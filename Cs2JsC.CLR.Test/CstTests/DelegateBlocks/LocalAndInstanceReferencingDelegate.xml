@@ -1,0 +1,73 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="VariableReference">
+          <variable type="LocalVariable">
+            <name>CS$&lt;&gt;8__locals8</name>
+          </variable>
+        </left>
+        <right type="NewObjectExpression">
+          <methodReference type="ConstructorReferenceExpression">
+            <methodReference>instance void RealScript.DelegateBlocks/&lt;&gt;c__DisplayClass7::.ctor()</methodReference>
+          </methodReference>
+          <parameters />
+        </right>
+      </expression>
+    </Elem0>
+    <Elem1 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="FieldReferenceExpression">
+          <leftExpression type="VariableReference">
+            <variable type="LocalVariable">
+              <name>CS$&lt;&gt;8__locals8</name>
+            </variable>
+          </leftExpression>
+          <fieldName>j</fieldName>
+        </left>
+        <right type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>j</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </right>
+      </expression>
+    </Elem1>
+    <Elem2 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="FieldReferenceExpression">
+          <leftExpression type="VariableReference">
+            <variable type="LocalVariable">
+              <name>CS$&lt;&gt;8__locals8</name>
+            </variable>
+          </leftExpression>
+          <fieldName>&lt;&gt;4__this</fieldName>
+        </left>
+        <right type="VariableReference">
+          <variable type="ThisVariable">
+            <name>this</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </right>
+      </expression>
+    </Elem2>
+    <Elem3 type="ReturnStatement">
+      <returnExpression type="InlineDelegateExpression">
+        <delegate type="DelegateMethodExpression">
+          <delegateType>RealScript.IntFunction</delegateType>
+          <methodReference type="MethodReferenceExpression">
+            <leftExpression type="VariableReference">
+              <variable type="LocalVariable">
+                <name>CS$&lt;&gt;8__locals8</name>
+              </variable>
+            </leftExpression>
+            <methodName>&lt;LocalAndInstanceReferencingDelegate&gt;b__6</methodName>
+          </methodReference>
+        </delegate>
+      </returnExpression>
+    </Elem3>
+  </statements>
+</RootBlock>

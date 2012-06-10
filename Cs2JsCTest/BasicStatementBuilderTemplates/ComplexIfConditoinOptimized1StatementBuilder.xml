@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="1" type="StackedBlock">
+    <!-- bool b = false; -->
+  </BlockInfo>
+  <BlockInfo id="2" type="StackedBlock">
+    <!-- int returnValue = 0; -->
+  </BlockInfo>
+  <BlockInfo id="3" type="ConditionalStatement">
+    <BlockInfo id="4" type="ConditionalStatement">
+      <BlockInfo id="11" type="ConditionalStatement">
+        <BlockInfo id="5" type="ConditionalStatement">
+          <BlockInfo id="6" type="StackedBlock">
+            <!-- i2 == 3  -->
+          </BlockInfo>
+          <BlockInfo id="7" type="StackedBlock">
+            <!-- i1 == 10 -->
+          </BlockInfo>
+        </BlockInfo>
+        <BlockInfo id="8" type="ConditionalStatement">
+          <BlockInfo id="9" type="StackedBlock">
+            <!-- i1 == 1 -->
+          </BlockInfo>
+          <BlockInfo id="10" type="StackedBlock">
+            <!-- i2 == 9 -->
+          </BlockInfo>
+        </BlockInfo>
+      </BlockInfo>
+      <BlockInfo id="12" type="ConditionalStatement">
+        <BlockInfo id="13" type="StackedBlock">
+          <!-- i1 == 2 -->
+        </BlockInfo>
+        <BlockInfo id="14" type="StackedBlock">
+          <!-- i2 == 3 -->
+        </BlockInfo>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="15" type="ConditionalStatement">
+      <BlockInfo id="16" type="StackedBlock">
+        <!-- i1 == 4 -->
+      </BlockInfo>
+      <BlockInfo id="17" type="StackedBlock">
+        <!-- i2 == 3 -->
+      </BlockInfo>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="18" type="StackedBlock">
+    <!--returnValue = i1 + i2 * 2 -->
+  </BlockInfo>
+  <BlockInfo id="19" type="InstructionBlock" label="IL_002c"/>
+  <BlockInfo id="20" type="ConditionalStatement">
+    <BlockInfo id="21" type="StackedBlock">
+      <!-- i1 > 3 -->
+    </BlockInfo>
+    <BlockInfo id="22" type="StackedBlock">
+      <!-- i2 < 3 -->
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="23" type="StackedBlock">
+    <!-- returnValue = i1 + i2 -->
+  </BlockInfo>
+  <BlockInfo id="24" type="InstructionBlock" label="IL_003a"/>
+  <BlockInfo id="25" type="StackedBlock">
+    <!-- if (b) -->
+  </BlockInfo>
+  <BlockInfo id="26" type="StackedBlock">
+    <!-- returnValue = i2 - i1 -->
+  </BlockInfo>
+  <BlockInfo id="27" type="StackedBlock">
+    <!-- return returnValue + i1 -->
+  </BlockInfo>
+</BlockInfo>

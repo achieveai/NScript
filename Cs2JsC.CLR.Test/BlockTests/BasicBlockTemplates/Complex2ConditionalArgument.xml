@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="BasicBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="1" opcode="LoadArgument" argument="1"/>
+    <BlockInfo id="4" type="BasicBlock">
+      <BlockInfo id="5" type="InstructionBlock" label="2" opcode="LoadArgument" argument="0"/>
+      <BlockInfo id="6" type="InstructionBlock" label="3" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="7" type="BasicBlock">
+        <BlockInfo id="8" type="BasicBlock">
+          <BlockInfo id="9" type="InstructionBlock" label="4" opcode="LoadArgument" argument="2"/>
+          <BlockInfo id="10" type="InstructionBlock" label="5" opcode="LoadConstantInt32" argument="3"/>
+          <BlockInfo id="11" type="InstructionBlock" label="6" opcode="BranchUNe" argument="34"/>
+        </BlockInfo>
+        <BlockInfo id="12" type="BasicBlock">
+          <BlockInfo id="13" type="InstructionBlock" label="8" opcode="LoadArgument" argument="3"/>
+          <BlockInfo id="14" type="InstructionBlock" label="9" opcode="LoadConstantInt32" argument="10"/>
+          <BlockInfo id="15" type="InstructionBlock" label="11" opcode="BranchUNe" argument="34"/>
+        </BlockInfo>
+        <BlockInfo id="16" type="BasicBlock">
+          <BlockInfo id="17" type="InstructionBlock" label="13" opcode="LoadArgument" argument="3"/>
+          <BlockInfo id="18" type="InstructionBlock" label="14" opcode="LoadConstantInt32" argument="2"/>
+          <BlockInfo id="19" type="InstructionBlock" label="15" opcode="BranchEq" argument="46"/>
+        </BlockInfo>
+        <BlockInfo id="20" type="BasicBlock">
+          <BlockInfo id="21" type="InstructionBlock" label="17" opcode="LoadArgument" argument="2"/>
+          <BlockInfo id="22" type="BasicBlock">
+            <BlockInfo id="23" type="BasicBlock">
+              <BlockInfo id="24" type="InstructionBlock" label="18" opcode="LoadArgument" argument="3"/>
+              <BlockInfo id="25" type="InstructionBlock" label="19" opcode="LoadConstantInt32" argument="10"/>
+              <BlockInfo id="26" type="InstructionBlock" label="21" opcode="BranchEq" argument="31"/>
+            </BlockInfo>
+            <BlockInfo id="27" type="BasicBlock">
+              <BlockInfo id="28" type="InstructionBlock" label="23" opcode="LoadArgument" argument="3"/>
+              <BlockInfo id="29" type="InstructionBlock" label="24" opcode="LoadConstantInt32" argument="4"/>
+              <BlockInfo id="30" type="InstructionBlock" label="25" opcode="BranchLt" argument="31"/>
+            </BlockInfo>
+            <BlockInfo id="31" type="InstructionBlock" label="27" opcode="LoadConstantInt32" argument="10"/>
+            <BlockInfo id="32" type="InstructionBlock" label="29" opcode="Branch" argument="32"/>
+            <BlockInfo id="33" type="InstructionBlock" label="31" opcode="LoadConstantInt32" argument="4"/>
+          </BlockInfo>
+          <BlockInfo id="34" type="InstructionBlock" label="32" opcode="BranchEq" argument="46"/>
+        </BlockInfo>
+        <BlockInfo id="35" type="BasicBlock">
+          <BlockInfo id="36" type="InstructionBlock" label="34" opcode="LoadArgument" argument="3"/>
+          <BlockInfo id="37" type="InstructionBlock" label="35" opcode="LoadConstantInt32" argument="4"/>
+          <BlockInfo id="38" type="InstructionBlock" label="36" opcode="BranchUNe" argument="42"/>
+        </BlockInfo>
+        <BlockInfo id="39" type="BasicBlock">
+          <BlockInfo id="40" type="InstructionBlock" label="38" opcode="LoadArgument" argument="2"/>
+          <BlockInfo id="41" type="InstructionBlock" label="39" opcode="LoadConstantInt32" argument="3"/>
+          <BlockInfo id="42" type="InstructionBlock" label="40" opcode="BranchEq" argument="46"/>
+        </BlockInfo>
+        <BlockInfo id="43" type="InstructionBlock" label="42" opcode="LoadConstantInt32" argument="14"/>
+        <BlockInfo id="44" type="InstructionBlock" label="44" opcode="Branch" argument="48"/>
+        <BlockInfo id="45" type="InstructionBlock" label="46" opcode="LoadConstantInt32" argument="24"/>
+      </BlockInfo>
+      <BlockInfo id="46" type="InstructionBlock" label="48" opcode="Call" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+    </BlockInfo>
+    <BlockInfo id="47" type="InstructionBlock" label="53" opcode="StoreIndirectInt32" argument=""/>
+  </BlockInfo>
+  <BlockInfo id="48" type="InstructionBlock" label="54" opcode="Return" argument=""/>
+</BlockInfo>

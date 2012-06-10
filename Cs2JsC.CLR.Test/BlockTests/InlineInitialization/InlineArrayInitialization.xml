@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InlineObjectArrayCreateBlock">
+      <BlockInfo id="4" type="StackedBlock">
+        <BlockInfo id="5" type="StackedBlock">
+          <BlockInfo id="6" type="InstructionBlock" label="1" opcode="LoadConstantInt32" argument="4"/>
+          <BlockInfo id="7" type="InstructionBlock" label="2" opcode="Newarr" argument=":RealScript.InlineComplexStatements&lt;&gt;"/>
+        </BlockInfo>
+        <BlockInfo id="8" type="InstructionBlock" label="7" opcode="StoreLocal" argument="1"/>
+      </BlockInfo>
+      <BlockInfo id="9" type="StackedBlock">
+        <BlockInfo id="10" type="InstructionBlock" label="8" opcode="LoadLocal" argument="1"/>
+        <BlockInfo id="11" type="InstructionBlock" label="9" opcode="LoadConstantInt32" argument="0"/>
+        <BlockInfo id="12" type="InstructionBlock" label="10" opcode="Newobj" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+        <BlockInfo id="13" type="InstructionBlock" label="15" opcode="StoreElement_ref" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="14" type="StackedBlock">
+        <BlockInfo id="15" type="InstructionBlock" label="16" opcode="LoadLocal" argument="1"/>
+        <BlockInfo id="16" type="InstructionBlock" label="17" opcode="LoadConstantInt32" argument="2"/>
+        <BlockInfo id="17" type="StackedBlock">
+          <BlockInfo id="18" type="InstructionBlock" label="18" opcode="LoadConstantDouble" argument="10"/>
+          <BlockInfo id="19" type="InstructionBlock" label="27" opcode="Newobj" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+        </BlockInfo>
+        <BlockInfo id="20" type="InstructionBlock" label="32" opcode="StoreElement_ref" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="21" type="StackedBlock">
+        <BlockInfo id="22" type="InstructionBlock" label="33" opcode="LoadLocal" argument="1"/>
+        <BlockInfo id="23" type="InstructionBlock" label="34" opcode="LoadConstantInt32" argument="3"/>
+        <BlockInfo id="24" type="StackedBlock">
+          <BlockInfo id="25" type="InstructionBlock" label="35" opcode="LoadConstantDouble" argument="15"/>
+          <BlockInfo id="26" type="InstructionBlock" label="44" opcode="Newobj" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+        </BlockInfo>
+        <BlockInfo id="27" type="InstructionBlock" label="49" opcode="StoreElement_ref" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="28" type="InstructionBlock" label="50" opcode="LoadLocal" argument="1"/>
+    </BlockInfo>
+    <BlockInfo id="29" type="InstructionBlock" label="55" opcode="Return" argument=""/>
+  </BlockInfo>
+</BlockInfo>

@@ -1,0 +1,34 @@
+﻿Testing first- vs higher-kinded and mono- vs polymorphic-method combinations...
+abc
+abc
+def
+Testing implicit implementations of interface methods on different instantiations of the same interface ...
+IHigherKindedAndPolymorphic<string>::Add
+IHigherKindedAndPolymorphic<int>::Add
+Testing implicit and explicit implementations of interface methods on the same interface...
+ImplicitAndExplicit::Test(Wrapper(Value=hij))
+ImplicitAndExplicit::Test2(Wrapper(Value=klm))
+Testing construction and field mutation...
+Person(t=5, u=0, name=pqr)
+MyBox(t=Person(t=5, u=0, name=opq), u=b1)
+MyBox(t=1, u=b2)
+MyBox(t=Person(t=5, u=0, name=rst), u=uvw)
+MyBox(t=3, u=b2)
+Testing mini generic lists of object...
+1
+2
+Person(t=5, u=0, name=pqr)
+Testing mini generic dictionary of string to int...
+one -> 1
+two -> 2
+three -> 3
+Testing static fields on distinct type instances...
+1
+2
+Testing generic methods with interesting permutation of type arguments..
+t=Person(t=5, u=0, name=opq), a=5, Second=second
+t=Person(t=5, u=0, name=opq), a=xyz, Second=second
+t=Person(t=5, u=0, name=opq), a=Person(t=5, u=0, name=efg), Second=second
+Testing recursive types...
+1
+2

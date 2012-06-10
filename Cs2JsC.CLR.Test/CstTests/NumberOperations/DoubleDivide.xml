@@ -1,0 +1,29 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="TypeCheckExpression">
+        <checkType type="TypeCheckType">CastType</checkType>
+        <typeReference>System.Int32</typeReference>
+        <expression type="BinaryExpression">
+          <operator type="BinaryOperator">Div</operator>
+          <left type="TypeCheckExpression">
+            <checkType type="TypeCheckType">CastType</checkType>
+            <typeReference>System.Double</typeReference>
+            <expression type="VariableReference">
+              <variable type="ParameterVariable">
+                <name>x</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </expression>
+          </left>
+          <right type="VariableReference">
+            <variable type="ParameterVariable">
+              <name>y</name>
+              <parameterType type="ParameterAttributes">None</parameterType>
+            </variable>
+          </right>
+        </expression>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>

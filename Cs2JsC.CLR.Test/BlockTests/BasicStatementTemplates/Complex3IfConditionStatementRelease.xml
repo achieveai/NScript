@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="0" opcode="LoadConstantInt32" argument="0"/>
+    <BlockInfo id="4" type="InstructionBlock" label="1" opcode="StoreLocal" argument="0"/>
+  </BlockInfo>
+  <BlockInfo id="5" type="StackedBlock">
+    <BlockInfo id="6" type="InstructionBlock" label="2" opcode="LoadConstantInt32" argument="0"/>
+    <BlockInfo id="7" type="InstructionBlock" label="3" opcode="StoreLocal" argument="1"/>
+  </BlockInfo>
+  <BlockInfo id="8" type="ConditionalStatement">
+    <BlockInfo id="9" type="ConditionalStatement">
+      <BlockInfo id="10" type="ConditionalStatement">
+        <BlockInfo id="11" type="ConditionalStatement">
+          <BlockInfo id="12" type="StackedBlock">
+            <BlockInfo id="13" type="InstructionBlock" label="4" opcode="LoadArgument" argument="2"/>
+            <BlockInfo id="14" type="InstructionBlock" label="5" opcode="LoadConstantInt32" argument="3"/>
+            <BlockInfo id="15" type="InstructionBlock" label="6" opcode="BranchUNe" argument="30"/>
+          </BlockInfo>
+          <BlockInfo id="16" type="StackedBlock">
+            <BlockInfo id="17" type="InstructionBlock" label="8" opcode="LoadArgument" argument="1"/>
+            <BlockInfo id="18" type="InstructionBlock" label="9" opcode="LoadConstantInt32" argument="10"/>
+            <BlockInfo id="19" type="InstructionBlock" label="11" opcode="BranchUNe" argument="30"/>
+          </BlockInfo>
+        </BlockInfo>
+        <BlockInfo id="20" type="ConditionalStatement">
+          <BlockInfo id="21" type="StackedBlock">
+            <BlockInfo id="22" type="InstructionBlock" label="13" opcode="LoadArgument" argument="1"/>
+            <BlockInfo id="23" type="InstructionBlock" label="14" opcode="LoadConstantInt32" argument="1"/>
+            <BlockInfo id="24" type="InstructionBlock" label="15" opcode="BranchEq" argument="22"/>
+          </BlockInfo>
+          <BlockInfo id="25" type="StackedBlock">
+            <BlockInfo id="26" type="InstructionBlock" label="17" opcode="LoadArgument" argument="2"/>
+            <BlockInfo id="27" type="InstructionBlock" label="18" opcode="LoadConstantInt32" argument="9"/>
+            <BlockInfo id="28" type="InstructionBlock" label="20" opcode="BranchUNe" argument="30"/>
+          </BlockInfo>
+        </BlockInfo>
+      </BlockInfo>
+      <BlockInfo id="29" type="ConditionalStatement">
+        <BlockInfo id="30" type="StackedBlock">
+          <BlockInfo id="31" type="InstructionBlock" label="22" opcode="LoadArgument" argument="1"/>
+          <BlockInfo id="32" type="InstructionBlock" label="23" opcode="LoadConstantInt32" argument="2"/>
+          <BlockInfo id="33" type="InstructionBlock" label="24" opcode="BranchEq" argument="38"/>
+        </BlockInfo>
+        <BlockInfo id="34" type="StackedBlock">
+          <BlockInfo id="35" type="InstructionBlock" label="26" opcode="LoadArgument" argument="2"/>
+          <BlockInfo id="36" type="InstructionBlock" label="27" opcode="LoadConstantInt32" argument="3"/>
+          <BlockInfo id="37" type="InstructionBlock" label="28" opcode="BranchEq" argument="38"/>
+        </BlockInfo>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="38" type="ConditionalStatement">
+      <BlockInfo id="39" type="StackedBlock">
+        <BlockInfo id="40" type="InstructionBlock" label="30" opcode="LoadArgument" argument="1"/>
+        <BlockInfo id="41" type="InstructionBlock" label="31" opcode="LoadConstantInt32" argument="4"/>
+        <BlockInfo id="42" type="InstructionBlock" label="32" opcode="BranchUNe" argument="46"/>
+      </BlockInfo>
+      <BlockInfo id="43" type="StackedBlock">
+        <BlockInfo id="44" type="InstructionBlock" label="34" opcode="LoadArgument" argument="2"/>
+        <BlockInfo id="45" type="InstructionBlock" label="35" opcode="LoadConstantInt32" argument="3"/>
+        <BlockInfo id="46" type="InstructionBlock" label="36" opcode="BranchUNe" argument="46"/>
+      </BlockInfo>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="47" type="StackedBlock">
+    <BlockInfo id="48" type="StackedBlock">
+      <BlockInfo id="49" type="InstructionBlock" label="38" opcode="LoadArgument" argument="1"/>
+      <BlockInfo id="50" type="StackedBlock">
+        <BlockInfo id="51" type="InstructionBlock" label="39" opcode="LoadArgument" argument="2"/>
+        <BlockInfo id="52" type="InstructionBlock" label="40" opcode="LoadConstantInt32" argument="2"/>
+        <BlockInfo id="53" type="InstructionBlock" label="41" opcode="Mul" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="54" type="InstructionBlock" label="42" opcode="Add" argument=""/>
+    </BlockInfo>
+    <BlockInfo id="55" type="InstructionBlock" label="43" opcode="StoreLocal" argument="1"/>
+  </BlockInfo>
+  <BlockInfo id="56" type="InstructionBlock" label="44" opcode="Branch" argument="67"/>
+  <BlockInfo id="57" type="ConditionalStatement">
+    <BlockInfo id="58" type="StackedBlock">
+      <BlockInfo id="59" type="InstructionBlock" label="46" opcode="LoadArgument" argument="1"/>
+      <BlockInfo id="60" type="InstructionBlock" label="47" opcode="LoadConstantInt32" argument="2"/>
+      <BlockInfo id="61" type="InstructionBlock" label="48" opcode="BranchLe" argument="60"/>
+    </BlockInfo>
+    <BlockInfo id="62" type="StackedBlock">
+      <BlockInfo id="63" type="InstructionBlock" label="50" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="64" type="InstructionBlock" label="51" opcode="LoadConstantInt32" argument="3"/>
+      <BlockInfo id="65" type="InstructionBlock" label="52" opcode="BranchGe" argument="60"/>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="66" type="StackedBlock">
+    <BlockInfo id="67" type="StackedBlock">
+      <BlockInfo id="68" type="InstructionBlock" label="54" opcode="LoadArgument" argument="1"/>
+      <BlockInfo id="69" type="InstructionBlock" label="55" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="70" type="InstructionBlock" label="56" opcode="Add" argument=""/>
+    </BlockInfo>
+    <BlockInfo id="71" type="InstructionBlock" label="57" opcode="StoreLocal" argument="1"/>
+  </BlockInfo>
+  <BlockInfo id="72" type="InstructionBlock" label="58" opcode="Branch" argument="67"/>
+  <BlockInfo id="73" type="StackedBlock">
+    <BlockInfo id="74" type="InstructionBlock" label="60" opcode="LoadLocal" argument="0"/>
+    <BlockInfo id="75" type="InstructionBlock" label="61" opcode="BranchFalse" argument="67"/>
+  </BlockInfo>
+  <BlockInfo id="76" type="StackedBlock">
+    <BlockInfo id="77" type="StackedBlock">
+      <BlockInfo id="78" type="InstructionBlock" label="63" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="79" type="InstructionBlock" label="64" opcode="LoadArgument" argument="1"/>
+      <BlockInfo id="80" type="InstructionBlock" label="65" opcode="Sub" argument=""/>
+    </BlockInfo>
+    <BlockInfo id="81" type="InstructionBlock" label="66" opcode="StoreLocal" argument="1"/>
+  </BlockInfo>
+  <BlockInfo id="82" type="StackedBlock">
+    <BlockInfo id="83" type="StackedBlock">
+      <BlockInfo id="84" type="InstructionBlock" label="67" opcode="LoadLocal" argument="1"/>
+      <BlockInfo id="85" type="InstructionBlock" label="68" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="86" type="InstructionBlock" label="69" opcode="Add" argument=""/>
+    </BlockInfo>
+    <BlockInfo id="87" type="InstructionBlock" label="72" opcode="Return" argument=""/>
+  </BlockInfo>
+</BlockInfo>

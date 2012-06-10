@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="BasicBlock">
+    <BlockInfo id="3" type="BasicBlock">
+      <BlockInfo id="4" type="InstructionBlock"/>
+      <BlockInfo id="5" type="InstructionBlock"/>
+    </BlockInfo> 
+    <BlockInfo id="6" type="InstructionBlock"/>
+  </BlockInfo>
+</BlockInfo>

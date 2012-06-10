@@ -1,0 +1,395 @@
+﻿//-----------------------------------------------------------------------
+// <copyright file="MemberReferenceSerializer.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace JsCsc.Lib
+{
+    using System;
+    using System.Collections.Generic;
+    using Cs2JsC.Utils;
+    using Mono.Cecil;
+    using Mono.CSharp;
+    using Newtonsoft.Json.Linq;
+
+    /// <summary>
+    /// Definition for MemberReferenceSerializer
+    /// </summary>
+    public static class MemberReferenceSerializer
+    {
+        public static void Serialize(ICustomSerializer serializer, IKVM.Reflection.Module module)
+        {
+            serializer.AddValue(NameTokens.TypeName, TypeTokens.ModuleDefinition);
+            serializer.AddValue(NameTokens.Name, module.Name);
+        }
+
+        public static void Serialize(ICustomSerializer serializer, ModuleContainer moduleContainer)
+        {
+            serializer.AddValue(NameTokens.TypeName, TypeTokens.ModuleDefinition);
+            serializer.AddValue(NameTokens.Name, moduleContainer.DeclaringAssembly.Name);
+        }
+
+        public static void Serialize(ICustomSerializer serializer, TypeContainer type)
+        {
+            MemberReferenceSerializer.Serialize(serializer, type.CurrentType);
+        }
+
+        public static void Serialize(ICustomSerializer serializer, TypeSpec type)
+        {
+            serializer.AddValue(NameTokens.TypeName, TypeTokens.TypeSpec);
+            if (type == null)
+            {
+                serializer.AddValue(NameTokens.Name, (string)null);
+            }
+
+            var metaInfo = type.GetMetaInfo();
+            serializer.AddValue(TypeTokens.ModuleDefinition, metaInfo.Module, MemberReferenceSerializer.Serialize);
+
+            if (type.IsGenericParameter)
+            {
+                TypeParameterSpec paramSpec = (TypeParameterSpec)type;
+                serializer.AddValue(NameTokens.Type, ValueTokens.GenericParam);
+                serializer.AddValue(NameTokens.Position, paramSpec.DeclaredPosition);
+                serializer.AddValue(NameTokens.IsMethodOwned, paramSpec.IsMethodOwned);
+
+                return;
+            }
+
+            if (type.IsArray)
+            {
+                serializer.AddValue(NameTokens.Type, ValueTokens.Array);
+                serializer.AddValue(
+                    NameTokens.ElementType,
+                    ((ArrayContainer)type).Element,
+                    MemberReferenceSerializer.Serialize);
+
+                return;
+            }
+
+            if (type is InflatedTypeSpec && type.IsGeneric)
+            {
+                serializer.AddValue(NameTokens.Type, ValueTokens.GenericInstance);
+            }
+
+            serializer.AddValue(NameTokens.NameSpace, metaInfo.Namespace);
+            serializer.AddValue(NameTokens.Name, metaInfo.Name);
+            if (metaInfo.IsNested)
+            {
+                serializer.AddValue(
+                    NameTokens.DeclaringType,
+                    type.DeclaringType,
+                    MemberReferenceSerializer.Serialize);
+            }
+
+            if (type is InflatedTypeSpec && type.IsGeneric)
+            {
+                InflatedTypeSpec inflatedTypeSpec = (InflatedTypeSpec)type;
+                serializer.AddValue(
+                    NameTokens.TypeParams,
+                    inflatedTypeSpec.TypeArguments,
+                    MemberReferenceSerializer.Serialize);
+            }
+        }
+
+        public static void Serialize(ICustomSerializer serializer, Method method)
+        {
+            MemberReferenceSerializer.Serialize(serializer, (MethodSpec)method.Spec);
+        }
+
+        public static void Serialize(ICustomSerializer serializer, MethodSpec method)
+        {
+            IParametersMember parametersMember = method.MemberDefinition as IParametersMember;
+            var parameters = parametersMember != null
+                ? parametersMember.Parameters
+                : method.Parameters;
+
+            TypeSpec methodReturnType = parametersMember != null
+                    ? parametersMember.MemberType
+                    : method.ReturnType;
+
+            serializer.AddValue(NameTokens.TypeName, TypeTokens.MethodSpec);
+            serializer.AddValue(
+                NameTokens.DeclaringType,
+                method.DeclaringType,
+                MemberReferenceSerializer.Serialize);
+
+            serializer.AddValue(
+                NameTokens.ReturnType,
+                methodReturnType,
+                MemberReferenceSerializer.Serialize);
+
+            serializer.AddValue(
+                NameTokens.Name,
+                method.IsConstructor ? (method.IsStatic ? ".cctor" : ".ctor") : method.Name);
+
+            serializer.AddValue(
+                NameTokens.IsStatic,
+                method.IsStatic);
+
+            serializer.AddValue(
+                NameTokens.Arity,
+                method.Arity);
+
+            List<Tuple<IParameterData, TypeSpec>> parameterList = new List<Tuple<IParameterData, TypeSpec>>(parameters.Count);
+            for (int iParam = 0; iParam < parameters.Count; iParam++)
+            {
+                parameterList.Add(Tuple.Create(parameters.FixedParameters[iParam], parameters.Types[iParam]));
+            }
+
+            serializer.AddValue(
+                NameTokens.Parameters,
+                parameterList,
+                MemberReferenceSerializer.Serialize);
+
+            if (method.TypeArguments != null)
+            {
+                serializer.AddValue(
+                    NameTokens.TypeParams,
+                    method.TypeArguments,
+                    MemberReferenceSerializer.Serialize);
+            }
+        }
+
+        public static void Serialize(ICustomSerializer serializer, FieldSpec fieldSpec)
+        {
+            IInterfaceMemberSpec memberSpec = fieldSpec.MemberDefinition as IInterfaceMemberSpec;
+            serializer.AddValue(NameTokens.TypeName, TypeTokens.FieldSpec);
+            serializer.AddValue(
+                NameTokens.Name,
+                fieldSpec.Name);
+            serializer.AddValue(
+                NameTokens.MemberType,
+                memberSpec != null
+                    ? memberSpec.MemberType
+                    : fieldSpec.MemberType,
+                MemberReferenceSerializer.Serialize);
+            serializer.AddValue(
+                NameTokens.DeclaringType,
+                fieldSpec.DeclaringType,
+                MemberReferenceSerializer.Serialize);
+        }
+
+        private static void Serialize(ICustomSerializer serializer, Tuple<IParameterData, TypeSpec> paramData)
+        {
+            serializer.AddValue(NameTokens.TypeName, "paramData");
+            ParameterAttributes attribute = ParameterAttributes.None;
+            var modFlags = paramData.Item1.ModFlags;
+
+            if ((modFlags & Parameter.Modifier.REF) == Parameter.Modifier.REF)
+            {
+                attribute |= ParameterAttributes.Retval;
+            }
+
+            if ((modFlags & Parameter.Modifier.OUT) == Parameter.Modifier.OUT)
+            {
+                attribute |= ParameterAttributes.Out;
+            }
+
+            serializer.AddValue(
+                NameTokens.ModFlags,
+                attribute);
+            serializer.AddValue(
+                NameTokens.Name,
+                paramData.Item1.Name);
+            serializer.AddValue(
+                NameTokens.Type,
+                paramData.Item2,
+                MemberReferenceSerializer.Serialize);
+        }
+
+        public static JObject Serialize(IKVM.Reflection.Module module)
+        {
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.ModuleDefinition;
+            rv[NameTokens.Name] = module.Name;
+            return rv;
+        }
+
+        public static JObject Serialize(ModuleContainer moduleContainer)
+        {
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.ModuleDefinition;
+            rv[NameTokens.Name] = moduleContainer.DeclaringAssembly.Name;
+            return rv;
+        }
+
+        public static JObject Serialize(TypeContainer type)
+        {
+            return MemberReferenceSerializer.Serialize(type.CurrentType);
+        }
+
+        public static JObject Serialize(TypeSpec type)
+        {
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.TypeSpec;
+            if (type == null)
+            {
+                rv[NameTokens.Name] = null;
+                return rv;
+            }
+
+            var metaInfo = type.GetMetaInfo();
+            rv[NameTokens.Module] = MemberReferenceSerializer.Serialize(metaInfo.Module);
+
+            if (type.IsGenericParameter)
+            {
+                TypeParameterSpec paramSpec = (TypeParameterSpec)type;
+                rv[NameTokens.Type] = ValueTokens.GenericParam;
+                rv[NameTokens.Name] = paramSpec.Name;
+                rv[NameTokens.Position] = paramSpec.DeclaredPosition;
+                rv[NameTokens.IsMethodOwned] = paramSpec.IsMethodOwned;
+
+                return rv;
+            }
+
+            if (type.IsArray)
+            {
+                rv[NameTokens.Type] = ValueTokens.Array;
+                rv[NameTokens.ElementType] = MemberReferenceSerializer.Serialize(((ArrayContainer)type).Element);
+
+                return rv;
+            }
+
+            if (type is InflatedTypeSpec && type.IsGeneric)
+            {
+                rv[NameTokens.Type] = ValueTokens.GenericInstance;
+            }
+            rv[NameTokens.Arity] = type.Arity;
+
+            rv[NameTokens.NameSpace] = metaInfo.Namespace;
+            rv[NameTokens.Name] = metaInfo.Name;
+            if (metaInfo.IsNested)
+            {
+                rv[NameTokens.DeclaringType] = MemberReferenceSerializer.Serialize(type.DeclaringType);
+            }
+
+            if (type is InflatedTypeSpec && type.IsGeneric)
+            {
+                InflatedTypeSpec inflatedTypeSpec = (InflatedTypeSpec)type;
+                JArray jarray = new JArray();
+                foreach (var typeArg in inflatedTypeSpec.TypeArguments)
+                {
+                    jarray.Add(MemberReferenceSerializer.Serialize(typeArg));
+                }
+
+                rv[NameTokens.TypeParams] = jarray;
+            }
+
+            return rv;
+        }
+
+        public static JObject Serialize(Method method)
+        {
+            return MemberReferenceSerializer.Serialize((MethodSpec)method.Spec);
+        }
+
+        public static JObject Serialize(MethodSpec method)
+        {
+            if (method == null)
+            {
+                return null;
+            }
+
+            IParametersMember parametersMember = method.MemberDefinition as IParametersMember;
+            var parameters = parametersMember != null
+                ? parametersMember.Parameters
+                : method.Parameters;
+
+            TypeSpec methodReturnType = parametersMember != null
+                    ? parametersMember.MemberType
+                    : method.ReturnType;
+
+            TypeSpec declaringType = parametersMember != null && parametersMember is MethodCore
+                ? ((MethodCore)parametersMember).Spec.DeclaringType
+                : method.DeclaringType;
+
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.MethodSpec;
+            rv[NameTokens.DeclaringType] = MemberReferenceSerializer.Serialize(method.DeclaringType);
+            rv[NameTokens.ReturnType] = MemberReferenceSerializer.Serialize(methodReturnType);
+            rv[NameTokens.Name] = method.IsConstructor
+                ? (method.IsStatic ? ".cctor" : ".ctor")
+                : method.Name;
+            rv[NameTokens.IsStatic] = method.IsStatic;
+            rv[NameTokens.Arity] = method.Arity;
+
+            JArray jarray = new JArray();
+            for (int iParam = 0; iParam < parameters.Count; iParam++)
+            {
+                var paramData = Tuple.Create(parameters.FixedParameters[iParam], parameters.Types[iParam]);
+                JObject paramObj = new JObject();
+                paramObj[NameTokens.TypeName] = "paramData";
+                ParameterAttributes attribute = ParameterAttributes.None;
+                var modFlags = paramData.Item1.ModFlags;
+
+                if ((modFlags & Parameter.Modifier.REF) == Parameter.Modifier.REF)
+                {
+                    attribute |= ParameterAttributes.Retval;
+                }
+
+                if ((modFlags & Parameter.Modifier.OUT) == Parameter.Modifier.OUT)
+                {
+                    attribute |= ParameterAttributes.Out;
+                }
+
+                paramObj[NameTokens.ModFlags] = attribute.ToString();
+                paramObj[NameTokens.Name] = paramData.Item1.Name;
+                paramObj[NameTokens.Type] = MemberReferenceSerializer.Serialize(paramData.Item2);
+
+                jarray.Add(paramObj);
+            }
+
+            rv[NameTokens.Parameters] = jarray;
+
+            if (method.TypeArguments != null)
+            {
+                jarray = new JArray();
+                foreach (var typeArg in method.TypeArguments)
+                {
+                    jarray.Add(MemberReferenceSerializer.Serialize(typeArg));
+                }
+
+                rv[NameTokens.TypeParams] = jarray;
+            }
+
+            return rv;
+        }
+
+        public static JObject Serialize(FieldSpec fieldSpec)
+        {
+            IInterfaceMemberSpec memberSpec = fieldSpec.MemberDefinition as IInterfaceMemberSpec;
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.FieldSpec;
+            rv[NameTokens.Name] = fieldSpec.Name;
+            rv[NameTokens.MemberType] = MemberReferenceSerializer.Serialize(memberSpec != null ? memberSpec.MemberType : fieldSpec.MemberType);
+            rv[NameTokens.DeclaringType] = MemberReferenceSerializer.Serialize(fieldSpec.DeclaringType);
+
+            return rv;
+        }
+
+        private static JObject Serialize(Tuple<IParameterData, TypeSpec> paramData)
+        {
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = "paramData";
+            ParameterAttributes attribute = ParameterAttributes.None;
+            var modFlags = paramData.Item1.ModFlags;
+
+            if ((modFlags & Parameter.Modifier.REF) == Parameter.Modifier.REF)
+            {
+                attribute |= ParameterAttributes.Retval;
+            }
+
+            if ((modFlags & Parameter.Modifier.OUT) == Parameter.Modifier.OUT)
+            {
+                attribute |= ParameterAttributes.Out;
+            }
+
+            rv[NameTokens.ModFlags] = attribute.ToString();
+            rv[NameTokens.Name] = paramData.Item1.Name;
+            rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(paramData.Item2);
+
+            return rv;
+        }
+    }
+}

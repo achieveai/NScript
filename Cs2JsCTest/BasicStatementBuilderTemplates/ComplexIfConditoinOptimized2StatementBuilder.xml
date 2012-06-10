@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="2" type="ConditionalStatement">
+    <BlockInfo id="3" type="ConditionalStatement">
+      <BlockInfo id="4" type="ConditionalStatement">
+        <BlockInfo id="5" type="StackedBlock">
+          <!-- i2 == 3 -->
+        </BlockInfo>
+        <BlockInfo id="6" type="StackedBlock">
+          <!-- i3 == 10 -->
+        </BlockInfo>
+      </BlockInfo>
+      <BlockInfo id="7" type="ConditionalStatement">
+        <BlockInfo id="8" type="StackedBlock">
+          <!-- i3 == 2 -->
+        </BlockInfo>
+        <BlockInfo id="9" type="StackedBlock">
+          <!-- i2 == .... -->
+          <BlockInfo id="10" type="InstructionBlock" label="IL_000d"/>
+          <BlockInfo id="11" type="ConditionalBlock">
+            <BlockInfo id="12" type="ConditionalStatement">
+              <BlockInfo id="13" type="StackedBlock">
+                <!-- i3 == 10 -->
+              </BlockInfo>
+              <BlockInfo id="14" type="StackedBlock">
+                <!-- i3 &lt; 4 -->
+              </BlockInfo>
+            </BlockInfo>
+            <BlockInfo id="15" type="InstructionBlock" label="IL_0017"/>
+            <BlockInfo id="16" type="InstructionBlock" label="IL_0019"/>
+            <BlockInfo id="17" type="InstructionBlock" label="IL_001b"/>
+          </BlockInfo>
+          <BlockInfo id="18" type="InstructionBlock" label="IL_001c"/>
+        </BlockInfo>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="19" type="ConditionalStatement">
+      <BlockInfo id="20" type="StackedBlock">
+        <!-- i3 == 4 -->
+      </BlockInfo>
+      <BlockInfo id="21" type="StackedBlock">
+        <!-- i2 == 3 -->
+      </BlockInfo>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="22" type="StackedBlock">
+    <!-- i1 = Func2 (i2, 15); -->
+  </BlockInfo>
+  <BlockInfo id="23" type="InstructionBlock" label="IL_0031"/>
+  <BlockInfo id="24" type="StackedBlock">
+    <!-- i1 = Func2 (i2, 25); -->
+  </BlockInfo>
+  <BlockInfo id="25" type="InstructionBlock" label="IL_003d"/>
+</BlockInfo>

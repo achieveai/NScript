@@ -1,0 +1,16 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="TypeCheckExpression">
+        <checkType type="TypeCheckType">IsType</checkType>
+        <typeReference>RealScript.TestReferenceClass</typeReference>
+        <expression type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>obj</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </expression>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>

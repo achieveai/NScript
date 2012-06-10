@@ -1,0 +1,42 @@
+﻿<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InlineObjectArrayCreateBlock">
+      <BlockInfo id="4" type="StackedBlock">
+        <BlockInfo id="5" type="StackedBlock">
+          <BlockInfo id="6" type="InstructionBlock" label="1" opcode="LoadConstantInt32" argument="2"/>
+          <BlockInfo id="7" type="InstructionBlock" label="2" opcode="Newarr" argument="System.Int32"/>
+        </BlockInfo>
+        <BlockInfo id="8" type="InstructionBlock" label="7" opcode="StoreLocal" argument="1"/>
+      </BlockInfo>
+      <BlockInfo id="9" type="StackedBlock">
+        <BlockInfo id="10" type="InstructionBlock" label="8" opcode="LoadLocal" argument="1"/>
+        <BlockInfo id="11" type="InstructionBlock" label="9" opcode="LoadConstantInt32" argument="0"/>
+        <BlockInfo id="12" type="PostfixBlock">
+          <BlockInfo id="13" type="SerialBlock">
+            <BlockInfo id="14" type="StackedBlock">
+              <BlockInfo id="15" type="InstructionBlock" label="10" opcode="LoadArgument" argument="0"/>
+              <BlockInfo id="16" type="InstructionBlock" label="11" opcode="Dup" argument=""/>
+            </BlockInfo>
+            <BlockInfo id="17" type="StackedBlock">
+              <BlockInfo id="18" type="StackedBlock">
+                <BlockInfo id="19" type="InstructionBlock" label="11_copy" opcode="DupCopy" argument="11:[3:3] Dup: "/>
+                <BlockInfo id="20" type="InstructionBlock" label="12" opcode="LoadConstantInt32" argument="1"/>
+                <BlockInfo id="21" type="InstructionBlock" label="13" opcode="Add" argument=""/>
+              </BlockInfo>
+              <BlockInfo id="22" type="InstructionBlock" label="14" opcode="StoreArgument" argument="0"/>
+            </BlockInfo>
+          </BlockInfo>
+        </BlockInfo>
+        <BlockInfo id="23" type="InstructionBlock" label="16" opcode="StoreElementInt32" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="24" type="StackedBlock">
+        <BlockInfo id="25" type="InstructionBlock" label="17" opcode="LoadLocal" argument="1"/>
+        <BlockInfo id="26" type="InstructionBlock" label="18" opcode="LoadConstantInt32" argument="1"/>
+        <BlockInfo id="27" type="InstructionBlock" label="19" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="28" type="InstructionBlock" label="20" opcode="StoreElementInt32" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="29" type="InstructionBlock" label="21" opcode="LoadLocal" argument="1"/>
+    </BlockInfo>
+    <BlockInfo id="30" type="InstructionBlock" label="26" opcode="Return" argument=""/>
+  </BlockInfo>
+</BlockInfo>

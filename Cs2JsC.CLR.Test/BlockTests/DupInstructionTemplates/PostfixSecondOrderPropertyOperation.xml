@@ -1,0 +1,41 @@
+﻿<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="0" opcode="LoadArgument" argument="0"/>
+    <BlockInfo id="4" type="PostfixBlock">
+      <BlockInfo id="5" type="SerialBlock">
+        <BlockInfo id="6" type="StackedBlock">
+          <BlockInfo id="7" type="StackedBlock">
+            <BlockInfo id="8" type="StackedBlock">
+              <BlockInfo id="9" type="InstructionBlock" label="1" opcode="LoadArgument" argument="0"/>
+              <BlockInfo id="10" type="InstructionBlock" label="2" opcode="CallVirtual" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+            </BlockInfo>
+            <BlockInfo id="11" type="InstructionBlock" label="7" opcode="Dup" argument=""/>
+          </BlockInfo>
+          <BlockInfo id="12" type="StackedBlock">
+            <BlockInfo id="13" type="InlineAssignmentBlock">
+              <BlockInfo id="14" type="SerialBlock">
+                <BlockInfo id="15" type="StackedBlock">
+                  <BlockInfo id="16" type="StackedBlock">
+                    <BlockInfo id="17" type="InstructionBlock" label="7_copy" opcode="DupCopy" argument="7:[2:2] Dup: "/>
+                    <BlockInfo id="18" type="InstructionBlock" label="8" opcode="CallVirtual" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+                  </BlockInfo>
+                  <BlockInfo id="19" type="InstructionBlock" label="13" opcode="Dup" argument=""/>
+                </BlockInfo>
+                <BlockInfo id="20" type="StackedBlock">
+                  <BlockInfo id="21" type="InstructionBlock" label="13_copy" opcode="DupCopy" argument="13:[3:3] Dup: "/>
+                  <BlockInfo id="22" type="InstructionBlock" label="14" opcode="StoreLocal" argument="0"/>
+                </BlockInfo>
+              </BlockInfo>
+            </BlockInfo>
+            <BlockInfo id="23" type="InstructionBlock" label="15" opcode="LoadConstantInt32" argument="1"/>
+            <BlockInfo id="24" type="InstructionBlock" label="16" opcode="Add" argument=""/>
+          </BlockInfo>
+          <BlockInfo id="25" type="InstructionBlock" label="17" opcode="CallVirtual" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+        </BlockInfo>
+        <BlockInfo id="26" type="InstructionBlock" label="22" opcode="LoadLocal" argument="0"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="27" type="InstructionBlock" label="23" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+  </BlockInfo>
+  <BlockInfo id="28" type="InstructionBlock" label="28" opcode="Return" argument=""/>
+</BlockInfo>

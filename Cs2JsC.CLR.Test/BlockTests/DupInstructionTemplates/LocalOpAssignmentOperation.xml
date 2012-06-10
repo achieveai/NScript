@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="OpAssignmentBlock">
+    <BlockInfo id="3" type="StackedBlock">
+      <BlockInfo id="4" type="StackedBlock">
+        <BlockInfo id="5" type="InstructionBlock" label="1" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="6" type="InstructionBlock" label="2" opcode="LoadArgument" argument="1"/>
+        <BlockInfo id="7" type="InstructionBlock" label="3" opcode="Add" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="8" type="InstructionBlock" label="4" opcode="StoreArgument" argument="0"/>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="9" type="StackedBlock">
+    <BlockInfo id="10" type="StackedBlock">
+      <BlockInfo id="11" type="InstructionBlock" label="6" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="12" type="InstructionBlock" label="7" opcode="LoadArgument" argument="0"/>
+      <BlockInfo id="13" type="InstructionBlock" label="8" opcode="LoadArgument" argument="1"/>
+      <BlockInfo id="14" type="InstructionBlock" label="9" opcode="CallVirtual" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+    </BlockInfo>
+    <BlockInfo id="15" type="InstructionBlock" label="14" opcode="Pop" argument=""/>
+  </BlockInfo>
+  <BlockInfo id="16" type="InstructionBlock" label="15" opcode="Return" argument=""/>
+</BlockInfo>

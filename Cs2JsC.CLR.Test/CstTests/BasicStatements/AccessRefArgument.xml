@@ -1,0 +1,45 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="VariableAddressReference">
+          <variable type="ParameterVariable">
+            <name>testOut</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </left>
+        <right type="BinaryExpression">
+          <operator type="BinaryOperator">Plus</operator>
+          <left type="BinaryExpression">
+            <operator type="BinaryOperator">Plus</operator>
+            <left type="VariableReference">
+              <variable type="ParameterVariable">
+                <name>i1</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </left>
+            <right type="IntLiteral">
+              <value>10</value>
+              <size type="IntSize">I32</size>
+            </right>
+          </left>
+          <right type="VariableAddressReference">
+            <variable type="ParameterVariable">
+              <name>testOut</name>
+              <parameterType type="ParameterAttributes">None</parameterType>
+            </variable>
+          </right>
+        </right>
+      </expression>
+    </Elem0>
+    <Elem1 type="ReturnStatement">
+      <returnExpression type="VariableReference">
+        <variable type="ParameterVariable">
+          <name>i1</name>
+          <parameterType type="ParameterAttributes">None</parameterType>
+        </variable>
+      </returnExpression>
+    </Elem1>
+  </statements>
+</RootBlock>

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="1" type="StackedBlock">
+    <!-- Skipping structure of string.format call -->
+  </BlockInfo>
+  <BlockInfo id="2" type="DoWhileBlock">
+    <BlockInfo id="3" type="Block">
+      <BlockInfo id="4" type="StackedBlock">
+        <!-- Skipping structure of string.format call -->
+      </BlockInfo>
+      <BlockInfo id="4" type="StackedBlock">
+        <!-- Skipping i post decrement call -->
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="5" type="StackedBlock">
+      <BlockInfo id="8" type="InstructionBlock" label="IL_0032"/>
+      <BlockInfo id="8" type="InstructionBlock" label="IL_0033"/>
+      <BlockInfo id="9" type="InstructionBlock" label="IL_0035"/>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="11" type="InstructionBlock" label="IL_0037"/>
+</BlockInfo>

@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="BasicBlock">
+    <BlockInfo id="3" type="BasicBlock">
+      <BlockInfo id="4" type="InstructionBlock" label="1" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="5" type="BasicBlock">
+        <BlockInfo id="6" type="InstructionBlock" label="2" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="7" type="BasicBlock">
+          <BlockInfo id="8" type="BasicBlock">
+            <BlockInfo id="9" type="InstructionBlock" label="3" opcode="LoadArgument" argument="1"/>
+            <BlockInfo id="10" type="InstructionBlock" label="4" opcode="Dup" argument=""/>
+          </BlockInfo>
+          <BlockInfo id="11" type="BasicBlock">
+            <BlockInfo id="12" type="BasicBlock">
+              <BlockInfo id="13" type="InstructionBlock" label="4_copy" opcode="DupCopy" argument="4:[3:3] Dup: "/>
+              <BlockInfo id="14" type="InstructionBlock" label="5" opcode="LoadConstantInt32" argument="1"/>
+              <BlockInfo id="15" type="InstructionBlock" label="6" opcode="Add" argument=""/>
+            </BlockInfo>
+            <BlockInfo id="16" type="InstructionBlock" label="7" opcode="StoreArgument" argument="1"/>
+          </BlockInfo>
+        </BlockInfo>
+        <BlockInfo id="17" type="InstructionBlock" label="9" opcode="LoadConstantInt32" argument="10"/>
+        <BlockInfo id="18" type="InstructionBlock" label="11" opcode="Call" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+      </BlockInfo>
+      <BlockInfo id="19" type="InstructionBlock" label="16" opcode="Add" argument=""/>
+    </BlockInfo>
+    <BlockInfo id="20" type="InstructionBlock" label="17" opcode="StoreArgument" argument="2"/>
+  </BlockInfo>
+  <BlockInfo id="21" type="BasicBlock">
+    <BlockInfo id="22" type="BasicBlock">
+      <BlockInfo id="23" type="InstructionBlock" label="19" opcode="LoadArgument" argument="2"/>
+      <BlockInfo id="24" type="BasicBlock">
+        <BlockInfo id="25" type="InstructionBlock" label="20" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="26" type="InstructionBlock" label="21" opcode="LoadArgument" argument="1"/>
+        <BlockInfo id="27" type="BasicBlock">
+          <BlockInfo id="28" type="BasicBlock">
+            <BlockInfo id="29" type="InstructionBlock" label="22" opcode="LoadArgument" argument="2"/>
+            <BlockInfo id="30" type="InstructionBlock" label="23" opcode="Dup" argument=""/>
+          </BlockInfo>
+          <BlockInfo id="31" type="BasicBlock">
+            <BlockInfo id="32" type="BasicBlock">
+              <BlockInfo id="33" type="InstructionBlock" label="23_copy" opcode="DupCopy" argument="23:[4:4] Dup: "/>
+              <BlockInfo id="34" type="InstructionBlock" label="24" opcode="LoadConstantInt32" argument="1"/>
+              <BlockInfo id="35" type="InstructionBlock" label="25" opcode="Add" argument=""/>
+            </BlockInfo>
+            <BlockInfo id="36" type="InstructionBlock" label="26" opcode="StoreArgument" argument="2"/>
+          </BlockInfo>
+        </BlockInfo>
+        <BlockInfo id="37" type="InstructionBlock" label="28" opcode="Call" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+      </BlockInfo>
+      <BlockInfo id="38" type="InstructionBlock" label="33" opcode="Add" argument=""/>
+    </BlockInfo>
+    <BlockInfo id="39" type="InstructionBlock" label="34" opcode="StoreArgument" argument="2"/>
+  </BlockInfo>
+  <BlockInfo id="40" type="BasicBlock">
+    <BlockInfo id="41" type="InstructionBlock" label="36" opcode="LoadArgument" argument="2"/>
+    <BlockInfo id="42" type="InstructionBlock" label="41" opcode="Return" argument=""/>
+  </BlockInfo>
+</BlockInfo>

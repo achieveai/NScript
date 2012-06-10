@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="1" opcode="Newobj" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+    <BlockInfo id="4" type="InstructionBlock" label="10" opcode="Return" argument=""/>
+  </BlockInfo>
+</BlockInfo>

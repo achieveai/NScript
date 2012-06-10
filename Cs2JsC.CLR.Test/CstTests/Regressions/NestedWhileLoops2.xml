@@ -1,0 +1,309 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="VariableReference">
+          <variable type="LocalVariable">
+            <name>randomValue</name>
+          </variable>
+        </left>
+        <right type="IntLiteral">
+          <value>11</value>
+          <size type="IntSize">I32</size>
+        </right>
+      </expression>
+    </Elem0>
+    <Elem1 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="VariableReference">
+          <variable type="LocalVariable">
+            <name>i</name>
+          </variable>
+        </left>
+        <right type="IntLiteral">
+          <value>0</value>
+          <size type="IntSize">I32</size>
+        </right>
+      </expression>
+    </Elem1>
+    <Elem2 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="VariableReference">
+          <variable type="LocalVariable">
+            <name>j</name>
+          </variable>
+        </left>
+        <right type="IntLiteral">
+          <value>10</value>
+          <size type="IntSize">I32</size>
+        </right>
+      </expression>
+    </Elem2>
+    <Elem3 type="WhileLoop">
+      <condition type="BinaryExpression">
+        <operator type="BinaryOperator">LessThan</operator>
+        <left type="VariableReference">
+          <variable type="LocalVariable">
+            <name>i</name>
+          </variable>
+        </left>
+        <right type="VariableReference">
+          <variable type="LocalVariable">
+            <name>j</name>
+          </variable>
+        </right>
+      </condition>
+      <loopBlock type="ScopeBlock">
+        <statements>
+          <Elem0 type="WhileLoop">
+            <condition type="BinaryExpression">
+              <operator type="BinaryOperator">LogicalAnd</operator>
+              <left type="BinaryExpression">
+                <operator type="BinaryOperator">LessThanOrEqual</operator>
+                <left type="ArrayElementExpression">
+                  <arrayExpression type="VariableReference">
+                    <variable type="ParameterVariable">
+                      <name>array</name>
+                      <parameterType type="ParameterAttributes">None</parameterType>
+                    </variable>
+                  </arrayExpression>
+                  <indexExpression type="VariableReference">
+                    <variable type="LocalVariable">
+                      <name>i</name>
+                    </variable>
+                  </indexExpression>
+                </left>
+                <right type="VariableReference">
+                  <variable type="LocalVariable">
+                    <name>randomValue</name>
+                  </variable>
+                </right>
+              </left>
+              <right type="BinaryExpression">
+                <operator type="BinaryOperator">LessThan</operator>
+                <left type="VariableReference">
+                  <variable type="LocalVariable">
+                    <name>i</name>
+                  </variable>
+                </left>
+                <right type="IntLiteral">
+                  <value>12</value>
+                  <size type="IntSize">I32</size>
+                </right>
+              </right>
+            </condition>
+            <loopBlock type="ScopeBlock">
+              <statements>
+                <Elem0 type="ExpressionStatement">
+                  <expression type="UnaryExpression">
+                    <operator type="UnaryOperator">PreIncrement</operator>
+                    <expression type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>i</name>
+                      </variable>
+                    </expression>
+                  </expression>
+                </Elem0>
+              </statements>
+            </loopBlock>
+          </Elem0>
+          <Elem1 type="WhileLoop">
+            <condition type="BinaryExpression">
+              <operator type="BinaryOperator">LogicalAnd</operator>
+              <left type="BinaryExpression">
+                <operator type="BinaryOperator">LogicalAnd</operator>
+                <left type="BinaryExpression">
+                  <operator type="BinaryOperator">GreaterThanOrEqual</operator>
+                  <left type="ArrayElementExpression">
+                    <arrayExpression type="VariableReference">
+                      <variable type="ParameterVariable">
+                        <name>array</name>
+                        <parameterType type="ParameterAttributes">None</parameterType>
+                      </variable>
+                    </arrayExpression>
+                    <indexExpression type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>j</name>
+                      </variable>
+                    </indexExpression>
+                  </left>
+                  <right type="VariableReference">
+                    <variable type="LocalVariable">
+                      <name>randomValue</name>
+                    </variable>
+                  </right>
+                </left>
+                <right type="BinaryExpression">
+                  <operator type="BinaryOperator">GreaterThanOrEqual</operator>
+                  <left type="VariableReference">
+                    <variable type="LocalVariable">
+                      <name>j</name>
+                    </variable>
+                  </left>
+                  <right type="VariableReference">
+                    <variable type="LocalVariable">
+                      <name>i</name>
+                    </variable>
+                  </right>
+                </right>
+              </left>
+              <right type="BinaryExpression">
+                <operator type="BinaryOperator">GreaterThan</operator>
+                <left type="VariableReference">
+                  <variable type="LocalVariable">
+                    <name>j</name>
+                  </variable>
+                </left>
+                <right type="IntLiteral">
+                  <value>0</value>
+                  <size type="IntSize">I32</size>
+                </right>
+              </right>
+            </condition>
+            <loopBlock type="ScopeBlock">
+              <statements>
+                <Elem0 type="ExpressionStatement">
+                  <expression type="UnaryExpression">
+                    <operator type="UnaryOperator">PreDecrement</operator>
+                    <expression type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>j</name>
+                      </variable>
+                    </expression>
+                  </expression>
+                </Elem0>
+              </statements>
+            </loopBlock>
+          </Elem1>
+          <Elem2 type="IfBlockStatement">
+            <condition type="BinaryExpression">
+              <operator type="BinaryOperator">LessThan</operator>
+              <left type="VariableReference">
+                <variable type="LocalVariable">
+                  <name>i</name>
+                </variable>
+              </left>
+              <right type="VariableReference">
+                <variable type="LocalVariable">
+                  <name>j</name>
+                </variable>
+              </right>
+            </condition>
+            <trueBlock>
+              <Elem0 type="ExpressionStatement">
+                <expression type="BinaryExpression">
+                  <operator type="BinaryOperator">Assignment</operator>
+                  <left type="VariableReference">
+                    <variable type="LocalVariable">
+                      <name>tmp</name>
+                    </variable>
+                  </left>
+                  <right type="ArrayElementExpression">
+                    <arrayExpression type="VariableReference">
+                      <variable type="ParameterVariable">
+                        <name>array</name>
+                        <parameterType type="ParameterAttributes">None</parameterType>
+                      </variable>
+                    </arrayExpression>
+                    <indexExpression type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>i</name>
+                      </variable>
+                    </indexExpression>
+                  </right>
+                </expression>
+              </Elem0>
+              <Elem1 type="ExpressionStatement">
+                <expression type="BinaryExpression">
+                  <operator type="BinaryOperator">Assignment</operator>
+                  <left type="ArrayElementExpression">
+                    <arrayExpression type="VariableReference">
+                      <variable type="ParameterVariable">
+                        <name>array</name>
+                        <parameterType type="ParameterAttributes">None</parameterType>
+                      </variable>
+                    </arrayExpression>
+                    <indexExpression type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>i</name>
+                      </variable>
+                    </indexExpression>
+                  </left>
+                  <right type="ArrayElementExpression">
+                    <arrayExpression type="VariableReference">
+                      <variable type="ParameterVariable">
+                        <name>array</name>
+                        <parameterType type="ParameterAttributes">None</parameterType>
+                      </variable>
+                    </arrayExpression>
+                    <indexExpression type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>j</name>
+                      </variable>
+                    </indexExpression>
+                  </right>
+                </expression>
+              </Elem1>
+              <Elem2 type="ExpressionStatement">
+                <expression type="BinaryExpression">
+                  <operator type="BinaryOperator">Assignment</operator>
+                  <left type="ArrayElementExpression">
+                    <arrayExpression type="VariableReference">
+                      <variable type="ParameterVariable">
+                        <name>array</name>
+                        <parameterType type="ParameterAttributes">None</parameterType>
+                      </variable>
+                    </arrayExpression>
+                    <indexExpression type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>j</name>
+                      </variable>
+                    </indexExpression>
+                  </left>
+                  <right type="VariableReference">
+                    <variable type="LocalVariable">
+                      <name>tmp</name>
+                    </variable>
+                  </right>
+                </expression>
+              </Elem2>
+            </trueBlock>
+          </Elem2>
+        </statements>
+      </loopBlock>
+    </Elem3>
+    <Elem4 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="ArrayElementExpression">
+          <arrayExpression type="VariableReference">
+            <variable type="ParameterVariable">
+              <name>array</name>
+              <parameterType type="ParameterAttributes">None</parameterType>
+            </variable>
+          </arrayExpression>
+          <indexExpression type="IntLiteral">
+            <value>11</value>
+            <size type="IntSize">I32</size>
+          </indexExpression>
+        </left>
+        <right type="ArrayElementExpression">
+          <arrayExpression type="VariableReference">
+            <variable type="ParameterVariable">
+              <name>array</name>
+              <parameterType type="ParameterAttributes">None</parameterType>
+            </variable>
+          </arrayExpression>
+          <indexExpression type="VariableReference">
+            <variable type="LocalVariable">
+              <name>i</name>
+            </variable>
+          </indexExpression>
+        </right>
+      </expression>
+    </Elem4>
+  </statements>
+</RootBlock>

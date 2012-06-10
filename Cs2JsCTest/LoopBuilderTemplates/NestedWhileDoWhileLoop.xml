@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="1" type="StackedBlock">
+<!-- Convers IL_0001 to IL_0011 -->
+  </BlockInfo>
+  <BlockInfo id="2" type="WhileBlock">
+    <BlockInfo id="7" type="InstructionBlock" label="IL_0012"/>
+    <BlockInfo id="3" type="Block">
+      <BlockInfo id="4" type="DoWhileBlock">
+        <BlockInfo id="5" type="StackedBlock">
+<!-- Convers IL_0016 to IL_0019 -->
+        </BlockInfo>
+        <BlockInfo id="6" type="StackedBlock">
+<!-- This is condition block, spans from IL_001c to IL_0024 -->
+        </BlockInfo>
+      </BlockInfo>
+      <BlockInfo id="8" type="StackedBlock">
+        <!-- i increment, covers IL_0026 to IL_0029 -->
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="9" type="StackedBlock">
+      <!-- Condition block, covers IL_002c to IL_0033 -->
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="10" type="StackedBlock">
+    <!-- Covers blocks IL_0035 to IL_0045 -->
+  </BlockInfo>
+  <BlockInfo id="11" type="InstructionBlock" label="IL_0046"/>
+</BlockInfo>

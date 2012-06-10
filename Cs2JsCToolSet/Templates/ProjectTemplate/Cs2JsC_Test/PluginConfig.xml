@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+This file is used to add plugins to preprocess JavaScript being generated.
+The philosophy here is that all the code that needs to be generated based on Reflection is generated
+using plugins.
+-->
+<Plugins>
+  <!-- This is a Test generator plugin which will add methods based on reflection to register and execute tests using QUnit framework. -->
+  <Plugin Assembly="Cs2JsC.Converter.Plugins" ClassName="Cs2JsC.Converter.Plugins.TestGenerator" />
+</Plugins>

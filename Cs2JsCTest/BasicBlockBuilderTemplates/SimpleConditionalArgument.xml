@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="BasicBlock">
+    <BlockInfo id="6" type="InstructionBlock" label="IL_0001"/>
+    <BlockInfo id="4" type="BasicBlock">
+      <BlockInfo id="7" type="InstructionBlock" label="IL_0002"/>
+      <BlockInfo id="8" type="InstructionBlock" label="IL_0003"/>
+      <BlockInfo id="5" type="BasicBlock">
+        <BlockInfo id="10" type="BasicBlock">
+          <BlockInfo id="11" type="InstructionBlock" label="IL_0004"/>
+          <BlockInfo id="12" type="InstructionBlock" label="IL_0005"/>
+          <BlockInfo id="13" type="InstructionBlock" label="IL_0007"/>
+        </BlockInfo>
+        <BlockInfo id="15" type="InstructionBlock" label="IL_0009"/>
+        <BlockInfo id="16" type="InstructionBlock" label="IL_000b"/>
+        <BlockInfo id="17" type="InstructionBlock" label="IL_000d"/>
+      </BlockInfo>
+      <BlockInfo id="3" type="InstructionBlock" lable="IL_000f"/>
+    </BlockInfo>
+    <BlockInfo id="3" type="InstructionBlock" label="IL_0014"/>
+  </BlockInfo>
+  <BlockInfo id="3" type="InstructionBlock" label="IL_0015"/>
+</BlockInfo>

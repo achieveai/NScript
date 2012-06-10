@@ -1,0 +1,95 @@
+﻿Testing Void -> Void...
+One invoked
+i: 3
+Testing Void -> Int...
+OneInt invoked
+i: 3
+4
+Testing Int -> Int...
+OneIntInt invoked
+i: 3
+8
+Testing Void -> String...
+OneString invoked
+i: 3
+13
+Testing String -> String...
+OneStringString invoked
+i: 3
+53
+Testing String -> String static...
+StaticStringString invoked
+12
+Testing simple delegate hash...
+Testing combined delegates...
+TwoStringString invoked
+i: 3
+OneStringString invoked
+i: 3
+OneStringString invoked
+i: 5
+ThreeStringString invoked
+i: 3
+73
+Testing removing delegates...
+TwoStringString invoked
+i: 3
+ThreeStringString invoked
+i: 3
+83
+TwoStringString invoked
+i: 3
+OneStringString invoked
+i: 3
+ThreeStringString invoked
+i: 3
+93
+TwoStringString invoked
+i: 3
+OneStringString invoked
+i: 3
+OneStringString invoked
+i: 5
+ThreeStringString invoked
+i: 3
+113
+Testing virtual delegate...
+A.Virtual invoked
+i: 3
+A3
+B.Virtual invoked
+i: 7
+B7
+Testing delegate with captured variable...
+7
+1
+28
+7
+2
+28
+7
+3
+28
+7
+1
+28
+7
+2
+28
+7
+3
+28
+Testing delegate with captured reference variable...
+4
+Testing delegate with captured value variable...
+3
+Testing event registering, triggering and unregestering...
+Something happened.
+Something happened.
+More happened
+Something happened.
+Testing delegates of higher-kinded type over polymorphic methods...
+a = 3, b = six
+a = 3, b = 7
+a = four, b = eight
+a = four, b = 9

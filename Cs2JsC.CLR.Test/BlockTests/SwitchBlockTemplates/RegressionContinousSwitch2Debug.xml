@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="1" opcode="LoadString" argument="Testing switch..."/>
+    <BlockInfo id="4" type="InstructionBlock" label="6" opcode="Call" argument="void RealScript.Console::WriteLine(System.String)"/>
+  </BlockInfo>
+  <BlockInfo id="5" type="SwitchBlock">
+    <BlockInfo id="6" type="StackedBlock">
+      <BlockInfo id="7" type="StackedBlock">
+        <BlockInfo id="8" type="InstructionBlock" label="12" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="9" type="InstructionBlock" label="15" opcode="LoadConstantInt32" argument="2"/>
+        <BlockInfo id="10" type="InstructionBlock" label="16" opcode="Sub" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="11" type="InstructionBlock" label="17" opcode="Switch" argument="System.String[]"/>
+    </BlockInfo>
+    <BlockInfo id="12" type="InstructionBlock" label="38" opcode="Branch" argument="79"/>
+    <BlockInfo id="13" type="Block">
+      <BlockInfo id="14" type="StackedBlock">
+        <BlockInfo id="15" type="InstructionBlock" label="40" opcode="LoadString" argument="2"/>
+        <BlockInfo id="16" type="InstructionBlock" label="45" opcode="Call" argument="void RealScript.Console::WriteLine(System.String)"/>
+      </BlockInfo>
+      <BlockInfo id="17" type="JumpBlock">
+        <BlockInfo id="18" type="InstructionBlock" label="51" opcode="Branch" argument="92"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="19" type="Block">
+      <BlockInfo id="20" type="StackedBlock">
+        <BlockInfo id="21" type="InstructionBlock" label="53" opcode="LoadString" argument="3"/>
+        <BlockInfo id="22" type="InstructionBlock" label="58" opcode="Call" argument="void RealScript.Console::WriteLine(System.String)"/>
+      </BlockInfo>
+      <BlockInfo id="23" type="JumpBlock">
+        <BlockInfo id="24" type="InstructionBlock" label="64" opcode="Branch" argument="103"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="25" type="Block">
+      <BlockInfo id="26" type="StackedBlock">
+        <BlockInfo id="27" type="InstructionBlock" label="66" opcode="LoadString" argument="4 or 5"/>
+        <BlockInfo id="28" type="InstructionBlock" label="71" opcode="Call" argument="void RealScript.Console::WriteLine(System.String)"/>
+      </BlockInfo>
+      <BlockInfo id="29" type="JumpBlock">
+        <BlockInfo id="30" type="InstructionBlock" label="77" opcode="Branch" argument="92"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="31" type="Block">
+      <BlockInfo id="32" type="StackedBlock">
+        <BlockInfo id="33" type="InstructionBlock" label="79" opcode="LoadString" argument="default"/>
+        <BlockInfo id="34" type="InstructionBlock" label="84" opcode="Call" argument="void RealScript.Console::WriteLine(System.String)"/>
+      </BlockInfo>
+      <BlockInfo id="35" type="JumpBlock">
+        <BlockInfo id="36" type="InstructionBlock" label="90" opcode="Branch" argument="92"/>
+      </BlockInfo>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="37" type="StackedBlock">
+    <BlockInfo id="38" type="InstructionBlock" label="92" opcode="LoadString" argument="after"/>
+    <BlockInfo id="39" type="InstructionBlock" label="97" opcode="Call" argument="void RealScript.Console::WriteLine(System.String)"/>
+  </BlockInfo>
+  <BlockInfo id="40" type="InstructionBlock" label="103" opcode="Return" argument=""/>
+</BlockInfo>

@@ -1,0 +1,33 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="BinaryExpression">
+        <operator type="BinaryOperator">LessThan</operator>
+        <left type="UnaryExpression">
+          <operator type="UnaryOperator">PreIncrement</operator>
+          <expression type="FieldReferenceExpression">
+            <leftExpression type="VariableReference">
+              <variable type="ParameterVariable">
+                <name>trc1</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </leftExpression>
+            <fieldName>intField</fieldName>
+          </expression>
+        </left>
+        <right type="FieldReferenceExpression">
+          <leftExpression type="FieldReferenceExpression">
+            <leftExpression type="VariableReference">
+              <variable type="ParameterVariable">
+                <name>trc1</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </leftExpression>
+            <fieldName>objField</fieldName>
+          </leftExpression>
+          <fieldName>intField</fieldName>
+        </right>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>

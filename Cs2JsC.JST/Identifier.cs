@@ -1,0 +1,250 @@
+﻿//-----------------------------------------------------------------------
+// <copyright file="Identifier.cs" company="WebAps.Net">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace Cs2JsC.JST
+{
+    using System;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// Identifier base class
+    /// </summary>
+    public class Identifier
+    {
+        /// <summary>
+        /// Backing store for usageCount.
+        /// </summary>
+        private int usageCount;
+
+        /// <summary>
+        /// Backing field for suggested name.
+        /// </summary>
+        private readonly string suggestedName;
+
+        /// <summary>
+        /// Backing field for EnforceSuggestion.
+        /// </summary>
+        private readonly bool enforceSuggestion;
+
+        /// <summary>
+        /// Backing field for owner scope.
+        /// </summary>
+        private readonly IdentifierScope ownerScope;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Identifier"/> class.
+        /// </summary>
+        /// <param name="suggestedName">Name of the suggested.</param>
+        /// <param name="ownerScope">The owner scope.</param>
+        private Identifier(
+            IdentifierScope ownerScope,
+            string suggestedName,
+            bool enforceSuggestion)
+        {
+            this.ownerScope = ownerScope;
+            this.enforceSuggestion = enforceSuggestion;
+            this.suggestedName = string.IsNullOrWhiteSpace(suggestedName)
+                    ? null
+                    : enforceSuggestion
+                        ? suggestedName
+                        : Utils.ToJSIdentifier(suggestedName);
+        }
+
+        /// <summary>
+        /// Gets or sets the usage count.
+        /// </summary>
+        /// <value>The usage count.</value>
+        public int UsageCount
+        {
+            get
+            {
+                return this.usageCount;
+            }
+
+            set
+            {
+                this.usageCount = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the suggested.
+        /// </summary>
+        /// <value>The name of the suggested.</value>
+        public string SuggestedName
+        {
+            get
+            {
+                return this.suggestedName;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether Identifier should enforce suggestion.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if should enforce suggestion; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShouldEnforceSuggestion
+        {
+            get
+            {
+                return this.enforceSuggestion;
+            }
+        }
+
+        /// <summary>
+        /// Gets the owner scope.
+        /// </summary>
+        /// <value>The owner scope.</value>
+        public IdentifierScope OwnerScope
+        {
+            get
+            {
+                return this.ownerScope;
+            }
+        }
+
+        /// <summary>
+        /// Creates the scope identifier.
+        /// </summary>
+        /// <param name="ownerScope">The owner scope.</param>
+        /// <returns>Identifier that has already been added to scope.</returns>
+        public static Identifier CreateScopeIdentifier(
+            IdentifierScope ownerScope)
+        {
+            return Identifier.CreateScopeIdentifier(ownerScope, null, false);
+        }
+
+        /// <summary>
+        /// Creates the scope identifier.
+        /// </summary>
+        /// <param name="ownerScope">The owner scope.</param>
+        /// <param name="suggestedName">Name of the suggested.</param>
+        /// <param name="enforceSuggestion">if set to <c>true</c> [enforce suggestion].</param>
+        /// <returns>
+        /// Identifier that has already been added to scope.
+        /// </returns>
+        public static Identifier CreateScopeIdentifier(
+            IdentifierScope ownerScope,
+            string suggestedName,
+            bool enforceSuggestion)
+        {
+            if (enforceSuggestion && string.IsNullOrWhiteSpace(suggestedName))
+            {
+                throw new ArgumentException("suggestedName");
+            }
+
+            Identifier returnValue = null;
+
+            if (!enforceSuggestion
+                || !ownerScope.TryGetKnownIdentifier(suggestedName, out returnValue))
+            {
+                returnValue = new Identifier(
+                     ownerScope,
+                     suggestedName,
+                     enforceSuggestion);
+
+                ownerScope.AddIdentifier(returnValue);
+            }
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Creates the parameter identifier.
+        /// </summary>
+        /// <param name="ownerScope">The owner scope.</param>
+        /// <param name="parameterCount">The parameter count.</param>
+        /// <param name="paramIdentifiers">The param identifiers.</param>
+        internal static void CreateParameterIdentifier(
+            IdentifierScope ownerScope,
+            int parameterCount,
+            List<Identifier> paramIdentifiers)
+        {
+            for (int parameterIndex = 0; parameterIndex < parameterCount; parameterIndex++)
+            {
+                paramIdentifiers.Add(new Identifier(ownerScope, string.Format("arg{0}", parameterIndex), false));
+            }
+        }
+
+        /// <summary>
+        /// Creates the parameter identifier.
+        /// </summary>
+        /// <param name="ownerScope">The owner scope.</param>
+        /// <param name="identifierNames">The identifier names.</param>
+        /// <param name="enforceNames">if set to <c>true</c> [enforce names].</param>
+        /// <param name="paramIdentifiers">The param identifiers.</param>
+        internal static void CreateParameterIdentifier(
+            IdentifierScope ownerScope,
+            IList<string> identifierNames,
+            bool enforceNames,
+            List<Identifier> paramIdentifiers)
+        {
+            for (int parameterIndex = 0; parameterIndex < identifierNames.Count; parameterIndex++)
+            {
+                paramIdentifiers.Add(
+                    new Identifier(
+                        ownerScope,
+                        identifierNames[parameterIndex],
+                        enforceNames));
+            }
+        }
+
+        /// <summary>
+        /// Adds the usage.
+        /// </summary>
+        /// <param name="identifierScope">The identifier scope.</param>
+        public void AddUsage(IdentifierScope identifierScope)
+        {
+            this.usageCount++;
+
+            this.AddUsageInternal(identifierScope);
+        }
+
+        /// <summary>
+        /// Adds the usage internal.
+        /// </summary>
+        /// <param name="identifierScope">The identifier scope.</param>
+        /// <returns></returns>
+        private bool AddUsageInternal(IdentifierScope identifierScope)
+        {
+            if (identifierScope == null)
+            {
+                return false;
+            }
+            else if (identifierScope == this.ownerScope)
+            {
+                identifierScope.IdentifierUsed(this);
+                return true;
+            }
+            else if (this.AddUsageInternal(identifierScope.ParentScope))
+            {
+                identifierScope.IdentifierUsed(this);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <returns>Name to be written in script</returns>
+        public string GetName()
+        {
+            if (this.enforceSuggestion)
+            {
+                return this.SuggestedName;
+            }
+            else
+            {
+                return this.OwnerScope.GetName(this);
+            }
+        }
+    }
+}

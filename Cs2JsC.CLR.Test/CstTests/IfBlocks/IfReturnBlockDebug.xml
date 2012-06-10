@@ -1,0 +1,76 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="IfBlockStatement">
+      <condition type="BinaryExpression">
+        <operator type="BinaryOperator">GreaterThan</operator>
+        <left type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>i</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </left>
+        <right type="IntLiteral">
+          <value>10</value>
+          <size type="IntSize">I32</size>
+        </right>
+      </condition>
+      <trueBlock>
+        <Elem0 type="ExpressionStatement">
+          <expression type="BinaryExpression">
+            <operator type="BinaryOperator">Assignment</operator>
+            <left type="VariableReference">
+              <variable type="LocalVariable">
+                <name>CS$1$0000</name>
+              </variable>
+            </left>
+            <right type="BinaryExpression">
+              <operator type="BinaryOperator">Minus</operator>
+              <left type="VariableReference">
+                <variable type="ParameterVariable">
+                  <name>i</name>
+                  <parameterType type="ParameterAttributes">None</parameterType>
+                </variable>
+              </left>
+              <right type="IntLiteral">
+                <value>10</value>
+                <size type="IntSize">I32</size>
+              </right>
+            </right>
+          </expression>
+        </Elem0>
+      </trueBlock>
+      <falseBlock>
+        <Elem0 type="ExpressionStatement">
+          <expression type="BinaryExpression">
+            <operator type="BinaryOperator">Assignment</operator>
+            <left type="VariableReference">
+              <variable type="LocalVariable">
+                <name>CS$1$0000</name>
+              </variable>
+            </left>
+            <right type="BinaryExpression">
+              <operator type="BinaryOperator">Plus</operator>
+              <left type="VariableReference">
+                <variable type="ParameterVariable">
+                  <name>i</name>
+                  <parameterType type="ParameterAttributes">None</parameterType>
+                </variable>
+              </left>
+              <right type="IntLiteral">
+                <value>10</value>
+                <size type="IntSize">I32</size>
+              </right>
+            </right>
+          </expression>
+        </Elem0>
+      </falseBlock>
+    </Elem0>
+    <Elem1 type="ReturnStatement">
+      <returnExpression type="VariableReference">
+        <variable type="LocalVariable">
+          <name>CS$1$0000</name>
+        </variable>
+      </returnExpression>
+    </Elem1>
+  </statements>
+</RootBlock>

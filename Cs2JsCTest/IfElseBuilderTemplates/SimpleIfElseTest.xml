@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="1" type="StackedBlock"></BlockInfo>
+  <BlockInfo id="2" type="IfElseBlock">
+    <BlockInfo id="3" type="StackedBlock">
+      <BlockInfo id="4" type="InstructionBlock" label="IL_0006"/>
+      <BlockInfo id="5" type="InstructionBlock" label="IL_0007"/>
+      <BlockInfo id="6" type="InstructionBlock" label="IL_0009"/>
+    </BlockInfo>
+    <BlockInfo id="7" type="Block">
+      <BlockInfo id="8" type="StackedBlock">
+        <BlockInfo id="9" type="InstructionBlock" label="IL_000b"/>
+        <BlockInfo id="10" type="InstructionBlock" label="IL_0010"/>
+      </BlockInfo>
+      <BlockInfo id="11" type="InstructionBlock" label="IL_0011"/>
+    </BlockInfo>
+    <BlockInfo id="12" type="StackedBlock">
+      <BlockInfo id="13" type="InstructionBlock" label="IL_0013"/>
+      <BlockInfo id="14" type="InstructionBlock" label="IL_0018"/>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="15" type="StackedBlock"></BlockInfo>
+  <BlockInfo id="16" type="StackedBlock"></BlockInfo>
+  <BlockInfo id="17" type="InstructionBlock" label="IL_0031"/>
+</BlockInfo>

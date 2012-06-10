@@ -1,0 +1,95 @@
+﻿<RootBlock type="ParameterBlock">
+    <statements>
+        <Elem0 type="ExpressionStatement">
+            <expression type="MethodCallExpression">
+                <methodReference type="MethodReferenceExpression">
+                    <methodName>Foo</methodName>
+                </methodReference>
+                <parameters>
+                    <Elem0 type="StringLiteral">
+                        <value>bool</value>
+                    </Elem0>
+                </parameters>
+            </expression>
+        </Elem0>
+        <Elem1 type="ForLoop">
+            <statements>
+                <Elem0 type="ScopeBlock">
+                    <statements>
+                        <Elem0 type="ExpressionStatement">
+                            <expression type="BinaryExpression">
+                                <operator type="BinaryOperator">Assignment</operator>
+                                <left type="FieldReferenceExpression">
+                                    <fieldName>staticBar</fieldName>
+                                </left>
+                                <right type="MethodCallExpression">
+                                    <methodReference type="MethodReferenceExpression">
+                                        <methodName>GetMoreStatic</methodName>
+                                    </methodReference>
+                                    <parameters>
+                                        <Elem0 type="VariableReference">
+                                            <variable type="ParameterVariable">
+                                                <name>i</name>
+                                                <parameterType type="ParameterAttributes">None</parameterType>
+                                            </variable>
+                                        </Elem0>
+                                    </parameters>
+                                </right>
+                            </expression>
+                        </Elem0>
+                    </statements>
+                </Elem0>
+            </statements>
+            <condition type="BinaryExpression">
+                <operator type="BinaryOperator">LessThan</operator>
+                <left type="VariableReference">
+                    <variable type="LocalVariable">
+                        <name>j</name>
+                    </variable>
+                </left>
+                <right type="VariableReference">
+                    <variable type="ParameterVariable">
+                        <name>i</name>
+                        <parameterType type="ParameterAttributes">None</parameterType>
+                    </variable>
+                </right>
+            </condition>
+            <initialize type="ExpressionStatement">
+                <expression type="BinaryExpression">
+                    <operator type="BinaryOperator">Assignment</operator>
+                    <left type="VariableReference">
+                        <variable type="LocalVariable">
+                            <name>j</name>
+                        </variable>
+                    </left>
+                    <right type="IntLiteral">
+                        <value>0</value>
+                        <size type="IntSize">I32</size>
+                    </right>
+                </expression>
+            </initialize>
+            <increment type="ExpressionStatement">
+                <expression type="UnaryExpression">
+                    <operator type="UnaryOperator">PreIncrement</operator>
+                    <expression type="VariableReference">
+                        <variable type="LocalVariable">
+                            <name>j</name>
+                        </variable>
+                    </expression>
+                </expression>
+            </increment>
+        </Elem1>
+        <Elem2 type="ExpressionStatement">
+            <expression type="MethodCallExpression">
+                <methodReference type="MethodReferenceExpression">
+                    <methodName>Foo</methodName>
+                </methodReference>
+                <parameters>
+                    <Elem0 type="StringLiteral">
+                        <value>after</value>
+                    </Elem0>
+                </parameters>
+            </expression>
+        </Elem2>
+    </statements>
+</RootBlock>

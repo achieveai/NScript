@@ -1,0 +1,348 @@
+﻿//-----------------------------------------------------------------------
+// <copyright file="JSBaseObjectIdentifierManager.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace Cs2JsC.Converter.TypeSystemConverter
+{
+    using Cs2JsC.JST;
+    using Mono.Cecil;
+
+    /// <summary>
+    /// Definition for JSBaseObjectIdentifierManager
+    /// </summary>
+    public class JSBaseObjectIdentifierManager
+    {
+        /// <summary>
+        /// Base Identifier scope for static methods.
+        /// This scope is used for runtime specific member management and JS
+        /// variables e.g. prototype
+        /// </summary>
+        private readonly IdentifierScope staticBaseIdentifiers;
+
+        /// <summary>
+        /// Base Identifier scope for instance methods.
+        /// This scope is used for members like constructor or __proto__ etc.
+        /// </summary>
+        private readonly IdentifierScope instanceBaseIdentifiers;
+
+        /// <summary>
+        /// Backing field for ObjectTypeScopeManager.
+        /// </summary>
+        private readonly TypeScopeManager objectTypeScopeManager;
+
+        /// <summary>
+        /// Backing field for TypeTypeScopeManager.
+        /// </summary>
+        private readonly TypeScopeManager typeTypeScopeManager;
+
+        /// <summary>
+        /// Backing store for runtimeScopeManager.
+        /// </summary>
+        private readonly RuntimeScopeManager runtimeScopeManager;
+
+        /// <summary>
+        /// Backing field for Prototype
+        /// </summary>
+        private Identifier prototypeIdentifier;
+
+        /// <summary>
+        /// Backing field for Constructor
+        /// </summary>
+        private Identifier constructorIdentifier;
+
+        /// <summary>
+        /// Backing field for TypeId
+        /// </summary>
+        private Identifier typeIdIdentifier;
+
+        /// <summary>
+        /// Backing field for TypeName
+        /// </summary>
+        private Identifier typeNameIdentifier;
+
+        /// <summary>
+        /// Backing field for RegisterNamespace
+        /// </summary>
+        private Identifier registerNamespace;
+
+        /// <summary>
+        /// Backing field for RegisterClass.
+        /// </summary>
+        private Identifier registerClass;
+
+        /// <summary>
+        /// Backing field for RegisterInterface.
+        /// </summary>
+        private Identifier registerInterface;
+
+        /// <summary>
+        /// Backing field for RegisterEnum.
+        /// </summary>
+        private Identifier registerEnum;
+
+        /// <summary>
+        /// Backing field for GenericTypeRefInitializer.
+        /// </summary>
+        private Identifier genericTypeRefInitializer;
+
+        /// <summary>
+        /// DefaultValueGetter backing field.
+        /// </summary>
+        private Identifier defaultValueGetter;
+
+        /// <summary>
+        /// Backing store for converter context.
+        /// </summary>
+        private readonly ConverterContext context;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JSBaseObjectIdentifierManager"/> class.
+        /// </summary>
+        public JSBaseObjectIdentifierManager(
+            RuntimeScopeManager runtimeScopeManager)
+        {
+            this.context = runtimeScopeManager.Context;
+            this.instanceBaseIdentifiers = new IdentifierScope(false);
+            this.staticBaseIdentifiers = new IdentifierScope(this.instanceBaseIdentifiers);
+            IdentifierScope objectStaticTypeScope = new IdentifierScope(this.staticBaseIdentifiers);
+
+            this.objectTypeScopeManager = new TypeScopeManager(
+                this.context,
+                (TypeDefinition)this.context.ClrKnownReferences.Object,
+                this.instanceBaseIdentifiers,
+                objectStaticTypeScope,
+                false);
+
+            this.typeTypeScopeManager = new TypeScopeManager(
+                this.context,
+                (TypeDefinition)this.context.ClrKnownReferences.TypeType,
+                this.staticBaseIdentifiers,
+                this.staticBaseIdentifiers,
+                false);
+
+            this.runtimeScopeManager = runtimeScopeManager;
+        }
+
+        /// <summary>
+        /// Gets the static scope.
+        /// </summary>
+        public IdentifierScope StaticScope
+        {
+            get
+            {
+                return this.staticBaseIdentifiers;
+            }
+        }
+
+        /// <summary>
+        /// Gets the instance scope.
+        /// </summary>
+        public IdentifierScope InstanceScope
+        {
+            get
+            {
+                return this.instanceBaseIdentifiers;
+            }
+        }
+
+        /// <summary>
+        /// Gets the objec type scope manager.
+        /// </summary>
+        public TypeScopeManager ObjecTypeScopeManager
+        { get { return this.objectTypeScopeManager; } }
+
+        /// <summary>
+        /// Gets the type type scope manager.
+        /// </summary>
+        public TypeScopeManager TypeTypeScopeManager
+        { get { return this.typeTypeScopeManager; } }
+
+        /// <summary>
+        /// Gets the prototype.
+        /// </summary>
+        public Identifier Prototype
+        {
+            get
+            {
+                if (this.prototypeIdentifier == null)
+                {
+                    this.prototypeIdentifier =
+                        this.runtimeScopeManager.Resolve(
+                            this.context.KnownReferences.PrototypeField);
+                }
+
+                return this.prototypeIdentifier;
+            }
+        }
+
+        /// <summary>
+        /// Gets the constructor.
+        /// </summary>
+        public Identifier Constructor
+        {
+            get
+            {
+                if (this.constructorIdentifier == null)
+                {
+                    this.constructorIdentifier =
+                        this.runtimeScopeManager.Resolve(
+                            this.context.KnownReferences.ConstructorField);
+                }
+
+                return this.constructorIdentifier;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type id.
+        /// </summary>
+        public Identifier TypeId
+        {
+            get
+            {
+                if (this.typeIdIdentifier == null)
+                {
+                    this.typeIdIdentifier =
+                        this.runtimeScopeManager.Resolve(
+                            this.context.KnownReferences.TypeIdField);
+                }
+
+                return this.typeIdIdentifier;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the type.
+        /// </summary>
+        /// <value>
+        /// The name of the type.
+        /// </value>
+        public Identifier TypeName
+        {
+            get
+            {
+                if (this.typeNameIdentifier == null)
+                {
+                    this.typeNameIdentifier =
+                        this.runtimeScopeManager.Resolve(
+                            this.context.KnownReferences.TypeNameField);
+                }
+
+                return this.typeNameIdentifier;
+            }
+        }
+
+        /// <summary>
+        /// Gets the register namespace.
+        /// </summary>
+        public Identifier RegisterNamespace
+        {
+            get
+            {
+                if (this.registerNamespace == null)
+                {
+                    this.registerNamespace = Identifier.CreateScopeIdentifier(
+                        this.StaticScope,
+                        "registerNamespace",
+                        true);
+                }
+
+                return this.registerNamespace;
+            }
+        }
+
+        /// <summary>
+        /// Gets the register class.
+        /// </summary>
+        public Identifier RegisterClass
+        {
+            get
+            {
+                if (this.registerClass == null)
+                {
+                    this.registerClass =
+                        this.runtimeScopeManager.Resolve(
+                            this.context.KnownReferences.RegisterReferenceTypeMethod);
+                }
+
+                return this.registerClass;
+            }
+        }
+
+        /// <summary>
+        /// Gets the register interface.
+        /// </summary>
+        public Identifier RegisterInterface
+        {
+            get
+            {
+                if (this.registerInterface == null)
+                {
+                    this.registerInterface =
+                        this.runtimeScopeManager.Resolve(
+                            this.context.KnownReferences.RegisterIntefaceMethod);
+                }
+
+                return this.registerInterface;
+            }
+        }
+
+        /// <summary>
+        /// Gets the register enum.
+        /// </summary>
+        public Identifier RegisterEnum
+        {
+            get
+            {
+                if (this.registerEnum == null)
+                {
+                    this.registerEnum =
+                        this.runtimeScopeManager.Resolve(
+                            this.context.KnownReferences.RegisterEnumMethod);
+                }
+
+                return this.registerEnum;
+            }
+        }
+
+        /// <summary>
+        /// Gets the generic type ref initializer.
+        /// </summary>
+        /// <value>The generic type ref initializer.</value>
+        public Identifier GenericTypeRefInitializer
+        {
+            get
+            {
+                if (this.genericTypeRefInitializer == null)
+                {
+                    this.genericTypeRefInitializer = Identifier.CreateScopeIdentifier(
+                        this.staticBaseIdentifiers,
+                        "_tri",
+                        true);
+                }
+
+                return this.genericTypeRefInitializer;
+            }
+        }
+
+        /// <summary>
+        /// Gets the default value getter.
+        /// </summary>
+        /// <value>The default value getter.</value>
+        public Identifier DefaultValueGetter
+        {
+            get
+            {
+                if (this.defaultValueGetter == null)
+                {
+                    this.defaultValueGetter = this.runtimeScopeManager.Resolve(
+                        this.context.KnownReferences.GetDefaultMethod);
+                }
+
+                return this.defaultValueGetter;
+            }
+        }
+    }
+}

@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A60706FF-08D7-4320-99F9-A2413275CDF6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStdLib>True</NoStdLib>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <CopyReferences>True</CopyReferences>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>System.Web.Html</RootNamespace>
+    <AssemblyName>System.Web.Html</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\Cs2JsC)</Cs2JsCToolSetPath>
+    <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Cs2JsC)</Cs2JsCToolSetPath>
+    <OutputPath>\bin\$(Configuration)</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <NoWarn>0626</NoWarn>
+    <OutputPath>..\Cs2JsCToolSet\lib\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <NoWarn>0626</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AnchorElement.cs" />
+    <Compile Include="CheckBoxElement.cs" />
+    <Compile Include="Data\ApplicationCache.cs" />
+    <Compile Include="AreaElement.cs" />
+    <Compile Include="AudioElement.cs" />
+    <Compile Include="CanvasElement.cs" />
+    <Compile Include="ClientRect.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="CustomEvent.cs" />
+    <Compile Include="DataTransfer.cs" />
+    <Compile Include="Data\WebSqlDb.cs" />
+    <Compile Include="Data\WebSqlError.cs" />
+    <Compile Include="Data\WebSqlResultSet.cs" />
+    <Compile Include="Data\WebSqlResultSetRow.cs" />
+    <Compile Include="Data\WebSqlTransaction.cs" />
+    <Compile Include="DivElement.cs" />
+    <Compile Include="Document.cs" />
+    <Compile Include="DocumentFragment.cs" />
+    <Compile Include="DomDataCache.cs" />
+    <Compile Include="DomList.cs" />
+    <Compile Include="Element.cs" />
+    <Compile Include="NodeAttribute.cs" />
+    <Compile Include="NodeCollection.cs" />
+    <Compile Include="ElementEvent.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="ErrorHandler.cs" />
+    <Compile Include="Filters\VisualTransition.cs" />
+    <Compile Include="FormElement.cs" />
+    <Compile Include="Geolocation\GeolocationService.cs" />
+    <Compile Include="GestureEvent.cs" />
+    <Compile Include="Graphics\CanvasContext.cs" />
+    <Compile Include="Graphics\CanvasContext2D.cs" />
+    <Compile Include="Graphics\Enums.cs" />
+    <Compile Include="Graphics\Gradient.cs" />
+    <Compile Include="Graphics\ImageData.cs" />
+    <Compile Include="Graphics\Pattern.cs" />
+    <Compile Include="Graphics\Rendering.cs" />
+    <Compile Include="Graphics\TextMetrics.cs" />
+    <Compile Include="History.cs" />
+    <Compile Include="IFrameElement.cs" />
+    <Compile Include="ImageElement.cs" />
+    <Compile Include="InputElement.cs" />
+    <Compile Include="Location.cs" />
+    <Compile Include="MapElement.cs" />
+    <Compile Include="MessageEvent.cs" />
+    <Compile Include="MutableEvent.cs" />
+    <Compile Include="Navigator.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="OptionElement.cs" />
+    <Compile Include="Orientation.cs" />
+    <Compile Include="Screen.cs" />
+    <Compile Include="ScriptElement.cs" />
+    <Compile Include="SelectElement.cs" />
+    <Compile Include="Selection.cs" />
+    <Compile Include="Data\Storage.cs" />
+    <Compile Include="Data\Enums.cs" />
+    <Compile Include="Style.cs" />
+    <Compile Include="TableCellElement.cs" />
+    <Compile Include="TableElement.cs" />
+    <Compile Include="TableRowElement.cs" />
+    <Compile Include="TableSectionElement.cs" />
+    <Compile Include="TextAreaElement.cs" />
+    <Compile Include="TextElement.cs" />
+    <Compile Include="TouchEvent.cs" />
+    <Compile Include="TouchInfo.cs" />
+    <Compile Include="Filters\VisualFilter.cs" />
+    <Compile Include="Window.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(Cs2JsCToolSetPath)\lib\mscorlib.dll" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+</Project>

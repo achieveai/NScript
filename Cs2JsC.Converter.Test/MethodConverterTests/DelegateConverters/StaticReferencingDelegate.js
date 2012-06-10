@@ -1,0 +1,3 @@
+﻿function RealScript__DelegateBlocks__StaticReferencingDelegate() {
+  return RealScript__DelegateBlocks___$StaticReferencingDelegate$_b__0;
+}

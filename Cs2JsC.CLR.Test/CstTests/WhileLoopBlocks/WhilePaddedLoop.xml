@@ -1,0 +1,77 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">ModAssignment</operator>
+        <left type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>i</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </left>
+        <right type="IntLiteral">
+          <value>100</value>
+          <size type="IntSize">I32</size>
+        </right>
+      </expression>
+    </Elem0>
+    <Elem1 type="WhileLoop">
+      <condition type="BinaryExpression">
+        <operator type="BinaryOperator">GreaterThan</operator>
+        <left type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>i</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </left>
+        <right type="IntLiteral">
+          <value>10</value>
+          <size type="IntSize">I32</size>
+        </right>
+      </condition>
+      <loopBlock type="ScopeBlock">
+        <statements>
+          <Elem0 type="ExpressionStatement">
+            <expression type="MethodCallExpression">
+              <methodReference type="MethodReferenceExpression">
+                <methodName>Foo</methodName>
+              </methodReference>
+              <parameters>
+                <Elem0 type="StringLiteral">
+                  <value>{0}</value>
+                </Elem0>
+                <Elem1 type="BoxExpression">
+                  <box type="VariableReference">
+                    <variable type="ParameterVariable">
+                      <name>i</name>
+                      <parameterType type="ParameterAttributes">None</parameterType>
+                    </variable>
+                  </box>
+                </Elem1>
+              </parameters>
+            </expression>
+          </Elem0>
+          <Elem1 type="ExpressionStatement">
+            <expression type="UnaryExpression">
+              <operator type="UnaryOperator">PreDecrement</operator>
+              <expression type="VariableReference">
+                <variable type="ParameterVariable">
+                  <name>i</name>
+                  <parameterType type="ParameterAttributes">None</parameterType>
+                </variable>
+              </expression>
+            </expression>
+          </Elem1>
+        </statements>
+      </loopBlock>
+    </Elem1>
+    <Elem2 type="ReturnStatement">
+      <returnExpression type="VariableReference">
+        <variable type="ParameterVariable">
+          <name>i</name>
+          <parameterType type="ParameterAttributes">None</parameterType>
+        </variable>
+      </returnExpression>
+    </Elem2>
+  </statements>
+</RootBlock>

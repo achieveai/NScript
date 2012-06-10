@@ -1,0 +1,42 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="InlineArrayInitialization">
+        <elementType>RealScript.InlineComplexStatements</elementType>
+        <initValues>
+          <Elem0 type="NewObjectExpression">
+            <methodReference type="ConstructorReferenceExpression">
+              <methodReference>instance void RealScript.InlineComplexStatements::.ctor()</methodReference>
+            </methodReference>
+            <parameters />
+          </Elem0>
+          <Elem1 type="DefaultValueExpression">
+            <type>RealScript.InlineComplexStatements</type>
+          </Elem1>
+          <Elem2 type="NewObjectExpression">
+            <methodReference type="ConstructorReferenceExpression">
+              <methodReference>instance void RealScript.InlineComplexStatements::.ctor(System.Double)</methodReference>
+            </methodReference>
+            <parameters>
+              <Elem0 type="DoubleLiteral">
+                <isSingle>false</isSingle>
+                <value>10</value>
+              </Elem0>
+            </parameters>
+          </Elem2>
+          <Elem3 type="NewObjectExpression">
+            <methodReference type="ConstructorReferenceExpression">
+              <methodReference>instance void RealScript.InlineComplexStatements::.ctor(System.Double)</methodReference>
+            </methodReference>
+            <parameters>
+              <Elem0 type="DoubleLiteral">
+                <isSingle>false</isSingle>
+                <value>15</value>
+              </Elem0>
+            </parameters>
+          </Elem3>
+        </initValues>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>

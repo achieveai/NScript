@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="1" type="StackedBlock">
+<!-- Skipping block from IL_0001 - IL_0011 -->
+  </BlockInfo>
+  <BlockInfo id="2" type="StackedBlock">
+<!-- Skipping block from IL_0012 to IL_0013 
+    This block should be part of For loop, but that
+    hasn't yet been implemented. -->
+  </BlockInfo>
+  <BlockInfo id="3" type="ForBlock">
+    <BlockInfo id="4" type="InstructionBlock" label="IL_0014"/>
+    <BlockInfo id="7" type="Block">
+      <BlockInfo id="5" type="StackedBlock">
+        <!-- Skipping IL_0017 to IL_0032 -->
+      </BlockInfo>
+      <BlockInfo id="6" type="StackedBlock">
+        <!-- Skippig IL_0033 to IL_0036 -->
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="8" type="StackedBlock">
+      <BlockInfo id="18" type="StackedBlock">
+        <BlockInfo id="9" type="InstructionBlock" label="IL_0039"/>
+        <BlockInfo id="10" type="InstructionBlock" label="IL_003a"/>
+        <BlockInfo id="11" type="InstructionBlock" label="IL_003b"/>
+      </BlockInfo>
+      <BlockInfo id="19" type="InstructionBlock" label="IL_003c"/>
+    </BlockInfo>
+    <BlockInfo id="12" type="StackedBlock">
+      <BlockInfo id="13" type="StackedBlock">
+        <BlockInfo id="14" type="InstructionBlock" label="IL_003d"/>
+        <BlockInfo id="15" type="InstructionBlock" label="IL_003e"/>
+        <BlockInfo id="16" type="InstructionBlock" label="IL_0040"/>
+      </BlockInfo>
+      <BlockInfo id="17" type="InstructionBlock" label="IL_0044"/>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="20" type="StackedBlock">
+    <!-- Skipping block from IL_0046 to IL_0056 -->
+  </BlockInfo>
+  <BlockInfo id="21" type="InstructionBlock" label="IL_0057"/>
+</BlockInfo>

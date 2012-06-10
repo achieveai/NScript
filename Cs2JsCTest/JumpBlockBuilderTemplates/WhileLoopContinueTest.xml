@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="1" type="StackedBlock">
+    <!-- j += i -->
+  </BlockInfo>
+  <BlockInfo id="2" type="DoWhileBlock">
+    <BlockInfo id="3" type="Block">
+      <BlockInfo id="4" type="StackedBlock">
+        <!-- i += j -->
+      </BlockInfo>
+      <BlockInfo id="5" type="IfElseBlock">
+        <BlockInfo id="6" type="StackedBlock">
+          <!-- i % 10 == 0 -->
+        </BlockInfo>
+        <BlockInfo id="7" type="Block">
+          <BlockInfo id="8" type="StackedBlock">
+            <!-- j++ -->
+          </BlockInfo>
+          <BlockInfo id="9" type="JumpBlock">
+            <BlockInfo id="10" type="StackedBlock">
+              <!-- if (j == 10) continue; -->
+            </BlockInfo>
+          </BlockInfo>
+          <BlockInfo id="11" type="StackedBlock">
+            <!-- i++ -->
+          </BlockInfo>
+        </BlockInfo>
+      </BlockInfo>
+      <BlockInfo id="14" type="StackedBlock">
+        <!-- j++ -->
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="12" type="StackedBlock">
+      <!-- while(i < 100); -->
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="13" type="StackedBlock">
+    <!-- return j; -->
+  </BlockInfo>
+</BlockInfo>

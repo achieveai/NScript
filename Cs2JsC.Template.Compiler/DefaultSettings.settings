@@ -1,0 +1,29 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Cs2JsC.Template.Compiler" GeneratedClassName="DefaultSettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ControlsNS" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Owa.Core.Controls</Value>
+    </Setting>
+    <Setting Name="ControlsNSAlias" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ctrl</Value>
+    </Setting>
+    <Setting Name="ConvertersNS" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Owa.Core.Controls.Converters</Value>
+    </Setting>
+    <Setting Name="ConvertersNSAlias" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">cnvt</Value>
+    </Setting>
+    <Setting Name="KnownNSAliases" Type="System.Collections.Specialized.StringCollection" Scope="Application">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;dvm:Owa.Desktop.ViewModels&lt;/string&gt;
+  &lt;string&gt;ctrl:Owa.Core.Controls&lt;/string&gt;
+  &lt;string&gt;cnvt:Owa.Core.Controls.Converters&lt;/string&gt;
+  &lt;string&gt;mvm:Owa.Mobile.ViewModels&lt;/string&gt;
+  &lt;string&gt;mdl:Owa.Core.Models&lt;/string&gt;
+  &lt;string&gt;mc:Owa.Mobile.Controls&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

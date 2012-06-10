@@ -1,0 +1,163 @@
+﻿//-----------------------------------------------------------------------
+// <copyright file="DefaultValueConverter.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace Cs2JsC.Converter.ExpressionsConverter
+{
+    using Cs2JsC.CLR;
+    using Cs2JsC.CLR.AST;
+    using Cs2JsC.Converter.TypeSystemConverter;
+    using Cs2JsC.Utils;
+    using Mono.Cecil;
+
+    /// <summary>
+    /// Definition for DefaultValueConverter
+    /// </summary>
+    public static class DefaultValueConverter
+    {
+        /// <summary>
+        /// Converts the specified converter.
+        /// </summary>
+        /// <param name="converter">The converter.</param>
+        /// <param name="defaultValueExpression">The default value expression.</param>
+        /// <returns>returns expression for default value.</returns>
+        public static JST.Expression Convert(
+            MethodConverter converter,
+            DefaultValueExpression defaultValueExpression)
+        {
+            return DefaultValueConverter.GetDefaultValue(
+                converter,
+                converter.RuntimeManager,
+                converter.Scope,
+                defaultValueExpression.ResultType,
+                defaultValueExpression.Location);
+        }
+
+        /// <summary>
+        /// Gets the default value.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="paramDef">The type reference.</param>
+        /// <returns>returns expression for default value.</returns>
+        public static JST.Expression GetDefaultValue(
+            IResolver resolver,
+            RuntimeScopeManager runtimeScopeManager,
+            JST.IdentifierScope scope,
+            TypeReference typeReference,
+            Location location = null)
+        {
+            if (typeReference.IsBoolean())
+            {
+                return new JST.BooleanLiteralExpression(
+                    scope,
+                    false);
+            }
+            else if (typeReference.IsIntegerOrEnum()
+                || typeReference.IsDouble())
+            {
+                return new JST.NumberLiteralExpression(scope, 0);
+            }
+
+            TypeDefinition typeDefinition = typeReference.Resolve();
+
+            if (typeDefinition != null)
+            {
+                if (!typeDefinition.IsValueType
+                    || typeDefinition.IsSameDefinition(
+                        runtimeScopeManager.Context.ClrKnownReferences.NullableType))
+                {
+                    // Everything else than struct are nulls.
+                    return new JST.NullLiteralExpression(scope);
+                }
+
+                JST.InlineObjectInitializer initializer = new JST.InlineObjectInitializer(
+                    location,
+                    scope);
+
+                foreach (var field in typeDefinition.Fields)
+                {
+                    if (field.IsStatic || field.HasConstant)
+                    {
+                        continue;
+                    }
+
+                    initializer.AddInitializer(
+                        runtimeScopeManager.Resolve(field),
+                        DefaultValueConverter.GetDefaultValue(
+                            resolver,
+                            runtimeScopeManager,
+                            scope,
+                            field.FieldType));
+                }
+
+                return initializer;
+            }
+
+            TypeDefinition genericTypeDefinition = typeReference.Resolve();
+            if (typeReference.IsArray
+                || (genericTypeDefinition != null
+                    && genericTypeDefinition.HasGenericParameters
+                    && genericTypeDefinition.BaseType != null
+                    && !runtimeScopeManager.Context.ClrKnownReferences.ValueType.IsSameDefinition(genericTypeDefinition.BaseType)))
+            {
+                // Again in this case we have generic type but it is of class type.
+                return new JST.NullLiteralExpression(scope);
+            }
+
+            GenericParameter genericParameter = typeReference as GenericParameter;
+            if (genericParameter != null)
+            {
+                bool? isValueType = null;
+                foreach (var constraint in genericParameter.Constraints)
+                {
+                    if (constraint.IsValueType)
+                    {
+                        isValueType = true;
+                        break;
+                    }
+                }
+
+                if (isValueType.HasValue && isValueType.Value == false)
+                {
+                    return new JST.NullLiteralExpression(scope);
+                }
+            }
+
+            return MethodCallExpressionConverter.CreateMethodCallExpression(
+                new MethodCallContext(
+                     JST.IdentifierExpression.Create(
+                        location,
+                        scope,
+                        resolver.Resolve(typeReference)),
+                        runtimeScopeManager.Context.KnownReferences.GetDefaultMethod,
+                        false),
+                    new JST.Expression[0],
+                    resolver,
+                    runtimeScopeManager);
+        }
+
+        /// <summary>
+        /// Determines whether the specified type reference is struct.
+        /// </summary>
+        /// <param name="paramDef">The type reference.</param>
+        /// <returns>
+        /// true if the specified type reference is struct; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsStruct(TypeReference typeReference)
+        {
+            TypeDefinition typeDefinition = typeReference.Resolve();
+
+            if (typeDefinition != null
+                && typeDefinition.BaseType != null
+                && typeDefinition.BaseType.IsValueType
+                    || typeDefinition.BaseType.IsEnum())
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+}

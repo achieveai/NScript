@@ -1,0 +1,44 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">Assignment</operator>
+        <left type="FieldReferenceExpression">
+          <leftExpression type="VariableReference">
+            <variable type="ParameterVariable">
+              <name>referenceClass</name>
+              <parameterType type="ParameterAttributes">None</parameterType>
+            </variable>
+          </leftExpression>
+          <fieldName>intField</fieldName>
+        </left>
+        <right type="BinaryExpression">
+          <operator type="BinaryOperator">Assignment</operator>
+          <left type="PropertyReferenceExpression">
+            <leftExpression type="VariableReference">
+              <variable type="ParameterVariable">
+                <name>referenceClass</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </leftExpression>
+            <propertyName>IntProperty</propertyName>
+            <arguments />
+          </left>
+          <right type="FieldReferenceExpression">
+            <leftExpression type="PropertyReferenceExpression">
+              <leftExpression type="VariableReference">
+                <variable type="ParameterVariable">
+                  <name>referenceClass</name>
+                  <parameterType type="ParameterAttributes">None</parameterType>
+                </variable>
+              </leftExpression>
+              <propertyName>Property</propertyName>
+              <arguments />
+            </leftExpression>
+            <fieldName>intField</fieldName>
+          </right>
+        </right>
+      </expression>
+    </Elem0>
+  </statements>
+</RootBlock>

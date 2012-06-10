@@ -1,0 +1,60 @@
+﻿Testing if-then...
+after
+Testing if-then...
+then
+after
+Testing if-then-else...
+else
+after
+Testing if-then-else...
+then
+after
+Testing switch...
+3
+Testing switch...
+4 or 5
+after
+Testing switch...
+default
+after
+Testing for...
+0
+1
+2
+after
+Testing while...
+0
+1
+2
+after
+Testing do-while...
+0
+1
+2
+after
+Testing refs...
+a = 3
+b = 7
+a = 7
+b = 3
+Testing ternary ?: operator without side-effects...
+cond1: <=, cond2: >, cond3: <= <=
+Testing ternary ?: operator without side-effects...
+cond1: <=, cond2: <=, cond3: > <=
+Testing ternary ?: operator with side-effects...
+x = 3, y = 7
+cond1: <=, cond2: >, cond3: > <=
+x = 5, y = 5
+Testing ternary ?: operator with side-effects...
+x = 7, y = 3
+cond1: <=, cond2: <=, cond3: > <=
+x = 9, y = 1
+Testing is in conditionals...
+is not a D
+is not a D
+Testing is in conditionals...
+is not a D
+is not a D
+Testing is in conditionals...
+is a D
+is a D

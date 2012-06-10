@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="1" opcode="LoadArgument" argument="0"/>
+    <BlockInfo id="4" type="InstructionBlock" label="2" opcode="LoadArgument" argument="1"/>
+    <BlockInfo id="5" type="InstructionBlock" label="3" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+  </BlockInfo>
+  <BlockInfo id="6" type="StackedBlock">
+    <BlockInfo id="7" type="InstructionBlock" label="8" opcode="LoadArgument" argument="0"/>
+    <BlockInfo id="8" type="InstructionBlock" label="9" opcode="LoadArgument" argument="2"/>
+    <BlockInfo id="9" type="InstructionBlock" label="10" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+  </BlockInfo>
+  <BlockInfo id="10" type="SwitchBlock">
+    <BlockInfo id="11" type="StackedBlock">
+      <BlockInfo id="12" type="InstructionBlock" label="15" opcode="LoadArgument" argument="1"/>
+      <BlockInfo id="13" type="InstructionBlock" label="18" opcode="Switch" argument="System.String[]"/>
+    </BlockInfo>
+    <BlockInfo id="14" type="Block">
+      <BlockInfo id="15" type="JumpBlock">
+        <BlockInfo id="16" type="InstructionBlock" label="43" opcode="Branch" argument="90"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="17" type="Block">
+      <BlockInfo id="18" type="StackedBlock">
+        <BlockInfo id="19" type="InstructionBlock" label="45" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="20" type="InstructionBlock" label="46" opcode="LoadArgument" argument="3"/>
+        <BlockInfo id="21" type="InstructionBlock" label="47" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+      </BlockInfo>
+      <BlockInfo id="22" type="JumpBlock">
+        <BlockInfo id="23" type="InstructionBlock" label="52" opcode="Branch" argument="90"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="24" type="Block">
+      <BlockInfo id="25" type="StackedBlock">
+        <BlockInfo id="26" type="InstructionBlock" label="54" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="27" type="InstructionBlock" label="55" opcode="LoadArgument" argument="4"/>
+        <BlockInfo id="28" type="InstructionBlock" label="57" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+      </BlockInfo>
+      <BlockInfo id="29" type="JumpBlock">
+        <BlockInfo id="30" type="InstructionBlock" label="62" opcode="Branch" argument="90"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="31" type="Block">
+      <BlockInfo id="32" type="StackedBlock">
+        <BlockInfo id="33" type="InstructionBlock" label="64" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="34" type="InstructionBlock" label="65" opcode="LoadArgument" argument="3"/>
+        <BlockInfo id="35" type="InstructionBlock" label="66" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+      </BlockInfo>
+      <BlockInfo id="36" type="StackedBlock">
+        <BlockInfo id="37" type="InstructionBlock" label="71" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="38" type="InstructionBlock" label="72" opcode="LoadArgument" argument="4"/>
+        <BlockInfo id="39" type="InstructionBlock" label="74" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+      </BlockInfo>
+      <BlockInfo id="40" type="JumpBlock">
+        <BlockInfo id="41" type="InstructionBlock" label="79" opcode="Branch" argument="90"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="42" type="Block">
+      <BlockInfo id="43" type="StackedBlock">
+        <BlockInfo id="44" type="InstructionBlock" label="81" opcode="LoadArgument" argument="0"/>
+        <BlockInfo id="45" type="InstructionBlock" label="82" opcode="LoadConstantInt32" argument="-1"/>
+        <BlockInfo id="46" type="InstructionBlock" label="83" opcode="StoreField" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+      </BlockInfo>
+      <BlockInfo id="47" type="JumpBlock">
+        <BlockInfo id="48" type="InstructionBlock" label="88" opcode="Branch" argument="90"/>
+      </BlockInfo>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="49" type="InstructionBlock" label="90" opcode="Return" argument=""/>
+</BlockInfo>

@@ -1,0 +1,38 @@
+﻿<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="0" opcode="LoadArgument" argument="trc1"/>
+    <BlockInfo id="4" type="OpAssignmentBlock">
+      <BlockInfo id="5" type="InlineAssignmentBlock">
+        <BlockInfo id="6" type="StackedBlock">
+          <BlockInfo id="7" type="StackedBlock">
+            <BlockInfo id="8" type="InstructionBlock" label="1" opcode="LoadArgument" argument="trc1"/>
+            <BlockInfo id="9" type="InstructionBlock" label="2" opcode="Dup" argument=""/>
+          </BlockInfo>
+          <BlockInfo id="10" type="InlineAssignmentBlock">
+            <BlockInfo id="11" type="SerialBlock">
+              <BlockInfo id="12" type="StackedBlock">
+                <BlockInfo id="13" type="StackedBlock">
+                  <BlockInfo id="14" type="StackedBlock">
+                    <BlockInfo id="15" type="InstructionBlock" label="2_copy" opcode="DupCopy" argument="2:[2:2] Dup: "/>
+                    <BlockInfo id="16" type="InstructionBlock" label="3" opcode="CallVirtual" argument="instance System.Int32 RealScript.TestReferenceClass::get_IntProperty()"/>
+                  </BlockInfo>
+                  <BlockInfo id="17" type="InstructionBlock" label="8" opcode="LoadConstantInt32" argument="10"/>
+                  <BlockInfo id="18" type="InstructionBlock" label="10" opcode="Add" argument=""/>
+                </BlockInfo>
+                <BlockInfo id="19" type="InstructionBlock" label="11" opcode="Dup" argument=""/>
+              </BlockInfo>
+              <BlockInfo id="20" type="StackedBlock">
+                <BlockInfo id="21" type="InstructionBlock" label="11_copy" opcode="DupCopy" argument="11:[3:3] Dup: "/>
+                <BlockInfo id="22" type="InstructionBlock" label="12" opcode="StoreLocal" argument="CS$0$0000"/>
+              </BlockInfo>
+            </BlockInfo>
+          </BlockInfo>
+          <BlockInfo id="23" type="InstructionBlock" label="13" opcode="CallVirtual" argument="instance void RealScript.TestReferenceClass::set_IntProperty(System.Int32)"/>
+        </BlockInfo>
+        <BlockInfo id="24" type="InstructionBlock" label="18" opcode="LoadLocal" argument="CS$0$0000"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="25" type="InstructionBlock" label="19" opcode="StoreField" argument="System.Int32 RealScript.TestReferenceClass::intField"/>
+  </BlockInfo>
+  <BlockInfo id="26" type="InstructionBlock" label="24" opcode="Return" argument=""/>
+</BlockInfo>

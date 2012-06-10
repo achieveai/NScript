@@ -1,0 +1,20 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="InlineDelegateExpression">
+        <delegate type="DelegateMethodExpression">
+          <delegateType>RealScript.IntFunction</delegateType>
+          <methodReference type="MethodReferenceExpression">
+            <leftExpression type="VariableReference">
+              <variable type="ThisVariable">
+                <name>this</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </leftExpression>
+            <methodName>&lt;InstanceReferencingDelegate&gt;b__2</methodName>
+          </methodReference>
+        </delegate>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>

@@ -1,0 +1,21 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="BinaryExpression">
+        <operator type="BinaryOperator">Div</operator>
+        <left type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>x</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </left>
+        <right type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>y</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </right>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>

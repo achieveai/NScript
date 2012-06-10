@@ -1,0 +1,28 @@
+﻿Testing non-null
+Nullable has value 42
+Nullable casts to object 42
+Recast nullable has value 42
+Nullable casts to underlying value 42
+Value or default is 42
+Testing null
+Nullable has no value
+Nullable equals null
+Nullable casts to null object
+Recast nullable has no value
+Nullable fails casting to underlying value
+Exception Message: Cannot call method 'toString' of null
+Value or default is 0
+Testing lifting with non-null args
+Nullable has value 3
+Nullable casts to object 3
+Recast nullable has value 3
+Nullable casts to underlying value 3
+Value or default is 3
+Testing lifting with null args
+Nullable has no value
+Nullable equals null
+Nullable casts to null object
+Recast nullable has no value
+Nullable fails casting to underlying value
+Exception Message: Cannot call method 'toString' of null
+Value or default is 0

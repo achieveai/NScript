@@ -1,0 +1,53 @@
+<RootBlock type="ParameterBlock">
+  <parameters>
+    <Elem0>
+      <name>this</name>
+      <type>RealScript.DelegateBlocks</type>
+    </Elem0>
+  </parameters>
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="AnonymousMethodBodyExpression">
+        <methodType>RealScript.IntFunction</methodType>
+        <paramBlock type="ParameterBlock">
+          <parameters>
+            <Elem0>
+              <name>i</name>
+              <type>System.Int32</type>
+            </Elem0>
+          </parameters>
+          <escapingVariables>
+            <Elem0 type="ThisVariable">
+              <isHoisted>true</isHoisted>
+              <name>this</name>
+              <parameterType type="ParameterAttributes">None</parameterType>
+            </Elem0>
+          </escapingVariables>
+          <statements>
+            <Elem0 type="ReturnStatement">
+              <returnExpression type="BinaryExpression">
+                <operator type="BinaryOperator">Plus</operator>
+                <left type="VariableReference">
+                  <variable type="ParameterVariable">
+                    <name>i</name>
+                    <parameterType type="ParameterAttributes">None</parameterType>
+                  </variable>
+                </left>
+                <right type="FieldReferenceExpression">
+                  <leftExpression type="VariableReference">
+                    <variable type="ThisVariable">
+                      <isHoisted>true</isHoisted>
+                      <name>this</name>
+                      <parameterType type="ParameterAttributes">None</parameterType>
+                    </variable>
+                  </leftExpression>
+                  <fieldName>intVariable</fieldName>
+                </right>
+              </returnExpression>
+            </Elem0>
+          </statements>
+        </paramBlock>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>

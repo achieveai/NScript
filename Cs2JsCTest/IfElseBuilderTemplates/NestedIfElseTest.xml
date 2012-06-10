@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockInfo id="0" type="RootBlock">
+  <BlockInfo id="1" type="StackedBlock">
+    <!-- returnValue = 10 -->
+  </BlockInfo>
+  <BlockInfo id="2" type="IfElseBlock">
+    <BlockInfo id="3" type="StackedBlock">
+      <!-- if (i > 10) -->
+    </BlockInfo>
+    <BlockInfo id="4" type="Block">
+      <BlockInfo id="5" type="StackedBlock">
+        <!-- returnValue += 10 -->
+      </BlockInfo>
+      <BlockInfo id="6" type="IfElseBlock">
+        <BlockInfo id="7" type="StackedBlock">
+          <!-- if (i == 15) -->
+        </BlockInfo>
+        <BlockInfo id="8" type="Block">
+          <BlockInfo id="9" type="StackedBlock">
+            <!-- returnValue += 5 -->
+          </BlockInfo>
+          <BlockInfo id="10" type="InstructionBlock" label="IL_0015"/>
+        </BlockInfo>
+        <BlockInfo id="11" type="Block">
+          <BlockInfo id="12" type="StackedBlock">
+            <!-- returnValue += 2 -->
+          </BlockInfo>
+          <BlockInfo id="13" type="InstructionBlock" label="IL_001b"/>
+        </BlockInfo>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="14" type="StackedBlock">
+      <!-- returnValue = 11 -->
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="15" type="StackedBlock">
+    <!-- return returnValue; -->
+  </BlockInfo>
+</BlockInfo>

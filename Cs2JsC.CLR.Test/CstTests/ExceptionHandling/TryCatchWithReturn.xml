@@ -1,0 +1,99 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="TryCatchFinally">
+      <try type="ScopeBlock">
+        <statements>
+          <Elem0 type="IfBlockStatement">
+            <condition type="BinaryExpression">
+              <operator type="BinaryOperator">Equals</operator>
+              <left type="VariableReference">
+                <variable type="ParameterVariable">
+                  <name>arg</name>
+                  <parameterType type="ParameterAttributes">None</parameterType>
+                </variable>
+              </left>
+              <right type="IntLiteral">
+                <value>0</value>
+                <size type="IntSize">I32</size>
+              </right>
+            </condition>
+            <trueBlock type="ScopeBlock">
+              <statements>
+                <Elem0 type="ExpressionStatement">
+                  <expression type="BinaryExpression">
+                    <operator type="BinaryOperator">Assignment</operator>
+                    <left type="VariableReference">
+                      <variable type="LocalVariable">
+                        <name>CS$1$0000</name>
+                      </variable>
+                    </left>
+                    <right type="MethodCallExpression">
+                      <methodReference type="MethodReferenceExpression">
+                        <methodName>GetMoreStatic</methodName>
+                      </methodReference>
+                      <parameters>
+                        <Elem0 type="VariableReference">
+                          <variable type="ParameterVariable">
+                            <name>arg</name>
+                            <parameterType type="ParameterAttributes">None</parameterType>
+                          </variable>
+                        </Elem0>
+                      </parameters>
+                    </right>
+                  </expression>
+                </Elem0>
+                <Elem1 type="ReturnStatement">
+                  <returnExpression type="VariableReference">
+                    <variable type="LocalVariable">
+                      <name>CS$1$0000</name>
+                    </variable>
+                  </returnExpression>
+                </Elem1>
+              </statements>
+            </trueBlock>
+          </Elem0>
+        </statements>
+      </try>
+      <handlers>
+        <Elem0 type="HandlerBlock">
+          <isCatch>true</isCatch>
+          <catchType>System.Exception</catchType>
+          <block type="ScopeBlock">
+            <statements>
+              <Elem0 type="ExpressionStatement">
+                <expression type="MethodCallExpression">
+                  <methodReference type="MethodReferenceExpression">
+                    <methodName>GetMoreStatic</methodName>
+                  </methodReference>
+                  <parameters>
+                    <Elem0 type="VariableReference">
+                      <variable type="ParameterVariable">
+                        <name>arg</name>
+                        <parameterType type="ParameterAttributes">None</parameterType>
+                      </variable>
+                    </Elem0>
+                  </parameters>
+                </expression>
+              </Elem0>
+            </statements>
+          </block>
+        </Elem0>
+      </handlers>
+    </Elem0>
+    <Elem1 type="ReturnStatement">
+      <returnExpression type="BinaryExpression">
+        <operator type="BinaryOperator">Minus</operator>
+        <left type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>arg</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </left>
+        <right type="IntLiteral">
+          <value>1</value>
+          <size type="IntSize">I32</size>
+        </right>
+      </returnExpression>
+    </Elem1>
+  </statements>
+</RootBlock>

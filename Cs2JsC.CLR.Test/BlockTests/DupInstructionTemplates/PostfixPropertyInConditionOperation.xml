@@ -1,0 +1,55 @@
+﻿<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InstructionBlock" label="0" opcode="LoadConstantInt32" argument="0"/>
+    <BlockInfo id="4" type="InstructionBlock" label="1" opcode="StoreLocal" argument="0"/>
+  </BlockInfo>
+  <BlockInfo id="5" type="WhileBlock">
+    <BlockInfo id="6" type="InstructionBlock" label="2" opcode="Branch" argument="8"/>
+    <BlockInfo id="7" type="StackedBlock">
+      <BlockInfo id="8" type="StackedBlock">
+        <BlockInfo id="9" type="InstructionBlock" label="4" opcode="LoadConstantInt32" argument="2"/>
+        <BlockInfo id="10" type="InstructionBlock" label="5" opcode="LoadLocal" argument="0"/>
+        <BlockInfo id="11" type="InstructionBlock" label="6" opcode="Mul" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="12" type="InstructionBlock" label="7" opcode="StoreLocal" argument="0"/>
+    </BlockInfo>
+    <BlockInfo id="13" type="StackedBlock">
+      <BlockInfo id="14" type="PostfixBlock">
+        <BlockInfo id="15" type="SerialBlock">
+          <BlockInfo id="16" type="StackedBlock">
+            <BlockInfo id="17" type="StackedBlock">
+              <BlockInfo id="18" type="InstructionBlock" label="8" opcode="LoadArgument" argument="0"/>
+              <BlockInfo id="19" type="InstructionBlock" label="9" opcode="Dup" argument=""/>
+            </BlockInfo>
+            <BlockInfo id="20" type="StackedBlock">
+              <BlockInfo id="21" type="InlineAssignmentBlock">
+                <BlockInfo id="22" type="SerialBlock">
+                  <BlockInfo id="23" type="StackedBlock">
+                    <BlockInfo id="24" type="StackedBlock">
+                      <BlockInfo id="25" type="InstructionBlock" label="9_copy" opcode="DupCopy" argument="9:[1:1] Dup: "/>
+                      <BlockInfo id="26" type="InstructionBlock" label="10" opcode="CallVirtual" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+                    </BlockInfo>
+                    <BlockInfo id="27" type="InstructionBlock" label="15" opcode="Dup" argument=""/>
+                  </BlockInfo>
+                  <BlockInfo id="28" type="StackedBlock">
+                    <BlockInfo id="29" type="InstructionBlock" label="15_copy" opcode="DupCopy" argument="15:[2:2] Dup: "/>
+                    <BlockInfo id="30" type="InstructionBlock" label="16" opcode="StoreLocal" argument="1"/>
+                  </BlockInfo>
+                </BlockInfo>
+              </BlockInfo>
+              <BlockInfo id="31" type="InstructionBlock" label="17" opcode="LoadConstantInt32" argument="1"/>
+              <BlockInfo id="32" type="InstructionBlock" label="18" opcode="Add" argument=""/>
+            </BlockInfo>
+            <BlockInfo id="33" type="InstructionBlock" label="19" opcode="CallVirtual" argument="Cs2JsC.PELoader.Reflection.MethodReference"/>
+          </BlockInfo>
+          <BlockInfo id="34" type="InstructionBlock" label="24" opcode="LoadLocal" argument="1"/>
+        </BlockInfo>
+      </BlockInfo>
+      <BlockInfo id="35" type="InstructionBlock" label="25" opcode="BranchFalse" argument="4"/>
+    </BlockInfo>
+  </BlockInfo>
+  <BlockInfo id="36" type="StackedBlock">
+    <BlockInfo id="37" type="InstructionBlock" label="27" opcode="LoadLocal" argument="0"/>
+    <BlockInfo id="38" type="InstructionBlock" label="28" opcode="Return" argument=""/>
+  </BlockInfo>
+</BlockInfo>

@@ -1,0 +1,31 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ExpressionStatement">
+      <expression type="MethodCallExpression">
+        <methodReference type="MethodReferenceExpression">
+          <methodName>AccessRefArgument</methodName>
+        </methodReference>
+        <parameters>
+          <Elem0 type="IntLiteral">
+            <value>10</value>
+            <size type="IntSize">I32</size>
+          </Elem0>
+          <Elem1 type="LoadAddressExpression">
+            <nestedExpression type="ArrayElementExpression">
+              <arrayExpression type="VariableReference">
+                <variable type="ParameterVariable">
+                  <name>intArray</name>
+                  <parameterType type="ParameterAttributes">None</parameterType>
+                </variable>
+              </arrayExpression>
+              <indexExpression type="IntLiteral">
+                <value>10</value>
+                <size type="IntSize">I32</size>
+              </indexExpression>
+            </nestedExpression>
+          </Elem1>
+        </parameters>
+      </expression>
+    </Elem0>
+  </statements>
+</RootBlock>

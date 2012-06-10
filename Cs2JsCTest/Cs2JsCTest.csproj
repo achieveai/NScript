@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{18CF8F39-0165-4A49-9795-CB05BDCC2E35}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Cs2JsCTest</RootNamespace>
+    <AssemblyName>Cs2JsCTest</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <BaseIntermediateOutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\obj</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BasicStatementBuilderTest.cs" />
+    <Compile Include="BlockInfo.cs" />
+    <Compile Include="ExecutionBlockTest.cs" />
+    <Compile Include="IfElseBuilderTest.cs" />
+    <Compile Include="ILDecompilerTest.cs" />
+    <Compile Include="JumpBlockBuilderTest.cs" />
+    <Compile Include="LoopBuilderTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BasicBlockBuilderTest.cs" />
+    <Compile Include="SwitchBlockBuilderTest.cs" />
+    <Compile Include="TestILFunctions.cs" />
+    <Compile Include="UnitTest1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cs2JsC.Lib\Cs2JsC.Lib.csproj">
+      <Project>{4C4890C1-7AFE-48FA-80AA-1A0E37D5FF9B}</Project>
+      <Name>Cs2JsC.Lib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicBlockBuilderTemplates\SimpleConditionalArgument.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicBlockBuilderTemplates\SimpleFormat3ArgCall.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicBlockBuilderTemplates\Complex1ConditionalArgument.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicBlockBuilderTemplates\Complex2ConditionalArgument.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicBlockBuilderTemplates\Complex2IfCondition.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SwitchBlockBuilderTemplates\SimpleSwitchFunction.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="LoopBuilderTemplates\SimpleWhileLoop.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicStatementBuilderTemplates\Complex2IfConditionStatementBuilder.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="LoopBuilderTemplates\SimpleDoWhileLoop.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="LoopBuilderTemplates\SimpleForLoop.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicStatementBuilderTemplates\Complex2IfConditionBlockBuilder.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="LoopBuilderTemplates\NestedWhileDoWhileLoop.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="LoopBuilderTemplates\LastDoWhileBlock.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicStatementBuilderTemplates\ComplexIfConditoinOptimized1StatementBuilder.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicStatementBuilderTemplates\ComplexIfConditoinOptimized2StatementBuilder.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BasicBlockBuilderTemplates\IncrementOnStack.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="IfElseBuilderTemplates\SimpleIfElseTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="IfElseBuilderTemplates\SimpleIfTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="IfElseBuilderTemplates\SimpleIfElseIfTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="IfElseBuilderTemplates\NestedIfElseTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="JumpBlockBuilderTemplates\WhileLoopContinueTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="JumpBlockBuilderTemplates\WhileLoopBreakTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="IfElseBuilderTemplates\WhileLoopContinueToIfTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="JumpBlockBuilderTemplates\ForLoopBreakTest.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="JumpBlockBuilderTemplates\ForLoopContinueTest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="JumpBlockBuilderTemplates\SimpleSwitchFunction.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

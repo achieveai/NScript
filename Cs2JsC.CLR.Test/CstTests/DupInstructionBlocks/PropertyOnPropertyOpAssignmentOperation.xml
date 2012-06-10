@@ -1,0 +1,29 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ExpressionStatement">
+      <expression type="BinaryExpression">
+        <operator type="BinaryOperator">MulAssignment</operator>
+        <left type="PropertyReferenceExpression">
+          <leftExpression type="PropertyReferenceExpression">
+            <leftExpression type="VariableReference">
+              <variable type="ParameterVariable">
+                <name>trc1</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </leftExpression>
+            <propertyName>Property</propertyName>
+            <arguments />
+          </leftExpression>
+          <propertyName>IntProperty</propertyName>
+          <arguments />
+        </left>
+        <right type="VariableReference">
+          <variable type="ParameterVariable">
+            <name>i2</name>
+            <parameterType type="ParameterAttributes">None</parameterType>
+          </variable>
+        </right>
+      </expression>
+    </Elem0>
+  </statements>
+</RootBlock>

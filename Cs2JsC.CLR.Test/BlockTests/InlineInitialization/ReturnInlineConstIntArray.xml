@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<BlockInfo id="1" type="RootBlock">
+  <BlockInfo id="2" type="StackedBlock">
+    <BlockInfo id="3" type="InlineNumberArrayCreateBlock">
+      <BlockInfo id="4" type="StackedBlock">
+        <BlockInfo id="5" type="StackedBlock">
+          <BlockInfo id="6" type="InstructionBlock" label="0" opcode="LoadConstantInt32" argument="5"/>
+          <BlockInfo id="7" type="InstructionBlock" label="1" opcode="Newarr" argument="System.Int32"/>
+        </BlockInfo>
+        <BlockInfo id="8" type="InstructionBlock" label="6" opcode="Dup" argument=""/>
+      </BlockInfo>
+      <BlockInfo id="9" type="StackedBlock">
+        <BlockInfo id="10" type="InstructionBlock" label="6_copy" opcode="DupCopy" argument="6:[1:1] Dup: "/>
+        <BlockInfo id="11" type="InstructionBlock" label="7" opcode="Ldtoken" argument="Cs2JsC.PELoader.Reflection.FieldReference"/>
+        <BlockInfo id="12" type="InstructionBlock" label="12" opcode="Call" argument="instance void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array, System.RuntimeFieldHandle)"/>
+      </BlockInfo>
+    </BlockInfo>
+    <BlockInfo id="13" type="InstructionBlock" label="17" opcode="Return" argument=""/>
+  </BlockInfo>
+</BlockInfo>

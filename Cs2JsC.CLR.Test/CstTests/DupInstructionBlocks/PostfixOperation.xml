@@ -1,0 +1,26 @@
+﻿<RootBlock type="ParameterBlock">
+  <statements>
+    <Elem0 type="ReturnStatement">
+      <returnExpression type="InlineArrayInitialization">
+        <elementType>System.Int32</elementType>
+        <initValues>
+          <Elem0 type="UnaryExpression">
+            <operator type="UnaryOperator">PostIncrement</operator>
+            <expression type="VariableReference">
+              <variable type="ParameterVariable">
+                <name>i</name>
+                <parameterType type="ParameterAttributes">None</parameterType>
+              </variable>
+            </expression>
+          </Elem0>
+          <Elem1 type="VariableReference">
+            <variable type="ParameterVariable">
+              <name>i</name>
+              <parameterType type="ParameterAttributes">None</parameterType>
+            </variable>
+          </Elem1>
+        </initValues>
+      </returnExpression>
+    </Elem0>
+  </statements>
+</RootBlock>
