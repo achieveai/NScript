@@ -12,7 +12,7 @@ namespace Sunlight.Framework.UI.Attributes
     /// Definition for CssNameAttribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class CssNameAttribute
+    public class CssNameAttribute : Attribute
     {
     }
 }

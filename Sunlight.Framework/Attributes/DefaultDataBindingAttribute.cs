@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sunlight.Framework.UI.Attributes
+namespace Sunlight.Framework.Attributes
 {
     using System;
     using Sunlight.Framework.Binders;

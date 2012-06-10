@@ -1,18 +1,17 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="TemplatePartAttribute.cs" company="">
+// <copyright file="SkinFactory.cs" company="">
 //     Copyright (c) . All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sunlight.Framework.UI.Attributes
+namespace Sunlight.Framework.UI.Helpers
 {
     using System;
 
     /// <summary>
-    /// Definition for TemplatePartAttribute
+    /// Definition for SkinFactory
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public class TemplatePartAttribute : Attribute
+    public class SkinFactory
     {
     }
 }

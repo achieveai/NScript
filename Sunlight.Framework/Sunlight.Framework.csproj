@@ -38,6 +38,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Attributes\DefaultDataBindingAttribute.cs" />
+    <Compile Include="Attributes\NonBindableAttribute.cs" />
     <Compile Include="Binders\ContextBindableObject.cs" />
     <Compile Include="Binders\DataBinder.cs" />
     <Compile Include="Binders\DataBindingMode.cs" />
@@ -45,6 +47,7 @@
     <Compile Include="Binders\ITargetBinder.cs" />
     <Compile Include="Binders\ITargetDataBinder.cs" />
     <Compile Include="Binders\IValueConverter.cs" />
+    <Compile Include="Binders\OneTimeDataBinder.cs" />
     <Compile Include="Binders\SourcePropertyBinder.cs" />
     <Compile Include="Binders\TargetBinder.cs" />
     <Compile Include="Binders\ValueConverter.cs" />

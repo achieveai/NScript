@@ -35,6 +35,11 @@ namespace Sunlight.Framework.Binders
             this.sourceBinder.UseDataBinder(this);
         }
 
+        public string TargetPropertyName
+        {
+            get { return this.targetBinder.PropertyName; }
+        }
+
         public void SetTarget(INotifyPropertyChanged target)
         {
             this.targetBinder.Target = target;

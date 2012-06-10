@@ -40,6 +40,11 @@ namespace Sunlight.Framework.Binders
             this.defaultValue = defaultValue;
         }
 
+        public string PropertyName
+        {
+            get { return this.propertyName; }
+        }
+
         public object Value
         {
             get
@@ -110,6 +115,11 @@ namespace Sunlight.Framework.Binders
         public void UseDataBinder(ITargetDataBinder dataBinder)
         {
             this.dataBinder = dataBinder;
+        }
+
+        protected void SetPropertySetter(Action<INotifyPropertyChanged, object> setter)
+        {
+            this.setter = setter;
         }
 
         private void OnTargetUpdated(INotifyPropertyChanged sender, string propertyName)

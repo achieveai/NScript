@@ -1,18 +1,18 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="TemplatePartAttribute.cs" company="">
+// <copyright file="NonBindableAttribute.cs" company="">
 //     Copyright (c) . All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sunlight.Framework.UI.Attributes
+namespace Sunlight.Framework.Attributes
 {
     using System;
 
     /// <summary>
-    /// Definition for TemplatePartAttribute
+    /// Definition for NonBindableAttribute
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public class TemplatePartAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public class NonBindableAttribute : Attribute
     {
     }
 }

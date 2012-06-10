@@ -9,10 +9,10 @@ namespace Sunlight.Framework.UI.Attributes
     using System;
 
     /// <summary>
-    /// Definition for TemplatePartAttribute
+    /// Definition for SkinPartAttribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class TemplatePartAttribute : Attribute
+    public class SkinPartAttribute : Attribute
     {
     }
 }
