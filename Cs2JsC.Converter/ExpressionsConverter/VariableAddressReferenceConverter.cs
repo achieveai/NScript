@@ -22,7 +22,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>Expression to read address variable.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             VariableAddressReference expression)
         {
             if (expression.Variable is ThisVariable)
@@ -53,7 +53,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="isReader">if set to <c>true</c> is reader.</param>
         /// <returns>Expression to read address variable.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             VariableAddressReference expression,
             bool isReader)
         {

@@ -23,7 +23,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="statement">The statement.</param>
         /// <returns>Try -catch-finally block.</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             TryCatchFinally statement)
         {
             if (statement.Handlers.Count > 2
@@ -93,7 +93,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="handler">The handler.</param>
         /// <returns>Catch handler</returns>
         private static JST.CatchHandler ConvertCatchHandler(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             HandlerBlock handler)
         {
             JST.IdentifierExpression catchVariable = null;

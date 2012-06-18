@@ -27,7 +27,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             AnonymousMethodBodyExpression expression)
         {
             return converter.ProcessParameterBlock(expression.ParameterBlock);

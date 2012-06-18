@@ -20,7 +20,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="boxExpression">The box expression.</param>
         /// <returns>Currently S# implementation, so we return the inner expression.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             CLR.AST.BoxExpression boxExpression)
         {
             return MethodCallExpressionConverter.CreateMethodCallExpression(
@@ -49,7 +49,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="boxExpression">The box expression.</param>
         /// <returns>Currently S# implementation, so we return the inner expression.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             CLR.AST.UnboxExpression boxExpression)
         {
             return MethodCallExpressionConverter.CreateMethodCallExpression(

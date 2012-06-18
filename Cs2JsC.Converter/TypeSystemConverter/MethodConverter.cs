@@ -31,7 +31,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
     /// <summary>
     /// Definition for MethodConverter
     /// </summary>
-    public class MethodConverter : IResolver
+    public class MethodConverter : IResolver, IMethodScopeConverter
     {
         /// <summary>
         /// This argument.

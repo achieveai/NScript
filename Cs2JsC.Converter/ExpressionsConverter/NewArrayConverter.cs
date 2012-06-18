@@ -26,7 +26,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="newObjectExpression">The new object expression.</param>
         /// <returns>Expression converter.</returns>
         public static JST.Expression Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             NewArrayExpression newObjectExpression)
         {
             MethodReference ctorMethod = methodConverter.KnownReferences.GetArrayIntArgCtor(
@@ -62,7 +62,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="newObjectExpression">The new object expression.</param>
         /// <returns>Expression converter.</returns>
         public static JST.Expression ConvertArrayElementLoad(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             ArrayElementExpression arrayElementLoadExpression)
         {
             return ExpressionConverterBase.Convert(

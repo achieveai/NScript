@@ -24,7 +24,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="defaultValueExpression">The default value expression.</param>
         /// <returns>returns expression for default value.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             DefaultValueExpression defaultValueExpression)
         {
             return DefaultValueConverter.GetDefaultValue(

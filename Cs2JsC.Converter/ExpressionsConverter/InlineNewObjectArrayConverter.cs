@@ -24,7 +24,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             InlineArrayInitialization expression)
         {
             List<JST.Expression> expressions = new List<JST.Expression>();

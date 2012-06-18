@@ -43,13 +43,13 @@
   .ver 1:0:0:0
 }
 .module Test.exe
-// MVID: {9063D61B-8EA3-4965-95FE-4B42F9E12C84}
+// MVID: {BAD80474-B67B-4643-83FF-F0F8D4BD7B3A}
 .imagebase 0x00400000
 .file alignment 0x00000200
 .stackreserve 0x00100000
 .subsystem 0x0003       // WINDOWS_CUI
 .corflags 0x00000001    //  ILONLY
-// Image base: 0x00BE0000
+// Image base: 0x01200000
 
 
 // =============== CLASS MEMBERS DECLARATION ===================
@@ -63,8 +63,8 @@
     // Code size       26 (0x1a)
     .maxstack  8
     .language '{3F5162F8-07C6-11D3-9053-00C04FA302A1}', '{994B45C4-E6E9-11D2-903F-00C04FA302A1}', '{5A869D0B-6611-11D3-BD2A-0000F80849BD}'
-// Source File 'c:\Users\Gautam\Documents\Visual Studio 11\Projects\Cs2JsC\Test\Class1.cs' 
-    .line 8,8 : 9,10 'c:\\Users\\Gautam\\Documents\\Visual Studio 11\\Projects\\Cs2JsC\\Test\\Class1.cs'
+// Source File 'c:\Users\Gautam\Documents\Visual Studio 2012\Projects\cs2jsc\Test\Class1.cs' 
+    .line 8,8 : 9,10 'c:\\Users\\Gautam\\Documents\\Visual Studio 2012\\Projects\\cs2jsc\\Test\\Class1.cs'
 //000008:         {
     IL_0000:  nop
     .line 9,9 : 13,41 ''
@@ -523,4 +523,4 @@
 // =============================================================
 
 // *********** DISASSEMBLY COMPLETE ***********************
-// WARNING: Created Win32 resource file C:\Users\Gautam\Documents\Visual Studio 11\Projects\Cs2JsC\Test\Foo.res
+// WARNING: Created Win32 resource file C:\Users\Gautam\Documents\Visual Studio 2012\Projects\cs2jsc\Test\Foo.res

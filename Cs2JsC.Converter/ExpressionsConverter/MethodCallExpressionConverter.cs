@@ -27,7 +27,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodCallExpression">The method call expression.</param>
         /// <returns>JST.MethodCallExpression</returns>
         public static JST.Expression Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             MethodCallExpression methodCallExpression)
         {
             MethodReferenceExpression methodReferenceExpression =
@@ -58,7 +58,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodCallExpression">The method call expression.</param>
         /// <returns></returns>
         private static JST.Expression ConvertInternal(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             MethodCallExpression methodCallExpression)
         {
             MethodReferenceExpression methodReferenceExpression =
@@ -339,7 +339,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="converter">The converter.</param>
         /// <param name="methodReference">The method reference.</param>
         /// <returns></returns>
-        internal static Func<MethodConverter, MethodCallExpression, JST.Expression> ConverterSpecialMethod(
+        internal static Func<IMethodScopeConverter, MethodCallExpression, JST.Expression> ConverterSpecialMethod(
             ConverterContext converter,
             MethodReference methodReference)
         {
@@ -443,7 +443,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     || typeName == "System.Single")
                 {
                     return delegate(
-                        MethodConverter methodConverter,
+                        IMethodScopeConverter methodConverter,
                         MethodCallExpression methodCall)
                     {
                         return ExpressionConverterBase.Convert(
@@ -474,7 +474,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodCallExpression">The method call expression.</param>
         /// <returns></returns>
         private static JST.Expression LiteralConverter(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             MethodCallExpression methodCallExpression)
         {
             return new JST.ScriptLiteralExpression(
@@ -490,7 +490,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodCallExpression">The method call expression.</param>
         /// <returns>BinaryExpression that will do concat.</returns>
         private static JST.Expression StringConcatConverter(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             MethodCallExpression methodCallExpression)
         {
             IList<Expression> strParts;
@@ -545,7 +545,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="op">The op.</param>
         /// <returns>Change function operator to native operator.</returns>
         private static JST.Expression FuncOperatorToNativeOperator(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             MethodCallExpression methodCallExpression,
             JST.BinaryOperator op)
         {
@@ -568,7 +568,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodCall">The method call.</param>
         /// <returns>Field getter expression.</returns>
         private static JST.Expression FieldGetter(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             MethodCallExpression methodCall)
         {
             return new JST.IndexExpression(
@@ -589,7 +589,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodCall">The method call.</param>
         /// <returns>Return expression with hardCoded alias.</returns>
         private static JST.Expression HardCodedAlias(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             MethodCallExpression methodCall)
         {
             if (methodCall == null || converter == null)
@@ -630,7 +630,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodCall">The method call.</param>
         /// <returns>Return new object expression.</returns>
         private static JST.Expression CreateInstance(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             MethodCallExpression methodCall)
         {
             return new JST.NewObjectExpression(

@@ -18,7 +18,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
     public static class LoadAddressExpressionConverter
     {
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             LoadAddressExpression expression)
         {
             if (expression.NestedExpression is VariableReference)
@@ -53,7 +53,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="variable">The variable.</param>
         /// <returns>Address access expression for variable.</returns>
         public static JST.Expression ConvertVaraiableAddress(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             VariableReference variable)
         {
             return LoadAddressExpressionConverter.GetReferenceObject(
@@ -70,7 +70,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="fieldReference">The field reference.</param>
         /// <returns>Address access expression for given field.</returns>
         public static JST.Expression ConvertObjectFieldAddress(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             FieldReferenceExpression fieldReference)
         {
             IdentifierScope objectBuilderScope = new IdentifierScope(converter.Scope, 1);
@@ -136,7 +136,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="arrayElementExpression">The array element expression.</param>
         /// <returns>Address access expression for array element.</returns>
         private static JST.Expression ConvertArrayElementAddress(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ArrayElementExpression arrayElementExpression)
         {
             IdentifierScope objectBuilderScope = new IdentifierScope(converter.Scope, 2);
@@ -191,7 +191,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// reference object that contains functions for accessing the data.
         /// </returns>
         public static JST.Expression GetReferenceObject(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             IdentifierScope parentScope,
             Location location,
             Func<IdentifierScope, JST.Expression> expressionCreator)

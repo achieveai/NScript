@@ -23,7 +23,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="memberReference">The member reference.</param>
         /// <returns>Expression for the member references.</returns>
         public static JST.Expression Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             MemberReferenceExpression memberReference)
         {
             MemberReference memberRef = memberReference.MemberReference;
@@ -73,7 +73,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="virtualMethodReference">The virtual method reference.</param>
         /// <returns>Expression for given virtual method.</returns>
         public static JST.Expression Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             VirtualMethodReferenceExpression virtualMethodReference)
         {
             MemberReference methodReference = virtualMethodReference.MethodReference;

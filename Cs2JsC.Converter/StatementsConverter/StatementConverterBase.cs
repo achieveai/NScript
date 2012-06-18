@@ -18,7 +18,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <summary>
         /// Mapping of all the convertible classes to converter functions.
         /// </summary>
-        private static Dictionary<Type, Func<MethodConverter, CLR.AST.Statement, JST.Statement>> typeMappings =
+        private static Dictionary<Type, Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement>> typeMappings =
             StatementConverterBase.CreateStatementConverterMapping();
 
         /// <summary>
@@ -28,10 +28,10 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="clrStatement">The CLR statement.</param>
         /// <returns></returns>
         public static JST.Statement Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             CLR.AST.Statement clrStatement)
         {
-            Func<MethodConverter, CLR.AST.Statement, JST.Statement> converter = null;
+            Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement> converter = null;
 
             if (clrStatement == null)
             {
@@ -50,10 +50,10 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// Creates the statement converter mapping.
         /// </summary>
         /// <returns>Mapping of type to converter function.</returns>
-        private static Dictionary<Type, Func<MethodConverter, CLR.AST.Statement, JST.Statement>> CreateStatementConverterMapping()
+        private static Dictionary<Type, Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement>> CreateStatementConverterMapping()
         {
-            Dictionary<Type, Func<MethodConverter, CLR.AST.Statement, JST.Statement>> returnValue =
-                new Dictionary<Type, Func<MethodConverter, CLR.AST.Statement, JST.Statement>>();
+            Dictionary<Type, Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement>> returnValue =
+                new Dictionary<Type, Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement>>();
 
             returnValue.Add(
                 typeof(CLR.AST.InitializerStatement),
@@ -139,10 +139,10 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <typeparam name="T">Statement sub class.</typeparam>
         /// <param name="converter">The converter.</param>
         /// <returns>Function that will convert Statement to JST.Statement.</returns>
-        private static Func<MethodConverter, CLR.AST.Statement, JST.Statement> SimplifyConverter<T>(
-            Func<MethodConverter, T, JST.Statement> converter) where T: CLR.AST.Statement
+        private static Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement> SimplifyConverter<T>(
+            Func<IMethodScopeConverter, T, JST.Statement> converter) where T: CLR.AST.Statement
         {
-            return delegate(MethodConverter mc, CLR.AST.Statement statement)
+            return delegate(IMethodScopeConverter mc, CLR.AST.Statement statement)
             {
                 return converter(mc, (T)statement);
             };

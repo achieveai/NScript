@@ -17,7 +17,7 @@ namespace Cs2JsC.Converter.StatementsConverter
     public static class SwitchStatementConverter
     {
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             SwitchStatement statement)
         {
             JST.Expression switchValue = ExpressionConverterBase.Convert(

@@ -24,7 +24,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>JST Expression.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             UnaryExpression expression)
         {
             if (expression.IsAssignment
@@ -50,7 +50,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>Converted expression</returns>
         private static JST.Expression ConvertFunctionAssignmentExpression(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             UnaryExpression expression)
         {
             List<JST.Expression> arguments = new List<JST.Expression>();
@@ -186,7 +186,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="clrOp">The CLR op.</param>
         /// <returns></returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             Location location,
             Expression expression,
             UnaryOperator clrOp,

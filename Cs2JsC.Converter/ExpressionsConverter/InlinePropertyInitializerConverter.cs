@@ -24,7 +24,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>JST expression</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             InlinePropertyInitilizationExpression expression)
         {
             // we are creating inline function for this initialization.

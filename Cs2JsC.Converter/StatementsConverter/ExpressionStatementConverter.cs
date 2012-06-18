@@ -22,7 +22,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <returns>Converted JST expression statement.</returns>
         public static JST.Statement Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             CLR.AST.ExpressionStatement expressionStatement)
         {
             JST.Expression innerExpression = ExpressionConverterBase.Convert(
@@ -48,7 +48,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="initializerStatement">The initializer statement.</param>
         /// <returns></returns>
         public static JST.Statement Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             CLR.AST.InitializerStatement initializerStatement)
         {
             List<JST.Expression> expressions = new List<JST.Expression>();

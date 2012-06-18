@@ -21,7 +21,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="statement">The statement.</param>
         /// <returns>WhileLoop block.</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             WhileLoop statement)
         {
             return new JST.WhileLoop(

@@ -27,7 +27,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             NullConditional expression)
         {
             JST.Expression firstExpression = ExpressionConverterBase.Convert(

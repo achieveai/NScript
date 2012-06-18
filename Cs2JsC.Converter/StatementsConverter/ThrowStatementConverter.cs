@@ -23,7 +23,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="statement">The statement.</param>
         /// <returns>ThrowStatement.</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ThrowStatement statement)
         {
             return new JST.ThrowStatement(

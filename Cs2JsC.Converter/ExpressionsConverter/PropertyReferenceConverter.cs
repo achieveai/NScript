@@ -27,7 +27,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>Expression for Property</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             PropertyReferenceExpression expression)
         {
             List<JST.Expression> arguments = new List<JST.Expression>();
@@ -62,7 +62,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="isIntrinsic">if set to <c>true</c> [is intrinsic].</param>
         /// <returns>Expression for property access.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             PropertyReferenceExpression expression,
             List<JST.Expression> arguments,
             bool isReader,

@@ -23,7 +23,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="scopeBlock">The scope block.</param>
         /// <returns>Statement block for given scope block.</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ScopeBlock scopeBlock)
         {
             converter.PushScopeBlock(scopeBlock);
@@ -44,7 +44,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="explicitBlock">The scope block.</param>
         /// <returns>Statement block for given scope block.</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ExplicitBlock explicitBlock)
         {
             if (explicitBlock.Statements.Count > 1)

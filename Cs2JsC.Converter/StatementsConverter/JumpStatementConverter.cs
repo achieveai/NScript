@@ -22,7 +22,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="statement">The statement.</param>
         /// <returns>IfBlockStatement</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             BreakStatement statement)
         {
             return new JST.BreakStatement(
@@ -37,7 +37,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="statement">The statement.</param>
         /// <returns>IfBlockStatement</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ContinueStatement statement)
         {
             return new JST.ContinueStatement(

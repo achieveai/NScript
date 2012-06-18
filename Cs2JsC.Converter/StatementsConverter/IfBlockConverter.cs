@@ -22,7 +22,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="statement">The statement.</param>
         /// <returns>IfBlockStatement</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             IfBlockStatement statement)
         {
             JST.Expression condition = ExpressionsConverter.ExpressionConverterBase.Convert(

@@ -23,7 +23,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>Delegate</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             InlineDelegateExpression expression)
         {
             return DelegateMethodConverter.Convert(

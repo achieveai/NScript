@@ -18,7 +18,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
     public static class VariableReferenceConverter
     {
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             VariableReference expression)
         {
             if (expression.Variable is LocalVariable)

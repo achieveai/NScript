@@ -23,7 +23,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="intLiteral">The int literal.</param>
         /// <returns>JS Expression node</returns>
-        public static JST.Expression ConvertIntLiteral(MethodConverter methodConverter, IntLiteral intLiteral)
+        public static JST.Expression ConvertIntLiteral(IMethodScopeConverter methodConverter, IntLiteral intLiteral)
         {
             return new JST.NumberLiteralExpression(
                 methodConverter.Scope,
@@ -36,7 +36,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="intLiteral">The int literal.</param>
         /// <returns>JS Expression node</returns>
-        public static JST.Expression ConvertUIntLiteral(MethodConverter methodConverter, UIntLiteral intLiteral)
+        public static JST.Expression ConvertUIntLiteral(IMethodScopeConverter methodConverter, UIntLiteral intLiteral)
         {
             return new JST.NumberLiteralExpression(
                 methodConverter.Scope,
@@ -49,7 +49,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="literal">The literal.</param>
         /// <returns>JS Expression node</returns>
-        public static JST.Expression ConvertDoubleLiteral(MethodConverter methodConverter, DoubleLiteral literal)
+        public static JST.Expression ConvertDoubleLiteral(IMethodScopeConverter methodConverter, DoubleLiteral literal)
         {
             return new JST.DoubleLiteralExpression(
                 methodConverter.Scope,
@@ -62,7 +62,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="literal">The literal.</param>
         /// <returns>JS Expression node</returns>
-        public static JST.Expression ConvertBooleanLiteral(MethodConverter methodConverter, BooleanLiteral literal)
+        public static JST.Expression ConvertBooleanLiteral(IMethodScopeConverter methodConverter, BooleanLiteral literal)
         {
             return new JST.BooleanLiteralExpression(
                 methodConverter.Scope,
@@ -75,7 +75,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="literal">The literal.</param>
         /// <returns>JS Expression node</returns>
-        public static JST.Expression ConvertStringLiteral(MethodConverter methodConverter, StringLiteral literal)
+        public static JST.Expression ConvertStringLiteral(IMethodScopeConverter methodConverter, StringLiteral literal)
         {
             return new JST.StringLiteralExpression(
                 methodConverter.Scope,
@@ -88,7 +88,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="literal">The literal.</param>
         /// <returns></returns>
-        public static JST.Expression ConvertCharLiteral(MethodConverter methodConverter, CharLiteral literal)
+        public static JST.Expression ConvertCharLiteral(IMethodScopeConverter methodConverter, CharLiteral literal)
         {
             return new JST.StringLiteralExpression(
                 methodConverter.Scope,
@@ -101,7 +101,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="literal">The literal.</param>
         /// <returns>JS Expression node</returns>
-        public static JST.Expression ConvertNullLiteral(MethodConverter methodConverter, NullLiteral literal)
+        public static JST.Expression ConvertNullLiteral(IMethodScopeConverter methodConverter, NullLiteral literal)
         {
             return new JST.NullLiteralExpression(
                 methodConverter.Scope);

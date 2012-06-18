@@ -15,14 +15,14 @@ namespace Cs2JsC.Converter.ExpressionsConverter
     public static class NullableConverter
     {
         public static JST.Expression ConvertTo(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ToNullable nullable)
         {
             return ExpressionConverterBase.Convert(converter, nullable.InnerExpression);
         }
 
         public static JST.Expression ConvertFrom(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             FromNullable nullable)
         {
             return ExpressionConverterBase.Convert(converter, nullable.InnerExpression);

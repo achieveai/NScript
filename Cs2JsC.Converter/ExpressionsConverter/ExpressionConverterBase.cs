@@ -19,7 +19,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <summary>
         /// Mapping of all the convertible classes to converter functions.
         /// </summary>
-        private static Dictionary<Type, Func<MethodConverter, Expression, JST.Expression>> typeMappings =
+        private static Dictionary<Type, Func<IMethodScopeConverter, Expression, JST.Expression>> typeMappings =
             ExpressionConverterBase.CreateExpressionConverterMapping();
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="clrExpression">The CLR statement.</param>
         /// <returns>JST.Experssion from provided clrExpression</returns>
         public static JST.Expression Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             Expression clrExpression)
         {
             if (clrExpression == null)
@@ -46,7 +46,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             }
 
             Type expressionType = clrExpression.GetType();
-            Func<MethodConverter, Expression, JST.Expression> processor;
+            Func<IMethodScopeConverter, Expression, JST.Expression> processor;
 
             if (!ExpressionConverterBase.typeMappings.TryGetValue(expressionType, out processor))
             {
@@ -60,10 +60,10 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// Creates the statement converter mapping.
         /// </summary>
         /// <returns>Mapping of type to converter function.</returns>
-        private static Dictionary<Type, Func<MethodConverter, Expression, JST.Expression>> CreateExpressionConverterMapping()
+        private static Dictionary<Type, Func<IMethodScopeConverter, Expression, JST.Expression>> CreateExpressionConverterMapping()
         {
-            Dictionary<Type, Func<MethodConverter, Expression, JST.Expression>> returnValue =
-                new Dictionary<Type, Func<MethodConverter, Expression, JST.Expression>>();
+            Dictionary<Type, Func<IMethodScopeConverter, Expression, JST.Expression>> returnValue =
+                new Dictionary<Type, Func<IMethodScopeConverter, Expression, JST.Expression>>();
 
             returnValue.Add(
                 typeof(AnonymousMethodBodyExpression),
@@ -249,10 +249,10 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <typeparam name="T">Expression sub class.</typeparam>
         /// <param name="converter">The converter.</param>
         /// <returns>Function that will convert Expression to JST.Expression.</returns>
-        private static Func<MethodConverter, Expression, JST.Expression> SimplifyConverter<T>(
-            Func<MethodConverter, T, JST.Expression> converter) where T: Expression
+        private static Func<IMethodScopeConverter, Expression, JST.Expression> SimplifyConverter<T>(
+            Func<IMethodScopeConverter, T, JST.Expression> converter) where T: Expression
         {
-            return delegate(MethodConverter mc, Expression statement)
+            return delegate(IMethodScopeConverter mc, Expression statement)
             {
                 return converter(mc, (T)statement);
             };

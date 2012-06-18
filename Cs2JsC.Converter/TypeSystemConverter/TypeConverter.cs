@@ -1931,5 +1931,16 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             returnValue.Add(this.Resolve(member, true));
             return returnValue;
         }
+
+
+        public IList<Identifier> ResolveFactory(MethodReference methodReference)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Expression ResolveMethodSlotName(MethodReference methodReference, bool isVirtualCall, IdentifierScope identifierScope)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

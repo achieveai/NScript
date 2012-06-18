@@ -23,7 +23,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>Expression for creating delegate.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             DelegateMethodExpression expression)
         {
             List<JST.Expression> genericArguments = new List<JST.Expression>();

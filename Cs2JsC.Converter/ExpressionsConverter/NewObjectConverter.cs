@@ -24,7 +24,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="newObjectExpression">The new object expression.</param>
         /// <returns>JST.MethodCallExpression for method constructor.</returns>
         public static JST.Expression Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodConverter,
             NewObjectExpression newObjectExpression)
         {
             MethodReference methodReference = ((ConstructorReferenceExpression)newObjectExpression.MethodReference).Constructor;
@@ -66,7 +66,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// </summary>
         /// <param name="methodReference">The method reference.</param>
         /// <returns>Convert special method.</returns>
-        internal static Func<MethodConverter, NewObjectExpression, JST.Expression> ConverterSpecialMethod(
+        internal static Func<IMethodScopeConverter, NewObjectExpression, JST.Expression> ConverterSpecialMethod(
             MethodReference methodReference)
         {
             if (methodReference.DeclaringType.FullName == "System.Collections.Dictionary")
@@ -83,7 +83,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         }
 
         private static JST.Expression CreateDictionary(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             NewObjectExpression methodCall)
         {
             JST.InlineObjectInitializer inlineArray =

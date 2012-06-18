@@ -18,29 +18,31 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <summary>
         /// Converts the specified method converter.
         /// </summary>
-        /// <param name="methodConverter">The method converter.</param>
+        /// <param name="methodScopeConverter">The method converter.</param>
         /// <param name="clrStatement">The CLR statement.</param>
         /// <returns>JST.ReturnStatement  for CLR.AST.ReturnStatement</returns>
         public static JST.Statement Convert(
-            MethodConverter methodConverter,
+            IMethodScopeConverter methodScopeConverter,
             CLR.AST.ReturnStatement clrStatement)
         {
             Location location = clrStatement.Location;
+            MethodConverter methodConverter = methodScopeConverter as MethodConverter;
 
-            if (methodConverter.IsConstructor
+            if (methodConverter != null
+                && methodConverter.IsConstructor
                 && methodConverter.MethodDefinition.DeclaringType.IsValueType)
             {
                 return new JST.ReturnStatement(
                     location,
-                    methodConverter.Scope,
-                    methodConverter.ResolveThis(methodConverter.Scope));
+                    methodScopeConverter.Scope,
+                    methodConverter.ResolveThis(methodScopeConverter.Scope));
             }
 
             return new JST.ReturnStatement(
                 location,
-                methodConverter.Scope,
+                methodScopeConverter.Scope,
                 ExpressionConverterBase.Convert(
-                    methodConverter,
+                    methodScopeConverter,
                     clrStatement.ReturnExpression));
         }
     }

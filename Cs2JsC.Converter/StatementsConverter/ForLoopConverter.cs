@@ -24,7 +24,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="forLoop">For loop.</param>
         /// <returns>ForLoop</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ForLoop forLoop)
         {
             converter.PushScopeBlock(forLoop);
@@ -51,7 +51,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="forEachLoop">For each loop.</param>
         /// <returns>Converted foreach loop.</returns>
         public static JST.Statement Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ForEachLoop forEachLoop)
         {
             converter.PushScopeBlock(forEachLoop);
@@ -100,7 +100,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         }
 
         private static JST.Statement ConvertDictionary(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             ForEachLoop forEachLoop)
         {
             TypeReference dictionaryEntryTypeReference = converter.KnownReferences.DictionaryEntry;
@@ -181,7 +181,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="collection">The collection.</param>
         /// <returns></returns>
         private static JST.Expression GetEnumeratorExpression(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             Expression collection)
         {
             JST.Expression collectionEnumeration = ExpressionConverterBase.Convert(
@@ -210,7 +210,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="enumerator">The enumerator.</param>
         /// <returns></returns>
         private static JST.Expression GetMoveNextExpression(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             JST.Expression enumerator)
         {
             MethodReference moveNextFunc = converter.KnownReferences.MoveNextEnumeratorMethod;
@@ -235,7 +235,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="enumerator">The enumerator.</param>
         /// <returns></returns>
         private static JST.Expression GetCurrentExpression(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             TypeReference expectedType,
             JST.Expression enumerator)
         {
@@ -282,7 +282,7 @@ namespace Cs2JsC.Converter.StatementsConverter
         /// <param name="scopeBlock">The scope block.</param>
         /// <returns>Scope block for foreachBlock</returns>
         private static JST.ScopeBlock GetScopeBlock(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             JST.Expression enumerator,
             LocalVariable loopVariable,
             ScopeBlock scopeBlock)

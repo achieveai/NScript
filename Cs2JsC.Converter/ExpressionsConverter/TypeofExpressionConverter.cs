@@ -22,7 +22,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>Expression for given type.</returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             TypeofExpression expression)
         {
             return JST.IdentifierExpression.Create(

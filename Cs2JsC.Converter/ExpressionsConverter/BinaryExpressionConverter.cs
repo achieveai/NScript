@@ -26,7 +26,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
         public static JST.Expression Convert(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             BinaryExpression expression)
         {
             if (expression.IsAssignmentOperator &&
@@ -76,7 +76,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="expression">The expression.</param>
         /// <returns>Converted expression</returns>
         internal static JST.Expression ConvertFunctionAssignmentExpression(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             BinaryExpression expression)
         {
             List<JST.Expression> arguments = new List<JST.Expression>();
@@ -173,7 +173,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="arguments">The arguments.</param>
         /// <returns>Function for write operation.</returns>
         internal static JST.Expression GetWriteFunction(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             Expression expression,
             List<JST.Expression> arguments,
             out bool isIntrinsic)
@@ -223,7 +223,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <param name="rightExpression">The right expression.</param>
         /// <returns>Converted expression</returns>
         internal static JST.Expression ConvertInternal(
-            MethodConverter converter,
+            IMethodScopeConverter converter,
             Location location,
             Expression leftExpression,
             BinaryOperator op,

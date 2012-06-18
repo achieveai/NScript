@@ -24,5 +24,13 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         IList<Identifier> Resolve(TypeReference typeReference);
 
         IList<Identifier> ResolveStaticMember(MethodReference member);
+
+        IList<JST.Identifier> ResolveFactory(Mono.Cecil.MethodReference methodReference);
+
+        IList<JST.Identifier> ResolveStaticMember(Mono.Cecil.FieldReference fieldReference);
+
+        JST.Identifier Resolve(Mono.Cecil.FieldReference fieldReference);
+
+        JST.Expression ResolveMethodSlotName(Mono.Cecil.MethodReference methodReference, bool isVirtualCall, JST.IdentifierScope identifierScope);
     }
 }
