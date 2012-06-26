@@ -52,6 +52,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UIElement.cs" />
     <Compile Include="UIEvent.cs" />
+    <Compile Include="UIPanel.cs" />
     <Compile Include="UISkinableElement.cs" />
   </ItemGroup>
   <ItemGroup>

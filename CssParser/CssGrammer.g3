@@ -1,0 +1,195 @@
+﻿grammar CssGrammer;
+
+options {
+    language=CSharp3;
+    TokenLabelType=CommonToken;
+    ASTLabelType=CommonTree;
+    backtrack=true;
+    memoize=true;
+    output=AST;
+	}
+
+tokens {
+	IMPORT;
+	NESTED;
+	NEST;
+	RULE;
+	ATTRIB;
+	PARENTOF;
+	PRECEDEDS;
+	ATTRIBEQUAL;
+	HASVALUE;
+	BEGINSWITH;
+	PSEUDO;
+	PROPERTY;
+	FUNCTION;
+	TAG;
+	ID;
+	CLASS;
+}
+
+@lexer::members {
+protected bool enumIsKeyword = true;
+protected bool assertIsKeyword = true;
+}
+
+@lexer::namespace{CssParser}
+@parser::namespace{CssParser}
+
+/*
+ * Parser Rules.
+ */
+
+public
+stylesheet
+	: importRule* (nested | ruleset)+
+	;
+
+importRule
+	: ('@import' | '@include')  STRING -> ^( IMPORT STRING )
+	;
+
+nested
+ 	: '@' nest '{' properties? nested* '}' -> ^( NESTED nest properties* nested* )
+	;
+
+nest
+	: IDENT IDENT* pseudo* -> ^( NEST IDENT IDENT* pseudo* )
+	;
+	
+ruleset
+ 	: selectors '{' properties? '}' -> ^( RULE selectors properties* )
+	;
+	
+selectors
+	: selector (',' selector)*
+	;
+	
+selector
+	: elem selectorOperation* attrib* pseudo? ->  elem selectorOperation* attrib* pseudo*
+	;
+
+selectorOperation
+	: selectop? elem -> selectop* elem
+	;
+
+selectop
+	: '>' -> PARENTOF
+        | '+'  -> PRECEDEDS
+	;
+
+properties
+	: declaration (';' declaration?)* ->  declaration+
+	;
+	
+elem
+	:     IDENT -> ^( TAG IDENT )
+	| '#' IDENT -> ^( ID IDENT )
+	| '.' IDENT -> ^( CLASS IDENT )
+	;
+
+pseudo
+	: (':'|'::') IDENT -> ^( PSEUDO IDENT )
+	| (':'|'::') function -> ^( PSEUDO function )
+	;
+
+attrib
+	: '[' IDENT (attribRelate (STRING | IDENT))? ']' -> ^( ATTRIB IDENT (attribRelate STRING* IDENT*)? )
+	;
+	
+attribRelate
+	: '='  -> ATTRIBEQUAL
+	| '~=' -> HASVALUE
+	| '|=' -> BEGINSWITH
+	;	
+  
+declaration
+	: IDENT ':' args -> ^( PROPERTY IDENT args )
+	;
+
+args
+	: expr (','? expr)* -> expr*
+	;
+
+expr
+	: (NUM unit?)
+	| IDENT
+	| COLOR
+	| STRING
+	| function
+	;
+
+unit
+	: ('%'|'px'|'cm'|'mm'|'in'|'pt'|'pc'|'em'|'ex'|'deg'|'rad'|'grad'|'ms'|'s'|'hz'|'khz')
+	;
+	
+function
+	: IDENT '(' args? ')' -> IDENT '(' args* ')'
+	;
+
+IDENT
+	:	('_' | Alphabets | '\u0100'..'\ufffe' ) 
+		('_' | '-' | Alphabets | '\u0100'..'\ufffe' | DecimalDigits)*
+	|	'-' ('_' | Alphabets | '\u0100'..'\ufffe' ) 
+		('_' | '-' | Alphabets | '\u0100'..'\ufffe' | DecimalDigits)*
+	;
+
+// string literals
+STRING
+	:	'"' (~('"'|'\n'|'\r'))* '"'
+	|	'\'' (~('\''|'\n'|'\r'))* '\''
+	;
+
+NUM
+	:	'-' (DecimalDigits* '.')? DecimalDigits+
+	|	(DecimalDigits* '.')? DecimalDigits+
+	;
+
+COLOR
+	:	'#' HexDigits+
+	;
+
+// Single-line comments
+SingleLineComment
+	:	'//'
+		(~('\n'|'\r'))* ('\n'|'\r'('\n')?)
+		{ $channel = Hidden; }
+	;
+	
+// multiple-line comments
+Comment
+	:	'/*' .* '*/'
+		{ $channel = Hidden; }
+	;
+
+SkipSpace
+    : NewLine
+		{ $channel = Hidden; }
+    | WhiteSpace
+		{ $channel = Hidden; }
+    ;
+
+fragment NewLine
+    : '\n'        // Line feed.
+    | '\r'        // Carriage return.
+    | '\u2028'    // Line separator.
+    | '\u2029'    // Paragraph separator.
+    ;
+
+fragment WhiteSpace
+    : ('\t' | '\v' | '\f' | ' ' | '\u00A0')
+    ;
+
+fragment HexDigits
+	: ('a'..'f')
+	| ('0'..'9')
+	;
+
+fragment DecimalDigits
+	: ('0'..'9')
+	;
+
+fragment Alphabets
+	: ('a'..'z')
+	| ('A'..'Z')
+	;

@@ -19,6 +19,7 @@ namespace Sunlight.Framework.UI
     public class UIElement : ContextBindableObject
     {
         Element element;
+
         StringDictionary<Action<UIEvent>> eventRegistrationDict = new StringDictionary<Action<UIEvent>>();
 
         public UIElement(Element element)
@@ -39,8 +40,12 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        /// <summary>   Gets or sets the css class. </summary>
-        /// <value> The css class. </value>
+        /// <summary>
+        /// Gets or sets the css class.
+        /// </summary>
+        /// <value>
+        /// The css class.
+        /// </value>
         [CssName]
         public string CssClass
         {
@@ -59,16 +64,22 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        /// <summary>   Gets the element. </summary>
-        /// <value> The element. </value>
+        /// <summary>
+        /// Gets the element.
+        /// </summary>
+        /// <value>
+        /// The element.
+        /// </value>
         public Element Element
         {
             get { return this.element; }
         }
 
-        /// <summary>   Attach event. </summary>
-        /// <param name="eventName">    Name of the event. </param>
-        /// <param name="callback">     The callback. </param>
+        /// <summary>
+        /// Attach event.
+        /// </summary>
+        /// <param name="eventName"> Name of the event. </param>
+        /// <param name="callback">  The callback. </param>
         public void AttachEvent(string eventName, Action<UIEvent> callback)
         {
             Action<UIEvent> act;
@@ -88,9 +99,11 @@ namespace Sunlight.Framework.UI
             this.eventRegistrationDict[eventName] = act;
         }
 
-        /// <summary>   Detack event. </summary>
-        /// <param name="eventName">    Name of the event. </param>
-        /// <param name="callback">     The callback. </param>
+        /// <summary>
+        /// Detack event.
+        /// </summary>
+        /// <param name="eventName"> Name of the event. </param>
+        /// <param name="callback">  The callback. </param>
         public void DetackEvent(string eventName, Action<UIEvent> callback)
         {
             Action<UIEvent> act;
@@ -113,8 +126,10 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        /// <summary>   Removes the CSS class described by className. </summary>
-        /// <param name="className">    Name of the CSS class. </param>
+        /// <summary>
+        /// Removes the CSS class described by className.
+        /// </summary>
+        /// <param name="className"> Name of the CSS class. </param>
         public void RemoveClass(string className)
         {
             int idx = this.CssClassIndex(className);
@@ -129,8 +144,10 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        /// <summary>   Adds a CSS class. </summary>
-        /// <param name="className">    Name of the CSS class. </param>
+        /// <summary>
+        /// Adds a CSS class.
+        /// </summary>
+        /// <param name="className"> Name of the CSS class. </param>
         public void AddClass(string className)
         {
             if (this.CssClassIndex(className) >= 0)
@@ -152,9 +169,13 @@ namespace Sunlight.Framework.UI
             this.element.ClassName = cssClassName;
         }
 
-        /// <summary>   Css class index. </summary>
-        /// <param name="className">    Name of the CSS class. </param>
-        /// <returns>   Index of className in CssClass of this element. </returns>
+        /// <summary>
+        /// Css class index.
+        /// </summary>
+        /// <param name="className"> Name of the CSS class. </param>
+        /// <returns>
+        /// Index of className in CssClass of this element.
+        /// </returns>
         public int CssClassIndex(string className)
         {
             int idx = -1;
@@ -182,7 +203,9 @@ namespace Sunlight.Framework.UI
             return idx;
         }
 
-        /// <summary>   Internal dispose. </summary>
+        /// <summary>
+        /// Internal dispose.
+        /// </summary>
         protected override void InternalDispose()
         {
             foreach (var kvPair in this.eventRegistrationDict)
@@ -195,8 +218,10 @@ namespace Sunlight.Framework.UI
             base.InternalDispose();
         }
 
-        /// <summary>   Handler, called when the event. </summary>
-        /// <param name="evt">  The event. </param>
+        /// <summary>
+        /// Handler, called when the event.
+        /// </summary>
+        /// <param name="evt"> The event. </param>
         private void EventHandler(ElementEvent evt)
         {
             string eventName = evt.Type;

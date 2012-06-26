@@ -15,25 +15,39 @@ namespace Sunlight.Framework.UI.Helpers
     /// </summary>
     public class SkinInstance : IDisposable
     {
-        /// <summary>   The child elements. </summary>
+        /// <summary>
+        /// The child elements.
+        /// </summary>
         private UIElement[] childElements;
 
-        /// <summary>   The root element. </summary>
+        /// <summary>
+        /// The root element.
+        /// </summary>
         private Element rootElement;
 
-        /// <summary>   The child identifier mappings. </summary>
+        /// <summary>
+        /// The child identifier mappings.
+        /// </summary>
         private StringDictionary<UIElement> childIdMappings = new StringDictionary<UIElement>();
 
-        /// <summary>   Type of the skinable. </summary>
+        /// <summary>
+        /// Type of the skinable.
+        /// </summary>
         private Type skinableType;
 
-        /// <summary>   Type of the data context. </summary>
+        /// <summary>
+        /// Type of the data context.
+        /// </summary>
         private Type dataContextType;
 
-        /// <summary>   true if this object is active. </summary>
+        /// <summary>
+        /// true if this object is active.
+        /// </summary>
         bool isActive;
 
-        /// <summary>   true if this object is diposed. </summary>
+        /// <summary>
+        /// true if this object is diposed.
+        /// </summary>
         bool isDiposed;
 
         /// <summary>   Initializes a new instance of the SkinInstance class. </summary>
@@ -116,7 +130,9 @@ namespace Sunlight.Framework.UI.Helpers
             }
         }
 
-        /// <summary>   Activates all the childElements. </summary>
+        /// <summary>
+        /// Activates all the childElements.
+        /// </summary>
         public void Activate()
         {
             if (!this.isActive && !this.isDiposed)
@@ -129,7 +145,9 @@ namespace Sunlight.Framework.UI.Helpers
             }
         }
 
-        /// <summary>   Deactivates all the childElements. </summary>
+        /// <summary>
+        /// Deactivates all the childElements.
+        /// </summary>
         public void Deactivate()
         {
             if (this.isActive && !this.isDiposed)

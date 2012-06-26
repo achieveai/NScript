@@ -13,5 +13,9 @@ namespace Sunlight.Framework.UI.Helpers
     /// </summary>
     public class SkinFactory
     {
+        public SkinInstance CreateInstance()
+        {
+            return null;
+        }
     }
 }

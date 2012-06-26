@@ -43,6 +43,7 @@
     <Compile Include="Binders\ContextBindableObject.cs" />
     <Compile Include="Binders\DataBinder.cs" />
     <Compile Include="Binders\DataBindingMode.cs" />
+    <Compile Include="Binders\IConverter.cs" />
     <Compile Include="Binders\ISourceDataBinder.cs" />
     <Compile Include="Binders\ITargetBinder.cs" />
     <Compile Include="Binders\ITargetDataBinder.cs" />
