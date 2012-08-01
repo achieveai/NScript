@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Cs2JsC.Converter;
 
 namespace Cs2JsC
@@ -12,23 +13,32 @@ namespace Cs2JsC
             if (parseOptions == null)
             {
                 ParseOptions.PrintUsage();
+                Console.ReadKey();
             }
 
             List<IConverterPlugin> plugins = new List<IConverterPlugin>();
+
+            var pluginsInfos = new List<PluginLoadInfo>();
+
             if (parseOptions.PluginConfigFileName != null)
             {
-                var pluginsInfos = PluginLoadInfo.LoadPluginInfos(
+                pluginsInfos = PluginLoadInfo.LoadPluginInfos(
                     parseOptions.PluginConfigFileName,
                     parseOptions.PluginHintPaths);
+            }
 
-                foreach (var pluginInfo in pluginsInfos)
+            if (pluginsInfos.Count == 0)
+            {
+                pluginsInfos.Add(PluginLoadInfo.GetDefaultPluginInfo(parseOptions.PluginHintPaths));
+            }
+
+            foreach (var pluginInfo in pluginsInfos)
+            {
+                var plugin = pluginInfo.GetPlugin();
+
+                if (plugin != null)
                 {
-                    var plugin = pluginInfo.GetPlugin();
-
-                    if (plugin != null)
-                    {
-                        plugins.Add(plugin);
-                    }
+                    plugins.Add(plugin);
                 }
             }
 

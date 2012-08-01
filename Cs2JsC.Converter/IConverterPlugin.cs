@@ -8,10 +8,10 @@ namespace Cs2JsC.Converter
 {
     using System;
     using System.Collections.Generic;
-using Mono.Cecil;
-using Cs2JsC.CLR;
-using Cs2JsC.JST;
-using Cs2JsC.Converter.TypeSystemConverter;
+    using Mono.Cecil;
+    using Cs2JsC.CLR;
+    using Cs2JsC.JST;
+    using Cs2JsC.Converter.TypeSystemConverter;
 
     /// <summary>
     /// Definition for IConverterPlugin

@@ -41,7 +41,7 @@
       <ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext)&quot;"/>
       <ScriptGenerateOption Include="-references $(Refs)"/>
       <ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
-      <ScriptGenerateOption Include="-pluginHintPath &quot;$(MsBuildThisFileDirectory)\bin;&quot;" Condition="'$(PluginConfig)' != ''"/>
+      <ScriptGenerateOption Include="-pluginHintPath &quot;$(MsBuildThisFileDirectory)\bin;&quot;" />
       <ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)\lib&quot;"/>
     </ItemGroup>
 
