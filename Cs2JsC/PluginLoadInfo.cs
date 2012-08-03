@@ -161,21 +161,6 @@ namespace Cs2JsC
         }
 
         /// <summary>
-        /// Returns a new default plugin info in it.
-        /// </summary>
-        /// <param name="hintPaths">List of hint paths</param>
-        /// <returns>An instance of default plugin</returns>
-        public static PluginLoadInfo GetDefaultPluginInfo(List<string> hintPaths)
-        {
-            var assemblyFile = ParseOptions.FindFile("Cs2JsC.Converter.Plugins.dll", hintPaths);
-
-            return new PluginLoadInfo(
-                assemblyFile,
-                "Cs2JsC.Converter.Plugins.DefaultGenerator",
-                null);
-        }
-
-        /// <summary>
         /// Gets the plugin.
         /// </summary>
         /// <returns>Plugin</returns>
