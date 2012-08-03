@@ -27,11 +27,6 @@ namespace Cs2JsC
                     parseOptions.PluginHintPaths);
             }
 
-            if (pluginsInfos.Count == 0)
-            {
-                pluginsInfos.Add(PluginLoadInfo.GetDefaultPluginInfo(parseOptions.PluginHintPaths));
-            }
-
             foreach (var pluginInfo in pluginsInfos)
             {
                 var plugin = pluginInfo.GetPlugin();
