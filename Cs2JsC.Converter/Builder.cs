@@ -87,8 +87,6 @@ namespace Cs2JsC.Converter
                 }
             }
 
-            // Let's add entry point to list of methodDefinitions to emit.
-
             // Let's convert all the code to JS.
             var statements = runtimeManager.Convert(methodDefinitionsToEmit);
 
@@ -111,16 +109,7 @@ namespace Cs2JsC.Converter
                 // Not at the end, let's insert call to entryPoint.
                 statements.Add(
                     JST.ExpressionStatement.CreateMethodCallExpression(
-                        new JST.IndexExpression(
-                            null,
-                            runtimeManager.Scope,
-                            JST.IdentifierExpression.Create(
-                                null,
-                                runtimeManager.Scope,
-                                runtimeManager.ResolveType(entryPoint.DeclaringType)),
-                            new JST.IdentifierExpression(
-                                runtimeManager.Resolve(entryPoint),
-                                runtimeManager.Scope))));
+                        new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
             }
 
             JSWriter writer = new JSWriter(true, false);
@@ -188,8 +177,8 @@ namespace Cs2JsC.Converter
                     }
 
                     if (method.IsPublic
-                        && method.ReturnType == context.ClrKnownReferences.Void
-                        && method.HasParameters
+                        && method.ReturnType.FullName == context.ClrKnownReferences.Void.FullName
+                        && !method.HasParameters
                         && method.Parameters.Count == 0
                         && method.CustomAttributes.SelectAttribute(context.KnownReferences.EntryPointAttribute) != null)
                     {
