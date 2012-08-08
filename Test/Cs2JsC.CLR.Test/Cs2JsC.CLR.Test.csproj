@@ -1,0 +1,359 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{EC58B191-43C1-4F6B-AFB6-506F3FE3A92B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Cs2JsC.CLR.Test</RootNamespace>
+    <AssemblyName>Cs2JsC.CLR.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseIntermediateOutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\obj</BaseIntermediateOutputPath>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Gallio, Version=3.3.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
+      <HintPath>..\packages\mbunit.3.3.454.0\lib\net40\Gallio.dll</HintPath>
+    </Reference>
+    <Reference Include="Gallio40, Version=3.3.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
+      <HintPath>..\packages\mbunit.3.3.454.0\lib\net40\Gallio40.dll</HintPath>
+    </Reference>
+    <Reference Include="MbUnit, Version=3.3.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
+      <HintPath>..\packages\mbunit.3.3.454.0\lib\net40\MbUnit.dll</HintPath>
+    </Reference>
+    <Reference Include="MbUnit40, Version=3.3.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
+      <HintPath>..\packages\mbunit.3.3.454.0\lib\net40\MbUnit40.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\Dependencies\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.0.5.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.4.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BlockTests\BasicStatementBuilderTestFixture.cs" />
+    <Compile Include="BlockTests\BlockInfo.cs" />
+    <Compile Include="BlockTests\DupInstructionBlockTests.cs" />
+    <Compile Include="BlockTests\InlineInitializaitons.cs" />
+    <Compile Include="BlockTests\LoopBuilderTestFixture.cs" />
+    <Compile Include="BlockTests\SwitchBlockBuilderTestFixture.cs" />
+    <Compile Include="CstTests\BasicStatementAstTestFixture.cs" />
+    <Compile Include="CstTests\DelegateBlockTests.cs" />
+    <Compile Include="CstTests\DupInstructionTests.cs" />
+    <Compile Include="CstTests\ExceptionHandlingTests.cs" />
+    <Compile Include="CstTests\ForLoopAstTests.cs" />
+    <Compile Include="BlockTests\GenericTests.cs" />
+    <Compile Include="CstTests\IfBlockAstTests.cs" />
+    <Compile Include="CstTests\InlineInitializationTests.cs" />
+    <Compile Include="CstTests\NumberOperationTests.cs" />
+    <Compile Include="CstTests\RegressionTests.cs" />
+    <Compile Include="CstTests\SwitchStatementTests.cs" />
+    <Compile Include="CstTests\WhileLoopBlockAstTests.cs" />
+    <Compile Include="DllBuilder.cs" />
+    <Compile Include="TestAssemblyLoader.cs" />
+    <Compile Include="BlockTests\BasicBlockBuilderTestFixture.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestHelpers.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Sources\Cs2JsC.CLR\Cs2JsC.CLR.csproj">
+      <Project>{83FB5360-CE27-4255-8457-13E789DC5B0C}</Project>
+      <Name>Cs2JsC.CLR</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sources\Cs2JsC.Utils\Cs2JsC.Utils.csproj">
+      <Project>{030B10DD-4861-4BE1-B0D6-DB43587E603F}</Project>
+      <Name>Cs2JsC.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sources\JsCsc.Lib\JsCsc.Lib.csproj">
+      <Project>{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}</Project>
+      <Name>JsCsc.Lib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\SimpleReturnFunction.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\SimpleFormat3ArgCall.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\SimpleConditionalArgument.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex1ConditionalArgument.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex2ConditionalArgument.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex2IfCondition.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\FuncIncrement.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex2IfConditionRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionStatementDebug.xml" />
+    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionStatementRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionBlockDebug.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionBlockRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex3IfConditionStatementDebug.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex3IfConditionStatementRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchOnlyFunctionDebug.xml" />
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchOnlyFunctionRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SimpleIntSwitchDebug.xml" />
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SimpleIntSwitchRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchWithReturnsOnlyDebug.xml" />
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchWithReturnsOnlyRelease.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\NestedWhileDoWhileDebug.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\NestedWhileDoWhileRelease.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyForLoopDebug.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyForLoopRelease.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyWhileLoopDebug.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyWhileLoopRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleDoWhileLoopDebug.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleDoWhileLoopRelease.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleForLoopDebug.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleForLoopRelease.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleWhileLoopDebug.xml" />
+    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleWhileLoopRelease.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstInt.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLong.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLargeLong.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstUInt.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CstTests\BasicStatements\SimpleConditional.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CstTests\BasicStatements\SetVariableSimple.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BlockTests\DupInstructionTemplates\Tmp.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitch.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitchRetail.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunctionRetail.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunction.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturn.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnRetail.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnly.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnlyRetail.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallySimple.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturn.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturnRetail.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchSimple.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturn.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturnDebug.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchFinallySimple.xml" />
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitchValues.xml" />
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitchValuesDebug.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithFor.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithForRetail.xml" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForEachLoop.xml" />
+    <EmbeddedResource Include="BlockTests\GenericTests\NewGenericObject.xml" />
+    <EmbeddedResource Include="BlockTests\GenericTests\NewGenericObject2.xml" />
+    <EmbeddedResource Include="BlockTests\GenericTests\GenericMethodCall.xml" />
+    <EmbeddedResource Include="BlockTests\GenericTests\GenericMethodCall2.xml" />
+    <EmbeddedResource Include="BlockTests\InlineInitialization\ReturnInlineConstIntArray.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineConstIntArray.xml" />
+    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlock.xml" />
+    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlockRetail.xml" />
+    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops.xml" />
+    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops2.xml" />
+    <EmbeddedResource Include="CstTests\Regressions\TwoConsicutivePreIncrements.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoopRelease.xml" />
+    <EmbeddedResource Include="CstTests\NumberOperations\IntDivide.xml" />
+    <EmbeddedResource Include="CstTests\NumberOperations\DoubleDivide.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoop.xml" />
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitch2.xml" />
+    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitch2Debug.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegressionRelease.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\RegressionContinousSwitch2.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\FieldPrefix.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineFieldPrePostfixAssignment.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrefix.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\RegressionPreIncrementInCompare.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgumentMcs.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfBlockMcs.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlockMcs.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlockMcs.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockMcs.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlockMcs.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrePostifixAssignment.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueMcs.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2Mcs.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturnMcs.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturnMcs.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueRelease.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegateMcs.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegateMcs.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegateMcs.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegateMcs.xml" />
+    <Content Include="Test.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreakDebug.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinue.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreak.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineOpAssignment.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\NullCheckAssignment.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\NullCheckAssignment.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyOnPropertyOpAssignmentOperation.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyOpAssignmentOperation.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\LocalOpAssignmentOperation.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOnPropertyOperation.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\FunctionCallWithInlineAssignment.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyInlineEquals.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyInConditionOperationDebug.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyInConditionOperation.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixSecondOrderPropertyOperation.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOperation.xml" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixOperation.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\DelegateBlocks\IntDelegateTaker.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegate.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegate.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\BasicStatements\PassArrayElementByRef.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\BasicStatements\PassVariableByRef.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\PassObjectFieldByRef.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\InlineInitializations\CallMethodWithInlineSettersElement.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineSettersElement.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\TestVarArgs.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArray.xml" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopPadded.xml" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBasic.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegate.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegate.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhilePaddedLoop.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhilePaddedLoop.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoop.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhileLoop.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnIntArray.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnObjectArray.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnArrayElement.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\SetArrayElement.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\AsType.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\CastType.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\CheckType.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfBlock.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlock.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlock.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlock.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockRelease.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockDebug.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BlockTests\InlineInitialization\InlineArrayInitialization.xml" />
+    <EmbeddedResource Include="BlockTests\InlineInitialization\VarArgs.xml" />
+    <EmbeddedResource Include="BlockTests\InlineInitialization\ReturnInlineSettersElement.xml" />
+    <EmbeddedResource Include="BlockTests\InlineInitialization\CallMethodWithInlineSettersElement.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixSecondOrderPropertyOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyInConditionOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyInConditionOperationDebug.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\FunctionCallWithInlineAssignment.xml" />
+    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\FuncPostIncrementWithProperty.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PropertyInlineEquals.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyOnPropertyOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\LocalOpAssignmentOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PropertyOpAssignmentOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PropertyOnPropertyOpAssignmentOperation.xml" />
+    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\InlineOpAssignment.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Content Include="CstTests\BasicStatements\ComplexCondition.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleCompare.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleAndComparision.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestFourPartCondition.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
