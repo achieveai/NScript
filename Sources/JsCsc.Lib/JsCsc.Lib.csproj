@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,8 +33,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mcs, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\Dependencies\mcs.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\mcs.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\Dependencies\Mono.Cecil.dll</HintPath>

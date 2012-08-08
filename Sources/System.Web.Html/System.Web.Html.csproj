@@ -15,13 +15,11 @@
     <AssemblyName>System.Web.Html</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\Cs2JsC)</Cs2JsCToolSetPath>
-    <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Cs2JsC)</Cs2JsCToolSetPath>
-    <OutputPath>\bin\$(Configuration)</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
+    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,13 +27,14 @@
     <Optimize>false</Optimize>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <NoWarn>0626</NoWarn>
-    <OutputPath>..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <DefineConstants>TRACE</DefineConstants>
     <NoWarn>0626</NoWarn>
+    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AnchorElement.cs" />
@@ -107,8 +106,10 @@
     <Compile Include="Window.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="$(Cs2JsCToolSetPath)\lib\mscorlib.dll" />
+    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
+      <Name>Cs2JsC.MsCorlib</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
 </Project>

@@ -49,8 +49,6 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Gallio35" />
-    <Reference Include="MbUnit35" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
@@ -68,7 +66,7 @@
     <Compile Include="TestTypeResolver.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cs2JsC.JSParser\Cs2JsC.JSParser.csproj">
+    <ProjectReference Include="..\..\Sources\Cs2JsC.JSParser\Cs2JsC.JSParser.csproj">
       <Project>{52661571-B3EE-421E-A6ED-983023665738}</Project>
       <Name>Cs2JsC.JSParser</Name>
     </ProjectReference>
