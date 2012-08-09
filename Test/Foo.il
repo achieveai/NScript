@@ -49,7 +49,7 @@
 .stackreserve 0x00100000
 .subsystem 0x0003       // WINDOWS_CUI
 .corflags 0x00000001    //  ILONLY
-// Image base: 0x01200000
+// Image base: 0x006A0000
 
 
 // =============== CLASS MEMBERS DECLARATION ===================
@@ -63,28 +63,22 @@
     // Code size       26 (0x1a)
     .maxstack  8
     .language '{3F5162F8-07C6-11D3-9053-00C04FA302A1}', '{994B45C4-E6E9-11D2-903F-00C04FA302A1}', '{5A869D0B-6611-11D3-BD2A-0000F80849BD}'
-// Source File 'c:\Users\Gautam\Documents\Visual Studio 2012\Projects\cs2jsc\Test\Class1.cs' 
+// Source File 'c:\Users\Gautam\Documents\Visual Studio 2012\Projects\cs2jsc\Test\Class1.cs' not found
     .line 8,8 : 9,10 'c:\\Users\\Gautam\\Documents\\Visual Studio 2012\\Projects\\cs2jsc\\Test\\Class1.cs'
-//000008:         {
     IL_0000:  nop
     .line 9,9 : 13,41 ''
-//000009:             NullableTests.TestNonNull();
     IL_0001:  call       void Test.NullableTests::TestNonNull()
     IL_0006:  nop
     .line 10,10 : 13,38 ''
-//000010:             NullableTests.TestNull();
     IL_0007:  call       void Test.NullableTests::TestNull()
     IL_000c:  nop
     .line 11,11 : 13,52 ''
-//000011:             NullableTests.TestLiftingNonNullArgs();
     IL_000d:  call       void Test.NullableTests::TestLiftingNonNullArgs()
     IL_0012:  nop
     .line 12,12 : 13,49 ''
-//000012:             NullableTests.TestLiftingNullArgs();
     IL_0013:  call       void Test.NullableTests::TestLiftingNullArgs()
     IL_0018:  nop
     .line 13,13 : 9,10 ''
-//000013:         }
     IL_0019:  ret
   } // end of method NullableTests::Main
 
@@ -94,28 +88,21 @@
     .maxstack  2
     .locals init ([0] valuetype [mscorlib]System.Nullable`1<int32> n)
     .line 16,16 : 9,10 ''
-//000014: 
-//000015:         private static void TestNonNull()
-//000016:         {
     IL_0000:  nop
     .line 17,17 : 13,51 ''
-//000017:             Console.WriteLine("Testing non-null");
     IL_0001:  ldstr      "Testing non-null"
     IL_0006:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_000b:  nop
     .line 18,18 : 13,30 ''
-//000018:             var n = (int?)42;
     IL_000c:  ldloca.s   n
     IL_000e:  ldc.i4.s   42
     IL_0010:  call       instance void valuetype [mscorlib]System.Nullable`1<int32>::.ctor(!0)
     IL_0015:  nop
     .line 19,19 : 13,28 ''
-//000019:             LogNullable(n);
     IL_0016:  ldloc.0
     IL_0017:  call       void Test.NullableTests::LogNullable<int32>(valuetype [mscorlib]System.Nullable`1<!!0>)
     IL_001c:  nop
     .line 20,20 : 9,10 ''
-//000020:         }
     IL_001d:  ret
   } // end of method NullableTests::TestNonNull
 
@@ -125,26 +112,19 @@
     .maxstack  1
     .locals init ([0] valuetype [mscorlib]System.Nullable`1<int32> n)
     .line 23,23 : 9,10 ''
-//000021: 
-//000022:         private static void TestNull()
-//000023:         {
     IL_0000:  nop
     .line 24,24 : 13,47 ''
-//000024:             Console.WriteLine("Testing null");
     IL_0001:  ldstr      "Testing null"
     IL_0006:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_000b:  nop
     .line 25,25 : 13,35 ''
-//000025:             var n = default(int?);
     IL_000c:  ldloca.s   n
     IL_000e:  initobj    valuetype [mscorlib]System.Nullable`1<int32>
     .line 26,26 : 13,28 ''
-//000026:             LogNullable(n);
     IL_0014:  ldloc.0
     IL_0015:  call       void Test.NullableTests::LogNullable<int32>(valuetype [mscorlib]System.Nullable`1<!!0>)
     IL_001a:  nop
     .line 27,27 : 9,10 ''
-//000027:         }
     IL_001b:  ret
   } // end of method NullableTests::TestNull
 
@@ -158,29 +138,22 @@
              [3] valuetype [mscorlib]System.Nullable`1<int32> CS$0$0001,
              [4] valuetype [mscorlib]System.Nullable`1<int32> CS$0$0002)
     .line 30,30 : 9,10 ''
-//000028: 
-//000029:         private static void TestLiftingNonNullArgs()
-//000030:         {
     IL_0000:  nop
     .line 31,31 : 13,69 ''
-//000031:             Console.WriteLine("Testing lifting with non-null args");
     IL_0001:  ldstr      "Testing lifting with non-null args"
     IL_0006:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_000b:  nop
     .line 32,32 : 13,30 ''
-//000032:             var n1 = (int?)1;
     IL_000c:  ldloca.s   n1
     IL_000e:  ldc.i4.1
     IL_000f:  call       instance void valuetype [mscorlib]System.Nullable`1<int32>::.ctor(!0)
     IL_0014:  nop
     .line 33,33 : 13,30 ''
-//000033:             var n2 = (int?)2;
     IL_0015:  ldloca.s   n2
     IL_0017:  ldc.i4.2
     IL_0018:  call       instance void valuetype [mscorlib]System.Nullable`1<int32>::.ctor(!0)
     IL_001d:  nop
     .line 34,34 : 13,34 ''
-//000034:             LogNullable(n1 + n2);
     IL_001e:  ldloc.0
     IL_001f:  stloc.2
     IL_0020:  ldloc.1
@@ -207,7 +180,6 @@
     IL_0054:  call       void Test.NullableTests::LogNullable<int32>(valuetype [mscorlib]System.Nullable`1<!!0>)
     IL_0059:  nop
     .line 35,35 : 9,10 ''
-//000035:         }
     IL_005a:  ret
   } // end of method NullableTests::TestLiftingNonNullArgs
 
@@ -222,27 +194,20 @@
              [4] valuetype [mscorlib]System.Nullable`1<int32> CS$0$0001,
              [5] valuetype [mscorlib]System.Nullable`1<int32> CS$0$0002)
     .line 38,38 : 9,10 ''
-//000036: 
-//000037:         private static void TestLiftingNullArgs()
-//000038:         {
     IL_0000:  nop
     .line 39,39 : 13,65 ''
-//000039:             Console.WriteLine("Testing lifting with null args");
     IL_0001:  ldstr      "Testing lifting with null args"
     IL_0006:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_000b:  nop
     .line 40,40 : 13,30 ''
-//000040:             var n1 = (int?)1;
     IL_000c:  ldloca.s   n1
     IL_000e:  ldc.i4.1
     IL_000f:  call       instance void valuetype [mscorlib]System.Nullable`1<int32>::.ctor(!0)
     IL_0014:  nop
     .line 41,41 : 13,36 ''
-//000041:             var n2 = default(int?);
     IL_0015:  ldloca.s   n2
     IL_0017:  initobj    valuetype [mscorlib]System.Nullable`1<int32>
     .line 42,42 : 13,30 ''
-//000042:             var n3 = n1 + n2;
     IL_001d:  ldloc.0
     IL_001e:  stloc.3
     IL_001f:  ldloc.1
@@ -268,7 +233,6 @@
     IL_0053:  nop
     IL_0054:  stloc.2
     .line 43,43 : 13,34 ''
-//000043:             LogNullable(n1 + n2);
     IL_0055:  ldloc.0
     IL_0056:  stloc.3
     IL_0057:  ldloc.1
@@ -295,7 +259,6 @@
     IL_008c:  call       void Test.NullableTests::LogNullable<int32>(valuetype [mscorlib]System.Nullable`1<!!0>)
     IL_0091:  nop
     .line 44,44 : 9,10 ''
-//000044:         }
     IL_0092:  ret
   } // end of method NullableTests::TestLiftingNullArgs
 
@@ -312,12 +275,8 @@
              [6] !!T CS$0$0001,
              [7] valuetype [mscorlib]System.Nullable`1<!!T> CS$0$0002)
     .line 47,47 : 9,10 ''
-//000045: 
-//000046:         private static void LogNullable<T>(Nullable<T> nt) where T : struct
-//000047:         {
     IL_0000:  nop
     .line 48,48 : 13,29 ''
-//000048:             if (nt.HasValue)
     IL_0001:  ldarga.s   nt
     IL_0003:  call       instance bool valuetype [mscorlib]System.Nullable`1<!!T>::get_HasValue()
     IL_0008:  ldc.i4.0
@@ -327,7 +286,6 @@
     IL_000f:  brtrue.s   IL_0039
 
     .line 49,49 : 17,80 ''
-//000049:                 Console.WriteLine("Nullable has value " + nt.Value.ToString());
     IL_0011:  ldstr      "Nullable has value "
     IL_0016:  ldarga.s   nt
     IL_0018:  call       instance !0 valuetype [mscorlib]System.Nullable`1<!!T>::get_Value()
@@ -342,13 +300,10 @@
     IL_0037:  br.s       IL_0044
 
     .line 51,51 : 17,60 ''
-//000050:             else
-//000051:                 Console.WriteLine("Nullable has no value");
     IL_0039:  ldstr      "Nullable has no value"
     IL_003e:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_0043:  nop
     .line 52,52 : 13,28 ''
-//000052:             if (nt == null)
     IL_0044:  ldarga.s   nt
     IL_0046:  call       instance bool valuetype [mscorlib]System.Nullable`1<!!T>::get_HasValue()
     IL_004b:  stloc.s    CS$4$0000
@@ -356,17 +311,14 @@
     IL_004f:  brtrue.s   IL_005c
 
     .line 53,53 : 17,59 ''
-//000053:                 Console.WriteLine("Nullable equals null");
     IL_0051:  ldstr      "Nullable equals null"
     IL_0056:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_005b:  nop
     .line 54,54 : 13,32 ''
-//000054:             var o = (object)nt;
     IL_005c:  ldarg.0
     IL_005d:  box        valuetype [mscorlib]System.Nullable`1<!!T>
     IL_0062:  stloc.0
     .line 55,55 : 13,27 ''
-//000055:             if (o == null)
     IL_0063:  ldloc.0
     IL_0064:  ldnull
     IL_0065:  ceq
@@ -377,15 +329,12 @@
     IL_006e:  brtrue.s   IL_007d
 
     .line 56,56 : 17,68 ''
-//000056:                 Console.WriteLine("Nullable casts to null object");
     IL_0070:  ldstr      "Nullable casts to null object"
     IL_0075:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_007a:  nop
     IL_007b:  br.s       IL_0093
 
     .line 58,58 : 17,79 ''
-//000057:             else
-//000058:                 Console.WriteLine("Nullable casts to object " + o.ToString());
     IL_007d:  ldstr      "Nullable casts to object "
     IL_0082:  ldloc.0
     IL_0083:  callvirt   instance string [mscorlib]System.Object::ToString()
@@ -394,12 +343,10 @@
     IL_008d:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_0092:  nop
     .line 59,59 : 13,38 ''
-//000059:             var nt2 = (Nullable<T>)o;
     IL_0093:  ldloc.0
     IL_0094:  unbox.any  valuetype [mscorlib]System.Nullable`1<!!T>
     IL_0099:  stloc.1
     .line 60,60 : 13,29 ''
-//000060:             if (nt.HasValue)
     IL_009a:  ldarga.s   nt
     IL_009c:  call       instance bool valuetype [mscorlib]System.Nullable`1<!!T>::get_HasValue()
     IL_00a1:  ldc.i4.0
@@ -409,7 +356,6 @@
     IL_00a8:  brtrue.s   IL_00d2
 
     .line 61,61 : 17,87 ''
-//000061:                 Console.WriteLine("Recast nullable has value " + nt.Value.ToString());
     IL_00aa:  ldstr      "Recast nullable has value "
     IL_00af:  ldarga.s   nt
     IL_00b1:  call       instance !0 valuetype [mscorlib]System.Nullable`1<!!T>::get_Value()
@@ -424,24 +370,18 @@
     IL_00d0:  br.s       IL_00dd
 
     .line 63,63 : 17,67 ''
-//000062:             else
-//000063:                 Console.WriteLine("Recast nullable has no value");
     IL_00d2:  ldstr      "Recast nullable has no value"
     IL_00d7:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_00dc:  nop
     .line 65,65 : 13,14 ''
-//000064:             try
-//000065:             {
     .try
     {
       IL_00dd:  nop
       .line 66,66 : 17,32 ''
-//000066:                 var t1 = (T)nt;
       IL_00de:  ldarga.s   nt
       IL_00e0:  call       instance !0 valuetype [mscorlib]System.Nullable`1<!!T>::get_Value()
       IL_00e5:  stloc.2
       .line 67,67 : 17,90 ''
-//000067:                 Console.WriteLine("Nullable casts to underlying value " + t1.ToString());
       IL_00e6:  ldstr      "Nullable casts to underlying value "
       IL_00eb:  ldloca.s   t1
       IL_00ed:  constrained. !!T
@@ -451,26 +391,21 @@
       IL_00fd:  call       void [mscorlib]System.Console::WriteLine(string)
       IL_0102:  nop
       .line 68,68 : 13,14 ''
-//000068:             }
       IL_0103:  nop
       IL_0104:  leave.s    IL_012c
 
       .line 69,69 : 13,32 ''
-//000069:             catch (Exception e)
     }  // end .try
     catch [mscorlib]System.Exception 
     {
       IL_0106:  stloc.3
       .line 70,70 : 13,14 ''
-//000070:             {
       IL_0107:  nop
       .line 71,71 : 17,81 ''
-//000071:                 Console.WriteLine("Nullable fails casting to underlying value");
       IL_0108:  ldstr      "Nullable fails casting to underlying value"
       IL_010d:  call       void [mscorlib]System.Console::WriteLine(string)
       IL_0112:  nop
       .line 72,72 : 17,70 ''
-//000072:                 Console.WriteLine("Exception Message: " + e.Message);
       IL_0113:  ldstr      "Exception Message: "
       IL_0118:  ldloc.3
       IL_0119:  callvirt   instance string [mscorlib]System.Exception::get_Message()
@@ -479,14 +414,12 @@
       IL_0123:  call       void [mscorlib]System.Console::WriteLine(string)
       IL_0128:  nop
       .line 73,73 : 13,14 ''
-//000073:             }
       IL_0129:  nop
       IL_012a:  leave.s    IL_012c
 
     }  // end handler
     IL_012c:  nop
     .line 74,74 : 13,39 ''
-//000074:             var t2 = nt ?? default(T);
     IL_012d:  ldarg.0
     IL_012e:  stloc.s    CS$0$0002
     IL_0130:  ldloca.s   CS$0$0002
@@ -503,7 +436,6 @@
     IL_014c:  nop
     IL_014d:  stloc.s    t2
     .line 75,75 : 13,71 ''
-//000075:             Console.WriteLine("Value or default is " + t2.ToString());
     IL_014f:  ldstr      "Value or default is "
     IL_0154:  ldloca.s   t2
     IL_0156:  constrained. !!T
@@ -513,7 +445,6 @@
     IL_0166:  call       void [mscorlib]System.Console::WriteLine(string)
     IL_016b:  nop
     .line 76,76 : 9,10 ''
-//000076:         }
     IL_016c:  ret
   } // end of method NullableTests::LogNullable
 
@@ -523,4 +454,4 @@
 // =============================================================
 
 // *********** DISASSEMBLY COMPLETE ***********************
-// WARNING: Created Win32 resource file C:\Users\Gautam\Documents\Visual Studio 2012\Projects\cs2jsc\Test\Foo.res
+// WARNING: Created Win32 resource file E:\Users\Gautam\Documents\Visual Studio 2012\Projects\cs2jsc\Test\Foo.res

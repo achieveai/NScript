@@ -26,6 +26,7 @@ tokens {
 	TAG;
 	ID;
 	CLASS;
+	NUMARG;
 }
 
 @lexer::members {
@@ -112,7 +113,7 @@ args
 	;
 
 expr
-	: (NUM unit?)
+	: (NUM unit?) -> ^(NUMARG NUM unit?)
 	| IDENT
 	| COLOR
 	| STRING
