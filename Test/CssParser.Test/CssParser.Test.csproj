@@ -61,7 +61,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CssParser\CssParser.csproj">
+    <ProjectReference Include="..\..\Sources\CssParser\CssParser.csproj">
       <Project>{c2534dea-af8c-43f3-81ed-86e6b5932cf6}</Project>
       <Name>CssParser</Name>
     </ProjectReference>

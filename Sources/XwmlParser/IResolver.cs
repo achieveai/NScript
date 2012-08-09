@@ -13,7 +13,7 @@ namespace XwmlParser
     /// <summary>
     /// Definition for IResolver
     /// </summary>
-    public class IResolver
+    public interface IResolver
     {
         /// <summary>
         /// Gets a type reference.
@@ -22,7 +22,7 @@ namespace XwmlParser
         /// <returns>
         /// The type reference.
         /// </returns>
-        private TypeReference GetTypeReference(string fullName);
+        TypeReference GetTypeReference(string fullName);
 
         /// <summary>
         /// Gets a property reference.
@@ -32,7 +32,7 @@ namespace XwmlParser
         /// <returns>
         /// The property reference.
         /// </returns>
-        private List<PropertyReference> GetPropertyReference(TypeReference typeReference, string propertyName);
+        List<PropertyReference> GetPropertyReference(TypeReference typeReference, string propertyName);
 
         /// <summary>
         /// Gets a method reference.
@@ -42,7 +42,7 @@ namespace XwmlParser
         /// <returns>
         /// The method reference.
         /// </returns>
-        private List<MethodReference> GetMethodReference(TypeReference typeReference, string methodName);
+        List<MethodReference> GetMethodReference(TypeReference typeReference, string methodName);
 
         /// <summary>
         /// Gets an event references.
@@ -52,6 +52,6 @@ namespace XwmlParser
         /// <returns>
         /// The event references.
         /// </returns>
-        private List<EventReference> GetEventReferences(TypeReference typeReference, string eventName);
+        List<EventReference> GetEventReferences(TypeReference typeReference, string eventName);
     }
 }

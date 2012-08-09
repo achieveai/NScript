@@ -44,7 +44,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="CssGrammer.cs">
       <DependentUpon>CssGrammer.g3</DependentUpon>
     </Compile>
@@ -57,9 +56,6 @@
     <Antlr3 Include="CssGrammer.g3">
       <Generator>MSBuild:Compile</Generator>
     </Antlr3>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="AntlrGeneratedCodeFileListAbsolute.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(AntlrPath)\Antlr3.targets" />
