@@ -15,7 +15,7 @@
     <AssemblyName>SunlightUnit</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
-    <!--<TargetFrameworkVersion>v2.0</TargetFrameworkVersion>-->
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -23,7 +23,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

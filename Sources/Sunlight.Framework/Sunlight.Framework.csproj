@@ -15,7 +15,7 @@
     <AssemblyName>Sunlight.Framework</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
-    <!--<TargetFrameworkVersion>v2.0</TargetFrameworkVersion>-->
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

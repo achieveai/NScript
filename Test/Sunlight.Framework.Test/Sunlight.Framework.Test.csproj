@@ -18,7 +18,7 @@
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
-    <!-- <TargetFrameworkVersion>v2.0</TargetFrameworkVersion> -->
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

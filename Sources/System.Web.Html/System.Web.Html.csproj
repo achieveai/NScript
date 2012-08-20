@@ -19,6 +19,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

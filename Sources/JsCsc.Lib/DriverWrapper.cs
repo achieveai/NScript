@@ -33,7 +33,10 @@ namespace JsCsc.Lib
             var messageStream = Console.Out;
             var printer = new StreamReportPrinter(errorStream);
             CommandLineParser cmd = new CommandLineParser(errorStream, messageStream);
+
+            List<string> fixedArgs = new List<string>(args);
             var setting = cmd.ParseArguments(args);
+            setting.StdLibRuntimeVersion = RuntimeVersion.v2;
             if (setting == null)
                 return;
 

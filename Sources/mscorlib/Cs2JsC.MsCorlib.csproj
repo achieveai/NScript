@@ -53,7 +53,7 @@
     <WarningLevel>4</WarningLevel>
     <DebugType>full</DebugType>
     <ErrorReport>prompt</ErrorReport>
-    <OutputPath>..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 3001; 3002; 0660; 0661</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -65,7 +65,7 @@
     <WarningLevel>4</WarningLevel>
     <DebugType>none</DebugType>
     <ErrorReport>prompt</ErrorReport>
-    <OutputPath>..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Activator.cs" />
