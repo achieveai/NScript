@@ -62,6 +62,16 @@
     <Compile Include="Driver.cs" />
     <Compile Include="ExtensibleObservableInfo.cs" />
     <Compile Include="IResolver.cs" />
+    <Compile Include="KnownTemplateTypes.cs" />
+    <Compile Include="NodeInfos\CollectionNodeInfo.cs" />
+    <Compile Include="NodeInfos\ControlNodeInfo.cs" />
+    <Compile Include="NodeInfos\FactoryNodeInfo.cs" />
+    <Compile Include="NodeInfos\HtmlNodeInfo.cs" />
+    <Compile Include="NodeInfos\NodeInfo.cs" />
+    <Compile Include="NodeInfos\PanelNodeInfo.cs" />
+    <Compile Include="NodeInfos\TemplateNodeInfo.cs" />
+    <Compile Include="NodeInfos\TypeNodeInfo.cs" />
+    <Compile Include="NodeInfos\UIElementNodeInfo.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

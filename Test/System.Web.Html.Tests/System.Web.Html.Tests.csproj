@@ -15,7 +15,7 @@
     <AssemblyName>System.Web.Html.Tests</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <GenerateJs>True</GenerateJs>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <!--<TargetFrameworkVersion>v2.0</TargetFrameworkVersion>-->
     <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\Cs2JsC)</Cs2JsCToolSetPath>
     <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Cs2JsC)</Cs2JsCToolSetPath>
     <OutputPath>bin\$(Configuration)</OutputPath>
@@ -47,11 +47,11 @@
     <None Include="PluginConfig.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\..\Sources\mscorlib\Cs2JsC.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
       <Name>Cs2JsC.MsCorlib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\System.Web.Html\System.Web.Html.csproj">
+    <ProjectReference Include="..\..\Sources\System.Web.Html\System.Web.Html.csproj">
       <Project>{A60706FF-08D7-4320-99F9-A2413275CDF6}</Project>
       <Name>System.Web.Html</Name>
     </ProjectReference>

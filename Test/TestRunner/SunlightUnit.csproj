@@ -14,8 +14,8 @@
     <RootNamespace>SunlightUnit</RootNamespace>
     <AssemblyName>SunlightUnit</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <Cs2JsCToolSetPath>..\Cs2JsCToolSet</Cs2JsCToolSetPath>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
+    <!--<TargetFrameworkVersion>v2.0</TargetFrameworkVersion>-->
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -48,7 +48,7 @@
     <Compile Include="TestSetup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\..\Sources\mscorlib\Cs2JsC.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
       <Name>Cs2JsC.MsCorlib</Name>
     </ProjectReference>
