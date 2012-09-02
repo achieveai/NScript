@@ -14,49 +14,33 @@ namespace XwmlParser
 
     public enum NodeType
     {
+        Object,
+        ObservableObject,
         ExtensibleObject,
+        ContextBindableObject,
+        UIElement,
+        SkinableElement,
+        Panel,
+        AttachedProperty,
         Property,
         Html,
         Text,
         Template,
-        Factory,
-        Style
+        Skin,
+        CssStyle
     }
 
     /// <summary>
     /// Definition for Parser
     /// </summary>
-    public class Parser
+    public class HtmlParser
     {
         private ParserContext context;
         private HtmlNode node;
         private List<Dictionary<string, string>> namespaceStack = new List<Dictionary<string, string>>();
 
-        public Parser(HtmlDocument htmlDoc)
+        public HtmlParser(HtmlDocument htmlDoc)
         {
-        }
-
-        /// <summary>
-        /// Parse namespaces.
-        /// </summary>
-        /// <param name="node"> The node. </param>
-        private void ParseNamespaces(HtmlNode node)
-        {
-            Dictionary<string, string> mapping = null;
-            foreach (var attr in node.Attributes)
-            {
-                if (attr.OriginalName.StartsWith("xmlns:"))
-                {
-                    if (mapping == null)
-                    {
-                        mapping = new Dictionary<string, string>();
-                    }
-
-                    mapping[attr.OriginalName.Substring("xmlns:".Length)] = attr.Value;
-                }
-            }
-
-            this.namespaceStack.Add(mapping);
         }
 
         /// <summary>
@@ -66,7 +50,7 @@ namespace XwmlParser
         /// <returns>
         /// The full node name.
         /// </returns>
-        private Tuple<string, string> GetFullNodeName(string nodeName)
+        public Tuple<string, string> GetFullNodeName(string nodeName)
         {
             string[] nameParts = nodeName.Split(':');
             if (nameParts.Length > 2)
@@ -95,12 +79,17 @@ namespace XwmlParser
         }
 
         private HtmlNode ParseNode(
-            HtmlNode node)
+            HtmlNode node,
+            NodeInfo parentNodeInfo)
         {
             try
             {
                 this.ParseNamespaces(node);
                 var nodeName = this.GetFullNodeName(node.OriginalName);
+                NodeType nodeType = this.GetNodeType(node, parentNodeInfo);
+                if (nodeType == NodeType.Html)
+                {
+                }
 
                 return null;
             }
@@ -115,9 +104,9 @@ namespace XwmlParser
         {
             var nodeName = this.GetFullNodeName(node.OriginalName);
 
-            if (nodeName.Item1 == null && nodeName.Item2 == "style")
+            if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStypeTag)
             {
-                return NodeType.Style;
+                return NodeType.CssStyle;
             }
             if (nodeName.Item1 == null)
             {
@@ -132,18 +121,74 @@ namespace XwmlParser
                 {
                     return NodeType.Property;
                 }
-                else if (nodeName.Item2 == "template")
+                else if (nodeName.Item2 == Strings.Template)
                 {
                     return NodeType.Template;
                 }
-                else if (nodeName.Item2 == "factory")
+                else if (nodeName.Item2 == Strings.Skin)
                 {
-                    return NodeType.Factory;
+                    return NodeType.Skin;
                 }
 
                 return NodeType.Html;
             }
-            else if (parentNodeInfo is ControlNodeInfo)
+            else
+            {
+                string[] nameParts = nodeName.Item2.Split('.');
+                TypeReference typeReference = this.context.Resolver.GetTypeReference(nodeName.Item1 + '.' + nameParts[0]);
+
+                if (typeReference == null)
+                {
+                    throw new ApplicationException(
+                        string.Format("Can't resolve type {0}.{1}", nodeName.Item1, nameParts[0]));
+                }
+
+                if (nameParts.Length > 2)
+                {
+                    throw new ApplicationException(
+                        string.Format(
+                            "Only Html tags, types or Attached Properties names are supported as tags, unsupported tag: {0}.{1}",
+                            nodeName.Item1,
+                            nodeName.Item2));
+                }
+
+                if (nameParts.Length == 2)
+                {
+                    var property = this.context.Resolver.GetPropertyReference(typeReference, nameParts[1]);
+
+                    if (property == null
+                        || property.Count == 0)
+                    {
+                        throw new ApplicationException(
+                            string.Format("Can't resolve proeprty {0}.{1}", nodeName.Item1, nodeName.Item2));
+                    }
+
+                    return NodeType.AttachedProperty;
+                }
+
+                if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UISkinableElement))
+                {
+                    return NodeType.SkinableElement;
+                }
+                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UIPanel))
+                {
+                    return NodeType.Panel;
+                }
+                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UIElement))
+                {
+                    return NodeType.UIElement;
+                }
+                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.ContextBindableObject))
+                {
+                    return NodeType.ContextBindableObject;
+                }
+                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.ObservableObject))
+                {
+                    return NodeType.ObservableObject;
+                }
+            }
+
+            if (parentNodeInfo is SkinnableNodeInfo)
             {
                 // When parent is ControlNodeInfo, this really means that parent is anonymous template
                 // The exception to this rule is AttachedProperty or property. But for normal Property

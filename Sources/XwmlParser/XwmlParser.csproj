@@ -59,12 +59,14 @@
     <Compile Include="Binding\BoundProperty.cs" />
     <Compile Include="Binding\BoundSource.cs" />
     <Compile Include="Binding\BoundValue.cs" />
+    <Compile Include="DocumentContext.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="ExtensibleObservableInfo.cs" />
     <Compile Include="IResolver.cs" />
     <Compile Include="KnownTemplateTypes.cs" />
     <Compile Include="NodeInfos\CollectionNodeInfo.cs" />
-    <Compile Include="NodeInfos\ControlNodeInfo.cs" />
+    <Compile Include="NodeInfos\ContextBindableNodeInfo.cs" />
+    <Compile Include="NodeInfos\SkinnableNodeInfo.cs" />
     <Compile Include="NodeInfos\FactoryNodeInfo.cs" />
     <Compile Include="NodeInfos\HtmlNodeInfo.cs" />
     <Compile Include="NodeInfos\NodeInfo.cs" />
@@ -72,9 +74,11 @@
     <Compile Include="NodeInfos\TemplateNodeInfo.cs" />
     <Compile Include="NodeInfos\TypeNodeInfo.cs" />
     <Compile Include="NodeInfos\UIElementNodeInfo.cs" />
-    <Compile Include="Parser.cs" />
+    <Compile Include="HtmlParser.cs" />
     <Compile Include="ParserContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Strings.cs" />
+    <Compile Include="TemplateParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

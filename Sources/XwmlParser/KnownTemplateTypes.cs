@@ -27,13 +27,19 @@ namespace XwmlParser
             set;
         }
 
-        public TypeReference Control
+        public TypeReference UISkinableElement
         {
             get;
             set;
         }
 
-        public TypeReference Panel
+        public TypeReference UIPanel
+        {
+            get;
+            set;
+        }
+
+        public TypeReference ExtensibleObject
         {
             get;
             set;
@@ -52,6 +58,15 @@ namespace XwmlParser
         }
 
         public TypeReference IListType
+        {
+            get;
+            set;
+        }
+    }
+
+    public class KnownAttributeTypes
+    {
+        public TypeReference CssClass
         {
             get;
             set;

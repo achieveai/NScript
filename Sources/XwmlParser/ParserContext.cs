@@ -14,14 +14,55 @@ namespace XwmlParser
     /// </summary>
     public class ParserContext
     {
+        /// <summary>
+        /// The resolver.
+        /// </summary>
         IResolver resolver;
+
+        /// <summary>
+        /// The abbr to namespace mapping.
+        /// </summary>
         List<Tuple<string, string>> abbrToNamespaceMapping = new List<Tuple<string, string>>();
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="resolver"> The resolver. </param>
         public ParserContext(
             IResolver resolver)
         {
         }
 
+        /// <summary>
+        /// Gets or sets a list of types of the attributes.
+        /// </summary>
+        /// <value>
+        /// A list of types of the attributes.
+        /// </value>
+        public KnownAttributeTypes AttributeTypes
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets a list of types of the knowns.
+        /// </summary>
+        /// <value>
+        /// A list of types of the knowns.
+        /// </value>
+        public KnownTemplateTypes KnownTypes
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the resolver.
+        /// </summary>
+        /// <value>
+        /// The resolver.
+        /// </value>
         public IResolver Resolver
         { get { return this.resolver; } }
     }

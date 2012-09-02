@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ControlNodeInfo.cs" company="">
+// <copyright file="SkinnableNodeInfo.cs" company="">
 //     Copyright (c) . All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -12,9 +12,9 @@ namespace XwmlParser.NodeInfos
     using System.Collections.Generic;
 
     /// <summary>
-    /// Definition for ControlNodeInfo
+    /// Definition for SkinnableNodeInfo
     /// </summary>
-    public class ControlNodeInfo : UIElementNodeInfo
+    public class SkinnableNodeInfo : UIElementNodeInfo
     {
         /// <summary>
         /// Constructor.
@@ -22,7 +22,7 @@ namespace XwmlParser.NodeInfos
         /// <param name="type">     The type. </param>
         /// <param name="node">     The node. </param>
         /// <param name="tagInfo">  Information describing the tag. </param>
-        public ControlNodeInfo(
+        public SkinnableNodeInfo(
             TypeReference type,
             HtmlNode node,
             Tuple<string, string> tagInfo)

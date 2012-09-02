@@ -53,5 +53,25 @@ namespace XwmlParser
         /// The event references.
         /// </returns>
         List<EventReference> GetEventReferences(TypeReference typeReference, string eventName);
+
+        /// <summary>
+        /// Type implements.
+        /// </summary>
+        /// <param name="typeReference">        The type reference. </param>
+        /// <param name="interfaceReference">   The interface reference. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        bool TypeImplements(TypeReference typeReference, TypeReference interfaceReference);
+
+        /// <summary>
+        /// Type inherits.
+        /// </summary>
+        /// <param name="typeReference">    The type reference. </param>
+        /// <param name="parentType">       Type of the parent. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        bool TypeInherits(TypeReference typeReference, TypeReference parentType);
     }
 }

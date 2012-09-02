@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="UIElementNodeInfo.cs" company="">
+// <copyright file="ContextBindableNodeInfo.cs" company="">
 //     Copyright (c) . All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -12,9 +12,9 @@ namespace XwmlParser.NodeInfos
     using System.Collections.Generic;
 
     /// <summary>
-    /// Definition for UIElementNodeInfo
+    /// Definition for ContextBindableNodeInfo
     /// </summary>
-    public class UIElementNodeInfo : ContextBindableNodeInfo
+    public class ContextBindableNodeInfo : TypeNodeInfo
     {
         /// <summary>
         /// Constructor.
@@ -22,11 +22,12 @@ namespace XwmlParser.NodeInfos
         /// <param name="type">     The type. </param>
         /// <param name="node">     The node. </param>
         /// <param name="tagInfo">  Information describing the tag. </param>
-        public UIElementNodeInfo(
+        public ContextBindableNodeInfo(
             TypeReference type,
             HtmlNode node,
             Tuple<string, string> tagInfo)
             : base(type, node, tagInfo)
-        { }
+        {
+        }
     }
 }
