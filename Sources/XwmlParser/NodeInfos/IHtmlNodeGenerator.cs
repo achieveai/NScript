@@ -1,18 +1,21 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ExtensibleObservableInfo.cs" company="">
+// <copyright file="IHtmlNodeGenerator.cs" company="">
 //     Copyright (c) . All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace XwmlParser
+namespace XwmlParser.NodeInfos
 {
+    using HtmlAgilityPack;
     using System;
     using System.Collections.Generic;
 
     /// <summary>
-    /// Definition for ExtensibleObservableInfo
+    /// Definition for IHtmlNodeGenerator
     /// </summary>
-    public class ExtensibleObservableInfo
+    public interface IHtmlNodeGenerator
     {
+        public HtmlNode GeneratedNode
+        { get; }
     }
 }

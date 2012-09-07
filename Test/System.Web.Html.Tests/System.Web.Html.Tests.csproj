@@ -16,6 +16,7 @@
     <FileAlignment>512</FileAlignment>
     <GenerateJs>True</GenerateJs>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
     <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\Cs2JsC)</Cs2JsCToolSetPath>
     <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Cs2JsC)</Cs2JsCToolSetPath>
     <OutputPath>bin\$(Configuration)</OutputPath>

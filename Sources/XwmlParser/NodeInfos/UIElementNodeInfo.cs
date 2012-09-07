@@ -14,8 +14,13 @@ namespace XwmlParser.NodeInfos
     /// <summary>
     /// Definition for UIElementNodeInfo
     /// </summary>
-    public class UIElementNodeInfo : ContextBindableNodeInfo
+    public class UIElementNodeInfo : ContextBindableNodeInfo, IHtmlNodeGenerator
     {
+        /// <summary>
+        /// The generated node.
+        /// </summary>
+        private HtmlNode generatedNode;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -28,5 +33,26 @@ namespace XwmlParser.NodeInfos
             Tuple<string, string> tagInfo)
             : base(type, node, tagInfo)
         { }
+
+        /// <summary>
+        /// Gets or sets the generated node.
+        /// </summary>
+        /// <value>
+        /// The generated node.
+        /// </value>
+        public HtmlNode GeneratedNode
+        {
+            get { return this.generatedNode; }
+
+            set
+            {
+                if (this.generatedNode != null)
+                {
+                    throw new InvalidOperationException("Can't set generated node more than once");
+                }
+
+                this.generatedNode = value;
+            }
+        }
     }
 }

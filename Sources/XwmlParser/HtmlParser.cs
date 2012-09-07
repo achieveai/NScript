@@ -84,7 +84,6 @@ namespace XwmlParser
         {
             try
             {
-                this.ParseNamespaces(node);
                 var nodeName = this.GetFullNodeName(node.OriginalName);
                 NodeType nodeType = this.GetNodeType(node, parentNodeInfo);
                 if (nodeType == NodeType.Html)

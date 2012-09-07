@@ -13,8 +13,13 @@ namespace XwmlParser.NodeInfos
     /// <summary>
     /// Definition for HtmlNodeInfo
     /// </summary>
-    public class HtmlNodeInfo : NodeInfo
+    public class HtmlNodeInfo : NodeInfo, IHtmlNodeGenerator
     {
+        /// <summary>
+        /// The generated node.
+        /// </summary>
+        HtmlNode generatedNode;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -25,5 +30,26 @@ namespace XwmlParser.NodeInfos
             Tuple<string, string> tagInfo)
             : base(node, tagInfo)
         { }
+
+        /// <summary>
+        /// Gets or sets the generated node.
+        /// </summary>
+        /// <value>
+        /// The generated node.
+        /// </value>
+        public HtmlNode GeneratedNode
+        {
+            get { return this.generatedNode; }
+
+            set
+            {
+                if (this.generatedNode != null)
+                {
+                    throw new InvalidOperationException("Can't set generated node more than once");
+                }
+
+                this.generatedNode = value;
+            }
+        }
     }
 }
