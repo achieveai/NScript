@@ -15,7 +15,7 @@ namespace XwmlParser.NodeInfos
     /// </summary>
     public interface IHtmlNodeGenerator
     {
-        public HtmlNode GeneratedNode
+        HtmlNode GeneratedNode
         { get; }
     }
 }

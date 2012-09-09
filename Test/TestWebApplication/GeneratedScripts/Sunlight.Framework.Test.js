@@ -1937,3 +1937,4 @@ module("Sunlight.Framework.Test.ObservableObjectTests");
 test("TestCreateNewObservableObject", 0, Sunlight__Framework__Test__ObservableObjectTests__TestCreateNewObservableObject);
 test("TestFirePropertyChanged", 0, Sunlight__Framework__Test__ObservableObjectTests__TestFirePropertyChanged);
 test("TestRemovePropertyChangeCallback", 0, Sunlight__Framework__Test__ObservableObjectTests__TestRemovePropertyChangeCallback);
+//@ sourceMappingURL=Sunlight.Framework.Test.js.map

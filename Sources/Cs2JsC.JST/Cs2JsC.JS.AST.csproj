@@ -95,6 +95,10 @@
       <Project>{030B10DD-4861-4BE1-B0D6-DB43587E603F}</Project>
       <Name>Cs2JsC.Utils</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SourceMap\SourceMap.csproj">
+      <Project>{20ccb52f-de6e-4da4-821e-5b3bd6771704}</Project>
+      <Name>SourceMap</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -121,10 +121,7 @@ namespace Cs2JsC.Converter
                 }
             }
 
-            using (StreamWriter streamWriter = new StreamWriter(this.jsScript, false, System.Text.Encoding.UTF8))
-            {
-                writer.Write(streamWriter);
-            }
+            writer.Write(this.jsScript, "..\\SrcMapper.ashx?path=");
 
             return true;
         }

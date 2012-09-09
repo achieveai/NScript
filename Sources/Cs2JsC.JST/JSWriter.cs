@@ -295,18 +295,83 @@ namespace Cs2JsC.JST
         }
 
         /// <summary>
-        /// Writers the specified writer.
+        /// Writes script to jsFileName and map file to jsFileName.map with given sourceRoot.
         /// </summary>
-        /// <param name="writer">The writer.</param>
+        /// <param name="jsFileName"> Filename of the js file. </param>
+        /// <param name="sourceRoot"> Source root. </param>
+        public void Write(string jsFileName, string sourceRoot)
+        {
+            using (StreamWriter streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8))
+            {
+                this.Write(streamWriter, Path.GetFileName(jsFileName), sourceRoot, jsFileName + ".map");
+            }
+        }
+
+        /// <summary>
+        /// Writes to the given TextWriter.
+        /// </summary>
+        /// <param name="writer"> The TextWriter to write. </param>
         public void Write(TextWriter writer)
+        {
+            this.Write(writer, null, null, null);
+        }
+
+        /// <summary>
+        /// Writes javascript to given writer with mapping file generated using jsFileName, sourceRoot
+        /// and mapFileName.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"> Thrown when one or more arguments are outside
+        ///     the required range. </exception>
+        /// <param name="writer">      The writer. </param>
+        /// <param name="jsFileName">  Filename of the js file. </param>
+        /// <param name="sourceRoot">  Source root. </param>
+        /// <param name="mapFileName"> Filename of the map file. </param>
+        private void Write(TextWriter writer, string jsFileName, string sourceRoot, string mapFileName)
         {
             this.ArrangeSpaces();
 
             int scopeDepth = 0;
+            Location lastLocation = null;
+            int curLine = 0;
+            int curCol = 0;
+            var sourceMapping = new OwaSourceMapper.SourceMap();
+            if (jsFileName != null)
+            {
+                sourceMapping.File = jsFileName;
+                sourceMapping.SourceRoot = sourceRoot.Replace("\\", "\\\\");
+            }
 
             foreach (var token in this.tokens)
             {
                 string str = string.Empty;
+
+                if (token.Type != TokenType.Space
+                    && token.Type != TokenType.Newline
+                    && token.Location != lastLocation)
+                {
+                    lastLocation = token.Location;
+
+                    if (lastLocation == null
+                        || lastLocation.StartLine < 0
+                        || string.IsNullOrWhiteSpace(lastLocation.FileName))
+                    {
+                        sourceMapping.AddMapping(
+                            curLine,
+                            curCol,
+                            0,
+                            0,
+                            null);
+                    }
+                    else
+                    {
+                        sourceMapping.AddMapping(
+                            curLine,
+                            curCol,
+                            lastLocation.StartLine - 1,
+                            lastLocation.StartColumn - 1,
+                            lastLocation.FileName);
+                    }
+                }
 
                 switch (token.Type)
                 {
@@ -346,10 +411,35 @@ namespace Cs2JsC.JST
                         throw new ArgumentOutOfRangeException();
                 }
 
+                for (int iStr = 0; iStr < str.Length; iStr++)
+                {
+                    if (str[iStr] == '\r')
+                    {
+                        curLine++;
+                        curCol = 0;
+                        if (iStr < str.Length - 1 && str[iStr] == '\n')
+                        {
+                            iStr++;
+                        }
+                    }
+                    else
+                    {
+                        curCol++;
+                    }
+                }
+
                 if (!string.IsNullOrEmpty(str))
                 {
                     writer.Write(str);
                 }
+            }
+
+            if (mapFileName != null)
+            {
+                writer.WriteLine();
+                writer.Write("//@ sourceMappingURL={0}", Path.GetFileName(mapFileName));
+                using (StreamWriter mapWriter = new StreamWriter(mapFileName, false, System.Text.Encoding.ASCII))
+                    mapWriter.Write(sourceMapping.ToString());
             }
         }
 

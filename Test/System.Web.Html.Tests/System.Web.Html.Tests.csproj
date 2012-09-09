@@ -62,4 +62,8 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy *.js ..\..\..\TestWebApplication\GeneratedScripts
+copy *.js.map ..\..\..\TestWebApplication\GeneratedScripts</PostBuildEvent>
+  </PropertyGroup>
 </Project>
