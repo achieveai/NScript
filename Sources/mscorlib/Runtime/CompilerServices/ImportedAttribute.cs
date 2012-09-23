@@ -3,7 +3,7 @@
     using System;
 
     [AttributeUsage(AttributeTargets.Type), Imported, NonScriptable]
-    public sealed class ImportedAttribute : Attribute
+    public class ImportedAttribute : Attribute
     {
     }
 }

@@ -638,7 +638,7 @@ namespace Cs2JsC.Converter
                         "PsudoTypeAttribute");
                 }
 
-                return this.makeStaticUsageAttribute;
+                return this.psudoTypeAttribute;
             }
         }
 

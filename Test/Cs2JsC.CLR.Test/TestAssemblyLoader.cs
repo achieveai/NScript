@@ -2,6 +2,7 @@
 {
     using System;
     using Mono.Cecil;
+    using System.IO;
 
     public static class TestAssemblyLoader
     {
@@ -363,7 +364,7 @@
 
             TestAssemblyLoader.DllBuilder.Build(
                 "mscorlib.dll",
-                @"D:\Users\Gautam\Documents\Visual Studio 2010\Projects\Cs2JsC_Mono\mscorlib",
+                Path.GetFullPath(@"..\..\..\..\Sources\mscorlib"),
                 mscorlibFileNames,
                 null,
                 false,
@@ -405,6 +406,7 @@
                 @"TestGeneric.cs",
                 @"TestInheritence.cs",
                 @"TestInitializers.cs",
+                @"TestPsudoType.cs",
                 @"TestReferenceClass.cs",
                 @"TestCompilerGeneratedStuff.cs",
                 @"WhileLoopBlocks.cs",
@@ -417,14 +419,14 @@
 
             TestAssemblyLoader.DllBuilder.Build(
                 "RealScript.dll",
-                @"D:\Users\Gautam\Documents\Visual Studio 2010\Projects\Cs2JsC_Mono\RealScript",
+                Path.GetFullPath(@"..\..\..\RealScript"),
                 fileNames,
                 references,
                 false);
 
             TestAssemblyLoader.DllBuilder.Build(
                 "RealScript.Debug.dll",
-                @"D:\Users\Gautam\Documents\Visual Studio 2010\Projects\Cs2JsC_Mono\RealScript",
+                Path.GetFullPath(@"..\..\..\RealScript"),
                 fileNames,
                 references,
                 true);

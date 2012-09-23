@@ -13,14 +13,14 @@
     <AssemblyName>Cs2JsC.Converter.Test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <BaseIntermediateOutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\obj</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(tmp)\$(SolutionName)\Cs2JsC.CLR.Test\bin\Debug\</OutputPath>
+    <OutputPath>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,7 +29,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(tmp)\$(SolutionName)\Cs2JsC.CLR.Test\bin\Release\</OutputPath>
+    <OutputPath>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -94,6 +94,7 @@
     <Compile Include="TypeConverterTests\DependencyAnalyzerTests.cs" />
     <Compile Include="TypeConverterTests\DependencyBasedConverterTests.cs" />
     <Compile Include="TypeConverterTests\GenericTypeConverterTest.cs" />
+    <Compile Include="TypeConverterTests\ImportedTypeConverterTest.cs" />
     <Compile Include="TypeConverterTests\RuntimeScriptGenerator.cs" />
     <Compile Include="TypeConverterTests\ScriptConverterHelper.cs" />
     <Compile Include="TypeConverterTests\SimpleTypeConverterTests.cs" />
@@ -401,6 +402,7 @@
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFull.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\PsudoTypeSimple.js" />
     <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ArrayTypeMcs.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullMcs.js" />
     <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\StructClassTypeMcs.js" />

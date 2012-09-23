@@ -158,23 +158,10 @@ namespace Cs2JsC.Converter
                 return false;
             }
 
-            for (int attributeIndex = 0;
-                attributeIndex < typeDefinition.CustomAttributes.Count;
-                attributeIndex++)
+            if (null != typeDefinition.CustomAttributes.SelectAttribute(
+                this.KnownReferences.ImportedAttribute))
             {
-                CustomAttribute attribute =
-                    typeDefinition.CustomAttributes[attributeIndex] as CustomAttribute;
-
-                if (attribute == null)
-                {
-                    continue;
-                }
-
-                if (attribute.AttributeType.IsSame(
-                        this.KnownReferences.ImportedAttribute))
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;

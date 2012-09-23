@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{142D8B13-3EED-43A9-96BD-353FFA72E536}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStdLib>True</NoStdLib>
+    <CopyReferences>True</CopyReferences>
+    <TemplateFile>Properties\Script.jst</TemplateFile>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RealScript.Debug</RootNamespace>
+    <AssemblyName>RealScript.Debug</AssemblyName>
+    <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
+    <Cs2JsCToolSetPath>..\Cs2JsCToolSet</Cs2JsCToolSetPath>
+    <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>$(ProjectDir)..\bin\Debug\RealScript.Debug.xml</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Release\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Release\RealScript.Debug.xml</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BasicBlockTestFunctions.cs" />
+    <Compile Include="BasicStatements.cs" />
+    <Compile Include="ConstructorTests.cs" />
+    <Compile Include="DelegateBlocks.cs" />
+    <Compile Include="DupInstructionBlocks.cs" />
+    <Compile Include="ExceptionHandlerSamples.cs" />
+    <Compile Include="ForLoopBlocks.cs" />
+    <Compile Include="FuncRegressions.cs" />
+    <Compile Include="GenericCollections.cs" />
+    <Compile Include="GenericSamples.cs" />
+    <Compile Include="IfBlocks.cs" />
+    <Compile Include="InlineComplexStatements.cs" />
+    <Compile Include="JsScriptImport.cs" />
+    <Compile Include="LoopTests.cs" />
+    <Compile Include="MathAlgorithms.cs" />
+    <Compile Include="NumberOperations.cs" />
+    <Compile Include="ScriptSharpCompat.cs" />
+    <Compile Include="SimpleInterfaceTest.cs" />
+    <Compile Include="SimpleTypes.cs" />
+    <Compile Include="StructClass.cs" />
+    <Compile Include="SwitchTest.cs" />
+    <Compile Include="TestArithmetics.cs" />
+    <Compile Include="TestCompilerGeneratedStuff.cs" />
+    <Compile Include="TestControlFlow.cs" />
+    <Compile Include="TestDelegates.cs" />
+    <Compile Include="TestGeneric.cs" />
+    <Compile Include="TestInheritence.cs" />
+    <Compile Include="TestInitializers.cs" />
+    <Compile Include="TestPsudoType.cs" />
+    <Compile Include="TestReferenceClass.cs" />
+    <Compile Include="WhileLoopBlocks.cs" />
+    <Compile Include="YieldReturnTests.cs" />
+    <Content Include="Properties\Project.FxCop" />
+    <Content Include="Properties\Script.jst" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Class1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="RealScript.il" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Sources\mscorlib\Cs2JsC.MsCorlib.csproj">
+      <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
+      <Name>Cs2JsC.MsCorlib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <!--
+  <Import Project="$(ProgramFiles)\nStuff\ScriptSharp\v1.0\nStuff.ScriptSharp.targets" />
+  -->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
