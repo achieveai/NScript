@@ -15,9 +15,10 @@
   </TemplateData>
   <TemplateContent>
     <Project TargetFileName="Cs2JsC_Test.csproj" File="Cs2JsC_Test.csproj" ReplaceParameters="true">
-        <ProjectItem OpenInEditor="true" ReplaceParameters="true">TestClass.cs</ProjectItem>
-        <ProjectItem OpenInEditor="true" ReplaceParameters="true">PluginConfig.xml</ProjectItem>
-      </Project>
+      <ProjectItem OpenInEditor="true" ReplaceParameters="true">TestClass.cs</ProjectItem>
+      <ProjectItem OpenInEditor="true" ReplaceParameters="true">PluginConfig.xml</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="Properties\AssemblyInfo.cs">AssemblyInfo.cs</ProjectItem>
+    </Project>
   </TemplateContent>
 </VSTemplate>
 

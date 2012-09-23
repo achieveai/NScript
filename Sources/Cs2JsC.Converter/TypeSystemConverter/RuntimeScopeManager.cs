@@ -623,6 +623,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         {
             IList<Identifier> returnValue;
 
+            if (this.context.IsPsudoType((TypeDefinition)typeReference.GetDefinition()))
+            {
+                typeReference = this.context.ClrKnownReferences.Object;
+            }
+
             if (!this.typeReferenceIdentifiers.TryGetValue(
                 typeReference,
                 out returnValue))

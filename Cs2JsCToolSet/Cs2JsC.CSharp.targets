@@ -16,6 +16,10 @@
         Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''"
         Projects="$(MSBuildProjectFile)"
         Targets="CopyJsFile" /> 
+    <MsBuild
+        Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''"
+        Projects="$(MSBuildProjectFile)"
+        Targets="CopyMapFile" /> 
   </Target> 
 
   <PropertyGroup Condition="$(GenerateJs) == True">
@@ -57,6 +61,17 @@
         Retries="3"
         RetryDelayMilliseconds="100"
         SourceFiles="$(OutputPath)$(AssemblyName).js"
+        DestinationFolder="$(JsOutputPath)" />
+  </Target>
+  <Target Name="CopyMapFile"
+          Inputs="$(OutputPath)$(AssemblyName).js.map"
+          Outputs="$(JsOutputPath)$(AssemblyName).js.map"
+          DependsOnTargets="ScriptGenerate"
+          Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''">
+    <Copy
+        Retries="3"
+        RetryDelayMilliseconds="100"
+        SourceFiles="$(OutputPath)$(AssemblyName).js.map"
         DestinationFolder="$(JsOutputPath)" />
   </Target>
 </Project>

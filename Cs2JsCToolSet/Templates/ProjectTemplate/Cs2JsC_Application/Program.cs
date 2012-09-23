@@ -7,11 +7,12 @@
 namespace $safeprojectname$
 {
     using System;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for Class
+    /// Definition for Program
     /// </summary>
-    public class Class
+    public class Program
     {
         [EntryPoint]
         public static void Main()

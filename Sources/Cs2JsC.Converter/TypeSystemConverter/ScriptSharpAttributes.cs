@@ -197,6 +197,15 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     "System.Runtime.CompilerServices.MakeStaticUsageAttribute"));
 
         /// <summary>
+        /// Backing field for MakeStaticUsageAttribute.
+        /// </summary>
+        private static TypeReference psudoTypeAttribute =
+            new TypeReference(
+                Tuple.Create(
+                    string.Empty,
+                    "System.Runtime.CompilerServices.PsudoTypeAttribute"));
+
+        /// <summary>
         /// Gets the alternate signature attribute.
         /// This attribute is used to mark over methods so that we can use single implementation without this attribute.
         /// </summary>
@@ -374,6 +383,17 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         public static TypeReference MakeStaticUsageAttribute
         {
             get { return ScriptSharpAttributes.makeStaticUsageAttribute; }
+        }
+
+        /// <summary>
+        /// Gets the psudo type attribute.
+        /// </summary>
+        /// <value>
+        /// The psudo type attribute.
+        /// </value>
+        public static TypeReference PsudoTypeAttribute
+        {
+            get { return ScriptSharpAttributes.psudoTypeAttribute; }
         }
 
         /// <summary>

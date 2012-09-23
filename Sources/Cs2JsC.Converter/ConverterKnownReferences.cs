@@ -34,6 +34,7 @@ namespace Cs2JsC.Converter
         private TypeReference scriptAliasAttribute;
         private TypeReference scriptNamespaceAttribute;
         private TypeReference makeStaticUsageAttribute;
+        private TypeReference psudoTypeAttribute;
         private TypeReference keepInstanceUsageAttribute;
         private TypeReference scriptAttribute;
         private TypeReference preserveNameAttribute;
@@ -617,6 +618,24 @@ namespace Cs2JsC.Converter
                     this.makeStaticUsageAttribute = this.GetTypeReference(
                         ClrKnownReferences.CompilerServicesStr,
                         "MakeStaticUsageAttribute");
+                }
+
+                return this.makeStaticUsageAttribute;
+            }
+        }
+
+        /// <summary>
+        /// Gets the psudo type attribute.
+        /// </summary>
+        public TypeReference PsudoTypeAttribute
+        {
+            get
+            {
+                if (this.psudoTypeAttribute == null)
+                {
+                    this.psudoTypeAttribute = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "PsudoTypeAttribute");
                 }
 
                 return this.makeStaticUsageAttribute;

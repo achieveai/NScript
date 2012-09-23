@@ -1661,10 +1661,52 @@ namespace Cs2JsC.CLR
         {
             for (int iAttribute = 0; iAttribute < attributes.Count; iAttribute++)
             {
-                if (attributes[iAttribute].Constructor.DeclaringType.IsSame(typeReference))
+                if (attributes[iAttribute].Constructor.DeclaringType.ExtendsType(typeReference))
                 {
                     return attributes[iAttribute];
                 }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// A TypeReference extension method that extends type.
+        /// </summary>
+        /// <param name="type">          The type to act on. </param>
+        /// <param name="typeReference"> The type reference. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public static bool ExtendsType(this TypeReference type, TypeReference typeReference)
+        {
+            do
+            {
+                if (type.IsSame(typeReference))
+                {
+                    return true;
+                }
+
+                type = type.GetBaseType();
+            }
+            while (type != null);
+
+            return false;
+        }
+
+        /// <summary>
+        /// A TypeReference extension method that gets a base type.
+        /// </summary>
+        /// <param name="type"> The type to act on. </param>
+        /// <returns>
+        /// The base type.
+        /// </returns>
+        public static TypeReference GetBaseType(this TypeReference type)
+        {
+            var baseType = ((TypeDefinition)type.GetDefinition()).BaseType;
+            if (baseType != null)
+            {
+                return baseType.FixGenericTypeArguments(type);
             }
 
             return null;
@@ -1723,7 +1765,7 @@ namespace Cs2JsC.CLR
 
             if (typeDefinition.BaseType != null)
             {
-                TypeReference baseType = typeDefinition.BaseType.FixGenericTypeArguments(typeReference);
+                TypeReference baseType = typeReference.GetBaseType();
                 foreach (var iface in baseType.GetAllImplementedInterfaces())
                 {
                     returnedInterfaces.Add(iface);

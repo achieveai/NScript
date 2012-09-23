@@ -544,6 +544,17 @@ namespace Cs2JsC.Converter
             return false;
         }
 
+        public bool IsPsudoType(TypeDefinition typeDefinition)
+        {
+            if (null != typeDefinition.CustomAttributes.SelectAttribute(
+                        this.KnownReferences.PsudoTypeAttribute))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public bool IsCompilerGeneratedProperty(PropertyDefinition propertyDefinition)
         {
             if (propertyDefinition.GetMethod != null &&

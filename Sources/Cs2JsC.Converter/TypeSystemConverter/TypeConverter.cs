@@ -1018,7 +1018,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             }
 
             // Now let's initialize the id of this type as well.
-            if (!this.typeDefinition.IsStatic())
+            if (!this.typeDefinition.IsStatic()
+                && !this.context.IsPsudoType(this.TypeDefinition))
             {
                 statements.Add(this.InitializeTypeId());
             }
@@ -1766,7 +1767,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </returns>
         private Statement RegisterType()
         {
-            if (this.TypeDefinition.IsStatic())
+            if (this.TypeDefinition.IsStatic()
+                || this.Context.IsPsudoType(this.TypeDefinition))
             {
                 return null;
             }
@@ -1931,7 +1933,6 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             returnValue.Add(this.Resolve(member, true));
             return returnValue;
         }
-
 
         public IList<Identifier> ResolveFactory(MethodReference methodReference)
         {

@@ -410,6 +410,7 @@
     <Compile Include="Runtime\CompilerServices\PreserveNameAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Runtime\CompilerServices\PsudoTypeAttribute.cs" />
     <Compile Include="Runtime\CompilerServices\RequiresAssemblyAttribute.cs">
       <SubType>Code</SubType>
     </Compile>

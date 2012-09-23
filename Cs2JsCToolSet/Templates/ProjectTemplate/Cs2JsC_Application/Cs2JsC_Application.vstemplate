@@ -14,7 +14,8 @@
   </TemplateData>
   <TemplateContent>
     <Project TargetFileName="Cs2JsC_Application.csproj" File="Cs2JsC_Application.csproj" ReplaceParameters="true">
-      <ProjectItem ReplaceParameters="true" TargetFileName="Class.cs">Class.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="Program.cs" OpenInEditor="true">Program.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="Properties\AssemblyInfo.cs">AssemblyInfo.cs</ProjectItem>
     </Project>
   </TemplateContent>
 </VSTemplate>

@@ -79,6 +79,9 @@ namespace System.Web.Html
         public ErrorHandler Onerror;
 
         [IntrinsicField]
+        public Action Onload;
+
+        [IntrinsicField]
         public readonly Window Opener;
 
         [IntrinsicField]

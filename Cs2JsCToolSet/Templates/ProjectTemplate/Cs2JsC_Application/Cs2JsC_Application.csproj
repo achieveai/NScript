@@ -18,7 +18,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\Cs2JsC)</Cs2JsCToolSetPath>
     <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Cs2JsC)</Cs2JsCToolSetPath>
-    <OutputPath>\bin\$(Configuration)</OutputPath>
+    <OutputPath>$(ProjectDir)bin\$(Configuration)</OutputPath>
     <!--
     Set this output path to your web application's script directory.
     <JsOutputPath>..\WebApplication\Scripts</JsOutputPath>
@@ -39,10 +39,12 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Class.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(Cs2JsCToolSetPath)\lib\mscorlib.dll"/>
+    <Reference Include="$(Cs2JsCToolSetPath)\lib\System.Web.Html.dll"/>
   </ItemGroup>
   <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
 </Project>

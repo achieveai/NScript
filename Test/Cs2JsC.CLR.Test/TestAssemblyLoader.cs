@@ -315,6 +315,7 @@
                 @"Runtime\CompilerServices\NumericValuesAttribute.cs",
                 @"Runtime\CompilerServices\PreserveCaseAttribute.cs",
                 @"Runtime\CompilerServices\PreserveNameAttribute.cs",
+                @"Runtime\CompilerServices\PsudoTypeAttribute.cs",
                 @"Runtime\CompilerServices\RequiresAssemblyAttribute.cs",
                 @"Runtime\CompilerServices\ResourcesAttribute.cs",
                 @"Runtime\CompilerServices\RuntimeHelpers.cs",

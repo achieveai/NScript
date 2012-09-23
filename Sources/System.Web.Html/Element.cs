@@ -147,16 +147,67 @@ namespace System.Web.Html
             return new DomList<Element>(this.GetElementsByClassNameInternal(className));
         }
 
-        [ScriptName("getElementsByTagName")]
         public DomList<Element> GetElementsByTagName(string tagName)
         {
             return new DomList<Element>(this.GetElementsByTagNameInternal(tagName));
         }
 
-        [ScriptName("querySelectorall")]
         public DomList<Element> QuerySelectorAll(string selector)
         {
             return new DomList<Element>(this.QuerySelectorAllInternal(selector));
+        }
+
+        public bool AddClassName(string className)
+        {
+            if (className == null
+                || (className = className.Trim()).Length == 0)
+            {
+                return false;
+            }
+
+            if (this.ClassName == null
+                || this.ClassName.Length == 0)
+            {
+                this.ClassName = className;
+                return true;
+            }
+
+            int index = 0;
+            while ((index = this.ClassName.IndexOf(className, index)) != -1)
+            {
+                if ((index == 0 || this.ClassName[index - 1] == ' ')
+                    && (index == this.ClassName.Length - className.Length || this.ClassName[index + className.Length] == ' '))
+                {
+                    return false;
+                }
+            }
+
+            this.ClassName = this.ClassName + " " + className;
+            return true;
+        }
+
+        public bool RemoveClassName(string className)
+        {
+            if (className == null
+                || (className = className.Trim()).Length == 0
+                || this.ClassName == null
+                || this.ClassName.Length == 0)
+            {
+                return false;
+            }
+
+            int index = 0;
+            while ((index = this.ClassName.IndexOf(className, index)) != -1)
+            {
+                if ((index == 0 || this.ClassName[index - 1] == ' ')
+                    && (index == this.ClassName.Length - className.Length || this.ClassName[index + className.Length] == ' '))
+                {
+                    this.ClassName = this.ClassName.Substring(0, index > 0 ? index - 1 : 0) + this.ClassName.Substring(index + className.Length);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void Bind(string eventName, Action<ElementEvent> handler)
