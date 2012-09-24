@@ -83,13 +83,9 @@ namespace Cs2JsC.Converter.ExpressionsConverter
 
             bool isIntrinsic;
 
-            JST.Expression writeFunctionReference = BinaryExpressionConverter.GetWriteFunction(
+            if (BinaryExpressionConverter.IsIntrinsicExpression(
                 converter,
-                expression.Left,
-                arguments,
-                out isIntrinsic);
-
-            if (isIntrinsic)
+                expression.Left))
             {
                 return BinaryExpressionConverter.ConvertInternal(
                     converter,
@@ -104,13 +100,10 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             switch (expression.Operator)
             {
                 case BinaryOperator.Assignment:
-                    arguments.Add(ExpressionConverterBase.Convert(converter, expression.Right));
-
-                    return new JST.MethodCallExpression(
-                        expression.Location,
-                        converter.Scope,
-                        writeFunctionReference,
-                        arguments);
+                    return BinaryExpressionConverter.GetWriteFunction(
+                        converter,
+                        expression.Left,
+                        ExpressionConverterBase.Convert(converter, expression.Right));
 
                 case BinaryOperator.BitwiseAndAssignment:
                     op = BinaryOperator.BitwiseAnd;
@@ -149,7 +142,9 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     throw new ArgumentOutOfRangeException();
             }
 
-            arguments.Add(
+            return BinaryExpressionConverter.GetWriteFunction(
+                converter,
+                expression.Left,
                 BinaryExpressionConverter.ConvertInternal(
                     converter,
                     expression.Location,
@@ -157,12 +152,6 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     op,
                     expression.Right,
                     expression.ResultType));
-
-            return new JST.MethodCallExpression(
-                expression.Location,
-                converter.Scope,
-                writeFunctionReference,
-                arguments);
         }
 
         /// <summary>
@@ -175,11 +164,9 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         internal static JST.Expression GetWriteFunction(
             IMethodScopeConverter converter,
             Expression expression,
-            List<JST.Expression> arguments,
-            out bool isIntrinsic)
+            JST.Expression value)
         {
             VariableAddressReference refVariable = expression as VariableAddressReference;
-            isIntrinsic = false;
 
             if (refVariable != null)
             {
@@ -203,14 +190,42 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 JST.Expression returnValue = PropertyReferenceConverter.Convert(
                     converter,
                     propertyReferenceExpression,
-                    arguments,
-                    false,
-                    out isIntrinsic);
+                    value);
 
                 return returnValue;
             }
 
             throw new NotSupportedException("Only VariableAddressReference and PropertyReferenceExpression is used");
+        }
+
+        /// <summary>
+        /// Gets an intrinsic expression.
+        /// </summary>
+        /// <param name="converter">  The converter. </param>
+        /// <param name="expression"> The expression. </param>
+        /// <returns>
+        /// The intrinsic expression.
+        /// </returns>
+        internal static bool IsIntrinsicExpression(
+            IMethodScopeConverter converter,
+            Expression expression)
+        {
+            ArrayElementExpression arrayElementExpression = expression as ArrayElementExpression;
+            if (arrayElementExpression != null)
+            {
+                expression = PropertyReferenceConverter.ConvertToPropertyReference(
+                    converter.RuntimeManager.Context,
+                    arrayElementExpression);
+            }
+
+            PropertyReferenceExpression propertyReferenceExpression = expression as PropertyReferenceExpression;
+            if (propertyReferenceExpression != null)
+            {
+                PropertyDefinition propertyDefinition = propertyReferenceExpression.PropertyReference.Resolve();
+                return converter.RuntimeManager.Context.IsIntrinsicProperty(propertyDefinition);
+            }
+
+            return false;
         }
 
         /// <summary>

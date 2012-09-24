@@ -57,15 +57,9 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             Location location = expression.Location;
             JST.IdentifierScope scope = converter.Scope;
 
-            bool isIntrinsic;
-
-            JST.Expression writeFunctionReference = BinaryExpressionConverter.GetWriteFunction(
+            if (BinaryExpressionConverter.IsIntrinsicExpression(
                 converter,
-                expression.Expression,
-                arguments,
-                out isIntrinsic);
-
-            if (isIntrinsic)
+                expression.Expression))
             {
                 return UnaryExpressionConverter.Convert(
                     converter,
@@ -155,25 +149,22 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     identExpr);
             }
 
+            var writerExpression = BinaryExpressionConverter.GetWriteFunction(
+                converter,
+                expression.Expression,
+                valueExpression);
+
             if (isPost)
             {
                 return new JST.ExpressionsList(
                     location,
                     scope,
-                    new JST.MethodCallExpression(
-                        writeFunctionReference.Location,
-                        scope,
-                        writeFunctionReference,
-                        valueExpression),
+                    writerExpression,
                     identExpr);
             }
             else
             {
-                return new JST.MethodCallExpression(
-                        writeFunctionReference.Location,
-                        scope,
-                        writeFunctionReference,
-                        valueExpression);
+                return writerExpression;
             }
         }
 

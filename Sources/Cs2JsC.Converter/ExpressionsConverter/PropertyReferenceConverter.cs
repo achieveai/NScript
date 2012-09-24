@@ -30,24 +30,11 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             PropertyReferenceExpression expression)
         {
-            List<JST.Expression> arguments = new List<JST.Expression>();
-            bool isIntrinsic;
             JST.Expression returnValue =
                 PropertyReferenceConverter.Convert(
                     converter,
                     expression,
-                    arguments,
-                    true,
-                    out isIntrinsic);
-
-            if (!isIntrinsic)
-            {
-                returnValue = new JST.MethodCallExpression(
-                        expression.Location,
-                        converter.Scope,
-                        returnValue,
-                        arguments);
-            }
+                    null);
 
             return returnValue;
         }
@@ -55,24 +42,96 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <summary>
         /// Converts the specified converter.
         /// </summary>
-        /// <param name="converter">The converter.</param>
-        /// <param name="expression">The expression.</param>
-        /// <param name="arguments">The arguments.</param>
-        /// <param name="isReader">if set to <c>true</c> [is reader].</param>
-        /// <param name="isIntrinsic">if set to <c>true</c> [is intrinsic].</param>
-        /// <returns>Expression for property access.</returns>
+        /// <exception cref="InvalidOperationException"> Thrown when the requested operation is invalid. </exception>
+        /// <param name="converter">  The converter. </param>
+        /// <param name="expression"> The expression. </param>
+        /// <param name="value">      The arguments. </param>
+        /// <returns>
+        /// Expression for property access.
+        /// </returns>
         public static JST.Expression Convert(
             IMethodScopeConverter converter,
             PropertyReferenceExpression expression,
-            List<JST.Expression> arguments,
-            bool isReader,
-            out bool isIntrinsic)
+            JST.Expression value)
         {
-            isIntrinsic = converter.RuntimeManager.Context.IsIntrinsicProperty(expression.PropertyReference.Resolve());
+            bool isIntrinsic = converter.RuntimeManager.Context.IsIntrinsicProperty(expression.PropertyReference.Resolve());
+            bool isIndexer = isIntrinsic && expression.Arguments.Count > 0;
+
+            PropertyDefinition propertyDefinition = expression.PropertyReference.Resolve();
+            List<JST.Expression> arguments = new List<JST.Expression>();
+
+            if (!isIntrinsic)
+            {
+                arguments.AddRange(
+                    expression.Arguments.Select(
+                        t => ExpressionConverterBase.Convert(converter, t)));
+
+                if (value != null)
+                {
+                    arguments.Add(value);
+                }
+
+                MethodCallContext callContext = null;
+                var methodDefinition = (value == null ? propertyDefinition.GetMethod : propertyDefinition.SetMethod);
+                var methodReference = methodDefinition.FixGenericArguments(expression.PropertyReference.DeclaringType);
+                if (expression.LeftExpression == null)
+                {
+                    callContext = new MethodCallContext(
+                        methodReference,
+                        expression.Location,
+                        converter.Scope);
+                }
+                else
+                {
+                    callContext = new MethodCallContext(
+                         ExpressionConverterBase.Convert(
+                            converter,
+                            expression.LeftExpression),
+                        methodReference,
+                        methodDefinition.IsVirtual);
+                }
+
+                return MethodCallExpressionConverter.CreateMethodCallExpression(
+                    callContext,
+                    arguments,
+                    converter,
+                    converter.RuntimeManager);
+            }
+            else if (value == null)
+            {
+                return PropertyReferenceConverter.GetIntrinsicAccessor(
+                    converter,
+                    expression);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        /// <summary>
+        /// Gets an intrinsic accessor.
+        /// </summary>
+        /// <exception cref="NotSupportedException"> Thrown when the requested operation is not supported. </exception>
+        /// <param name="converter">  The converter. </param>
+        /// <param name="expression"> The expression. </param>
+        /// <returns>
+        /// The intrinsic accessor.
+        /// </returns>
+        public static JST.Expression GetIntrinsicAccessor(
+            IMethodScopeConverter converter,
+            PropertyReferenceExpression expression)
+        {
+            PropertyDefinition propertyDefinition = expression.PropertyReference.Resolve();
+            bool isIntrinsic = converter.RuntimeManager.Context.IsIntrinsicProperty(propertyDefinition);
+            if (!isIntrinsic)
+            {
+                return null;
+            }
+
             bool isIndexer = isIntrinsic && expression.Arguments.Count > 0;
 
             JST.Expression returnValue;
-
             if (expression.LeftExpression == null)
             {
                 if (isIndexer)
@@ -85,7 +144,6 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 }
                 else
                 {
-                    PropertyDefinition propertyDefinition = expression.PropertyReference.Resolve();
                     MethodReference methodReference =
                         (propertyDefinition.SetMethod ?? propertyDefinition.GetMethod).FixGenericArguments(expression.PropertyReference.DeclaringType);
 
@@ -110,42 +168,17 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             }
             else
             {
-                MethodReference accessorMethod =
-                            isReader
-                                ? expression.PropertyReference.Resolve().GetMethod.FixGenericArguments(expression.PropertyReference.DeclaringType)
-                                : expression.PropertyReference.Resolve().SetMethod.FixGenericArguments(expression.PropertyReference.DeclaringType);
+                returnValue = new JST.IdentifierExpression(
+                    converter.Resolve(expression.PropertyReference),
+                    converter.Scope);
 
-                MemberReferenceConverter.FixMethodReference<MethodReference>(converter.RuntimeManager.Context, ref accessorMethod);
-
-                if (!accessorMethod.Resolve().IsVirtual
-                    && accessorMethod.Resolve().DeclaringType.IsValueType)
-                {
-                    returnValue =
-                        JST.IdentifierExpression.Create(
-                            expression.Location,
-                            converter.Scope,
-                            converter.ResolveStaticMember(accessorMethod));
-
-                    arguments.Add(
-                        ExpressionConverterBase.Convert(
-                            converter,
-                            expression.LeftExpression));
-                }
-                else
-                {
-                    returnValue =
-                            converter.ResolveVirtualMethod(
-                                accessorMethod,
-                                converter.Scope);
-
-                    returnValue = new JST.IndexExpression(
-                        expression.Location,
-                        converter.Scope,
-                        ExpressionConverterBase.Convert(
-                            converter,
-                            expression.LeftExpression),
-                        returnValue);
-                }
+                returnValue = new JST.IndexExpression(
+                    expression.Location,
+                    converter.Scope,
+                    ExpressionConverterBase.Convert(
+                        converter,
+                        expression.LeftExpression),
+                    returnValue);
             }
 
             if (isIndexer)
@@ -161,12 +194,6 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     returnValue,
                     ExpressionConverterBase.Convert(converter, expression.Arguments[0]),
                     true);
-            }
-            else if (expression.Arguments.Count > 0)
-            {
-                arguments.AddRange(
-                    expression.Arguments.Select(
-                        t => ExpressionConverterBase.Convert(converter, t)));
             }
 
             return returnValue;

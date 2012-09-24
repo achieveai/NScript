@@ -467,6 +467,9 @@
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\SubDelegates.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\IndexerGet.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\IndexerSet.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\AccessStringElement.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\CheckFooBar.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\GetAndSetIndexerPropertyMcs.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

@@ -63,5 +63,27 @@ namespace Cs2JsC.Converter.Test.MethodConverterTests
                 "SimpleCsMethodCall",
                 TestType.All);
         }
+
+        [Test]
+        public void AccessStringElementCall()
+        {
+            ConverterTestHelpers.RunTest(
+                ScriptImportTests.TemplateNamespace + "AccessStringElement.js",
+                ScriptImportTests.TestClassNameStr,
+                "AccessStringElement",
+                TestType.All,
+                true);
+        }
+
+        [Test]
+        public void CheckFooBarTest()
+        {
+            ConverterTestHelpers.RunTest(
+                ScriptImportTests.TemplateNamespace + "CheckFooBar.js",
+                ScriptImportTests.TestClassNameStr,
+                "CheckFooBar",
+                TestType.All,
+                true);
+        }
     }
 }

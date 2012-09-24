@@ -14,6 +14,20 @@ namespace RealScript
     /// </summary>
     public class JsScriptImport
     {
+        [IntrinsicProperty]
+        [ScriptAlias("jsScriptImportTest")]
+        public static extern JsScriptImport Instance
+        {
+            get;
+        }
+
+        [IntrinsicProperty]
+        public extern int FooBar
+        { get; set; }
+
+        public int this[int index]
+        { get { return 1; } set { } }
+
         [Script("var a,b = 10; a = b + 1; b += a;")]
         public static extern void Simple0ArgScript();
 
@@ -25,5 +39,21 @@ namespace RealScript
 
         [Script(@"return @{[RealScript]RealScript.TmpC::Foo([mscorlib]System.String)}(str);")]
         public static extern int SimpleStatic1ArgCsMethodCall(string str);
+
+        public static int AccessStringElement(string str, int index)
+        {
+            return str[index] + str[index + 1];
+        }
+
+        public static int CheckFooBar()
+        {
+            return JsScriptImport.Instance.FooBar;
+        }
+
+        public static int GetAndSetIndexerProperty(JsScriptImport obj, int foo)
+        {
+            obj[0] = foo;
+            return obj[1];
+        }
     }
 }

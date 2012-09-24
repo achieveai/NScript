@@ -39,6 +39,7 @@ namespace Cs2JsC.Converter.Test.MethodConverterTests
         [Test]
         [Row(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.All)]
         [Row(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoopsMcs.js", TestType.All)]
+        [Row("JsScriptImport", "GetAndSetIndexerProperty", "GetAndSetIndexerPropertyMcs.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
