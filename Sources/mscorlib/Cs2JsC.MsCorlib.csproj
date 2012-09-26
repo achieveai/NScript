@@ -157,6 +157,8 @@
     <Compile Include="Collections\Generic\KeyValuePair.cs" />
     <Compile Include="Collections\Generic\List.cs" />
     <Compile Include="Collections\Generic\NumberDictionary.cs" />
+    <Compile Include="Collections\Generic\Queue.cs" />
+    <Compile Include="Collections\Generic\Stack.cs" />
     <Compile Include="Collections\Generic\StringDictionary.cs" />
     <Compile Include="Collections\IEnumerable.cs">
       <SubType>Code</SubType>

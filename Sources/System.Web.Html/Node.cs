@@ -13,6 +13,7 @@ namespace System.Web.Html
     /// </summary>
     [Imported]
     [IgnoreNamespace]
+    [PsudoType]
     public class Node
     {
         internal Node() { }

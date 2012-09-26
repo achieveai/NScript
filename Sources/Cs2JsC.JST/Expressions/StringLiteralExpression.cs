@@ -24,7 +24,7 @@ namespace Cs2JsC.JST
         public StringLiteralExpression(
             IdentifierScope scope,
             string stringLiteral)
-            : base(Utils.ToJSString(stringLiteral), scope)
+            : base(stringLiteral, scope)
         {
             this.stringLiteral = stringLiteral;
         }

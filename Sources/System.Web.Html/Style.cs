@@ -13,6 +13,7 @@ namespace System.Web.Html
     /// </summary>
     [IgnoreNamespace]
     [Imported]
+    [ScriptName("CSSStyleDeclaration")]
     public sealed class Style
     {
         private Style() { }

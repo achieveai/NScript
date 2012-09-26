@@ -897,9 +897,9 @@ System__String__formatHelperRegex = null;
 System__String__trimStartHelperRegex = null;
 System__String__trimEndHelperRegex = null;
 function System__String____cctor() {
-  System__String__formatHelperRegex = new RegExp("(\\\\{[^\\\\}^\\\\{]+\\\\})", "g");
-  System__String__trimStartHelperRegex = new RegExp("^\\\\s*");
-  System__String__trimEndHelperRegex = new RegExp("\\\\s*$");
+  System__String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
+  System__String__trimStartHelperRegex = new RegExp("^\\s*");
+  System__String__trimEndHelperRegex = new RegExp("\\s*$");
 };
 System__Type__RegisterReferenceType(String, "System.String", Object, []);
 function System_ArrayImpl() {
@@ -1303,9 +1303,13 @@ ptyp_.__ctora = function Sunlight__Framework__Test__ObservableObjectTests$2fObse
   this.__ctor();
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_ObservableObjectTests_ObservableTestObject, "Sunlight.Framework.Test.ObservableObjectTests/ObservableTestObject", Sunlight_Framework_Observables_ObservableObject, []);
+function System_Array() {
+};
+System_Array.typeId = "bm";
+System__Type__RegisterReferenceType(System_Array, "System.Array", Object, []);
 function Sunlight_Framework_TypeRegistry() {
 };
-Sunlight_Framework_TypeRegistry.typeId = "bm";
+Sunlight_Framework_TypeRegistry.typeId = "bn";
 function Sunlight__Framework__TypeRegistry_factory(factory) {
   var this_;
   this_ = new Sunlight_Framework_TypeRegistry();
@@ -1333,9 +1337,9 @@ ptyp_.getValue = function Sunlight__Framework__TypeRegistry__GetValue() {
   return this.value;
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_TypeRegistry, "Sunlight.Framework.TypeRegistry", Object, []);
-Error.typeId = "bn";
+Error.typeId = "bo";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
-Object.typeId = "bo";
+Object.typeId = "bp";
 System__Type__RegisterReferenceType(Object, "System.Collections.Dictionary", Object, []);
 function Sunlight_Framework_ExceptionHelpers() {
 };
@@ -1350,7 +1354,7 @@ function Sunlight__Framework__ExceptionHelpers__ThrowOnArgumentNull(value, argum
 function System_Function(boxedValue) {
   this.boxedValue = boxedValue;
 };
-System_Function.typeId = "bp";
+System_Function.typeId = "bq";
 System_Function.getDefaultValue = function() {
   return {
     length: 0
@@ -1358,7 +1362,7 @@ System_Function.getDefaultValue = function() {
 };
 System_Function.prototype = new System_ValueType();
 System__Type__RegisterStructType(System_Function, "System.Function", []);
-Array.typeId = "bq";
+Array.typeId = "br";
 function System__NativeArray__Push(this_, value) {
   return this_.push(value);
 };
@@ -1387,7 +1391,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_ = System_ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = System_ArrayG;
-  ArrayG$1_$T$_.typeId = "br$" + T.typeId + "$";
+  ArrayG$1_$T$_.typeId = "bs$" + T.typeId + "$";
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
   ArrayG$1_$T$_.__ctora = function System_ArrayG$1_factoryb(size) {
     var this_;
@@ -1416,9 +1420,6 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     this.__ctor();
     this.innerArray = nativeArray;
   };
-  ptyp_.get_length = function System__ArrayG$1__get_Length() {
-    return this.innerArray.length;
-  };
   ptyp_.get_item = function System__ArrayG$1__get_Item(index) {
     var arr;
     arr = this.innerArray;
@@ -1439,7 +1440,6 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.add = function System__ArrayG$1__Add(item) {
     throw new Error("Not Implemented.");
   };
-  ptyp_.V_get_Length = ptyp_.get_length;
   ptyp_["V_get_Count_" + ICollection$1_$T$_.typeId] = ptyp_.get_count;
   ptyp_["V_Add_" + ICollection$1_$T$_.typeId] = ptyp_.add;
   System__Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", System_ArrayImpl, [ICollection$1_$T$_]);
@@ -1465,7 +1465,7 @@ function System_Func(T1, TRes, $5fcallStatiConstructor) {
   Func$2_$T1_x_T1$_ = System_Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_T1$_.genericParameters = [T1, TRes];
   Func$2_$T1_x_T1$_.genericClosure = System_Func;
-  Func$2_$T1_x_T1$_.typeId = "bs$" + T1.typeId + "_" + TRes.typeId + "$";
+  Func$2_$T1_x_T1$_.typeId = "bt$" + T1.typeId + "_" + TRes.typeId + "$";
   Func$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Func$2_$T1_x_T1$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", System_MulticastDelegate, []);
   Func$2_$T1_x_T1$_._tri = function() {
@@ -1489,7 +1489,7 @@ function Sunlight_Framework_Lazy(T, $5fcallStatiConstructor) {
   Lazy$1_$T$_ = Sunlight_Framework_Lazy[T.typeId];
   Lazy$1_$T$_.genericParameters = [T];
   Lazy$1_$T$_.genericClosure = Sunlight_Framework_Lazy;
-  Lazy$1_$T$_.typeId = "bt$" + T.typeId + "$";
+  Lazy$1_$T$_.typeId = "bu$" + T.typeId + "$";
   Lazy$1_$T$_.__ctor = function Sunlight_Framework_Lazy$1_factorya(factory) {
     var this_;
     this_ = new Lazy$1_$T$_();
@@ -1536,7 +1536,7 @@ function Sunlight_Framework_Observables_ObservableCollection(T, $5fcallStatiCons
   ObservableCollection$1_$T$_ = Sunlight_Framework_Observables_ObservableCollection[T.typeId];
   ObservableCollection$1_$T$_.genericParameters = [T];
   ObservableCollection$1_$T$_.genericClosure = Sunlight_Framework_Observables_ObservableCollection;
-  ObservableCollection$1_$T$_.typeId = "bu$" + T.typeId + "$";
+  ObservableCollection$1_$T$_.typeId = "bv$" + T.typeId + "$";
   ObservableCollection$1_$T$_.defaultConstructor = function Sunlight_Framework_Observables_ObservableCollection$1_factorya() {
     var this_;
     this_ = new ObservableCollection$1_$T$_();
@@ -1606,28 +1606,6 @@ function Sunlight_Framework_Observables_ObservableCollection(T, $5fcallStatiCons
     ObservableCollection$1_$T$_._tri();
   return ObservableCollection$1_$T$_;
 };
-function System_Collections_Generic_ICollection(T, $5fcallStatiConstructor) {
-  var ICollection$1_$T$_, $5f_initTracker;
-  if (System_Collections_Generic_ICollection[T.typeId])
-    return System_Collections_Generic_ICollection[T.typeId];
-  System_Collections_Generic_ICollection[T.typeId] = function System__Collections__Generic__ICollection$1a() {
-  };
-  ICollection$1_$T$_ = System_Collections_Generic_ICollection[T.typeId];
-  ICollection$1_$T$_.genericParameters = [T];
-  ICollection$1_$T$_.genericClosure = System_Collections_Generic_ICollection;
-  ICollection$1_$T$_.typeId = "c$" + T.typeId + "$";
-  System__Type__RegisterInterface(ICollection$1_$T$_, "System.Collections.Generic.ICollection`1<" + T.fullName + ">");
-  ICollection$1_$T$_._tri = function() {
-    if ($5f_initTracker)
-      return;
-    $5f_initTracker = true;
-    T = T;
-    ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, true);
-  };
-  if ($5fcallStatiConstructor)
-    ICollection$1_$T$_._tri();
-  return ICollection$1_$T$_;
-};
 function Sunlight_Framework_Observables_CollectionChangedEventArgs(T, $5fcallStatiConstructor) {
   var CollectionChangedEventArgs$1_$T$_, $5f_initTracker;
   if (Sunlight_Framework_Observables_CollectionChangedEventArgs[T.typeId])
@@ -1637,7 +1615,7 @@ function Sunlight_Framework_Observables_CollectionChangedEventArgs(T, $5fcallSta
   CollectionChangedEventArgs$1_$T$_ = Sunlight_Framework_Observables_CollectionChangedEventArgs[T.typeId];
   CollectionChangedEventArgs$1_$T$_.genericParameters = [T];
   CollectionChangedEventArgs$1_$T$_.genericClosure = Sunlight_Framework_Observables_CollectionChangedEventArgs;
-  CollectionChangedEventArgs$1_$T$_.typeId = "bv$" + T.typeId + "$";
+  CollectionChangedEventArgs$1_$T$_.typeId = "bw$" + T.typeId + "$";
   CollectionChangedEventArgs$1_$T$_.__ctor = function Sunlight_Framework_Observables_CollectionChangedEventArgs$1_factorya(action, changeIndex, newItems, oldItems) {
     var this_;
     this_ = new CollectionChangedEventArgs$1_$T$_();
@@ -1693,6 +1671,28 @@ function Sunlight_Framework_Observables_CollectionChangedEventArgs(T, $5fcallSta
     CollectionChangedEventArgs$1_$T$_._tri();
   return CollectionChangedEventArgs$1_$T$_;
 };
+function System_Collections_Generic_ICollection(T, $5fcallStatiConstructor) {
+  var ICollection$1_$T$_, $5f_initTracker;
+  if (System_Collections_Generic_ICollection[T.typeId])
+    return System_Collections_Generic_ICollection[T.typeId];
+  System_Collections_Generic_ICollection[T.typeId] = function System__Collections__Generic__ICollection$1a() {
+  };
+  ICollection$1_$T$_ = System_Collections_Generic_ICollection[T.typeId];
+  ICollection$1_$T$_.genericParameters = [T];
+  ICollection$1_$T$_.genericClosure = System_Collections_Generic_ICollection;
+  ICollection$1_$T$_.typeId = "c$" + T.typeId + "$";
+  System__Type__RegisterInterface(ICollection$1_$T$_, "System.Collections.Generic.ICollection`1<" + T.fullName + ">");
+  ICollection$1_$T$_._tri = function() {
+    if ($5f_initTracker)
+      return;
+    $5f_initTracker = true;
+    T = T;
+    ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, true);
+  };
+  if ($5fcallStatiConstructor)
+    ICollection$1_$T$_._tri();
+  return ICollection$1_$T$_;
+};
 function System_Action(T1, T2, $5fcallStatiConstructor) {
   var Action$2_$T1_x_T1$_, $5f_initTracker;
   if (System_Action[T1.typeId] && System_Action[T1.typeId][T2.typeId])
@@ -1704,7 +1704,7 @@ function System_Action(T1, T2, $5fcallStatiConstructor) {
   Action$2_$T1_x_T1$_ = System_Action[T1.typeId][T2.typeId];
   Action$2_$T1_x_T1$_.genericParameters = [T1, T2];
   Action$2_$T1_x_T1$_.genericClosure = System_Action;
-  Action$2_$T1_x_T1$_.typeId = "bw$" + T1.typeId + "_" + T2.typeId + "$";
+  Action$2_$T1_x_T1$_.typeId = "bx$" + T1.typeId + "_" + T2.typeId + "$";
   Action$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$2_$T1_x_T1$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", System_MulticastDelegate, []);
   Action$2_$T1_x_T1$_._tri = function() {
@@ -1732,7 +1732,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "bx$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "by$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   ICollection$1_$KeyValuePair$2_$String_x_String$_$_ = System_Collections_Generic_ICollection(System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
@@ -1809,7 +1809,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   List$1_$T$_ = System_Collections_Generic_List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = System_Collections_Generic_List;
-  List$1_$T$_.typeId = "by$" + T.typeId + "$";
+  List$1_$T$_.typeId = "bz$" + T.typeId + "$";
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factorya() {
     var this_;
@@ -1864,7 +1864,7 @@ function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) 
   KeyValuePair$2_$K_x_K$_ = System_Collections_Generic_KeyValuePair[K.typeId][V.typeId];
   KeyValuePair$2_$K_x_K$_.genericParameters = [K, V];
   KeyValuePair$2_$K_x_K$_.genericClosure = System_Collections_Generic_KeyValuePair;
-  KeyValuePair$2_$K_x_K$_.typeId = "bz$" + K.typeId + "_" + V.typeId + "$";
+  KeyValuePair$2_$K_x_K$_.typeId = "ca$" + K.typeId + "_" + V.typeId + "$";
   KeyValuePair$2_$K_x_K$_.getDefaultValue = function() {
     return {
       key: K.getDefaultValue(),

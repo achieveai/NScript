@@ -170,10 +170,15 @@ namespace Cs2JsC.Converter.ExpressionsConverter
 
             if (refVariable != null)
             {
-                return VariableAddressReferenceConverter.Convert(
-                    converter,
-                    refVariable,
-                    false);
+                return
+                    new JST.MethodCallExpression(
+                        expression.Location,
+                        converter.Scope,
+                        VariableAddressReferenceConverter.Convert(
+                            converter,
+                            refVariable,
+                            false),
+                        value);
             }
 
             ArrayElementExpression arrayElementExpression = expression as ArrayElementExpression;

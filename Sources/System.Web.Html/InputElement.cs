@@ -13,7 +13,8 @@ namespace System.Web.Html
     /// </summary>
     [Imported]
     [IgnoreNamespace]
-    public class InputElement
+    [PsudoType]
+    public class InputElement : Element
     {
         internal InputElement() { }
 

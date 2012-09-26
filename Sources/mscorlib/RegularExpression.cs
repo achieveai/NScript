@@ -5,75 +5,45 @@
     [IgnoreNamespace, ScriptName("RegExp"), Imported]
     public sealed class RegularExpression
     {
-        public RegularExpression(string pattern)
-        {
-        }
+        public extern RegularExpression(string pattern);
 
-        public RegularExpression(string pattern, string flags)
-        {
-        }
+        public extern RegularExpression(string pattern, string flags);
 
-        public string[] Exec(string s)
-        {
-            return null;
-        }
+        public extern string[] Exec(string s);
 
-        public static RegularExpression Parse(string s)
-        {
-            return null;
-        }
+        public extern static RegularExpression Parse(string s);
 
-        public bool Test(string s)
+        public extern bool Test(string s);
+
+        [IntrinsicProperty]
+        public extern bool Global
         {
-            return false;
+            get;
         }
 
         [IntrinsicProperty]
-        public bool Global
+        public extern bool IgnoreCase
         {
-            get
-            {
-                return false;
-            }
+            get;
         }
 
         [IntrinsicProperty]
-        public bool IgnoreCase
+        public extern int LastIndex
         {
-            get
-            {
-                return false;
-            }
+            get;
+            set;
         }
 
         [IntrinsicProperty]
-        public int LastIndex
+        public extern bool Multiline
         {
-            get
-            {
-                return 0;
-            }
-            set
-            {
-            }
+            get;
         }
 
         [IntrinsicProperty]
-        public bool Multiline
+        public extern string Pattern
         {
-            get
-            {
-                return false;
-            }
-        }
-
-        [IntrinsicProperty]
-        public string Pattern
-        {
-            get
-            {
-                return null;
-            }
+            get;
         }
     }
 }

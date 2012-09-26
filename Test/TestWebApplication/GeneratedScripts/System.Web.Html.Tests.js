@@ -92,15 +92,12 @@ Window.typeId = "e";
 System__Type__RegisterReferenceType(Window, "System.Web.Html.Window", Object, []);
 Document.typeId = "f";
 System__Type__RegisterReferenceType(Document, "System.Web.Html.Document", Object, []);
-Node.typeId = "g";
 function System__Web__Html__Node__As(this_) {
   return this_;
 };
 function System__Web__Html__Node__GetAttributes(this_) {
   return System_Web_Html_DomList_$Attr$_.__ctor(this_.attributes);
 };
-System__Type__RegisterReferenceType(Node, "System.Web.Html.Node", Object, []);
-Element.typeId = "h";
 function System__Web__Html__Element__Bind(this_, eventName, handler) {
   var dataCache;
   dataCache = System__Web__Html__DomDataCache__GetDataCache(this_);
@@ -111,23 +108,22 @@ function System__Web__Html__Element__UnBind(this_, eventName, handler) {
   dataCache = System__Web__Html__DomDataCache__GetDataCache(this_);
   dataCache.removeEvent(eventName, handler, false);
 };
-System__Type__RegisterReferenceType(Element, "System.Web.Html.Element", Node, []);
-Attr.typeId = "i";
+Attr.typeId = "g";
 System__Type__RegisterReferenceType(Attr, "System.Web.Html.NodeAttribute", Object, []);
-Event.typeId = "j";
+Event.typeId = "h";
 System__Type__RegisterReferenceType(Event, "System.Web.Html.ElementEvent", Object, []);
-MutationEvent.typeId = "k";
+MutationEvent.typeId = "i";
 System__Type__RegisterReferenceType(MutationEvent, "System.Web.Html.MutableEvent", Object, []);
-Array.typeId = "l";
+Array.typeId = "j";
 function System__NativeArray__GetFrom(this_, index) {
   return this_[index];
 };
 System__Type__RegisterReferenceType(Array, "System.NativeArray", Object, []);
-Error.typeId = "m";
+Error.typeId = "k";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function System_Web_Html_DomDataCache() {
 };
-System_Web_Html_DomDataCache.typeId = "n";
+System_Web_Html_DomDataCache.typeId = "l";
 System__Web__Html__DomDataCache__instance = null;
 System__Web__Html__DomDataCache__cacheId = 0;
 System__Web__Html__DomDataCache__cacheIdString = null;
@@ -236,12 +232,12 @@ ptyp_.eventHandlerBubble = function System__Web__Html__DomDataCache__EventHandle
 System__Type__RegisterReferenceType(System_Web_Html_DomDataCache, "System.Web.Html.DomDataCache", Object, []);
 function System_ValueType() {
 };
-System_ValueType.typeId = "o";
+System_ValueType.typeId = "m";
 System__Type__RegisterReferenceType(System_ValueType, "System.ValueType", Object, []);
 function System_Int32(boxedValue) {
   this.boxedValue = boxedValue;
 };
-System_Int32.typeId = "p";
+System_Int32.typeId = "n";
 System_Int32.getDefaultValue = function() {
   return 0;
 };
@@ -260,7 +256,7 @@ System__Type__RegisterStructType(System_Int32, "System.Int32", []);
 function System__Math__Random(number) {
   return Math.floor(Math.random() * number) | 0;
 };
-Date.typeId = "q";
+Date.typeId = "o";
 function System__DateTime__get_Now() {
   return new Date();
 };
@@ -268,24 +264,24 @@ function System__DateTime____cctor() {
   Date.empty = new Date(0);
 };
 System__Type__RegisterReferenceType(Date, "System.DateTime", Object, []);
-String.typeId = "r";
+String.typeId = "p";
 System__String__formatHelperRegex = null;
 System__String__trimStartHelperRegex = null;
 System__String__trimEndHelperRegex = null;
 function System__String____cctor() {
-  System__String__formatHelperRegex = new RegExp("(\\\\{[^\\\\}^\\\\{]+\\\\})", "g");
-  System__String__trimStartHelperRegex = new RegExp("^\\\\s*");
-  System__String__trimEndHelperRegex = new RegExp("\\\\s*$");
+  System__String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
+  System__String__trimStartHelperRegex = new RegExp("^\\s*");
+  System__String__trimEndHelperRegex = new RegExp("\\s*$");
 };
 function System__String__Concat(s1, s2, s3, s4) {
   return s1.toString() + s2.toString() + s3.toString() + s4.toString();
 };
 System__Type__RegisterReferenceType(String, "System.String", Object, []);
-RegExp.typeId = "s";
+RegExp.typeId = "q";
 System__Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
 function System_Delegate() {
 };
-System_Delegate.typeId = "t";
+System_Delegate.typeId = "r";
 function System__Delegate__Combine(a, b) {
   var funcs, rv;
   funcs = [];
@@ -371,13 +367,13 @@ function System__Delegate__CreateJoinedArray(array) {
 System__Type__RegisterReferenceType(System_Delegate, "System.Delegate", Object, []);
 function System_MulticastDelegate() {
 };
-System_MulticastDelegate.typeId = "u";
+System_MulticastDelegate.typeId = "s";
 System_MulticastDelegate.prototype = new System_Delegate();
 System__Type__RegisterReferenceType(System_MulticastDelegate, "System.MulticastDelegate", System_Delegate, []);
 function System_Double(boxedValue) {
   this.boxedValue = boxedValue;
 };
-System_Double.typeId = "v";
+System_Double.typeId = "t";
 System_Double.getDefaultValue = function() {
   return 0;
 };
@@ -390,7 +386,7 @@ ptyp_.toString = function() {
   return System__Double__ToString(this.boxedValue);
 };
 System__Type__RegisterStructType(System_Double, "System.Double", []);
-Object.typeId = "w";
+Object.typeId = "u";
 System__Type__RegisterReferenceType(Object, "System.Collections.Dictionary", Object, []);
 function System_Web_Html_DomList(T, $5fcallStatiConstructor) {
   var DomList$1_$T$_;
@@ -401,7 +397,7 @@ function System_Web_Html_DomList(T, $5fcallStatiConstructor) {
   DomList$1_$T$_ = System_Web_Html_DomList[T.typeId];
   DomList$1_$T$_.genericParameters = [T];
   DomList$1_$T$_.genericClosure = System_Web_Html_DomList;
-  DomList$1_$T$_.typeId = "x$" + T.typeId + "$";
+  DomList$1_$T$_.typeId = "v$" + T.typeId + "$";
   DomList$1_$T$_.__ctor = function System_Web_Html_DomList$1_factory(array) {
     var this_;
     this_ = new DomList$1_$T$_();
@@ -434,7 +430,7 @@ function System_Collections_Generic_NumberDictionary(TValue, $5fcallStatiConstru
   NumberDictionary$1_$TValue$_ = System_Collections_Generic_NumberDictionary[TValue.typeId];
   NumberDictionary$1_$TValue$_.genericParameters = [TValue];
   NumberDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_NumberDictionary;
-  NumberDictionary$1_$TValue$_.typeId = "y$" + TValue.typeId + "$";
+  NumberDictionary$1_$TValue$_.typeId = "w$" + TValue.typeId + "$";
   NumberDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_NumberDictionary$1_factory() {
     var this_;
     this_ = new NumberDictionary$1_$TValue$_();
@@ -466,7 +462,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "z$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "x$" + TValue.typeId + "$";
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -517,7 +513,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_ = System_Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = System_Action;
-  Action$1_$T1$_.typeId = "A$" + T1.typeId + "$";
+  Action$1_$T1$_.typeId = "y$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", System_MulticastDelegate, []);
   return Action$1_$T1$_;

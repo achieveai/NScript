@@ -79,5 +79,22 @@ namespace RealScript
             TestArithmetics.Unary(++i, ++i);
             TestArithmetics.Unary(i++, i++);
         }
+
+        public static bool TestPassByRefAssignment(List<int> list, ref int value)
+        {
+            if (list.Count > 10)
+            {
+                value = list[10];
+                return true;
+            }
+
+            value = default(int);
+            return false;
+        }
+
+        public static string EscapesInString()
+        {
+            return @"\+.?/\r\n" + "\\+?.\r\n\"";
+        }
     }
 }

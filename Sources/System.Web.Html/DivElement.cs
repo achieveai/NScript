@@ -13,7 +13,7 @@ namespace System.Web.Html
     /// </summary>
     [Imported]
     [IgnoreNamespace]
-    [ScriptName("HTMLDivElement")]
+    [PsudoType]
     public sealed class DivElement : Element
     {
         private DivElement() { }

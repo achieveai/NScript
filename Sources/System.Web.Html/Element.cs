@@ -14,6 +14,7 @@ namespace System.Web.Html
     /// </summary>
     [IgnoreNamespace]
     [Imported]
+    [PsudoType]
     public class Element : Node
     {
         internal Element() { }

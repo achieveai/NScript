@@ -470,6 +470,8 @@
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\AccessStringElement.js" />
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\CheckFooBar.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\GetAndSetIndexerPropertyMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\TestPassByRefAssignment.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\EscapesInString.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>
