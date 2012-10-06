@@ -57,6 +57,19 @@ namespace System.Collections.Generic
             this.nativeArray.InsertRangeAt(index, NativeArray.GetNativeArray(items));
         }
 
+        public void InsertRange(int index, List<T> items)
+        {
+            this.nativeArray.InsertRangeAt(index, items.nativeArray);
+        }
+
+        public void InsertRange(int index, IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                this.nativeArray.InsertAt(index++, item);
+            }
+        }
+
         public void RemoveAt(int index)
         {
             this.nativeArray.RemoveAt(index);
@@ -79,9 +92,21 @@ namespace System.Collections.Generic
 
         public void AddRange(T[] items)
         {
-            for (int i = 0; i < items.Length; i++)
+            this.nativeArray =
+                this.nativeArray.Concat(NativeArray.GetNativeArray(items));
+        }
+
+        public void AddRange(List<T> items)
+        {
+            this.nativeArray =
+                this.nativeArray.Concat(items.nativeArray);
+        }
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            foreach (var item in items)
             {
-                this.nativeArray.Push(items[i]);
+                this.nativeArray.Push(item);
             }
         }
 
@@ -112,6 +137,11 @@ namespace System.Collections.Generic
             }
 
             return index >= 0;
+        }
+
+        public void Sort(Func<T, T, int> sortFunction)
+        {
+            this.nativeArray.Sort(sortFunction);
         }
 
         public IEnumerator<T> GetEnumerator()

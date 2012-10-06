@@ -472,6 +472,8 @@
     <EmbeddedResource Include="MethodConverterTests\Regressions\GetAndSetIndexerPropertyMcs.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\TestPassByRefAssignment.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\EscapesInString.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCalls.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\CollapsingForInIfRegression.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

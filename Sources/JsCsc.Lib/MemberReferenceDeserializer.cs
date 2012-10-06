@@ -70,10 +70,28 @@ namespace JsCsc.Lib
             var returningType = this.DeserializeType(
                 jObject.Value<JObject>(NameTokens.ReturnType));
 
+            if (returningType.HasGenericParameters && returningType is TypeDefinition)
+            {
+                // Returning type can't be TypeDefinition if typeDefinition is generic, it has to
+                // be TypeReference.
+                var genericInstanceType = new GenericInstanceType(returningType);
+                for (int iArity = 0; iArity < returningType.GenericParameters.Count; iArity++)
+                {
+                    genericInstanceType.GenericArguments.Add(returningType.GenericParameters[iArity]);
+                }
+
+                returningType = genericInstanceType;
+            }
+
             MethodReference rv = new MethodReference(
                 name,
                 returningType,
                 declaringType);
+
+            MethodReference rvDef = new MethodReference(
+                name,
+                returningType,
+                declaringType.Resolve());
 
             JArray argsArray = jObject.Value<JArray>(NameTokens.Parameters);
             for (int iParam = 0; iParam < argsArray.Count; iParam++)
@@ -101,6 +119,12 @@ namespace JsCsc.Lib
                         paramObj.Value<string>(NameTokens.Name),
                         attr,
                         argType));
+
+                rvDef.Parameters.Add(
+                    new ParameterDefinition(
+                        paramObj.Value<string>(NameTokens.Name),
+                        attr,
+                        argType));
             }
 
             this._activeContext = this._methodContextTypeParams;
@@ -110,7 +134,7 @@ namespace JsCsc.Lib
             {
                 for (int iArity = 0; iArity < arity; iArity++)
                 {
-                    rv.GenericParameters.Add(
+                    rvDef.GenericParameters.Add(
                         new GenericParameter(
                             iArity,
                             GenericParameterType.Method,
@@ -119,7 +143,7 @@ namespace JsCsc.Lib
 
                 // Now let's fix both the generic parameters and argument types so that
                 // generic parameters have property owners.
-                MethodDefinition tmpMethodDefinition = rv.Resolve();
+                MethodDefinition tmpMethodDefinition = rvDef.Resolve();
                 this._activeContext = this.GetTypeNameMaps(tmpMethodDefinition);
 
                 rv = new MethodReference();

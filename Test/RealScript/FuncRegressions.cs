@@ -7,6 +7,7 @@
 namespace RealScript
 {
     using System;
+    using System.Collections;
 
     /// <summary>
     /// Definition for FuncRegressions
@@ -95,6 +96,18 @@ namespace RealScript
         public static string EscapesInString()
         {
             return @"\+.?/\r\n" + "\\+?.\r\n\"";
+        }
+
+        public static void CollapsingForInIfRegression(string[] headerPair)
+        {
+            var request = new MyDictionary<string, string>();
+            if (headerPair != null)
+            {
+                for (int iHeader = 0; iHeader < headerPair.Length - 1; iHeader+=2)
+                {
+                    request.Add(headerPair[iHeader], headerPair[iHeader + 1]);
+                }
+            }
         }
     }
 }

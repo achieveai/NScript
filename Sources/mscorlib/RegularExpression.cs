@@ -9,11 +9,14 @@
 
         public extern RegularExpression(string pattern, string flags);
 
-        public extern string[] Exec(string s);
-
         public extern static RegularExpression Parse(string s);
 
         public extern bool Test(string s);
+
+        public string[] Execute(string s)
+        {
+            return this.Exec(s).GetArray<string>();
+        }
 
         [IntrinsicProperty]
         public extern bool Global
@@ -45,6 +48,8 @@
         {
             get;
         }
+
+        private extern NativeArray Exec(string s);
     }
 }
 

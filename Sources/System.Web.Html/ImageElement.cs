@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ImageElement
     /// </summary>
-    [Imported]
+    [PsudoType]
     [IgnoreNamespace]
     public sealed class ImageElement : Element
     {

@@ -30,6 +30,21 @@ namespace RealScript
         {
             return bar;
         }
+
+        public T Foo(TestGeneric<T> bar)
+        {
+            return default(T);
+        }
+
+        public T Foo<V>(TestGeneric<T> bar, TestGeneric<V> b)
+        {
+            return default(T);
+        }
+
+        public T Foo<V>(TestGeneric<V> bar)
+        {
+            return default(T);
+        }
     }
 
     public class TestGeneric
@@ -160,6 +175,17 @@ namespace RealScript
             }
 
             return default(T);
+        }
+
+        public static void TestGenericMethodCalls()
+        {
+            var tmp = new TestGeneric<int>();
+            var tmp1 = new TestGeneric<long>();
+            var tmp2 = new TestGeneric<int>();
+            tmp.Foo(1);
+            tmp.Foo(tmp2);
+            tmp.Foo<int>(tmp2);
+            tmp.Foo<long>(tmp2, tmp1);
         }
     }
 }

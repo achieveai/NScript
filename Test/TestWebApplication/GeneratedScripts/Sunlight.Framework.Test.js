@@ -5,7 +5,7 @@ function System__Type__AsType(this_, instance) {
   return this_.isInstanceOfType(instance) ? instance : null;
 };
 function System__Type__CastType(this_, instance) {
-  if (this_.isInstanceOfType(instance)) {
+  if (this_.isInstanceOfType(instance) || instance === null) {
     if (this_.isStruct)
       return instance.boxedValue;
     return instance;
@@ -172,7 +172,7 @@ function Sunlight__Framework__Test__Binders__DataBinderTests__BasicBinderTwoWayN
   QUnit.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
   dataBinder.setSource(source);
   QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
-  target.set_intProp((stmtTemp1 = target.get_intProp()) + 1), stmtTemp1;
+  (target.set_intProp((stmtTemp1 = target.get_intProp()) + 1), stmtTemp1);
   QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_Binders_DataBinderTests, "Sunlight.Framework.Test.Binders.DataBinderTests", Object, []);
@@ -180,21 +180,8 @@ function Sunlight_Framework_Test_Binders_SourcePropertyBinderTests() {
 };
 Sunlight_Framework_Test_Binders_SourcePropertyBinderTests.typeId = "l";
 function Sunlight__Framework__Test__Binders__SourcePropertyBinderTests__PrepNotifiableObject() {
-  var rv;
-  rv = (function() {
-    var $5fipi;
-    $5fipi = Sunlight__Framework__Test__Binders__SimpleNotifiableClass_factory();
-    $5fipi.set_intProp(10);
-    $5fipi.set_strProp("Ten");
-    $5fipi.set_objProp((function() {
-      var $5fipi;
-      $5fipi = Sunlight__Framework__Test__Binders__SimpleObjectWithProperty_factory();
-      $5fipi.set_intProp(11);
-      $5fipi.set_stringProp("Eleven");
-      return $5fipi;
-    })());
-    return $5fipi;
-  })();
+  var rv, stmtTemp1, stmtTemp1a;
+  rv = ((stmtTemp1 = Sunlight__Framework__Test__Binders__SimpleNotifiableClass_factory(), stmtTemp1.set_intProp(10), stmtTemp1.set_strProp("Ten"), stmtTemp1.set_objProp((stmtTemp1a = Sunlight__Framework__Test__Binders__SimpleObjectWithProperty_factory(), stmtTemp1a.set_intProp(11), stmtTemp1a.set_stringProp("Eleven"), stmtTemp1a)), stmtTemp1));
   rv.set_selfProp(rv);
   rv.get_objProp().set_selfProp(rv.get_objProp());
   rv.get_objProp().set_notifiableProp(rv);
@@ -227,7 +214,7 @@ function Sunlight__Framework__Test__Binders__SourcePropertyBinderTests__BasicVal
   QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
   QUnit.equal(src.get_intProp(), System_Int32.unbox(sourceBinder.get_value()), "SourceBinder.Value");
   helper.set_sourceValueUpdateCalled(false);
-  src.set_intProp((stmtTemp1 = src.get_intProp()) + 1), stmtTemp1;
+  (src.set_intProp((stmtTemp1 = src.get_intProp()) + 1), stmtTemp1);
   QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
   QUnit.equal(src.get_intProp(), System_Int32.unbox(sourceBinder.get_value()), "SourceBinder.Value");
 };
@@ -348,7 +335,7 @@ function Sunlight_Framework_Test_EventBusTests() {
 };
 Sunlight_Framework_Test_EventBusTests.typeId = "n";
 function Sunlight__Framework__Test__EventBusTests__TestSubscribeAndRaise() {
-  var evtBus, x1, x2;
+  var evtBus, x1, x2, stmtTemp1;
   evtBus = Sunlight__Framework__EventBus_factory();
   x1 = 0;
   x2 = 0;
@@ -358,17 +345,12 @@ function Sunlight__Framework__Test__EventBusTests__TestSubscribeAndRaise() {
   evtBus.subscribe(Sunlight_Framework_Test_EventBusTests_Evt2, function Sunlight__Framework__Test__EventBusTests__TestSubscribeAndRaise_del2(evt) {
     return x2 = evt.x;
   });
-  evtBus.raise(Sunlight_Framework_Test_EventBusTests_Evt1, (function() {
-    var $5fipi;
-    $5fipi = Sunlight__Framework__Test__EventBusTests$2fEvt1_factory();
-    $5fipi.x = 10;
-    return $5fipi;
-  })());
+  evtBus.raise(Sunlight_Framework_Test_EventBusTests_Evt1, (stmtTemp1 = Sunlight__Framework__Test__EventBusTests$2fEvt1_factory(), stmtTemp1.x = 10, stmtTemp1));
   QUnit.equal(10, x1, "10 == x1");
   QUnit.equal(0, x2, "0 == x2");
 };
 function Sunlight__Framework__Test__EventBusTests__TestSubscribeAndRaiseOnceTime() {
-  var evtBus, x1, x2, del;
+  var evtBus, x1, x2, del, stmtTemp1;
   evtBus = Sunlight__Framework__EventBus_factory();
   x1 = 0;
   x2 = 0;
@@ -379,19 +361,14 @@ function Sunlight__Framework__Test__EventBusTests__TestSubscribeAndRaiseOnceTime
   evtBus.subscribe(Sunlight_Framework_Test_EventBusTests_Evt2, function Sunlight__Framework__Test__EventBusTests__TestSubscribeAndRaiseOnceTime_del2(evt) {
     return x2 = evt.x;
   });
-  evtBus.raiseOneTime(Sunlight_Framework_Test_EventBusTests_Evt1, (function() {
-    var $5fipi;
-    $5fipi = Sunlight__Framework__Test__EventBusTests$2fEvt1_factory();
-    $5fipi.x = 10;
-    return $5fipi;
-  })());
+  evtBus.raiseOneTime(Sunlight_Framework_Test_EventBusTests_Evt1, (stmtTemp1 = Sunlight__Framework__Test__EventBusTests$2fEvt1_factory(), stmtTemp1.x = 10, stmtTemp1));
   QUnit.equal(10, x1, "10 == x1");
   x1 = 0;
   evtBus.subscribe(Sunlight_Framework_Test_EventBusTests_Evt1, del);
   QUnit.equal(10, x1, "(2) 10 == x1");
 };
 function Sunlight__Framework__Test__EventBusTests__TestSubscribeUnSubscribeAndRaise() {
-  var evtBus, x1, x2, del;
+  var evtBus, x1, x2, del, stmtTemp1;
   evtBus = Sunlight__Framework__EventBus_factory();
   x1 = 0;
   x2 = 0;
@@ -405,12 +382,7 @@ function Sunlight__Framework__Test__EventBusTests__TestSubscribeUnSubscribeAndRa
     return x2 = evt.x;
   });
   evtBus.unSubscribe(Sunlight_Framework_Test_EventBusTests_Evt1, del);
-  evtBus.raise(Sunlight_Framework_Test_EventBusTests_Evt1, (function() {
-    var $5fipi;
-    $5fipi = Sunlight__Framework__Test__EventBusTests$2fEvt1_factory();
-    $5fipi.x = 10;
-    return $5fipi;
-  })());
+  evtBus.raise(Sunlight_Framework_Test_EventBusTests_Evt1, (stmtTemp1 = Sunlight__Framework__Test__EventBusTests$2fEvt1_factory(), stmtTemp1.x = 10, stmtTemp1));
   QUnit.equal(0, x1, "0 == x1");
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_EventBusTests, "Sunlight.Framework.Test.EventBusTests", Object, []);

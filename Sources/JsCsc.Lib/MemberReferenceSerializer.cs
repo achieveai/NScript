@@ -219,7 +219,7 @@ namespace JsCsc.Lib
             return MemberReferenceSerializer.Serialize(type.CurrentType);
         }
 
-        public static JObject Serialize(TypeSpec type)
+        public static JObject Serialize(TypeSpec type, TypeSpec typeContext = null, MethodSpec methodContext = null)
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TypeSpec;
@@ -246,31 +246,55 @@ namespace JsCsc.Lib
             if (type.IsArray)
             {
                 rv[NameTokens.Type] = ValueTokens.Array;
-                rv[NameTokens.ElementType] = MemberReferenceSerializer.Serialize(((ArrayContainer)type).Element);
+                rv[NameTokens.ElementType] = MemberReferenceSerializer.Serialize(((ArrayContainer)type).Element, typeContext, methodContext);
 
                 return rv;
             }
 
-            if (type is InflatedTypeSpec && type.IsGeneric)
+            if (type.IsGeneric && (type is InflatedTypeSpec
+                || (typeContext != null && typeContext.MemberDefinition == type.MemberDefinition)))
             {
                 rv[NameTokens.Type] = ValueTokens.GenericInstance;
             }
-            rv[NameTokens.Arity] = type.Arity;
 
+            rv[NameTokens.Arity] = type.Arity;
             rv[NameTokens.NameSpace] = metaInfo.Namespace;
             rv[NameTokens.Name] = metaInfo.Name;
             if (metaInfo.IsNested)
             {
-                rv[NameTokens.DeclaringType] = MemberReferenceSerializer.Serialize(type.DeclaringType);
+                rv[NameTokens.DeclaringType] = MemberReferenceSerializer.Serialize(type.DeclaringType, typeContext, methodContext);
             }
 
-            if (type is InflatedTypeSpec && type.IsGeneric)
+            if (type.IsGeneric && type is InflatedTypeSpec)
             {
                 InflatedTypeSpec inflatedTypeSpec = (InflatedTypeSpec)type;
                 JArray jarray = new JArray();
                 foreach (var typeArg in inflatedTypeSpec.TypeArguments)
                 {
-                    jarray.Add(MemberReferenceSerializer.Serialize(typeArg));
+                    jarray.Add(MemberReferenceSerializer.Serialize(typeArg, typeContext, methodContext));
+                }
+
+                rv[NameTokens.TypeParams] = jarray;
+            }
+            else if (type.IsGeneric && typeContext != null && type.MemberDefinition == typeContext.MemberDefinition)
+            {
+                // All this is a hack around bug in Mono where it doesn't really keep type as InflatedType instread
+                // makes it a typeSpec.
+                JArray jarray = new JArray();
+                string typeNameStr = type.ToString();
+                int indexOfGt = typeNameStr.IndexOf('<');
+                int indexOfLt = typeNameStr.IndexOf('>');
+                string[] typeArgNames = typeNameStr.Substring(indexOfGt + 1, indexOfLt - indexOfGt - 1).Split(',');
+                for (int i = 0; i < type.Arity; i++)
+                {
+                    JObject paramObj = new JObject();
+                    paramObj[NameTokens.Module] = MemberReferenceSerializer.Serialize(metaInfo.Module);
+                    paramObj[NameTokens.Type] = ValueTokens.GenericParam;
+                    paramObj[NameTokens.Name] = typeArgNames[i];
+                    paramObj[NameTokens.Position] = i;
+                    paramObj[NameTokens.IsMethodOwned] = false;
+
+                    jarray.Add(paramObj);
                 }
 
                 rv[NameTokens.TypeParams] = jarray;
@@ -292,7 +316,7 @@ namespace JsCsc.Lib
             }
 
             IParametersMember parametersMember = method.MemberDefinition as IParametersMember;
-            var parameters = parametersMember != null
+            var parameters = parametersMember != null // && method.Parameters == null
                 ? parametersMember.Parameters
                 : method.Parameters;
 
@@ -335,7 +359,7 @@ namespace JsCsc.Lib
 
                 paramObj[NameTokens.ModFlags] = attribute.ToString();
                 paramObj[NameTokens.Name] = paramData.Item1.Name;
-                paramObj[NameTokens.Type] = MemberReferenceSerializer.Serialize(paramData.Item2);
+                paramObj[NameTokens.Type] = MemberReferenceSerializer.Serialize(paramData.Item2, method.DeclaringType, method);
 
                 jarray.Add(paramObj);
             }

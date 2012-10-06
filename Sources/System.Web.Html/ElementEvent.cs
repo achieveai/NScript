@@ -11,9 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ElementEvent
     /// </summary>
-    [Imported]
-    [IgnoreNamespace]
-    [ScriptName("Event")]
+    [PsudoType, IgnoreNamespace]
     public class ElementEvent
     {
         internal ElementEvent() { }

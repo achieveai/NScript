@@ -560,6 +560,7 @@ importedMethodArguments
 importedTypeName
     : '[' assem=importedTypeNamePart ']' type=importedTypeNamePart -> ^(TYPENAME $assem $type)
     | Identifier -> ^(TYPENAME Identifier)
+	| GenericSignature -> ^(TYPENAME GenericSignature)
     ;
 
 importedAssemblyNamePart
@@ -578,7 +579,8 @@ TypeNameIdentifier
     ;
 
 GenericSignature
-    : '`' DecimalDigit+
+    : '!' DecimalDigit+
+	| '!!' DecimalDigit+
     ;
 
 /*

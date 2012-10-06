@@ -6,6 +6,7 @@
 
 namespace System
 {
+    using System.Collections.Generic;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -32,13 +33,28 @@ namespace System
         [Script("return array ? array.@{[mscorlib]System.ArrayG`1::innerArray} : null;")]
         public static extern NativeArray GetNativeArray<T>(T[] array);
 
+        [IgnoreGenericArguments]
+        [Script("return array ? array.@{[mscorlib]System.Collections.Generic.List`1::nativeArray} : null;")]
+        public static extern NativeArray GetNativeArray<T>(List<T> array);
+
         [Script(@"
             return this.@{[mscorlib]System.NativeArray::ConcatImpl()}.apply(
                 this,
-                arrays);")]
+                array.@{[mscorlib]System.Collections.Generic.List`1::nativeArray});")]
         public extern NativeArray Concat(params NativeArray[] arrays);
 
+        [Script(@"return this.concat(array);")]
+        public extern NativeArray Concat(NativeArray array);
+
+        [Script(@"return this.concat(array, array2);")]
+        public extern NativeArray Concat(NativeArray array, NativeArray array2);
+
+        [Script(@"return this.concat(array, array2, array3);")]
+        public extern NativeArray Concat(NativeArray array, NativeArray array2, NativeArray array3);
+
         public extern string Join();
+
+        public extern string Join(string seperator);
 
         [IgnoreGenericArguments]
         [Script(@"return this.pop();")]
@@ -124,6 +140,11 @@ namespace System
         [IgnoreGenericArguments]
         [Script(@"return this[index];")]
         public extern T GetFrom<T>(int index);
+
+        public extern void Sort();
+
+        [IgnoreGenericArguments]
+        public extern void Sort<T>(Func<T, T, int> sortFunction);
 
         [ScriptName("shift")]
         private extern void ShiftImpl();

@@ -117,20 +117,26 @@ namespace Cs2JsC.JST
                 .Write(Keyword.For)
                 .Write(Symbols.BracketOpenRound);
 
-            ForLoop.WriteBlockWithCommaSeperator(
-                writer,
-                this.InitializationBlock);
+            if (this.InitializationBlock is InitializerStatement)
+            {
+                writer.Write(this.initializationBlock);
+            }
+            else
+            {
+                ForLoop.WriteBlockWithCommaSeperator(
+                    writer,
+                    this.InitializationBlock);
+                writer.Write(Symbols.SemiColon);
+            }
 
             if (this.Condition != null)
             {
-                writer.Write(Symbols.SemiColon)
-                    .Write(this.Condition)
+                writer.Write(this.Condition)
                     .Write(Symbols.SemiColon);
             }
             else
             {
-                writer.Write(Symbols.SemiColon)
-                    .Write(Symbols.SemiColon);
+                writer.Write(Symbols.SemiColon);
             }
 
             ForLoop.WriteBlockWithCommaSeperator(

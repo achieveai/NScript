@@ -224,6 +224,32 @@ namespace Cs2JsC.CLR
             yield break;
         }
 
+        public GenericParameter GetTypeParameter(
+            ModuleDefinition moduleDefinition,
+            Tuple<string, string> typeName)
+        {
+            if (string.IsNullOrEmpty(typeName.Item1)
+                && typeName.Item2.StartsWith("!"))
+            {
+                int typeParameterNumber;
+                if (!int.TryParse(typeName.Item2.Substring(typeName.Item2.LastIndexOf('!') + 1), out typeParameterNumber))
+                {
+                    return null;
+                }
+
+                if (typeName.Item2.StartsWith("!!"))
+                {
+                    return new GenericParameter(typeParameterNumber, GenericParameterType.Method, moduleDefinition);
+                }
+                else
+                {
+                    return new GenericParameter(typeParameterNumber, GenericParameterType.Method, moduleDefinition);
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Gets the type definition.
         /// </summary>
@@ -236,11 +262,22 @@ namespace Cs2JsC.CLR
             if (!this.TryGetModuleDefinition(typeName.Item1, out moduleDefinition))
             { return null; }
 
-            return new TypeReference(
+            string nspace = typeName.Item2.Substring(0, typeName.Item2.LastIndexOf('.'));
+            string tName = typeName.Item2.Substring(typeName.Item2.LastIndexOf('.') + 1);
+            int arity = 0;
+
+            if (tName.Contains('`'))
+            {
+                int.TryParse(typeName.Item2.Substring(tName.LastIndexOf('`') + 1), out arity);
+            }
+
+            var rv = new TypeReference(
                 typeName.Item2.Substring(0, typeName.Item2.LastIndexOf('.')),
                 typeName.Item2.Substring(typeName.Item2.LastIndexOf('.') + 1),
                 moduleDefinition,
                 moduleDefinition).Resolve();
+
+            return rv;
         }
 
         /// <summary>

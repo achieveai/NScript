@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Location
     /// </summary>
-    [Imported]
+    [PsudoType]
     [IgnoreNamespace]
     public sealed class Location
     {

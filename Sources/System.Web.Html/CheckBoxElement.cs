@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for CheckBoxElement
     /// </summary>
-    [Imported]
+    [PsudoType]
     [IgnoreNamespace]
     public class CheckBoxElement : InputElement
     {

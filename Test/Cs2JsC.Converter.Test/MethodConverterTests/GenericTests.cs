@@ -43,12 +43,13 @@ namespace Cs2JsC.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
-        [Row(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
-        [Row(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
-        [Row(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
-        [Row("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
-        [Row("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All)]
+        // [Row(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
+        // [Row(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
+        // [Row(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
+        // [Row(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
+        // [Row("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
+        // [Row("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All)]
+        [Row("GenericRegressions", "TestGenericMethodCalls", "GenericMethodCalls.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

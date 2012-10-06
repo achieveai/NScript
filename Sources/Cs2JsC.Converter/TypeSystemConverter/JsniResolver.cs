@@ -228,15 +228,25 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 iMethodArgument < methodArguments.Length;
                 iMethodArgument++)
             {
-                TypeDefinition argumentDefinition = clrContext.GetTypeDefinition(methodArguments[iMethodArgument]);
-                if (argumentDefinition == null)
+                if (string.IsNullOrEmpty(methodArguments[iMethodArgument].Item1)
+                    && methodArguments[iMethodArgument].Item2.StartsWith("!"))
                 {
-                    throw new ApplicationException(
-                        string.Format("Can't resolve type: [{0}]{1}.",
-                            methodArguments[iMethodArgument].Item1,
-                            methodArguments[iMethodArgument].Item2));
+                    var gtp = clrContext.GetTypeParameter(this.converter.MethodDefinition.Module, methodArguments[iMethodArgument]);
+                    argumentTypes[iMethodArgument] = gtp;
                 }
-                argumentTypes[iMethodArgument] = argumentDefinition;
+                else
+                {
+                    TypeDefinition argumentDefinition = clrContext.GetTypeDefinition(methodArguments[iMethodArgument]);
+                    if (argumentDefinition == null)
+                    {
+                        throw new ApplicationException(
+                            string.Format("Can't resolve type: [{0}]{1}.",
+                                methodArguments[iMethodArgument].Item1,
+                                methodArguments[iMethodArgument].Item2));
+                    }
+
+                    argumentTypes[iMethodArgument] = argumentDefinition;
+                }
             }
 
             foreach (var method in typeDefinition.Methods)

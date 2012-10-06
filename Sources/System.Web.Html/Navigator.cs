@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Navigator
     /// </summary>
-    [Imported]
+    [PsudoType]
     [IgnoreNamespace]
     public sealed class Navigator
     {

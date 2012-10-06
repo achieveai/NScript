@@ -84,7 +84,7 @@
         public extern static bool operator <=(DateTime a, DateTime b);
 
         [Script(@"return a - b;")]
-        public extern static int operator -(DateTime a, DateTime b);
+        public extern static long operator -(DateTime a, DateTime b);
 
         [ScriptAlias("Date.parseDate")]
         public extern static DateTime Parse(string value);

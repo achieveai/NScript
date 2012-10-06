@@ -1,9 +1,6 @@
 ﻿
 Function.typeId = "b";
 System__Type__typeMapping = null;
-function System__Type__ToString(this_) {
-  return this_.fullName ? this_.fullName : this_.name;
-};
 function System__Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
   this_.fullName = typeName;
@@ -14,37 +11,20 @@ function System__Type__RegisterReferenceType(this_, typeName, parentType, interf
     };
   System__Type__typeMapping[this_.fullName] = this_;
 };
-function System__Type__RegisterStructType(this_, typeName, interfaces) {
-  this_.isStruct = true;
-  this_.fullName = typeName;
-  this_.baseType = System_ValueType;
-  this_.interfaces = interfaces;
-  if (!System__Type__typeMapping)
-    System__Type__typeMapping = {
-    };
-  System__Type__typeMapping[this_.fullName] = this_;
-};
 ptyp_ = Function.prototype;
 ptyp_.isDelegate = false;
 ptyp_.isClass = false;
-ptyp_.isStruct = false;
 ptyp_.baseType = null;
 ptyp_.fullName = null;
 ptyp_.interfaces = null;
-ptyp_.box = function System__Type__Box(instance) {
-  if (this.isStruct)
-    return new this(instance);
-  else
-    return instance;
-};
 ptyp_.getDefaultValue = function System__Type__GetDefaultValue() {
   return null;
 };
-ptyp_.toString = function() {
-  return System__Type__ToString(this);
-};
 System__Type__RegisterReferenceType(Function, "System.Type", Object, []);
 Object.typeId = "c";
+function System__Object__IsNullOrUndefined(obj) {
+  return obj === null || typeof obj == "undefined";
+};
 System__Type__RegisterReferenceType(Object, "System.Object", null, []);
 function System_Web_Html_Tests_TestElement() {
 };
@@ -75,13 +55,13 @@ function System__Web__Html__Tests__TestElement__TestEventBinding() {
     handlerCalled = true;
     eventType = evt.type;
   };
-  System__Web__Html__Element__Bind(element, "click", handler);
+  System__Web__Html__Element__Bind(element, "click", handler, false);
   testEvt = window.document.createEvent("MouseEvent");
   testEvt.initMouseEvent("click", true, true, window, "", 0, 0, 0, 0, false, false, false, false, "", element);
   element.dispatchEvent(testEvt);
   QUnit.ok(handlerCalled, "Handler should be called");
   QUnit.equal("click", eventType, "EventType");
-  System__Web__Html__Element__UnBind(element, "click", handler);
+  System__Web__Html__Element__UnBind(element, "click", handler, false);
   handlerCalled = false;
   eventType = null;
   element.dispatchEvent(testEvt);
@@ -98,190 +78,31 @@ function System__Web__Html__Node__As(this_) {
 function System__Web__Html__Node__GetAttributes(this_) {
   return System_Web_Html_DomList_$Attr$_.__ctor(this_.attributes);
 };
-function System__Web__Html__Element__Bind(this_, eventName, handler) {
-  var dataCache;
-  dataCache = System__Web__Html__DomDataCache__GetDataCache(this_);
-  dataCache.addEvent(eventName, handler, false);
+function System__Web__Html__Element__Bind(this_, eventName, handler, capture) {
+  if (System__Object__IsNullOrUndefined(this_.elementBinder))
+    this_.elementBinder = System_Web_DomDataCache_$ElementEvent$_.__ctor(this_);
+  this_.elementBinder.addEvent(eventName, handler, capture);
 };
-function System__Web__Html__Element__UnBind(this_, eventName, handler) {
-  var dataCache;
-  dataCache = System__Web__Html__DomDataCache__GetDataCache(this_);
-  dataCache.removeEvent(eventName, handler, false);
+function System__Web__Html__Element__UnBind(this_, eventName, handler, capture) {
+  if (!System__Object__IsNullOrUndefined(this_.elementBinder))
+    this_.elementBinder.removeEvent(eventName, handler, capture);
 };
 Attr.typeId = "g";
 System__Type__RegisterReferenceType(Attr, "System.Web.Html.NodeAttribute", Object, []);
-Event.typeId = "h";
-System__Type__RegisterReferenceType(Event, "System.Web.Html.ElementEvent", Object, []);
-MutationEvent.typeId = "i";
+MutationEvent.typeId = "h";
 System__Type__RegisterReferenceType(MutationEvent, "System.Web.Html.MutableEvent", Object, []);
-Array.typeId = "j";
+Array.typeId = "i";
 function System__NativeArray__GetFrom(this_, index) {
   return this_[index];
 };
 System__Type__RegisterReferenceType(Array, "System.NativeArray", Object, []);
-Error.typeId = "k";
+Error.typeId = "j";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
-function System_Web_Html_DomDataCache() {
-};
-System_Web_Html_DomDataCache.typeId = "l";
-System__Web__Html__DomDataCache__instance = null;
-System__Web__Html__DomDataCache__cacheId = 0;
-System__Web__Html__DomDataCache__cacheIdString = null;
-function System__Web__Html__DomDataCache__GetDataCache(element) {
-  var attr, number, rv;
-  if (System__Web__Html__DomDataCache__cacheIdString === null)
-    System__Web__Html__DomDataCache__cacheIdString = System__String__Concat("__Id", System_Int32.box(System__Math__Random(10000)), "_", System_Int32.box(System__DateTime__get_Now().getTime()));
-  attr = element.getAttribute(System__Web__Html__DomDataCache__cacheIdString);
-  if (attr !== null) {
-    number = parseInt(attr);
-    rv = System__Web__Html__DomDataCache__instance.get_item(number);
-  }
-  else {
-    rv = System__Web__Html__DomDataCache_factory(element);
-    number = System__Web__Html__DomDataCache__cacheId++;
-    element.setAttribute(System__Web__Html__DomDataCache__cacheIdString, number.toString());
-    System__Web__Html__DomDataCache__instance.set_item(number, rv);
-  }
-  return rv;
-};
-function System__Web__Html__DomDataCache__IsW3wc(element) {
-  return !!element.addEventListener;
-};
-function System__Web__Html__DomDataCache____cctor() {
-  System__Web__Html__DomDataCache__instance = System_Collections_Generic_NumberDictionary_$DomDataCache$_.defaultConstructor();
-  System__Web__Html__DomDataCache__cacheId = 0;
-};
-function System__Web__Html__DomDataCache_factory(element) {
-  var this_;
-  this_ = new System_Web_Html_DomDataCache();
-  this_.__ctor(element);
-  return this_;
-};
-ptyp_ = System_Web_Html_DomDataCache.prototype;
-ptyp_.capturePhaseEvents = null;
-ptyp_.bubblePhaseEvents = null;
-ptyp_.dataDictionary = null;
-ptyp_.target = null;
-ptyp_.__ctor = function System__Web__Html__DomDataCache____ctor(element) {
-  this.capturePhaseEvents = System_Collections_Generic_StringDictionary_$Action_$Event$_$_.defaultConstructor();
-  this.bubblePhaseEvents = System_Collections_Generic_StringDictionary_$Action_$Event$_$_.defaultConstructor();
-  this.dataDictionary = new Object();
-  this.target = System__Web__Html__Node__As(element);
-};
-ptyp_.addEvent = function System__Web__Html__DomDataCache__AddEvent(name, action, onCapture) {
-  var isW3wc, evts, elementEvent;
-  isW3wc = System__Web__Html__DomDataCache__IsW3wc(this.target);
-  onCapture = onCapture && isW3wc;
-  evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
-  if (!evts.tryGetValue(name, {
-    read: function() {
-      return elementEvent;
-    },
-    write: function(arg0) {
-      return elementEvent = arg0;
-    }
-  })) {
-    elementEvent = action;
-    if (onCapture && System__Web__Html__DomDataCache__IsW3wc(this.target))
-      this.target.addEventListener(name, System__Delegate__Create("eventHandlerCapture", this), true);
-    else if (isW3wc)
-      this.target.addEventListener(name, System__Delegate__Create("eventHandlerBubble", this), false);
-    else
-      this.target.attachEvent("on" + name, System__Delegate__Create("eventHandlerIE", this));
-  }
-  else
-    elementEvent = System__Delegate__Combine(elementEvent, action);
-  evts.set_item(name, elementEvent);
-};
-ptyp_.removeEvent = function System__Web__Html__DomDataCache__RemoveEvent(name, handler, onCapture) {
-  var isW3wc, evts, elementEvent;
-  isW3wc = System__Web__Html__DomDataCache__IsW3wc(this.target);
-  onCapture = onCapture && isW3wc;
-  evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
-  if (evts.tryGetValue(name, {
-    read: function() {
-      return elementEvent;
-    },
-    write: function(arg0) {
-      return elementEvent = arg0;
-    }
-  })) {
-    elementEvent = System__Delegate__Remove(elementEvent, handler);
-    if (elementEvent === null) {
-      evts.remove(name);
-      if (onCapture)
-        this.target.removeEventListener(name, System__Delegate__Create("eventHandlerCapture", this), true);
-      else if (isW3wc)
-        this.target.removeEventListener(name, System__Delegate__Create("eventHandlerBubble", this), false);
-      else
-        this.target.detachEvent("on" + name, System__Delegate__Create("eventHandlerIE", this));
-    }
-    else
-      evts.set_item(name, elementEvent);
-  }
-};
-ptyp_.eventHandlerIE = function System__Web__Html__DomDataCache__EventHandlerIE() {
-  this.eventHandlerBubble(event);
-};
-ptyp_.eventHandlerCapture = function System__Web__Html__DomDataCache__EventHandlerCapture(evt) {
-  this.capturePhaseEvents.get_item(evt.type)(evt);
-};
-ptyp_.eventHandlerBubble = function System__Web__Html__DomDataCache__EventHandlerBubble(evt) {
-  this.bubblePhaseEvents.get_item(evt.type)(evt);
-};
-System__Type__RegisterReferenceType(System_Web_Html_DomDataCache, "System.Web.Html.DomDataCache", Object, []);
-function System_ValueType() {
-};
-System_ValueType.typeId = "m";
-System__Type__RegisterReferenceType(System_ValueType, "System.ValueType", Object, []);
-function System_Int32(boxedValue) {
-  this.boxedValue = boxedValue;
-};
-System_Int32.typeId = "n";
-System_Int32.getDefaultValue = function() {
-  return 0;
-};
-function System__Int32__ToString(this_, radix) {
-  return this_.toString(radix);
-};
-function System__Int32__ToStringa(this_) {
-  return System__Int32__ToString(this_, 10);
-};
-ptyp_ = new System_ValueType();
-System_Int32.prototype = ptyp_;
-ptyp_.toString = function() {
-  return System__Int32__ToStringa(this.boxedValue);
-};
-System__Type__RegisterStructType(System_Int32, "System.Int32", []);
-function System__Math__Random(number) {
-  return Math.floor(Math.random() * number) | 0;
-};
-Date.typeId = "o";
-function System__DateTime__get_Now() {
-  return new Date();
-};
-function System__DateTime____cctor() {
-  Date.empty = new Date(0);
-};
-System__Type__RegisterReferenceType(Date, "System.DateTime", Object, []);
-String.typeId = "p";
-System__String__formatHelperRegex = null;
-System__String__trimStartHelperRegex = null;
-System__String__trimEndHelperRegex = null;
-function System__String____cctor() {
-  System__String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
-  System__String__trimStartHelperRegex = new RegExp("^\\s*");
-  System__String__trimEndHelperRegex = new RegExp("\\s*$");
-};
-function System__String__Concat(s1, s2, s3, s4) {
-  return s1.toString() + s2.toString() + s3.toString() + s4.toString();
-};
-System__Type__RegisterReferenceType(String, "System.String", Object, []);
-RegExp.typeId = "q";
-System__Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
+Object.typeId = "k";
+System__Type__RegisterReferenceType(Object, "System.Collections.Dictionary", Object, []);
 function System_Delegate() {
 };
-System_Delegate.typeId = "r";
+System_Delegate.typeId = "l";
 function System__Delegate__Combine(a, b) {
   var funcs, rv;
   funcs = [];
@@ -367,27 +188,9 @@ function System__Delegate__CreateJoinedArray(array) {
 System__Type__RegisterReferenceType(System_Delegate, "System.Delegate", Object, []);
 function System_MulticastDelegate() {
 };
-System_MulticastDelegate.typeId = "s";
+System_MulticastDelegate.typeId = "m";
 System_MulticastDelegate.prototype = new System_Delegate();
 System__Type__RegisterReferenceType(System_MulticastDelegate, "System.MulticastDelegate", System_Delegate, []);
-function System_Double(boxedValue) {
-  this.boxedValue = boxedValue;
-};
-System_Double.typeId = "t";
-System_Double.getDefaultValue = function() {
-  return 0;
-};
-function System__Double__ToString(this_) {
-  return this_.toString();
-};
-ptyp_ = new System_ValueType();
-System_Double.prototype = ptyp_;
-ptyp_.toString = function() {
-  return System__Double__ToString(this.boxedValue);
-};
-System__Type__RegisterStructType(System_Double, "System.Double", []);
-Object.typeId = "u";
-System__Type__RegisterReferenceType(Object, "System.Collections.Dictionary", Object, []);
 function System_Web_Html_DomList(T, $5fcallStatiConstructor) {
   var DomList$1_$T$_;
   if (System_Web_Html_DomList[T.typeId])
@@ -397,7 +200,7 @@ function System_Web_Html_DomList(T, $5fcallStatiConstructor) {
   DomList$1_$T$_ = System_Web_Html_DomList[T.typeId];
   DomList$1_$T$_.genericParameters = [T];
   DomList$1_$T$_.genericClosure = System_Web_Html_DomList;
-  DomList$1_$T$_.typeId = "v$" + T.typeId + "$";
+  DomList$1_$T$_.typeId = "n$" + T.typeId + "$";
   DomList$1_$T$_.__ctor = function System_Web_Html_DomList$1_factory(array) {
     var this_;
     this_ = new DomList$1_$T$_();
@@ -421,37 +224,127 @@ function System_Web_Html_DomList(T, $5fcallStatiConstructor) {
   System__Type__RegisterReferenceType(DomList$1_$T$_, "System.Web.Html.DomList`1<" + T.fullName + ">", Object, []);
   return DomList$1_$T$_;
 };
-function System_Collections_Generic_NumberDictionary(TValue, $5fcallStatiConstructor) {
-  var NumberDictionary$1_$TValue$_;
-  if (System_Collections_Generic_NumberDictionary[TValue.typeId])
-    return System_Collections_Generic_NumberDictionary[TValue.typeId];
-  System_Collections_Generic_NumberDictionary[TValue.typeId] = function System__Collections__Generic__NumberDictionary$1() {
+function System_Web_DomDataCache(T, $5fcallStatiConstructor) {
+  var StringDictionary$1_$Action$1_$T$_$_, DomDataCache$1_$T$_, $5f_initTracker;
+  if (System_Web_DomDataCache[T.typeId])
+    return System_Web_DomDataCache[T.typeId];
+  System_Web_DomDataCache[T.typeId] = function System__Web__DomDataCache$1() {
   };
-  NumberDictionary$1_$TValue$_ = System_Collections_Generic_NumberDictionary[TValue.typeId];
-  NumberDictionary$1_$TValue$_.genericParameters = [TValue];
-  NumberDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_NumberDictionary;
-  NumberDictionary$1_$TValue$_.typeId = "w$" + TValue.typeId + "$";
-  NumberDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_NumberDictionary$1_factory() {
+  DomDataCache$1_$T$_ = System_Web_DomDataCache[T.typeId];
+  DomDataCache$1_$T$_.genericParameters = [T];
+  DomDataCache$1_$T$_.genericClosure = System_Web_DomDataCache;
+  DomDataCache$1_$T$_.typeId = "o$" + T.typeId + "$";
+  DomDataCache$1_$T$_.isW3wc = function System__Web__DomDataCache$1__IsW3wc(element) {
+    return !!element.addEventListener;
+  };
+  DomDataCache$1_$T$_.getEventType = function System__Web__DomDataCache$1__GetEventType(evt) {
+    return evt.type;
+  };
+  DomDataCache$1_$T$_.__ctor = function System_Web_DomDataCache$1_factory(element) {
     var this_;
-    this_ = new NumberDictionary$1_$TValue$_();
-    this_.__ctor();
+    this_ = new DomDataCache$1_$T$_();
+    this_.__ctor(element);
     return this_;
   };
-  ptyp_ = NumberDictionary$1_$TValue$_.prototype;
-  ptyp_.innerDict = null;
-  ptyp_.__ctor = function System__Collections__Generic__NumberDictionary$1____ctor() {
-    this.innerDict = new Object();
+  ptyp_ = DomDataCache$1_$T$_.prototype;
+  ptyp_.capturePhaseEvents = null;
+  ptyp_.bubblePhaseEvents = null;
+  ptyp_.dataDictionary = null;
+  ptyp_.target = null;
+  ptyp_.disposed = false;
+  ptyp_.__ctor = function System__Web__DomDataCache$1____ctor(element) {
+    this.capturePhaseEvents = StringDictionary$1_$Action$1_$T$_$_.defaultConstructor();
+    this.bubblePhaseEvents = StringDictionary$1_$Action$1_$T$_$_.defaultConstructor();
+    this.dataDictionary = new Object();
+    this.target = element;
   };
-  ptyp_.get_item = function System__Collections__Generic__NumberDictionary$1__get_Item(index) {
-    if (!(index in this.innerDict))
-      throw new Error("Key not found");
-    return this.innerDict[index];
+  ptyp_.addEvent = function System__Web__DomDataCache$1__AddEvent(name, action, onCapture) {
+    var isW3wc, evts, elementEvent;
+    isW3wc = DomDataCache$1_$T$_.isW3wc(this.target);
+    onCapture = onCapture && isW3wc;
+    evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
+    if (!evts.tryGetValue(name, {
+      read: function() {
+        return elementEvent;
+      },
+      write: function(arg0) {
+        return elementEvent = arg0;
+      }
+    })) {
+      elementEvent = action;
+      if (onCapture && DomDataCache$1_$T$_.isW3wc(this.target))
+        this.addEventListener(name, System__Delegate__Create("eventHandlerCapture", this), true);
+      else if (isW3wc)
+        this.addEventListener(name, System__Delegate__Create("eventHandlerBubble", this), false);
+      else
+        this.attachEvent(name, System__Delegate__Create("eventHandlerIE", this));
+    }
+    else
+      elementEvent = System__Delegate__Combine(elementEvent, action);
+    evts.set_item(name, elementEvent);
   };
-  ptyp_.set_item = function System__Collections__Generic__NumberDictionary$1__set_Item(index, value) {
-    this.innerDict[index] = value;
+  ptyp_.removeEvent = function System__Web__DomDataCache$1__RemoveEvent(name, handler, onCapture) {
+    var isW3wc, evts, elementEvent;
+    isW3wc = DomDataCache$1_$T$_.isW3wc(this.target);
+    onCapture = onCapture && isW3wc;
+    evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
+    if (evts.tryGetValue(name, {
+      read: function() {
+        return elementEvent;
+      },
+      write: function(arg0) {
+        return elementEvent = arg0;
+      }
+    })) {
+      elementEvent = System__Delegate__Remove(elementEvent, handler);
+      if (elementEvent === null) {
+        evts.remove(name);
+        if (onCapture)
+          this.removeEventListener(name, System__Delegate__Create("eventHandlerCapture", this), true);
+        else if (isW3wc)
+          this.removeEventListener(name, System__Delegate__Create("eventHandlerBubble", this), false);
+        else
+          this.detachEvent(name, System__Delegate__Create("eventHandlerIE", this));
+      }
+      else
+        evts.set_item(name, elementEvent);
+    }
   };
-  System__Type__RegisterReferenceType(NumberDictionary$1_$TValue$_, "System.Collections.Generic.NumberDictionary`1<" + TValue.fullName + ">", Object, []);
-  return NumberDictionary$1_$TValue$_;
+  ptyp_.addEventListener = function System__Web__DomDataCache$1__AddEventListener(evtName, cb, isCapture) {
+    this.target.addEventListener(evtName, cb, isCapture);
+  };
+  ptyp_.attachEvent = function System__Web__DomDataCache$1__AttachEvent(evtName, cb) {
+    this.target.atachEvent("on" + evtName, cb);
+  };
+  ptyp_.removeEventListener = function System__Web__DomDataCache$1__RemoveEventListener(evtName, cb, isCapture) {
+    this.target.removeEventListener(evtName, cb, isCapture);
+  };
+  ptyp_.detachEvent = function System__Web__DomDataCache$1__DetachEvent(evtName, cb) {
+    this.target.detachEvent("on" + evtName, cb);
+  };
+  ptyp_.eventHandlerIE = function System__Web__DomDataCache$1__EventHandlerIE() {
+    this.eventHandlerBubble(event);
+  };
+  ptyp_.eventHandlerCapture = function System__Web__DomDataCache$1__EventHandlerCapture(evt) {
+    if (this.disposed)
+      return;
+    this.capturePhaseEvents.get_item(DomDataCache$1_$T$_.getEventType(evt))(evt);
+  };
+  ptyp_.eventHandlerBubble = function System__Web__DomDataCache$1__EventHandlerBubble(evt) {
+    if (this.disposed)
+      return;
+    this.bubblePhaseEvents.get_item(DomDataCache$1_$T$_.getEventType(evt))(evt);
+  };
+  System__Type__RegisterReferenceType(DomDataCache$1_$T$_, "System.Web.DomDataCache`1<" + T.fullName + ">", Object, []);
+  DomDataCache$1_$T$_._tri = function() {
+    if ($5f_initTracker)
+      return;
+    $5f_initTracker = true;
+    StringDictionary$1_$Action$1_$T$_$_ = System_Collections_Generic_StringDictionary(System_Action(T, true), true);
+  };
+  if ($5fcallStatiConstructor)
+    DomDataCache$1_$T$_._tri();
+  return DomDataCache$1_$T$_;
 };
 function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstructor) {
   var StringDictionary$1_$TValue$_;
@@ -462,7 +355,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "x$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "p$" + TValue.typeId + "$";
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -513,18 +406,14 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_ = System_Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = System_Action;
-  Action$1_$T1$_.typeId = "y$" + T1.typeId + "$";
+  Action$1_$T1$_.typeId = "q$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", System_MulticastDelegate, []);
   return Action$1_$T1$_;
 };
 System_Web_Html_DomList_$Attr$_ = System_Web_Html_DomList(Attr);
-System_Collections_Generic_NumberDictionary_$DomDataCache$_ = System_Collections_Generic_NumberDictionary(System_Web_Html_DomDataCache);
-System_Action_$Event$_ = System_Action(Event);
-System_Collections_Generic_StringDictionary_$Action_$Event$_$_ = System_Collections_Generic_StringDictionary(System_Action_$Event$_);
-System__Web__Html__DomDataCache____cctor();
-System__DateTime____cctor();
-System__String____cctor();
+System_Web_DomDataCache_$ElementEvent$_ = System_Web_DomDataCache(Object);
+System_Web_DomDataCache_$ElementEvent$_._tri();
 module("System.Web.Html.Tests.TestElement");
 test("TestCreateElement", 0, System__Web__Html__Tests__TestElement__TestCreateElement);
 test("TestAttribute", 0, System__Web__Html__Tests__TestElement__TestAttribute);

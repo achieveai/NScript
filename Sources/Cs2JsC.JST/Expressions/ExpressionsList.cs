@@ -19,9 +19,10 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionsList"/> class.
         /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="scope">The scope.</param>
-        /// <param name="expressions">The expressions.</param>
+        /// <param name="location">    The location. </param>
+        /// <param name="scope">       The scope. </param>
+        /// <param name="makeUnit">    true to make unit (encapsulates result in ()). </param>
+        /// <param name="expressions"> The expressions. </param>
         public ExpressionsList(
             Location location,
             IdentifierScope scope,
@@ -64,12 +65,15 @@ namespace Cs2JsC.JST
         {
             if (this.expressions.Count > 0)
             {
-                writer.Write(this.expressions[0]);
+                writer.Write(Symbols.BracketOpenRound)
+                    .Write(this.expressions[0]);
 
                 for (int iExpr = 1; iExpr < this.expressions.Count; iExpr++)
                 {
                     writer.Write(Symbols.Comma).Write(this.expressions[iExpr]);
                 }
+
+                writer.Write(Symbols.BracketCloseRound);
             }
             else if (this.expressions.Count == 1)
             {

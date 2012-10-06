@@ -361,31 +361,37 @@ namespace Cs2JsC.CLR
                 GenericParameter leftGenericParameter = (GenericParameter)left;
                 GenericParameter rightGenericParameter = (GenericParameter)right;
 
-                if (leftGenericParameter.Position == rightGenericParameter.Position
-                    && leftGenericParameter.Owner.GenericParameterType == rightGenericParameter.Owner.GenericParameterType)
+                if (leftGenericParameter.Position == rightGenericParameter.Position)
                 {
-                    for (int iStack = stack.Count - 1; iStack >= 0; iStack--)
+                    if (leftGenericParameter.Owner == null || rightGenericParameter.Owner == null)
                     {
-                        if (leftGenericParameter.Owner == stack[iStack].Key)
+                        return true;
+                    }
+                    else if (leftGenericParameter.Owner.GenericParameterType == rightGenericParameter.Owner.GenericParameterType)
+                    {
+                        for (int iStack = stack.Count - 1; iStack >= 0; iStack--)
                         {
-                            stack.RemoveAt(stack.Count - 1);
-                            return rightGenericParameter.Owner == stack[iStack].Value;
+                            if (leftGenericParameter.Owner == stack[iStack].Key)
+                            {
+                                stack.RemoveAt(stack.Count - 1);
+                                return rightGenericParameter.Owner == stack[iStack].Value;
+                            }
                         }
-                    }
 
-                    if (leftGenericParameter.Owner.GenericParameterType == GenericParameterType.Method)
-                    {
-                        rv = TypeHelpers.IsSame(
-                            (MethodReference)leftGenericParameter.Owner,
-                            (MethodReference)rightGenericParameter.Owner,
-                            stack);
-                    }
-                    else
-                    {
-                        rv = TypeHelpers.IsSame(
-                            (TypeReference)leftGenericParameter.Owner,
-                            (TypeReference)rightGenericParameter.Owner,
-                            stack);
+                        if (leftGenericParameter.Owner.GenericParameterType == GenericParameterType.Method)
+                        {
+                            rv = TypeHelpers.IsSame(
+                                (MethodReference)leftGenericParameter.Owner,
+                                (MethodReference)rightGenericParameter.Owner,
+                                stack);
+                        }
+                        else
+                        {
+                            rv = TypeHelpers.IsSame(
+                                (TypeReference)leftGenericParameter.Owner,
+                                (TypeReference)rightGenericParameter.Owner,
+                                stack);
+                        }
                     }
                 }
 

@@ -1,28 +1,27 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="TouchEvent.cs" company="">
+// <copyright file="WheelEvent.cs" company="">
 //     Copyright (c) . All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 
 namespace System.Web.Html
 {
+    using System;
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for TouchEvent
+    /// Definition for WheelEvent
     /// </summary>
     [PsudoType, IgnoreNamespace]
-    public sealed class TouchEvent : ElementEvent
+    public class WheelEvent : ElementEvent
     {
-        private TouchEvent() { }
+        [IntrinsicField]
+        public readonly int WheelDelta;
 
         [IntrinsicField]
-        public readonly TouchInfo[] ChangedTouches;
+        public readonly int WheelDeltaX;
 
         [IntrinsicField]
-        public readonly TouchInfo[] TargetTouches;
-
-        [IntrinsicField]
-        public readonly TouchInfo[] Touches;
+        public readonly int WheelDeltaY;
     }
 }

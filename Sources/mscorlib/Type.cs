@@ -126,7 +126,7 @@
         public extern object AsType(object instance);
 
         [Script(@"
-            if (this.@{[mscorlib]System.Type::IsInstanceOfType([mscorlib]System.Object)}(instance)) {
+            if (this.@{[mscorlib]System.Type::IsInstanceOfType([mscorlib]System.Object)}(instance) || instance === null) {
                 if (this.@{[mscorlib]System.Type::IsStruct})
                     return instance.@{[mscorlib]System.ValueType::boxedValue};
                 return instance;

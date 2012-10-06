@@ -49,21 +49,27 @@ namespace JsCsc.Lib
             this._currentMethod = method;
             this._currentMethodFileName = fileName;
             this._memberReferenceDeserializer.SetMethodContext(this._currentMethod);
-
-            JObject methodBlockObject = jObject.Value<JObject>(NameTokens.Block);
-            if (methodBlockObject != null)
+            try
             {
-                TopLevelBlock rv = new TopLevelBlock(method);
-                rv.RootBlock = (ParameterBlock)this.ParseNode(methodBlockObject);
-                this._currentMethod = null;
-                this._currentMethodFileName = null;
-                this._memberReferenceDeserializer.SetMethodContext(null);
 
-                return Tuple.Create(method, rv);
+                JObject methodBlockObject = jObject.Value<JObject>(NameTokens.Block);
+                if (methodBlockObject != null)
+                {
+                    TopLevelBlock rv = new TopLevelBlock(method);
+                    rv.RootBlock = (ParameterBlock)this.ParseNode(methodBlockObject);
+                    this._currentMethod = null;
+                    this._currentMethodFileName = null;
+
+                    return Tuple.Create(method, rv);
+                }
+                else
+                {
+                    return Tuple.Create(method, (TopLevelBlock)null);
+                }
             }
-            else
+            finally
             {
-                return Tuple.Create(method, (TopLevelBlock)null);
+                this._memberReferenceDeserializer.SetMethodContext(null);
             }
         }
 

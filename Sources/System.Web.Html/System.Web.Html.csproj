@@ -33,8 +33,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <DefineConstants>TRACE</DefineConstants>
     <NoWarn>0626</NoWarn>
+    <DefineConstants>TRACE</DefineConstants>
     <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
@@ -56,9 +56,9 @@
     <Compile Include="DivElement.cs" />
     <Compile Include="Document.cs" />
     <Compile Include="DocumentFragment.cs" />
-    <Compile Include="DomDataCache.cs" />
     <Compile Include="DomList.cs" />
     <Compile Include="Element.cs" />
+    <Compile Include="MediaElement.cs" />
     <Compile Include="NodeAttribute.cs" />
     <Compile Include="NodeCollection.cs" />
     <Compile Include="ElementEvent.cs" />
@@ -104,6 +104,8 @@
     <Compile Include="TouchEvent.cs" />
     <Compile Include="TouchInfo.cs" />
     <Compile Include="Filters\VisualFilter.cs" />
+    <Compile Include="VideoElement.cs" />
+    <Compile Include="WheelEvent.cs" />
     <Compile Include="Window.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +113,13 @@
       <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
       <Name>Cs2JsC.MsCorlib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\System.Web\System.Web.csproj">
+      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
+      <Name>System.Web</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
 </Project>

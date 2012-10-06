@@ -29,7 +29,15 @@ namespace Cs2JsC.Converter.StatementsConverter
             converter.PushScopeBlock(scopeBlock);
             try
             {
-                return ScopeBlockConverter.Convert(converter, (ExplicitBlock)scopeBlock);
+                if (scopeBlock is ScopeBlock
+                    && scopeBlock.GetType() == typeof(ScopeBlock))
+                {
+                    return ScopeBlockConverter.Convert(converter, (ExplicitBlock)scopeBlock);
+                }
+                else
+                {
+                    return StatementConverterBase.Convert(converter, scopeBlock);
+                }
             }
             finally
             {

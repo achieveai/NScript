@@ -11,34 +11,9 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for AudioElement
     /// </summary>
-    [Imported]
-    [IgnoreNamespace]
-    public sealed class AudioElement
+    [IgnoreNamespace, PsudoType]
+    public sealed class AudioElement : MediaElement
     {
         private AudioElement() { }
-
-        [IntrinsicField]
-        public double CurrentTime;
-
-        [IntrinsicField]
-        public readonly double Duration;
-
-        [IntrinsicField]
-        public readonly bool Ended;
-
-        [IntrinsicField]
-        public readonly bool Paused;
-
-        [IntrinsicField]
-        public string Src;
-
-        [IntrinsicField]
-        public float Volume;
-
-        public extern void Load();
-
-        public extern void Pause();
-
-        public extern void Play();
     }
 }

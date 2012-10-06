@@ -35,9 +35,13 @@ namespace Cs2JsC.Converter.StatementsConverter
             JST.ScopeBlock trueBlock = trueStatement as JST.ScopeBlock;
             if (trueBlock == null)
             {
-                jstStatements.Add(trueStatement);
+                if (trueStatement != null)
+                {
+                    jstStatements.Add(trueStatement);
+                }
+
                 trueBlock = new JST.ScopeBlock(
-                    trueStatement.Location,
+                    trueStatement != null ? trueStatement.Location : null,
                     converter.Scope,
                     jstStatements);
             }

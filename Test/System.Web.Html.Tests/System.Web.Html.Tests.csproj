@@ -56,6 +56,10 @@
       <Project>{A60706FF-08D7-4320-99F9-A2413275CDF6}</Project>
       <Name>System.Web.Html</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Sources\System.Web\System.Web.csproj">
+      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
+      <Name>System.Web</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TestRunner\SunlightUnit.csproj">
       <Project>{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}</Project>
       <Name>SunlightUnit</Name>

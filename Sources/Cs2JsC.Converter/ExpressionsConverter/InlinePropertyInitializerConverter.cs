@@ -11,6 +11,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
     using Cs2JsC.Converter.TypeSystemConverter;
     using Cs2JsC.JST;
     using Mono.Cecil;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for InlinePropertyInitializerConverter
@@ -39,24 +40,19 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 null);
 
             // initialize a varible that will be used to hold object for initialization.
-            var variable = Identifier.CreateScopeIdentifier(
-                newScope,
-                "_ipi",
-                false);
+            var variable = converter.GetTempVariable();
 
+            List<JST.Expression> expressions = new List<JST.Expression>();
             JST.Expression initExpression = ExpressionConverterBase.Convert(converter, expression.Constructor);
 
             // Add the constructor statement.
-            function.AddStatement(
-                new JST.ExpressionStatement(
-                    initExpression.Location,
-                    function.Scope,
+            expressions.Add(
                     new JST.BinaryExpression(
                         initExpression.Location,
                         function.Scope,
                         JST.BinaryOperator.Assignment,
                         new JST.IdentifierExpression(variable),
-                        initExpression)));
+                        initExpression));
 
             foreach (var setter in expression.Setters)
             {
@@ -101,24 +97,13 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         new JST.Expression[] {valueExpression});
                 }
 
-                function.AddStatement(
-                    new JST.ExpressionStatement(
-                        assignmentExpression.Location,
-                        function.Scope,
-                        assignmentExpression));
+                expressions.Add(assignmentExpression);
             }
 
-            function.AddStatement(
-                new JST.ReturnStatement(
-                    null,
-                    function.Scope,
-                    new JST.IdentifierExpression(variable)));
+            expressions.Add(new JST.IdentifierExpression(variable));
+            JST.ExpressionsList expressionList = new ExpressionsList(expression.Location, converter.Scope, expressions);
 
-            return new JST.MethodCallExpression(
-                expression.Location,
-                converter.Scope,
-                function,
-                new JST.Expression[0]);
+            return expressionList;
         }
     }
 }
