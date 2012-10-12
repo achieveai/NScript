@@ -24,10 +24,126 @@
     <Compile Include="Product.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <WixExtension Include="WixVSExtension">
-      <HintPath>$(WixExtDir)\WixVSExtension.dll</HintPath>
-      <Name>WixVSExtension</Name>
-    </WixExtension>
+    <ProjectReference Include="..\Cs2JsC.CLR\Cs2JsC.CLR.csproj">
+      <Name>Cs2JsC.CLR</Name>
+      <Project>{83fb5360-ce27-4255-8457-13e789dc5b0c}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Cs2JsC.Converter.Plugins\Cs2JsC.Converter.Plugins.csproj">
+      <Name>Cs2JsC.Converter.Plugins</Name>
+      <Project>{8e168b27-2033-412a-b362-5102400ea471}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Cs2JsC.Converter\Cs2JsC.Converter.csproj">
+      <Name>Cs2JsC.Converter</Name>
+      <Project>{2cb180c7-d96a-4e43-8676-f928e4736a1f}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Cs2JsC.JSParser\Cs2JsC.JSParser.csproj">
+      <Name>Cs2JsC.JSParser</Name>
+      <Project>{52661571-b3ee-421e-a6ed-983023665738}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Cs2JsC.JST\Cs2JsC.JS.AST.csproj">
+      <Name>Cs2JsC.JS.AST</Name>
+      <Project>{35789c27-44de-4251-8528-6b0de5c66608}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Cs2JsC.Utils\Cs2JsC.Utils.csproj">
+      <Name>Cs2JsC.Utils</Name>
+      <Project>{030b10dd-4861-4be1-b0d6-db43587e603f}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Cs2JsC\Cs2JsC.csproj">
+      <Name>Cs2JsC</Name>
+      <Project>{71392f3d-7171-43fa-8f68-365a31889ab0}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\CssParser\CssParser.csproj">
+      <Name>CssParser</Name>
+      <Project>{c2534dea-af8c-43f3-81ed-86e6b5932cf6}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj">
+      <Name>JsCsc.Lib</Name>
+      <Project>{65fdb136-49ee-4316-95c5-aee4c1a5da83}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\JsCsc\JsCsc.csproj">
+      <Name>JsCsc</Name>
+      <Project>{584493da-04a9-4a95-aa49-f532a85d8c1a}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+      <Name>Cs2JsC.MsCorlib</Name>
+      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\SourceMap\SourceMap.csproj">
+      <Name>SourceMap</Name>
+      <Project>{20ccb52f-de6e-4da4-821e-5b3bd6771704}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Web.Html\System.Web.Html.csproj">
+      <Name>System.Web.Html</Name>
+      <Project>{a60706ff-08d7-4320-99f9-a2413275cdf6}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Web\System.Web.csproj">
+      <Name>System.Web</Name>
+      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\XwmlParser\XwmlParser.csproj">
+      <Name>XwmlParser</Name>
+      <Project>{e3fe7841-2db8-4713-8c41-fb399d921a77}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <!--

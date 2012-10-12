@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:vs="http://schemas.microsoft.com/wix/VSExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ProductVersion="1.0.0.0" ?>
   <?define ToolsetDir="$(var.SolutionDir)\Cs2JscToolset" ?>
 
-	<Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
+  <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+		<MediaTemplate EmbedCab="yes"/>
 
-    <PropertyRef Id="VS2012_ITEMTEMPLATES_DIR" />
-    <PropertyRef Id="VS2012_PROJECTTEMPLATES_DIR" />
-    <CustomActionRef Id="VS2012InstallVSTemplates" />
-      
+    <Property Id="USERITEMTEMPLATEDIR">
+      <RegistrySearch Id="ItemTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
+    </Property>
+
+    <Property Id="USERPROJECTTEMPLATEDIR">
+      <RegistrySearch Id="ProjectTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
+    </Property>
+         
 		<Feature Id="ProductFeature" Title="nScript" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
@@ -30,11 +34,17 @@
         </Directory>
 			</Directory>
 
-      <Directory Id="ITEMTEMPLATE_BASEDIR" Name="[VS2012_ITEMTEMPLATES_DIR]">
-        <Directory Id="ITEMTEMPLATE_BASEDIR_CSHARP" Name="CSharp">
+      <Directory Id="USERITEMTEMPLATEDIR">
+        <Directory Id="ITEMTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
           <Directory Id="ITEMTEMPLATE_DIR" Name="nScript">
             <Directory Id="ITEMTEMPLATE_DIR_CLASS" Name="Class" />
           </Directory>
+        </Directory>
+      </Directory>
+
+      <Directory Id="USERPROJECTTEMPLATEDIR">
+        <Directory Id="PROJECTTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
+          <Directory Id="PROJECTTEMPLATE_DIR" Name="nScript" />
         </Directory>
       </Directory>
 		</Directory>
@@ -44,9 +54,17 @@
   <Fragment>
     <ComponentGroup Id="ProductComponents">
       <Component Id="RegistryEntry" Directory="INSTALLFOLDER" Guid="{E995DA69-5D6E-4F76-979D-D86DA16189AA}">
-        <RegistryKey Root="HKCU" Key="Cs2JsC">
+        <RegistryKey Root="HKCU" Key="Software\Cs2JsC">
           <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
         </RegistryKey>
+
+        <RegistryKey Root="HKCU" Key="Software\WOW6432Node\Cs2JsC">
+          <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
+        </RegistryKey>
+      </Component>
+
+      <Component Id="TargetsFileComponent" Directory="INSTALLFOLDER" Guid="{CF8FC4F5-9B73-47E2-A3C5-EFC72C4A1AEF}">
+        <File Source="$(var.ToolsetDir)\Cs2JsC.CSharp.targets" />
       </Component>
 
       <Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
@@ -64,9 +82,6 @@
         <File Source="$(var.ToolsetDir)\bin\Cs2JsC.pdb" />
         <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.dll" />
         <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.vshost.exe" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.vshost.exe.config" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.vshost.exe.manifest" />
         <File Source="$(var.ToolsetDir)\bin\Csc.exe" KeyPath="yes" />
         <File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
         <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
@@ -105,6 +120,14 @@
       <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR_CLASS" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
         <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.cs" />
         <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.vstemplate" />
+      </Component>
+
+      <Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\AssemblyInfo.cs" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.csproj" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.vstemplate" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Logo.ico" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Program.cs" />
       </Component>
 		</ComponentGroup>
 	</Fragment>
