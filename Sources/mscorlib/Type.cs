@@ -111,7 +111,7 @@
 
         [Script(@"
             if (!this.@{[mscorlib]System.Type::IsInterface})
-                return instance instanceof this;
+                return instance instanceof this || (instance && instance.constructor == this);
             else if (instance && !instance.constructor.@{[mscorlib]System.Type::baseInterfaces})
                 @{[mscorlib]System.Type::InitializeBaseInterfaces([mscorlib]System.Type)}(instance.constructor);
 

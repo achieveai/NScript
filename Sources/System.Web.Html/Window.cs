@@ -12,9 +12,8 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Window.
     /// </summary>
-    [Imported]
+    [PsudoType]
     [IgnoreNamespace]
-    [ScriptName("Window")]
     public sealed class Window
     {
         /// <summary>

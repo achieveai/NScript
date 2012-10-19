@@ -90,9 +90,9 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         /// <returns></returns>
         public static JST.Expression ConvertCharLiteral(IMethodScopeConverter methodConverter, CharLiteral literal)
         {
-            return new JST.StringLiteralExpression(
+            return new JST.NumberLiteralExpression(
                 methodConverter.Scope,
-                string.Format("{0}", literal.Value));
+                literal.Value);
         }
 
         /// <summary>

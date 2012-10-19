@@ -68,10 +68,6 @@ function System__Web__Html__Tests__TestElement__TestEventBinding() {
   QUnit.ok(!handlerCalled, "Handler should not be called");
 };
 System__Type__RegisterReferenceType(System_Web_Html_Tests_TestElement, "System.Web.Html.Tests.TestElement", Object, []);
-Window.typeId = "e";
-System__Type__RegisterReferenceType(Window, "System.Web.Html.Window", Object, []);
-Document.typeId = "f";
-System__Type__RegisterReferenceType(Document, "System.Web.Html.Document", Object, []);
 function System__Web__Html__Node__As(this_) {
   return this_;
 };
@@ -87,22 +83,22 @@ function System__Web__Html__Element__UnBind(this_, eventName, handler, capture) 
   if (!System__Object__IsNullOrUndefined(this_.elementBinder))
     this_.elementBinder.removeEvent(eventName, handler, capture);
 };
-Attr.typeId = "g";
+Attr.typeId = "e";
 System__Type__RegisterReferenceType(Attr, "System.Web.Html.NodeAttribute", Object, []);
-MutationEvent.typeId = "h";
+MutationEvent.typeId = "f";
 System__Type__RegisterReferenceType(MutationEvent, "System.Web.Html.MutableEvent", Object, []);
-Array.typeId = "i";
+Array.typeId = "g";
 function System__NativeArray__GetFrom(this_, index) {
   return this_[index];
 };
 System__Type__RegisterReferenceType(Array, "System.NativeArray", Object, []);
-Error.typeId = "j";
+Error.typeId = "h";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
-Object.typeId = "k";
+Object.typeId = "i";
 System__Type__RegisterReferenceType(Object, "System.Collections.Dictionary", Object, []);
 function System_Delegate() {
 };
-System_Delegate.typeId = "l";
+System_Delegate.typeId = "j";
 function System__Delegate__Combine(a, b) {
   var funcs, rv;
   funcs = [];
@@ -188,7 +184,7 @@ function System__Delegate__CreateJoinedArray(array) {
 System__Type__RegisterReferenceType(System_Delegate, "System.Delegate", Object, []);
 function System_MulticastDelegate() {
 };
-System_MulticastDelegate.typeId = "m";
+System_MulticastDelegate.typeId = "k";
 System_MulticastDelegate.prototype = new System_Delegate();
 System__Type__RegisterReferenceType(System_MulticastDelegate, "System.MulticastDelegate", System_Delegate, []);
 function System_Web_Html_DomList(T, $5fcallStatiConstructor) {
@@ -200,7 +196,7 @@ function System_Web_Html_DomList(T, $5fcallStatiConstructor) {
   DomList$1_$T$_ = System_Web_Html_DomList[T.typeId];
   DomList$1_$T$_.genericParameters = [T];
   DomList$1_$T$_.genericClosure = System_Web_Html_DomList;
-  DomList$1_$T$_.typeId = "n$" + T.typeId + "$";
+  DomList$1_$T$_.typeId = "l$" + T.typeId + "$";
   DomList$1_$T$_.__ctor = function System_Web_Html_DomList$1_factory(array) {
     var this_;
     this_ = new DomList$1_$T$_();
@@ -233,7 +229,7 @@ function System_Web_DomDataCache(T, $5fcallStatiConstructor) {
   DomDataCache$1_$T$_ = System_Web_DomDataCache[T.typeId];
   DomDataCache$1_$T$_.genericParameters = [T];
   DomDataCache$1_$T$_.genericClosure = System_Web_DomDataCache;
-  DomDataCache$1_$T$_.typeId = "o$" + T.typeId + "$";
+  DomDataCache$1_$T$_.typeId = "m$" + T.typeId + "$";
   DomDataCache$1_$T$_.isW3wc = function System__Web__DomDataCache$1__IsW3wc(element) {
     return !!element.addEventListener;
   };
@@ -355,7 +351,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "p$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "n$" + TValue.typeId + "$";
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -406,7 +402,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_ = System_Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = System_Action;
-  Action$1_$T1$_.typeId = "q$" + T1.typeId + "$";
+  Action$1_$T1$_.typeId = "o$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", System_MulticastDelegate, []);
   return Action$1_$T1$_;

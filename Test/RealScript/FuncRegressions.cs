@@ -109,5 +109,15 @@ namespace RealScript
                 }
             }
         }
+
+        public static string RegressionWithLastIndexOfString(string str)
+        {
+            if (str.LastIndexOf('/') > 0)
+            {
+                return str + "10";
+            }
+
+            return str;
+        }
     }
 }

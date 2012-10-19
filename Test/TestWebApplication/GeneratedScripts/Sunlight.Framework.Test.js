@@ -70,7 +70,7 @@ ptyp_.boxedValue = null;
 ptyp_.interfaces = null;
 ptyp_.isInstanceOfType = function System__Type__IsInstanceOfType(instance) {
   if (!this.isInterface)
-    return instance instanceof this;
+    return instance instanceof this || instance && instance.constructor == this;
   else if (instance && !instance.constructor.baseInterfaces)
     System__Type__InitializeBaseInterfaces(instance.constructor);
   return instance && instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
@@ -1339,10 +1339,11 @@ function System__NativeArray__Push(this_, value) {
   return this_.push(value);
 };
 function System__NativeArray__RemoveAt(this_, index) {
-  var i;
+  var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  for (i = this_.length - 2; i >= index; i--)
+  len = this_.length - 2;
+  for (i = index; i < len; i++)
     this_[i] = this_[i + 1];
   this_.pop();
 };

@@ -16,13 +16,56 @@ namespace System.Web.Html
     {
         private TouchEvent() { }
 
-        [IntrinsicField]
-        public readonly TouchInfo[] ChangedTouches;
+        public TouchInfo[] ChangedTouches
+        {
+            get
+            {
+                if (object.IsNullOrUndefined(this.changedTouchesInternal))
+                {
+                    this.changedTouchesInternal = this.changedTouches.GetArray<TouchInfo>();
+                }
+
+                return this.changedTouchesInternal;
+            }
+        }
+
+        public TouchInfo[] TargetTouches
+        {
+            get
+            {
+                if (object.IsNullOrUndefined(this.targetTouchesInternal))
+                {
+                    this.targetTouchesInternal = this.targetTouches.GetArray<TouchInfo>();
+                }
+
+                return this.targetTouchesInternal;
+            }
+        }
+
+        public TouchInfo[] Touches
+        {
+            get
+            {
+                if (object.IsNullOrUndefined(this.touchesInternal))
+                {
+                    this.touchesInternal = this.touches.GetArray<TouchInfo>();
+                }
+
+                return this.touchesInternal;
+            }
+        }
 
         [IntrinsicField]
-        public readonly TouchInfo[] TargetTouches;
+        private readonly NativeArray changedTouches;
 
         [IntrinsicField]
-        public readonly TouchInfo[] Touches;
+        private readonly NativeArray targetTouches;
+
+        [IntrinsicField]
+        private readonly NativeArray touches;
+
+        private TouchInfo[] touchesInternal;
+        private TouchInfo[] targetTouchesInternal;
+        private TouchInfo[] changedTouchesInternal;
     }
 }

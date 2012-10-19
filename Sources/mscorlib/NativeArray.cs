@@ -127,7 +127,8 @@ namespace System
             var i;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            for(i = this.length-2; i >= index; i--)
+            var len = this.length - 2;
+            for(i = index; i < len; i++)
                 this[i] = this[i + 1];
             this.pop();
             ")]

@@ -59,7 +59,7 @@ namespace System.Web.Html
         /// <summary>
         /// Default constructor.
         /// </summary>
-        internal Element() { }
+        protected Element() { }
 
         /// <summary>
         /// The previous element sibling.
@@ -133,6 +133,7 @@ namespace System.Web.Html
         /// The identifier.
         /// </summary>
         [IntrinsicField]
+        [ScriptName("id")]
         public string ID;
 
         /// <summary>
@@ -536,7 +537,7 @@ namespace System.Web.Html
         /// </summary>
         public void Show()
         {
-            this.Style.Display = null;
+            this.Style.Display = string.Empty;
         }
 
         /// <summary>

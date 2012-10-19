@@ -8,7 +8,7 @@ namespace System.Web.Html
 {
     using System.Runtime.CompilerServices;
 
-    [Imported]
+    [PsudoType]
     [IgnoreNamespace]
     public sealed class Document
     {

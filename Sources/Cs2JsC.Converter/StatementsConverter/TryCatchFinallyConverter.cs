@@ -125,11 +125,18 @@ namespace Cs2JsC.Converter.StatementsConverter
                 if (catchBlock == null)
                 {
                     var temp = new List<JST.Statement>();
-                    temp.Add(jstStatement);
-                    catchBlock = new JST.ScopeBlock(
-                        jstStatement.Location,
-                        jstStatement.Scope,
-                        temp);
+                    if (jstStatement != null)
+                    {
+                        temp.Add(jstStatement);
+                        catchBlock = new JST.ScopeBlock(
+                            jstStatement.Location,
+                            jstStatement.Scope,
+                            temp);
+                    }
+                    else
+                    {
+                        catchBlock = new JST.ScopeBlock(null, converter.Scope, temp);
+                    }
                 }
 
                 return new JST.CatchHandler(
