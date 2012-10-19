@@ -475,6 +475,7 @@
     <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCalls.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\CollapsingForInIfRegression.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionWithLastIndexOfString.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\OddNativeArrayPushBehavior.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

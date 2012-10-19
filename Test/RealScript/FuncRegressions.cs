@@ -119,5 +119,11 @@ namespace RealScript
 
             return str;
         }
+
+        public static void OddNativeArrayPushBehavior(Foo fooObject)
+        {
+            var items = new NativeArray(1);
+            items.Push<Foo>(fooObject);
+        }
     }
 }
