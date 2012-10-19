@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(Cs2JsCToolSetPath)\lib\mscorlib.dll"/>
+    <Reference Include="$(Cs2JsCToolSetPath)\lib\System.Web.dll"/>
     <Reference Include="$(Cs2JsCToolSetPath)\lib\System.Web.Html.dll"/>
   </ItemGroup>
   <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
