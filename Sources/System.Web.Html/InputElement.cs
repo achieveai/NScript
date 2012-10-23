@@ -26,6 +26,18 @@ namespace System.Web.Html
         internal InputElement() { }
 
         /// <summary>
+        /// Gets the on change event handler.
+        /// </summary>
+        /// <value>
+        /// The on change event handler.
+        /// </value>
+        public event Action<ElementEvent> OnChange
+        {
+            add { this.Bind(OnChangeEvtName, value); }
+            remove { this.UnBind(OnChangeEvtName, value); }
+        }
+
+        /// <summary>
         /// The default value.
         /// </summary>
         [IntrinsicField]

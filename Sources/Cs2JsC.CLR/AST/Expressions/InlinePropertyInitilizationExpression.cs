@@ -20,12 +20,12 @@ namespace Cs2JsC.CLR.AST
         /// <summary>
         /// Backing collection for PropertySetters;
         /// </summary>
-        private readonly List<Tuple<MemberReferenceExpression, Expression>> setters;
+        private readonly List<Tuple<MemberReferenceExpression, Expression[]>> setters;
 
         /// <summary>
         /// Backing field for Setters.
         /// </summary>
-        private readonly ReadOnlyCollection<Tuple<MemberReferenceExpression, Expression>> readonlySetters;
+        private readonly ReadOnlyCollection<Tuple<MemberReferenceExpression, Expression[]>> readonlySetters;
 
         /// <summary>
         /// Backing field for newObjectExpression
@@ -43,12 +43,12 @@ namespace Cs2JsC.CLR.AST
             ClrContext context,
             Location locationInfo,
             NewObjectExpression newObjectExpression,
-            List<Tuple<MemberReferenceExpression, Expression>> setters)
+            List<Tuple<MemberReferenceExpression, Expression[]>> setters)
             : base(context, locationInfo)
         {
             this.newObjectExpression = newObjectExpression;
             this.setters = setters;
-            this.readonlySetters = new ReadOnlyCollection<Tuple<MemberReferenceExpression, Expression>>(this.setters);
+            this.readonlySetters = new ReadOnlyCollection<Tuple<MemberReferenceExpression, Expression[]>>(this.setters);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Cs2JsC.CLR.AST
         /// Gets the setters.
         /// </summary>
         /// <value>The setters.</value>
-        public IList<Tuple<MemberReferenceExpression, Expression>> Setters
+        public IList<Tuple<MemberReferenceExpression, Expression[]>> Setters
         {
             get { return this.readonlySetters; }
         }
@@ -91,10 +91,15 @@ namespace Cs2JsC.CLR.AST
 
             for (int setterIndex = 0; setterIndex < this.setters.Count; setterIndex++)
             {
+                for (int jSetterExpression = 0; jSetterExpression < this.setters[setterIndex].Item2.Length; jSetterExpression++)
+                {
+                    this.setters[setterIndex].Item2[jSetterExpression] = (Expression)processor.Process(this.setters[setterIndex].Item2[jSetterExpression]);
+                }
+
                 this.setters[setterIndex] =
                     Tuple.Create(
                         (MemberReferenceExpression)processor.Process(this.setters[setterIndex].Item1),
-                        (Expression)processor.Process(this.setters[setterIndex].Item2));
+                        this.setters[setterIndex].Item2);
             }
         }
 
@@ -135,9 +140,17 @@ namespace Cs2JsC.CLR.AST
 
             for (int setterIndex = 0; setterIndex < this.Setters.Count; setterIndex++)
             {
-                if (!this.Setters[setterIndex].Equals(right.Setters[setterIndex]))
+                if (!this.Setters[setterIndex].Item1.Equals(right.Setters[setterIndex].Item1))
                 {
                     return false;
+                }
+
+                for (int jExpresssion = 0; jExpresssion < this.Setters[setterIndex].Item2.Length; jExpresssion++)
+                {
+                    if (!this.Setters[setterIndex].Item2[jExpresssion].Equals(right.Setters[setterIndex].Item2[jExpresssion]))
+                    {
+                        return false;
+                    }
                 }
             }
 

@@ -57,44 +57,90 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             foreach (var setter in expression.Setters)
             {
                 JST.Expression assignmentExpression;
-                JST.Expression valueExpression = 
-                        ExpressionConverterBase.Convert(converter, setter.Item2);
+                var thisVariable = new JST.IdentifierExpression(variable);
 
-                if (setter.Item1 is FieldReferenceExpression)
+                if (setter.Item1 is MethodReferenceExpression)
                 {
-                    var fieldAccessExpression =
-                        new JST.IndexExpression(
-                            setter.Item2.Location,
-                            function.Scope,
-                            new JST.IdentifierExpression(variable),
-                            new JST.IdentifierExpression(
-                                converter.Resolve(
-                                    (FieldReference)setter.Item1.MemberReference)));
+                    MethodCallContext methodCallContext = new MethodCallContext(
+                            thisVariable,
+                            (MethodReference)setter.Item1.MemberReference,
+                            false);
 
-                    assignmentExpression = new JST.BinaryExpression(
-                        setter.Item2.Location,
-                        function.Scope,
-                        JST.BinaryOperator.Assignment,
-                        fieldAccessExpression,
-                        valueExpression);
+                    List<JST.Expression> args = new List<JST.Expression>();
+                    foreach (var arg in setter.Item2)
+                    {
+                        args.Add(ExpressionConverterBase.Convert(converter, arg));
+                    }
+
+                    assignmentExpression = MethodCallExpressionConverter.CreateMethodCallExpression(
+                        methodCallContext,
+                        args,
+                        converter,
+                        converter.RuntimeManager);
                 }
                 else
                 {
-                    PropertyReference propertyReference = (PropertyReference)setter.Item1.MemberReference;
+                    JST.Expression valueExpression =
+                            ExpressionConverterBase.Convert(converter, setter.Item2[0]);
 
-                    var propertySetterAccessExpression =
-                        new JST.IndexExpression(
-                            setter.Item2.Location,
+                    if (setter.Item1 is FieldReferenceExpression)
+                    {
+                        var fieldAccessExpression =
+                            new JST.IndexExpression(
+                                setter.Item2[0].Location,
+                                function.Scope,
+                                thisVariable,
+                                new JST.IdentifierExpression(
+                                    converter.Resolve(
+                                        (FieldReference)setter.Item1.MemberReference)));
+
+                        assignmentExpression = new JST.BinaryExpression(
+                            setter.Item2[0].Location,
                             function.Scope,
-                            new JST.IdentifierExpression(variable),
-                            new JST.IdentifierExpression(
-                                converter.Resolve(propertyReference.Resolve().SetMethod)));
+                            JST.BinaryOperator.Assignment,
+                            fieldAccessExpression,
+                            valueExpression);
+                    }
+                    else
+                    {
+                        PropertyReference propertyReference = (PropertyReference)setter.Item1.MemberReference;
 
-                    assignmentExpression = new JST.MethodCallExpression(
-                        setter.Item2.Location,
-                        function.Scope,
-                        propertySetterAccessExpression,
-                        new JST.Expression[] {valueExpression});
+                        if (converter.RuntimeManager.Context.IsIntrinsicProperty(propertyReference.Resolve()))
+                        {
+                            var fieldAccessExpression =
+                                new JST.IndexExpression(
+                                    setter.Item2[0].Location,
+                                    function.Scope,
+                                    thisVariable,
+                                    new JST.IdentifierExpression(converter.Resolve(propertyReference)));
+
+                            assignmentExpression = new JST.BinaryExpression(
+                                setter.Item2[0].Location,
+                                function.Scope,
+                                JST.BinaryOperator.Assignment,
+                                fieldAccessExpression,
+                                valueExpression);
+                        }
+                        else
+                        {
+                            MethodCallContext methodCallContext = new MethodCallContext(
+                                thisVariable,
+                                propertyReference.Resolve().SetMethod,
+                                false);
+
+                            List<JST.Expression> args = new List<JST.Expression>();
+                            foreach (var arg in setter.Item2)
+                            {
+                                args.Add(ExpressionConverterBase.Convert(converter, arg));
+                            }
+
+                            assignmentExpression = MethodCallExpressionConverter.CreateMethodCallExpression(
+                                methodCallContext,
+                                args,
+                                converter,
+                                converter.RuntimeManager);
+                        }
+                    }
                 }
 
                 expressions.Add(assignmentExpression);

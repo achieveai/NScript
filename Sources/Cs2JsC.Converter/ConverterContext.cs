@@ -404,8 +404,7 @@ namespace Cs2JsC.Converter
                 isFixedName = true;
                 return memberDefinition.Name;
             }
-            else if (isParentImported
-                && !this.IsImplemented(memberDefinition))
+            else if (!this.IsImplemented(memberDefinition))
             {
                 isFixedName = true;
                 attribute = memberDefinition.CustomAttributes.SelectAttribute(
@@ -523,7 +522,9 @@ namespace Cs2JsC.Converter
         public bool IsIntrinsicProperty(PropertyDefinition propertyDefinition)
         {
             if (null != propertyDefinition.CustomAttributes.SelectAttribute(
-                        this.KnownReferences.IntrinsicPropertyAttribute))
+                        this.KnownReferences.IntrinsicPropertyAttribute)
+                || null != propertyDefinition.CustomAttributes.SelectAttribute(
+                        this.KnownReferences.ScriptAliasAttribute))
             {
                 return true;
             }

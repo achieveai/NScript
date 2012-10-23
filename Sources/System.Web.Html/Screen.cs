@@ -11,8 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Screen
     /// </summary>
-    [Imported]
-    [IgnoreNamespace]
+    [PsudoType]
     public sealed class Screen
     {
         private Screen() { }

@@ -29,7 +29,7 @@ namespace System.Web.Html
         /// <summary>
         /// The on key press evtname.
         /// </summary>
-        public const string OnKeyPressEvtname = "keypress";
+        public const string OnKeyPressEvtName = "keypress";
 
         /// <summary>
         /// Name of the on mouse up event.
@@ -52,9 +52,69 @@ namespace System.Web.Html
         public const string OnMouseOutEvtName = "mouseout";
 
         /// <summary>
+        /// Name of the on mouse move event.
+        /// </summary>
+        public const string OnMouseMoveEvtName = "mousemove";
+
+        /// <summary>
+        /// Name of the on mouse wheel event.
+        /// </summary>
+        public const string OnMouseWheelEvtName = "mousewheel";
+
+        /// <summary>
         /// Name of the on click event.
         /// </summary>
         public const string OnClickEvtName = "click";
+
+        /// <summary>
+        /// Name of the on focus event.
+        /// </summary>
+        public const string OnFocusEvtName = "focus";
+
+        /// <summary>
+        /// Name of the on blur event.
+        /// </summary>
+        public const string OnBlurEvtName = "blur";
+
+        /// <summary>
+        /// Name of the on scroll event.
+        /// </summary>
+        public const string OnScrollEvtName = "scoll";
+
+        /// <summary>
+        /// Name of the on touch start event.
+        /// </summary>
+        public const string OnTouchStartEvtName = "touchstart";
+
+        /// <summary>
+        /// Name of the on touch end event.
+        /// </summary>
+        public const string OnTouchEndEvtName = "touchend";
+
+        /// <summary>
+        /// Name of the on touch move event.
+        /// </summary>
+        public const string OnTouchMoveEvtName = "touchmove";
+
+        /// <summary>
+        /// Name of the on animation start event.
+        /// </summary>
+        public const string OnAnimationStartEvtName = "animationstart";
+
+        /// <summary>
+        /// Name of the on animation end event.
+        /// </summary>
+        public const string OnAnimationEndEvtName = "animationend";
+
+        /// <summary>
+        /// Name of the on web kit animation start event.
+        /// </summary>
+        public const string OnWebKitAnimationStartEvtName = "webkitAnimationStart";
+
+        /// <summary>
+        /// Name of the on web kit animation end event.
+        /// </summary>
+        public const string OnWebKitAnimationEndEvtName = "webkitAnimationEnd";
 
         /// <summary>
         /// Default constructor.
@@ -89,25 +149,25 @@ namespace System.Web.Html
         /// Height of the client.
         /// </summary>
         [IntrinsicField]
-        public readonly int ClientHeight;
+        public readonly double ClientHeight;
 
         /// <summary>
         /// The client left.
         /// </summary>
         [IntrinsicField]
-        public readonly int ClientLeft;
+        public readonly double ClientLeft;
 
         /// <summary>
         /// The client top.
         /// </summary>
         [IntrinsicField]
-        public readonly int ClientTop;
+        public readonly double ClientTop;
 
         /// <summary>
         /// Width of the client.
         /// </summary>
         [IntrinsicField]
-        public readonly int ClientWidth;
+        public readonly double ClientWidth;
 
         /// <summary>
         /// The current style.
@@ -152,13 +212,13 @@ namespace System.Web.Html
         /// Height of the offset.
         /// </summary>
         [IntrinsicField]
-        public readonly int OffsetHeight;
+        public readonly double OffsetHeight;
 
         /// <summary>
         /// The offset left.
         /// </summary>
         [IntrinsicField]
-        public readonly int OffsetLeft;
+        public readonly double OffsetLeft;
 
         /// <summary>
         /// The offset parent.
@@ -170,13 +230,13 @@ namespace System.Web.Html
         /// The offset top.
         /// </summary>
         [IntrinsicField]
-        public readonly int OffsetTop;
+        public readonly double OffsetTop;
 
         /// <summary>
         /// Width of the offset.
         /// </summary>
         [IntrinsicField]
-        public readonly int OffsetWidth;
+        public readonly double OffsetWidth;
 
         /// <summary>
         /// The runtime style.
@@ -188,25 +248,25 @@ namespace System.Web.Html
         /// Height of the scroll.
         /// </summary>
         [IntrinsicField]
-        public readonly int ScrollHeight;
+        public readonly double ScrollHeight;
 
         /// <summary>
         /// The scroll left.
         /// </summary>
         [IntrinsicField]
-        public int ScrollLeft;
+        public double ScrollLeft;
 
         /// <summary>
         /// The scroll top.
         /// </summary>
         [IntrinsicField]
-        public int ScrollTop;
+        public double ScrollTop;
 
         /// <summary>
         /// Width of the scroll.
         /// </summary>
         [IntrinsicField]
-        public readonly int ScrollWidth;
+        public readonly double ScrollWidth;
 
         /// <summary>
         /// The style.
@@ -245,6 +305,240 @@ namespace System.Web.Html
         private DomDataCache<ElementEvent> elementBinder;
 
         /// <summary>
+        /// Gets the on key down.
+        /// </summary>
+        /// <value>
+        /// The on key down.
+        /// </value>
+        public event Action<ElementEvent> OnKeyDown
+        {
+            add { this.Bind(OnKeyDownEvtName, value); }
+            remove { this.UnBind(OnKeyDownEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on key up.
+        /// </summary>
+        /// <value>
+        /// The on key up.
+        /// </value>
+        public event Action<ElementEvent> OnKeyUp
+        {
+            add { this.Bind(OnKeyUpEvtName, value); }
+            remove { this.UnBind(OnKeyUpEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on key press.
+        /// </summary>
+        /// <value>
+        /// The on key press.
+        /// </value>
+        public event Action<ElementEvent> OnKeyPress
+        {
+            add { this.Bind(OnKeyPressEvtName, value); }
+            remove { this.UnBind(OnKeyPressEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on mouse up.
+        /// </summary>
+        /// <value>
+        /// The on mouse up.
+        /// </value>
+        public event Action<ElementEvent> OnMouseUp
+        {
+            add { this.Bind(OnMouseUpEvtName, value); }
+            remove { this.UnBind(OnMouseUpEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on mouse down.
+        /// </summary>
+        /// <value>
+        /// The on mouse down.
+        /// </value>
+        public event Action<ElementEvent> OnMouseDown
+        {
+            add { this.Bind(OnMouseDownEvtName, value); }
+            remove { this.UnBind(OnMouseDownEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on mouse enter.
+        /// </summary>
+        /// <value>
+        /// The on mouse enter.
+        /// </value>
+        public event Action<ElementEvent> OnMouseEnter
+        {
+            add { this.Bind(OnMouseEnterEvtName, value); }
+            remove { this.UnBind(OnMouseEnterEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on mouse out.
+        /// </summary>
+        /// <value>
+        /// The on mouse out.
+        /// </value>
+        public event Action<ElementEvent> OnMouseOut
+        {
+            add { this.Bind(OnMouseOutEvtName, value); }
+            remove { this.UnBind(OnMouseOutEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on mouse move event.
+        /// </summary>
+        /// <value>
+        /// The on mouse move event.
+        /// </value>
+        public event Action<ElementEvent> OnMouseMove
+        {
+            add { this.Bind(OnMouseMoveEvtName, value); }
+            remove { this.UnBind(OnMouseMoveEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on mouse wheel event handler.
+        /// </summary>
+        /// <value>
+        /// The on mouse wheel event handler.
+        /// </value>
+        public event Action<ElementEvent> OnMouseWheel
+        {
+            add { this.Bind(OnMouseWheelEvtName, value); }
+            remove { this.UnBind(OnMouseWheelEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on click.
+        /// </summary>
+        /// <value>
+        /// The on click.
+        /// </value>
+        public event Action<ElementEvent> OnClick
+        {
+            add { this.Bind(OnClickEvtName, value); }
+            remove { this.UnBind(OnClickEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on focus event handler.
+        /// </summary>
+        /// <value>
+        /// The on focus event handler.
+        /// </value>
+        public event Action<ElementEvent> OnFocus
+        {
+            add { this.Bind(OnFocusEvtName, value); }
+            remove { this.UnBind(OnFocusEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on blur event handler.
+        /// </summary>
+        /// <value>
+        /// The on blur event handler.
+        /// </value>
+        public event Action<ElementEvent> OnBlur
+        {
+            add { this.Bind(OnBlurEvtName, value); }
+            remove { this.UnBind(OnBlurEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on touch start event handler.
+        /// </summary>
+        /// <value>
+        /// The on touch start event handler.
+        /// </value>
+        public event Action<ElementEvent> OnTouchStart
+        {
+            add { this.Bind(OnTouchStartEvtName, value); }
+            remove { this.UnBind(OnTouchStartEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on touch end event handler.
+        /// </summary>
+        /// <value>
+        /// The on touch end event handler.
+        /// </value>
+        public event Action<ElementEvent> OnTouchEnd
+        {
+            add { this.Bind(OnTouchEndEvtName, value); }
+            remove { this.UnBind(OnTouchEndEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on touch move event handler.
+        /// </summary>
+        /// <value>
+        /// The on touch move event handler.
+        /// </value>
+        public event Action<ElementEvent> OnTouchMove
+        {
+            add { this.Bind(OnTouchMoveEvtName, value); }
+            remove { this.UnBind(OnTouchMoveEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on scroll event handler.
+        /// </summary>
+        /// <value>
+        /// The on scroll event handler.
+        /// </value>
+        public event Action<ElementEvent> OnScroll
+        {
+            add { this.Bind(OnScrollEvtName, value); }
+            remove { this.UnBind(OnScrollEvtName, value); }
+        }
+
+        /// <summary>
+        /// Gets the on animation start event handler.
+        /// </summary>
+        /// <value>
+        /// The on animation start event handler.
+        /// </value>
+        public event Action<ElementEvent> OnAnimationStart
+        {
+            add
+            {
+                this.Bind(OnAnimationStartEvtName, value);
+                this.Bind(OnWebKitAnimationStartEvtName, value);
+            }
+
+            remove
+            {
+                this.UnBind(OnAnimationStartEvtName, value);
+                this.UnBind(OnWebKitAnimationStartEvtName, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the on animation end event handler.
+        /// </summary>
+        /// <value>
+        /// The on animation end event handler.
+        /// </value>
+        public event Action<ElementEvent> OnAnimationEnd
+        {
+            add
+            {
+                this.Bind(OnAnimationEndEvtName, value);
+                this.Bind(OnWebKitAnimationEndEvtName, value);
+            }
+
+            remove
+            {
+                this.UnBind(OnAnimationEndEvtName, value);
+                this.UnBind(OnWebKitAnimationEndEvtName, value);
+            }
+        }
+
+        /// <summary>
         /// Appends a child.
         /// </summary>
         /// <param name="child"> The child. </param>
@@ -258,7 +552,7 @@ namespace System.Web.Html
         /// </summary>
         /// <param name="child"> The child. </param>
         /// <returns>
-        /// .
+        /// The child element itself.
         /// </returns>
         public extern Element AppendChild(DocumentFragment child);
 

@@ -87,7 +87,7 @@ namespace Cs2JsC.CLR.Decompiler.Blocks
             AST.NewObjectExpression newObjectExpression =
                 (AST.NewObjectExpression) this.InitBlock.GetDependent(0).ToAstNode(variableResolver);
 
-            List<Tuple<AST.MemberReferenceExpression, Expression>> setters = new List<Tuple<MemberReferenceExpression, Expression>>();
+            List<Tuple<AST.MemberReferenceExpression, Expression[]>> setters = new List<Tuple<MemberReferenceExpression, Expression[]>>();
 
             foreach (StackedBlock setter in this.Setters)
             {
@@ -96,24 +96,24 @@ namespace Cs2JsC.CLR.Decompiler.Blocks
                 if (binaryExpression.Left is FieldReferenceExpression)
                 {
                     setters.Add(
-                        Tuple.Create<MemberReferenceExpression, Expression>(
+                        Tuple.Create<MemberReferenceExpression, Expression[]>(
                             new FieldReferenceExpression(
                                 this.Context.ClrContext,
                                 binaryExpression.Left.Location,
-                                ((FieldReferenceExpression) binaryExpression.Left).FieldReference,
+                                ((FieldReferenceExpression)binaryExpression.Left).FieldReference,
                                 null),
-                            binaryExpression.Right));
+                            new Expression[] { binaryExpression.Right }));
                 }
                 else
                 {
                     setters.Add(
-                        Tuple.Create<MemberReferenceExpression, Expression>(
+                        Tuple.Create<MemberReferenceExpression, Expression[]>(
                             new PropertyReferenceExpression(
                                 this.Context.ClrContext,
                                 binaryExpression.Left.Location,
                                 ((PropertyReferenceExpression) binaryExpression.Left).PropertyReference,
                                 null),
-                            binaryExpression.Right));
+                            new Expression[] { binaryExpression.Right }));
                 }
             }
 

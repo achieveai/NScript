@@ -134,7 +134,7 @@ namespace System.Web.Html
     /// Media element.
     /// </summary>
     [IgnoreNamespace, PsudoType]
-    public abstract class MediaElement : Element
+    public abstract class MediaElement : SourceElement
     {
         /// <summary>
         /// Name of the on load start event.
@@ -370,16 +370,250 @@ namespace System.Web.Html
         public readonly bool Seeking;
 
         /// <summary>
-        /// Source for the.
-        /// </summary>
-        [IntrinsicField]
-        public string Src;
-
-        /// <summary>
         /// The volume.
         /// </summary>
         [IntrinsicField]
         public double Volume;
+
+        /// <summary>
+        /// Gets the on load start handler.
+        /// </summary>
+        /// <value>
+        /// The on load start handler.
+        /// </value>
+        public event Action<ElementEvent> OnLoadStart
+		{
+			add { this.Bind(OnLoadStartEvtName, value); }
+			remove { this.UnBind(OnLoadStartEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on progress handler.
+        /// </summary>
+        /// <value>
+        /// The on progress handler.
+        /// </value>
+		public event Action<ElementEvent> OnProgress
+		{
+			add { this.Bind(OnProgressEvtName, value); }
+			remove { this.UnBind(OnProgressEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on suspend handler.
+        /// </summary>
+        /// <value>
+        /// The on suspend handler.
+        /// </value>
+		public event Action<ElementEvent> OnSuspend
+		{
+			add { this.Bind(OnSuspendEvtName, value); }
+			remove { this.UnBind(OnSuspendEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on abort handler.
+        /// </summary>
+        /// <value>
+        /// The on abort handler.
+        /// </value>
+		public event Action<ElementEvent> OnAbort
+		{
+			add { this.Bind(OnAbortEvtName, value); }
+			remove { this.UnBind(OnAbortEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on error handler.
+        /// </summary>
+        /// <value>
+        /// The on error handler.
+        /// </value>
+		public event Action<ElementEvent> OnError
+		{
+			add { this.Bind(OnErrorEvtName, value); }
+			remove { this.UnBind(OnErrorEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on stalled handler.
+        /// </summary>
+        /// <value>
+        /// The on stalled handler.
+        /// </value>
+		public event Action<ElementEvent> OnStalled
+		{
+			add { this.Bind(OnStalledEvtName, value); }
+			remove { this.UnBind(OnStalledEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on emptied handler.
+        /// </summary>
+        /// <value>
+        /// The on emptied handler.
+        /// </value>
+		public event Action<ElementEvent> OnEmptied
+		{
+			add { this.Bind(OnEmptiedEvtName, value); }
+			remove { this.UnBind(OnEmptiedEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on loaded metadata handler.
+        /// </summary>
+        /// <value>
+        /// The on loaded metadata handler.
+        /// </value>
+		public event Action<ElementEvent> OnLoadedMetadata
+		{
+			add { this.Bind(OnLoadedMetadataEvtName, value); }
+			remove { this.UnBind(OnLoadedMetadataEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the information describing the on loaded handler.
+        /// </summary>
+        /// <value>
+        /// Information describing the on loaded handler.
+        /// </value>
+		public event Action<ElementEvent> OnLoadedData
+		{
+			add { this.Bind(OnLoadedDataEvtName, value); }
+			remove { this.UnBind(OnLoadedDataEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on can play handler.
+        /// </summary>
+        /// <value>
+        /// The on can play handler.
+        /// </value>
+		public event Action<ElementEvent> OnCanPlay
+		{
+			add { this.Bind(OnCanPlayEvtName, value); }
+			remove { this.UnBind(OnCanPlayEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on can play through handler.
+        /// </summary>
+        /// <value>
+        /// The on can play through handler.
+        /// </value>
+		public event Action<ElementEvent> OnCanPlayThrough
+		{
+			add { this.Bind(OnCanPlayThroughEvtName, value); }
+			remove { this.UnBind(OnCanPlayThroughEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on playing handler.
+        /// </summary>
+        /// <value>
+        /// The on playing handler.
+        /// </value>
+		public event Action<ElementEvent> OnPlaying
+		{
+			add { this.Bind(OnPlayingEvtName, value); }
+			remove { this.UnBind(OnPlayingEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on ended handler.
+        /// </summary>
+        /// <value>
+        /// The on ended handler.
+        /// </value>
+		public event Action<ElementEvent> OnEnded
+		{
+			add { this.Bind(OnEndedEvtName, value); }
+			remove { this.UnBind(OnEndedEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on waiting handler.
+        /// </summary>
+        /// <value>
+        /// The on waiting handler.
+        /// </value>
+		public event Action<ElementEvent> OnWaiting
+		{
+			add { this.Bind(OnWaitingEvtName, value); }
+			remove { this.UnBind(OnWaitingEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on duration change handler.
+        /// </summary>
+        /// <value>
+        /// The on duration change handler.
+        /// </value>
+		public event Action<ElementEvent> OnDurationChange
+		{
+			add { this.Bind(OnDurationChangeEvtName, value); }
+			remove { this.UnBind(OnDurationChangeEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on time upate handler.
+        /// </summary>
+        /// <value>
+        /// The on time upate handler.
+        /// </value>
+		public event Action<ElementEvent> OnTimeUpate
+		{
+			add { this.Bind(OnTimeUpateEvtName, value); }
+			remove { this.UnBind(OnTimeUpateEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on play handler.
+        /// </summary>
+        /// <value>
+        /// The on play handler.
+        /// </value>
+		public event Action<ElementEvent> OnPlay
+		{
+			add { this.Bind(OnPlayEvtName, value); }
+			remove { this.UnBind(OnPlayEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on pause handler.
+        /// </summary>
+        /// <value>
+        /// The on pause handler.
+        /// </value>
+		public event Action<ElementEvent> OnPause
+		{
+			add { this.Bind(OnPauseEvtName, value); }
+			remove { this.UnBind(OnPauseEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on rate change handler.
+        /// </summary>
+        /// <value>
+        /// The on rate change handler.
+        /// </value>
+		public event Action<ElementEvent> OnRateChange
+		{
+			add { this.Bind(OnRateChangeEvtName, value); }
+			remove { this.UnBind(OnRateChangeEvtName, value); }
+		}
+
+        /// <summary>
+        /// Gets the on volume change handler.
+        /// </summary>
+        /// <value>
+        /// The on volume change handler.
+        /// </value>
+		public event Action<ElementEvent> OnVolumeChange
+		{
+			add { this.Bind(OnVolumeChangeEvtName, value); }
+			remove { this.UnBind(OnVolumeChangeEvtName, value); }
+		}
 
         /// <summary>
         /// Can play type.

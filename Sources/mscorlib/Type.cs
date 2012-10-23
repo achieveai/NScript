@@ -185,7 +185,7 @@
             for(var key in enumStrToValueMap)
             {
                 valueToStr[enumStrToValueMap[key]] = key;
-                lowerStrToValue[key.toLower()] = enumStrToValueMap[key];
+                lowerStrToValue[key.toLowerCase()] = enumStrToValueMap[key];
             }
 
             this.@{[mscorlib]System.Type::enumValueToStrMap} = valueToStr;

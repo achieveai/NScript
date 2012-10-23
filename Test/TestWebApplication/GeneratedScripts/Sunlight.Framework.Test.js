@@ -180,8 +180,8 @@ function Sunlight_Framework_Test_Binders_SourcePropertyBinderTests() {
 };
 Sunlight_Framework_Test_Binders_SourcePropertyBinderTests.typeId = "l";
 function Sunlight__Framework__Test__Binders__SourcePropertyBinderTests__PrepNotifiableObject() {
-  var rv, stmtTemp1, stmtTemp1a;
-  rv = ((stmtTemp1 = Sunlight__Framework__Test__Binders__SimpleNotifiableClass_factory(), stmtTemp1.set_intProp(10), stmtTemp1.set_strProp("Ten"), stmtTemp1.set_objProp((stmtTemp1a = Sunlight__Framework__Test__Binders__SimpleObjectWithProperty_factory(), stmtTemp1a.set_intProp(11), stmtTemp1a.set_stringProp("Eleven"), stmtTemp1a)), stmtTemp1));
+  var rv, stmtTemp1, stmtTemp1a, stmtTemp1b;
+  rv = ((stmtTemp1 = Sunlight__Framework__Test__Binders__SimpleNotifiableClass_factory(), stmtTemp1.set_intProp(10), stmtTemp1.set_strProp("Ten"), stmtTemp1.set_objProp((stmtTemp1b = Sunlight__Framework__Test__Binders__SimpleObjectWithProperty_factory(), stmtTemp1b.set_intProp(11), stmtTemp1b.set_stringProp("Eleven"), stmtTemp1b)), stmtTemp1));
   rv.set_selfProp(rv);
   rv.get_objProp().set_selfProp(rv.get_objProp());
   rv.get_objProp().set_notifiableProp(rv);
@@ -296,7 +296,7 @@ function Sunlight__Framework__Test__ContainerTests__TestRegisterResolveWithAs() 
   QUnit.equal(1, t2.testMethod(), "1 == t1.TestMethod()");
   t1 = container.resolve(Sunlight_Framework_Test_IIocTestType1);
   QUnit.ok(t1 !== null, "t1 != null");
-  QUnit.equal(3, t1.V_TestMethod_b(), "3 == t1.TestMethod()");
+  QUnit.equal(3, t1.testMethod_b(), "3 == t1.TestMethod()");
 };
 function Sunlight__Framework__Test__ContainerTests__TestRegisterResolveIsSingleton() {
   var container, x, y, t2, t1, t1_;
@@ -401,7 +401,7 @@ function Sunlight__Framework__Test__ObservableCollectionTests__TestAddItemToObse
   eventRaised = false;
   observableCollection.add_CollectionChanged(function Sunlight__Framework__Test__ObservableCollectionTests__TestAddItemToObservableCollection_del(coll, evtArg) {
     QUnit.equal(observableCollection, coll, "ObservableCollection");
-    QUnit.equal(1, evtArg.get_newItems().V_get_Count_c$d$(), "evtArg.NewItems.Count");
+    QUnit.equal(1, evtArg.get_newItems().get_count_c$d$(), "evtArg.NewItems.Count");
     QUnit.ok(System__Object__IsNullOrUndefined(evtArg.get_oldItems()), "Object.IsNullOrUndefined(evtArg.OldItems)");
     QUnit.equal(0, evtArg.get_changeIndex(), "evtArg.changeIndex");
     eventRaised = true;
@@ -418,7 +418,7 @@ function Sunlight__Framework__Test__ObservableCollectionTests__TestRemoveItemToO
   observableCollection.add(3);
   observableCollection.add_CollectionChanged(function Sunlight__Framework__Test__ObservableCollectionTests__TestRemoveItemToObservableCollection_del(coll, evtArg) {
     QUnit.equal(observableCollection, coll, "ObservableCollection");
-    QUnit.equal(2, evtArg.get_oldItems().V_get_Count_c$d$(), "evtArg.OldItems.Count");
+    QUnit.equal(2, evtArg.get_oldItems().get_count_c$d$(), "evtArg.OldItems.Count");
     QUnit.ok(System__Object__IsNullOrUndefined(evtArg.get_newItems()), "Object.IsNullOrUndefined(evtArg.NewItems)");
     QUnit.equal(1, evtArg.get_changeIndex(), "evtArg.changeIndex");
     eventRaised = true;
@@ -518,7 +518,7 @@ ptyp_.applyBinding = function Sunlight__Framework__Binders__DataBinder__ApplyBin
     if (this.bindingMode === 0) {
       if (!this.firstBindingSuccessful)
         if (this.sourceBinder.get_isActive()) {
-          this.targetBinder.set_value(this.converter === null ? this.sourceBinder.get_value() : this.converter.V_Convert_f(this.sourceBinder.get_value()));
+          this.targetBinder.set_value(this.converter === null ? this.sourceBinder.get_value() : this.converter.convert_f(this.sourceBinder.get_value()));
           this.firstBindingSuccessful = true;
         }
         else
@@ -527,7 +527,7 @@ ptyp_.applyBinding = function Sunlight__Framework__Binders__DataBinder__ApplyBin
     }
     if (this.sourceBinder.get_isActive()) {
       if (this.converter !== null)
-        this.targetBinder.set_value(this.converter.V_Convert_f(this.sourceBinder.get_value()));
+        this.targetBinder.set_value(this.converter.convert_f(this.sourceBinder.get_value()));
       else
         this.targetBinder.set_value(this.sourceBinder.get_value());
     }
@@ -540,8 +540,8 @@ ptyp_.applyBackBinding = function Sunlight__Framework__Binders__DataBinder__Appl
     if (this.sourceBinder.get_isActive())
       this.sourceBinder.set_value(this.targetBinder.get_value());
 };
-ptyp_.V_SourceValueUpdated_g = ptyp_.sourceValueUpdated;
-ptyp_.V_TargetValueUpdated_h = ptyp_.targetValueUpdated;
+ptyp_.sourceValueUpdated_g = ptyp_.sourceValueUpdated;
+ptyp_.targetValueUpdated_h = ptyp_.targetValueUpdated;
 System__Type__RegisterReferenceType(Sunlight_Framework_Binders_DataBinder, "Sunlight.Framework.Binders.DataBinder", Object, [Sunlight_Framework_Binders_ISourceDataBinder, Sunlight_Framework_Binders_ITargetDataBinder]);
 function Sunlight_Framework_Binders_SourcePropertyBinder() {
 };
@@ -565,7 +565,7 @@ ptyp_.isActive = false;
 ptyp_.__ctor = function Sunlight__Framework__Binders__SourcePropertyBinder____ctor(propertyPartNames, propertyGetterChain, propertySetter) {
   var i;
   this.propertyPartNames = propertyPartNames;
-  this.chainLength = this.propertyPartNames.V_get_Length();
+  this.chainLength = this.propertyPartNames.get_length();
   this.propertyGetterChain = propertyGetterChain;
   this.propertySetter = propertySetter;
   this.objectChain = System_ArrayG_$Object$_.__ctora(this.chainLength);
@@ -584,7 +584,7 @@ ptyp_.get_value = function Sunlight__Framework__Binders__SourcePropertyBinder__g
 };
 ptyp_.set_value = function Sunlight__Framework__Binders__SourcePropertyBinder__set_Value(value) {
   if (this.isActive && this.propertySetter !== null)
-    this.propertySetter(this.objectChain.get_item(this.objectChain.V_get_Length() - 1), value);
+    this.propertySetter(this.objectChain.get_item(this.objectChain.get_length() - 1), value);
 };
 ptyp_.get_isActive = function Sunlight__Framework__Binders__SourcePropertyBinder__get_IsActive() {
   return this.isActive;
@@ -602,19 +602,19 @@ ptyp_.calculateValueFrom = function Sunlight__Framework__Binders__SourceProperty
         this.isActive = false;
         this.value = null;
         if (this.dataBinderBase !== null)
-          this.dataBinderBase.V_SourceValueUpdated_g();
+          this.dataBinderBase.sourceValueUpdated_g();
       }
       break;
     }
     else {
       nextValue = this.propertyGetterChain.get_item(i)(this.objectChain.get_item(i));
-      if (i < this.objectChain.V_get_Length() - 1)
+      if (i < this.objectChain.get_length() - 1)
         this.setObjectChainElementValue(i + 1, nextValue);
       else if (this.value !== nextValue || !this.isActive) {
         this.isActive = true;
         this.value = nextValue;
         if (this.dataBinderBase !== null)
-          this.dataBinderBase.V_SourceValueUpdated_g();
+          this.dataBinderBase.sourceValueUpdated_g();
       }
     }
 };
@@ -624,11 +624,11 @@ ptyp_.setObjectChainElementValue = function Sunlight__Framework__Binders__Source
     return;
   oldValue = System__Type__AsType(Sunlight_Framework_Observables_INotifyPropertyChanged, this.objectChain.get_item(index));
   if (oldValue !== null)
-    oldValue.V_RemovePropertyChangedListener_e(this.propertyPartNames.get_item(index), this.changeRegistrations.get_item(index));
+    oldValue.removePropertyChangedListener_e(this.propertyPartNames.get_item(index), this.changeRegistrations.get_item(index));
   this.objectChain.set_item(index, value);
   newNotifiableValue = System__Type__AsType(Sunlight_Framework_Observables_INotifyPropertyChanged, value);
   if (newNotifiableValue !== null)
-    newNotifiableValue.V_AddPropertyChangedListener_e(this.propertyPartNames.get_item(index), this.changeRegistrations.get_item(index));
+    newNotifiableValue.addPropertyChangedListener_e(this.propertyPartNames.get_item(index), this.changeRegistrations.get_item(index));
 };
 ptyp_.getChangeTrackerAt = function Sunlight__Framework__Binders__SourcePropertyBinder__GetChangeTrackerAt(index) {
   var this_;
@@ -727,11 +727,11 @@ ptyp_.get_isActive = function Sunlight__Framework__Binders__TargetBinder__get_Is
 ptyp_.set_target = function Sunlight__Framework__Binders__TargetBinder__set_Target(value) {
   if (this.target !== value) {
     if (this.target !== null)
-      this.target.V_RemovePropertyChangedListener_e(this.propertyName, System__Delegate__Create("onTargetUpdated", this));
+      this.target.removePropertyChangedListener_e(this.propertyName, System__Delegate__Create("onTargetUpdated", this));
     this.target = value;
     this.value = null;
     if (this.target !== null) {
-      this.target.V_AddPropertyChangedListener_e(this.propertyName, System__Delegate__Create("onTargetUpdated", this));
+      this.target.addPropertyChangedListener_e(this.propertyName, System__Delegate__Create("onTargetUpdated", this));
       if (this.getter !== null)
         this.value = this.getter(this.target);
     }
@@ -746,7 +746,7 @@ ptyp_.useDataBinder = function Sunlight__Framework__Binders__TargetBinder__UseDa
 ptyp_.onTargetUpdated = function Sunlight__Framework__Binders__TargetBinder__OnTargetUpdated(sender, propertyName) {
   if (this.dataBinder !== null && this.getter !== null) {
     this.value = this.getter(this.target);
-    this.dataBinder.V_TargetValueUpdated_h();
+    this.dataBinder.targetValueUpdated_h();
   }
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_Binders_TargetBinder, "Sunlight.Framework.Binders.TargetBinder", Object, []);
@@ -811,8 +811,8 @@ ptyp_.firePropertyChanged = function Sunlight__Framework__Observables__Observabl
 };
 ptyp_.__ctor = function Sunlight__Framework__Observables__ObservableObject____ctor() {
 };
-ptyp_.V_AddPropertyChangedListener_e = ptyp_.addPropertyChangedListener;
-ptyp_.V_RemovePropertyChangedListener_e = ptyp_.removePropertyChangedListener;
+ptyp_.addPropertyChangedListener_e = ptyp_.addPropertyChangedListener;
+ptyp_.removePropertyChangedListener_e = ptyp_.removePropertyChangedListener;
 System__Type__RegisterReferenceType(Sunlight_Framework_Observables_ObservableObject, "Sunlight.Framework.Observables.ObservableObject", Object, [Sunlight_Framework_Observables_INotifyPropertyChanged]);
 function Sunlight_Framework_Test_Binders_SimpleNotifiableClass() {
 };
@@ -1007,7 +1007,7 @@ ptyp_.sourceValueUpdated = function Sunlight__Framework__Test__Binders__SourcePr
 };
 ptyp_.__ctor = function Sunlight__Framework__Test__Binders__SourcePropertyBinderTests$2fBinderTestHelper____ctor() {
 };
-ptyp_.V_SourceValueUpdated_g = ptyp_.sourceValueUpdated;
+ptyp_.sourceValueUpdated_g = ptyp_.sourceValueUpdated;
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_Binders_SourcePropertyBinderTests_BinderTestHelper, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests/BinderTestHelper", Object, [Sunlight_Framework_Binders_ISourceDataBinder]);
 function Sunlight_Framework_IocContainer() {
 };
@@ -1113,7 +1113,7 @@ ptyp_.__ctora = function Sunlight__Framework__Test__IocTestType1____ctor(x, y) {
 ptyp_.testMethod = function Sunlight__Framework__Test__IocTestType1__TestMethod() {
   return this.y + this.testMethodBase();
 };
-ptyp_.V_TestMethod_b = ptyp_.testMethod;
+ptyp_.testMethod_b = ptyp_.testMethod;
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_IocTestType1, "Sunlight.Framework.Test.IocTestType1", Sunlight_Framework_Test_IocTestType1Base, [Sunlight_Framework_Test_IIocTestType1]);
 function Sunlight_Framework_IoC_IocHelper() {
 };
@@ -1413,8 +1413,8 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.add = function System__ArrayG$1__Add(item) {
     throw new Error("Not Implemented.");
   };
-  ptyp_["V_get_Count_" + ICollection$1_$T$_.typeId] = ptyp_.get_count;
-  ptyp_["V_Add_" + ICollection$1_$T$_.typeId] = ptyp_.add;
+  ptyp_["get_count_" + ICollection$1_$T$_.typeId] = ptyp_.get_count;
+  ptyp_["add_" + ICollection$1_$T$_.typeId] = ptyp_.add;
   System__Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", System_ArrayImpl, [ICollection$1_$T$_]);
   ArrayG$1_$T$_._tri = function() {
     if ($5f_initTracker)
@@ -1759,8 +1759,8 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   ptyp_.adda = function System__Collections__Generic__StringDictionary$1__Add(item) {
     this.add(KeyValuePair$2_$String_x_String$_.get_key(item), KeyValuePair$2_$String_x_String$_.get_value(item));
   };
-  ptyp_["V_get_Count_" + ICollection$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.get_count;
-  ptyp_["V_Add_" + ICollection$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.adda;
+  ptyp_["get_count_" + ICollection$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.get_count;
+  ptyp_["add_" + ICollection$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.adda;
   System__Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [ICollection$1_$KeyValuePair$2_$String_x_String$_$_]);
   StringDictionary$1_$TValue$_._tri = function() {
     if ($5f_initTracker)
@@ -1811,8 +1811,8 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   ptyp_.add = function System__Collections__Generic__List$1__Add(item) {
     System__NativeArray__Push(this.nativeArray, item);
   };
-  ptyp_["V_get_Count_" + ICollection$1_$T$_.typeId] = ptyp_.get_count;
-  ptyp_["V_Add_" + ICollection$1_$T$_.typeId] = ptyp_.add;
+  ptyp_["get_count_" + ICollection$1_$T$_.typeId] = ptyp_.get_count;
+  ptyp_["add_" + ICollection$1_$T$_.typeId] = ptyp_.add;
   System__Type__RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [ICollection$1_$T$_]);
   List$1_$T$_._tri = function() {
     if ($5f_initTracker)

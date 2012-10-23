@@ -132,13 +132,71 @@ namespace System.Web.Html
         /// The onload.
         /// </summary>
         [IntrinsicField]
-        public Action Onload;
+        private Action Onload;
 
         /// <summary>
         /// The onresize.
         /// </summary>
         [IntrinsicField]
-        public Action Onresize;
+        private Action Onresize;
+
+        /// <summary>
+        /// Gets the on load event handler.
+        /// </summary>
+        /// <value>
+        /// The on load event handler.
+        /// </value>
+        public event Action OnLoad
+        {
+            add
+            {
+                if (this.Onload != null)
+                {
+                    this.Onload = this.Onload + value;
+                }
+                else
+                {
+                    this.Onload = value;
+                }
+            }
+
+            remove
+            {
+                if (this.Onload != null)
+                {
+                    this.Onload = this.Onload - value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the on resize event handler.
+        /// </summary>
+        /// <value>
+        /// The on resize event handler.
+        /// </value>
+        public event Action OnResize
+        {
+            add
+            {
+                if (this.Onresize != null)
+                {
+                    this.Onresize = this.Onresize + value;
+                }
+                else
+                {
+                    this.Onresize = value;
+                }
+            }
+
+            remove
+            {
+                if (this.Onresize != null)
+                {
+                    this.Onresize = this.Onresize - value;
+                }
+            }
+        }
 
         /// <summary>
         /// The opener.

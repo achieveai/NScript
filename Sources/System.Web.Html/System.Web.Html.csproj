@@ -94,6 +94,7 @@
     <Compile Include="Selection.cs" />
     <Compile Include="Data\Storage.cs" />
     <Compile Include="Data\Enums.cs" />
+    <Compile Include="SourceElement.cs" />
     <Compile Include="Style.cs" />
     <Compile Include="TableCellElement.cs" />
     <Compile Include="TableElement.cs" />

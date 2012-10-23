@@ -225,7 +225,7 @@ namespace JsCsc.Lib
                             jarray.Add(
                                 toJObject.SerializeMethodBody(
                                     evt.Add,
-                                    null));
+                                    this.methodBlocks[evt.Add]));
                         }
                         else if (evt.IsCompilerGenerated && evt.Add != null)
                         {

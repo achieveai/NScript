@@ -743,7 +743,9 @@ namespace JsCsc.Lib
         }
 
         public JObject Visit(BlockConstantDeclaration expression)
-        { throw new NotImplementedException(); }
+        {
+            return this.Visit((BlockVariableDeclaration)expression);
+        }
 
         public JObject Visit(LocalVariable exprssion)
         { throw new NotImplementedException(); }
@@ -1447,25 +1449,36 @@ namespace JsCsc.Lib
                 {
                     JObject initializerObj = new JObject();
 
-                    ElementInitializer initializer = (ElementInitializer)init;
-                    PropertyExpr propertyExpr = initializer.Target as PropertyExpr;
-                    if (propertyExpr != null)
+                    ElementInitializer initializer = init as ElementInitializer;
+                    if (initializer != null)
                     {
-                        initializerObj[NameTokens.ElementType] = TypeTokens.PropertySpec;
-                        initializerObj[NameTokens.Setter] = MemberReferenceSerializer.Serialize(
-                            propertyExpr.Setter);
+                        PropertyExpr propertyExpr = initializer.Target as PropertyExpr;
+                        if (propertyExpr != null)
+                        {
+                            initializerObj[NameTokens.ElementType] = TypeTokens.PropertySpec;
+                            initializerObj[NameTokens.Setter] = MemberReferenceSerializer.Serialize(
+                                propertyExpr.Setter);
+                        }
+                        else
+                        {
+                            FieldExpr fieldExpr = (FieldExpr)initializer.Target;
+                            initializerObj[NameTokens.ElementType] = TypeTokens.FieldSpec;
+                            initializerObj[NameTokens.Field] = MemberReferenceSerializer.Serialize(
+                                fieldExpr.Spec);
+                        }
+
+                        initializerObj[NameTokens.Loc] = init.Location.GetStrLoc();
+                        initializerObj[NameTokens.Value] =
+                            this.Dispatch(initializer.Source);
                     }
                     else
                     {
-                        FieldExpr fieldExpr = (FieldExpr)initializer.Target;
-                        initializerObj[NameTokens.ElementType] = TypeTokens.FieldSpec;
-                        initializerObj[NameTokens.Field] = MemberReferenceSerializer.Serialize(
-                            fieldExpr.Spec);
+                        Invocation invocation = (Invocation)init;
+                        initializerObj[NameTokens.ElementType] = TypeTokens.MethodSpec;
+                        JArray args = new JArray();
+                        initializerObj[NameTokens.Arguments] = this.EnumerateArgs(invocation.Arguments);
+                        initializerObj[NameTokens.Method] = MemberReferenceSerializer.Serialize(invocation.MethodGroup.BestCandidate);
                     }
-
-                    initializerObj[NameTokens.Loc] = init.Location.GetStrLoc();
-                    initializerObj[NameTokens.Value] =
-                        this.Dispatch(initializer.Source);
 
                     initializerArray.Add(initializerObj);
                 }

@@ -958,8 +958,8 @@ namespace JsCsc.Lib
             var args = this.ParseArguments(
                 jObject.Value<JArray>(NameTokens.Arguments));
 
-            List<Tuple<MemberReferenceExpression, Expression>> setters =
-                new List<Tuple<MemberReferenceExpression, Expression>>();
+            List<Tuple<MemberReferenceExpression, Expression[]>> setters =
+                new List<Tuple<MemberReferenceExpression, Expression[]>>();
 
             if (initializerArray != null)
             {
@@ -979,8 +979,13 @@ namespace JsCsc.Lib
                             this.LocFromJObject(initObj),
                             propertyReference,
                             null);
+
+                        setters.Add(
+                            Tuple.Create(
+                                memberReferenceExpression,
+                                new Expression[] { this.ParseExpression(initObj.Value<JObject>(NameTokens.Value)) }));
                     }
-                    else
+                    else if (initObj.Value<string>(NameTokens.ElementType) == TypeTokens.FieldSpec)
                     {
                         memberReferenceExpression = new FieldReferenceExpression(
                             this._clrContext,
@@ -988,12 +993,28 @@ namespace JsCsc.Lib
                             this.DeserializeField(
                                 initObj.Value<JObject>(NameTokens.Field)),
                             null);
-                    }
 
-                    setters.Add(
-                        Tuple.Create(
-                            memberReferenceExpression,
-                            this.ParseExpression(initObj.Value<JObject>(NameTokens.Value))));
+                        setters.Add(
+                            Tuple.Create(
+                                memberReferenceExpression,
+                                new Expression[] { this.ParseExpression(initObj.Value<JObject>(NameTokens.Value)) }));
+                    }
+                    else
+                    {
+                        memberReferenceExpression = new MethodReferenceExpression(
+                            this._clrContext,
+                            this.LocFromJObject(initObj),
+                            this.DeserializeMethod(
+                                initObj.Value<JObject>(NameTokens.Method)),
+                            null);
+
+                        var arguments = this.ParseArguments(initObj.Value<JArray>(NameTokens.Arguments));
+
+                        setters.Add(
+                            Tuple.Create(
+                                memberReferenceExpression,
+                                arguments));
+                    }
                 }
             }
 
