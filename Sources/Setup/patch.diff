@@ -1,0 +1,600 @@
+diff --git a/Sources/Setup/Product.wxs b/Sources/Setup/Product.wxs
+index 84a26e7..5b14c33 100644
+--- a/Sources/Setup/Product.wxs
++++ b/Sources/Setup/Product.wxs
+@@ -1,134 +1,134 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+-  <?define ProductVersion="1.0.0.0" ?>
+-  <?define ToolsetDir="$(var.SolutionDir)\Cs2JscToolset" ?>
+-
+-  <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
+-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+-
+-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+-		<MediaTemplate EmbedCab="yes"/>
+-
+-    <Property Id="USERITEMTEMPLATEDIR">
+-      <RegistrySearch Id="ItemTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
+-    </Property>
+-
+-    <Property Id="USERPROJECTTEMPLATEDIR">
+-      <RegistrySearch Id="ProjectTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
+-    </Property>
+-         
+-		<Feature Id="ProductFeature" Title="nScript" Level="1">
+-			<ComponentGroupRef Id="ProductComponents" />
+-		</Feature>
+-	</Product>
+-
+-  <!-- Step 1: Define the directory structure -->
+-  <Fragment>
+-		<Directory Id="TARGETDIR" Name="SourceDir">
+-			<Directory Id="ProgramFilesFolder">
+-        <Directory Id="BASEINSTALLFOLDER" Name="nScript">
+-          <Directory Id="INSTALLFOLDER" Name="$(var.ProductVersion)">
+-            <Directory Id="INSTALLFOLDER_BIN" Name="bin"/>
+-            <Directory Id="INSTALLFOLDER_LIB" Name="lib"/>
+-          </Directory>
+-        </Directory>
+-			</Directory>
+-
+-      <Directory Id="USERITEMTEMPLATEDIR">
+-        <Directory Id="ITEMTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
+-          <Directory Id="ITEMTEMPLATE_DIR" Name="nScript">
+-            <Directory Id="ITEMTEMPLATE_DIR_CLASS" Name="Class" />
+-          </Directory>
+-        </Directory>
+-      </Directory>
+-
+-      <Directory Id="USERPROJECTTEMPLATEDIR">
+-        <Directory Id="PROJECTTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
+-          <Directory Id="PROJECTTEMPLATE_DIR" Name="nScript" />
+-        </Directory>
+-      </Directory>
+-		</Directory>
+-	</Fragment>
+-
+-  <!-- Step 2: Add files to your installer package -->
+-  <Fragment>
+-    <ComponentGroup Id="ProductComponents">
+-      <Component Id="RegistryEntry" Directory="INSTALLFOLDER" Guid="{E995DA69-5D6E-4F76-979D-D86DA16189AA}">
+-        <RegistryKey Root="HKCU" Key="Software\Cs2JsC">
+-          <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
+-        </RegistryKey>
+-
+-        <RegistryKey Root="HKCU" Key="Software\WOW6432Node\Cs2JsC">
+-          <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
+-        </RegistryKey>
+-      </Component>
+-
+-      <Component Id="TargetsFileComponent" Directory="INSTALLFOLDER" Guid="{CF8FC4F5-9B73-47E2-A3C5-EFC72C4A1AEF}">
+-        <File Source="$(var.ToolsetDir)\Cs2JsC.CSharp.targets" />
+-      </Component>
+-
+-      <Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
+-        <File Source="$(var.ToolsetDir)\bin\Antlr3.Runtime.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.CLR.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.CLR.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Converter.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Converter.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.exe" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.exe.config" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JSParser.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JSParser.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JST.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JST.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Csc.exe" KeyPath="yes" />
+-        <File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\mcs.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\mcs.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Mdb.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Mdb.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.pdb" />
+-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.xml" />
+-        <File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
+-        <File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
+-        <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
+-      </Component>
+-
+-      <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">
+-        <File Source="$(var.ToolsetDir)\lib\mscorlib.dll" />
+-        <File Source="$(var.ToolsetDir)\lib\mscorlib.pdb" />
+-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.dll" />
+-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.pdb" />
+-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.dll" />
+-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.pdb" />
+-        <File Source="$(var.ToolsetDir)\lib\SunlightUnit.dll" />
+-        <File Source="$(var.ToolsetDir)\lib\SunlightUnit.pdb" />
+-        <File Source="$(var.ToolsetDir)\lib\System.Web.dll" />
+-        <File Source="$(var.ToolsetDir)\lib\System.Web.Html.dll" />
+-        <File Source="$(var.ToolsetDir)\lib\System.Web.Html.pdb" />
+-        <File Source="$(var.ToolsetDir)\lib\System.Web.pdb" />
+-      </Component>
+-
+-      <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR_CLASS" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
+-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.cs" />
+-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.vstemplate" />
+-      </Component>
+-
+-      <Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
+-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\AssemblyInfo.cs" />
+-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.csproj" />
+-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.vstemplate" />
+-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Logo.ico" />
+-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Program.cs" />
+-      </Component>
+-		</ComponentGroup>
+-	</Fragment>
++<?xml version="1.0" encoding="UTF-8"?>
++<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
++  <?define ProductVersion="1.0.0.0" ?>
++  <?define ToolsetDir="$(var.SolutionDir)Cs2JscToolset" ?>
++
++  <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
++		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
++
++		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
++		<MediaTemplate EmbedCab="yes"/>
++
++    <Property Id="USERITEMTEMPLATEDIR">
++      <RegistrySearch Id="ItemTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
++    </Property>
++
++    <Property Id="USERPROJECTTEMPLATEDIR">
++      <RegistrySearch Id="ProjectTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
++    </Property>
++         
++		<Feature Id="ProductFeature" Title="nScript" Level="1">
++			<ComponentGroupRef Id="ProductComponents" />
++		</Feature>
++	</Product>
++
++  <!-- Step 1: Define the directory structure -->
++  <Fragment>
++		<Directory Id="TARGETDIR" Name="SourceDir">
++			<Directory Id="ProgramFilesFolder">
++        <Directory Id="BASEINSTALLFOLDER" Name="nScript">
++          <Directory Id="INSTALLFOLDER" Name="$(var.ProductVersion)">
++            <Directory Id="INSTALLFOLDER_BIN" Name="bin"/>
++            <Directory Id="INSTALLFOLDER_LIB" Name="lib"/>
++          </Directory>
++        </Directory>
++			</Directory>
++
++      <Directory Id="USERITEMTEMPLATEDIR">
++        <Directory Id="ITEMTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
++          <Directory Id="ITEMTEMPLATE_DIR" Name="nScript">
++            <Directory Id="ITEMTEMPLATE_DIR_CLASS" Name="Class" />
++          </Directory>
++        </Directory>
++      </Directory>
++
++      <Directory Id="USERPROJECTTEMPLATEDIR">
++        <Directory Id="PROJECTTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
++          <Directory Id="PROJECTTEMPLATE_DIR" Name="nScript" />
++        </Directory>
++      </Directory>
++		</Directory>
++	</Fragment>
++
++  <!-- Step 2: Add files to your installer package -->
++  <Fragment>
++    <ComponentGroup Id="ProductComponents">
++      <Component Id="RegistryEntry" Directory="INSTALLFOLDER" Guid="{E995DA69-5D6E-4F76-979D-D86DA16189AA}">
++        <RegistryKey Root="HKCU" Key="Software\Cs2JsC">
++          <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
++        </RegistryKey>
++
++        <RegistryKey Root="HKCU" Key="Software\WOW6432Node\Cs2JsC">
++          <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
++        </RegistryKey>
++      </Component>
++
++      <Component Id="TargetsFileComponent" Directory="INSTALLFOLDER" Guid="{CF8FC4F5-9B73-47E2-A3C5-EFC72C4A1AEF}">
++        <File Source="$(var.ToolsetDir)\Cs2JsC.CSharp.targets" />
++      </Component>
++
++      <Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
++        <File Source="$(var.ToolsetDir)\bin\Antlr3.Runtime.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.CLR.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.CLR.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Converter.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Converter.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.exe" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.exe.config" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JSParser.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JSParser.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JST.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JST.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Csc.exe" KeyPath="yes" />
++        <File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
++        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\mcs.dll" />
++        <File Source="$(var.ToolsetDir)\bin\mcs.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Mdb.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Mdb.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
++        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.pdb" />
++        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.xml" />
++        <File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
++        <File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
++        <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
++      </Component>
++
++      <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">
++        <File Source="$(var.ToolsetDir)\lib\mscorlib.dll" />
++        <File Source="$(var.ToolsetDir)\lib\mscorlib.pdb" />
++        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.dll" />
++        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.pdb" />
++        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.dll" />
++        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.pdb" />
++        <File Source="$(var.ToolsetDir)\lib\SunlightUnit.dll" />
++        <File Source="$(var.ToolsetDir)\lib\SunlightUnit.pdb" />
++        <File Source="$(var.ToolsetDir)\lib\System.Web.dll" />
++        <File Source="$(var.ToolsetDir)\lib\System.Web.Html.dll" />
++        <File Source="$(var.ToolsetDir)\lib\System.Web.Html.pdb" />
++        <File Source="$(var.ToolsetDir)\lib\System.Web.pdb" />
++      </Component>
++
++      <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR_CLASS" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
++        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.cs" />
++        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.vstemplate" />
++      </Component>
++
++      <Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
++        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\AssemblyInfo.cs" />
++        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.csproj" />
++        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.vstemplate" />
++        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Logo.ico" />
++        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Program.cs" />
++      </Component>
++		</ComponentGroup>
++	</Fragment>
+ </Wix>
+\ No newline at end of file
+diff --git a/Sources/Setup/Setup.wixproj b/Sources/Setup/Setup.wixproj
+index e0fa169..76c5451 100644
+--- a/Sources/Setup/Setup.wixproj
++++ b/Sources/Setup/Setup.wixproj
+@@ -1,157 +1,165 @@
+-﻿<?xml version="1.0" encoding="utf-8"?>
+-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+-  <PropertyGroup>
+-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+-    <ProductVersion>3.6</ProductVersion>
+-    <ProjectGuid>9e20da0b-348e-4e84-a5cb-e63956e51016</ProjectGuid>
+-    <SchemaVersion>2.0</SchemaVersion>
+-    <OutputName>nScript</OutputName>
+-    <OutputType>Package</OutputType>
+-    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+-    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+-  </PropertyGroup>
+-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+-    <OutputPath>bin\$(Configuration)\</OutputPath>
+-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+-    <DefineConstants>Debug</DefineConstants>
+-  </PropertyGroup>
+-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+-    <OutputPath>bin\$(Configuration)\</OutputPath>
+-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+-  </PropertyGroup>
+-  <ItemGroup>
+-    <Compile Include="Product.wxs" />
+-  </ItemGroup>
+-  <ItemGroup>
+-    <ProjectReference Include="..\Cs2JsC.CLR\Cs2JsC.CLR.csproj">
+-      <Name>Cs2JsC.CLR</Name>
+-      <Project>{83fb5360-ce27-4255-8457-13e789dc5b0c}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\Cs2JsC.Converter.Plugins\Cs2JsC.Converter.Plugins.csproj">
+-      <Name>Cs2JsC.Converter.Plugins</Name>
+-      <Project>{8e168b27-2033-412a-b362-5102400ea471}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\Cs2JsC.Converter\Cs2JsC.Converter.csproj">
+-      <Name>Cs2JsC.Converter</Name>
+-      <Project>{2cb180c7-d96a-4e43-8676-f928e4736a1f}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\Cs2JsC.JSParser\Cs2JsC.JSParser.csproj">
+-      <Name>Cs2JsC.JSParser</Name>
+-      <Project>{52661571-b3ee-421e-a6ed-983023665738}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\Cs2JsC.JST\Cs2JsC.JS.AST.csproj">
+-      <Name>Cs2JsC.JS.AST</Name>
+-      <Project>{35789c27-44de-4251-8528-6b0de5c66608}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\Cs2JsC.Utils\Cs2JsC.Utils.csproj">
+-      <Name>Cs2JsC.Utils</Name>
+-      <Project>{030b10dd-4861-4be1-b0d6-db43587e603f}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\Cs2JsC\Cs2JsC.csproj">
+-      <Name>Cs2JsC</Name>
+-      <Project>{71392f3d-7171-43fa-8f68-365a31889ab0}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\CssParser\CssParser.csproj">
+-      <Name>CssParser</Name>
+-      <Project>{c2534dea-af8c-43f3-81ed-86e6b5932cf6}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj">
+-      <Name>JsCsc.Lib</Name>
+-      <Project>{65fdb136-49ee-4316-95c5-aee4c1a5da83}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\JsCsc\JsCsc.csproj">
+-      <Name>JsCsc</Name>
+-      <Project>{584493da-04a9-4a95-aa49-f532a85d8c1a}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+-      <Name>Cs2JsC.MsCorlib</Name>
+-      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\SourceMap\SourceMap.csproj">
+-      <Name>SourceMap</Name>
+-      <Project>{20ccb52f-de6e-4da4-821e-5b3bd6771704}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\System.Web.Html\System.Web.Html.csproj">
+-      <Name>System.Web.Html</Name>
+-      <Project>{a60706ff-08d7-4320-99f9-a2413275cdf6}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\System.Web\System.Web.csproj">
+-      <Name>System.Web</Name>
+-      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-    <ProjectReference Include="..\XwmlParser\XwmlParser.csproj">
+-      <Name>XwmlParser</Name>
+-      <Project>{e3fe7841-2db8-4713-8c41-fb399d921a77}</Project>
+-      <Private>True</Private>
+-      <DoNotHarvest>True</DoNotHarvest>
+-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+-    </ProjectReference>
+-  </ItemGroup>
+-  <Import Project="$(WixTargetsPath)" />
+-  <!--
+-	To modify your build process, add your task inside one of the targets below and uncomment it.
+-	Other similar extension points exist, see Wix.targets.
+-	<Target Name="BeforeBuild">
+-	</Target>
+-	<Target Name="AfterBuild">
+-	</Target>
+-	-->
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <PropertyGroup>
++    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
++    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
++    <ProductVersion>3.6</ProductVersion>
++    <ProjectGuid>9e20da0b-348e-4e84-a5cb-e63956e51016</ProjectGuid>
++    <SchemaVersion>2.0</SchemaVersion>
++    <OutputName>nScript</OutputName>
++    <OutputType>Package</OutputType>
++    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
++    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
++  </PropertyGroup>
++  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
++    <OutputPath>bin\$(Configuration)\</OutputPath>
++    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
++    <DefineConstants>Debug</DefineConstants>
++  </PropertyGroup>
++  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
++    <OutputPath>bin\$(Configuration)\</OutputPath>
++    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
++  </PropertyGroup>
++  <ItemGroup>
++    <Compile Include="Product.wxs" />
++  </ItemGroup>
++  <ItemGroup>
++    <ProjectReference Include="..\Cs2JsC.CLR\Cs2JsC.CLR.csproj">
++      <Name>Cs2JsC.CLR</Name>
++      <Project>{83fb5360-ce27-4255-8457-13e789dc5b0c}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\Cs2JsC.Converter.Plugins\Cs2JsC.Converter.Plugins.csproj">
++      <Name>Cs2JsC.Converter.Plugins</Name>
++      <Project>{8e168b27-2033-412a-b362-5102400ea471}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\Cs2JsC.Converter\Cs2JsC.Converter.csproj">
++      <Name>Cs2JsC.Converter</Name>
++      <Project>{2cb180c7-d96a-4e43-8676-f928e4736a1f}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\Cs2JsC.JSParser\Cs2JsC.JSParser.csproj">
++      <Name>Cs2JsC.JSParser</Name>
++      <Project>{52661571-b3ee-421e-a6ed-983023665738}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\Cs2JsC.JST\Cs2JsC.JS.AST.csproj">
++      <Name>Cs2JsC.JS.AST</Name>
++      <Project>{35789c27-44de-4251-8528-6b0de5c66608}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\Cs2JsC.Utils\Cs2JsC.Utils.csproj">
++      <Name>Cs2JsC.Utils</Name>
++      <Project>{030b10dd-4861-4be1-b0d6-db43587e603f}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\Cs2JsC\Cs2JsC.csproj">
++      <Name>Cs2JsC</Name>
++      <Project>{71392f3d-7171-43fa-8f68-365a31889ab0}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\CssParser\CssParser.csproj">
++      <Name>CssParser</Name>
++      <Project>{c2534dea-af8c-43f3-81ed-86e6b5932cf6}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj">
++      <Name>JsCsc.Lib</Name>
++      <Project>{65fdb136-49ee-4316-95c5-aee4c1a5da83}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\JsCsc\JsCsc.csproj">
++      <Name>JsCsc</Name>
++      <Project>{584493da-04a9-4a95-aa49-f532a85d8c1a}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
++      <Name>Cs2JsC.MsCorlib</Name>
++      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\SourceMap\SourceMap.csproj">
++      <Name>SourceMap</Name>
++      <Project>{20ccb52f-de6e-4da4-821e-5b3bd6771704}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj">
++      <Name>Sunlight.Framework.UI</Name>
++      <Project>{650bbe9a-d0c5-4590-a82a-8e63c664a894}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\System.Web.Html\System.Web.Html.csproj">
++      <Name>System.Web.Html</Name>
++      <Project>{a60706ff-08d7-4320-99f9-a2413275cdf6}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\System.Web\System.Web.csproj">
++      <Name>System.Web</Name>
++      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++    <ProjectReference Include="..\XwmlParser\XwmlParser.csproj">
++      <Name>XwmlParser</Name>
++      <Project>{e3fe7841-2db8-4713-8c41-fb399d921a77}</Project>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
++      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
++    </ProjectReference>
++  </ItemGroup>
++  <Import Project="$(WixTargetsPath)" />
++  <!--
++	To modify your build process, add your task inside one of the targets below and uncomment it.
++	Other similar extension points exist, see Wix.targets.
++	<Target Name="BeforeBuild">
++	</Target>
++	<Target Name="AfterBuild">
++	</Target>
++	-->
+ </Project>
+\ No newline at end of file
