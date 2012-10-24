@@ -79,7 +79,7 @@ namespace System.Web.Html
         /// <summary>
         /// Name of the on scroll event.
         /// </summary>
-        public const string OnScrollEvtName = "scoll";
+        public const string OnScrollEvtName = "scroll";
 
         /// <summary>
         /// Name of the on touch start event.
