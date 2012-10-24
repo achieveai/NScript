@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion="1.0.0.0" ?>
+  <?define ProductVersion="1.0.0.1" ?>
   <?define ToolsetDir="$(var.SolutionDir)Cs2JscToolset" ?>
 
   <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
