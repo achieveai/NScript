@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion="1.0.0.1" ?>
+  <?define ProductVersion="1.0.0.0" ?>
   <?define ToolsetDir="$(var.SolutionDir)Cs2JscToolset" ?>
 
   <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
 		<MediaTemplate EmbedCab="yes"/>
 
     <Property Id="USERITEMTEMPLATEDIR">
@@ -20,7 +20,7 @@
 		<Feature Id="ProductFeature" Title="nScript" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
-	</Product>
+  </Product>
 
   <!-- Step 1: Define the directory structure -->
   <Fragment>
