@@ -126,7 +126,7 @@ namespace System.Web.Html
         /// The onerror.
         /// </summary>
         [IntrinsicField]
-        public ErrorHandler Onerror;
+        private Action<string, string, int> onerror;
 
         /// <summary>
         /// The onload.
@@ -194,6 +194,29 @@ namespace System.Web.Html
                 if (this.Onresize != null)
                 {
                     this.Onresize = this.Onresize - value;
+                }
+            }
+        }
+
+        public event Action<string, string, int> OnError
+        {
+            add
+            {
+                if (this.onerror != null)
+                {
+                    this.onerror = this.onerror + value;
+                }
+                else
+                {
+                    this.onerror = value;
+                }
+            }
+
+            remove
+            {
+                if (this.onerror != null)
+                {
+                    this.onerror = this.onerror - value;
                 }
             }
         }
