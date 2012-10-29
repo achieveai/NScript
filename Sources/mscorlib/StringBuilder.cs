@@ -2,81 +2,100 @@
 {
     using System.Runtime.CompilerServices;
 
-    [ScriptNamespace("ss"), Imported]
+    [ScriptNamespace("ss")]
     public sealed class StringBuilder
     {
+        private NativeArray internalArray;
+
         public StringBuilder()
         {
+            this.internalArray = new NativeArray(0);
         }
 
         public StringBuilder(string initialText)
         {
+            this.internalArray = new NativeArray(0);
+            this.Append(initialText);
         }
 
         public StringBuilder Append(bool b)
         {
-            return null;
+            this.Append(b.ToString());
+            return this;
         }
 
         public StringBuilder Append(char c)
         {
-            return null;
+            this.Append(c.ToString());
+            return this;
         }
 
         public StringBuilder Append(Number n)
         {
-            return null;
+            this.Append(n.ToString());
+            return this;
         }
 
         public StringBuilder Append(string s)
         {
-            return null;
+            this.internalArray.Push(s);
+            return this;
         }
 
         public StringBuilder AppendLine()
         {
-            return null;
+            this.Append("\n");
+            return this;
         }
 
         public StringBuilder AppendLine(bool b)
         {
-            return null;
+            this.Append(b);
+            this.AppendLine();
+            return this;
         }
 
         public StringBuilder AppendLine(char c)
         {
-            return null;
+            this.Append(c);
+            this.AppendLine();
+            return this;
         }
 
         public StringBuilder AppendLine(Number n)
         {
-            return null;
+            this.Append(n);
+            this.AppendLine();
+            return this;
         }
 
         public StringBuilder AppendLine(string s)
         {
-            return null;
+            this.Append(s);
+            this.AppendLine();
+            return this;
         }
 
         public void Clear()
         {
+            this.internalArray = new NativeArray(0);
         }
 
         public override string ToString()
         {
-            return null;
+            return this.internalArray.Join();
         }
 
         public string ToString(string separator)
         {
-            return null;
+            return this.internalArray.Join(separator);
         }
 
         public bool IsEmpty
         {
             get
             {
-                return false;
+                return this.internalArray.Length == 0;
             }
         }
     }
