@@ -15,7 +15,14 @@
 
         public string[] Execute(string s)
         {
-            return this.Exec(s).GetArray<string>();
+            NativeArray resultArray = this.Exec(s);
+
+            if (resultArray == null)
+            {
+                return null;
+            }
+
+            return resultArray.GetArray<string>();
         }
 
         [IntrinsicProperty]
