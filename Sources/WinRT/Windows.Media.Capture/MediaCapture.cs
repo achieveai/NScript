@@ -12,16 +12,8 @@ namespace Windows.Media.Capture
 	[Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Standard), Threading(ThreadingModel.MTA), Version(100794368u)]
 	public sealed class MediaCapture : IMediaCapture, IMediaCaptureVideoPreview
 	{
-		public extern event MediaCaptureFailedEventHandler Failed
-		{
-			add;
-			remove;
-		}
-		public extern event RecordLimitationExceededEventHandler RecordLimitationExceeded
-		{
-			add;
-			remove;
-		}
+		public extern event MediaCaptureFailedEventHandler Failed;
+		public extern event RecordLimitationExceededEventHandler RecordLimitationExceeded;
 		public extern AudioDeviceController AudioDeviceController
 		{
 			get;

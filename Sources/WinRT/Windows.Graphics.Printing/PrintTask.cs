@@ -7,26 +7,10 @@ namespace Windows.Graphics.Printing
 	[MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Version(100794368u)]
 	public sealed class PrintTask : IPrintTask
 	{
-		public extern event TypedEventHandler<PrintTask, PrintTaskCompletedEventArgs> Completed
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PrintTask, object> Previewing
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PrintTask, PrintTaskProgressingEventArgs> Progressing
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PrintTask, object> Submitting
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<PrintTask, PrintTaskCompletedEventArgs> Completed;
+		public extern event TypedEventHandler<PrintTask, object> Previewing;
+		public extern event TypedEventHandler<PrintTask, PrintTaskProgressingEventArgs> Progressing;
+		public extern event TypedEventHandler<PrintTask, object> Submitting;
 		public extern PrintTaskOptions Options
 		{
 			get;

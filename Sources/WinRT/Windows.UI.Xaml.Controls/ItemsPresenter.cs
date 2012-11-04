@@ -10,16 +10,8 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IItemsPresenterStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class ItemsPresenter : FrameworkElement, IItemsPresenter, IScrollSnapPointsInfo
 	{
-		public extern event EventHandler<object> HorizontalSnapPointsChanged
-		{
-			add;
-			remove;
-		}
-		public extern event EventHandler<object> VerticalSnapPointsChanged
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> HorizontalSnapPointsChanged;
+		public extern event EventHandler<object> VerticalSnapPointsChanged;
 		public extern object Header
 		{
 			get;

@@ -8,51 +8,15 @@ namespace Windows.Media.PlayTo
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Standard), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class PlayToReceiver : IPlayToReceiver
 	{
-		public extern event TypedEventHandler<PlayToReceiver, CurrentTimeChangeRequestedEventArgs> CurrentTimeChangeRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, MuteChangeRequestedEventArgs> MuteChangeRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, object> PauseRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, object> PlayRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, PlaybackRateChangeRequestedEventArgs> PlaybackRateChangeRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, SourceChangeRequestedEventArgs> SourceChangeRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, object> StopRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, object> TimeUpdateRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToReceiver, VolumeChangeRequestedEventArgs> VolumeChangeRequested
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<PlayToReceiver, CurrentTimeChangeRequestedEventArgs> CurrentTimeChangeRequested;
+		public extern event TypedEventHandler<PlayToReceiver, MuteChangeRequestedEventArgs> MuteChangeRequested;
+		public extern event TypedEventHandler<PlayToReceiver, object> PauseRequested;
+		public extern event TypedEventHandler<PlayToReceiver, object> PlayRequested;
+		public extern event TypedEventHandler<PlayToReceiver, PlaybackRateChangeRequestedEventArgs> PlaybackRateChangeRequested;
+		public extern event TypedEventHandler<PlayToReceiver, SourceChangeRequestedEventArgs> SourceChangeRequested;
+		public extern event TypedEventHandler<PlayToReceiver, object> StopRequested;
+		public extern event TypedEventHandler<PlayToReceiver, object> TimeUpdateRequested;
+		public extern event TypedEventHandler<PlayToReceiver, VolumeChangeRequestedEventArgs> VolumeChangeRequested;
 		public extern string FriendlyName
 		{
 			get;

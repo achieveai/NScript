@@ -7,14 +7,14 @@ namespace Windows.UI.Xaml.Controls
 	[Composable(typeof(ICanvasFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ICanvasStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class Canvas : Panel, ICanvas
 	{
+        [IndependentlyAnimatable]
 		public static extern DependencyProperty LeftProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
+        [IndependentlyAnimatable]
 		public static extern DependencyProperty TopProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		public static extern DependencyProperty ZIndexProperty

@@ -11,7 +11,7 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlResultSetRow
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public class WebSqlResultSetRow
     {

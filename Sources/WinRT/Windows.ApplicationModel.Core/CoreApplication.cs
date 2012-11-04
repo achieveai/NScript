@@ -5,24 +5,12 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 namespace Windows.ApplicationModel.Core
 {
-	[MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Static(typeof(ICoreApplicationExit), 100794368u), Static(typeof(ICoreApplicationUseCount), 100794368u), Static(typeof(ICoreImmersiveApplication), 100794368u), Static(typeof(ICoreApplication), 100794368u), Version(100794368u), WebHostHidden]
+	[MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Version(100794368u), WebHostHidden]
 	public static class CoreApplication
 	{
-		public static extern event EventHandler<object> Exiting
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> Resuming
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<SuspendingEventArgs> Suspending
-		{
-			add;
-			remove;
-		}
+		public static extern event EventHandler<object> Exiting;
+		public static extern event EventHandler<object> Resuming;
+		public static extern event EventHandler<SuspendingEventArgs> Suspending;
 		public static extern CoreApplicationView MainView
 		{
 			get;

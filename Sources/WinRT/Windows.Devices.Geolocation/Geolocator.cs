@@ -7,16 +7,8 @@ namespace Windows.Devices.Geolocation
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class Geolocator : IGeolocator
 	{
-		public extern event TypedEventHandler<Geolocator, PositionChangedEventArgs> PositionChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<Geolocator, StatusChangedEventArgs> StatusChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<Geolocator, PositionChangedEventArgs> PositionChanged;
+		public extern event TypedEventHandler<Geolocator, StatusChangedEventArgs> StatusChanged;
 		public extern PositionAccuracy DesiredAccuracy
 		{
 			get;

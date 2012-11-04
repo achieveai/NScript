@@ -6,11 +6,7 @@ namespace Windows.Graphics.Printing
 	[MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Static(typeof(IPrintManagerStatic), 100794368u), Version(100794368u)]
 	public sealed class PrintManager : IPrintManager
 	{
-		public extern event TypedEventHandler<PrintManager, PrintTaskRequestedEventArgs> PrintTaskRequested
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<PrintManager, PrintTaskRequestedEventArgs> PrintTaskRequested;
 		public static extern PrintManager GetForCurrentView();
 		public static extern IAsyncOperation<bool> ShowPrintUIAsync();
 	}

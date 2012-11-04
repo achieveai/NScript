@@ -8,26 +8,10 @@ namespace Windows.UI.Xaml.Controls
 	[Composable(typeof(IFrameFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IFrameStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class Frame : ContentControl, IFrame, INavigate
 	{
-		public extern event NavigatedEventHandler Navigated
-		{
-			add;
-			remove;
-		}
-		public extern event NavigatingCancelEventHandler Navigating
-		{
-			add;
-			remove;
-		}
-		public extern event NavigationFailedEventHandler NavigationFailed
-		{
-			add;
-			remove;
-		}
-		public extern event NavigationStoppedEventHandler NavigationStopped
-		{
-			add;
-			remove;
-		}
+		public extern event NavigatedEventHandler Navigated;
+		public extern event NavigatingCancelEventHandler Navigating;
+		public extern event NavigationFailedEventHandler NavigationFailed;
+		public extern event NavigationStoppedEventHandler NavigationStopped;
 		public extern int BackStackDepth
 		{
 			get;

@@ -11,7 +11,7 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for CanvasContext2D
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class CanvasContext2D : CanvasContext
     {

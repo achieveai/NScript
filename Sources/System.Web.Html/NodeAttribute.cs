@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for NodeAttribute
     /// </summary>
-    [Imported]
+    [Extended]
     [ScriptName("Attr")]
     public sealed class NodeAttribute
     {

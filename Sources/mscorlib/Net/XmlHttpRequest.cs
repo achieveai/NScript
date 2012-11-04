@@ -4,7 +4,7 @@
     using System.Runtime.CompilerServices;
     using System.Xml;
 
-    [Imported, ScriptName("XMLHttpRequest"), IgnoreNamespace]
+    [Extended, ScriptName("XMLHttpRequest"), IgnoreNamespace]
     public sealed class XmlHttpRequest
     {
         public void Abort()

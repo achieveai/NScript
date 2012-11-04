@@ -7,16 +7,8 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IImageStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class Image : FrameworkElement, IImage
 	{
-		public extern event ExceptionRoutedEventHandler ImageFailed
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler ImageOpened
-		{
-			add;
-			remove;
-		}
+		public extern event ExceptionRoutedEventHandler ImageFailed;
+		public extern event RoutedEventHandler ImageOpened;
 		public extern Thickness NineGrid
 		{
 			get;

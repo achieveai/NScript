@@ -4,7 +4,7 @@ using Windows.Foundation.Metadata;
 using Windows.Storage;
 namespace Windows.Networking.BackgroundTransfer
 {
-	[Activatable(typeof(IBackgroundTransferContentPartFactory), 100794368u), Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(IBackgroundTransferContentPartFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class BackgroundTransferContentPart : IBackgroundTransferContentPart
 	{
 		public extern BackgroundTransferContentPart([In] string name);

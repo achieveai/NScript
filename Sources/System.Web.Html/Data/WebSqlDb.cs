@@ -12,7 +12,7 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlDb
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class WebSqlDb
     {

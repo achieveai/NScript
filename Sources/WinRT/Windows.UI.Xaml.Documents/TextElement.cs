@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Media;
 namespace Windows.UI.Xaml.Documents
 {
 	[Composable(typeof(ITextElementFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ITextElementStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class TextElement : DependencyObject, ITextElement, ITextElementOverrides
+	public class TextElement : DependencyObject
 	{
 		public extern int CharacterSpacing
 		{

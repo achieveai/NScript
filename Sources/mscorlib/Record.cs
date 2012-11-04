@@ -3,7 +3,7 @@
     using System.Collections;
     using System.Runtime.CompilerServices;
 
-    [ScriptNamespace("ss"), Imported]
+    [ScriptNamespace("ss"), Extended]
     public abstract class Record
     {
         protected Record()

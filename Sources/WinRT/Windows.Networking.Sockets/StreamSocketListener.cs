@@ -7,11 +7,7 @@ namespace Windows.Networking.Sockets
 	[Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class StreamSocketListener : IStreamSocketListener, IClosable
 	{
-		public extern event TypedEventHandler<StreamSocketListener, StreamSocketListenerConnectionReceivedEventArgs> ConnectionReceived
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<StreamSocketListener, StreamSocketListenerConnectionReceivedEventArgs> ConnectionReceived;
 		public extern StreamSocketListenerControl Control
 		{
 			get;

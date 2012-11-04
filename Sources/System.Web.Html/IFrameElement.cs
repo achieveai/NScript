@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for IFrameElement
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class IFrameElement : Element
     {

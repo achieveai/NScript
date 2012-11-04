@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [GlobalMethods, Imported, IgnoreNamespace]
+    [GlobalMethods, Extended, IgnoreNamespace]
     public static class Script
     {
         public static void Alert(bool b)

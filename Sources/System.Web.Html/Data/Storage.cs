@@ -8,7 +8,7 @@ namespace System.Web.Html.Data
 {
     using System.Runtime.CompilerServices;
 
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class Storage
     {

@@ -6,11 +6,7 @@ namespace Windows.Devices.Printers.Extensions
 	[Version(100794368u)]
 	public sealed class PrintTaskConfiguration : IPrintTaskConfiguration
 	{
-		public extern event TypedEventHandler<PrintTaskConfiguration, PrintTaskConfigurationSaveRequestedEventArgs> SaveRequested
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<PrintTaskConfiguration, PrintTaskConfigurationSaveRequestedEventArgs> SaveRequested;
 		public extern object PrinterExtensionContext
 		{
 			get;

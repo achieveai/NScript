@@ -7,23 +7,11 @@ using Windows.UI.Xaml.Controls.Primitives;
 namespace Windows.UI.Xaml
 {
 	[Composable(typeof(IApplicationFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IApplicationStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class Application : IApplication, IApplicationOverrides
+	public class Application : IApplication
 	{
-		public extern event EventHandler<object> Resuming
-		{
-			add;
-			remove;
-		}
-		public extern event SuspendingEventHandler Suspending
-		{
-			add;
-			remove;
-		}
-		public extern event UnhandledExceptionEventHandler UnhandledException
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> Resuming;
+		public extern event SuspendingEventHandler Suspending;
+		public extern event UnhandledExceptionEventHandler UnhandledException;
 		public extern DebugSettings DebugSettings
 		{
 			get;

@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [AttributeUsage(AttributeTargets.Type | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Constructor, Inherited=false), Imported, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
+    [AttributeUsage(AttributeTargets.Type | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Constructor, Inherited=false), Extended, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
     public sealed class ObsoleteAttribute : Attribute
     {
         private bool _error;

@@ -6,18 +6,10 @@ using Windows.UI.Xaml.Controls.Primitives;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IComboBoxFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IComboBoxStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class ComboBox : Selector, IComboBox, IComboBoxOverrides
+	public class ComboBox : Selector, IComboBox
 	{
-		public extern event EventHandler<object> DropDownClosed
-		{
-			add;
-			remove;
-		}
-		public extern event EventHandler<object> DropDownOpened
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> DropDownClosed;
+		public extern event EventHandler<object> DropDownOpened;
 		public extern bool IsDropDownOpen
 		{
 			get;

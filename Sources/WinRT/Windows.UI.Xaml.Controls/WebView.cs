@@ -10,21 +10,9 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IWebViewStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class WebView : FrameworkElement, IWebView
 	{
-		public extern event LoadCompletedEventHandler LoadCompleted
-		{
-			add;
-			remove;
-		}
-		public extern event WebViewNavigationFailedEventHandler NavigationFailed
-		{
-			add;
-			remove;
-		}
-		public extern event NotifyEventHandler ScriptNotify
-		{
-			add;
-			remove;
-		}
+		public extern event LoadCompletedEventHandler LoadCompleted;
+		public extern event WebViewNavigationFailedEventHandler NavigationFailed;
+		public extern event NotifyEventHandler ScriptNotify;
 		public extern IVector<Uri> AllowedScriptNotifyUris
 		{
 			get;

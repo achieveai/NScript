@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [ScriptNamespace("ss"), Imported]
+    [ScriptNamespace("ss"), Extended]
     public delegate void CollectionChangedEventHandler(object sender, CollectionChangedEventArgs e);
 }
 

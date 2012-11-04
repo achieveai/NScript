@@ -14,9 +14,9 @@ namespace Windows.UI.Xaml
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		DependencyProperty ClipProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		RoutedEvent DoubleTappedEvent
@@ -95,9 +95,9 @@ namespace Windows.UI.Xaml
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		DependencyProperty OpacityProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		RoutedEvent PointerCanceledEvent
@@ -136,18 +136,18 @@ namespace Windows.UI.Xaml
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		DependencyProperty ProjectionProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		DependencyProperty RenderTransformOriginProperty
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		DependencyProperty RenderTransformProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		RoutedEvent RightTappedEvent

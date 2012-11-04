@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition of DataTransfer
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class DataTransfer
     {

@@ -2,7 +2,7 @@
 {
     using System;
 
-    [Imported, AttributeUsage(AttributeTargets.Assembly, Inherited=false, AllowMultiple=false), NonScriptable]
+    [Extended, AttributeUsage(AttributeTargets.Assembly, Inherited=false, AllowMultiple=false), NonScriptable]
     public sealed class ScriptAssemblyAttribute : Attribute
     {
         private string _name;

@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [ScriptName("JSON"), Imported, IgnoreNamespace]
+    [ScriptName("JSON"), Extended, IgnoreNamespace]
     public static class Json
     {
         public static object Parse(string json)

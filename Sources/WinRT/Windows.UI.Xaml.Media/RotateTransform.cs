@@ -21,19 +21,19 @@ namespace Windows.UI.Xaml.Media
 			get;
 			set;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty AngleProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty CenterXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty CenterYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 		public extern RotateTransform();

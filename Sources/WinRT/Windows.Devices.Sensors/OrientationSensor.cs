@@ -6,11 +6,7 @@ namespace Windows.Devices.Sensors
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IOrientationSensorStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class OrientationSensor : IOrientationSensor
 	{
-		public extern event TypedEventHandler<OrientationSensor, OrientationSensorReadingChangedEventArgs> ReadingChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<OrientationSensor, OrientationSensorReadingChangedEventArgs> ReadingChanged;
 		public extern uint MinimumReportInterval
 		{
 			get;

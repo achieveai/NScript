@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for CustomEvent
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class CustomEvent : ElementEvent
     {

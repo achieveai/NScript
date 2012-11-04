@@ -7,11 +7,7 @@ namespace Windows.ApplicationModel.Resources.Core
 	[MarshalingBehavior(MarshalingType.Agile), Version(100794368u)]
 	public sealed class ResourceQualifierObservableMap : IObservableMap<string, string>, IMap<string, string>, IIterable<IKeyValuePair<string, string>>
 	{
-		public extern event MapChangedEventHandler<string, string> MapChanged
-		{
-			add;
-			remove;
-		}
+		public extern event MapChangedEventHandler<string, string> MapChanged;
 		public extern uint Size
 		{
 			get;

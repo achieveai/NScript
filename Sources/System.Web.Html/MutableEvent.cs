@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for MutableEvent
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     [ScriptName("MutationEvent")]
     public class MutableEvent

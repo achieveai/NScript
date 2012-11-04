@@ -4,7 +4,7 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 namespace Windows.Globalization
 {
-	[Activatable(typeof(IGeographicRegionFactory), 100794368u), Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IGeographicRegionStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(IGeographicRegionFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IGeographicRegionStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class GeographicRegion : IGeographicRegion
 	{
 		public extern string Code

@@ -11,7 +11,7 @@ namespace System.Runtime.CompilerServices
     /// <summary>
     /// Definition for ImplementAttribute
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field), Imported, NonScriptable]
+    [AttributeUsage(AttributeTargets.Field), Extended, NonScriptable]
     public class ImplementAttribute : Attribute
     {
     }

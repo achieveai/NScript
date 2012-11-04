@@ -6,11 +6,7 @@ namespace Windows.UI.Xaml.Controls
 	[Composable(typeof(IGroupStyleFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class GroupStyle : IGroupStyle, INotifyPropertyChanged
 	{
-		public extern event PropertyChangedEventHandler PropertyChanged
-		{
-			add;
-			remove;
-		}
+        public extern event PropertyChangedEventHandler PropertyChanged;
 		public extern Style ContainerStyle
 		{
 			get;

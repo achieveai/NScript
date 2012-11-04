@@ -7,16 +7,8 @@ namespace Windows.UI.Xaml
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "States")]
 	public sealed class VisualStateGroup : DependencyObject, IVisualStateGroup
 	{
-		public extern event VisualStateChangedEventHandler CurrentStateChanged
-		{
-			add;
-			remove;
-		}
-		public extern event VisualStateChangedEventHandler CurrentStateChanging
-		{
-			add;
-			remove;
-		}
+		public extern event VisualStateChangedEventHandler CurrentStateChanged;
+		public extern event VisualStateChangedEventHandler CurrentStateChanging;
 		public extern VisualState CurrentState
 		{
 			get;

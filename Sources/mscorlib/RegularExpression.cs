@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, ScriptName("RegExp"), Imported]
+    [IgnoreNamespace, ScriptName("RegExp"), Extended]
     public sealed class RegularExpression
     {
         public extern RegularExpression(string pattern);

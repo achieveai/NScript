@@ -6,16 +6,8 @@ namespace Windows.Devices.Sensors
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IAccelerometerStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class Accelerometer : IAccelerometer
 	{
-		public extern event TypedEventHandler<Accelerometer, AccelerometerReadingChangedEventArgs> ReadingChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<Accelerometer, AccelerometerShakenEventArgs> Shaken
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<Accelerometer, AccelerometerReadingChangedEventArgs> ReadingChanged;
+		public extern event TypedEventHandler<Accelerometer, AccelerometerShakenEventArgs> Shaken;
 		public extern uint MinimumReportInterval
 		{
 			get;

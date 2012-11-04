@@ -11,7 +11,7 @@ namespace System.Runtime.CompilerServices
     /// <summary>
     /// Definition for ScriptAttribute
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = true, AllowMultiple = false), NonScriptable, Imported]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = true, AllowMultiple = false), NonScriptable, Extended]
     public class ScriptAttribute : Attribute
     {
         private readonly string script;

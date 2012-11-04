@@ -11,7 +11,7 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for CanvasContext
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public abstract class CanvasContext
     {

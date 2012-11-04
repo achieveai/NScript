@@ -6,16 +6,8 @@ namespace Windows.UI.Xaml.Controls
 	[Composable(typeof(IToolTipFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IToolTipStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class ToolTip : ContentControl, IToolTip
 	{
-		public extern event RoutedEventHandler Closed
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler Opened
-		{
-			add;
-			remove;
-		}
+		public extern event RoutedEventHandler Closed;
+        public extern event RoutedEventHandler Opened;
 		public extern double HorizontalOffset
 		{
 			get;

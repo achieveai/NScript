@@ -6,11 +6,7 @@ namespace Windows.Devices.Input
 	[MarshalingBehavior(MarshalingType.Standard), Static(typeof(IMouseDeviceStatics), 100794368u), Version(100794368u)]
 	public sealed class MouseDevice : IMouseDevice
 	{
-		public extern event TypedEventHandler<MouseDevice, MouseEventArgs> MouseMoved
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<MouseDevice, MouseEventArgs> MouseMoved;
 		public static extern MouseDevice GetForCurrentView();
 	}
 }

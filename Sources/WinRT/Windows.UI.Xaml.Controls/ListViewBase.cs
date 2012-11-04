@@ -11,16 +11,8 @@ namespace Windows.UI.Xaml.Controls
 	[Composable(typeof(IListViewBaseFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IListViewBaseStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class ListViewBase : Selector, IListViewBase, ISemanticZoomInformation
 	{
-		public extern event DragItemsStartingEventHandler DragItemsStarting
-		{
-			add;
-			remove;
-		}
-		public extern event ItemClickEventHandler ItemClick
-		{
-			add;
-			remove;
-		}
+		public extern event DragItemsStartingEventHandler DragItemsStarting;
+		public extern event ItemClickEventHandler ItemClick;
 		public extern bool CanDragItems
 		{
 			get;

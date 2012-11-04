@@ -6,16 +6,8 @@ namespace Windows.Storage.Provider
 	[Version(100794368u)]
 	public sealed class CachedFileUpdaterUI : ICachedFileUpdaterUI
 	{
-		public extern event TypedEventHandler<CachedFileUpdaterUI, FileUpdateRequestedEventArgs> FileUpdateRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CachedFileUpdaterUI, object> UIRequested
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<CachedFileUpdaterUI, FileUpdateRequestedEventArgs> FileUpdateRequested;
+        public extern event TypedEventHandler<CachedFileUpdaterUI, object> UIRequested;
 		public extern string Title
 		{
 			get;

@@ -6,31 +6,11 @@ namespace Windows.Devices.Enumeration
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Version(100794368u)]
 	public sealed class DeviceWatcher : IDeviceWatcher
 	{
-		public extern event TypedEventHandler<DeviceWatcher, DeviceInformation> Added
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<DeviceWatcher, object> EnumerationCompleted
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<DeviceWatcher, DeviceInformationUpdate> Removed
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<DeviceWatcher, object> Stopped
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<DeviceWatcher, DeviceInformationUpdate> Updated
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<DeviceWatcher, DeviceInformation> Added;
+		public extern event TypedEventHandler<DeviceWatcher, object> EnumerationCompleted;
+		public extern event TypedEventHandler<DeviceWatcher, DeviceInformationUpdate> Removed;
+		public extern event TypedEventHandler<DeviceWatcher, object> Stopped;
+		public extern event TypedEventHandler<DeviceWatcher, DeviceInformationUpdate> Updated;
 		public extern DeviceWatcherStatus Status
 		{
 			get;

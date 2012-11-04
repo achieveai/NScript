@@ -6,36 +6,12 @@ namespace Windows.Media.Devices
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ICallControlStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class CallControl : ICallControl
 	{
-		public extern event CallControlEventHandler AnswerRequested
-		{
-			add;
-			remove;
-		}
-		public extern event CallControlEventHandler AudioTransferRequested
-		{
-			add;
-			remove;
-		}
-		public extern event DialRequestedEventHandler DialRequested
-		{
-			add;
-			remove;
-		}
-		public extern event CallControlEventHandler HangUpRequested
-		{
-			add;
-			remove;
-		}
-		public extern event KeypadPressedEventHandler KeypadPressed
-		{
-			add;
-			remove;
-		}
-		public extern event RedialRequestedEventHandler RedialRequested
-		{
-			add;
-			remove;
-		}
+		public extern event CallControlEventHandler AnswerRequested;
+		public extern event CallControlEventHandler AudioTransferRequested;
+		public extern event DialRequestedEventHandler DialRequested;
+		public extern event CallControlEventHandler HangUpRequested;
+		public extern event KeypadPressedEventHandler KeypadPressed;
+		public extern event RedialRequestedEventHandler RedialRequested;
 		public extern bool HasRinger
 		{
 			get;

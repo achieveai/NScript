@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, Imported]
+    [IgnoreNamespace, Extended]
     public static class Math
     {
         [PreserveCase]

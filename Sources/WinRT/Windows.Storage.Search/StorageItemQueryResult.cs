@@ -8,16 +8,8 @@ namespace Windows.Storage.Search
 	[Version(100794368u)]
 	public sealed class StorageItemQueryResult : IStorageItemQueryResult, IStorageQueryResultBase
 	{
-		public extern event TypedEventHandler<IStorageQueryResultBase, object> ContentsChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<IStorageQueryResultBase, object> OptionsChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<IStorageQueryResultBase, object> ContentsChanged;
+		public extern event TypedEventHandler<IStorageQueryResultBase, object> OptionsChanged;
 		public extern StorageFolder Folder
 		{
 			get;

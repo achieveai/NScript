@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 using Windows.Data.Xml.Dom;
 using Windows.Foundation;
@@ -6,7 +5,7 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 namespace Windows.Web.Syndication
 {
-	[Activatable(100794368u), Activatable(typeof(ISyndicationItemFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(ISyndicationItemFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class SyndicationItem : ISyndicationItem, ISyndicationNode
 	{
 		public extern IVector<SyndicationPerson> Authors

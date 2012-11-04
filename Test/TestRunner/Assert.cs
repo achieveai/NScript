@@ -14,7 +14,7 @@ namespace SunlightUnit
     /// </summary>
     /// <remarks>Until VS plugin is ready, I'm using this class as a entry point for QUnit, that way no tests
     /// have to be changed, only this class.  (kevinc)</remarks>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     [GlobalMethods]
     public static class Assert

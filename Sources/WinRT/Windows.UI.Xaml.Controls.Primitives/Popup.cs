@@ -8,16 +8,8 @@ namespace Windows.UI.Xaml.Controls.Primitives
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IPopupStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Child")]
 	public sealed class Popup : FrameworkElement, IPopup
 	{
-		public extern event EventHandler<object> Closed
-		{
-			add;
-			remove;
-		}
-		public extern event EventHandler<object> Opened
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> Closed;
+		public extern event EventHandler<object> Opened;
 		public extern UIElement Child
 		{
 			get;

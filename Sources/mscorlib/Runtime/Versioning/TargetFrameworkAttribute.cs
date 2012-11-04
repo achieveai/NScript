@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [AttributeUsage(AttributeTargets.Assembly, Inherited=false, AllowMultiple=false), Imported, NonScriptable]
+    [AttributeUsage(AttributeTargets.Assembly, Inherited=false, AllowMultiple=false), Extended, NonScriptable]
     public sealed class TargetFrameworkAttribute : Attribute
     {
         private string _frameworkDisplayName;

@@ -7,21 +7,9 @@ namespace Windows.UI.Xaml.Printing
 	[Composable(typeof(IPrintDocumentFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IPrintDocumentStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class PrintDocument : DependencyObject, IPrintDocument
 	{
-		public extern event AddPagesEventHandler AddPages
-		{
-			add;
-			remove;
-		}
-		public extern event GetPreviewPageEventHandler GetPreviewPage
-		{
-			add;
-			remove;
-		}
-		public extern event PaginateEventHandler Paginate
-		{
-			add;
-			remove;
-		}
+		public extern event AddPagesEventHandler AddPages;
+		public extern event GetPreviewPageEventHandler GetPreviewPage;
+		public extern event PaginateEventHandler Paginate;
 		public extern IPrintDocumentSource DocumentSource
 		{
 			get;

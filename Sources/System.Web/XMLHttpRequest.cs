@@ -64,7 +64,7 @@ namespace System.Web
     /// <summary>
     /// Definition for Class.
     /// </summary>
-    [Imported, IgnoreNamespace, ScriptName("XMLHttpRequest")]
+    [Extended, IgnoreNamespace, ScriptName("XMLHttpRequest")]
     public class XMLHttpRequest
     {
         /// <summary>

@@ -9,91 +9,23 @@ namespace Windows.UI.Core
 	[MarshalingBehavior(MarshalingType.Standard), Muse(Version = 100794368u), Static(typeof(ICoreWindowStatic), 100794368u), Version(100794368u), WebHostHidden]
 	public sealed class CoreWindow : ICoreWindow
 	{
-		public extern event TypedEventHandler<CoreWindow, WindowActivatedEventArgs> Activated
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, AutomationProviderRequestedEventArgs> AutomationProviderRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, CharacterReceivedEventArgs> CharacterReceived
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, CoreWindowEventArgs> Closed
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, InputEnabledEventArgs> InputEnabled
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, KeyEventArgs> KeyDown
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, KeyEventArgs> KeyUp
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerCaptureLost
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerEntered
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerExited
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerMoved
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerPressed
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerReleased
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerWheelChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, WindowSizeChangedEventArgs> SizeChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, TouchHitTestingEventArgs> TouchHitTesting
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<CoreWindow, VisibilityChangedEventArgs> VisibilityChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<CoreWindow, WindowActivatedEventArgs> Activated;
+		public extern event TypedEventHandler<CoreWindow, AutomationProviderRequestedEventArgs> AutomationProviderRequested;
+		public extern event TypedEventHandler<CoreWindow, CharacterReceivedEventArgs> CharacterReceived;
+		public extern event TypedEventHandler<CoreWindow, CoreWindowEventArgs> Closed;
+		public extern event TypedEventHandler<CoreWindow, InputEnabledEventArgs> InputEnabled;
+		public extern event TypedEventHandler<CoreWindow, KeyEventArgs> KeyDown;
+		public extern event TypedEventHandler<CoreWindow, KeyEventArgs> KeyUp;
+		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerCaptureLost;
+		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerEntered;
+		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerExited;
+		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerMoved;
+		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerPressed;
+		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerReleased;
+		public extern event TypedEventHandler<CoreWindow, PointerEventArgs> PointerWheelChanged;
+		public extern event TypedEventHandler<CoreWindow, WindowSizeChangedEventArgs> SizeChanged;
+		public extern event TypedEventHandler<CoreWindow, TouchHitTestingEventArgs> TouchHitTesting;
+		public extern event TypedEventHandler<CoreWindow, VisibilityChangedEventArgs> VisibilityChanged;
 		public extern object AutomationHostProvider
 		{
 			get;

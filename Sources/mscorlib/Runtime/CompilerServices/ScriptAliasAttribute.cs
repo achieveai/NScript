@@ -2,7 +2,7 @@
 {
     using System;
 
-    [Imported, AttributeUsage(AttributeTargets.Property | AttributeTargets.Method, Inherited=true, AllowMultiple=false), NonScriptable]
+    [Extended, AttributeUsage(AttributeTargets.Property | AttributeTargets.Method, Inherited=true, AllowMultiple=false), NonScriptable]
     public sealed class ScriptAliasAttribute : Attribute
     {
         private string _alias;

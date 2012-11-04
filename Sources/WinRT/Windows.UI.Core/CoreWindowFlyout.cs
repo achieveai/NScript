@@ -9,11 +9,7 @@ namespace Windows.UI.Core
 	[Activatable(typeof(ICoreWindowFlyoutFactory), 100794368u), MarshalingBehavior(MarshalingType.Standard), Muse(Version = 100794368u), Version(100794368u), WebHostHidden]
 	public sealed class CoreWindowFlyout : ICoreWindowFlyout
 	{
-		public extern event TypedEventHandler<CoreWindow, CoreWindowPopupShowingEventArgs> Showing
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<CoreWindow, CoreWindowPopupShowingEventArgs> Showing;
 		public extern UICommandInvokedHandler BackButtonCommand
 		{
 			get;

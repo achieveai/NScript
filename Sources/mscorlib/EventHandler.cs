@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [Imported, IgnoreNamespace]
+    [Extended, IgnoreNamespace]
     public delegate void EventHandler(object sender, EventArgs e);
 }
 

@@ -6,66 +6,18 @@ namespace Windows.Media
 	[MarshalingBehavior(MarshalingType.Agile), Static(typeof(IMediaControl), 100794368u), Threading(ThreadingModel.MTA), Version(100794368u)]
 	public static class MediaControl
 	{
-		public static extern event EventHandler<object> ChannelDownPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> ChannelUpPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> FastForwardPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> NextTrackPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> PausePressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> PlayPauseTogglePressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> PlayPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> PreviousTrackPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> RecordPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> RewindPressed
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> SoundLevelChanged
-		{
-			add;
-			remove;
-		}
-		public static extern event EventHandler<object> StopPressed
-		{
-			add;
-			remove;
-		}
+		public static extern event EventHandler<object> ChannelDownPressed;
+		public static extern event EventHandler<object> ChannelUpPressed;
+		public static extern event EventHandler<object> FastForwardPressed;
+		public static extern event EventHandler<object> NextTrackPressed;
+		public static extern event EventHandler<object> PausePressed;
+		public static extern event EventHandler<object> PlayPauseTogglePressed;
+        public static extern event EventHandler<object> PlayPressed;
+		public static extern event EventHandler<object> PreviousTrackPressed;
+		public static extern event EventHandler<object> RecordPressed;
+		public static extern event EventHandler<object> RewindPressed;
+		public static extern event EventHandler<object> SoundLevelChanged;
+		public static extern event EventHandler<object> StopPressed;
 		public static extern Uri AlbumArt
 		{
 			get;

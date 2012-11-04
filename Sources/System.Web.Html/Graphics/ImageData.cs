@@ -11,7 +11,7 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for ImageData
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class ImageData
     {

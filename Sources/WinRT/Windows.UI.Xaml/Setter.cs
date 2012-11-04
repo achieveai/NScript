@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml
 {
-	[Activatable(typeof(ISetterFactory), 100794368u), Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
+	[Activatable(typeof(ISetterFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class Setter : SetterBase, ISetter
 	{
 		public extern DependencyProperty Property

@@ -4,7 +4,7 @@ using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IGroupStyleSelectorFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class GroupStyleSelector : IGroupStyleSelector, IGroupStyleSelectorOverrides
+	public class GroupStyleSelector : IGroupStyleSelector
 	{
 		public extern GroupStyleSelector();
 		public extern GroupStyle SelectGroupStyle([In] object group, [In] uint level);

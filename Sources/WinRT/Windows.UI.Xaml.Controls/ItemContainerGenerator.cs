@@ -7,11 +7,7 @@ namespace Windows.UI.Xaml.Controls
 	[MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class ItemContainerGenerator : IItemContainerGenerator
 	{
-		public extern event ItemsChangedEventHandler ItemsChanged
-		{
-			add;
-			remove;
-		}
+		public extern event ItemsChangedEventHandler ItemsChanged;
 		public extern object ItemFromContainer([In] DependencyObject container);
 		public extern DependencyObject ContainerFromItem([In] object item);
 		public extern int IndexFromContainer([In] DependencyObject container);

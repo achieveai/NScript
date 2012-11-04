@@ -8,16 +8,8 @@ namespace Windows.Graphics.Printing.OptionDetails
 	[MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Static(typeof(IPrintTaskOptionDetailsStatic), 100794368u), Version(100794368u)]
 	public sealed class PrintTaskOptionDetails : IPrintTaskOptionDetails, IPrintTaskOptionsCore, IPrintTaskOptionsCoreUIConfiguration
 	{
-		public extern event TypedEventHandler<PrintTaskOptionDetails, object> BeginValidation
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PrintTaskOptionDetails, PrintTaskOptionChangedEventArgs> OptionChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<PrintTaskOptionDetails, object> BeginValidation;
+		public extern event TypedEventHandler<PrintTaskOptionDetails, PrintTaskOptionChangedEventArgs> OptionChanged;
 		public extern IMapView<string, IPrintOptionDetails> Options
 		{
 			get;

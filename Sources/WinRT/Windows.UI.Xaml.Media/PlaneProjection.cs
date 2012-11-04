@@ -71,68 +71,68 @@ namespace Windows.UI.Xaml.Media
 			get;
 			set;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty CenterOfRotationXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty CenterOfRotationYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty CenterOfRotationZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty GlobalOffsetXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty GlobalOffsetYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty GlobalOffsetZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty LocalOffsetXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty LocalOffsetYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty LocalOffsetZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 		public static extern DependencyProperty ProjectionMatrixProperty
 		{
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty RotationXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty RotationYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty RotationZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 		public extern PlaneProjection();

@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [NonScriptable, EditorBrowsable(EditorBrowsableState.Never), AttributeUsage(AttributeTargets.Type | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Constructor), Imported]
+    [NonScriptable, EditorBrowsable(EditorBrowsableState.Never), AttributeUsage(AttributeTargets.Type | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Constructor), Extended]
     public sealed class EditorBrowsableAttribute : Attribute
     {
         private EditorBrowsableState _browsableState;

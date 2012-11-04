@@ -5,7 +5,7 @@ using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Media
 {
 	[Composable(typeof(IGeneralTransformFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class GeneralTransform : DependencyObject, IGeneralTransform, IGeneralTransformOverrides
+	public class GeneralTransform : DependencyObject
 	{
 		public extern GeneralTransform Inverse
 		{

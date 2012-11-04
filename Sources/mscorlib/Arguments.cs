@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [ScriptName("arguments"), IgnoreNamespace, Imported]
+    [ScriptName("arguments"), IgnoreNamespace, Extended]
     public static class Arguments
     {
         public static object GetArgument(int index)

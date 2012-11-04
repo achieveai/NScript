@@ -7,7 +7,7 @@ using Windows.UI.Xaml.Media.Animation;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IItemsControlFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IItemsControlStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Items")]
-	public class ItemsControl : Control, IItemsControl, IItemsControlOverrides
+	public class ItemsControl : Control
 	{
 		public extern string DisplayMemberPath
 		{

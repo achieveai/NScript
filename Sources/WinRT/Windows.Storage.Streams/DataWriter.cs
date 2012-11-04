@@ -1,10 +1,9 @@
-using System;
 using System.Runtime.InteropServices;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 namespace Windows.Storage.Streams
 {
-	[Activatable(100794368u), Activatable(typeof(IDataWriterFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(IDataWriterFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class DataWriter : IDataWriter, IClosable
 	{
 		public extern ByteOrder ByteOrder

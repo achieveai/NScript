@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// Definition for Style
     /// </summary>
     [IgnoreNamespace]
-    [Imported]
+    [Extended]
     [ScriptName("CSSStyleDeclaration")]
     public sealed class Style
     {

@@ -10,133 +10,33 @@ using Windows.UI.Xaml.Media.Animation;
 namespace Windows.UI.Xaml
 {
 	[Composable(typeof(IUIElementFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IUIElementStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class UIElement : DependencyObject, IUIElement, IUIElementOverrides
+	public class UIElement : DependencyObject
 	{
-		public extern event DoubleTappedEventHandler DoubleTapped
-		{
-			add;
-			remove;
-		}
-		public extern event DragEventHandler DragEnter
-		{
-			add;
-			remove;
-		}
-		public extern event DragEventHandler DragLeave
-		{
-			add;
-			remove;
-		}
-		public extern event DragEventHandler DragOver
-		{
-			add;
-			remove;
-		}
-		public extern event DragEventHandler Drop
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler GotFocus
-		{
-			add;
-			remove;
-		}
-		public extern event HoldingEventHandler Holding
-		{
-			add;
-			remove;
-		}
-		public extern event KeyEventHandler KeyDown
-		{
-			add;
-			remove;
-		}
-		public extern event KeyEventHandler KeyUp
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler LostFocus
-		{
-			add;
-			remove;
-		}
-		public extern event ManipulationCompletedEventHandler ManipulationCompleted
-		{
-			add;
-			remove;
-		}
-		public extern event ManipulationDeltaEventHandler ManipulationDelta
-		{
-			add;
-			remove;
-		}
-		public extern event ManipulationInertiaStartingEventHandler ManipulationInertiaStarting
-		{
-			add;
-			remove;
-		}
-		public extern event ManipulationStartedEventHandler ManipulationStarted
-		{
-			add;
-			remove;
-		}
-		public extern event ManipulationStartingEventHandler ManipulationStarting
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerCanceled
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerCaptureLost
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerEntered
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerExited
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerMoved
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerPressed
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerReleased
-		{
-			add;
-			remove;
-		}
-		public extern event PointerEventHandler PointerWheelChanged
-		{
-			add;
-			remove;
-		}
-		public extern event RightTappedEventHandler RightTapped
-		{
-			add;
-			remove;
-		}
-		public extern event TappedEventHandler Tapped
-		{
-			add;
-			remove;
-		}
+		public extern event DoubleTappedEventHandler DoubleTapped;
+		public extern event DragEventHandler DragEnter;
+		public extern event DragEventHandler DragLeave;
+		public extern event DragEventHandler DragOver;
+		public extern event DragEventHandler Drop;
+		public extern event RoutedEventHandler GotFocus;
+		public extern event HoldingEventHandler Holding;
+		public extern event KeyEventHandler KeyDown;
+		public extern event KeyEventHandler KeyUp;
+		public extern event RoutedEventHandler LostFocus;
+		public extern event ManipulationCompletedEventHandler ManipulationCompleted;
+		public extern event ManipulationDeltaEventHandler ManipulationDelta;
+		public extern event ManipulationInertiaStartingEventHandler ManipulationInertiaStarting;
+		public extern event ManipulationStartedEventHandler ManipulationStarted;
+		public extern event ManipulationStartingEventHandler ManipulationStarting;
+		public extern event PointerEventHandler PointerCanceled;
+		public extern event PointerEventHandler PointerCaptureLost;
+		public extern event PointerEventHandler PointerEntered;
+		public extern event PointerEventHandler PointerExited;
+		public extern event PointerEventHandler PointerMoved;
+		public extern event PointerEventHandler PointerPressed;
+		public extern event PointerEventHandler PointerReleased;
+		public extern event PointerEventHandler PointerWheelChanged;
+		public extern event RightTappedEventHandler RightTapped;
+		public extern event TappedEventHandler Tapped;
 		public extern bool AllowDrop
 		{
 			get;
@@ -237,9 +137,9 @@ namespace Windows.UI.Xaml
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		public static extern DependencyProperty ClipProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		public static extern RoutedEvent DoubleTappedEvent
@@ -318,9 +218,9 @@ namespace Windows.UI.Xaml
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		public static extern DependencyProperty OpacityProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		public static extern RoutedEvent PointerCanceledEvent
@@ -359,18 +259,18 @@ namespace Windows.UI.Xaml
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		public static extern DependencyProperty ProjectionProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		public static extern DependencyProperty RenderTransformOriginProperty
 		{
 			get;
 		}
+        [IndependentlyAnimatable]
 		public static extern DependencyProperty RenderTransformProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		public static extern RoutedEvent RightTappedEvent

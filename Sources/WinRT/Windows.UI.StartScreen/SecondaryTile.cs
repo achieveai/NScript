@@ -6,7 +6,7 @@ using Windows.Foundation.Metadata;
 using Windows.UI.Popups;
 namespace Windows.UI.StartScreen
 {
-	[Activatable(100794368u), Activatable(typeof(ISecondaryTileFactory), 100794368u), Muse(Version = 100794368u), Static(typeof(ISecondaryTileStatics), 100794368u), Version(100794368u)]
+	[Activatable(typeof(ISecondaryTileFactory), 100794368u), Muse(Version = 100794368u), Static(typeof(ISecondaryTileStatics), 100794368u), Version(100794368u)]
 	public sealed class SecondaryTile : ISecondaryTile
 	{
 		public extern string Arguments

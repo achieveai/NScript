@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for SelectElement
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class SelectElement : Element
     {

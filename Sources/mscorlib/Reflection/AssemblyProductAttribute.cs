@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, AttributeUsage(AttributeTargets.Assembly, Inherited=false), NonScriptable]
+    [Extended, AttributeUsage(AttributeTargets.Assembly, Inherited=false), NonScriptable]
     public sealed class AssemblyProductAttribute : Attribute
     {
         private string _product;

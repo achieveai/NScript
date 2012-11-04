@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, AttributeUsage(AttributeTargets.Assembly, Inherited=false), NonScriptable]
+    [Extended, AttributeUsage(AttributeTargets.Assembly, Inherited=false), NonScriptable]
     public sealed class AssemblyTitleAttribute : Attribute
     {
         private string _title;

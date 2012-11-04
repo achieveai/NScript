@@ -6,19 +6,19 @@ namespace Windows.UI.Xaml.Media
 	[ExclusiveTo(typeof(RotateTransform)), Guid(2704403338u, 20899, 16822, 185, 211, 161, 14, 66, 144, 84, 171), Version(100794368u), WebHostHidden]
 	internal interface IRotateTransformStatics
 	{
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty AngleProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 	}

@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>31C685F7-13B4-41F9-BE2E-64F9698DF160</ProjectGuid>
+    <ProjectGuid>{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <NoStdLib>True</NoStdLib>
     <NoStandardLibraries>false</NoStandardLibraries>
@@ -18,7 +18,7 @@
     <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
     <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0626</NoWarn>
+    <NoWarn>0067; 0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
+    <Compile Include="Guid.cs" />
     <Compile Include="Windows.ApplicationModel.Activation\ActivationKind.cs" />
     <Compile Include="Windows.ApplicationModel.Activation\ApplicationExecutionState.cs" />
     <Compile Include="Windows.ApplicationModel.Activation\CachedFileUpdaterActivatedEventArgs.cs" />
@@ -499,8 +500,6 @@
     <Compile Include="Windows.Foundation.Diagnostics\RuntimeBrokerErrorSettings.cs" />
     <Compile Include="Windows.Foundation.Metadata\ActivatableAttribute.cs" />
     <Compile Include="Windows.Foundation.Metadata\AllowMultipleAttribute.cs" />
-    <Compile Include="Windows.Foundation.Metadata\AttributeTargets.cs" />
-    <Compile Include="Windows.Foundation.Metadata\AttributeUsageAttribute.cs" />
     <Compile Include="Windows.Foundation.Metadata\ComposableAttribute.cs" />
     <Compile Include="Windows.Foundation.Metadata\CompositionType.cs" />
     <Compile Include="Windows.Foundation.Metadata\DefaultAttribute.cs" />

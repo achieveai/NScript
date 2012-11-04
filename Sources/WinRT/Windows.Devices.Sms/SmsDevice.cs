@@ -7,16 +7,8 @@ namespace Windows.Devices.Sms
 	[DualApiPartition(version = 100794368u), Static(typeof(ISmsDeviceStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class SmsDevice : ISmsDevice
 	{
-		public extern event SmsDeviceStatusChangedEventHandler SmsDeviceStatusChanged
-		{
-			add;
-			remove;
-		}
-		public extern event SmsMessageReceivedEventHandler SmsMessageReceived
-		{
-			add;
-			remove;
-		}
+		public extern event SmsDeviceStatusChangedEventHandler SmsDeviceStatusChanged;
+		public extern event SmsMessageReceivedEventHandler SmsMessageReceived;
 		public extern string AccountPhoneNumber
 		{
 			get;

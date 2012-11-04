@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, ScriptNamespace("ss")]
+    [Extended, ScriptNamespace("ss")]
     public delegate void PropertyChangedEventHandler(object sender, PropertyChangedEventArgs e);
 }
 

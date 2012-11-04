@@ -12,7 +12,7 @@ namespace System.Runtime.CompilerServices
     /// Definition for PsudoTypeAttribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Type), NonScriptable]
-    public class PsudoTypeAttribute : ImportedAttribute
+    public class PsudoTypeAttribute : ExtendedAttribute
     {
     }
 }

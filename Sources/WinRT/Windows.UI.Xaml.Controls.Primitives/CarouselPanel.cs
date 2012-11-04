@@ -8,16 +8,8 @@ namespace Windows.UI.Xaml.Controls.Primitives
 	[Composable(typeof(ICarouselPanelFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class CarouselPanel : VirtualizingPanel, ICarouselPanel, IScrollSnapPointsInfo
 	{
-		public extern event EventHandler<object> HorizontalSnapPointsChanged
-		{
-			add;
-			remove;
-		}
-		public extern event EventHandler<object> VerticalSnapPointsChanged
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> HorizontalSnapPointsChanged;
+		public extern event EventHandler<object> VerticalSnapPointsChanged;
 		public extern bool CanHorizontallyScroll
 		{
 			get;

@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, ScriptNamespace("ss")]
+    [Extended, ScriptNamespace("ss")]
     public sealed class CollectionChangedEventArgs : EventArgs
     {
         public CollectionChangedEventArgs(CollectionChangedAction action, object item)

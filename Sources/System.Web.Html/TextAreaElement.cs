@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for TextAreaElement
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class TextAreaElement : InputElement
     {

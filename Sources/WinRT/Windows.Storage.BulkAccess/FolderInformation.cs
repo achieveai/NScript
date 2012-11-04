@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -10,16 +9,8 @@ namespace Windows.Storage.BulkAccess
 	[Version(100794368u)]
 	public sealed class FolderInformation : IStorageItemInformation, IStorageFolder, IStorageItem, IStorageItemProperties, IStorageFolderQueryOperations
 	{
-		public extern event TypedEventHandler<IStorageItemInformation, object> PropertiesUpdated
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<IStorageItemInformation, object> ThumbnailUpdated
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<IStorageItemInformation, object> PropertiesUpdated;
+		public extern event TypedEventHandler<IStorageItemInformation, object> ThumbnailUpdated;
 		public extern BasicProperties BasicProperties
 		{
 			get;

@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media.Animation;
 namespace Windows.UI.Xaml.Media
 {
-	[Activatable(100794368u), Activatable(typeof(ISolidColorBrushFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ISolidColorBrushStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Color")]
+	[Activatable(typeof(ISolidColorBrushFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ISolidColorBrushStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Color")]
 	public sealed class SolidColorBrush : Brush, ISolidColorBrush
 	{
 		public extern Color Color
@@ -13,9 +13,9 @@ namespace Windows.UI.Xaml.Media
 			get;
 			set;
 		}
+        [IndependentlyAnimatable]
 		public static extern DependencyProperty ColorProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 		public extern SolidColorBrush();

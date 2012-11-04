@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for TableElement
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class TableElement : Element
     {

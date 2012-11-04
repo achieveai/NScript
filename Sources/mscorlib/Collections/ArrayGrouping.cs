@@ -4,7 +4,7 @@
     using System.Reflection;
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, ScriptName("Array"), Imported]
+    [IgnoreNamespace, ScriptName("Array"), Extended]
     public sealed class ArrayGrouping : IEnumerable
     {
         private ArrayGrouping()

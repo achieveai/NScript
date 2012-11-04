@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, Imported]
+    [IgnoreNamespace, Extended]
     public sealed class Number
     {
         [PreserveCase]

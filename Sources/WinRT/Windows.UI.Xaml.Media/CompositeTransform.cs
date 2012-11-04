@@ -51,49 +51,49 @@ namespace Windows.UI.Xaml.Media
 			get;
 			set;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty CenterXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty CenterYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty RotationProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty ScaleXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty ScaleYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty SkewXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty SkewYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty TranslateXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty TranslateYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 		public extern CompositeTransform();

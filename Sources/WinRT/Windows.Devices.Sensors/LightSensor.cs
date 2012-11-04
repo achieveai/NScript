@@ -6,11 +6,7 @@ namespace Windows.Devices.Sensors
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ILightSensorStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class LightSensor : ILightSensor
 	{
-		public extern event TypedEventHandler<LightSensor, LightSensorReadingChangedEventArgs> ReadingChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<LightSensor, LightSensorReadingChangedEventArgs> ReadingChanged;
 		public extern uint MinimumReportInterval
 		{
 			get;

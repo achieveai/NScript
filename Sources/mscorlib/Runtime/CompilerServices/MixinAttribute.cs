@@ -2,7 +2,7 @@
 {
     using System;
 
-    [Imported, NonScriptable, AttributeUsage(AttributeTargets.Class, Inherited=false, AllowMultiple=false)]
+    [Extended, NonScriptable, AttributeUsage(AttributeTargets.Class, Inherited=false, AllowMultiple=false)]
     public sealed class MixinAttribute : Attribute
     {
         private string _expression;

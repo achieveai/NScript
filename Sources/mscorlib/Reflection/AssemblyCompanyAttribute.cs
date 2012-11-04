@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [NonScriptable, Imported, AttributeUsage(AttributeTargets.Assembly, Inherited=false)]
+    [NonScriptable, Extended, AttributeUsage(AttributeTargets.Assembly, Inherited=false)]
     public sealed class AssemblyCompanyAttribute : Attribute
     {
         private string _company;

@@ -12,7 +12,7 @@ namespace System
     /// <summary>
     /// Definition for NativeArray
     /// </summary>
-    [Imported, ScriptName("Array"), IgnoreNamespace]
+    [Extended, ScriptName("Array"), IgnoreNamespace]
     public sealed class NativeArray
     {
         public extern NativeArray(int length);

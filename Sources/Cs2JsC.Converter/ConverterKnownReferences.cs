@@ -25,7 +25,7 @@ namespace Cs2JsC.Converter
         private TypeReference ienumeratorReference;
         private TypeReference ignoreNamespaceAttribute;
         private TypeReference implementAttribute;
-        private TypeReference importedAttribute;
+        private TypeReference extendedAttribute;
         private TypeReference intrinsicPropertyAttribute;
         private TypeReference intrinsicFieldAttribute;
         private TypeReference nonScriptableAttribute;
@@ -411,18 +411,18 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the imported attribute reference.
         /// </summary>
-        public TypeReference ImportedAttribute
+        public TypeReference ExtendedAttribute
         {
             get
             {
-                if (this.importedAttribute == null)
+                if (this.extendedAttribute == null)
                 {
-                    this.importedAttribute = this.GetTypeReference(
+                    this.extendedAttribute = this.GetTypeReference(
                         ClrKnownReferences.CompilerServicesStr,
-                        "ImportedAttribute");
+                        "ExtendedAttribute");
                 }
 
-                return this.importedAttribute;
+                return this.extendedAttribute;
             }
         }
 
@@ -838,7 +838,7 @@ namespace Cs2JsC.Converter
             {
                 if (this.createDelegateFromFunction == null)
                 {
-                    this.createDelegate = this.GetMethodReference(
+                    this.createDelegateFromFunction = this.GetMethodReference(
                         "Create",
                         this.ClrReferences.DelegateType,
                         this.ClrReferences.FunctionType);

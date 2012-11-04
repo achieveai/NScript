@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [NonScriptable, Imported, AttributeUsage(AttributeTargets.Assembly, Inherited=false)]
+    [NonScriptable, Extended, AttributeUsage(AttributeTargets.Assembly, Inherited=false)]
     public sealed class AssemblyVersionAttribute : Attribute
     {
         private string _version;

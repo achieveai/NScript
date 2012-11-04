@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 using Windows.Data.Xml.Dom;
 using Windows.Foundation;

@@ -8,16 +8,8 @@ namespace Windows.Networking.Sockets
 	[Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class MessageWebSocket : IMessageWebSocket, IWebSocket, IClosable
 	{
-		public extern event TypedEventHandler<MessageWebSocket, MessageWebSocketMessageReceivedEventArgs> MessageReceived
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<IWebSocket, WebSocketClosedEventArgs> Closed
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<MessageWebSocket, MessageWebSocketMessageReceivedEventArgs> MessageReceived;
+		public extern event TypedEventHandler<IWebSocket, WebSocketClosedEventArgs> Closed;
 		public extern MessageWebSocketControl Control
 		{
 			get;

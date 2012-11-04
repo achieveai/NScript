@@ -5,11 +5,7 @@ namespace Windows.UI.Xaml.Controls.Primitives
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IScrollBarStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class ScrollBar : RangeBase, IScrollBar
 	{
-		public extern event ScrollEventHandler Scroll
-		{
-			add;
-			remove;
-		}
+        public extern event ScrollEventHandler Scroll;
 		public extern ScrollingIndicatorMode IndicatorMode
 		{
 			get;

@@ -6,11 +6,7 @@ namespace Windows.UI.Xaml.Media.Animation
 	[Composable(typeof(ITimelineFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ITimelineStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class Timeline : DependencyObject, ITimeline
 	{
-		public extern event EventHandler<object> Completed
-		{
-			add;
-			remove;
-		}
+        public extern event EventHandler<object> Completed;
 		public extern bool AutoReverse
 		{
 			get;

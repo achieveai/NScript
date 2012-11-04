@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Media.Animation;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IContentPresenterFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IContentPresenterStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Content")]
-	public class ContentPresenter : FrameworkElement, IContentPresenter, IContentPresenterOverrides
+	public class ContentPresenter : FrameworkElement, IContentPresenter
 	{
 		public extern int CharacterSpacing
 		{

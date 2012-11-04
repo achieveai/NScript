@@ -9,11 +9,7 @@ namespace Windows.System.UserProfile
 	[DualApiPartition(version = 100794368u), Static(typeof(IUserInformationStatics), 100794368u), Version(100794368u)]
 	public static class UserInformation
 	{
-		public static extern event EventHandler<object> AccountPictureChanged
-		{
-			add;
-			remove;
-		}
+		public static extern event EventHandler<object> AccountPictureChanged;
 		public static extern bool AccountPictureChangeEnabled
 		{
 			get;

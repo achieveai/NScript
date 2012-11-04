@@ -7,31 +7,11 @@ namespace Windows.ApplicationModel.Search
 	[MarshalingBehavior(MarshalingType.Standard), Muse(Version = 100794368u), Static(typeof(ISearchPaneStatics), 100794368u), Version(100794368u)]
 	public sealed class SearchPane : ISearchPane
 	{
-		public extern event TypedEventHandler<SearchPane, SearchPaneQueryChangedEventArgs> QueryChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<SearchPane, SearchPaneQuerySubmittedEventArgs> QuerySubmitted
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<SearchPane, SearchPaneResultSuggestionChosenEventArgs> ResultSuggestionChosen
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<SearchPane, SearchPaneSuggestionsRequestedEventArgs> SuggestionsRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<SearchPane, SearchPaneVisibilityChangedEventArgs> VisibilityChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<SearchPane, SearchPaneQueryChangedEventArgs> QueryChanged;
+		public extern event TypedEventHandler<SearchPane, SearchPaneQuerySubmittedEventArgs> QuerySubmitted;
+		public extern event TypedEventHandler<SearchPane, SearchPaneResultSuggestionChosenEventArgs> ResultSuggestionChosen;
+		public extern event TypedEventHandler<SearchPane, SearchPaneSuggestionsRequestedEventArgs> SuggestionsRequested;
+		public extern event TypedEventHandler<SearchPane, SearchPaneVisibilityChangedEventArgs> VisibilityChanged;
 		public extern string Language
 		{
 			get;

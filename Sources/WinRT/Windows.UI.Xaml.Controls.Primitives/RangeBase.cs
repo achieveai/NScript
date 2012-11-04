@@ -4,13 +4,9 @@ using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Controls.Primitives
 {
 	[Composable(typeof(IRangeBaseFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IRangeBaseStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class RangeBase : Control, IRangeBase, IRangeBaseOverrides
+	public class RangeBase : Control
 	{
-		public extern event RangeBaseValueChangedEventHandler ValueChanged
-		{
-			add;
-			remove;
-		}
+        public extern event RangeBaseValueChangedEventHandler ValueChanged;
 		public extern double LargeChange
 		{
 			get;

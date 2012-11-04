@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IVirtualizingPanelFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class VirtualizingPanel : Panel, IVirtualizingPanel, IVirtualizingPanelOverrides, IVirtualizingPanelProtected
+	public class VirtualizingPanel : Panel
 	{
 		public extern ItemContainerGenerator ItemContainerGenerator
 		{

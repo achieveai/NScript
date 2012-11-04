@@ -8,11 +8,7 @@ namespace Windows.ApplicationModel.Core
 	[MarshalingBehavior(MarshalingType.Standard), Muse(Version = 100794368u), Version(100794368u), WebHostHidden]
 	public sealed class CoreApplicationView : ICoreApplicationView
 	{
-		public extern event TypedEventHandler<CoreApplicationView, IActivatedEventArgs> Activated
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<CoreApplicationView, IActivatedEventArgs> Activated;
 		public extern CoreWindow CoreWindow
 		{
 			get;

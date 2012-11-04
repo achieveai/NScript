@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [NonScriptable, Imported, EditorBrowsable(EditorBrowsableState.Never)]
+    [NonScriptable, Extended, EditorBrowsable(EditorBrowsableState.Never)]
     public struct RuntimeTypeHandle
     {
     }

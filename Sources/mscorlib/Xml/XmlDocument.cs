@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, IgnoreNamespace]
+    [Extended, IgnoreNamespace]
     public sealed class XmlDocument : XmlNode
     {
         internal XmlDocument()

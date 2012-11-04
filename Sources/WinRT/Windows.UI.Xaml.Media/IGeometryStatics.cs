@@ -14,9 +14,9 @@ namespace Windows.UI.Xaml.Media
 		{
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty TransformProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 	}

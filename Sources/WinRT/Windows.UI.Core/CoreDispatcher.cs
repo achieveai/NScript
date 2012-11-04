@@ -7,11 +7,7 @@ namespace Windows.UI.Core
 	[MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Version(100794368u), WebHostHidden]
 	public sealed class CoreDispatcher : ICoreDispatcher, ICoreAcceleratorKeys
 	{
-		public extern event TypedEventHandler<CoreDispatcher, AcceleratorKeyEventArgs> AcceleratorKeyActivated
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<CoreDispatcher, AcceleratorKeyEventArgs> AcceleratorKeyActivated;
 		public extern bool HasThreadAccess
 		{
 			get;

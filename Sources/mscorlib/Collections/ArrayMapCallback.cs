@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, Imported]
+    [IgnoreNamespace, Extended]
     public delegate object ArrayMapCallback(object value, int index, Array array);
 }
 

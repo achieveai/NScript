@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -9,16 +8,8 @@ namespace Windows.Storage.BulkAccess
 	[Version(100794368u)]
 	public sealed class FileInformation : IStorageItemInformation, IStorageFile, IStorageItem, IRandomAccessStreamReference, IInputStreamReference, IStorageItemProperties
 	{
-		public extern event TypedEventHandler<IStorageItemInformation, object> PropertiesUpdated
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<IStorageItemInformation, object> ThumbnailUpdated
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<IStorageItemInformation, object> PropertiesUpdated;
+		public extern event TypedEventHandler<IStorageItemInformation, object> ThumbnailUpdated;
 		public extern BasicProperties BasicProperties
 		{
 			get;

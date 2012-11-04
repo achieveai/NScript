@@ -7,26 +7,10 @@ namespace Windows.UI.Xaml
 	[MarshalingBehavior(MarshalingType.Agile), Static(typeof(IWindowStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class Window : IWindow
 	{
-		public extern event WindowActivatedEventHandler Activated
-		{
-			add;
-			remove;
-		}
-		public extern event WindowClosedEventHandler Closed
-		{
-			add;
-			remove;
-		}
-		public extern event WindowSizeChangedEventHandler SizeChanged
-		{
-			add;
-			remove;
-		}
-		public extern event WindowVisibilityChangedEventHandler VisibilityChanged
-		{
-			add;
-			remove;
-		}
+		public extern event WindowActivatedEventHandler Activated;
+		public extern event WindowClosedEventHandler Closed;
+		public extern event WindowSizeChangedEventHandler SizeChanged;
+		public extern event WindowVisibilityChangedEventHandler VisibilityChanged;
 		public extern Rect Bounds
 		{
 			get;

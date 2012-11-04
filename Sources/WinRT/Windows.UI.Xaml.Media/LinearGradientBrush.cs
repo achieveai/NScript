@@ -4,7 +4,7 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Media
 {
-	[Activatable(typeof(ILinearGradientBrushFactory), 100794368u), Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ILinearGradientBrushStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
+	[Activatable(typeof(ILinearGradientBrushFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ILinearGradientBrushStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class LinearGradientBrush : GradientBrush, ILinearGradientBrush
 	{
 		public extern Point EndPoint

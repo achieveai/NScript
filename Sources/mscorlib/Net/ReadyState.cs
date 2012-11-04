@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, IgnoreNamespace, NumericValues]
+    [Extended, IgnoreNamespace, NumericValues]
     public enum ReadyState
     {
         Uninitialized,

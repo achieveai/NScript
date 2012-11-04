@@ -1,4 +1,3 @@
-using System;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 namespace Windows.Devices.Sensors

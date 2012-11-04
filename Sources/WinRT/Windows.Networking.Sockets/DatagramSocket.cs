@@ -9,11 +9,7 @@ namespace Windows.Networking.Sockets
 	[Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IDatagramSocketStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class DatagramSocket : IDatagramSocket, IClosable
 	{
-		public extern event TypedEventHandler<DatagramSocket, DatagramSocketMessageReceivedEventArgs> MessageReceived
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<DatagramSocket, DatagramSocketMessageReceivedEventArgs> MessageReceived;
 		public extern DatagramSocketControl Control
 		{
 			get;

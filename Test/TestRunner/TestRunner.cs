@@ -12,7 +12,7 @@ namespace SunlightUnit
     /// <summary>
     /// Definition for TestRunner
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     [GlobalMethods]
     public static class TestRunner

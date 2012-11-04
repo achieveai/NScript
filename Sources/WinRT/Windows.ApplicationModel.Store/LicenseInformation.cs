@@ -1,4 +1,3 @@
-using System;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
@@ -7,11 +6,7 @@ namespace Windows.ApplicationModel.Store
 	[MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class LicenseInformation : ILicenseInformation
 	{
-		public extern event LicenseChangedEventHandler LicenseChanged
-		{
-			add;
-			remove;
-		}
+		public extern event LicenseChangedEventHandler LicenseChanged;
 		public extern DateTime ExpirationDate
 		{
 			get;

@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [NonScriptable, AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple=true), Imported]
+    [NonScriptable, AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple=true), Extended]
     public sealed class ConditionalAttribute : Attribute
     {
         private string _conditionString;

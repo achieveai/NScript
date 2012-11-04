@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for CanvasElement
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class CanvasElement
     {

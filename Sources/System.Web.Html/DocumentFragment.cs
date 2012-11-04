@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for DocumentFragment
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public class DocumentFragment
     {

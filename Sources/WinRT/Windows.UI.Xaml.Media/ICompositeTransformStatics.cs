@@ -6,49 +6,49 @@ namespace Windows.UI.Xaml.Media
 	[ExclusiveTo(typeof(CompositeTransform)), Guid(790170632u, 33382, 18799, 150, 83, 161, 139, 212, 248, 54, 170), Version(100794368u), WebHostHidden]
 	internal interface ICompositeTransformStatics
 	{
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty RotationProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty ScaleXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty ScaleYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty SkewXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty SkewYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty TranslateXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty TranslateYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 	}

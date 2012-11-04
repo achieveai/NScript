@@ -12,56 +12,16 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IMediaElementStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class MediaElement : FrameworkElement, IMediaElement
 	{
-		public extern event RoutedEventHandler BufferingProgressChanged
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler CurrentStateChanged
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler DownloadProgressChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TimelineMarkerRoutedEventHandler MarkerReached
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler MediaEnded
-		{
-			add;
-			remove;
-		}
-		public extern event ExceptionRoutedEventHandler MediaFailed
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler MediaOpened
-		{
-			add;
-			remove;
-		}
-		public extern event RateChangedRoutedEventHandler RateChanged
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler SeekCompleted
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler VolumeChanged
-		{
-			add;
-			remove;
-		}
+		public extern event RoutedEventHandler BufferingProgressChanged;
+		public extern event RoutedEventHandler CurrentStateChanged;
+		public extern event RoutedEventHandler DownloadProgressChanged;
+		public extern event TimelineMarkerRoutedEventHandler MarkerReached;
+		public extern event RoutedEventHandler MediaEnded;
+		public extern event ExceptionRoutedEventHandler MediaFailed;
+		public extern event RoutedEventHandler MediaOpened;
+		public extern event RateChangedRoutedEventHandler RateChanged;
+		public extern event RoutedEventHandler SeekCompleted;
+		public extern event RoutedEventHandler VolumeChanged;
 		public extern Stereo3DVideoPackingMode ActualStereo3DVideoPackingMode
 		{
 			get;

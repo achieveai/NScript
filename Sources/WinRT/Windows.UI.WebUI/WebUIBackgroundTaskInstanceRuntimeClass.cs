@@ -6,11 +6,7 @@ namespace Windows.UI.WebUI
 	[MarshalingBehavior(MarshalingType.Standard), Version(100794368u)]
 	public sealed class WebUIBackgroundTaskInstanceRuntimeClass : IWebUIBackgroundTaskInstance, IBackgroundTaskInstance
 	{
-		public extern event BackgroundTaskCanceledEventHandler Canceled
-		{
-			add;
-			remove;
-		}
+        public extern event BackgroundTaskCanceledEventHandler Canceled;
 		public extern bool Succeeded
 		{
 			get;

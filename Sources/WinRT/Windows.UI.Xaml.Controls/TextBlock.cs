@@ -10,16 +10,8 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ITextBlockStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Inlines")]
 	public sealed class TextBlock : FrameworkElement, ITextBlock
 	{
-		public extern event ContextMenuOpeningEventHandler ContextMenuOpening
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler SelectionChanged
-		{
-			add;
-			remove;
-		}
+		public extern event ContextMenuOpeningEventHandler ContextMenuOpening;
+		public extern event RoutedEventHandler SelectionChanged;
 		public extern double BaselineOffset
 		{
 			get;

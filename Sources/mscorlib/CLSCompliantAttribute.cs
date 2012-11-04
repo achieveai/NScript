@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [EditorBrowsable(EditorBrowsableState.Never), AttributeUsage(AttributeTargets.All, Inherited=true, AllowMultiple=false), NonScriptable, Imported]
+    [EditorBrowsable(EditorBrowsableState.Never), AttributeUsage(AttributeTargets.All, Inherited=true, AllowMultiple=false), NonScriptable, Extended]
     public sealed class CLSCompliantAttribute : Attribute
     {
         private bool _isCompliant;

@@ -7,7 +7,7 @@ using Windows.UI.Xaml.Automation.Provider;
 namespace Windows.UI.Xaml.Automation.Peers
 {
 	[Composable(typeof(IAutomationPeerFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IAutomationPeerStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class AutomationPeer : DependencyObject, IAutomationPeer, IAutomationPeerOverrides, IAutomationPeerProtected
+	public class AutomationPeer : DependencyObject, IAutomationPeer
 	{
 		public extern AutomationPeer EventsSource
 		{

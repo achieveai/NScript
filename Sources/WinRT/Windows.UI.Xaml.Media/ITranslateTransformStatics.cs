@@ -6,14 +6,14 @@ namespace Windows.UI.Xaml.Media
 	[ExclusiveTo(typeof(TranslateTransform)), Guid(4095322769u, 57410, 16657, 156, 47, 210, 1, 48, 65, 35, 221), Version(100794368u), WebHostHidden]
 	internal interface ITranslateTransformStatics
 	{
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty XProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty YProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 	}

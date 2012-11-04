@@ -6,16 +6,8 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ISemanticZoomStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "ZoomedInView")]
 	public sealed class SemanticZoom : Control, ISemanticZoom
 	{
-		public extern event SemanticZoomViewChangedEventHandler ViewChangeCompleted
-		{
-			add;
-			remove;
-		}
-		public extern event SemanticZoomViewChangedEventHandler ViewChangeStarted
-		{
-			add;
-			remove;
-		}
+		public extern event SemanticZoomViewChangedEventHandler ViewChangeCompleted;
+        public extern event SemanticZoomViewChangedEventHandler ViewChangeStarted;
 		public extern bool CanChangeViews
 		{
 			get;

@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [AttributeUsage(AttributeTargets.Assembly, Inherited=false), Imported, NonScriptable]
+    [AttributeUsage(AttributeTargets.Assembly, Inherited=false), Extended, NonScriptable]
     public sealed class AssemblyTrademarkAttribute : Attribute
     {
         private string _trademark;

@@ -159,7 +159,7 @@ namespace Cs2JsC.Converter
             }
 
             if (null != typeDefinition.CustomAttributes.SelectAttribute(
-                this.KnownReferences.ImportedAttribute))
+                this.KnownReferences.ExtendedAttribute))
             {
                 return true;
             }

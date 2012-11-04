@@ -4,7 +4,7 @@
     using System.Reflection;
     using System.Runtime.CompilerServices;
 
-    [Imported, IgnoreNamespace, ScriptName("Array")]
+    [Extended, IgnoreNamespace, ScriptName("Array")]
     public sealed class ArrayList : IEnumerable
     {
         public ArrayList()

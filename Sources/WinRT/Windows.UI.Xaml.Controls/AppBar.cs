@@ -5,18 +5,10 @@ using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IAppBarFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IAppBarStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class AppBar : ContentControl, IAppBar, IAppBarOverrides
+	public class AppBar : ContentControl, IAppBar
 	{
-		public extern event EventHandler<object> Closed
-		{
-			add;
-			remove;
-		}
-		public extern event EventHandler<object> Opened
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> Closed;
+		public extern event EventHandler<object> Opened;
 		public extern bool IsOpen
 		{
 			get;

@@ -8,16 +8,8 @@ namespace Windows.Storage.Pickers.Provider
 	[Version(100794368u)]
 	public sealed class FileSavePickerUI : IFileSavePickerUI
 	{
-		public extern event TypedEventHandler<FileSavePickerUI, object> FileNameChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<FileSavePickerUI, TargetFileRequestedEventArgs> TargetFileRequested
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<FileSavePickerUI, object> FileNameChanged;
+		public extern event TypedEventHandler<FileSavePickerUI, TargetFileRequestedEventArgs> TargetFileRequested;
 		public extern IVectorView<string> AllowedFileTypes
 		{
 			get;

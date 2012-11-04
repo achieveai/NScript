@@ -3,7 +3,7 @@
     using System.Collections;
     using System.Runtime.CompilerServices;
 
-    [ScriptName("Error"), IgnoreNamespace, Imported]
+    [ScriptName("Error"), IgnoreNamespace, Extended]
     public class Exception
     {
         public Exception(string message)

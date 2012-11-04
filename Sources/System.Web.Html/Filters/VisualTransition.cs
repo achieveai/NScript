@@ -18,7 +18,7 @@ namespace System.Web.Html.Filters
     /// <summary>
     /// Definition for VisualTransition
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class VisualTransition : VisualFilter
     {

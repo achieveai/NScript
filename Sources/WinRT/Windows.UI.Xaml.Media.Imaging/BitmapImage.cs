@@ -4,24 +4,12 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Media.Imaging
 {
-	[Activatable(typeof(IBitmapImageFactory), 100794368u), Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IBitmapImageStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
+	[Activatable(typeof(IBitmapImageFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IBitmapImageStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class BitmapImage : BitmapSource, IBitmapImage
 	{
-		public extern event DownloadProgressEventHandler DownloadProgress
-		{
-			add;
-			remove;
-		}
-		public extern event ExceptionRoutedEventHandler ImageFailed
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler ImageOpened
-		{
-			add;
-			remove;
-		}
+		public extern event DownloadProgressEventHandler DownloadProgress;
+		public extern event ExceptionRoutedEventHandler ImageFailed;
+		public extern event RoutedEventHandler ImageOpened;
 		public extern BitmapCreateOptions CreateOptions
 		{
 			get;

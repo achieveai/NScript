@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Navigation;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IPageFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IPageStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class Page : UserControl, IPage, IPageOverrides
+	public class Page : UserControl
 	{
 		public extern AppBar BottomAppBar
 		{

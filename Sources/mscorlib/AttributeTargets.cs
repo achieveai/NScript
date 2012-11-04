@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [Imported, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
+    [Extended, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
     public enum AttributeTargets
     {
         All = 0x7fff,
@@ -22,7 +22,8 @@
         Property = 0x80,
         ReturnValue = 0x2000,
         Struct = 8,
-        Type = 0x141c
+        Type = 0x141c,
+		InterfaceImpl = 2048,
     }
 }
 

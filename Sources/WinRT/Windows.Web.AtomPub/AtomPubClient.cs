@@ -7,7 +7,7 @@ using Windows.Storage.Streams;
 using Windows.Web.Syndication;
 namespace Windows.Web.AtomPub
 {
-	[Activatable(typeof(IAtomPubClientFactory), 100794368u), Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(IAtomPubClientFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class AtomPubClient : IAtomPubClient, ISyndicationClient
 	{
 		public extern bool BypassCacheOnRetrieve

@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Interop;
 using Windows.UI.Xaml.Markup;
 namespace Windows.UI.Xaml
 {
-	[Activatable(typeof(IStyleFactory), 100794368u), Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Setters")]
+	[Activatable(typeof(IStyleFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Setters")]
 	public sealed class Style : DependencyObject, IStyle
 	{
 		public extern Style BasedOn

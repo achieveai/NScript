@@ -118,11 +118,6 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         private readonly bool isSelectiveInit;
 
         /// <summary>
-        /// Step 3 expression. See remarks of TypeConverter to know more.
-        /// </summary>
-        private readonly FunctionExpression defaultValueFunction;
-
-        /// <summary>
         /// Step 5 expression. See remarks of TypeConverter to know more.
         /// </summary>
         private readonly Expression basePrototypeExpression;

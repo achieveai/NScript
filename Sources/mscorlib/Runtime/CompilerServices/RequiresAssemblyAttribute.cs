@@ -2,7 +2,7 @@
 {
     using System;
 
-    [Imported, AttributeUsage(AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Class, Inherited=true, AllowMultiple=false), NonScriptable]
+    [Extended, AttributeUsage(AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Class, Inherited=true, AllowMultiple=false), NonScriptable]
     public sealed class RequiresAssemblyAttribute : Attribute
     {
         private string _scriptAssemblyName;

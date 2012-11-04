@@ -7,31 +7,11 @@ namespace Windows.Graphics.Display
 	[MarshalingBehavior(MarshalingType.Agile), Static(typeof(IDisplayPropertiesStatics), 100794368u), Version(100794368u)]
 	public static class DisplayProperties
 	{
-		public static extern event DisplayPropertiesEventHandler ColorProfileChanged
-		{
-			add;
-			remove;
-		}
-		public static extern event DisplayPropertiesEventHandler DisplayContentsInvalidated
-		{
-			add;
-			remove;
-		}
-		public static extern event DisplayPropertiesEventHandler LogicalDpiChanged
-		{
-			add;
-			remove;
-		}
-		public static extern event DisplayPropertiesEventHandler OrientationChanged
-		{
-			add;
-			remove;
-		}
-		public static extern event DisplayPropertiesEventHandler StereoEnabledChanged
-		{
-			add;
-			remove;
-		}
+		public static extern event DisplayPropertiesEventHandler ColorProfileChanged;
+		public static extern event DisplayPropertiesEventHandler DisplayContentsInvalidated;
+		public static extern event DisplayPropertiesEventHandler LogicalDpiChanged;
+		public static extern event DisplayPropertiesEventHandler OrientationChanged;
+		public static extern event DisplayPropertiesEventHandler StereoEnabledChanged;
 		public static extern DisplayOrientations AutoRotationPreferences
 		{
 			get;

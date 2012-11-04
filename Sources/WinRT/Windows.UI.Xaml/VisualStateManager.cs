@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Controls;
 namespace Windows.UI.Xaml
 {
 	[Composable(typeof(IVisualStateManagerFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IVisualStateManagerStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class VisualStateManager : DependencyObject, IVisualStateManager, IVisualStateManagerOverrides, IVisualStateManagerProtected
+	public class VisualStateManager : DependencyObject
 	{
 		public static extern DependencyProperty CustomVisualStateManagerProperty
 		{

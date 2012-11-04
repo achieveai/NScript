@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [ScriptName("Array"), IgnoreNamespace, Imported]
+    [ScriptName("Array"), IgnoreNamespace, Extended]
     public sealed class Queue
     {
         public void Clear()

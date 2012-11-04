@@ -5,7 +5,7 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 namespace Windows.Globalization.NumberFormatting
 {
-	[Activatable(100794368u), Activatable(typeof(IPercentFormatterFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(IPercentFormatterFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class PercentFormatter : INumberFormatterOptions, INumberFormatter, INumberFormatter2, INumberParser
 	{
 		public extern int FractionDigits

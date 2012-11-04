@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, ScriptNamespace("ss")]
+    [Extended, ScriptNamespace("ss")]
     public static class Debug
     {
         [Conditional("DEBUG")]

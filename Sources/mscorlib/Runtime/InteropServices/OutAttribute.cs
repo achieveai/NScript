@@ -4,8 +4,8 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [Imported, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
-    public class OutAttribute
+    [Extended, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
+    public class OutAttribute : Attribute
     {
     }
 }

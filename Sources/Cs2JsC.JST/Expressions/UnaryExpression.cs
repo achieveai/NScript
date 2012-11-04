@@ -92,7 +92,7 @@ namespace Cs2JsC.JST
         /// <value>
         /// <c>true</c> if this instance is left to right; otherwise, <c>false</c>.
         /// </value>
-        public virtual bool IsLeftToRight
+        public override bool IsLeftToRight
         {
             get
             {

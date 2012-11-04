@@ -6,28 +6,12 @@ using Windows.UI.Xaml.Data;
 namespace Windows.UI.Xaml
 {
 	[Composable(typeof(IFrameworkElementFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IFrameworkElementStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class FrameworkElement : UIElement, IFrameworkElement, IFrameworkElementOverrides
+	public class FrameworkElement : UIElement
 	{
-		public extern event EventHandler<object> LayoutUpdated
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler Loaded
-		{
-			add;
-			remove;
-		}
-		public extern event SizeChangedEventHandler SizeChanged
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler Unloaded
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> LayoutUpdated;
+		public extern event RoutedEventHandler Loaded;
+		public extern event SizeChangedEventHandler SizeChanged;
+		public extern event RoutedEventHandler Unloaded;
 		public extern double ActualHeight
 		{
 			get;

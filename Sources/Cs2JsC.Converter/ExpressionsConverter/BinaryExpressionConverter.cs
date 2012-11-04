@@ -81,8 +81,6 @@ namespace Cs2JsC.Converter.ExpressionsConverter
         {
             List<JST.Expression> arguments = new List<JST.Expression>();
 
-            bool isIntrinsic;
-
             if (BinaryExpressionConverter.IsIntrinsicExpression(
                 converter,
                 expression.Left))

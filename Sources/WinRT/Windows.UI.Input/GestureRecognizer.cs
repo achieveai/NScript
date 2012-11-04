@@ -8,51 +8,15 @@ namespace Windows.UI.Input
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.None), Version(100794368u)]
 	public sealed class GestureRecognizer : IGestureRecognizer
 	{
-		public extern event TypedEventHandler<GestureRecognizer, CrossSlidingEventArgs> CrossSliding
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, DraggingEventArgs> Dragging
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, HoldingEventArgs> Holding
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, ManipulationCompletedEventArgs> ManipulationCompleted
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, ManipulationInertiaStartingEventArgs> ManipulationInertiaStarting
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, ManipulationStartedEventArgs> ManipulationStarted
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, ManipulationUpdatedEventArgs> ManipulationUpdated
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, RightTappedEventArgs> RightTapped
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<GestureRecognizer, TappedEventArgs> Tapped
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<GestureRecognizer, CrossSlidingEventArgs> CrossSliding;
+		public extern event TypedEventHandler<GestureRecognizer, DraggingEventArgs> Dragging;
+		public extern event TypedEventHandler<GestureRecognizer, HoldingEventArgs> Holding;
+		public extern event TypedEventHandler<GestureRecognizer, ManipulationCompletedEventArgs> ManipulationCompleted;
+		public extern event TypedEventHandler<GestureRecognizer, ManipulationInertiaStartingEventArgs> ManipulationInertiaStarting;
+		public extern event TypedEventHandler<GestureRecognizer, ManipulationStartedEventArgs> ManipulationStarted;
+		public extern event TypedEventHandler<GestureRecognizer, ManipulationUpdatedEventArgs> ManipulationUpdated;
+		public extern event TypedEventHandler<GestureRecognizer, RightTappedEventArgs> RightTapped;
+		public extern event TypedEventHandler<GestureRecognizer, TappedEventArgs> Tapped;
 		public extern bool AutoProcessInertia
 		{
 			get;

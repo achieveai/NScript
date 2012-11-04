@@ -2,7 +2,7 @@
 {
     using System;
 
-    [NonScriptable, AttributeUsage(AttributeTargets.Enum, Inherited=false, AllowMultiple=false), Imported]
+    [NonScriptable, AttributeUsage(AttributeTargets.Enum, Inherited=false, AllowMultiple=false), Extended]
     public sealed class NamedValuesAttribute : Attribute
     {
     }

@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, Imported]
+    [IgnoreNamespace, Extended]
     public abstract class TestClass
     {
         protected TestClass()

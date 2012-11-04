@@ -6,24 +6,24 @@ namespace Windows.UI.Xaml.Media
 	[ExclusiveTo(typeof(ScaleTransform)), Guid(2643736308u, 16551, 18141, 151, 90, 7, 211, 55, 205, 133, 46), Version(100794368u), WebHostHidden]
 	internal interface IScaleTransformStatics
 	{
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty ScaleXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty ScaleYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 	}

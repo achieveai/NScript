@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [ScriptName("Array"), Imported, IgnoreNamespace]
+    [ScriptName("Array"), Extended, IgnoreNamespace]
     public sealed class Stack
     {
         public void Clear()

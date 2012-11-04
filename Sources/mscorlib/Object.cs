@@ -3,7 +3,7 @@
     using System.Runtime.CompilerServices;
 
     [IgnoreNamespace]
-    [Imported]
+    [Extended]
     public class Object
     {
         /// <summary>

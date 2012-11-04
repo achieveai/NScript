@@ -7,16 +7,8 @@ namespace Windows.ApplicationModel.Background
 	[MarshalingBehavior(MarshalingType.Agile), Static(typeof(IBackgroundTaskRegistrationStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class BackgroundTaskRegistration : IBackgroundTaskRegistration
 	{
-		public extern event BackgroundTaskCompletedEventHandler Completed
-		{
-			add;
-			remove;
-		}
-		public extern event BackgroundTaskProgressEventHandler Progress
-		{
-			add;
-			remove;
-		}
+		public extern event BackgroundTaskCompletedEventHandler Completed;
+		public extern event BackgroundTaskProgressEventHandler Progress;
 		public extern string Name
 		{
 			get;

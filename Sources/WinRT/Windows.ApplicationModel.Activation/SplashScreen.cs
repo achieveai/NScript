@@ -6,11 +6,7 @@ namespace Windows.ApplicationModel.Activation
 	[Version(100794368u)]
 	public sealed class SplashScreen : ISplashScreen
 	{
-		public extern event TypedEventHandler<SplashScreen, object> Dismissed
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<SplashScreen, object> Dismissed;
 		public extern Rect ImageLocation
 		{
 			get;

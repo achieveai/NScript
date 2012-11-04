@@ -8,11 +8,7 @@ namespace Windows.ApplicationModel.Contacts.Provider
 	[Version(100794368u)]
 	public sealed class ContactPickerUI : IContactPickerUI
 	{
-		public extern event TypedEventHandler<ContactPickerUI, ContactRemovedEventArgs> ContactRemoved
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<ContactPickerUI, ContactRemovedEventArgs> ContactRemoved;
 		public extern IVectorView<string> DesiredFields
 		{
 			get;

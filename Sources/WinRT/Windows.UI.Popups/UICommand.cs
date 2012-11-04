@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Windows.Foundation.Metadata;
 namespace Windows.UI.Popups
 {
-	[Activatable(typeof(IUICommandFactory), 100794368u), Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(IUICommandFactory), 100794368u), MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class UICommand : IUICommand
 	{
 		public extern object Id

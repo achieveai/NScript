@@ -7,16 +7,8 @@ namespace Windows.Media.Devices
 	[MarshalingBehavior(MarshalingType.Agile), Static(typeof(IMediaDeviceStatics), 100794368u), Threading(ThreadingModel.MTA), Version(100794368u)]
 	public static class MediaDevice
 	{
-		public static extern event TypedEventHandler<object, DefaultAudioCaptureDeviceChangedEventArgs> DefaultAudioCaptureDeviceChanged
-		{
-			add;
-			remove;
-		}
-		public static extern event TypedEventHandler<object, DefaultAudioRenderDeviceChangedEventArgs> DefaultAudioRenderDeviceChanged
-		{
-			add;
-			remove;
-		}
+		public static extern event TypedEventHandler<object, DefaultAudioCaptureDeviceChangedEventArgs> DefaultAudioCaptureDeviceChanged;
+		public static extern event TypedEventHandler<object, DefaultAudioRenderDeviceChangedEventArgs> DefaultAudioRenderDeviceChanged;
 		public static extern string GetAudioCaptureSelector();
 		public static extern string GetAudioRenderSelector();
 		public static extern string GetVideoCaptureSelector();

@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [NumericValues, Imported, IgnoreNamespace]
+    [NumericValues, Extended, IgnoreNamespace]
     public enum XmlNodeType
     {
         Attribute = 2,

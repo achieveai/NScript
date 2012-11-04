@@ -4,7 +4,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [Imported]
+    [Extended]
     [ScriptName("Function")]
     public sealed class Type
     {

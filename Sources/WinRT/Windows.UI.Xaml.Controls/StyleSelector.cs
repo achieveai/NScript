@@ -4,7 +4,7 @@ using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IStyleSelectorFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class StyleSelector : IStyleSelector, IStyleSelectorOverrides
+	public class StyleSelector
 	{
 		public extern StyleSelector();
 		public extern Style SelectStyle([In] object item, [In] DependencyObject container);

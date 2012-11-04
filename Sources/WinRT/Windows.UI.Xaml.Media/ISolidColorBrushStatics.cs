@@ -6,9 +6,9 @@ namespace Windows.UI.Xaml.Media
 	[ExclusiveTo(typeof(SolidColorBrush)), Guid(3785776890u, 11043, 16826, 185, 186, 112, 148, 236, 142, 78, 159), Version(100794368u), WebHostHidden]
 	internal interface ISolidColorBrushStatics
 	{
+        [IndependentlyAnimatable]
 		DependencyProperty ColorProperty
 		{
-			[IndependentlyAnimatable]
 			get;
 		}
 	}

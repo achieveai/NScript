@@ -2,7 +2,7 @@
 {
     using System;
 
-    [NonScriptable, Imported, AttributeUsage(AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Struct | AttributeTargets.Class, Inherited=false, AllowMultiple=false)]
+    [NonScriptable, Extended, AttributeUsage(AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Struct | AttributeTargets.Class, Inherited=false, AllowMultiple=false)]
     public sealed class ScriptNameAttribute : Attribute
     {
         private string _name;

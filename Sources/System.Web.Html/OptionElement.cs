@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for OptionElement
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public class OptionElement
     {

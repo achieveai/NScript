@@ -5,7 +5,7 @@ using Windows.Foundation.Metadata;
 using Windows.Storage.Streams;
 namespace Windows.Security.Cryptography.DataProtection
 {
-	[Activatable(typeof(IDataProtectionProviderFactory), 100794368u), Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(IDataProtectionProviderFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class DataProtectionProvider : IDataProtectionProvider
 	{
 		public extern DataProtectionProvider([In] string protectionDescriptor);

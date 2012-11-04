@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for GestureEvent
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class GestureEvent : ElementEvent
     {

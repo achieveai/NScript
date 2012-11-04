@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for AnchorElement
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class AnchorElement : Element
     {

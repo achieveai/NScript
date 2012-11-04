@@ -1,4 +1,3 @@
-using System;
 using Windows.ApplicationModel;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;

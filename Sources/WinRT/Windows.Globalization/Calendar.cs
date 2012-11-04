@@ -1,11 +1,10 @@
-using System;
 using System.Runtime.InteropServices;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 namespace Windows.Globalization
 {
-	[Activatable(typeof(ICalendarFactory), 100794368u), Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(ICalendarFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class Calendar : ICalendar
 	{
 		public extern int Day

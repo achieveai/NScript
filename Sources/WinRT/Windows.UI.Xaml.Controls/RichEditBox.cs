@@ -7,21 +7,9 @@ namespace Windows.UI.Xaml.Controls
 	[Composable(typeof(IRichEditBoxFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IRichEditBoxStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class RichEditBox : Control, IRichEditBox
 	{
-		public extern event ContextMenuOpeningEventHandler ContextMenuOpening
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler SelectionChanged
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler TextChanged
-		{
-			add;
-			remove;
-		}
+		public extern event ContextMenuOpeningEventHandler ContextMenuOpening;
+		public extern event RoutedEventHandler SelectionChanged;
+		public extern event RoutedEventHandler TextChanged;
 		public extern bool AcceptsReturn
 		{
 			get;

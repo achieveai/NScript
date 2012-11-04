@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, Imported, ScriptName("Object")]
+    [IgnoreNamespace, Extended, ScriptName("Object")]
     public sealed class Dictionary : IEnumerable
     {
         public extern Dictionary();

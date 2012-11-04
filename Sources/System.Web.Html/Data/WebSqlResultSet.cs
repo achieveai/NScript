@@ -11,7 +11,7 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlResult
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public sealed class WebSqlResultSet
     {

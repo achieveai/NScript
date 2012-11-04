@@ -5,16 +5,8 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IPasswordBoxStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class PasswordBox : Control, IPasswordBox
 	{
-		public extern event ContextMenuOpeningEventHandler ContextMenuOpening
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler PasswordChanged
-		{
-			add;
-			remove;
-		}
+		public extern event ContextMenuOpeningEventHandler ContextMenuOpening;
+		public extern event RoutedEventHandler PasswordChanged;
 		public extern bool IsPasswordRevealButtonEnabled
 		{
 			get;

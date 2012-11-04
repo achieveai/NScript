@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Media.Animation;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IContentControlFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IContentControlStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Content")]
-	public class ContentControl : Control, IContentControl, IContentControlOverrides
+	public class ContentControl : Control, IContentControl
 	{
 		public extern object Content
 		{

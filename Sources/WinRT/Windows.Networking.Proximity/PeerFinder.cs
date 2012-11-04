@@ -9,16 +9,8 @@ namespace Windows.Networking.Proximity
 	[MarshalingBehavior(MarshalingType.Agile), Static(typeof(IPeerFinderStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public static class PeerFinder
 	{
-		public static extern event TypedEventHandler<object, ConnectionRequestedEventArgs> ConnectionRequested
-		{
-			add;
-			remove;
-		}
-		public static extern event TypedEventHandler<object, TriggeredConnectionStateChangedEventArgs> TriggeredConnectionStateChanged
-		{
-			add;
-			remove;
-		}
+		public static extern event TypedEventHandler<object, ConnectionRequestedEventArgs> ConnectionRequested;
+		public static extern event TypedEventHandler<object, TriggeredConnectionStateChangedEventArgs> TriggeredConnectionStateChanged;
 		public static extern bool AllowBluetooth
 		{
 			get;

@@ -6,11 +6,7 @@ namespace Windows.UI.Xaml.Controls.Primitives
 	[Composable(typeof(IButtonBaseFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IButtonBaseStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class ButtonBase : ContentControl, IButtonBase
 	{
-		public extern event RoutedEventHandler Click
-		{
-			add;
-			remove;
-		}
+        public extern event RoutedEventHandler Click;
 		public extern ClickMode ClickMode
 		{
 			get;

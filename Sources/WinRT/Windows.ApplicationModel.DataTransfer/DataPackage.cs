@@ -10,16 +10,8 @@ namespace Windows.ApplicationModel.DataTransfer
 	[Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Version(100794368u)]
 	public sealed class DataPackage : IDataPackage
 	{
-		public extern event TypedEventHandler<DataPackage, object> Destroyed
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<DataPackage, OperationCompletedEventArgs> OperationCompleted
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<DataPackage, object> Destroyed;
+		public extern event TypedEventHandler<DataPackage, OperationCompletedEventArgs> OperationCompleted;
 		public extern DataPackagePropertySet Properties
 		{
 			get;

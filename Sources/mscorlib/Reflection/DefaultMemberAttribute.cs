@@ -4,7 +4,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [NonScriptable, EditorBrowsable(EditorBrowsableState.Never), Imported]
+    [NonScriptable, EditorBrowsable(EditorBrowsableState.Never), Extended]
     public sealed class DefaultMemberAttribute
     {
         private string _memberName;

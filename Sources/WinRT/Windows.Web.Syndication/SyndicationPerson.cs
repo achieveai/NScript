@@ -6,7 +6,7 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 namespace Windows.Web.Syndication
 {
-	[Activatable(100794368u), Activatable(typeof(ISyndicationPersonFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(ISyndicationPersonFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class SyndicationPerson : ISyndicationPerson, ISyndicationNode
 	{
 		public extern string Email

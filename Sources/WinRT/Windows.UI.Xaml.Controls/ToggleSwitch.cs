@@ -6,13 +6,9 @@ using Windows.UI.Xaml.Markup;
 namespace Windows.UI.Xaml.Controls
 {
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IToggleSwitchStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden, ContentProperty(Name = "Header")]
-	public sealed class ToggleSwitch : Control, IToggleSwitch, IToggleSwitchOverrides
+	public sealed class ToggleSwitch : Control
 	{
-		public extern event RoutedEventHandler Toggled
-		{
-			add;
-			remove;
-		}
+		public extern event RoutedEventHandler Toggled;
 		public extern object Header
 		{
 			get;
@@ -81,9 +77,5 @@ namespace Windows.UI.Xaml.Controls
 			get;
 		}
 		public extern ToggleSwitch();
-		protected virtual extern void OnToggled();
-		protected virtual extern void OnOnContentChanged([In] object oldContent, [In] object newContent);
-		protected virtual extern void OnOffContentChanged([In] object oldContent, [In] object newContent);
-		protected virtual extern void OnHeaderChanged([In] object oldContent, [In] object newContent);
 	}
 }

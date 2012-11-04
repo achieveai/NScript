@@ -2,7 +2,7 @@
 {
     using System;
 
-    [AttributeUsage(AttributeTargets.Class), Imported, NonScriptable]
+    [AttributeUsage(AttributeTargets.Class), Extended, NonScriptable]
     public sealed class ResourcesAttribute : Attribute
     {
     }

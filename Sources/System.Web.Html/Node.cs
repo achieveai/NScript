@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Node
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     [PsudoType]
     public class Node

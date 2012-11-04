@@ -1,4 +1,3 @@
-using System;
 using Windows.Data.Xml.Dom;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;

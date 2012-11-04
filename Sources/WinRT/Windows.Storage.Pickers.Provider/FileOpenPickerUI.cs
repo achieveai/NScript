@@ -8,16 +8,8 @@ namespace Windows.Storage.Pickers.Provider
 	[Version(100794368u)]
 	public sealed class FileOpenPickerUI : IFileOpenPickerUI
 	{
-		public extern event TypedEventHandler<FileOpenPickerUI, PickerClosingEventArgs> Closing
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<FileOpenPickerUI, FileRemovedEventArgs> FileRemoved
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<FileOpenPickerUI, PickerClosingEventArgs> Closing;
+		public extern event TypedEventHandler<FileOpenPickerUI, FileRemovedEventArgs> FileRemoved;
 		public extern IVectorView<string> AllowedFileTypes
 		{
 			get;

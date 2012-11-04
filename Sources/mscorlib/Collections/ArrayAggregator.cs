@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, IgnoreNamespace]
+    [Extended, IgnoreNamespace]
     public delegate object ArrayAggregator(object aggregatedValue, object value, int index, Array array);
 }
 

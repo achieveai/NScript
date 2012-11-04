@@ -7,13 +7,9 @@ using Windows.UI.Xaml.Media;
 namespace Windows.UI.Xaml.Controls
 {
 	[Composable(typeof(IControlFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IControlStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class Control : FrameworkElement, IControl, IControlOverrides, IControlProtected
+	public class Control : FrameworkElement, IControl
 	{
-		public extern event DependencyPropertyChangedEventHandler IsEnabledChanged
-		{
-			add;
-			remove;
-		}
+		public extern event DependencyPropertyChangedEventHandler IsEnabledChanged;
 		public extern Brush Background
 		{
 			get;

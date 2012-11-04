@@ -4,7 +4,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [AttributeUsage(AttributeTargets.All, Inherited=false, AllowMultiple=false), Imported, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
+    [AttributeUsage(AttributeTargets.All, Inherited=false, AllowMultiple=false), Extended, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
     public sealed class GeneratedCodeAttribute : Attribute
     {
         private string _tool;

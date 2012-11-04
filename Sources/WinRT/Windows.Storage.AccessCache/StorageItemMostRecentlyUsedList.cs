@@ -7,11 +7,7 @@ namespace Windows.Storage.AccessCache
 	[Version(100794368u)]
 	public sealed class StorageItemMostRecentlyUsedList : IStorageItemMostRecentlyUsedList, IStorageItemAccessList
 	{
-		public extern event TypedEventHandler<StorageItemMostRecentlyUsedList, ItemRemovedEventArgs> ItemRemoved
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<StorageItemMostRecentlyUsedList, ItemRemovedEventArgs> ItemRemoved;
 		public extern AccessListEntryView Entries
 		{
 			get;

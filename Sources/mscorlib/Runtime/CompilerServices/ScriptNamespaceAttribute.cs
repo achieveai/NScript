@@ -2,7 +2,7 @@
 {
     using System;
 
-    [NonScriptable, AttributeUsage(AttributeTargets.Type | AttributeTargets.Assembly, AllowMultiple=false), Imported]
+    [NonScriptable, AttributeUsage(AttributeTargets.Type | AttributeTargets.Assembly, AllowMultiple=false), Extended]
     public sealed class ScriptNamespaceAttribute : Attribute
     {
         private string _name;

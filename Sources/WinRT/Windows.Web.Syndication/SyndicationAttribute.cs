@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Windows.Foundation.Metadata;
 namespace Windows.Web.Syndication
 {
-	[Activatable(typeof(ISyndicationAttributeFactory), 100794368u), Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(ISyndicationAttributeFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class SyndicationAttribute : ISyndicationAttribute
 	{
 		public extern string Name

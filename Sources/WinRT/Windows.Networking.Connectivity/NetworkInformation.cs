@@ -8,11 +8,7 @@ namespace Windows.Networking.Connectivity
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(INetworkInformationStatics), 100794368u), Version(100794368u)]
 	public static class NetworkInformation
 	{
-		public static extern event NetworkStatusChangedEventHandler NetworkStatusChanged
-		{
-			add;
-			remove;
-		}
+		public static extern event NetworkStatusChangedEventHandler NetworkStatusChanged;
 		public static extern IVectorView<ConnectionProfile> GetConnectionProfiles();
 		public static extern ConnectionProfile GetInternetConnectionProfile();
 		public static extern IVectorView<LanIdentifier> GetLanIdentifiers();

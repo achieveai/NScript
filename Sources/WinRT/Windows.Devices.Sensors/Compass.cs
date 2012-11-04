@@ -6,11 +6,7 @@ namespace Windows.Devices.Sensors
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ICompassStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class Compass : ICompass
 	{
-		public extern event TypedEventHandler<Compass, CompassReadingChangedEventArgs> ReadingChanged
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<Compass, CompassReadingChangedEventArgs> ReadingChanged;
 		public extern uint MinimumReportInterval
 		{
 			get;

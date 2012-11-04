@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [AttributeUsage(AttributeTargets.Assembly, Inherited=false), NonScriptable, Imported]
+    [AttributeUsage(AttributeTargets.Assembly, Inherited=false), NonScriptable, Extended]
     public sealed class AssemblyConfigurationAttribute : Attribute
     {
         private string _configuration;

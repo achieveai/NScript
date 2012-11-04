@@ -5,7 +5,7 @@ using Windows.Foundation.Metadata;
 using Windows.Security.Credentials;
 namespace Windows.Web.Syndication
 {
-	[Activatable(100794368u), Activatable(typeof(ISyndicationClientFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(ISyndicationClientFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class SyndicationClient : ISyndicationClient
 	{
 		public extern bool BypassCacheOnRetrieve

@@ -12,7 +12,7 @@ namespace System.Web
     /// <summary>
     /// Definition for Globals
     /// </summary>
-    [Imported, IgnoreNamespace, GlobalMethods]
+    [Extended, IgnoreNamespace, GlobalMethods]
     public static class Globals
     {
         [ScriptAlias("encodeURIComponent")]

@@ -6,14 +6,10 @@ using Windows.Foundation.Metadata;
 using Windows.UI.Popups;
 namespace Windows.UI.Core
 {
-	[Activatable(100794368u), Activatable(typeof(ICoreWindowDialogFactory), 100794368u), MarshalingBehavior(MarshalingType.Standard), Muse(Version = 100794368u), Version(100794368u), WebHostHidden]
+	[Activatable(typeof(ICoreWindowDialogFactory), 100794368u), MarshalingBehavior(MarshalingType.Standard), Muse(Version = 100794368u), Version(100794368u), WebHostHidden]
 	public sealed class CoreWindowDialog : ICoreWindowDialog
 	{
-		public extern event TypedEventHandler<CoreWindow, CoreWindowPopupShowingEventArgs> Showing
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<CoreWindow, CoreWindowPopupShowingEventArgs> Showing;
 		public extern UICommandInvokedHandler BackButtonCommand
 		{
 			get;

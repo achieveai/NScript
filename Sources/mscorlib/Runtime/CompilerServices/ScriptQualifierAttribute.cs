@@ -2,7 +2,7 @@
 {
     using System;
 
-    [Imported, AttributeUsage(AttributeTargets.Assembly, Inherited=false, AllowMultiple=false), NonScriptable]
+    [Extended, AttributeUsage(AttributeTargets.Assembly, Inherited=false, AllowMultiple=false), NonScriptable]
     public sealed class ScriptQualifierAttribute : Attribute
     {
         private string _prefix;

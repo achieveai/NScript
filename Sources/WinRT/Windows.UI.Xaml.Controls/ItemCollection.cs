@@ -7,11 +7,7 @@ namespace Windows.UI.Xaml.Controls
 	[MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class ItemCollection : IObservableVector<object>, IVector<object>, IIterable<object>
 	{
-		public extern event VectorChangedEventHandler<object> VectorChanged
-		{
-			add;
-			remove;
-		}
+		public extern event VectorChangedEventHandler<object> VectorChanged;
 		public extern uint Size
 		{
 			get;

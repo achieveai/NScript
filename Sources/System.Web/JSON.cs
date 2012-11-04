@@ -13,7 +13,7 @@ namespace System.Web
     /// <summary>
     /// Definition for JSON
     /// </summary>
-    [Imported, IgnoreNamespace]
+    [Extended, IgnoreNamespace]
     public static class JSON
     {
         public extern static Dictionary Parse(string str);

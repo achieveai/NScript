@@ -6,16 +6,8 @@ namespace Windows.Media.PlayTo
 	[MarshalingBehavior(MarshalingType.Agile), Muse(Version = 100794368u), Static(typeof(IPlayToManagerStatics), 100794368u), Version(100794368u)]
 	public sealed class PlayToManager : IPlayToManager
 	{
-		public extern event TypedEventHandler<PlayToManager, PlayToSourceRequestedEventArgs> SourceRequested
-		{
-			add;
-			remove;
-		}
-		public extern event TypedEventHandler<PlayToManager, PlayToSourceSelectedEventArgs> SourceSelected
-		{
-			add;
-			remove;
-		}
+		public extern event TypedEventHandler<PlayToManager, PlayToSourceRequestedEventArgs> SourceRequested;
+        public extern event TypedEventHandler<PlayToManager, PlayToSourceSelectedEventArgs> SourceSelected;
 		public extern bool DefaultSourceSelection
 		{
 			get;

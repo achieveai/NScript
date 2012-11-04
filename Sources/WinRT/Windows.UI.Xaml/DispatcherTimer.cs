@@ -6,11 +6,7 @@ namespace Windows.UI.Xaml
 	[Composable(typeof(IDispatcherTimerFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class DispatcherTimer : IDispatcherTimer
 	{
-		public extern event EventHandler<object> Tick
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<object> Tick;
 		public extern TimeSpan Interval
 		{
 			get;

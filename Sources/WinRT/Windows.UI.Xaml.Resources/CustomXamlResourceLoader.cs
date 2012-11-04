@@ -4,7 +4,7 @@ using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Resources
 {
 	[Composable(typeof(ICustomXamlResourceLoaderFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ICustomXamlResourceLoaderStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class CustomXamlResourceLoader : ICustomXamlResourceLoader, ICustomXamlResourceLoaderOverrides
+	public class CustomXamlResourceLoader
 	{
 		public static extern CustomXamlResourceLoader Current
 		{

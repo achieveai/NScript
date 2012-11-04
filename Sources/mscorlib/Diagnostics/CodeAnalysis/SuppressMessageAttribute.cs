@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [Imported, AttributeUsage(AttributeTargets.All, Inherited=false, AllowMultiple=true), NonScriptable]
+    [Extended, AttributeUsage(AttributeTargets.All, Inherited=false, AllowMultiple=true), NonScriptable]
     public sealed class SuppressMessageAttribute : Attribute
     {
         private string _category;

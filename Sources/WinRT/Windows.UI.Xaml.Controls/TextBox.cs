@@ -8,21 +8,9 @@ namespace Windows.UI.Xaml.Controls
 	[Composable(typeof(ITextBoxFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ITextBoxStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class TextBox : Control, ITextBox
 	{
-		public extern event ContextMenuOpeningEventHandler ContextMenuOpening
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler SelectionChanged
-		{
-			add;
-			remove;
-		}
-		public extern event TextChangedEventHandler TextChanged
-		{
-			add;
-			remove;
-		}
+		public extern event ContextMenuOpeningEventHandler ContextMenuOpening;
+		public extern event RoutedEventHandler SelectionChanged;
+		public extern event TextChangedEventHandler TextChanged;
 		public extern bool AcceptsReturn
 		{
 			get;

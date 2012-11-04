@@ -6,68 +6,68 @@ namespace Windows.UI.Xaml.Media
 	[ExclusiveTo(typeof(PlaneProjection)), Guid(2912001127u, 15324, 18517, 137, 105, 209, 249, 163, 173, 194, 125), Version(100794368u), WebHostHidden]
 	internal interface IPlaneProjectionStatics
 	{
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterOfRotationXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterOfRotationYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterOfRotationZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty GlobalOffsetXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty GlobalOffsetYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty GlobalOffsetZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty LocalOffsetXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty LocalOffsetYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty LocalOffsetZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 		DependencyProperty ProjectionMatrixProperty
 		{
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty RotationXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty RotationYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty RotationZProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 	}

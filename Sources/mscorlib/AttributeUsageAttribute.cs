@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [EditorBrowsable(EditorBrowsableState.Never), NonScriptable, Imported, AttributeUsage(AttributeTargets.Class, Inherited=true)]
+    [EditorBrowsable(EditorBrowsableState.Never), NonScriptable, Extended, AttributeUsage(AttributeTargets.Class, Inherited=true)]
     public sealed class AttributeUsageAttribute : Attribute
     {
         private bool _allowMultiple;

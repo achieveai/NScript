@@ -6,24 +6,24 @@ namespace Windows.UI.Xaml.Media
 	[ExclusiveTo(typeof(SkewTransform)), Guid(3973127539u, 22036, 19249, 182, 175, 190, 174, 16, 16, 86, 36), Version(100794368u), WebHostHidden]
 	internal interface ISkewTransformStatics
 	{
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty AngleXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty AngleYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterXProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		DependencyProperty CenterYProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 	}

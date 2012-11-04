@@ -8,16 +8,8 @@ namespace Windows.Networking.Proximity
 	[DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IProximityDeviceStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class ProximityDevice : IProximityDevice
 	{
-		public extern event DeviceArrivedEventHandler DeviceArrived
-		{
-			add;
-			remove;
-		}
-		public extern event DeviceDepartedEventHandler DeviceDeparted
-		{
-			add;
-			remove;
-		}
+		public extern event DeviceArrivedEventHandler DeviceArrived;
+		public extern event DeviceDepartedEventHandler DeviceDeparted;
 		public extern ulong BitsPerSecond
 		{
 			get;

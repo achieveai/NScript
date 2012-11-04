@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [ScriptNamespace("ss"), Imported]
+    [ScriptNamespace("ss"), Extended]
     public class CancelEventArgs : EventArgs
     {
         public bool Cancel

@@ -7,11 +7,7 @@ namespace Windows.UI.Xaml.Controls.Primitives
 	[Composable(typeof(ISelectorFactory), CompositionType.Protected, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(ISelectorStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public class Selector : ItemsControl, ISelector
 	{
-		public extern event SelectionChangedEventHandler SelectionChanged
-		{
-			add;
-			remove;
-		}
+		public extern event SelectionChangedEventHandler SelectionChanged;
 		public extern IReference<bool> IsSynchronizedWithCurrentItem
 		{
 			get;

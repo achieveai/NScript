@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [ScriptNamespace("ss"), Imported]
+    [ScriptNamespace("ss"), Extended]
     public static class XmlDocumentParser
     {
         public static XmlDocument Parse(string markup)

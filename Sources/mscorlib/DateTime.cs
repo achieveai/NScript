@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [ScriptName("Date"), IgnoreNamespace, Imported]
+    [ScriptName("Date"), IgnoreNamespace, Extended]
     public class DateTime
     {
         public static readonly DateTime Empty = new DateTime(0);

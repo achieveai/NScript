@@ -16,14 +16,14 @@ namespace Windows.UI.Xaml.Media
 			get;
 			set;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty XProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
+        [ConditionallyIndependentlyAnimatable]
 		public static extern DependencyProperty YProperty
 		{
-			[ConditionallyIndependentlyAnimatable]
 			get;
 		}
 		public extern TranslateTransform();

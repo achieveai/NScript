@@ -7,14 +7,12 @@
 namespace SunlightUnit
 {
     using System;
-
-    using System;
     using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Class used to setup test cases and suites
     /// </summary>
-    [Imported]
+    [Extended]
     [GlobalMethods]
     public static class TestSetup
     {

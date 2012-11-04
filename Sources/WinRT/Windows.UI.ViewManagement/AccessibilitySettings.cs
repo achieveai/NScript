@@ -6,11 +6,7 @@ namespace Windows.UI.ViewManagement
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Version(100794368u)]
 	public sealed class AccessibilitySettings : IAccessibilitySettings
 	{
-		public extern event TypedEventHandler<AccessibilitySettings, object> HighContrastChanged
-		{
-			add;
-			remove;
-		}
+        public extern event TypedEventHandler<AccessibilitySettings, object> HighContrastChanged;
 		public extern bool HighContrast
 		{
 			get;

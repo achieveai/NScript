@@ -6,7 +6,7 @@ using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 namespace Windows.Web.Syndication
 {
-	[Activatable(typeof(ISyndicationLinkFactory), 100794368u), Activatable(100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
+	[Activatable(typeof(ISyndicationLinkFactory), 100794368u), DualApiPartition(version = 100794368u), MarshalingBehavior(MarshalingType.Agile), Threading(ThreadingModel.Both), Version(100794368u)]
 	public sealed class SyndicationLink : ISyndicationLink, ISyndicationNode
 	{
 		public extern uint Length

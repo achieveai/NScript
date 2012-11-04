@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, ScriptName("Number"), Imported]
+    [IgnoreNamespace, ScriptName("Number"), Extended]
     public struct Decimal
     {
         public extern Decimal(double d);

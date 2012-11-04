@@ -1034,11 +1034,9 @@ ptyp_.register = function Sunlight__Framework__IocContainer__Register(T, factory
   });
 };
 ptyp_.resolve = function Sunlight__Framework__IocContainer__Resolve(T) {
-  var typeId;
   if (this.resolutionCount > 100)
     throw new Error("Ioc has cycles, use ResolveLazy<T> to break cycle");
   this.resolutionCount++;
-  typeId = T.typeId;
   try {
     return this.factoryMap.get_item(T.typeId).getValue();
   } finally {

@@ -9,11 +9,7 @@ namespace Windows.UI.Xaml.Controls
 	[Activatable(100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IScrollViewerStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
 	public sealed class ScrollViewer : ContentControl, IScrollViewer
 	{
-		public extern event EventHandler<ScrollViewerViewChangedEventArgs> ViewChanged
-		{
-			add;
-			remove;
-		}
+		public extern event EventHandler<ScrollViewerViewChangedEventArgs> ViewChanged;
 		public extern bool BringIntoViewOnFocusChange
 		{
 			get;

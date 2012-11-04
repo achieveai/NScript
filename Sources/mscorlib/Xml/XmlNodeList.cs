@@ -5,7 +5,7 @@
     using System.Reflection;
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, Imported]
+    [IgnoreNamespace, Extended]
     public sealed class XmlNodeList : IEnumerable
     {
         internal XmlNodeList()

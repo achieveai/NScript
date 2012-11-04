@@ -11,7 +11,7 @@ namespace System.Web.Html.Filters
     /// <summary>
     /// Definition for VisualFilter
     /// </summary>
-    [Imported]
+    [Extended]
     [IgnoreNamespace]
     public class VisualFilter
     {

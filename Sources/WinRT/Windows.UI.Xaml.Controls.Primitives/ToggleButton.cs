@@ -4,23 +4,11 @@ using Windows.Foundation.Metadata;
 namespace Windows.UI.Xaml.Controls.Primitives
 {
 	[Composable(typeof(IToggleButtonFactory), CompositionType.Public, 100794368u), MarshalingBehavior(MarshalingType.Agile), Static(typeof(IToggleButtonStatics), 100794368u), Threading(ThreadingModel.Both), Version(100794368u), WebHostHidden]
-	public class ToggleButton : ButtonBase, IToggleButton, IToggleButtonOverrides
+	public class ToggleButton : ButtonBase
 	{
-		public extern event RoutedEventHandler Checked
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler Indeterminate
-		{
-			add;
-			remove;
-		}
-		public extern event RoutedEventHandler Unchecked
-		{
-			add;
-			remove;
-		}
+		public extern event RoutedEventHandler Checked;
+		public extern event RoutedEventHandler Indeterminate;
+		public extern event RoutedEventHandler Unchecked;
 		public extern IReference<bool> IsChecked
 		{
 			get;

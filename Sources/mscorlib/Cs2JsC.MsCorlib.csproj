@@ -41,7 +41,7 @@
     <RootNamespace>System</RootNamespace>
     <SignAssembly>true</SignAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
+    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
     <CscToolPath>$(Cs2JsCToolSetPath)\bin</CscToolPath>
   </PropertyGroup>
@@ -54,7 +54,6 @@
     <DebugType>full</DebugType>
     <ErrorReport>prompt</ErrorReport>
     <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
-    <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 3001; 3002; 0660; 0661</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -386,7 +385,7 @@
     <Compile Include="Runtime\CompilerServices\IgnoreNamespaceAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Runtime\CompilerServices\ImportedAttribute.cs">
+    <Compile Include="Runtime\CompilerServices\ExtendedAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Runtime\CompilerServices\IntrinsicPropertyAttribute.cs">
@@ -442,6 +441,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Runtime\CompilerServices\UsedAttribure.cs" />
+    <Compile Include="Runtime\InteropServices\InAttribute.cs" />
     <Compile Include="Runtime\InteropServices\OutAttribute.cs">
       <SubType>Code</SubType>
     </Compile>

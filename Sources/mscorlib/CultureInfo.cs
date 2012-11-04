@@ -2,7 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
-    [ScriptNamespace("ss"), Imported]
+    [ScriptNamespace("ss"), Extended]
     public sealed class CultureInfo
     {
         private CultureInfo()

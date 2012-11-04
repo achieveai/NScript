@@ -77,7 +77,6 @@ namespace Sunlight.Framework
             }
 
             this.resolutionCount++;
-            string typeId = typeof(T).TypeId;
             try
             {
                 return this.factoryMap[typeof(T).TypeId].GetValue<T>();
