@@ -5,24 +5,15 @@
     [ScriptName("arguments"), IgnoreNamespace, Extended]
     public static class Arguments
     {
-        public static object GetArgument(int index)
-        {
-            return null;
-        }
+        public extern static object GetArgument(int index);
 
         [ScriptAlias("Array.toArray")]
-        public static Array ToArray()
-        {
-            return null;
-        }
+        public extern static Array ToArray();
 
         [IntrinsicProperty]
-        public static int Length
+        public extern static int Length
         {
-            get
-            {
-                return 0;
-            }
+            get;
         }
     }
 }

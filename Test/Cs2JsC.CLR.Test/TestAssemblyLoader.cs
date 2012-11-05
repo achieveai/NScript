@@ -306,7 +306,7 @@
                 @"Runtime\CompilerServices\IntrinsicFieldAttribute.cs",
                 @"Runtime\CompilerServices\GlobalMethodsAttribute.cs",
                 @"Runtime\CompilerServices\IgnoreNamespaceAttribute.cs",
-                @"Runtime\CompilerServices\ImportedAttribute.cs",
+                @"Runtime\CompilerServices\ExtendedAttribute.cs",
                 @"Runtime\CompilerServices\IntrinsicPropertyAttribute.cs",
                 @"Runtime\CompilerServices\KeepInstanceUsage.cs",
                 @"Runtime\CompilerServices\MakeStaticUsage.cs",

@@ -63,21 +63,11 @@ namespace Cs2JsC.JST
 
         public override void Write(JSWriter writer)
         {
-            if (this.expressions.Count > 0)
-            {
-                writer.Write(Symbols.BracketOpenRound)
-                    .Write(this.expressions[0]);
+            writer.Write(this.expressions[0]);
 
-                for (int iExpr = 1; iExpr < this.expressions.Count; iExpr++)
-                {
-                    writer.Write(Symbols.Comma).Write(this.expressions[iExpr]);
-                }
-
-                writer.Write(Symbols.BracketCloseRound);
-            }
-            else if (this.expressions.Count == 1)
+            for (int iExpr = 1; iExpr < this.expressions.Count; iExpr++)
             {
-                this.expressions[0].Write(writer);
+                writer.Write(Symbols.Comma).Write(this.expressions[iExpr]);
             }
         }
 

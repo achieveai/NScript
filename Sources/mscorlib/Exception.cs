@@ -6,9 +6,7 @@
     [ScriptName("Error"), IgnoreNamespace, Extended]
     public class Exception
     {
-        public Exception(string message)
-        {
-        }
+        public extern Exception(string message);
 
         [ScriptAlias("Error.createError")]
         public extern static Exception Create(string message, Dictionary errorInfo);
@@ -17,31 +15,16 @@
         public extern static Exception Create(string message, Dictionary errorInfo, Exception innerException);
 
         [IntrinsicProperty]
-        public Exception InnerException
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public extern Exception InnerException
+        { get; }
 
         [IntrinsicProperty]
-        public object this[string key]
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public extern object this[string key]
+        { get; }
 
         [IntrinsicProperty]
-        public string Message
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public extern string Message
+        { get; }
     }
 
     public class NotSupportedException : Exception

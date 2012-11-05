@@ -35,7 +35,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 return converter(methodConverter, newObjectExpression);
             }
 
-            if (!methodConverter.RuntimeManager.Context.IsImported(
+            if (!methodConverter.RuntimeManager.Context.IsExtended(
                     methodReference.DeclaringType.Resolve()))
             {
                 // Call into factory methods that will create and return the type.

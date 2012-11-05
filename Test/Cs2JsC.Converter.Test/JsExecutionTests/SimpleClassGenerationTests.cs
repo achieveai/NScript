@@ -57,15 +57,15 @@ namespace Cs2JsC.Converter.Test.JsExecutionTests
         }
 
         [Test]
-        //[Row(TestType.All, "FactorialCalculator", "Main")]
-        //[Row(TestType.All, "GetMin", "RunTest")]
-        //[Row(TestType.All, "QuickSort", "RunTest")]
-        //[Row(TestType.All, "TestArithmetics", "Main")]
-        //[Row(TestType.All, "TestControlFlow", "Main")]
-        //[Row(TestType.All, "TestInitializer", "Main")]
-        //[Row(TestType.All, "TestDelegates", "Main")]
+        [Row(TestType.All, "FactorialCalculator", "Main")]
+        [Row(TestType.All, "GetMin", "RunTest")]
+        [Row(TestType.All, "QuickSort", "RunTest")]
+        [Row(TestType.All, "TestArithmetics", "Main")]
+        [Row(TestType.All, "TestControlFlow", "Main")]
+        [Row(TestType.All, "TestInitializer", "Main")]
+        [Row(TestType.All, "TestDelegates", "Main")]
         [Row(TestType.Retail, "TestGenerics", "Main")]
-        //[Row(TestType.All, "NullableTests", "Main")]
+        [Row(TestType.All, "NullableTests", "Main")]
         public void TestMcs(
                 TestType testType,
                 string className,

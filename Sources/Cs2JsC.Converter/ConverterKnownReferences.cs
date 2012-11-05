@@ -409,7 +409,7 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
-        /// Gets the imported attribute reference.
+        /// Gets the extended attribute reference.
         /// </summary>
         public TypeReference ExtendedAttribute
         {

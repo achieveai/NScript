@@ -66,7 +66,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
 
             if (methodReferenceExpression != null)
             {
-                if (methodConverter.RuntimeManager.Context.IsImported(
+                if (methodConverter.RuntimeManager.Context.IsExtended(
                         methodReferenceExpression.MethodReference.DeclaringType.Resolve())
                     && methodReferenceExpression.MethodReference.Name == ".ctor")
                 {
@@ -275,10 +275,10 @@ namespace Cs2JsC.Converter.ExpressionsConverter
 
             if (methodReference.HasThis
                 && !(methodReference.DeclaringType.IsValueType
-                    && (!runtimeManager.Context.IsImported(methodReference.DeclaringType.Resolve())
+                    && (!runtimeManager.Context.IsExtended(methodReference.DeclaringType.Resolve())
                         || runtimeManager.Context.IsImplemented(methodReference.Resolve())))
                 && (callContext.IsVirtual
-                    || !runtimeManager.Context.IsImported(methodReference.DeclaringType.Resolve())
+                    || !runtimeManager.Context.IsExtended(methodReference.DeclaringType.Resolve())
                     || !runtimeManager.Context.IsImplemented(methodReference.Resolve())
                     || methodReference.Resolve().CustomAttributes.SelectAttribute(
                             runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) != null)

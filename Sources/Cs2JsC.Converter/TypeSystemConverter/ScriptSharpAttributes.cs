@@ -62,13 +62,13 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     "System.Runtime.CompilerServices.ImplementAttribute"));
 
         /// <summary>
-        /// Backing field for ImportedAttribute
+        /// Backing field for ExtendedAttribute
         /// </summary>
-        private static readonly TypeReference importedAttribute =
+        private static readonly TypeReference extendedAttribute =
             new TypeReference(
                 Tuple.Create(
                     string.Empty,
-                    "System.Runtime.CompilerServices.ImportedAttribute"));
+                    "System.Runtime.CompilerServices.ExtendedAttribute"));
 
         /// <summary>
         /// Backing field for IntrinsicAttribute
@@ -245,13 +245,13 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         }
 
         /// <summary>
-        /// Gets the imported attribute.
-        /// This is used for imported class where we don't need to implement any class internals.
+        /// Gets the extended attribute.
+        /// This is used for extended class where we don't need to implement any class internals.
         /// </summary>
-        /// <value>The imported attribute.</value>
-        public static TypeReference ImportedAttribute
+        /// <value>The extended attribute.</value>
+        public static TypeReference ExtendedAttribute
         {
-            get { return ScriptSharpAttributes.importedAttribute; }
+            get { return ScriptSharpAttributes.extendedAttribute; }
         }
 
         /// <summary>
@@ -397,31 +397,31 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         }
 
         /// <summary>
-        /// Determines whether the specified type reference is imported.
+        /// Determines whether the specified type reference is extended.
         /// </summary>
         /// <param name="typeReference">The type reference.</param>
         /// <returns>
-        /// 	<c>true</c> if the specified type reference is imported; otherwise, <c>false</c>.
+        /// 	<c>true</c> if the specified type reference is extended; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsImported(TypeReference typeReference)
+        public static bool IsExtended(TypeReference typeReference)
         {
-            return ScriptSharpAttributes.IsImported(typeReference.Type);
+            return ScriptSharpAttributes.IsExtended(typeReference.Type);
         }
 
         /// <summary>
-        /// Determines whether the specified type definition base is imported.
+        /// Determines whether the specified type definition base is extended.
         /// </summary>
         /// <param name="typeDefinitionBase">The type definition base.</param>
         /// <returns>
-        /// <c>true</c> if the specified type definition base is imported; otherwise, <c>false</c>.
+        /// <c>true</c> if the specified type definition base is extended; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsImported(TypeDefinitionBase typeDefinitionBase)
+        public static bool IsExtended(TypeDefinitionBase typeDefinitionBase)
         {
             TypeDefinition typeDefinition = typeDefinitionBase as TypeDefinition;
 
             if (typeDefinition == null)
             {
-                // Only proper typeDefinition can be imported.
+                // Only proper typeDefinition can be extended.
                 return false;
             }
 
@@ -438,7 +438,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 }
 
                 if (attribute.Ctor.Parent.Equals(
-                    ScriptSharpAttributes.ImportedAttribute))
+                    ScriptSharpAttributes.ExtendedAttribute))
                 {
                     return true;
                 }
@@ -527,8 +527,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             out bool isFixedName,
             out bool isAlias)
         {
-            bool isParentImported =
-                ScriptSharpAttributes.IsImported(memberDefinition.Parent);
+            bool isParentExtended =
+                ScriptSharpAttributes.IsExtended(memberDefinition.Parent);
             isFixedName = false;
             isAlias = false;
 
@@ -567,7 +567,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 isFixedName = true;
                 return memberDefinition.Name;
             }
-            else if (isParentImported
+            else if (isParentExtended
                 && !ScriptSharpAttributes.IsImplemented(memberDefinition))
             {
                 isFixedName = true;
@@ -704,7 +704,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </returns>
         public static bool IsImplemented(MemberDefinition memberDefinition)
         {
-            if (!ScriptSharpAttributes.IsImported(memberDefinition.Parent))
+            if (!ScriptSharpAttributes.IsExtended(memberDefinition.Parent))
             {
                 return true;
             }

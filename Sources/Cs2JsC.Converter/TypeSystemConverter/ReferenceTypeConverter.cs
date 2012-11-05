@@ -127,7 +127,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 }
 
                 if (function.IsConstructor
-                    && this.Context.IsImported(this.TypeDefinition))
+                    && this.Context.IsExtended(this.TypeDefinition))
                 {
                     continue;
                 }
@@ -340,7 +340,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         private void CreateFactories(List<Statement> statements)
         {
             if (!this.TypeDefinition.IsAbstract
-                && !this.Context.IsImported(this.TypeDefinition))
+                && !this.Context.IsExtended(this.TypeDefinition))
             {
                 foreach (var function in this.TypeDefinition.Methods)
                 {

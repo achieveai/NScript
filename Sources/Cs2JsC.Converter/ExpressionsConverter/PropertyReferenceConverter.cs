@@ -74,6 +74,8 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 MethodCallContext callContext = null;
                 var methodDefinition = (value == null ? propertyDefinition.GetMethod : propertyDefinition.SetMethod);
                 var methodReference = methodDefinition.FixGenericArguments(expression.PropertyReference.DeclaringType);
+                MemberReferenceConverter.FixMethodReference(converter.RuntimeManager.Context, ref methodReference);
+
                 if (expression.LeftExpression == null)
                 {
                     callContext = new MethodCallContext(

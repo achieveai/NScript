@@ -635,7 +635,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 Identifier resolvedIdentifier;
                 var typeName = this.GetTypeName(typeReference);
                 NamespaceManager nameSpace = this.globalNamespaceManager;
-                bool isImported = this.context.IsImported(typeReference);
+                bool isExtended = this.context.IsExtended(typeReference);
 
                 // put in queue to process. In case of conversion using dependency
                 // walk, this will be used to start converting these types as well.
@@ -646,10 +646,10 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 {
                     resolvedIdentifier = Identifier.CreateScopeIdentifier(
                         nameSpace.Scope,
-                        isImported
+                        isExtended
                             ? typeName.Item2
                             : (typeName.Item1 + '.' + typeName.Item2).Replace('.', '_'),
-                        isImported);
+                        isExtended);
 
                     returnValue = new List<Identifier>();
 

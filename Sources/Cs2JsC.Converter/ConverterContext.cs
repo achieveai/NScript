@@ -132,29 +132,29 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
-        /// Determines whether the specified type reference is imported.
+        /// Determines whether the specified type reference is Extended type.
         /// </summary>
         /// <param name="paramDef">The type reference.</param>
         /// <returns>
-        /// <c>true</c> if the specified type reference is imported; otherwise, <c>false</c>.
+        /// <c>true</c> if the specified type reference is Extended type; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsImported(TypeReference typeReference)
+        public bool IsExtended(TypeReference typeReference)
         {
-            return this.IsImported(typeReference.Resolve());
+            return this.IsExtended(typeReference.Resolve());
         }
 
         /// <summary>
-        /// Determines whether the specified type definition base is imported.
+        /// Determines whether the specified type definition base is Extended type.
         /// </summary>
         /// <param name="typeDefinitionBase">The type definition base.</param>
         /// <returns>
-        /// <c>true</c> if the specified type definition base is imported; otherwise, <c>false</c>.
+        /// <c>true</c> if the specified type definition base is Extended type; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsImported(TypeDefinition typeDefinition)
+        public bool IsExtended(TypeDefinition typeDefinition)
         {
             if (typeDefinition == null)
             {
-                // Only proper typeDefinition can be imported.
+                // Only proper typeDefinition can be extended.
                 return false;
             }
 
@@ -283,7 +283,7 @@ namespace Cs2JsC.Converter
         /// </returns>
         public bool IsImplemented(FieldDefinition fieldDef)
         {
-            if (!this.IsImported(fieldDef.DeclaringType))
+            if (!this.IsExtended(fieldDef.DeclaringType))
             {
                 return true;
             }
@@ -305,11 +305,23 @@ namespace Cs2JsC.Converter
             if (methodDefinition != null)
             {
                 return (methodDefinition.HasBody && methodDefinition.Body.Instructions.Count > 0)
-                    || null != methodDefinition.CustomAttributes.SelectAttribute(
-                        this.KnownReferences.ScriptAttribute);
+                    || null != methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.ScriptAttribute)
+                    || (methodDefinition.DeclaringType.IsInterface && !this.IsPsudoType(methodDefinition.DeclaringType));
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Query if 'methodDefinition' is extern.
+        /// </summary>
+        /// <param name="methodDefinition"> The method definition. </param>
+        /// <returns>
+        /// true if extern, false if not.
+        /// </returns>
+        public bool IsExtern(MethodDefinition methodDefinition)
+        {
+            return !this.IsImplemented(methodDefinition);
         }
 
         /// <summary>
@@ -321,7 +333,7 @@ namespace Cs2JsC.Converter
         /// </returns>
         public bool IsImplemented(PropertyDefinition propDef)
         {
-            if (!this.IsImported(propDef.DeclaringType))
+            if (!this.IsExtended(propDef.DeclaringType))
             {
                 return true;
             }
@@ -368,7 +380,7 @@ namespace Cs2JsC.Converter
                 throw new InvalidProgramException();
             }
 
-            bool isParentImported = this.IsImported(memberDefinition.DeclaringType);
+            bool isParentExtended = this.IsExtended(memberDefinition.DeclaringType);
             isFixedName = false;
             isAlias = false;
 
@@ -404,7 +416,8 @@ namespace Cs2JsC.Converter
                 isFixedName = true;
                 return memberDefinition.Name;
             }
-            else if (!this.IsImplemented(memberDefinition))
+            else if (!this.IsImplemented(memberDefinition)
+                && (this.IsExtended(memberDefinition.DeclaringType) || this.IsPsudoType(memberDefinition.DeclaringType)))
             {
                 isFixedName = true;
                 attribute = memberDefinition.CustomAttributes.SelectAttribute(
@@ -521,15 +534,21 @@ namespace Cs2JsC.Converter
         /// </returns>
         public bool IsIntrinsicProperty(PropertyDefinition propertyDefinition)
         {
-            if (null != propertyDefinition.CustomAttributes.SelectAttribute(
+            return (propertyDefinition.GetMethod != null && this.IsExtern(propertyDefinition.GetMethod))
+                || (propertyDefinition.SetMethod != null && this.IsExtern(propertyDefinition.SetMethod));
+
+            /*
+            return null != propertyDefinition.CustomAttributes.SelectAttribute(
                         this.KnownReferences.IntrinsicPropertyAttribute)
                 || null != propertyDefinition.CustomAttributes.SelectAttribute(
-                        this.KnownReferences.ScriptAliasAttribute))
-            {
-                return true;
-            }
+                        this.KnownReferences.ScriptAliasAttribute);
+            */
+        }
 
-            return false;
+        public bool IsIntrinsicEvent(EventDefinition evt)
+        {
+            return (evt.AddMethod != null && this.IsExtern(evt.AddMethod))
+                || (evt.RemoveMethod != null && this.IsExtern(evt.RemoveMethod));
         }
 
         public bool IsPsudoType(TypeDefinition typeDefinition)

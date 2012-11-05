@@ -7,169 +7,67 @@
     [IgnoreNamespace, ScriptName("Array"), Extended]
     public sealed class ArrayGrouping : IEnumerable
     {
-        private ArrayGrouping()
-        {
-        }
+        private extern ArrayGrouping();
 
-        public object Aggregate(object seedValue, ArrayAggregator aggregator)
-        {
-            return null;
-        }
+        public extern object Aggregate(object seedValue, ArrayAggregator aggregator);
 
-        public object Aggregate(object seedValue, ArrayItemAggregator aggregator)
-        {
-            return null;
-        }
+        public extern object Aggregate(object seedValue, ArrayItemAggregator aggregator);
 
-        public Array Clone()
-        {
-            return null;
-        }
+        public extern Array Clone();
 
-        public Array Concat(params object[] objects)
-        {
-            return null;
-        }
+        public extern Array Concat(params object[] objects);
 
-        public bool Contains(object item)
-        {
-            return false;
-        }
+        public extern bool Contains(object item);
 
-        public bool Every(ArrayFilterCallback filterCallback)
-        {
-            return false;
-        }
+        public extern bool Every(ArrayFilterCallback filterCallback);
 
-        public bool Every(ArrayItemFilterCallback itemFilterCallback)
-        {
-            return false;
-        }
+        public extern bool Every(ArrayItemFilterCallback itemFilterCallback);
 
-        public Array Extract(int index)
-        {
-            return null;
-        }
+        public extern Array Extract(int index);
 
-        public Array Extract(int index, int count)
-        {
-            return null;
-        }
+        public extern Array Extract(int index, int count);
 
-        public Array Filter(ArrayFilterCallback filterCallback)
-        {
-            return null;
-        }
+        public extern Array Filter(ArrayFilterCallback filterCallback);
 
-        public Array Filter(ArrayItemFilterCallback itemFilterCallback)
-        {
-            return null;
-        }
+        public extern Array Filter(ArrayItemFilterCallback itemFilterCallback);
 
-        public void ForEach(ArrayCallback callback)
-        {
-        }
+        public extern void ForEach(ArrayCallback callback);
 
-        public void ForEach(ArrayItemCallback itemCallback)
-        {
-        }
+        public extern void ForEach(ArrayItemCallback itemCallback);
 
-        public IEnumerator GetEnumerator()
-        {
-            return null;
-        }
+        public extern IEnumerator GetEnumerator();
 
-        public ArrayGrouping[] GroupBy(ArrayItemKeyGenerator keyCallback)
-        {
-            return null;
-        }
+        public extern ArrayGrouping[] GroupBy(ArrayItemKeyGenerator keyCallback);
 
-        public Dictionary Index(ArrayItemKeyGenerator keyCallback)
-        {
-            return null;
-        }
+        public extern Dictionary Index(ArrayItemKeyGenerator keyCallback);
 
-        public int IndexOf(object item)
-        {
-            return 0;
-        }
+        public extern int IndexOf(object item);
 
-        public int IndexOf(object item, int startIndex)
-        {
-            return 0;
-        }
+        public extern int IndexOf(object item, int startIndex);
 
-        public string Join()
-        {
-            return null;
-        }
+        public extern string Join();
 
-        public string Join(string delimiter)
-        {
-            return null;
-        }
+        public extern string Join(string delimiter);
 
-        public Array Map(ArrayItemMapCallback mapItemCallback)
-        {
-            return null;
-        }
+        public extern Array Map(ArrayItemMapCallback mapItemCallback);
 
-        public Array Map(ArrayMapCallback mapCallback)
-        {
-            return null;
-        }
+        public extern Array Map(ArrayMapCallback mapCallback);
 
-        public void Reverse()
-        {
-        }
+        public extern void Reverse();
 
-        public bool Some(ArrayFilterCallback filterCallback)
-        {
-            return false;
-        }
+        public extern bool Some(ArrayFilterCallback filterCallback);
 
-        public bool Some(ArrayItemFilterCallback itemFilterCallback)
-        {
-            return false;
-        }
+        public extern bool Some(ArrayItemFilterCallback itemFilterCallback);
 
-        public void Sort()
-        {
-        }
+        public extern void Sort();
 
-        public void Sort(CompareCallback compareCallback)
-        {
-        }
+        public extern void Sort(CompareCallback compareCallback);
 
-        [IntrinsicProperty]
-        public object this[int index]
-        {
-            get
-            {
-                return null;
-            }
-            set
-            {
-            }
-        }
+        public extern object this[int index] { get; set; }
 
-        [IntrinsicProperty]
-        public string Key
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public extern string Key { get; }
 
-        [IntrinsicProperty]
-        public int Length
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public extern int Length { get; }
     }
 }
 

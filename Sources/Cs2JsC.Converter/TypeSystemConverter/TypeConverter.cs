@@ -331,6 +331,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 throw new ArgumentException("methodDefinition");
             }
 
+            if (this is InterfaceTypeConverter)
+            {
+                return;
+            }
+
             // If we can't implement this method, let's skip.
             if (!this.TypeScopeManager.IsImplemented(methodDefinition)
                 || !this.context.IsImplemented(methodDefinition))
@@ -914,9 +919,9 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <returns></returns>
         protected virtual void CreateConstructor(List<Statement> statements)
         {
-            // If a class is imported and it has ignore namespace, the constructor is
+            // If a class is extended and it has ignore namespace, the constructor is
             // already defined.
-            if (!this.Context.IsImported(this.typeDefinition)
+            if (!this.Context.IsExtended(this.typeDefinition)
                 && !this.Context.HasIgnoreNamespaceAttribute(this.typeDefinition))
             {
                 var typeExpr = this.ResolveTypeToExpression(this.typeDefinition, this.Scope);
@@ -1446,7 +1451,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             if (this.TypeDefinition.BaseType != null
                 && !this.TypeDefinition.IsStatic()
                 && !this.TypeDefinition.BaseType.IsSame(this.clrKnownRefs.Object)
-                && !this.Context.IsImported(this.typeDefinition))
+                && !this.Context.IsExtended(this.typeDefinition))
             {
                 return new NewObjectExpression(
                         null,

@@ -342,7 +342,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             {
                 return
                     (this.methodDefinition.HasThis
-                        && (this.context.IsImported(this.typeConverter.TypeDefinition)
+                        && (this.context.IsExtended(this.typeConverter.TypeDefinition)
                             || this.typeConverter.AllStaticMethods
                             || this.RuntimeManager.ImplementInstanceAsStatic)
                         && this.methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.KeepInstanceUsageAttribute) == null)
@@ -392,7 +392,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 return false;
             }
 
-            if (context.IsImported(methodDefinition.DeclaringType)
+            if (context.IsExtended(methodDefinition.DeclaringType)
                 && methodDefinition.HasThis
                 && methodDefinition.IsConstructor)
             {

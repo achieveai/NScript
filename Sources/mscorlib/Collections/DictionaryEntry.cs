@@ -6,21 +6,13 @@
     [IgnoreNamespace, Extended]
     public sealed class DictionaryEntry
     {
-        internal DictionaryEntry()
-        {
-        }
+        internal extern DictionaryEntry();
 
-        [IntrinsicProperty]
         public extern string Key
-        {
-            get;
-        }
+        { get; }
 
-        [IntrinsicProperty]
         public extern object Value
-        {
-            get;
-        }
+        { get; }
     }
 }
 

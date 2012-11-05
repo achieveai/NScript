@@ -132,7 +132,16 @@ namespace Cs2JsC.JST
                     this.Write(Symbols.Comma);
                 }
 
+                if (arguments[argumentIndex].Precedence <= Precedence.Comma)
+                {
+                    this.Write(Symbols.BracketOpenRound);
+                }
+
                 arguments[argumentIndex].Write(this);
+                if (arguments[argumentIndex].Precedence <= Precedence.Comma)
+                {
+                    this.Write(Symbols.BracketCloseRound);
+                }
             }
 
             this.Write(Symbols.BracketCloseRound);
