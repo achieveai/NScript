@@ -321,7 +321,8 @@ namespace Cs2JsC.Converter
         /// </returns>
         public bool IsExtern(MethodDefinition methodDefinition)
         {
-            return !this.IsImplemented(methodDefinition);
+            return !this.IsImplemented(methodDefinition)
+                && !methodDefinition.IsAbstract;
         }
 
         /// <summary>
@@ -461,8 +462,7 @@ namespace Cs2JsC.Converter
                         name = propertyDefinition.Name;
                     }
 
-                    if (null != propertyDefinition.CustomAttributes.SelectAttribute(
-                            this.KnownReferences.IntrinsicPropertyAttribute))
+                    if (this.IsIntrinsicProperty(propertyDefinition))
                     {
                         string rv = propertyDefinition.Name;
                         name = char.ToLowerInvariant(rv[0]) + rv.Substring(1);

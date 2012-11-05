@@ -54,10 +54,12 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             PropertyReferenceExpression expression,
             JST.Expression value)
         {
-            bool isIntrinsic = converter.RuntimeManager.Context.IsIntrinsicProperty(expression.PropertyReference.Resolve());
+            PropertyDefinition propertyDefinition = expression.PropertyReference.Resolve();
+            MemberReferenceConverter.FixMethodReference(converter.RuntimeManager.Context, ref propertyDefinition);
+
+            bool isIntrinsic = converter.RuntimeManager.Context.IsIntrinsicProperty(propertyDefinition);
             bool isIndexer = isIntrinsic && expression.Arguments.Count > 0;
 
-            PropertyDefinition propertyDefinition = expression.PropertyReference.Resolve();
             List<JST.Expression> arguments = new List<JST.Expression>();
 
             if (!isIntrinsic)
@@ -125,6 +127,8 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             PropertyReferenceExpression expression)
         {
             PropertyDefinition propertyDefinition = expression.PropertyReference.Resolve();
+            MemberReferenceConverter.FixMethodReference(converter.RuntimeManager.Context, ref propertyDefinition);
+
             bool isIntrinsic = converter.RuntimeManager.Context.IsIntrinsicProperty(propertyDefinition);
             if (!isIntrinsic)
             {

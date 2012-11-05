@@ -1139,7 +1139,10 @@ namespace Cs2JsC.Converter
         /// </summary>
         public PropertyReference ArrayLengthProperty
         {
-            get { return this.arrayLengthGetter.Resolve().GetPropertyDefinition(); }
+            get
+            {
+                return this.ArrayLengthGetter.Resolve().GetPropertyDefinition();
+            }
         }
 
         /// <summary>
@@ -1284,7 +1287,7 @@ namespace Cs2JsC.Converter
         /// </summary>
         public PropertyReference ArrayImplLengthProperty
         {
-            get { return this.arrayImplLengthGetter.Resolve().GetPropertyDefinition(); }
+            get { return this.ArrayImplLengthGetter.Resolve().GetPropertyDefinition(); }
         }
 
         /// <summary>

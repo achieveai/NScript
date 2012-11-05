@@ -12,16 +12,15 @@ namespace RealScript
     /// <summary>
     /// Definition for JsScriptImport
     /// </summary>
+    [PsudoType]
     public class JsScriptImport
     {
-        [IntrinsicProperty]
         [ScriptAlias("jsScriptImportTest")]
         public static extern JsScriptImport Instance
         {
             get;
         }
 
-        [IntrinsicProperty]
         public extern int FooBar
         { get; set; }
 

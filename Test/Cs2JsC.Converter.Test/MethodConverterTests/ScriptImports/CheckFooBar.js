@@ -1,3 +1,3 @@
 ﻿function RealScript__JsScriptImport__CheckFooBar() {
-  return jsScriptImportTest.FooBar;
+  return jsScriptImportTest.fooBar;
 }

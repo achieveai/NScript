@@ -97,45 +97,50 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             ref T memberReference) where T : MemberReference
         {
             ConverterKnownReferences converterKnownReferences = context.KnownReferences;
-            MethodReference methodReference = memberReference as MethodReference;
-            if (methodReference == null)
+            if (!memberReference.DeclaringType.IsSame(context.ClrContext.KnownReferences.SystemArray))
             {
                 return;
             }
 
-            if (methodReference.DeclaringType.IsSame(context.ClrContext.KnownReferences.SystemArray))
+            MethodReference methodReference = memberReference as MethodReference;
+            PropertyReference propertyReference = memberReference as PropertyReference;
+            if (methodReference != null)
             {
-                MethodReference replacementMethod = null;
                 if (methodReference.IsSame(converterKnownReferences.ArrayCloneMethod))
                 {
-                    replacementMethod = converterKnownReferences.ArrayImplCloneMethod;
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplCloneMethod;
                 }
                 else if (methodReference.IsSame(converterKnownReferences.ArrayContainsMethod))
                 {
-                    replacementMethod = converterKnownReferences.ArrayImplContainsMethod;
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplContainsMethod;
                 }
                 else if (methodReference.IsSame(converterKnownReferences.ArrayReverseMethod))
                 {
-                    replacementMethod = converterKnownReferences.ArrayImplReverseMethod;
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplReverseMethod;
                 }
                 else if (methodReference.IsSame(converterKnownReferences.ArrayIndexOf1Method))
                 {
-                    replacementMethod = converterKnownReferences.ArrayImplIndexOf1Method;
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplIndexOf1Method;
                 }
                 else if (methodReference.IsSame(converterKnownReferences.ArrayIndexOf2Method))
                 {
-                    replacementMethod = converterKnownReferences.ArrayImplIndexOf2Method;
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplIndexOf2Method;
                 }
                 else if (methodReference.IsSame(converterKnownReferences.ArrayGetEnumeratorMethod))
                 {
-                    replacementMethod = converterKnownReferences.ArrayImplGetEnumeratorMethod;
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplGetEnumeratorMethod;
                 }
                 else if (methodReference.IsSame(converterKnownReferences.ArrayLengthGetter))
                 {
-                    replacementMethod = converterKnownReferences.ArrayImplLengthGetter;
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplLengthGetter;
                 }
-
-                memberReference = (T)(object)replacementMethod;
+            }
+            else if (propertyReference != null)
+            {
+                if (propertyReference.IsSame(converterKnownReferences.ArrayLengthProperty))
+                {
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplLengthProperty;
+                }
             }
         }
     }
