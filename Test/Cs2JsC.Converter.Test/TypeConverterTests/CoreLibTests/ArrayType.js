@@ -23,8 +23,20 @@ function System__NativeArray__GetArray(T, this_) {
 function System__NativeArray__GetNativeArray(array) {
   return array ? array.innerArray : null;
 };
+function System__NativeArray__GetNativeArraya(array) {
+  return array ? array.nativeArray : null;
+};
 function System__NativeArray__Concat(this_, arrays) {
-  return this_.concat.apply(this_, arrays);
+  return this_.concat.apply(this_, arrays.nativeArray);
+};
+function System__NativeArray__Concata(this_, array) {
+  return this_.concat(array);
+};
+function System__NativeArray__Concatb(this_, array, array2) {
+  return this_.concat(array, array2);
+};
+function System__NativeArray__Concatc(this_, array, array2, array3) {
+  return this_.concat(array, array2, array3);
 };
 function System__NativeArray__Pop(this_) {
   return this_.pop();
@@ -72,10 +84,11 @@ function System__NativeArray__InsertRangeAt(this_, index, values) {
     this_[index + i] = values[i];
 };
 function System__NativeArray__RemoveAt(this_, index) {
-  var i;
+  var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  for (i = this_.length - 2; i >= index; i--)
+  len = this_.length - 2;
+  for (i = index; i < len; i++)
     this_[i] = this_[i + 1];
   this_.pop();
 };
@@ -87,7 +100,7 @@ function System__NativeArray__GetFrom(this_, index) {
 };
 System__Type__RegisterReferenceType(Array, "System.NativeArray", Object, []);
 function System_ArrayG(T, $5fcallStatiConstructor) {
-  var Enumerator_$T$_, ArrayG$1_$T$_, IEnumerable$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, $5f_initTracker;
+  var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_ArrayG[T.typeId])
     return System_ArrayG[T.typeId];
   System_ArrayG[T.typeId] = function System__ArrayG$1() {
@@ -96,9 +109,9 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = System_ArrayG;
   ArrayG$1_$T$_.typeId = "e$" + T.typeId + "$";
-  IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
+  IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
   ArrayG$1_$T$_.__ctora = function System_ArrayG$1_factory(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
@@ -234,7 +247,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_["V_Contains_" + ICollection$1_$T$_.typeId] = ptyp_.containsa;
   ptyp_["V_CopyTo_" + ICollection$1_$T$_.typeId] = ptyp_.copyTo;
   ptyp_["V_Remove_" + ICollection$1_$T$_.typeId] = ptyp_.remove;
-  System__Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", System_ArrayImpl, [IEnumerable$1_$T$_, System_Collections_IEnumerable, IList$1_$T$_, ICollection$1_$T$_]);
+  System__Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", System_ArrayImpl, [IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, System_Collections_IEnumerable]);
   ArrayG$1_$T$_._tri = function() {
     if ($5f_initTracker)
       return;

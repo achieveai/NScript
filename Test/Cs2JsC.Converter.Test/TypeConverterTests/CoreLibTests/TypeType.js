@@ -10,7 +10,7 @@ function System__Type__AsType(this_, instance) {
   return this_.isInstanceOfType(instance) ? instance : null;
 };
 function System__Type__CastType(this_, instance) {
-  if (this_.isInstanceOfType(instance)) {
+  if (this_.isInstanceOfType(instance) || instance === null) {
     if (this_.isStruct)
       return instance.boxedValue;
     return instance;
@@ -18,10 +18,10 @@ function System__Type__CastType(this_, instance) {
   throw "InvalidCast to " + this_.fullName;
 };
 function System__Type__ToLocaleString(this_) {
-  return this_.fullName;
+  return this_.fullName ? this_.fullName : this_.name;
 };
 function System__Type__ToString(this_) {
-  return this_.fullName;
+  return this_.fullName ? this_.fullName : this_.name;
 };
 function System__Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
@@ -60,7 +60,7 @@ function System__Type__RegisterEnum(this_, typeName, isFlag) {
   };
   for (key in enumStrToValueMap) {
     valueToStr[enumStrToValueMap[key]] = key;
-    lowerStrToValue[key.toLower()] = enumStrToValueMap[key];
+    lowerStrToValue[key.toLowerCase()] = enumStrToValueMap[key];
   }
   this_.enumValueToStrMap = valueToStr;
   this_.enumLowerStrToValueMap = lowerStrToValue;
@@ -112,7 +112,7 @@ ptyp_.isFlagEnum = false;
 ptyp_.interfaces = null;
 ptyp_.isInstanceOfType = function System__Type__IsInstanceOfType(instance) {
   if (!this.isInterface)
-    return instance instanceof this;
+    return instance instanceof this || instance && instance.constructor == this;
   else if (instance && !instance.constructor.baseInterfaces)
     System__Type__InitializeBaseInterfaces(instance.constructor);
   return instance && instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];

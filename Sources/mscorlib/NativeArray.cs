@@ -40,7 +40,7 @@ namespace System
         [Script(@"
             return this.@{[mscorlib]System.NativeArray::ConcatImpl()}.apply(
                 this,
-                array.@{[mscorlib]System.Collections.Generic.List`1::nativeArray});")]
+                arrays.@{[mscorlib]System.Collections.Generic.List`1::nativeArray});")]
         public extern NativeArray Concat(params NativeArray[] arrays);
 
         [Script(@"return this.concat(array);")]

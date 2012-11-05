@@ -5,9 +5,6 @@ System_Int32.typeId = "b";
 System_Int32.getDefaultValue = function() {
   return 0;
 };
-function System__Int32__op_Implicit(i) {
-  return i;
-};
 function System__Int32__Parse(s) {
   return parseInt(s);
 };

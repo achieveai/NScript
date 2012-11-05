@@ -3,9 +3,9 @@ System__String__formatHelperRegex = null;
 System__String__trimStartHelperRegex = null;
 System__String__trimEndHelperRegex = null;
 function System__String____cctor() {
-  System__String__formatHelperRegex = new RegExp("(\\\\{[^\\\\}^\\\\{]+\\\\})", "g");
-  System__String__trimStartHelperRegex = new RegExp("^\\\\s*");
-  System__String__trimEndHelperRegex = new RegExp("\\\\s*$");
+  System__String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
+  System__String__trimStartHelperRegex = new RegExp("^\\s*");
+  System__String__trimEndHelperRegex = new RegExp("\\s*$");
 };
 function System__String__Compare(s1, s2) {
   s1 = s1 || "";

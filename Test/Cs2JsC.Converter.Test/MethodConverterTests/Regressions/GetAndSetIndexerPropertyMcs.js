@@ -1,4 +1,4 @@
 ﻿function RealScript__JsScriptImport__GetAndSetIndexerProperty(obj, foo) {
-  obj.set_item(0, foo);
-  return obj.get_item(1);
+  RealScript__JsScriptImport__set_Item(obj, 0, foo);
+  return RealScript__JsScriptImport__get_Item(obj, 1);
 }
