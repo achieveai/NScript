@@ -19,17 +19,17 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             MethodReference methodReference,
             IdentifierScope scope);
 
-        Identifier Resolve(MethodReference memberReference);
+        IIdentifier Resolve(MethodReference memberReference);
 
-        IList<Identifier> Resolve(TypeReference typeReference);
+        IList<IIdentifier> Resolve(TypeReference typeReference);
 
-        IList<Identifier> ResolveStaticMember(MethodReference member);
+        IList<IIdentifier> ResolveStaticMember(MethodReference member);
 
-        IList<JST.Identifier> ResolveFactory(Mono.Cecil.MethodReference methodReference);
+        IList<JST.IIdentifier> ResolveFactory(Mono.Cecil.MethodReference methodReference);
 
-        IList<JST.Identifier> ResolveStaticMember(Mono.Cecil.FieldReference fieldReference);
+        IList<JST.IIdentifier> ResolveStaticMember(Mono.Cecil.FieldReference fieldReference);
 
-        JST.Identifier Resolve(Mono.Cecil.FieldReference fieldReference);
+        JST.IIdentifier Resolve(Mono.Cecil.FieldReference fieldReference);
 
         JST.Expression ResolveMethodSlotName(Mono.Cecil.MethodReference methodReference, bool isVirtualCall, JST.IdentifierScope identifierScope);
     }

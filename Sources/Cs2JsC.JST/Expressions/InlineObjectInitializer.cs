@@ -39,12 +39,12 @@ namespace Cs2JsC.JST
         /// <param name="identifier">The identifier.</param>
         /// <param name="expression">The expression.</param>
         public void AddInitializer(
-            Identifier identifier,
+            IIdentifier identifier,
             Expression expression)
         {
             this.initializers.Add(
                 new Tuple<Expression, Expression>(
-                    new IdentifierExpression(identifier),
+                    new IdentifierExpression(identifier, expression.Scope),
                     expression));
         }
 

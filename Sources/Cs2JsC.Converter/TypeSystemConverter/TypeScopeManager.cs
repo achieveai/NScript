@@ -45,38 +45,56 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Mapping for all the memberDefinitions to identifiers.
         /// </summary>
-        private readonly Dictionary<MethodDefinition, Identifier> methodInstanceMap =
-            new Dictionary<MethodDefinition, Identifier>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<MethodDefinition, IIdentifier> methodInstanceMap =
+            new Dictionary<MethodDefinition, IIdentifier>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// Mapping for all instance fieldDefinitions to identifiers.
         /// </summary>
-        private readonly Dictionary<FieldDefinition, Identifier> fieldMap =
-            new Dictionary<FieldDefinition, Identifier>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<FieldDefinition, IIdentifier> fieldMap =
+            new Dictionary<FieldDefinition, IIdentifier>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// Backing store for intrinsic propertyDefinition to identifier map.
         /// </summary>
-        private readonly Dictionary<PropertyDefinition, Identifier> propertyMap =
-            new Dictionary<PropertyDefinition, Identifier>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<PropertyDefinition, IIdentifier> propertyMap =
+            new Dictionary<PropertyDefinition, IIdentifier>(MemberReferenceComparer.Instance);
+
+        /// <summary>
+        /// Imported extension Property Map.
+        /// </summary>
+        private readonly Dictionary<PropertyDefinition, IIdentifier> importedExtensionPropertyMap =
+            new Dictionary<PropertyDefinition, IIdentifier>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// Tracking field for identifiers for static members.
         /// </summary>
-        private readonly Dictionary<MethodDefinition, Identifier> methodStaticMap =
-            new Dictionary<MethodDefinition, Identifier>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<MethodDefinition, IIdentifier> methodStaticMap =
+            new Dictionary<MethodDefinition, IIdentifier>(MemberReferenceComparer.Instance);
+
+        /// <summary>
+        /// Underlying method map.
+        /// </summary>
+        private readonly Dictionary<MethodDefinition, IIdentifier> underlyingMethodMap =
+            new Dictionary<MethodDefinition, IIdentifier>(MemberReferenceComparer.Instance);
+
+        /// <summary>
+        /// Underlying static method map.
+        /// </summary>
+        private readonly Dictionary<MethodDefinition, IIdentifier> underlyingStaticMethodMap =
+            new Dictionary<MethodDefinition, IIdentifier>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// Backing field for virtual methods.
         /// </summary>
-        private readonly Dictionary<MethodDefinition, Identifier> virtualMethodIdentifiers =
-            new Dictionary<MethodDefinition, Identifier>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<MethodDefinition, IIdentifier> virtualMethodIdentifiers =
+            new Dictionary<MethodDefinition, IIdentifier>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// Backing store for fixedName identifier.
         /// </summary>
-        private readonly Dictionary<string, Identifier> fixedNameIdentifierMapping =
-            new Dictionary<string, Identifier>();
+        private readonly Dictionary<string, IIdentifier> fixedNameIdentifierMapping =
+            new Dictionary<string, IIdentifier>();
 
         /// <summary>
         /// Implementation for instance methods.
@@ -155,7 +173,7 @@ namespace Cs2JsC.Converter
         /// <param name="methodReference">The method reference.</param>
         /// <param name="forceStatic">if set to <c>true</c> [force static].</param>
         /// <returns>Identifier for given method.</returns>
-        public Identifier ResolveMethod(
+        public IIdentifier ResolveMethod(
             MethodReference methodReference,
             bool forceStatic)
         {
@@ -169,13 +187,13 @@ namespace Cs2JsC.Converter
         /// </summary>
         /// <param name="memberDefinition">The member definition.</param>
         /// <returns>Identifier for given member</returns>
-        public Identifier ResolveMethod(
+        public IIdentifier ResolveMethod(
             MethodDefinition memberDefinition,
             bool forceStatic = false)
         {
-            Identifier returnValue;
+            IIdentifier returnValue;
             forceStatic = forceStatic || memberDefinition.IsStatic;
-            Dictionary<MethodDefinition, Identifier> identifierMap =
+            Dictionary<MethodDefinition, IIdentifier> identifierMap =
                 forceStatic
                     ? this.methodStaticMap
                     : this.methodInstanceMap;
@@ -191,6 +209,7 @@ namespace Cs2JsC.Converter
 
                 string name = this.context.GetMemberName(
                     methodDefinition,
+                    false,
                     out isFixedName,
                     out isAlias);
 
@@ -198,7 +217,7 @@ namespace Cs2JsC.Converter
                 {
                     if (!this.fixedNameIdentifierMapping.TryGetValue(name, out returnValue))
                     {
-                        returnValue = Identifier.CreateScopeIdentifier(
+                        returnValue = SimpleIdentifier.CreateScopeIdentifier(
                             forceStatic ? this.staticMemberScope : this.scope,
                             name,
                             true);
@@ -213,7 +232,7 @@ namespace Cs2JsC.Converter
                 else
                 {
                     // if the memberName is fixed name and if it already exists, use the same identifer.
-                    returnValue = Identifier.CreateScopeIdentifier(
+                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
                         forceStatic ? this.staticMemberScope : this.scope,
                         name,
                         false);
@@ -226,13 +245,81 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Resolve underlying method.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="methodDefinition"> The method definition. </param>
+        /// <returns>
+        /// Identifier for methodDefinition
+        /// </returns>
+        public IIdentifier ResolveUnderlyingMethod(MethodDefinition methodDefinition)
+        {
+            if (!this.context.IsWrapped(methodDefinition))
+            {
+                throw new InvalidProgramException("Can't resolve non wrapped method to underlying method name");
+            }
+
+            IIdentifier returnValue;
+            bool forceStatic = methodDefinition.IsStatic;
+            Dictionary<MethodDefinition, IIdentifier> identifierMap =
+                forceStatic
+                    ? this.underlyingStaticMethodMap
+                    : this.underlyingMethodMap;
+
+            if (!identifierMap.TryGetValue(methodDefinition, out returnValue))
+            {
+                bool isFixedName;
+                bool isAlias;
+                bool isVirtualMethod = methodDefinition != null
+                    && methodDefinition.IsVirtual
+                    && !methodDefinition.IsFinal;
+
+                string name = this.context.GetMemberName(
+                    methodDefinition,
+                    true,
+                    out isFixedName,
+                    out isAlias);
+
+                if (isFixedName && !isVirtualMethod)
+                {
+                    if (!this.fixedNameIdentifierMapping.TryGetValue(name, out returnValue))
+                    {
+                        returnValue = SimpleIdentifier.CreateScopeIdentifier(
+                            forceStatic ? this.staticMemberScope : this.scope,
+                            name,
+                            true);
+
+                        this.fixedNameIdentifierMapping[name] = returnValue;
+                    }
+                }
+                else if (forceStatic && name == ".ctor" && !methodDefinition.HasParameters)
+                {
+                    // This means that the name of this constructor is going to be defaultConstructor
+                }
+                else
+                {
+                    // if the memberName is fixed name and if it already exists, use the same identifer.
+                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
+                        forceStatic ? this.staticMemberScope : this.scope,
+                        name,
+                        false);
+                }
+
+                identifierMap.Add(methodDefinition, returnValue);
+            }
+
+            return returnValue;
+        }
+
+        /// <summary>
         /// Resolves the member.
         /// </summary>
         /// <param name="fieldReference">The member reference.</param>
         /// <returns>
         /// Identifier for given member
         /// </returns>
-        public Identifier ResolveField(
+        public IIdentifier ResolveField(
             FieldReference fieldReference)
         {
             return this.ResolveField(
@@ -246,10 +333,10 @@ namespace Cs2JsC.Converter
         /// <returns>
         /// Identifier for given member
         /// </returns>
-        public Identifier ResolveField(
+        public IIdentifier ResolveField(
             FieldDefinition fieldDefinition)
         {
-            Identifier returnValue;
+            IIdentifier returnValue;
             bool forceStatic = fieldDefinition.IsStatic;
 
             if (!this.fieldMap.TryGetValue(fieldDefinition, out returnValue))
@@ -259,6 +346,7 @@ namespace Cs2JsC.Converter
 
                 string name = this.context.GetMemberName(
                     fieldDefinition,
+                    false,
                     out isFixedName,
                     out isAlias);
 
@@ -266,7 +354,7 @@ namespace Cs2JsC.Converter
                 {
                     if (!this.fixedNameIdentifierMapping.TryGetValue(name, out returnValue))
                     {
-                        returnValue = Identifier.CreateScopeIdentifier(
+                        returnValue = SimpleIdentifier.CreateScopeIdentifier(
                             forceStatic ? this.staticMemberScope : this.scope,
                             name,
                             true);
@@ -277,7 +365,7 @@ namespace Cs2JsC.Converter
                 else
                 {
                     // if the memberName is fixed name and if it already exists, use the same identifer.
-                    returnValue = Identifier.CreateScopeIdentifier(
+                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
                         forceStatic ? this.staticMemberScope : this.scope,
                         name,
                         false);
@@ -296,10 +384,10 @@ namespace Cs2JsC.Converter
         /// <returns>
         /// Identifier for given member
         /// </returns>
-        public Identifier ResolveProperty(
+        public IIdentifier ResolveProperty(
             PropertyDefinition propertyDefinition)
         {
-            Identifier returnValue;
+            IIdentifier returnValue;
             bool forceStatic = propertyDefinition.IsStatic();
 
             if (!this.propertyMap.TryGetValue(propertyDefinition, out returnValue))
@@ -309,6 +397,7 @@ namespace Cs2JsC.Converter
 
                 string name = this.context.GetMemberName(
                     propertyDefinition,
+                    true,
                     out isFixedName,
                     out isAlias);
 
@@ -316,7 +405,7 @@ namespace Cs2JsC.Converter
                 {
                     if (!this.fixedNameIdentifierMapping.TryGetValue(name, out returnValue))
                     {
-                        returnValue = Identifier.CreateScopeIdentifier(
+                        returnValue = SimpleIdentifier.CreateScopeIdentifier(
                             forceStatic ? this.staticMemberScope : this.scope,
                             name,
                             true);
@@ -327,7 +416,7 @@ namespace Cs2JsC.Converter
                 else
                 {
                     // if the memberName is fixed name and if it already exists, use the same identifer.
-                    returnValue = Identifier.CreateScopeIdentifier(
+                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
                         forceStatic ? this.staticMemberScope : this.scope,
                         name,
                         false);
@@ -340,11 +429,40 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Resolve imported extended property.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <returns>
+        /// Identifier for Cs2JsC specific value of given property.
+        /// </returns>
+        public IIdentifier ResolveImportedExtendedProperty(
+            PropertyDefinition propertyDefinition)
+        {
+            IIdentifier returnValue;
+            bool forceStatic = propertyDefinition.IsStatic();
+
+            if (!this.importedExtensionPropertyMap.TryGetValue(propertyDefinition, out returnValue))
+            {
+                string name = propertyDefinition.Name;
+
+                // if the memberName is fixed name and if it already exists, use the same identifer.
+                returnValue = SimpleIdentifier.CreateScopeIdentifier(
+                    forceStatic ? this.staticMemberScope : this.scope,
+                    name,
+                    false);
+
+                importedExtensionPropertyMap.Add(propertyDefinition, returnValue);
+            }
+
+            return returnValue;
+        }
+
+        /// <summary>
         /// Resolves the virtual method.
         /// </summary>
         /// <param name="methodReference">The method reference.</param>
         /// <returns>Identifier for given virtual method</returns>
-        public Identifier ResolveVirtualMethod(
+        public IIdentifier ResolveVirtualMethod(
             MethodReference methodReference)
         {
             MethodDefinition memberDefinition = methodReference.Resolve();
@@ -357,10 +475,10 @@ namespace Cs2JsC.Converter
         /// </summary>
         /// <param name="methodDefinition">The method definition.</param>
         /// <returns>Identifier for given virtual method</returns>
-        public Identifier ResolveVirtualMethod(
+        public IIdentifier ResolveVirtualMethod(
             MethodDefinition methodDefinition)
         {
-            Identifier returnValue;
+            IIdentifier returnValue;
 
             if (methodDefinition.IsFinal
                 || !methodDefinition.IsVirtual)
@@ -377,6 +495,7 @@ namespace Cs2JsC.Converter
 
                 string name = this.context.GetMemberName(
                     methodDefinition,
+                    false,
                     out isFixedName,
                     out isAlias);
 
@@ -384,7 +503,7 @@ namespace Cs2JsC.Converter
                 {
                     if (!this.fixedNameIdentifierMapping.TryGetValue(name, out returnValue))
                     {
-                        returnValue = Identifier.CreateScopeIdentifier(
+                        returnValue = SimpleIdentifier.CreateScopeIdentifier(
                             methodDefinition.IsStatic ? this.staticMemberScope : this.scope,
                             name,
                             isFixedName);
@@ -394,7 +513,7 @@ namespace Cs2JsC.Converter
                 }
                 else
                 {
-                    returnValue = Identifier.CreateScopeIdentifier(
+                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
                         this.scope,
                         "V_" + methodDefinition.Name,
                         false);
@@ -425,7 +544,7 @@ namespace Cs2JsC.Converter
         /// <param name="isInstance">if set to <c>true</c> [is instance].</param>
         /// <param name="enforce">if set to <c>true</c> [enforce].</param>
         /// <returns>identifier for given string</returns>
-        internal Identifier GetIdentifier(
+        internal IIdentifier GetIdentifier(
             string identifierString,
             bool isInstance,
             bool enforce)
@@ -434,7 +553,7 @@ namespace Cs2JsC.Converter
                 ? this.scope
                 : this.staticMemberScope;
 
-            return Identifier.CreateScopeIdentifier(
+            return SimpleIdentifier.CreateScopeIdentifier(
                 scope,
                 identifierString,
                 enforce);
@@ -458,7 +577,7 @@ namespace Cs2JsC.Converter
             {
                 bool isFinalName, isAlias;
 
-                string name = this.context.GetMemberName(methodDefinition, out isFinalName, out isAlias);
+                string name = this.context.GetMemberName(methodDefinition, false, out isFinalName, out isAlias);
                 if (isFinalName)
                 {
                     if (methodDefinition.IsVirtual)
@@ -467,7 +586,14 @@ namespace Cs2JsC.Converter
                     }
                     else
                     {
-                        this.ResolveMethod(methodDefinition);
+                        if (this.context.IsWrapped(methodDefinition))
+                        {
+                            this.ResolveUnderlyingMethod(methodDefinition);
+                        }
+                        else
+                        {
+                            this.ResolveMethod(methodDefinition);
+                        }
                     }
                 }
             }
@@ -476,7 +602,7 @@ namespace Cs2JsC.Converter
             {
                 bool isFinalName, isAlias;
 
-                string name = this.context.GetMemberName(propDef, out isFinalName, out isAlias);
+                string name = this.context.GetMemberName(propDef, false, out isFinalName, out isAlias);
                 if (isFinalName)
                 {
                     this.ResolveProperty(propDef);
@@ -487,7 +613,7 @@ namespace Cs2JsC.Converter
             {
                 bool isFinalName, isAlias;
 
-                string name = this.context.GetMemberName(fieldDef, out isFinalName, out isAlias);
+                string name = this.context.GetMemberName(fieldDef, false, out isFinalName, out isAlias);
                 if (isFinalName)
                 {
                     this.ResolveField(fieldDef);
@@ -498,7 +624,7 @@ namespace Cs2JsC.Converter
             {
                 bool isFinalName, isAlias;
 
-                string name = this.context.GetMemberName(methodDefinition, out isFinalName, out isAlias);
+                string name = this.context.GetMemberName(methodDefinition, false, out isFinalName, out isAlias);
                 if (isFinalName)
                 {
                     if (methodDefinition.IsVirtual)

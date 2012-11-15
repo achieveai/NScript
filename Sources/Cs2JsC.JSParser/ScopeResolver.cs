@@ -8,15 +8,15 @@ namespace Cs2JsC.JSParser
 {
     using System;
     using System.Collections.Generic;
-using Cs2JsC.JST;
+    using Cs2JsC.JST;
 
     public class ScopeResolver
     {
         /// <summary>
         /// dictionary etc.
         /// </summary>
-        List<Dictionary<string, Identifier>> scopeDictionaries =
-            new List<Dictionary<string,Identifier>>();
+        List<Dictionary<string, IIdentifier>> scopeDictionaries =
+            new List<Dictionary<string,IIdentifier>>();
 
         /// <summary>
         /// Backing field for resolver.
@@ -39,7 +39,7 @@ using Cs2JsC.JST;
         {
             this.resolver = resolver;
             this.scopes.Add(parentScope);
-            this.scopeDictionaries.Add(new Dictionary<string,Identifier>());
+            this.scopeDictionaries.Add(new Dictionary<string,IIdentifier>());
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ using Cs2JsC.JST;
         /// <returns>Resolved identifier.</returns>
         public Expression Resolve(string identifier)
         {
-            Identifier returnValue = null;
+            IIdentifier returnValue = null;
 
             for (int iDict = 0; iDict < this.scopeDictionaries.Count; iDict++)
             {
@@ -79,9 +79,9 @@ using Cs2JsC.JST;
         /// </summary>
         /// <param name="identifier">The identifier.</param>
         /// <returns>Newly created identifier.</returns>
-        public Identifier CreateIdentifier(string identifier)
+        public IIdentifier CreateIdentifier(string identifier)
         {
-            Identifier rv = Identifier.CreateScopeIdentifier(
+            IIdentifier rv = SimpleIdentifier.CreateScopeIdentifier(
                 this.Scope,
                 identifier,
                 false);
@@ -161,7 +161,7 @@ using Cs2JsC.JST;
                 args,
                 false);
 
-            this.scopeDictionaries.Insert(0, new Dictionary<string, Identifier>());
+            this.scopeDictionaries.Insert(0, new Dictionary<string, IIdentifier>());
             this.scopes.Insert(0, newScope);
 
             for (int iArg = 0; iArg < args.Count; iArg++)

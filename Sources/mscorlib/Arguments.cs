@@ -10,11 +10,8 @@
         [ScriptAlias("Array.toArray")]
         public extern static Array ToArray();
 
-        [IntrinsicProperty]
         public extern static int Length
-        {
-            get;
-        }
+        { get; }
     }
 }
 

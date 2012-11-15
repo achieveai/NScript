@@ -254,7 +254,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             if (identExpr == null)
             {
                 identExpr = new JST.IdentifierExpression(
-                    converter.GetTempVariable());
+                    converter.GetTempVariable(), converter.Scope);
 
                 conditionExpr = new JST.BinaryExpression(
                     location,

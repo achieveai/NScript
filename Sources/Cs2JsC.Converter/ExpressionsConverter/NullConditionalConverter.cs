@@ -38,7 +38,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 converter,
                 expression.Alternate);
 
-            JST.Identifier tmpIdentifier = converter.GetTempVariable();
+            JST.IIdentifier tmpIdentifier = converter.GetTempVariable();
             JST.IdentifierExpression identifierExpression = new IdentifierExpression(
                 tmpIdentifier,
                 converter.Scope);

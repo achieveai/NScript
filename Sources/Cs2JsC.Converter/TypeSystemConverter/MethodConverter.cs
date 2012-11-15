@@ -41,8 +41,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Stack of all the argumentVariablesIdentifierMap tracker when converting CSAst to JSAst.
         /// </summary>
-        private readonly LinkedList<Dictionary<string, Identifier>> argumentVariableToIdentifierMapStack =
-            new LinkedList<Dictionary<string, Identifier>>();
+        private readonly LinkedList<Dictionary<string, IIdentifier>> argumentVariableToIdentifierMapStack =
+            new LinkedList<Dictionary<string, IIdentifier>>();
 
         /// <summary>
         /// Backing store for Clr Known references.
@@ -62,7 +62,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Queue for free temp variables.
         /// </summary>
-        private readonly Queue<Identifier> freeTempVariables = new Queue<Identifier>();
+        private readonly Queue<IIdentifier> freeTempVariables = new Queue<IIdentifier>();
 
         /// <summary>
         /// Tracker for if this method has Generic Arguments.
@@ -73,14 +73,14 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Dictionary for keeping track of local TypeReferences (typeReferences with scope
         /// of MethodReference).
         /// </summary>
-        private readonly Dictionary<TypeReference, Identifier> localTypeReferences =
-            new Dictionary<TypeReference, Identifier>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<TypeReference, IIdentifier> localTypeReferences =
+            new Dictionary<TypeReference, IIdentifier>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// Stack of all the localVariablesIdentifierMap tracker when converting CSAst to JSAst.
         /// </summary>
-        private readonly LinkedList<Dictionary<string, Identifier>> localVariableToIdentifierMapStack =
-            new LinkedList<Dictionary<string, Identifier>>();
+        private readonly LinkedList<Dictionary<string, IIdentifier>> localVariableToIdentifierMapStack =
+            new LinkedList<Dictionary<string, IIdentifier>>();
 
         /// <summary>
         /// Backing field for MethodDefinition.
@@ -125,8 +125,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Tempvariables used for instatement operations. These are mostly
         /// used around expansion of OpAssignments or Property post/pre fix operations.
         /// </summary>
-        private readonly List<Identifier> statementTemporaryVariables =
-            new List<Identifier>();
+        private readonly List<IIdentifier> statementTemporaryVariables =
+            new List<IIdentifier>();
 
         /// <summary>
         /// Backing field for TypeConverter.
@@ -147,7 +147,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Backing store for thisIdentifier.
         /// </summary>
-        private Identifier thisIdentifier;
+        private IIdentifier thisIdentifier;
 
         /// <summary>
         /// Set if we are using AST out of Mono compiler.
@@ -218,7 +218,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 }
             }
 
-            argumentVariableToIdentifierMapStack.AddFirst(new Dictionary<string, Identifier>());
+            argumentVariableToIdentifierMapStack.AddFirst(new Dictionary<string, IIdentifier>());
             for (int argumentIndex = 0;
                  argumentIndex < methodDefinition.Parameters.Count;
                  argumentIndex++)
@@ -243,7 +243,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 }
                 else
                 {
-                    thisIdentifier = Identifier.CreateScopeIdentifier(
+                    thisIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                         methodScope,
                         ThisArgument,
                         false);
@@ -343,6 +343,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 return
                     (this.methodDefinition.HasThis
                         && (this.context.IsExtended(this.typeConverter.TypeDefinition)
+                            || this.context.IsPsudoType(this.typeConverter.TypeDefinition)
                             || this.typeConverter.AllStaticMethods
                             || this.RuntimeManager.ImplementInstanceAsStatic)
                         && this.methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.KeepInstanceUsageAttribute) == null)
@@ -407,18 +408,18 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="localIndex">Index of the local.</param>
         /// <returns>Resolved identifier.</returns>
-        public Identifier ResolveLocal(string localVariable)
+        public IIdentifier ResolveLocal(string localVariable)
         {
             LinkedListNode<ScopeBlock> scopeNode = scopeBlocksStack.First;
             LinkedListNode<ParameterBlock> parameterNode = parameterBlocksStack.First;
             LinkedListNode<IdentifierScope> identifierScopeNode = scopeStack.First;
-            LinkedListNode<Dictionary<string, Identifier>> localsNode = localVariableToIdentifierMapStack.First;
+            LinkedListNode<Dictionary<string, IIdentifier>> localsNode = localVariableToIdentifierMapStack.First;
             LinkedListNode<Dictionary<string, int>> variableNamesGivenNode = variableNamesGivenStack.First;
 
-            Func<Identifier> localVariableGetter =
+            Func<IIdentifier> localVariableGetter =
                 delegate
                 {
-                    Identifier rv;
+                    IIdentifier rv;
                     if (!localsNode.Value.TryGetValue(localVariable, out rv))
                     {
                         string identifierName = null;
@@ -446,7 +447,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                             identifierName = string.Format("{0}{1}", identifierName, namesGiven);
                         }
 
-                        rv = Identifier.CreateScopeIdentifier(
+                        rv = SimpleIdentifier.CreateScopeIdentifier(
                             identifierScopeNode.Value,
                             identifierName,
                             false);
@@ -492,9 +493,9 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="argumentIndex">Index of the argument.</param>
         /// <returns></returns>
-        public Identifier ResolveArgument(string argumentName)
+        public IIdentifier ResolveArgument(string argumentName)
         {
-            Identifier rv;
+            IIdentifier rv;
             if (!TryResolveArgument(argumentName, out rv))
             {
                 throw new ArgumentException(argumentName + " not found");
@@ -528,7 +529,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <returns>true if argument name exists, else false.</returns>
         public bool TryResolveArgument(
             string argumentName,
-            out Identifier identifier)
+            out IIdentifier identifier)
         {
             foreach (var dict in argumentVariableToIdentifierMapStack)
             {
@@ -547,7 +548,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="paramDef">The type reference base.</param>
         /// <returns>Identifier for givenType.</returns>
-        public IList<Identifier> Resolve(
+        public IList<IIdentifier> Resolve(
             TypeReference typeReference)
         {
             GenericParameterType? typeScope = typeReference.GetGenericTypeScope();
@@ -563,7 +564,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                             typeReference));
                 }
 
-                Identifier rv;
+                IIdentifier rv;
                 if (!localTypeReferences.TryGetValue(typeReference, out rv))
                 {
                     var strBuilder = new StringBuilder();
@@ -585,7 +586,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                             typeNameBuilder.Append(typeName);
                         });
 
-                    rv = Identifier.CreateScopeIdentifier(
+                    rv = SimpleIdentifier.CreateScopeIdentifier(
                         methodScope,
                         strBuilder.ToString(),
                         false);
@@ -635,7 +636,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="member">The member.</param>
         /// <returns>Resolve static member</returns>
-        public IList<Identifier> ResolveStaticMember(FieldReference member)
+        public IList<IIdentifier> ResolveStaticMember(FieldReference member)
         {
             return typeConverter.ResolveStaticMember(
                 member,
@@ -647,14 +648,14 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="member">The member.</param>
         /// <returns>Resolve static member</returns>
-        public IList<Identifier> ResolveStaticMember(MethodReference member)
+        public IList<IIdentifier> ResolveStaticMember(MethodReference member)
         {
             return typeConverter.ResolveStaticMember(
                 member,
                 Resolve);
         }
 
-        public IList<Identifier> ResolveFactory(MethodReference constructor)
+        public IList<IIdentifier> ResolveFactory(MethodReference constructor)
         {
             return typeConverter.ResolveFactory(
                 constructor,
@@ -666,7 +667,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="fieldReference">The member reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public Identifier Resolve(FieldReference fieldReference)
+        public IIdentifier Resolve(FieldReference fieldReference)
         {
             return typeConverter.Resolve(fieldReference);
         }
@@ -676,7 +677,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="propertyReference">The member reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public Identifier Resolve(PropertyReference propertyReference)
+        public IIdentifier Resolve(PropertyReference propertyReference)
         {
             return typeConverter.Resolve(propertyReference);
         }
@@ -686,7 +687,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="memberReference">The member reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public Identifier Resolve(MethodReference memberReference)
+        public IIdentifier Resolve(MethodReference memberReference)
         {
             return typeConverter.Resolve(memberReference);
         }
@@ -807,11 +808,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Gets the statement temp.
         /// </summary>
         /// <returns>Temporary variable for current statement.</returns>
-        public Identifier GetTempVariable()
+        public IIdentifier GetTempVariable()
         {
             if (freeTempVariables.Count == 0)
             {
-                Identifier identifier = Identifier.CreateScopeIdentifier(
+                IIdentifier identifier = SimpleIdentifier.CreateScopeIdentifier(
                     Scope,
                     string.Format("stmtTemp{0}", freeTempVariables.Count + 1),
                     false);
@@ -827,7 +828,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Releases the temp variable.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
-        public void ReleaseTempVariable(Identifier identifier)
+        public void ReleaseTempVariable(IIdentifier identifier)
         {
             freeTempVariables.Enqueue(identifier);
         }
@@ -883,8 +884,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             scopeBlocksStack.AddFirst(parameterBlock);
             parameterBlocksStack.AddFirst(parameterBlock);
             variableNamesGivenStack.AddFirst(new Dictionary<string, int>());
-            localVariableToIdentifierMapStack.AddFirst(new Dictionary<string, Identifier>());
-            argumentVariableToIdentifierMapStack.AddFirst(new Dictionary<string, Identifier>());
+            localVariableToIdentifierMapStack.AddFirst(new Dictionary<string, IIdentifier>());
+            argumentVariableToIdentifierMapStack.AddFirst(new Dictionary<string, IIdentifier>());
 
             try
             {
@@ -928,7 +929,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     scopeStack.RemoveFirst();
                 }
 
-                Identifier delegateFunctionNameId = Identifier.CreateScopeIdentifier(
+                IIdentifier delegateFunctionNameId = SimpleIdentifier.CreateScopeIdentifier(
                     RuntimeManager.Scope,
                     string.Format(
                         "{0}_del{1}",
@@ -1121,7 +1122,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="methodReference">The method reference.</param>
         /// <returns>Method name identifier.</returns>
-        private Identifier GetMethodName(MethodReference methodReference)
+        private IIdentifier GetMethodName(MethodReference methodReference)
         {
             return typeConverter.RuntimeManager.ResolveFunctionName(methodReference);
         }
@@ -1151,7 +1152,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                                 Scope,
                                 Resolve(typeConverter.TypeDefinition)),
                             new IdentifierExpression(
-                                Resolve(cnvtKnownReferences.GetDefaultMethod))),
+                                Resolve(cnvtKnownReferences.GetDefaultMethod), Scope)),
                         new JST.Expression[0])));
         }
 
@@ -1214,6 +1215,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     GetConstructorDefaultInitializationStatement());
             }
 
+            if (this.HasWrappedField())
+            {
+                this.InitializeImportedWrapper(returnValue);
+            }
+
             returnValue.AddStatements(scopeBlock.Statements);
 
             return returnValue;
@@ -1225,6 +1231,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <returns></returns>
         private FunctionExpression Convert()
         {
+            if (this.context.IsWrapped(this.methodDefinition))
+            {
+                return this.GenerateWrapperImplementation();
+            }
+
             if (!methodDefinition.HasBody
                 || methodDefinition.Body.Instructions.Count == 0)
             {
@@ -1245,7 +1256,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             scopeBlocksStack.AddFirst(rootBlock);
             parameterBlocksStack.AddFirst(rootBlock);
             variableNamesGivenStack.AddFirst(new Dictionary<string, int>());
-            localVariableToIdentifierMapStack.AddFirst(new Dictionary<string, Identifier>());
+            localVariableToIdentifierMapStack.AddFirst(new Dictionary<string, IIdentifier>());
 
             // Check if thisIdentifier is really hoisted, then we need to copy this variable in another temporary variable
             if (thisIdentifier == null)
@@ -1256,7 +1267,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     {
                         if (param.IsHoisted)
                         {
-                            thisIdentifier = Identifier.CreateScopeIdentifier(
+                            thisIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                                 Scope,
                                 ThisArgument,
                                 false);
@@ -1333,7 +1344,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     GetConstructorDefaultInitializationStatement());
             }
 
-            Identifier functionName = this.GetMethodName(methodDefinition);
+            IIdentifier functionName = this.GetMethodName(methodDefinition);
 
             if (this.IsGlobalStaticImplementation)
             {
@@ -1354,6 +1365,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 Scope.ParameterIdentifiers,
                 functionName);
 
+            if (this.HasWrappedField())
+            {
+                this.InitializeImportedWrapper(returnValue);
+            }
+
             returnValue.AddStatements(statements);
 
             return returnValue;
@@ -1365,7 +1381,57 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <returns></returns>
         private FunctionExpression GenerateCompilerImplemented()
         {
-            Identifier functionName = this.GetMethodName(methodDefinition);
+            IIdentifier functionName = this.GetMethodName(methodDefinition);
+
+            if (this.IsGlobalStaticImplementation)
+            {
+                functionName = this.RuntimeManager.ResolveStatic(this.methodDefinition);
+            }
+
+            var returnValue = new FunctionExpression(
+                null,
+                typeConverter.Scope,
+                Scope,
+                Scope.ParameterIdentifiers,
+                functionName);
+
+            if (this.HasWrappedField())
+            {
+                this.InitializeImportedWrapper(returnValue);
+            }
+
+            if (this.methodDefinition.IsSetter)
+            {
+                this.GenerateSetterImplementation(returnValue);
+            }
+            else if (this.methodDefinition.IsGetter)
+            {
+                this.GenerateGetterImplementation(returnValue);
+            }
+            else if (this.methodDefinition.IsAddOn
+                || this.methodDefinition.IsRemoveOn)
+            {
+                this.GenerateAddonOrRemoveOnImplementation(returnValue);
+            }
+            else
+            {
+                throw new InvalidProgramException();
+            }
+
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Generates a wrapper implementation.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <returns>
+        /// The wrapper implementation.
+        /// </returns>
+        private FunctionExpression GenerateWrapperImplementation()
+        {
+            IIdentifier functionName = this.GetMethodName(methodDefinition);
 
             if (this.IsGlobalStaticImplementation)
             {
@@ -1381,16 +1447,16 @@ namespace Cs2JsC.Converter.TypeSystemConverter
 
             if (this.methodDefinition.IsSetter)
             {
-                this.GenerateSetterImplementation(returnValue);
+                this.GenerateSetterImportedWrapper(returnValue);
             }
             else if (this.methodDefinition.IsGetter)
             {
-                this.GenerateGetterImplementation(returnValue);
+                this.GenerateGetterImportedWrapper(returnValue);
             }
             else if (this.methodDefinition.IsAddOn
                 || this.methodDefinition.IsRemoveOn)
             {
-                this.GenerateAddonOrRemoveOnImplementation(returnValue);
+                this.GenerateAddonOrRemoveOnImportedWrapper(returnValue);
             }
             else
             {
@@ -1439,8 +1505,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         null,
                         this.Scope,
                         this.GetMethodSlotParentExpression(),
-                        new JST.IdentifierExpression(this.Resolve(fieldReference))),
-                new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0]));
+                        new JST.IdentifierExpression(this.Resolve(fieldReference), this.Scope)),
+                new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0], this.Scope));
 
             functionExpression.AddStatement(
                 JST.ExpressionStatement.CreateAssignmentExpression(
@@ -1453,8 +1519,53 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                             null,
                             this.Scope,
                             this.GetMethodSlotParentExpression(),
-                            new JST.IdentifierExpression(this.Resolve(fieldReference))),
+                            new JST.IdentifierExpression(this.Resolve(fieldReference), this.Scope)),
                     methodCallExpr));
+        }
+
+        /// <summary>
+        /// Generates an addon or remove on imported wrapper.
+        /// </summary>
+        /// <param name="functionExpression"> The function expression. </param>
+        private void GenerateAddonOrRemoveOnImportedWrapper(FunctionExpression functionExpression)
+        {
+            var methodCallExpr = new JST.MethodCallExpression(
+                null,
+                this.Scope,
+                JST.IdentifierExpression.Create(
+                    null,
+                    this.Scope,
+                    this.ResolveStaticMember(
+                        this.MethodDefinition.IsAddOn
+                            ?  this.context.KnownReferences.AddEventMethod
+                            : this.context.KnownReferences.RemoveEventMethod)),
+                new JST.IdentifierExpression(this.thisIdentifier, this.Scope),
+                new JST.StringLiteralExpression(this.Scope, this.GetNativeEventName()),
+                new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope),
+                new JST.BooleanLiteralExpression(this.Scope, false));
+
+            functionExpression.AddStatement(new ExpressionStatement(null, this.Scope, methodCallExpr));
+        }
+
+        /// <summary>
+        /// Gets the native event name.
+        /// </summary>
+        /// <returns>
+        /// The native event name.
+        /// </returns>
+        private string GetNativeEventName()
+        {
+            EventDefinition eventDefinition = (EventDefinition)this.methodDefinition.GetAssociatedMember();
+            string eventName = eventDefinition.Name;
+
+            if (eventName.StartsWith("On")
+                && eventName.Length > 3
+                && char.IsUpper(eventName, 2))
+            {
+                return eventName.Substring(2).ToLowerInvariant();
+            }
+
+            return eventName.ToLowerInvariant();
         }
 
         /// <summary>
@@ -1477,8 +1588,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                            this.GetMethodSlotParentExpression(),
                            new JST.IdentifierExpression(
                                this.RuntimeManager.Resolve(
-                                   this.methodDefinition.GetPropertyDefinition()))),
-                       new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0]))));
+                                   this.methodDefinition.GetPropertyDefinition()), this.Scope)),
+                       new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0], this.Scope))));
         }
 
         /// <summary>
@@ -1497,7 +1608,256 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         this.GetMethodSlotParentExpression(),
                         new JST.IdentifierExpression(
                             this.RuntimeManager.Resolve(
-                                this.methodDefinition.GetPropertyDefinition())))));
+                                this.methodDefinition.GetPropertyDefinition()), this.Scope))));
+        }
+
+        /// <summary>
+        /// Generates a getter imported wrapper.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="functionExpression"> The function expression. </param>
+        public void GenerateGetterImportedWrapper(FunctionExpression functionExpression)
+        {
+            PropertyDefinition propertyDefinition = (PropertyDefinition)this.methodDefinition.GetAssociatedMember();
+            var valueParameter = this.methodDefinition.ReturnType;
+
+            if (this.methodDefinition.IsStatic)
+            {
+                JST.Expression valueExpression = new JST.ConditionalOperatorExpression(
+                    null,
+                    this.Scope,
+                    new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                    this.GenerateWrapperExpression(
+                        valueParameter,
+                        new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope)),
+                    new JST.NullLiteralExpression(this.Scope));
+
+                functionExpression.AddStatement(
+                    new JST.ReturnStatement(
+                        null,
+                        this.Scope,
+                        new JST.BinaryExpression(
+                            null,
+                            this.Scope,
+                            BinaryOperator.Assignment,
+                            new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                            new JST.BinaryExpression(
+                                null,
+                                this.Scope,
+                                BinaryOperator.LogicalOr,
+                                new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                                valueExpression))));
+            }
+            else
+            {
+                this.InitializeImportedWrapper(functionExpression);
+
+                JST.Expression valueExpression = new JST.ConditionalOperatorExpression(
+                    null,
+                    this.Scope,
+                    new JST.IndexExpression(
+                        null,
+                        this.Scope,
+                        this.ResolveThis(this.Scope),
+                        new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
+                        false),
+                    this.GenerateWrapperExpression(
+                        valueParameter,
+                        new JST.IndexExpression(
+                            null,
+                            this.Scope,
+                            this.ResolveThis(this.Scope),
+                            new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
+                            false)),
+                    new JST.NullLiteralExpression(this.Scope));
+
+                functionExpression.AddStatement(
+                    new JST.ReturnStatement(
+                        null,
+                        this.Scope,
+                        new JST.BinaryExpression(
+                            null,
+                            this.Scope,
+                            BinaryOperator.Assignment,
+                            new JST.IdentifierExpression(this.GetImportedWrapperIdentifier(propertyDefinition), this.Scope),
+                            new JST.BinaryExpression(
+                                null,
+                                this.Scope,
+                                BinaryOperator.LogicalOr,
+                                new JST.IdentifierExpression(this.GetImportedWrapperIdentifier(propertyDefinition), this.Scope),
+                                valueExpression))));
+            }
+        }
+
+        /// <summary>
+        /// Generates a setter imported wrapper.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="functionExpression"> The function expression. </param>
+        private void GenerateSetterImportedWrapper(FunctionExpression functionExpression)
+        {
+            PropertyDefinition propertyDefinition = (PropertyDefinition)this.methodDefinition.GetAssociatedMember();
+
+            if (this.methodDefinition.IsStatic)
+            {
+                functionExpression.AddStatement(
+                    JST.ExpressionStatement.CreateAssignmentExpression(
+                        new JST.IdentifierExpression(this.typeConverter.ResolveImplementedVersion(propertyDefinition), this.Scope),
+                        new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope)));
+
+                functionExpression.AddStatement(
+                    JST.ExpressionStatement.CreateAssignmentExpression(
+                        new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                        this.GenerateExtrationExpression(
+                            this.methodDefinition.Parameters[0].ParameterType,
+                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope))));
+            }
+            else
+            {
+                this.InitializeImportedWrapper(functionExpression);
+
+                functionExpression.AddStatement(
+                    JST.ExpressionStatement.CreateAssignmentExpression(
+                        new JST.IdentifierExpression(this.GetImportedWrapperIdentifier(propertyDefinition), this.Scope),
+                        new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope)));
+
+                functionExpression.AddStatement(
+                    JST.ExpressionStatement.CreateAssignmentExpression(
+                        new JST.IndexExpression(
+                            null,
+                            this.Scope,
+                            this.ResolveThis(this.Scope),
+                            new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
+                            false),
+                        this.GenerateExtrationExpression(
+                            this.methodDefinition.Parameters[0].ParameterType,
+                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope))));
+            }
+        }
+
+        /// <summary>
+        /// Generates a wrapper expression.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="expressionType"> Type of the expression. </param>
+        /// <param name="expression">     The expression. </param>
+        /// <returns>
+        /// The wrapper expression.
+        /// </returns>
+        private JST.Expression GenerateWrapperExpression(TypeReference expressionType, JST.Expression expression)
+        {
+            MethodReference constructorMethod = null;
+
+            if (expressionType is ArrayType)
+            {
+                constructorMethod = this.KnownReferences.GetArrayNativeArrayArgCtor(((ArrayType)expressionType).ElementType);
+            }
+            else
+            {
+                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
+                if (genericInstanceType == null
+                    || !genericInstanceType.DeclaringType.Resolve().IsSameDefinition(this.KnownReferences.ListGeneric))
+                {
+                    throw new InvalidProgramException("Can't generate ImportedWrapper for properties of type other than Array and List");
+                }
+
+                constructorMethod = this.KnownReferences.GetListNativeArrayArgCtor(genericInstanceType.GenericArguments[0]);
+            }
+
+            return new JST.MethodCallExpression(
+                        null,
+                        this.Scope,
+                        JST.IdentifierExpression.Create(null, this.Scope, this.ResolveFactory(constructorMethod)),
+                        expression);
+        }
+
+        /// <summary>
+        /// Generates an extration expression.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="expressionType"> Type of the expression. </param>
+        /// <param name="expression">     The expression. </param>
+        /// <returns>
+        /// The extration expression.
+        /// </returns>
+        private JST.Expression GenerateExtrationExpression(TypeReference expressionType, JST.Expression expression)
+        {
+            MethodReference converterMethod = null;
+
+            if (expressionType is ArrayType)
+            {
+                converterMethod = this.KnownReferences.GetNativeArrayFromArrayMethod(
+                    ((ArrayType)expressionType).ElementType);
+            }
+            else
+            {
+                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
+                if (genericInstanceType == null
+                    || !genericInstanceType.DeclaringType.Resolve().IsSameDefinition(this.KnownReferences.ListGeneric))
+                {
+                    throw new InvalidProgramException("Can't generate ImportedWrapper for properties of type other than Array and List");
+                }
+
+                converterMethod = this.KnownReferences.GetNativeArrayFromListMethod(genericInstanceType.GenericArguments[0]);
+            }
+
+            return new JST.MethodCallExpression(
+                            null,
+                            this.Scope,
+                            JST.IdentifierExpression.Create(
+                                null,
+                                this.Scope,
+                                this.ResolveStaticMember(converterMethod)),
+                            expression);
+        }
+
+        /// <summary>
+        /// Gets an imported wrapper identifier.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <returns>
+        /// The imported wrapper identifier.
+        /// </returns>
+        private IIdentifier GetImportedWrapperIdentifier(PropertyDefinition propertyDefinition)
+        {
+            return new CompoundIdentifier(
+                this.thisIdentifier,
+                this.typeConverter.ResolveImplementedVersion(propertyDefinition));
+        }
+
+        /// <summary>
+        /// Initializes the imported wrapper.
+        /// </summary>
+        /// <param name="functionExpression"> The function expression. </param>
+        private void InitializeImportedWrapper(FunctionExpression functionExpression)
+        {
+            FieldReference importedAdapterField = this.KnownReferences.ImportedExtensionField;
+            functionExpression.AddStatement(
+                JST.ExpressionStatement.CreateAssignmentExpression(
+                    new JST.IndexExpression(
+                        null,
+                        this.Scope,
+                        this.ResolveThis(this.Scope),
+                        new JST.IdentifierExpression(this.Resolve(importedAdapterField), this.Scope),
+                        false),
+                    new JST.BinaryExpression(
+                        null,
+                        this.Scope,
+                        BinaryOperator.LogicalOr,
+                        new JST.IndexExpression(
+                            null,
+                            this.Scope,
+                            this.ResolveThis(this.Scope),
+                            new JST.IdentifierExpression(this.Resolve(importedAdapterField), this.Scope),
+                            false),
+                        new JST.MethodCallExpression(
+                            null,
+                            this.Scope,
+                            JST.IdentifierExpression.Create(null, this.Scope, this.ResolveStaticMember(this.KnownReferences.GetNewImportedExtensionMethod))))));
         }
 
         /// <summary>
@@ -1548,6 +1908,17 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             TopLevelBlock csAst = executionBlock.ToAST();
 
             return csAst.RootBlock;
+        }
+
+        /// <summary>
+        /// Query if this object has wrapped field.
+        /// </summary>
+        /// <returns>
+        /// true if wrapped field, false if not.
+        /// </returns>
+        private bool HasWrappedField()
+        {
+            return this.context.IsPsudoType(this.typeConverter.TypeDefinition) && this.typeConverter.TypeDefinition.HasFields;
         }
     }
 }

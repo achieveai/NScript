@@ -8,9 +8,13 @@ function System__Object__Equals(obj1, obj2) {
 function System__Object__IsNullOrUndefined(obj) {
   return obj === null || typeof obj == "undefined";
 };
-function System__Object_factory() {
-  var this_;
-  this_ = Object.getDefaultValue();
+function System__Object__GetNewImportedExtension() {
+  return {
+    "toJSON": System__Object__NoReturn
+  };
+};
+function System__Object__NoReturn() {
+  return undefined;
 };
 System__Object__GetType = function System__Object__GetType(this_) {
   return this_.constructor;

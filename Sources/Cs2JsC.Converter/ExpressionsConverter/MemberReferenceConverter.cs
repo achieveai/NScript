@@ -51,7 +51,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         (MethodReference)memberRef));
             }
 
-            JST.Identifier methodIdentifier =
+            JST.IIdentifier methodIdentifier =
                 memberRef is FieldReference
                     ? methodConverter.Resolve((FieldReference)memberRef)
                     : methodConverter.Resolve((MethodReference)memberRef);
@@ -63,7 +63,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     methodConverter,
                     memberReference.LeftExpression),
                 new JST.IdentifierExpression(
-                    methodIdentifier));
+                    methodIdentifier, methodConverter.Scope));
         }
 
         /// <summary>

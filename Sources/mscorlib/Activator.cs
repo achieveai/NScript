@@ -28,7 +28,10 @@ namespace System
         // Exceptions:
         //   System.MissingMethodException:
         //     The type that is specified for T does not have a parameterless constructor.
-        public extern static T CreateInstance<T>();
+        public static T CreateInstance<T>()
+        {
+            return (T)Activator.CreateInstance(typeof(T));
+        }
 
         //
         // Summary:

@@ -4,25 +4,36 @@
 
     public struct SByte
     {
+        [Script("return i;")]
+        public extern static implicit operator Number(sbyte i);
+
+        [Script("return parseInt(s);")]
+        public extern static sbyte Parse(string s);
+
+        [Script("return parseInt(s, radix);")]
+        public extern static sbyte Parse(string s, int radix);
+
         public string Format(string format)
         {
-            return null;
+            return this.ToString(10);
         }
 
         public string LocaleFormat(string format)
         {
-            return null;
+            return this.Format(format);
         }
 
-        [CLSCompliant(false)]
-        public static implicit operator Number(sbyte i)
+        [Script("return this.toString(radix);")]
+        public extern string ToString(int radix);
+
+        public override string ToString()
         {
-            return null;
+            return this.ToString(10);
         }
 
-        public string ToString(int radix)
+        public override string ToLocaleString()
         {
-            return null;
+            return this.ToString();
         }
     }
 }

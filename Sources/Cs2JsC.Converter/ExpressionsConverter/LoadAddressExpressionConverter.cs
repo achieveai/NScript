@@ -81,7 +81,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 objectBuilderScope.ParameterIdentifiers,
                 null);
 
-            Identifier objectRefIdentifier = objectBuilderScope.ParameterIdentifiers[0];
+            SimpleIdentifier objectRefIdentifier = objectBuilderScope.ParameterIdentifiers[0];
 
             objectBuilderFunction.AddStatement(
                 new JST.ReturnStatement(
@@ -102,8 +102,8 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                                 : (JST.Expression)new JST.IndexExpression(
                                     objectBuilderFunction.Location,
                                     scope,
-                                    new JST.IdentifierExpression(objectRefIdentifier),
-                                    new JST.IdentifierExpression(converter.Resolve(fieldReference.FieldReference)));
+                                    new JST.IdentifierExpression(objectRefIdentifier, converter.Scope),
+                                    new JST.IdentifierExpression(converter.Resolve(fieldReference.FieldReference), converter.Scope));
                         })));
 
             JST.Expression objectRefExpression;
@@ -147,8 +147,8 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 objectBuilderScope.ParameterIdentifiers,
                 null);
 
-            Identifier arrayRefIdentifier = objectBuilderScope.ParameterIdentifiers[0];
-            Identifier arrayIndexIdentifier = objectBuilderScope.ParameterIdentifiers[1];
+            SimpleIdentifier arrayRefIdentifier = objectBuilderScope.ParameterIdentifiers[0];
+            SimpleIdentifier arrayIndexIdentifier = objectBuilderScope.ParameterIdentifiers[1];
 
             objectBuilderFunction.AddStatement(
                 new JST.ReturnStatement(
@@ -161,8 +161,8 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         (scope) => (JST.Expression)new JST.IndexExpression(
                             objectBuilderFunction.Location,
                             scope,
-                            new JST.IdentifierExpression(arrayRefIdentifier),
-                            new JST.IdentifierExpression(arrayIndexIdentifier),
+                            new JST.IdentifierExpression(arrayRefIdentifier, converter.Scope),
+                            new JST.IdentifierExpression(arrayIndexIdentifier, converter.Scope),
                             true))));
 
             JST.Expression arrayRefExpression = ExpressionConverterBase.Convert(
@@ -221,7 +221,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 func);
 
             innerScope = new IdentifierScope(parentScope, 1);
-            Identifier setterArgument = innerScope.ParameterIdentifiers[0];
+            SimpleIdentifier setterArgument = innerScope.ParameterIdentifiers[0];
 
             func = new JST.FunctionExpression(
                 initializer.Location,
@@ -239,7 +239,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         innerScope,
                         JST.BinaryOperator.Assignment,
                         expressionCreator(innerScope),
-                        new IdentifierExpression(setterArgument))));
+                        new IdentifierExpression(setterArgument, converter.Scope))));
 
             initializer.AddInitializer(
                 converter.RuntimeManager.ReferenceManager.WriterIdentifier,

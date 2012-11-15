@@ -253,6 +253,7 @@
                 @"Double.cs",
                 @"Enum.cs",
                 @"EventArgs.cs",
+                @"EventBinder.cs",
                 @"EventHandler.cs",
                 @"Exception.cs",
                 @"FlagsAttribute.cs",

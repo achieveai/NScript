@@ -107,8 +107,8 @@ namespace Cs2JsC.Converter.StatementsConverter
             PropertyReference keyReference = converter.KnownReferences.DictEntryKey;
             PropertyReference valueReference = converter.KnownReferences.DictEntryValue;
 
-            JST.Identifier keyIdentifier = converter.GetTempVariable();
-            JST.Identifier dictIdentifier = converter.GetTempVariable();
+            JST.IIdentifier keyIdentifier = converter.GetTempVariable();
+            JST.IIdentifier dictIdentifier = converter.GetTempVariable();
 
             List<JST.Statement> statements = new List<JST.Statement>();
             JST.ScopeBlock scopeBlock = new JST.ScopeBlock(

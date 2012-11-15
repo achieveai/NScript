@@ -301,7 +301,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         callContext.ThisExpression,
                         callContext.IsVirtual
                             ? resolver.ResolveVirtualMethod(methodReference, callContext.Scope)
-                            : new JST.IdentifierExpression(resolver.Resolve(methodReference))),
+                            : new JST.IdentifierExpression(resolver.Resolve(methodReference), callContext.Scope)),
                     genericArguments);
             }
             else

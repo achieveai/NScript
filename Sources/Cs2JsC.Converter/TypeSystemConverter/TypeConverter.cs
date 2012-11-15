@@ -84,15 +84,15 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Mapping from localVariableIndex to Identifier.
         /// </summary>
-        private readonly Dictionary<string, Identifier> localVariableToIdentifierMap =
-            new Dictionary<string, Identifier>();
+        private readonly Dictionary<string, IIdentifier> localVariableToIdentifierMap =
+            new Dictionary<string, IIdentifier>();
 
         /// <summary>
         /// Dictionary for keeping track of local TypeReferences (typeReferences with scope
         /// of MethodReference).
         /// </summary>
-        private readonly Dictionary<TypeReference, Identifier> localTypeReferences =
-            new Dictionary<TypeReference, Identifier>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<TypeReference, IIdentifier> localTypeReferences =
+            new Dictionary<TypeReference, IIdentifier>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// Tracking field for what all typeReferences have been initialized.
@@ -338,7 +338,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
 
             // If we can't implement this method, let's skip.
             if (!this.TypeScopeManager.IsImplemented(methodDefinition)
-                || !this.context.IsImplemented(methodDefinition))
+                || !this.context.IsImplemented(methodDefinition)
+                || (methodDefinition.IsConstructor && this.context.IsPsudoType(this.typeDefinition)))
             {
                 return;
             }
@@ -373,7 +374,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="paramDef">The type reference base.</param>
         /// <returns>Identifier for givenType.</returns>
-        public IList<Identifier> Resolve(TypeReference typeReference)
+        public IList<IIdentifier> Resolve(TypeReference typeReference)
         {
             // If we are resolving paramDef which points to typeDefinition
             // replace it with localTypeReference. This is done so that if typeDefinition
@@ -388,7 +389,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             if (typeScope.HasValue
                 && typeScope.Value == GenericParameterType.Type)
             {
-                Identifier rv;
+                IIdentifier rv;
                 if (!this.localTypeReferences.TryGetValue(typeReference, out rv))
                 {
                     GenericParameter genericParam = typeReference as GenericParameter;
@@ -411,7 +412,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                                         typeDefinitionBase.Name).Item2);
                             });
 
-                        rv = Identifier.CreateScopeIdentifier(
+                        rv = SimpleIdentifier.CreateScopeIdentifier(
                             this.typeScope,
                             strBuilder.ToString(),
                             false);
@@ -420,7 +421,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     this.localTypeReferences.Add(typeReference, rv);
                 }
 
-                return new Identifier[] { rv };
+                return new IIdentifier[] { rv };
             }
 
             return this.runtimeScopeManager.ResolveType((TypeReference)typeReference);
@@ -433,8 +434,15 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <returns>
         /// Identifier identifying the member.
         /// </returns>
-        public Identifier Resolve(FieldReference fieldReference)
+        public IIdentifier Resolve(FieldReference fieldReference)
         {
+            if (this.context.IsPsudoType(fieldReference.DeclaringType.Resolve()))
+            {
+                return new CompoundIdentifier(
+                    this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
+                    this.runtimeScopeManager.Resolve(fieldReference));
+            }
+
             return this.runtimeScopeManager.Resolve(fieldReference);
         }
 
@@ -445,7 +453,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <returns>
         /// Identifier identifying the member.
         /// </returns>
-        public Identifier Resolve(PropertyReference propertyReference)
+        public IIdentifier Resolve(PropertyReference propertyReference)
         {
             return this.runtimeScopeManager.Resolve(propertyReference);
         }
@@ -455,7 +463,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="methodReference">The method reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public Identifier Resolve(MethodReference methodReference)
+        public IIdentifier Resolve(MethodReference methodReference)
         {
             return this.Resolve(methodReference, false);
         }
@@ -465,7 +473,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="memberReference">The member reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public Identifier Resolve(MethodReference memberReference, bool forceStatic)
+        public IIdentifier Resolve(MethodReference memberReference, bool forceStatic)
         {
             return this.runtimeScopeManager.Resolve(memberReference, forceStatic);
         }
@@ -476,14 +484,15 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <param name="member">The member.</param>
         /// <param name="resolver">The resolver.</param>
         /// <returns>Idnentifiers for accessing static member.</returns>
-        public IList<Identifier> ResolveStaticMember(
+        public IList<IIdentifier> ResolveStaticMember(
             FieldReference member,
-            Func<TypeReference, IList<Identifier>> resolver)
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             bool isFixedName, isAlias;
 
             string name = this.Context.GetMemberName(
                 member.GetDefinition(),
+                false,
                 out isFixedName,
                 out isAlias);
 
@@ -492,7 +501,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 return this.RuntimeManager.ResolveScriptAlias(name);
             }
 
-            List<Identifier> returnValue = new List<Identifier>();
+            List<IIdentifier> returnValue = new List<IIdentifier>();
             TypeDefinition memberTypeDef = member.DeclaringType.Resolve();
             if (!memberTypeDef.IsGeneric()
                 && this.RuntimeManager.Context.IsImplemented(member.Resolve()))
@@ -501,7 +510,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 return returnValue;
             }
 
-            IList<Identifier> parentPath = resolver(member.DeclaringType);
+            IList<IIdentifier> parentPath = resolver(member.DeclaringType);
             if (parentPath != null)
             {
                 returnValue.AddRange(parentPath);
@@ -512,21 +521,65 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         }
 
         /// <summary>
+        /// Resolve static member.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <param name="resolver">           The resolver. </param>
+        /// <returns>
+        /// Identifier for static member.
+        /// </returns>
+        internal IIdentifier ResolveStaticMember(
+            PropertyDefinition propertyDefinition,
+            Func<TypeReference, IList<IIdentifier>> resolver)
+        {
+            bool isFixedName, isAlias;
+
+            string name = this.Context.GetMemberName(
+                propertyDefinition,
+                false,
+                out isFixedName,
+                out isAlias);
+
+            if (isAlias)
+            {
+                return new CompoundIdentifier(this.RuntimeManager.ResolveScriptAlias(name));
+            }
+
+            List<IIdentifier> returnValue = new List<IIdentifier>();
+            TypeDefinition memberTypeDef = propertyDefinition.DeclaringType.Resolve();
+            if (!memberTypeDef.IsGeneric()
+                && this.RuntimeManager.Context.IsImplemented(propertyDefinition))
+            {
+                returnValue.Add(this.RuntimeManager.ResolveStatic(propertyDefinition));
+                return new CompoundIdentifier(returnValue);
+            }
+
+            IList<IIdentifier> parentPath = resolver(propertyDefinition.DeclaringType);
+            if (parentPath != null)
+            {
+                returnValue.AddRange(parentPath);
+            }
+
+            returnValue.Add(this.Resolve(propertyDefinition));
+            return new CompoundIdentifier(returnValue);
+        }
+
+        /// <summary>
         /// Resolves the static member.
         /// </summary>
         /// <param name="member">The member.</param>
         /// <param name="resolver">The resolver.</param>
         /// <returns>Idnentifiers for accessing static member.</returns>
-        public IList<Identifier> ResolveStaticMember(
+        public IList<IIdentifier> ResolveStaticMember(
             MethodReference member,
-            Func<TypeReference, IList<Identifier>> resolver)
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return this.ResolveStaticMember(member, resolver, false);
         }
 
-        public IList<Identifier> ResolveFactory(
+        public IList<IIdentifier> ResolveFactory(
             MethodReference constructor,
-            Func<TypeReference, IList<Identifier>> resolver)
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return this.ResolveStaticMember(constructor, resolver, true);
         }
@@ -536,7 +589,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="member">The member.</param>
         /// <returns>Resolve static member</returns>
-        public IList<Identifier> ResolveStaticMember(
+        public IList<IIdentifier> ResolveStaticMember(
             FieldReference member)
         {
             return this.ResolveStaticMember(
@@ -549,12 +602,24 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="member">The member.</param>
         /// <returns>Resolve static member</returns>
-        public IList<Identifier> ResolveStaticMember(
+        public IList<IIdentifier> ResolveStaticMember(
             MethodReference member)
         {
             return this.ResolveStaticMember(
                 member,
                 this.Resolve);
+        }
+
+        /// <summary>
+        /// Resolve static member.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <returns>
+        /// Identifier for static member.
+        /// </returns>
+        public IIdentifier ResolveStaticMember(PropertyDefinition propertyDefinition)
+        {
+            return this.ResolveStaticMember(propertyDefinition, this.Resolve);
         }
 
         /// <summary>
@@ -582,7 +647,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         public Expression ResolveVirtualMethod(
             MethodReference methodReference,
             IdentifierScope scope,
-            Func<TypeReference, IList<Identifier>> typeResolver)
+            Func<TypeReference, IList<IIdentifier>> typeResolver)
         {
             return this.RuntimeManager.ResolveVirtualMethod(
                 methodReference,
@@ -813,7 +878,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         this.Scope,
                         prototype,
                         new IdentifierExpression(
-                            this.TypeScopeManager.ResolveMethod(method)));
+                            this.TypeScopeManager.ResolveMethod(method), this.Scope));
             }
 
             List<string> args = new List<string>();
@@ -854,7 +919,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         new ThisExpression(null, innerScope2),
                         new IdentifierExpression(
                             this.Resolve(
-                                this.Context.KnownReferences.BoxedValueField))));
+                                this.Context.KnownReferences.BoxedValueField), innerScope2)));
             }
             else
             {
@@ -922,11 +987,12 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             // If a class is extended and it has ignore namespace, the constructor is
             // already defined.
             if (!this.Context.IsExtended(this.typeDefinition)
+                && !this.Context.IsPsudoType(this.typeDefinition)
                 && !this.Context.HasIgnoreNamespaceAttribute(this.typeDefinition))
             {
                 var typeExpr = this.ResolveTypeToExpression(this.typeDefinition, this.Scope);
                 var identifierTypeExpr = typeExpr as IdentifierExpression;
-                Identifier typeIdentifier = identifierTypeExpr != null
+                IIdentifier typeIdentifier = identifierTypeExpr != null
                     ? identifierTypeExpr.Identifier
                     : null;
 
@@ -1030,15 +1096,15 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <returns></returns>
         protected virtual Expression CreateConstructorFunction(
-            Identifier typeName)
+            IIdentifier typeName)
         {
             IdentifierScope innerScope = new IdentifierScope(this.Scope);
             Expression objExpression = new FunctionExpression(
                 null,
                 this.Scope,
                 innerScope,
-                new List<Identifier>(),
-                typeName ?? Identifier.CreateScopeIdentifier(
+                new List<IIdentifier>(),
+                typeName ?? SimpleIdentifier.CreateScopeIdentifier(
                     this.Scope,
                     this.typeDefinition.FullName, false));
 
@@ -1114,7 +1180,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         null,
                         this.Scope,
                         this.Resolve(this.typeDefinition)),
-                    new IdentifierExpression(this.RuntimeManager.JSBaseObjectScopeManager.TypeId)),
+                    new IdentifierExpression(this.RuntimeManager.JSBaseObjectScopeManager.TypeId, this.Scope)),
                 idExpression);
         }
 
@@ -1168,7 +1234,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 this.hasTypeRefInit = true;
 
                 // Add condition so that we don't do initialization twice.
-                Identifier initTracker = Identifier.CreateScopeIdentifier(
+                IIdentifier initTracker = SimpleIdentifier.CreateScopeIdentifier(
                     this.Scope,
                     "__initTracker",
                     false);
@@ -1386,7 +1452,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                                     this.Resolve(this.typeDefinition)),
                                 new IdentifierExpression(
                                     this.Resolve(
-                                        this.cnvtKnownRefs.PrototypeField))),
+                                        this.cnvtKnownRefs.PrototypeField), this.Scope)),
                             prototypeExpression));
                 }
                 else
@@ -1451,7 +1517,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             if (this.TypeDefinition.BaseType != null
                 && !this.TypeDefinition.IsStatic()
                 && !this.TypeDefinition.BaseType.IsSame(this.clrKnownRefs.Object)
-                && !this.Context.IsExtended(this.typeDefinition))
+                && !this.Context.IsExtended(this.typeDefinition)
+                && !this.Context.IsPsudoType(this.typeDefinition))
             {
                 return new NewObjectExpression(
                         null,
@@ -1473,9 +1540,9 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             List<Statement> returnValue,
             Action<TypeConverter, List<Statement>> addDependenciesCallback)
         {
-            IList<Identifier> identifiers = this.RuntimeManager.ResolveType(this.typeDefinition);
+            IList<IIdentifier> identifiers = this.RuntimeManager.ResolveType(this.typeDefinition);
 
-            Identifier functionName = identifiers.Count == 1 ? identifiers[0] : null;
+            IIdentifier functionName = identifiers.Count == 1 ? identifiers[0] : null;
             FunctionExpression genericTypeInitFunction = new FunctionExpression(
                 null,
                 this.RuntimeManager.Scope,
@@ -1696,6 +1763,10 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             List<Statement> returnValue,
             Action<TypeConverter, List<Statement>> addDependenciesCallback)
         {
+            Action<FieldDefinition> dele = this.AddFieldToImplementation;
+            MulticastDelegate dele2 = dele;
+            Delegate dele3 = dele;
+            dele = (Action<FieldDefinition>)dele2;
             if (!this.typeDefinition.IsInterface)
             {
                 this.InitializeStaticVariables(returnValue);
@@ -1739,6 +1810,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
 
                 foreach (var field in this.typeDefinition.Fields)
                 {
+                    if (this.context.IsPsudoType(this.typeDefinition))
+                    {
+                        continue;
+                    }
+
                     this.AddFieldToImplementation(field);
                 }
             }
@@ -1816,7 +1892,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         IdentifierExpression.Create(
                             null,
                             this.Scope,
-                            new Identifier[] { this.typeScope.ParameterIdentifiers[paramIndex], this.RuntimeManager.JSBaseObjectScopeManager.TypeName }));
+                            new IIdentifier[] { this.typeScope.ParameterIdentifiers[paramIndex], this.RuntimeManager.JSBaseObjectScopeManager.TypeName }));
                 }
 
                 typeNameExpression = new BinaryExpression(
@@ -1887,18 +1963,19 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Resolves the static member.
         /// </summary>
-        /// <param name="member">The member.</param>
+        /// <param name="method">The member.</param>
         /// <param name="resolver">The resolver.</param>
         /// <returns>Idnentifiers for accessing static member.</returns>
-        private IList<Identifier> ResolveStaticMember(
-            MethodReference member,
-            Func<TypeReference, IList<Identifier>> resolver,
+        private IList<IIdentifier> ResolveStaticMember(
+            MethodReference method,
+            Func<TypeReference, IList<IIdentifier>> resolver,
             bool isFactory)
         {
             bool isFixedName, isAlias;
 
             string name = this.Context.GetMemberName(
-                member.GetDefinition(),
+                method.GetDefinition(),
+                false,
                 out isFixedName,
                 out isAlias);
 
@@ -1907,36 +1984,50 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 return this.RuntimeManager.ResolveScriptAlias(name);
             }
 
-            List<Identifier> returnValue = new List<Identifier>();
-            TypeDefinition memberTypeDef = member.DeclaringType.Resolve();
+            List<IIdentifier> returnValue = new List<IIdentifier>();
+            TypeDefinition memberTypeDef = method.DeclaringType.Resolve();
             if (!memberTypeDef.IsGeneric()
-                && this.RuntimeManager.Context.IsImplemented(member.Resolve()))
+                && this.RuntimeManager.Context.IsImplemented(method.Resolve()))
             {
                 if (!isFactory)
                 {
-                    returnValue.Add(this.RuntimeManager.ResolveStatic(member.Resolve()));
+                    returnValue.Add(this.RuntimeManager.ResolveStatic(method.Resolve()));
                 }
                 else
                 {
-                    returnValue.Add(this.RuntimeManager.ResolveFactory(member.Resolve()));
+                    returnValue.Add(this.RuntimeManager.ResolveFactory(method.Resolve()));
                 }
 
                 return returnValue;
             }
 
-            IList<Identifier> parentPath = resolver(member.DeclaringType);
+            IList<IIdentifier> parentPath = resolver(method.DeclaringType);
             if (parentPath != null)
             {
                 returnValue.AddRange(parentPath);
             }
 
-            returnValue.Add(this.Resolve(member, true));
+            returnValue.Add(this.Resolve(method, true));
             return returnValue;
         }
 
-        public IList<Identifier> ResolveFactory(MethodReference methodReference)
+        public IList<IIdentifier> ResolveFactory(MethodReference methodReference)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Resolve implemented version.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <returns>
+        /// Identifier for ImplementedVersion of imported property.
+        /// </returns>
+        public IIdentifier ResolveImplementedVersion(PropertyDefinition propertyDefinition)
+        {
+            return new CompoundIdentifier(
+                this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
+                this.typeScopeManager.ResolveImportedExtendedProperty(propertyDefinition));
         }
 
         public Expression ResolveMethodSlotName(MethodReference methodReference, bool isVirtualCall, IdentifierScope identifierScope)

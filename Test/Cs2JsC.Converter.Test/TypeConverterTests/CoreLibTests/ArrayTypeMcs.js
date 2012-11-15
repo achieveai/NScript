@@ -1,19 +1,11 @@
-﻿function System_Array() {
-};
-System_Array.typeId = "b";
+﻿Array.typeId = "b";
 function System__Array__Sort(T, array, comparator) {
   var ArrayG_$T$_;
   ArrayG_$T$_ = System_ArrayG(T, true);
   System__Type__CastType(ArrayG_$T$_, array).sort(comparator);
 };
-ptyp_ = System_Array.prototype;
-ptyp_.__ctor = function System__Array____ctor() {
-};
-ptyp_.V_GetEnumerator_c = function() {
-  return this.V_GetEnumerator();
-};
-System__Type__RegisterReferenceType(System_Array, "System.Array", Object, [System_Collections_IEnumerable]);
-Array.typeId = "d";
+System__Type__RegisterReferenceType(Array, "System.Array", Object, [System_Collections_IEnumerable]);
+Array.typeId = "c";
 function System__NativeArray__GetArray(T, this_) {
   var ArrayG_$T$_, T$5b$5d_$T$_;
   T$5b$5d_$T$_ = System_ArrayG(T, true);
@@ -108,7 +100,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_ = System_ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = System_ArrayG;
-  ArrayG$1_$T$_.typeId = "e$" + T.typeId + "$";
+  ArrayG$1_$T$_.typeId = "d$" + T.typeId + "$";
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);

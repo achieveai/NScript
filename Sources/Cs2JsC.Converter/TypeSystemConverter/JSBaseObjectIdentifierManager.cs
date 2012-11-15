@@ -45,52 +45,52 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Backing field for Prototype
         /// </summary>
-        private Identifier prototypeIdentifier;
+        private IIdentifier prototypeIdentifier;
 
         /// <summary>
         /// Backing field for Constructor
         /// </summary>
-        private Identifier constructorIdentifier;
+        private IIdentifier constructorIdentifier;
 
         /// <summary>
         /// Backing field for TypeId
         /// </summary>
-        private Identifier typeIdIdentifier;
+        private IIdentifier typeIdIdentifier;
 
         /// <summary>
         /// Backing field for TypeName
         /// </summary>
-        private Identifier typeNameIdentifier;
+        private IIdentifier typeNameIdentifier;
 
         /// <summary>
         /// Backing field for RegisterNamespace
         /// </summary>
-        private Identifier registerNamespace;
+        private IIdentifier registerNamespace;
 
         /// <summary>
         /// Backing field for RegisterClass.
         /// </summary>
-        private Identifier registerClass;
+        private IIdentifier registerClass;
 
         /// <summary>
         /// Backing field for RegisterInterface.
         /// </summary>
-        private Identifier registerInterface;
+        private IIdentifier registerInterface;
 
         /// <summary>
         /// Backing field for RegisterEnum.
         /// </summary>
-        private Identifier registerEnum;
+        private IIdentifier registerEnum;
 
         /// <summary>
         /// Backing field for GenericTypeRefInitializer.
         /// </summary>
-        private Identifier genericTypeRefInitializer;
+        private IIdentifier genericTypeRefInitializer;
 
         /// <summary>
         /// DefaultValueGetter backing field.
         /// </summary>
-        private Identifier defaultValueGetter;
+        private IIdentifier defaultValueGetter;
 
         /// <summary>
         /// Backing store for converter context.
@@ -162,7 +162,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the prototype.
         /// </summary>
-        public Identifier Prototype
+        public IIdentifier Prototype
         {
             get
             {
@@ -180,7 +180,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the constructor.
         /// </summary>
-        public Identifier Constructor
+        public IIdentifier Constructor
         {
             get
             {
@@ -198,7 +198,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the type id.
         /// </summary>
-        public Identifier TypeId
+        public IIdentifier TypeId
         {
             get
             {
@@ -219,7 +219,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <value>
         /// The name of the type.
         /// </value>
-        public Identifier TypeName
+        public IIdentifier TypeName
         {
             get
             {
@@ -237,13 +237,13 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the register namespace.
         /// </summary>
-        public Identifier RegisterNamespace
+        public IIdentifier RegisterNamespace
         {
             get
             {
                 if (this.registerNamespace == null)
                 {
-                    this.registerNamespace = Identifier.CreateScopeIdentifier(
+                    this.registerNamespace = SimpleIdentifier.CreateScopeIdentifier(
                         this.StaticScope,
                         "registerNamespace",
                         true);
@@ -256,7 +256,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the register class.
         /// </summary>
-        public Identifier RegisterClass
+        public IIdentifier RegisterClass
         {
             get
             {
@@ -274,7 +274,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the register interface.
         /// </summary>
-        public Identifier RegisterInterface
+        public IIdentifier RegisterInterface
         {
             get
             {
@@ -292,7 +292,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the register enum.
         /// </summary>
-        public Identifier RegisterEnum
+        public IIdentifier RegisterEnum
         {
             get
             {
@@ -311,13 +311,13 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Gets the generic type ref initializer.
         /// </summary>
         /// <value>The generic type ref initializer.</value>
-        public Identifier GenericTypeRefInitializer
+        public IIdentifier GenericTypeRefInitializer
         {
             get
             {
                 if (this.genericTypeRefInitializer == null)
                 {
-                    this.genericTypeRefInitializer = Identifier.CreateScopeIdentifier(
+                    this.genericTypeRefInitializer = SimpleIdentifier.CreateScopeIdentifier(
                         this.staticBaseIdentifiers,
                         "_tri",
                         true);
@@ -331,7 +331,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Gets the default value getter.
         /// </summary>
         /// <value>The default value getter.</value>
-        public Identifier DefaultValueGetter
+        public IIdentifier DefaultValueGetter
         {
             get
             {

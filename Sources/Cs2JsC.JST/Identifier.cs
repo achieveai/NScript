@@ -12,7 +12,7 @@ namespace Cs2JsC.JST
     /// <summary>
     /// Identifier base class
     /// </summary>
-    public class Identifier
+    public class SimpleIdentifier : IIdentifier
     {
         /// <summary>
         /// Backing store for usageCount.
@@ -35,11 +35,11 @@ namespace Cs2JsC.JST
         private readonly IdentifierScope ownerScope;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Identifier"/> class.
+        /// Initializes a new instance of the <see cref="SimpleIdentifier"/> class.
         /// </summary>
         /// <param name="suggestedName">Name of the suggested.</param>
         /// <param name="ownerScope">The owner scope.</param>
-        private Identifier(
+        private SimpleIdentifier(
             IdentifierScope ownerScope,
             string suggestedName,
             bool enforceSuggestion)
@@ -113,10 +113,10 @@ namespace Cs2JsC.JST
         /// </summary>
         /// <param name="ownerScope">The owner scope.</param>
         /// <returns>Identifier that has already been added to scope.</returns>
-        public static Identifier CreateScopeIdentifier(
+        public static SimpleIdentifier CreateScopeIdentifier(
             IdentifierScope ownerScope)
         {
-            return Identifier.CreateScopeIdentifier(ownerScope, null, false);
+            return SimpleIdentifier.CreateScopeIdentifier(ownerScope, null, false);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Cs2JsC.JST
         /// <returns>
         /// Identifier that has already been added to scope.
         /// </returns>
-        public static Identifier CreateScopeIdentifier(
+        public static SimpleIdentifier CreateScopeIdentifier(
             IdentifierScope ownerScope,
             string suggestedName,
             bool enforceSuggestion)
@@ -138,12 +138,12 @@ namespace Cs2JsC.JST
                 throw new ArgumentException("suggestedName");
             }
 
-            Identifier returnValue = null;
+            SimpleIdentifier returnValue = null;
 
             if (!enforceSuggestion
                 || !ownerScope.TryGetKnownIdentifier(suggestedName, out returnValue))
             {
-                returnValue = new Identifier(
+                returnValue = new SimpleIdentifier(
                      ownerScope,
                      suggestedName,
                      enforceSuggestion);
@@ -162,11 +162,11 @@ namespace Cs2JsC.JST
         internal static void CreateParameterIdentifier(
             IdentifierScope ownerScope,
             int parameterCount,
-            List<Identifier> paramIdentifiers)
+            List<SimpleIdentifier> paramIdentifiers)
         {
             for (int parameterIndex = 0; parameterIndex < parameterCount; parameterIndex++)
             {
-                paramIdentifiers.Add(new Identifier(ownerScope, string.Format("arg{0}", parameterIndex), false));
+                paramIdentifiers.Add(new SimpleIdentifier(ownerScope, string.Format("arg{0}", parameterIndex), false));
             }
         }
 
@@ -181,12 +181,12 @@ namespace Cs2JsC.JST
             IdentifierScope ownerScope,
             IList<string> identifierNames,
             bool enforceNames,
-            List<Identifier> paramIdentifiers)
+            List<SimpleIdentifier> paramIdentifiers)
         {
             for (int parameterIndex = 0; parameterIndex < identifierNames.Count; parameterIndex++)
             {
                 paramIdentifiers.Add(
-                    new Identifier(
+                    new SimpleIdentifier(
                         ownerScope,
                         identifierNames[parameterIndex],
                         enforceNames));

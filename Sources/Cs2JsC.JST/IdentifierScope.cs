@@ -22,25 +22,25 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Scope variable identifiers.
         /// </summary>
-        private readonly HashSet<Identifier> scopedIdentifiersSet =
-            new HashSet<Identifier>();
+        private readonly HashSet<SimpleIdentifier> scopedIdentifiersSet =
+            new HashSet<SimpleIdentifier>();
 
         /// <summary>
         /// Identifier used in current scope.
         /// </summary>
-        private readonly Dictionary<Identifier, int> usedIdentifiersSet =
-            new Dictionary<Identifier, int>();
+        private readonly Dictionary<SimpleIdentifier, int> usedIdentifiersSet =
+            new Dictionary<SimpleIdentifier, int>();
 
         /// <summary>
         /// backing list for ParameterIdentifiers.
         /// </summary>
-        private readonly List<Identifier> paramaterIdentifiers;
+        private readonly List<SimpleIdentifier> paramaterIdentifiers;
 
         /// <summary>
         /// backing list for ScopedIdentifiers.
         /// </summary>
-        private readonly List<Identifier> scopedIdentifiers =
-            new List<Identifier>();
+        private readonly List<SimpleIdentifier> scopedIdentifiers =
+            new List<SimpleIdentifier>();
 
         /// <summary>
         /// backing list for ChildScopes.
@@ -51,29 +51,29 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Backing list for UsedIdentifiers.
         /// </summary>
-        private readonly List<Identifier> usedIdentifiers =
-            new List<Identifier>();
+        private readonly List<SimpleIdentifier> usedIdentifiers =
+            new List<SimpleIdentifier>();
 
         /// <summary>
         /// Backing field for used local identifiers.
         /// </summary>
-        private readonly List<Identifier> usedLocalIdentifiers =
-            new List<Identifier>();
+        private readonly List<SimpleIdentifier> usedLocalIdentifiers =
+            new List<SimpleIdentifier>();
 
         /// <summary>
         /// Backing field for ParameterIdentifiers.
         /// </summary>
-        private readonly ReadOnlyCollection<Identifier> readonlyParameterIdentifiers;
+        private readonly ReadOnlyCollection<SimpleIdentifier> readonlyParameterIdentifiers;
 
         /// <summary>
         /// Backing field for ScopedIdentifiers.
         /// </summary>
-        private readonly ReadOnlyCollection<Identifier> readonlyScopedIdentifiers;
+        private readonly ReadOnlyCollection<SimpleIdentifier> readonlyScopedIdentifiers;
 
         /// <summary>
         /// Backing field for UsedIdentifiers.
         /// </summary>
-        private readonly ReadOnlyCollection<Identifier> readonlyUsedIdentifiers;
+        private readonly ReadOnlyCollection<SimpleIdentifier> readonlyUsedIdentifiers;
 
         /// <summary>
         /// Backing field for ChildScopes.
@@ -83,20 +83,20 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Backing field for usedLocalIdentifiers.
         /// </summary>
-        private readonly ReadOnlyCollection<Identifier> readonlyUsedLocalIdentifiers;
+        private readonly ReadOnlyCollection<SimpleIdentifier> readonlyUsedLocalIdentifiers;
 
         /// <summary>
         /// mapping between enforced names and identifiers.
         /// </summary>
-        private readonly Dictionary<string, Identifier> knownNameMap =
-            new Dictionary<string, Identifier>();
+        private readonly Dictionary<string, SimpleIdentifier> knownNameMap =
+            new Dictionary<string, SimpleIdentifier>();
 
         /// <summary>
         /// Dictionary for keeping track of which names are used by which identifier.
         /// This is used for generating correct name.
         /// </summary>
-        private readonly Dictionary<string, List<Identifier>> identifierNameGroups =
-            new Dictionary<string, List<Identifier>>();
+        private readonly Dictionary<string, List<SimpleIdentifier>> identifierNameGroups =
+            new Dictionary<string, List<SimpleIdentifier>>();
 
         /// <summary>
         /// Parent scope.
@@ -114,13 +114,13 @@ namespace Cs2JsC.JST
 
             if (isExecutionScope)
             {
-                this.paramaterIdentifiers = new List<Identifier>();
-                this.readonlyParameterIdentifiers = new ReadOnlyCollection<Identifier>(this.paramaterIdentifiers);
+                this.paramaterIdentifiers = new List<SimpleIdentifier>();
+                this.readonlyParameterIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.paramaterIdentifiers);
             }
 
-            this.readonlyUsedLocalIdentifiers = new ReadOnlyCollection<Identifier>(this.usedLocalIdentifiers);
-            this.readonlyScopedIdentifiers = new ReadOnlyCollection<Identifier>(this.scopedIdentifiers);
-            this.readonlyUsedIdentifiers = new ReadOnlyCollection<Identifier>(this.usedIdentifiers);
+            this.readonlyUsedLocalIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.usedLocalIdentifiers);
+            this.readonlyScopedIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.scopedIdentifiers);
+            this.readonlyUsedIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.usedIdentifiers);
             this.readonlyChildScopes = new ReadOnlyCollection<IdentifierScope>(this.childScopes);
         }
 
@@ -140,15 +140,15 @@ namespace Cs2JsC.JST
             this.isExecutionScope = parentScope.isExecutionScope;
             this.parentScope.childScopes.Add(this);
 
-            this.readonlyUsedLocalIdentifiers = new ReadOnlyCollection<Identifier>(this.usedLocalIdentifiers);
-            this.readonlyScopedIdentifiers = new ReadOnlyCollection<Identifier>(this.scopedIdentifiers);
-            this.readonlyUsedIdentifiers = new ReadOnlyCollection<Identifier>(this.usedIdentifiers);
+            this.readonlyUsedLocalIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.usedLocalIdentifiers);
+            this.readonlyScopedIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.scopedIdentifiers);
+            this.readonlyUsedIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.usedIdentifiers);
             this.readonlyChildScopes = new ReadOnlyCollection<IdentifierScope>(this.childScopes);
 
             if (this.isExecutionScope)
             {
-                this.paramaterIdentifiers = new List<Identifier>();
-                this.readonlyParameterIdentifiers = new ReadOnlyCollection<Identifier>(this.paramaterIdentifiers);
+                this.paramaterIdentifiers = new List<SimpleIdentifier>();
+                this.readonlyParameterIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.paramaterIdentifiers);
             }
         }
 
@@ -166,7 +166,7 @@ namespace Cs2JsC.JST
                 throw new System.InvalidOperationException("Non execution scopes can't take parameters");
             }
 
-            Identifier.CreateParameterIdentifier(this, parameterCount, this.paramaterIdentifiers);
+            SimpleIdentifier.CreateParameterIdentifier(this, parameterCount, this.paramaterIdentifiers);
 
             for (int iParam = 0; iParam < this.paramaterIdentifiers.Count; iParam++)
             {
@@ -191,7 +191,7 @@ namespace Cs2JsC.JST
                 throw new System.InvalidOperationException("Non execution scopes can't take parameters");
             }
 
-            Identifier.CreateParameterIdentifier(
+            SimpleIdentifier.CreateParameterIdentifier(
                 this,
                 suggestedParameterNames,
                 enforceSuggestion,
@@ -219,7 +219,7 @@ namespace Cs2JsC.JST
         /// Gets the parameter identifiers.
         /// </summary>
         /// <value>The parameter identifiers.</value>
-        public IList<Identifier> ParameterIdentifiers
+        public IList<SimpleIdentifier> ParameterIdentifiers
         {
             get
             {
@@ -231,7 +231,7 @@ namespace Cs2JsC.JST
         /// Gets the scoped identifiers.
         /// </summary>
         /// <value>The scoped identifiers.</value>
-        public IList<Identifier> ScopedIdentifiers
+        public IList<SimpleIdentifier> ScopedIdentifiers
         {
             get
             {
@@ -243,7 +243,7 @@ namespace Cs2JsC.JST
         /// Gets the used local identifiers.
         /// </summary>
         /// <value>The used local identifiers.</value>
-        public IList<Identifier> UsedLocalIdentifiers
+        public IList<SimpleIdentifier> UsedLocalIdentifiers
         {
             get { return this.readonlyUsedLocalIdentifiers; }
         }
@@ -261,7 +261,7 @@ namespace Cs2JsC.JST
         /// Adds the identifier.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
-        internal void AddIdentifier(Identifier identifier)
+        internal void AddIdentifier(SimpleIdentifier identifier)
         {
             if (identifier.ShouldEnforceSuggestion)
             {
@@ -278,7 +278,7 @@ namespace Cs2JsC.JST
         /// Identifiers the used.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
-        internal void IdentifierUsed(Identifier identifier)
+        internal void IdentifierUsed(SimpleIdentifier identifier)
         {
             if (!this.usedIdentifiersSet.ContainsKey(identifier))
             {
@@ -303,7 +303,7 @@ namespace Cs2JsC.JST
         /// <returns>
         /// true if knownIdentifier is already present, false otherwise
         /// </returns>
-        internal bool TryGetKnownIdentifier(string identifierName, out Identifier identifier)
+        internal bool TryGetKnownIdentifier(string identifierName, out SimpleIdentifier identifier)
         {
             return this.knownNameMap.TryGetValue(identifierName, out identifier);
         }
@@ -313,9 +313,9 @@ namespace Cs2JsC.JST
         /// </summary>
         /// <param name="identifier">The identifier.</param>
         /// <returns>Name for this identifier.</returns>
-        internal string GetName(Identifier identifier)
+        internal string GetName(SimpleIdentifier identifier)
         {
-            Identifier knownIdentifier;
+            SimpleIdentifier knownIdentifier;
 
             if (this.knownNameMap.TryGetValue(identifier.SuggestedName, out knownIdentifier)
                 && knownIdentifier == identifier)
@@ -324,7 +324,7 @@ namespace Cs2JsC.JST
             }
 
             IdentifierScope parentScope = this.ParentScope;
-            List<Identifier> sameNamedIdentifiers;
+            List<SimpleIdentifier> sameNamedIdentifiers;
 
             int slotIndex = 0;
 
@@ -361,7 +361,7 @@ namespace Cs2JsC.JST
         private string GetName(string name)
         {
             IdentifierScope parentScope = this.ParentScope;
-            List<Identifier> sameNamedIdentifiers;
+            List<SimpleIdentifier> sameNamedIdentifiers;
 
             int slotIndex = 0;
 
@@ -387,13 +387,13 @@ namespace Cs2JsC.JST
             return name;
         }
 
-        private void AddIdentifierToTrack(Identifier identifier)
+        private void AddIdentifierToTrack(SimpleIdentifier identifier)
         {
-            List<Identifier> identifierGroup;
+            List<SimpleIdentifier> identifierGroup;
 
             if (!this.identifierNameGroups.TryGetValue(identifier.SuggestedName, out identifierGroup))
             {
-                identifierGroup = new List<Identifier>();
+                identifierGroup = new List<SimpleIdentifier>();
                 this.identifierNameGroups.Add(identifier.SuggestedName, identifierGroup);
             }
 

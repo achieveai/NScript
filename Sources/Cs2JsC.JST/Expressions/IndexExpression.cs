@@ -51,7 +51,7 @@ namespace Cs2JsC.JST
         public IndexExpression(
             Location loc,
             IdentifierScope scope,
-            IList<Identifier> indexes,
+            IList<IIdentifier> indexes,
             int lastIndex)
             : base(loc, scope)
         {

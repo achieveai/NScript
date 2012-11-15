@@ -246,6 +246,7 @@
     <Compile Include="EventArgs.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="EventBinder.cs" />
     <Compile Include="EventHandler.cs">
       <SubType>Code</SubType>
     </Compile>

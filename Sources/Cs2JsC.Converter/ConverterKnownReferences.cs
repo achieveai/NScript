@@ -12,38 +12,147 @@ namespace Cs2JsC.Converter
     using Mono.Cecil;
 
     /// <summary>
-    /// Definition for ConverterKnownReferences
+    /// Definition for ConverterKnownReferences.
     /// </summary>
     public class ConverterKnownReferences
     {
+        /// <summary>
+        /// The collections string.
+        /// </summary>
         public const string CollectionsStr = "System.Collections";
+
+        /// <summary>
+        /// The collections string.
+        /// </summary>
+        public const string GenericCollectionsStr = "System.Collections.Generic";
+
+        /// <summary>
+        /// Context for the colour.
+        /// </summary>
         private readonly ClrContext clrContext;
+
+        /// <summary>
+        /// The milliseconds corlib module.
+        /// </summary>
         private ModuleDefinition msCorlibModule;
 
+        /// <summary>
+        /// The dictionary entry.
+        /// </summary>
         private TypeReference dictionaryEntry;
+
+        /// <summary>
+        /// The ienumerable reference.
+        /// </summary>
         private TypeReference ienumerableReference;
+
+        /// <summary>
+        /// The ienumerator reference.
+        /// </summary>
         private TypeReference ienumeratorReference;
+
+        /// <summary>
+        /// The ignore namespace attribute.
+        /// </summary>
         private TypeReference ignoreNamespaceAttribute;
+
+        /// <summary>
+        /// The implement attribute.
+        /// </summary>
         private TypeReference implementAttribute;
+
+        /// <summary>
+        /// The extended attribute.
+        /// </summary>
         private TypeReference extendedAttribute;
+
+        /// <summary>
+        /// The intrinsic property attribute.
+        /// </summary>
         private TypeReference intrinsicPropertyAttribute;
+
+        /// <summary>
+        /// The intrinsic field attribute.
+        /// </summary>
         private TypeReference intrinsicFieldAttribute;
+
+        /// <summary>
+        /// The non scriptable attribute.
+        /// </summary>
         private TypeReference nonScriptableAttribute;
+
+        /// <summary>
+        /// The numeric value attribute.
+        /// </summary>
         private TypeReference numericValueAttribute;
+
+        /// <summary>
+        /// The preserve case attribute.
+        /// </summary>
         private TypeReference preserveCaseAttribute;
+
+        /// <summary>
+        /// The script alias attribute.
+        /// </summary>
         private TypeReference scriptAliasAttribute;
+
+        /// <summary>
+        /// The script namespace attribute.
+        /// </summary>
         private TypeReference scriptNamespaceAttribute;
+
+        /// <summary>
+        /// The make static usage attribute.
+        /// </summary>
         private TypeReference makeStaticUsageAttribute;
+
+        /// <summary>
+        /// The list generic.
+        /// </summary>
+        private TypeReference listGeneric;
+
+        /// <summary>
+        /// The psudo type attribute.
+        /// </summary>
         private TypeReference psudoTypeAttribute;
+
+        /// <summary>
+        /// The keep instance usage attribute.
+        /// </summary>
         private TypeReference keepInstanceUsageAttribute;
+
+        /// <summary>
+        /// The script attribute.
+        /// </summary>
         private TypeReference scriptAttribute;
+
+        /// <summary>
+        /// The preserve name attribute.
+        /// </summary>
         private TypeReference preserveNameAttribute;
+
+        /// <summary>
+        /// The global methods attribute.
+        /// </summary>
         private TypeReference globalMethodsAttribute;
+
+        /// <summary>
+        /// The ignore generic arguments attribute.
+        /// </summary>
         private TypeReference ignoreGenericArgumentsAttribute;
+
+        /// <summary>
+        /// The entry point attribute.
+        /// </summary>
         private TypeReference entryPointAttribute;
 
         /// <summary>
-        /// Backing field for ScriptNameAttribute
+        /// The event binder.
+        /// </summary>
+        private TypeReference eventBinder;
+
+        /// <summary>
+        /// Backing field for ScriptNameAttribute.
         /// </summary>
         private TypeReference scriptNameAttribute;
 
@@ -63,17 +172,17 @@ namespace Cs2JsC.Converter
         private TypeReference arrayImplBase;
 
         /// <summary>
-        /// Backing field for CreateDelegate
+        /// Backing field for CreateDelegate.
         /// </summary>
         private MethodReference createDelegate;
 
         /// <summary>
-        /// Backing field for CreateDelegateFromFunction
+        /// Backing field for CreateDelegateFromFunction.
         /// </summary>
         private MethodReference createDelegateFromFunction;
 
         /// <summary>
-        /// Backing field for StaticInstanceCreateDelegate
+        /// Backing field for StaticInstanceCreateDelegate.
         /// </summary>
         private MethodReference staticInstanceCreateDelegate;
 
@@ -96,8 +205,9 @@ namespace Cs2JsC.Converter
         /// Backing Field for DelegateRemoveMethod.
         /// </summary>
         private MethodReference delegateRemoveMethod;
+
         /// <summary>
-        /// Backing field for boxMethod
+        /// Backing field for boxMethod.
         /// </summary>
         private MethodReference boxMethod;
 
@@ -107,7 +217,7 @@ namespace Cs2JsC.Converter
         private MethodReference unboxMethod;
 
         /// <summary>
-        /// Backing field for ValueBoxMethod
+        /// Backing field for ValueBoxMethod.
         /// </summary>
         private MethodReference valueBoxMethod;
 
@@ -152,14 +262,189 @@ namespace Cs2JsC.Converter
         private MethodReference enumToStringMethod;
 
         /// <summary>
-        /// Backing field for GetEnumeratorIEnumerbleMethod
+        /// Backing field for GetEnumeratorIEnumerbleMethod.
         /// </summary>
         private MethodReference getEnumeratorIEnumerableMethod;
 
         /// <summary>
-        /// Backing field for GetCurrentIEnumeratorMethod
+        /// Backing field for GetCurrentIEnumeratorMethod.
         /// </summary>
         private MethodReference getCurrentIEnumeratorMethod;
+
+        /// <summary>
+        /// Backing field for MoveNextEnumeratorMethod.
+        /// </summary>
+        private MethodReference moveNextEnumeratorMethod;
+
+        /// <summary>
+        /// Backing field for ArrayImplNativeArrayCtor.
+        /// </summary>
+        private MethodReference arrayImplNativeArrayCtor;
+
+        /// <summary>
+        /// Backing field for ArrayImplLengthCtor.
+        /// </summary>
+        private MethodReference arrayImplLengthCtor;
+
+        /// <summary>
+        /// Backing store for ItemGetter.
+        /// </summary>
+        private MethodReference arrayItemGetter;
+
+        /// <summary>
+        /// The list native array constructor.
+        /// </summary>
+        private MethodReference listNativeArrayCtor;
+
+        /// <summary>
+        /// Backing field for IsInstanceOfMethod.
+        /// </summary>
+        private MethodReference isInstanceOfMethod;
+
+        /// <summary>
+        /// Backing field for CastTypeMethod.
+        /// </summary>
+        private MethodReference castTypeMethod;
+
+        /// <summary>
+        /// Backing field for AsTypeMethod.
+        /// </summary>
+        private MethodReference asTypeMethod;
+
+        /// <summary>
+        /// The array clone method.
+        /// </summary>
+        private MethodReference arrayCloneMethod;
+
+        /// <summary>
+        /// The array implementation clone method.
+        /// </summary>
+        private MethodReference arrayImplCloneMethod;
+
+        /// <summary>
+        /// The array contains method.
+        /// </summary>
+        private MethodReference arrayContainsMethod;
+
+        /// <summary>
+        /// The array implementation contains method.
+        /// </summary>
+        private MethodReference arrayImplContainsMethod;
+
+        /// <summary>
+        /// The array index of 1 method.
+        /// </summary>
+        private MethodReference arrayIndexOf1Method;
+
+        /// <summary>
+        /// The array implementation index of 1 method.
+        /// </summary>
+        private MethodReference arrayImplIndexOf1Method;
+
+        /// <summary>
+        /// The array index of 2 method.
+        /// </summary>
+        private MethodReference arrayIndexOf2Method;
+
+        /// <summary>
+        /// The array implementation index of 2 method.
+        /// </summary>
+        private MethodReference arrayImplIndexOf2Method;
+
+        /// <summary>
+        /// The array reverse method.
+        /// </summary>
+        private MethodReference arrayReverseMethod;
+
+        /// <summary>
+        /// The array implementation reverse method.
+        /// </summary>
+        private MethodReference arrayImplReverseMethod;
+
+        /// <summary>
+        /// The array get enumerator method.
+        /// </summary>
+        private MethodReference arrayGetEnumeratorMethod;
+
+        /// <summary>
+        /// The array implementation get enumerator method.
+        /// </summary>
+        private MethodReference arrayImplGetEnumeratorMethod;
+
+        /// <summary>
+        /// The array length getter.
+        /// </summary>
+        private MethodReference arrayLengthGetter;
+
+        /// <summary>
+        /// The array implementation length getter.
+        /// </summary>
+        private MethodReference arrayImplLengthGetter;
+
+        /// <summary>
+        /// The type default constructor.
+        /// </summary>
+        private MethodReference typeDefaultConstructor;
+
+        /// <summary>
+        /// The nullable box method.
+        /// </summary>
+        private MethodReference nullableBoxMethod;
+
+        /// <summary>
+        /// The nullable unbox method.
+        /// </summary>
+        private MethodReference nullableUnboxMethod;
+
+        /// <summary>
+        /// The add event method.
+        /// </summary>
+        private MethodReference addEventMethod;
+
+        /// <summary>
+        /// The remove event method.
+        /// </summary>
+        private MethodReference removeEventMethod;
+
+        /// <summary>
+        /// Array of get native array froms.
+        /// </summary>
+        private MethodReference getNativeArrayFromArray;
+
+        /// <summary>
+        /// List of get native array froms.
+        /// </summary>
+        private MethodReference getNativeArrayFromList;
+
+        /// <summary>
+        /// The get new imported extension.
+        /// </summary>
+        private MethodReference getNewImportedExtension;
+
+        /// <summary>
+        /// Backing field for DictEntryKey.
+        /// </summary>
+        private PropertyReference dictEntryKey;
+
+        /// <summary>
+        /// Backing field for DictEntryValue.
+        /// </summary>
+        private PropertyReference dictEntryValue;
+
+        /// <summary>
+        /// Backing field for ArrayAccessor.
+        /// </summary>
+        private PropertyReference arrayAccessor;
+
+        /// <summary>
+        /// Backing field for NullableValueProperty.
+        /// </summary>
+        private PropertyReference nullableValueProperty;
+
+        /// <summary>
+        /// The imported extension field.
+        /// </summary>
+        private FieldReference importedExtensionField;
 
         /// <summary>
         /// Backing field for EnumStrToValueMap.
@@ -207,94 +492,9 @@ namespace Cs2JsC.Converter
         private FieldReference genericParametersField;
 
         /// <summary>
-        /// Backing field for DictEntryKey.
+        /// Constructor.
         /// </summary>
-        private PropertyReference dictEntryKey;
-
-        /// <summary>
-        /// Backing field for DictEntryValue.
-        /// </summary>
-        private PropertyReference dictEntryValue;
-
-        /// <summary>
-        /// Backing field for ArrayAccessor.
-        /// </summary>
-        private PropertyReference arrayAccessor;
-
-        /// <summary>
-        /// Backing field for NullableValueProperty.
-        /// </summary>
-        private PropertyReference nullableValueProperty;
-
-        /// <summary>
-        /// Backing field for MoveNextEnumeratorMethod.
-        /// </summary>
-        private MethodReference moveNextEnumeratorMethod;
-
-        /// <summary>
-        /// Backing field for ArrayImplNativeArrayCtor.
-        /// </summary>
-        private MethodReference arrayImplNativeArrayCtor;
-
-        /// <summary>
-        /// Backing field for ArrayImplLengthCtor.
-        /// </summary>
-        private MethodReference arrayImplLengthCtor;
-
-        /// <summary>
-        /// Backing store for ItemGetter.
-        /// </summary>
-        private MethodReference arrayItemGetter;
-
-        /// <summary>
-        /// Backing field for IsInstanceOfMethod.
-        /// </summary>
-        private MethodReference isInstanceOfMethod;
-
-        /// <summary>
-        /// Backing field for CastTypeMethod.
-        /// </summary>
-        private MethodReference castTypeMethod;
-
-        /// <summary>
-        /// Backing field for AsTypeMethod.
-        /// </summary>
-        private MethodReference asTypeMethod;
-
-        private MethodReference arrayCloneMethod;
-
-        private MethodReference arrayImplCloneMethod;
-
-        private MethodReference arrayContainsMethod;
-
-        private MethodReference arrayImplContainsMethod;
-
-        private MethodReference arrayIndexOf1Method;
-
-        private MethodReference arrayImplIndexOf1Method;
-
-        private MethodReference arrayIndexOf2Method;
-
-        private MethodReference arrayImplIndexOf2Method;
-
-        private MethodReference arrayReverseMethod;
-
-        private MethodReference arrayImplReverseMethod;
-
-        private MethodReference arrayGetEnumeratorMethod;
-
-        private MethodReference arrayImplGetEnumeratorMethod;
-
-        private MethodReference arrayLengthGetter;
-
-        private MethodReference arrayImplLengthGetter;
-
-        private MethodReference typeDefaultConstructor;
-
-        private MethodReference nullableBoxMethod;
-
-        private MethodReference nullableUnboxMethod;
-
+        /// <param name="clrContext"> Context for the colour. </param>
         public ConverterKnownReferences(ClrContext clrContext)
         {
             this.clrContext = clrContext;
@@ -303,6 +503,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the I enumerator.
         /// </summary>
+        /// <value>
+        /// The i enumerable.
+        /// </value>
         public TypeReference IEnumerable
         {
             get
@@ -321,6 +524,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the I enumerator.
         /// </summary>
+        /// <value>
+        /// The i enumerator.
+        /// </value>
         public TypeReference IEnumerator
         {
             get
@@ -339,6 +545,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the dictionary entry.
         /// </summary>
+        /// <value>
+        /// The dictionary entry.
+        /// </value>
         public TypeReference DictionaryEntry
         {
             get
@@ -357,6 +566,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the native array.
         /// </summary>
+        /// <value>
+        /// An Array of natives.
+        /// </value>
         public TypeReference NativeArray
         {
             get
@@ -375,6 +587,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the ignore namespace attribute reference.
         /// </summary>
+        /// <value>
+        /// The ignore namespace attribute.
+        /// </value>
         public TypeReference IgnoreNamespaceAttribute
         {
             get
@@ -393,6 +608,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the implement attribute reference.
         /// </summary>
+        /// <value>
+        /// The implement attribute.
+        /// </value>
         public TypeReference ImplementAttribute
         {
             get
@@ -411,6 +629,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the extended attribute reference.
         /// </summary>
+        /// <value>
+        /// The extended attribute.
+        /// </value>
         public TypeReference ExtendedAttribute
         {
             get
@@ -429,6 +650,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the intrinsic property attribute reference.
         /// </summary>
+        /// <value>
+        /// The intrinsic property attribute.
+        /// </value>
         public TypeReference IntrinsicPropertyAttribute
         {
             get
@@ -447,6 +671,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the intrinsic field attribute reference.
         /// </summary>
+        /// <value>
+        /// The intrinsic field attribute.
+        /// </value>
         public TypeReference IntrinsicFieldAttribute
         {
             get
@@ -465,6 +692,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the non scriptable attribute reference.
         /// </summary>
+        /// <value>
+        /// The non scriptable attribute.
+        /// </value>
         public TypeReference NonScriptableAttribute
         {
             get
@@ -483,6 +713,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the numeric value attribute reference.
         /// </summary>
+        /// <value>
+        /// The total number of eric value attribute.
+        /// </value>
         public TypeReference NumericValueAttribute
         {
             get
@@ -501,6 +734,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the preserve case attribute reference.
         /// </summary>
+        /// <value>
+        /// The preserve case attribute.
+        /// </value>
         public TypeReference PreserveCaseAttribute
         {
             get
@@ -519,6 +755,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the preserve name attribute reference.
         /// </summary>
+        /// <value>
+        /// The preserve name attribute.
+        /// </value>
         public TypeReference PreserveNameAttribute
         {
             get
@@ -537,6 +776,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the script alias attribute reference.
         /// </summary>
+        /// <value>
+        /// The script alias attribute.
+        /// </value>
         public TypeReference ScriptAliasAttribute
         {
             get
@@ -555,6 +797,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the script namespace attribute reference.
         /// </summary>
+        /// <value>
+        /// The script namespace attribute.
+        /// </value>
         public TypeReference ScriptNamespaceAttribute
         {
             get
@@ -573,6 +818,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the script name attribute reference.
         /// </summary>
+        /// <value>
+        /// The script name attribute.
+        /// </value>
         public TypeReference ScriptNameAttribute
         {
             get
@@ -591,6 +839,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the script attribute reference.
         /// </summary>
+        /// <value>
+        /// The script attribute.
+        /// </value>
         public TypeReference ScriptAttribute
         {
             get
@@ -609,6 +860,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the make static attribute reference.
         /// </summary>
+        /// <value>
+        /// The make static usage attribute.
+        /// </value>
         public TypeReference MakeStaticUsageAttribute
         {
             get
@@ -627,6 +881,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the psudo type attribute.
         /// </summary>
+        /// <value>
+        /// The psudo type attribute.
+        /// </value>
         public TypeReference PsudoTypeAttribute
         {
             get
@@ -645,6 +902,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the keep instance usage attribute.
         /// </summary>
+        /// <value>
+        /// The keep instance usage attribute.
+        /// </value>
         public TypeReference KeepInstanceUsageAttribute
         {
             get
@@ -661,10 +921,12 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
-        /// Gets the global methods attribute.
-        /// This attribute is used to point that all the methods are in global scope.
+        /// Gets the global methods attribute. This attribute is used to point that all the methods are
+        /// in global scope.
         /// </summary>
-        /// <value>The global methods attribute.</value>
+        /// <value>
+        /// The global methods attribute.
+        /// </value>
         public TypeReference GlobalMethodsAttribute
         {
             get
@@ -683,6 +945,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the ignore generic arguments attribute.
         /// </summary>
+        /// <value>
+        /// The ignore generic arguments attribute.
+        /// </value>
         public TypeReference IgnoreGenericArgumentsAttribute
         {
             get
@@ -701,6 +966,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the entry point attribute.
         /// </summary>
+        /// <value>
+        /// The entry point attribute.
+        /// </value>
         public TypeReference EntryPointAttribute
         {
             get
@@ -719,6 +987,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl.
         /// </summary>
+        /// <value>
+        /// The array implementation generic.
+        /// </value>
         public TypeReference ArrayImplGeneric
         {
             get
@@ -737,6 +1008,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl.
         /// </summary>
+        /// <value>
+        /// The array implementation base.
+        /// </value>
         public TypeReference ArrayImplBase
         {
             get
@@ -753,8 +1027,32 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Gets the list generic.
+        /// </summary>
+        /// <value>
+        /// The list generic.
+        /// </value>
+        public TypeReference ListGeneric
+        {
+            get
+            {
+                if (this.listGeneric == null)
+                {
+                    this.listGeneric = this.GetTypeReference(
+                        ConverterKnownReferences.GenericCollectionsStr,
+                        "List`1");
+                }
+
+                return this.listGeneric;
+            }
+        }
+
+        /// <summary>
         /// Gets the get current I enumerator method.
         /// </summary>
+        /// <value>
+        /// The get enumerator i enumerable method.
+        /// </value>
         public MethodReference GetEnumeratorIEnumerableMethod
         {
             get
@@ -774,6 +1072,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the get current I enumerator method.
         /// </summary>
+        /// <value>
+        /// The get current i enumerator method.
+        /// </value>
         public MethodReference GetCurrentIEnumeratorMethod
         {
             get
@@ -793,6 +1094,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the move next enumerator method.
         /// </summary>
+        /// <value>
+        /// The move next enumerator method.
+        /// </value>
         public MethodReference MoveNextEnumeratorMethod
         {
             get
@@ -811,6 +1115,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the create delegate.
         /// </summary>
+        /// <value>
+        /// The create delegate.
+        /// </value>
         public MethodReference CreateDelegate
         {
             get
@@ -832,6 +1139,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the create delegate.
         /// </summary>
+        /// <value>
+        /// The create delegate from function.
+        /// </value>
         public MethodReference CreateDelegateFromFunction
         {
             get
@@ -851,6 +1161,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the static instance create delegate.
         /// </summary>
+        /// <value>
+        /// The static instance create delegate.
+        /// </value>
         public MethodReference StaticInstanceCreateDelegate
         {
             get
@@ -873,6 +1186,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the create generic delegate.
         /// </summary>
+        /// <value>
+        /// The create generic delegate.
+        /// </value>
         public MethodReference CreateGenericDelegate
         {
             get
@@ -896,6 +1212,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the create generic instance delegate.
         /// </summary>
+        /// <value>
+        /// The create generic instance delegate.
+        /// </value>
         public MethodReference CreateGenericInstanceDelegate
         {
             get
@@ -918,6 +1237,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the delegate combine method.
         /// </summary>
+        /// <value>
+        /// The delegate combine method.
+        /// </value>
         public MethodReference DelegateCombineMethod
         {
             get
@@ -939,6 +1261,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the delegate remove method.
         /// </summary>
+        /// <value>
+        /// The delegate remove method.
+        /// </value>
         public MethodReference DelegateRemoveMethod
         {
             get
@@ -960,6 +1285,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl native array ctor.
         /// </summary>
+        /// <value>
+        /// The array implementation native array constructor.
+        /// </value>
         public MethodReference ArrayImplNativeArrayCtor
         {
             get
@@ -977,9 +1305,82 @@ namespace Cs2JsC.Converter
             }
         }
 
+        public MethodReference ListNativeArrayCtor
+        {
+            get
+            {
+                if (this.listNativeArrayCtor == null)
+                {
+                    this.listNativeArrayCtor = this.GetMethodReference(
+                        ".ctor",
+                        this.ClrReferences.Void,
+                        this.ListGeneric,
+                        this.NativeArray);
+                }
+
+                return this.arrayImplNativeArrayCtor;
+            }
+        }
+
+        /// <summary>
+        /// Gets an array of get native array froms.
+        /// </summary>
+        /// <value>
+        /// An Array of get native array froms.
+        /// </value>
+        public MethodReference GetNativeArrayFromArray
+        {
+            get
+            {
+                if (this.getNativeArrayFromArray == null)
+                {
+                    this.getNativeArrayFromArray = new MethodReference(
+                        "GetNativeArray",
+                        this.NativeArray,
+                        this.NativeArray);
+
+                    this.getNativeArrayFromArray.GenericParameters.Add(new GenericParameter("T", this.getNativeArrayFromArray));
+                    ArrayType arrayType = new ArrayType(new GenericParameter(0, GenericParameterType.Method, this.NativeArray.Module));
+                    this.getNativeArrayFromArray.Parameters.Add(new ParameterDefinition(arrayType));
+                }
+
+                return this.getNativeArrayFromArray;
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of get native array froms.
+        /// </summary>
+        /// <value>
+        /// A List of get native array froms.
+        /// </value>
+        public MethodReference GetNativeArrayFromList
+        {
+            get
+            {
+                if (this.getNativeArrayFromList == null)
+                {
+                    this.getNativeArrayFromList = new MethodReference(
+                        "GetNativeArray",
+                        this.NativeArray,
+                        this.NativeArray);
+
+                    this.getNativeArrayFromList.GenericParameters.Add(new GenericParameter("T", this.getNativeArrayFromArray));
+                    GenericInstanceType listType = new GenericInstanceType(this.ListGeneric);
+                    listType.GenericParameters.Add(new GenericParameter(0, GenericParameterType.Method, this.NativeArray.Module));
+                    this.getNativeArrayFromList.Parameters.Add(new ParameterDefinition(listType));
+                }
+
+                return this.getNativeArrayFromList;
+            }
+        }
+
         /// <summary>
         /// Gets the array impl native array ctor.
         /// </summary>
+        /// <value>
+        /// The array implementation length constructor.
+        /// </value>
         public MethodReference ArrayImplLengthCtor
         {
             get
@@ -1000,6 +1401,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array clone method.
         /// </summary>
+        /// <value>
+        /// The array clone method.
+        /// </value>
         public MethodReference ArrayCloneMethod
         {
             get
@@ -1019,6 +1423,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array contains method.
         /// </summary>
+        /// <value>
+        /// The array contains method.
+        /// </value>
         public MethodReference ArrayContainsMethod
         {
             get
@@ -1039,6 +1446,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array index of1 method.
         /// </summary>
+        /// <value>
+        /// The array index of 1 method.
+        /// </value>
         public MethodReference ArrayIndexOf1Method
         {
             get
@@ -1059,6 +1469,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array index of2 method.
         /// </summary>
+        /// <value>
+        /// The array index of 2 method.
+        /// </value>
         public MethodReference ArrayIndexOf2Method
         {
             get
@@ -1080,6 +1493,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array reverse method.
         /// </summary>
+        /// <value>
+        /// The array reverse method.
+        /// </value>
         public MethodReference ArrayReverseMethod
         {
             get
@@ -1099,6 +1515,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array reverse method.
         /// </summary>
+        /// <value>
+        /// The array get enumerator method.
+        /// </value>
         public MethodReference ArrayGetEnumeratorMethod
         {
             get
@@ -1118,6 +1537,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array length getter.
         /// </summary>
+        /// <value>
+        /// The array length getter.
+        /// </value>
         public MethodReference ArrayLengthGetter
         {
             get
@@ -1137,6 +1559,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array length property.
         /// </summary>
+        /// <value>
+        /// The array length property.
+        /// </value>
         public PropertyReference ArrayLengthProperty
         {
             get
@@ -1148,6 +1573,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl clone method.
         /// </summary>
+        /// <value>
+        /// The array implementation clone method.
+        /// </value>
         public MethodReference ArrayImplCloneMethod
         {
             get
@@ -1167,6 +1595,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl contains method.
         /// </summary>
+        /// <value>
+        /// The array implementation contains method.
+        /// </value>
         public MethodReference ArrayImplContainsMethod
         {
             get
@@ -1187,6 +1618,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl index of1 method.
         /// </summary>
+        /// <value>
+        /// The array implementation index of 1 method.
+        /// </value>
         public MethodReference ArrayImplIndexOf1Method
         {
             get
@@ -1207,6 +1641,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl index of2 method.
         /// </summary>
+        /// <value>
+        /// The array implementation index of 2 method.
+        /// </value>
         public MethodReference ArrayImplIndexOf2Method
         {
             get
@@ -1228,6 +1665,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl reverse method.
         /// </summary>
+        /// <value>
+        /// The array implementation reverse method.
+        /// </value>
         public MethodReference ArrayImplReverseMethod
         {
             get
@@ -1247,6 +1687,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl get enumerator method.
         /// </summary>
+        /// <value>
+        /// The array implementation get enumerator method.
+        /// </value>
         public MethodReference ArrayImplGetEnumeratorMethod
         {
             get
@@ -1266,6 +1709,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl length getter.
         /// </summary>
+        /// <value>
+        /// The array implementation length getter.
+        /// </value>
         public MethodReference ArrayImplLengthGetter
         {
             get
@@ -1285,6 +1731,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array impl length property.
         /// </summary>
+        /// <value>
+        /// The array implementation length property.
+        /// </value>
         public PropertyReference ArrayImplLengthProperty
         {
             get { return this.ArrayImplLengthGetter.Resolve().GetPropertyDefinition(); }
@@ -1293,6 +1742,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the box method.
         /// </summary>
+        /// <value>
+        /// The box method.
+        /// </value>
         public MethodReference BoxMethod
         {
             get
@@ -1313,6 +1765,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the unbox method.
         /// </summary>
+        /// <value>
+        /// The unbox method.
+        /// </value>
         public MethodReference UnboxMethod
         {
             get
@@ -1333,6 +1788,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the value box method.
         /// </summary>
+        /// <value>
+        /// The value box method.
+        /// </value>
         public MethodReference ValueBoxMethod
         {
             get
@@ -1353,6 +1811,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the value unbox method.
         /// </summary>
+        /// <value>
+        /// The value unbox method.
+        /// </value>
         public MethodReference ValueUnboxMethod
         {
             get
@@ -1373,6 +1834,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the get default method.
         /// </summary>
+        /// <value>
+        /// The get default method.
+        /// </value>
         public MethodReference GetDefaultMethod
         {
             get
@@ -1392,6 +1856,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the get default constructor method.
         /// </summary>
+        /// <value>
+        /// The get default constructor method.
+        /// </value>
         public MethodReference GetDefaultConstructorMethod
         {
             get
@@ -1409,8 +1876,33 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Gets the get new imported extension method.
+        /// </summary>
+        /// <value>
+        /// The get new imported extension method.
+        /// </value>
+        public MethodReference GetNewImportedExtensionMethod
+        {
+            get
+            {
+                if (this.getNewImportedExtension == null)
+                {
+                    this.getNewImportedExtension = this.GetMethodReference(
+                        "GetNewImportedExtension",
+                        this.ClrReferences.Object,
+                        this.ClrReferences.Object);
+                }
+
+                return this.getNewImportedExtension;
+            }
+        }
+
+        /// <summary>
         /// Gets the nullable box method.
         /// </summary>
+        /// <value>
+        /// The nullable box method.
+        /// </value>
         public MethodReference NullableBoxMethod
         {
             get
@@ -1434,6 +1926,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the nullable unbox method.
         /// </summary>
+        /// <value>
+        /// The nullable unbox method.
+        /// </value>
         public MethodReference NullableUnboxMethod
         {
             get
@@ -1457,6 +1952,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the nullable value property.
         /// </summary>
+        /// <value>
+        /// The nullable value property.
+        /// </value>
         public PropertyReference NullableValueProperty
         {
             get
@@ -1478,7 +1976,7 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array accessor.
         /// </summary>
-        /// <param name="arrayElementType">Type of the array element.</param>
+        /// <param name="elementType"> Type of the array element. </param>
         /// <returns>
         /// Array element accessor property.
         /// </returns>
@@ -1500,6 +1998,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the register inteface.
         /// </summary>
+        /// <value>
+        /// The register inteface method.
+        /// </value>
         public MethodReference RegisterIntefaceMethod
         {
             get
@@ -1520,6 +2021,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the register enum.
         /// </summary>
+        /// <value>
+        /// The register enum method.
+        /// </value>
         public MethodReference RegisterEnumMethod
         {
             get
@@ -1541,6 +2045,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the register reference type method.
         /// </summary>
+        /// <value>
+        /// The register reference type method.
+        /// </value>
         public MethodReference RegisterReferenceTypeMethod
         {
             get
@@ -1563,6 +2070,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the register struct type method.
         /// </summary>
+        /// <value>
+        /// The register structure type method.
+        /// </value>
         public MethodReference RegisterStructTypeMethod
         {
             get
@@ -1584,6 +2094,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets to string method.
         /// </summary>
+        /// <value>
+        /// to string method.
+        /// </value>
         public MethodReference ToStringMethod
         {
             get
@@ -1603,6 +2116,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets Enum's toString.
         /// </summary>
+        /// <value>
+        /// The enum to string method.
+        /// </value>
         public MethodReference EnumToStringMethod
         {
             get
@@ -1624,6 +2140,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array item getter.
         /// </summary>
+        /// <value>
+        /// The array item getter.
+        /// </value>
         public MethodReference ArrayItemGetter
         {
             get
@@ -1644,6 +2163,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the is instance of method.
         /// </summary>
+        /// <value>
+        /// The is instance of method.
+        /// </value>
         public MethodReference IsInstanceOfMethod
         {
             get
@@ -1664,6 +2186,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the cast type method.
         /// </summary>
+        /// <value>
+        /// The cast type method.
+        /// </value>
         public MethodReference CastTypeMethod
         {
             get
@@ -1684,6 +2209,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets as type method.
         /// </summary>
+        /// <value>
+        /// as type method.
+        /// </value>
         public MethodReference AsTypeMethod
         {
             get
@@ -1704,6 +2232,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the enum STR to value map field.
         /// </summary>
+        /// <value>
+        /// The enum string to value map field.
+        /// </value>
         public FieldReference EnumStrToValueMapField
         {
             get
@@ -1723,6 +2254,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the boxed value field.
         /// </summary>
+        /// <value>
+        /// The boxed value field.
+        /// </value>
         public FieldReference BoxedValueField
         {
             get
@@ -1742,6 +2276,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the prototype field.
         /// </summary>
+        /// <value>
+        /// The prototype field.
+        /// </value>
         public FieldReference PrototypeField
         {
             get
@@ -1761,6 +2298,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the constructor field.
         /// </summary>
+        /// <value>
+        /// The constructor field.
+        /// </value>
         public FieldReference ConstructorField
         {
             get
@@ -1780,6 +2320,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the type id field.
         /// </summary>
+        /// <value>
+        /// The type identifier field.
+        /// </value>
         public FieldReference TypeIdField
         {
             get
@@ -1799,6 +2342,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the type name field.
         /// </summary>
+        /// <value>
+        /// The type name field.
+        /// </value>
         public FieldReference TypeNameField
         {
             get
@@ -1818,6 +2364,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the base type field.
         /// </summary>
+        /// <value>
+        /// The base type field.
+        /// </value>
         public FieldReference BaseTypeField
         {
             get
@@ -1837,6 +2386,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the generic parameters field.
         /// </summary>
+        /// <value>
+        /// The generic closure field.
+        /// </value>
         public FieldReference GenericClosureField
         {
             get
@@ -1856,6 +2408,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the generic parameters field.
         /// </summary>
+        /// <value>
+        /// The generic parameters field.
+        /// </value>
         public FieldReference GenericParametersField
         {
             get
@@ -1875,6 +2430,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the dict entry key.
         /// </summary>
+        /// <value>
+        /// The dictionary entry key.
+        /// </value>
         public PropertyReference DictEntryKey
         {
             get
@@ -1894,6 +2452,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the dict entry value.
         /// </summary>
+        /// <value>
+        /// The dictionary entry value.
+        /// </value>
         public PropertyReference DictEntryValue
         {
             get
@@ -1913,6 +2474,9 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array accessor.
         /// </summary>
+        /// <value>
+        /// The array accessor.
+        /// </value>
         public PropertyReference ArrayAccessor
         {
             get
@@ -1928,10 +2492,109 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Gets the event binder.
+        /// </summary>
+        /// <value>
+        /// The event binder.
+        /// </value>
+        public TypeReference EventBinder
+        {
+            get
+            {
+                if (this.eventBinder == null)
+                {
+                    this.eventBinder = this.GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "EventBinder");
+                }
+
+                return this.eventBinder;
+            }
+        }
+
+        /// <summary>
+        /// Gets the add event method.
+        /// </summary>
+        /// <value>
+        /// The add event method.
+        /// </value>
+        public MethodReference AddEventMethod
+        {
+            get
+            {
+                if (this.addEventMethod == null)
+                {
+                    foreach (var method in this.EventBinder.Resolve().Methods)
+                    {
+                        if (method.Name == "AddEvent"
+                            && method.IsStatic)
+                        {
+                            this.addEventMethod = method;
+                            break;
+                        }
+                    }
+                }
+
+                return this.addEventMethod;
+            }
+        }
+
+        /// <summary>
+        /// Gets the remove event method.
+        /// </summary>
+        /// <value>
+        /// The remove event method.
+        /// </value>
+        public MethodReference RemoveEventMethod
+        {
+            get
+            {
+                if (this.removeEventMethod == null)
+                {
+                    foreach (var method in this.EventBinder.Resolve().Methods)
+                    {
+                        if (method.Name == "RemoveEvent"
+                            && method.IsStatic)
+                        {
+                            this.removeEventMethod = method;
+                            break;
+                        }
+                    }
+                }
+
+                return this.removeEventMethod;
+            }
+        }
+
+        /// <summary>
+        /// Gets the imported extension field.
+        /// </summary>
+        /// <value>
+        /// The imported extension field.
+        /// </value>
+        public FieldReference ImportedExtensionField
+        {
+            get
+            {
+                if (this.importedExtensionField == null)
+                {
+                    this.importedExtensionField = new FieldReference(
+                        "importedExtension",
+                        this.ClrReferences.Object,
+                        this.ClrReferences.Object);
+                }
+
+                return this.importedExtensionField;
+            }
+        }
+
+        /// <summary>
         /// Gets the array int arg ctor.
         /// </summary>
-        /// <param name="arrayElementType">Type of the array element.</param>
-        /// <returns>Generic ArrayG&lt;arrayElementType&gt;</returns>
+        /// <param name="arrayElementType"> Type of the array element. </param>
+        /// <returns>
+        /// Generic ArrayG&lt;arrayElementType&gt;
+        /// </returns>
         public MethodReference GetArrayIntArgCtor(TypeReference arrayElementType)
         {
             MethodDefinition methodDefinition = this.ArrayImplLengthCtor.Resolve();
@@ -1950,7 +2613,7 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the array native array arg ctor.
         /// </summary>
-        /// <param name="arrayElementType">Type of the array element.</param>
+        /// <param name="arrayElementType"> Type of the array element. </param>
         /// <returns>
         /// Method reference with GenericInstanceType DeclaringType.
         /// </returns>
@@ -1970,9 +2633,59 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Gets the array native array arg ctor.
+        /// </summary>
+        /// <param name="listElementType"> Type of the list element. </param>
+        /// <returns>
+        /// Method reference with GenericInstanceType DeclaringType.
+        /// </returns>
+        public MethodReference GetListNativeArrayArgCtor(TypeReference listElementType)
+        {
+            MethodDefinition methodDefinition = this.ListNativeArrayCtor.Resolve();
+            GenericInstanceType instanceType = new GenericInstanceType(methodDefinition.DeclaringType);
+            instanceType.GenericArguments.Add(listElementType);
+            MethodReference ctorMethod = new MethodReference(
+                methodDefinition.Name,
+                methodDefinition.ReturnType,
+                instanceType);
+            ctorMethod.Parameters.Add(methodDefinition.Parameters[0]);
+            ctorMethod.HasThis = true;
+
+            return ctorMethod;
+        }
+
+        /// <summary>
+        /// Gets a native array from array method.
+        /// </summary>
+        /// <param name="arrayElementType"> Type of the array element. </param>
+        /// <returns>
+        /// The native array from array method.
+        /// </returns>
+        public MethodReference GetNativeArrayFromArrayMethod(TypeReference arrayElementType)
+        {
+            GenericInstanceMethod method = new GenericInstanceMethod(this.GetNativeArrayFromArray);
+            method.GenericArguments.Add(arrayElementType);
+            return method;
+        }
+
+        /// <summary>
+        /// Gets a native array from list method.
+        /// </summary>
+        /// <param name="listElementType"> Type of the list element. </param>
+        /// <returns>
+        /// The native array from list method.
+        /// </returns>
+        public MethodReference GetNativeArrayFromListMethod(TypeReference listElementType)
+        {
+            GenericInstanceMethod method = new GenericInstanceMethod(this.GetNativeArrayFromList);
+            method.GenericArguments.Add(listElementType);
+            return method;
+        }
+
+        /// <summary>
         /// Gets the array accessor.
         /// </summary>
-        /// <param name="arrayElementType">Type of the array element.</param>
+        /// <param name="arrayElementType"> Type of the array element. </param>
         /// <returns>
         /// Array element accessor property.
         /// </returns>
@@ -1996,12 +2709,18 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the CLR references.
         /// </summary>
+        /// <value>
+        /// The colour references.
+        /// </value>
         private ClrKnownReferences ClrReferences
         { get { return this.clrContext.KnownReferences; } }
 
         /// <summary>
         /// Gets the MS corlib module.
         /// </summary>
+        /// <value>
+        /// The milliseconds corlib module.
+        /// </value>
         private ModuleDefinition MSCorlibModule
         {
             get
@@ -2023,9 +2742,11 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the type reference.
         /// </summary>
-        /// <param name="typeNamespace">The type namespace.</param>
-        /// <param name="typeName">Name of the type.</param>
-        /// <returns>Type reference inside mscorlib.</returns>
+        /// <param name="typeNamespace"> The type namespace. </param>
+        /// <param name="typeName">      Name of the type. </param>
+        /// <returns>
+        /// Type reference inside mscorlib.
+        /// </returns>
         private TypeReference GetTypeReference(
             string typeNamespace,
             string typeName)
@@ -2040,11 +2761,13 @@ namespace Cs2JsC.Converter
         /// <summary>
         /// Gets the method reference.
         /// </summary>
-        /// <param name="methodName">Name of the method.</param>
-        /// <param name="returnType">Type of the return.</param>
-        /// <param name="declaringType">Type of the declaring.</param>
-        /// <param name="arguments">The arguments.</param>
-        /// <returns>MethodReference</returns>
+        /// <param name="methodName">    Name of the method. </param>
+        /// <param name="returnType">    Type of the return. </param>
+        /// <param name="declaringType"> Type of the declaring. </param>
+        /// <param name="arguments">     The arguments. </param>
+        /// <returns>
+        /// MethodReference.
+        /// </returns>
         private MethodReference GetMethodReference(
             string methodName,
             TypeReference returnType,

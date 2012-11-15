@@ -1,36 +1,36 @@
 ﻿namespace System
 {
     using System.Collections;
+    using System.Runtime.CompilerServices;
 
+    [Extended]
     public abstract class Array : IEnumerable
     {
-        public abstract int Length
-        {
-            get;
-        }
+        public extern int Length
+        { get; }
 
-        internal Array() { }
+        internal extern Array();
 
         public static void Sort<T>(T[] array, Func<T, int> comparator)
         {
             ((ArrayG<T>)(object)array).Sort(comparator);
         }
 
-        public abstract Array Clone();
+        public extern Array Clone();
 
-        public abstract bool Contains(object item);
+        public extern bool Contains(object item);
 
-        public abstract IEnumerator GetEnumerator();
+        public extern IEnumerator GetEnumerator();
 
-        public abstract int IndexOf(object item);
+        public extern int IndexOf(object item);
 
-        public abstract int IndexOf(object item, int startIndex);
+        public extern int IndexOf(object item, int startIndex);
 
-        public abstract void Reverse();
+        public extern void Reverse();
 
-        public abstract object GetValue(int index);
+        public extern object GetValue(int index);
 
-        public abstract void SetValue(int index, object value);
+        public extern void SetValue(int index, object value);
     }
 
     public abstract class ArrayImpl : IEnumerable

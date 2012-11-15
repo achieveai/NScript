@@ -199,7 +199,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                                 tempScope,
                                 new ThisExpression(null, tempScope),
                                 new IdentifierExpression(
-                                    this.TypeScopeManager.ResolveVirtualMethod(method))),
+                                    this.TypeScopeManager.ResolveVirtualMethod(method), this.Scope)),
                             tempScope.ParameterIdentifiers.Select(
                                 (p) => new IdentifierExpression(p, tempScope)).ToArray());
 
@@ -234,7 +234,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                                     this.Scope,
                                     prototype,
                                     new IdentifierExpression(
-                                        this.TypeScopeManager.ResolveMethod(method)));
+                                        this.TypeScopeManager.ResolveMethod(method), this.Scope));
                         }
                     }
                 }
@@ -271,6 +271,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     bool isFixedName, isScriptAlias;
                     this.Context.GetMemberName(
                         method,
+                        false,
                         out isFixedName,
                         out isScriptAlias);
 
@@ -286,7 +287,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                             null,
                             this.Scope,
                             prototype,
-                            new IdentifierExpression(this.TypeScopeManager.ResolveMethod(method)));
+                            new IdentifierExpression(this.TypeScopeManager.ResolveMethod(method), this.Scope));
 
                     if (isFixedName)
                     {
@@ -362,12 +363,12 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         argumentNames,
                         false);
 
-                    IList<Identifier> functionNameExpr = this.ResolveFactory(function, this.Resolve);
-                    Identifier functionName;
+                    IList<IIdentifier> functionNameExpr = this.ResolveFactory(function, this.Resolve);
+                    IIdentifier functionName;
 
                     if (functionNameExpr.Count > 1)
                     {
-                        functionName = Identifier.CreateScopeIdentifier(
+                        functionName = SimpleIdentifier.CreateScopeIdentifier(
                             this.Scope,
                             string.Format("{0}_factory", this.TypeDefinition.FullName).Replace('.', '_'),
                             false);
@@ -405,7 +406,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     else
                     {
                         IdentifierExpression thisObjectExpression = new IdentifierExpression(
-                            Identifier.CreateScopeIdentifier(functionScope, "this_", false),
+                            SimpleIdentifier.CreateScopeIdentifier(functionScope, "this_", false),
                             functionScope);
 
                         BinaryExpression thisAssignmentExpression = new BinaryExpression(
@@ -487,8 +488,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                                             null,
                                             this.Scope,
                                             this.Resolve(this.TypeDefinition)),
-                                        new IdentifierExpression(this.Resolve(this.Context.KnownReferences.GetDefaultConstructorMethod))),
-                                    new IdentifierExpression(functionName)));
+                                        new IdentifierExpression(this.Resolve(this.Context.KnownReferences.GetDefaultConstructorMethod), this.Scope)),
+                                    new IdentifierExpression(functionName, this.Scope)));
                         }
                     }
                 }

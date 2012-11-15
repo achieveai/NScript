@@ -24,7 +24,7 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Backing field for parameters.
         /// </summary>
-        private List<Identifier> parameters;
+        private List<IIdentifier> parameters;
 
         /// <summary>
         /// Backing field for Statements.
@@ -34,7 +34,7 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Backing field for identifier.
         /// </summary>
-        private readonly ReadOnlyCollection<Identifier> readonlyIdentifiers;
+        private readonly ReadOnlyCollection<IIdentifier> readonlyIdentifiers;
 
         /// <summary>
         /// Backing field for statements.
@@ -44,7 +44,7 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Name of the function.
         /// </summary>
-        private readonly Identifier name;
+        private readonly IIdentifier name;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionExpression"/> class.
@@ -58,23 +58,23 @@ namespace Cs2JsC.JST
             Location location,
             IdentifierScope outerScope,
             IdentifierScope innerScope,
-            IEnumerable<Identifier> parameters,
-            Identifier name)
+            IEnumerable<IIdentifier> parameters,
+            IIdentifier name)
             : base(location, outerScope)
         {
             this.innerScope = innerScope;
             this.name = name;
-            this.parameters = new List<Identifier>(parameters);
+            this.parameters = new List<IIdentifier>(parameters);
             this.statements = new List<Statement>();
             this.readonlyStatements = new ReadOnlyCollection<Statement>(this.statements);
-            this.readonlyIdentifiers = new ReadOnlyCollection<Identifier>(this.parameters);
+            this.readonlyIdentifiers = new ReadOnlyCollection<IIdentifier>(this.parameters);
         }
 
         /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public Identifier Name
+        public IIdentifier Name
         {
             get { return this.name; }
         }
@@ -83,7 +83,7 @@ namespace Cs2JsC.JST
         /// Gets the parameters.
         /// </summary>
         /// <value>The parameters.</value>
-        public IList<Identifier> Parameters
+        public IList<IIdentifier> Parameters
         {
             get
             {

@@ -4,7 +4,8 @@
 
     public struct Function
     {
-        public readonly int Length;
+        public extern int Length
+        { get; }
 
         [IgnoreGenericArguments]
         [ScriptAlias("apply")]

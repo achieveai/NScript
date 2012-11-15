@@ -9,7 +9,7 @@ namespace System.Runtime.CompilerServices
     /// <summary>
     /// Definition for IgnoreGenericArguments
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Type)]
     public sealed class IgnoreGenericArgumentsAttribute : Attribute
     {
     }

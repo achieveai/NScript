@@ -17,6 +17,7 @@ namespace Cs2JsC.Converter
     using Mono.Cecil;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+using Cs2JsC.Utils;
 
     /// <summary>
     /// Definition for ConverterContext
@@ -56,6 +57,12 @@ namespace Cs2JsC.Converter
 
         private readonly Dictionary<MethodDefinition, TopLevelBlock> methodAstMapping
             = new Dictionary<MethodDefinition, TopLevelBlock>(MemberReferenceComparer.Instance);
+
+        private readonly Dictionary<TypeDefinition, TypeKind> typeKindMapping
+            = new Dictionary<TypeDefinition, TypeKind>(MemberReferenceComparer.Instance);
+
+        private readonly List<Tuple<Location, string>> errors = new List<Tuple<Location, string>>();
+        private readonly List<Tuple<Location, string>> warnings = new List<Tuple<Location, string>>();
 
         public ConverterContext(ClrContext clrContext)
         {
@@ -114,6 +121,10 @@ namespace Cs2JsC.Converter
         public ConverterKnownReferences KnownReferences
         { get { return this.converterKnownReferences; } }
 
+        public void AddError(Location location, string error, bool isWarning)
+        {
+        }
+
         public bool TryGetMethodAst(
             MethodDefinition method,
             out ParameterBlock rootBlock)
@@ -158,8 +169,7 @@ namespace Cs2JsC.Converter
                 return false;
             }
 
-            if (null != typeDefinition.CustomAttributes.SelectAttribute(
-                this.KnownReferences.ExtendedAttribute))
+            if (this.GetTypeKind(typeDefinition) == TypeKind.Extended)
             {
                 return true;
             }
@@ -299,17 +309,47 @@ namespace Cs2JsC.Converter
         /// <returns>
         /// <c>true</c> if the specified member definition is implemented; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsImplemented(MethodDefinition memberDefinition)
+        public bool IsImplemented(MethodDefinition methodDefinition)
         {
-            MethodDefinition methodDefinition = memberDefinition as MethodDefinition;
-            if (methodDefinition != null)
+            if (!this.IsImplementedInternal(methodDefinition))
             {
-                return (methodDefinition.HasBody && methodDefinition.Body.Instructions.Count > 0)
-                    || null != methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.ScriptAttribute)
-                    || (methodDefinition.DeclaringType.IsInterface && !this.IsPsudoType(methodDefinition.DeclaringType));
+                if (methodDefinition.IsAddOn || methodDefinition.IsRemoveOn)
+                {
+                    return true;
+                }
+
+                if (this.IsWrappedType(methodDefinition.ReturnType))
+                {
+                    return true;
+                }
+
+                for (int iArgument = 0; iArgument < methodDefinition.Parameters.Count; iArgument++)
+                {
+                    if (this.IsWrappedType(methodDefinition.Parameters[iArgument].ParameterType))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Query if 'memberDefinition' is wrapped.
+        /// </summary>
+        /// <param name="memberDefinition"> The member definition. </param>
+        /// <returns>
+        /// true if wrapped, false if not.
+        /// </returns>
+        public bool IsWrapped(MethodDefinition memberDefinition)
+        {
+            return !this.IsImplementedInternal(memberDefinition)
+                && this.IsImplemented(memberDefinition);
         }
 
         /// <summary>
@@ -321,8 +361,11 @@ namespace Cs2JsC.Converter
         /// </returns>
         public bool IsExtern(MethodDefinition methodDefinition)
         {
-            return !this.IsImplemented(methodDefinition)
-                && !methodDefinition.IsAbstract;
+            return methodDefinition != null
+                && (!methodDefinition.HasBody || methodDefinition.Body.Instructions.Count == 0)
+                && !methodDefinition.DeclaringType.IsInterface
+                && !methodDefinition.IsAbstract
+                && null == methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.ScriptAttribute);
         }
 
         /// <summary>
@@ -334,7 +377,7 @@ namespace Cs2JsC.Converter
         /// </returns>
         public bool IsImplemented(PropertyDefinition propDef)
         {
-            if (!this.IsExtended(propDef.DeclaringType))
+            if (this.GetTypeKind(propDef.DeclaringType) == TypeKind.Normal)
             {
                 return true;
             }
@@ -345,6 +388,28 @@ namespace Cs2JsC.Converter
             }
 
             return this.IsImplemented(propDef.SetMethod);
+        }
+
+        /// <summary>
+        /// Query if 'propDef' is wrapped.
+        /// </summary>
+        /// <param name="propDef"> The property def. </param>
+        /// <returns>
+        /// true if wrapped, false if not.
+        /// </returns>
+        public bool IsWrapped(PropertyDefinition propDef)
+        {
+            if (this.GetTypeKind(propDef.DeclaringType) == TypeKind.Normal)
+            {
+                return true;
+            }
+
+            if (propDef.GetMethod != null)
+            {
+                return this.IsWrapped(propDef.GetMethod);
+            }
+
+            return this.IsWrapped(propDef.SetMethod);
         }
 
         /// <summary>
@@ -373,6 +438,7 @@ namespace Cs2JsC.Converter
         /// <returns>Member's name</returns>
         public string GetMemberName(
             IMemberDefinition memberDefinition,
+            bool resolveUnderlying,
             out bool isFixedName,
             out bool isAlias)
         {
@@ -417,7 +483,11 @@ namespace Cs2JsC.Converter
                 isFixedName = true;
                 return memberDefinition.Name;
             }
-            else if (!this.IsImplemented(memberDefinition)
+            else if (
+                (!this.IsImplemented(memberDefinition)
+                    || (resolveUnderlying
+                        && ((methodDefinition != null && this.IsWrapped(methodDefinition))
+                            || (propertyDefinition != null && this.IsWrapped(propertyDefinition)))))
                 && (this.IsExtended(memberDefinition.DeclaringType) || this.IsPsudoType(memberDefinition.DeclaringType)))
             {
                 isFixedName = true;
@@ -462,11 +532,11 @@ namespace Cs2JsC.Converter
                         name = propertyDefinition.Name;
                     }
 
-                    if (this.IsIntrinsicProperty(propertyDefinition))
-                    {
+                    // if (this.IsIntrinsicProperty(propertyDefinition))
+                    // {
                         string rv = propertyDefinition.Name;
                         name = char.ToLowerInvariant(rv[0]) + rv.Substring(1);
-                    }
+                    // }
                 }
                 else if (ConverterContext.IsCapsName(memberDefinition.Name))
                 {
@@ -534,8 +604,8 @@ namespace Cs2JsC.Converter
         /// </returns>
         public bool IsIntrinsicProperty(PropertyDefinition propertyDefinition)
         {
-            return (propertyDefinition.GetMethod != null && this.IsExtern(propertyDefinition.GetMethod))
-                || (propertyDefinition.SetMethod != null && this.IsExtern(propertyDefinition.SetMethod));
+            return (propertyDefinition.GetMethod == null || (this.IsExtern(propertyDefinition.GetMethod) && !this.IsWrapped(propertyDefinition.GetMethod)))
+                && (propertyDefinition.SetMethod == null || (this.IsExtern(propertyDefinition.SetMethod) && !this.IsWrapped(propertyDefinition.SetMethod)));
 
             /*
             return null != propertyDefinition.CustomAttributes.SelectAttribute(
@@ -545,23 +615,51 @@ namespace Cs2JsC.Converter
             */
         }
 
+        /// <summary>
+        /// Query if 'evt' is intrinsic event.
+        /// </summary>
+        /// <param name="evt"> The event. </param>
+        /// <returns>
+        /// true if intrinsic event, false if not.
+        /// </returns>
         public bool IsIntrinsicEvent(EventDefinition evt)
         {
             return (evt.AddMethod != null && this.IsExtern(evt.AddMethod))
                 || (evt.RemoveMethod != null && this.IsExtern(evt.RemoveMethod));
         }
 
+        /// <summary>
+        /// Query if 'typeDefinition' is psudo type.
+        /// </summary>
+        /// <param name="typeDefinition"> The type definition. </param>
+        /// <returns>
+        /// true if psudo type, false if not.
+        /// </returns>
         public bool IsPsudoType(TypeDefinition typeDefinition)
         {
-            if (null != typeDefinition.CustomAttributes.SelectAttribute(
-                        this.KnownReferences.PsudoTypeAttribute))
-            {
-                return true;
-            }
-
-            return false;
+            TypeKind typeKind = this.GetTypeKind(typeDefinition);
+            return typeKind == TypeKind.Imported || typeKind == TypeKind.JSONType;
         }
 
+        /// <summary>
+        /// Query if 'typeDefinition' is json type.
+        /// </summary>
+        /// <param name="typeDefinition"> The type definition. </param>
+        /// <returns>
+        /// true if json type, false if not.
+        /// </returns>
+        public bool IsJsonType(TypeDefinition typeDefinition)
+        {
+            return this.GetTypeKind(typeDefinition) == TypeKind.JSONType;
+        }
+
+        /// <summary>
+        /// Query if 'propertyDefinition' is compiler generated property.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <returns>
+        /// true if compiler generated property, false if not.
+        /// </returns>
         public bool IsCompilerGeneratedProperty(PropertyDefinition propertyDefinition)
         {
             if (propertyDefinition.GetMethod != null &&
@@ -578,6 +676,196 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Gets a type kind.
+        /// </summary>
+        /// <exception cref="InvalidDataException"> Thrown when an invalid data error condition occurs. </exception>
+        /// <param name="typeDefinition"> The type definition. </param>
+        /// <returns>
+        /// The type kind.
+        /// </returns>
+        public TypeKind GetTypeKind(TypeDefinition typeDefinition)
+        {
+            TypeKind rv;
+            if (this.typeKindMapping.TryGetValue(typeDefinition, out rv))
+            {
+                return rv;
+            }
+
+            TypeDefinition baseType = null;
+            TypeKind baseKind = TypeKind.Normal;
+
+            if (typeDefinition.BaseType != null)
+            {
+                baseType = typeDefinition.GetBaseType().Resolve();
+                baseKind = this.GetTypeKind(baseType);
+            }
+
+            if (typeDefinition.IsInterface && null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute))
+            {
+                rv = TypeKind.Imported;
+            }
+            else
+            {
+                bool hasConstructor = false;
+                bool hasStaticConstructor = false;
+                bool implmentedConstructor = false;
+                bool hasExternMethod = false;
+                bool hasImplementedVirtual = false;
+                bool hasFields = typeDefinition.HasFields;
+                bool hasPublicFields = false;
+                bool hasNonNullableStructField = false;
+                bool hasNonPropertyMethods = false;
+                bool hasVirtualMethods = false;
+
+                foreach (var method in typeDefinition.Methods)
+                {
+                    if (method.IsConstructor)
+                    {
+                        if (method.IsStatic)
+                        {
+                            hasStaticConstructor = true;
+                        }
+                        // TODO: move below logic into it's own function so that it can be used
+                        // to simplify constructor code.
+                        else if ((method.Body.CodeSize != 7 && method.Body.Instructions.Count != 3)
+                            || typeDefinition.IsValueType)
+                        {
+                            hasConstructor = true;
+                            implmentedConstructor = implmentedConstructor || !this.IsExtern(method);
+                        }
+                    }
+                    else
+                    {
+                        bool isExtern = this.IsExtern(method);
+                        hasExternMethod = isExtern || hasExternMethod;
+
+                        if (!isExtern && !method.IsAbstract && method.IsVirtual)
+                        {
+                            hasImplementedVirtual = true;
+                        }
+
+                        if (!method.IsGetter && !method.IsSetter)
+                        {
+                            hasNonPropertyMethods = true;
+                        }
+
+                        if (method.IsVirtual || method.IsAbstract)
+                        {
+                            hasVirtualMethods = true;
+                        }
+                    }
+                }
+
+                foreach (var field in typeDefinition.Fields)
+                {
+                    if (!field.IsPrivate)
+                    {
+                        hasPublicFields = true;
+                    }
+
+                    if (field.FieldType.IsValueType
+                        && !field.FieldType.IsSameDefinition(this.ClrKnownReferences.NullableType))
+                    {
+                        hasNonNullableStructField = true;
+                    }
+                }
+
+                if (null != typeDefinition.CustomAttributes.SelectAttribute(
+                    this.KnownReferences.ExtendedAttribute))
+                {
+                    if (baseType != null && baseKind != TypeKind.Extended && !typeDefinition.IsValueType)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "BaseType:'{0}' of ExtendedType: '{1}' should also be ExtendedType.",
+                                baseType,
+                                typeDefinition));
+                    }
+
+                    rv = TypeKind.Extended;
+                }
+                else if (hasExternMethod)
+                {
+                    // This is candidate for Imported or JSONType
+                    // It's an error to have base class that is not either Imported, JSONType or Extended
+
+                    if (baseType != null
+                        && baseKind != TypeKind.Imported
+                        && baseKind != TypeKind.Extended
+                        && baseKind != TypeKind.JSONType
+                        && !typeDefinition.IsValueType)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "BaseType: '{0}' of Imported/JSONType Type: '{1}' should be Imported/JSONType/Extended",
+                                baseType,
+                                typeDefinition));
+                    }
+
+                    if (hasImplementedVirtual)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Imported Type: '{0}' can not have virtual method implementation. Only instance Methods/Properties/Fields are allowed",
+                                typeDefinition));
+                    }
+
+                    if (hasVirtualMethods)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Imported Type: '{0}' can not have virtual methods, virtuals are not really needed.",
+                                typeDefinition));
+                    }
+
+                    if (hasPublicFields)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Imported Type: '{0}' can not have fields, fields not yet supported for imported types (this may also because of compiler generated Properties or Events, please use extern in those cases).",
+                                typeDefinition));
+                    }
+
+                    if (hasNonNullableStructField)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Imported Type: '{0}' can not have member field of struct type that is not Nullable",
+                                typeDefinition));
+                    }
+
+                    if (!hasNonPropertyMethods
+                        && !hasConstructor
+                        && baseType != null
+                        && (baseKind == TypeKind.JSONType || baseType.IsSameDefinition(this.ClrKnownReferences.Object)))
+                    {
+                        rv = TypeKind.JSONType;
+                    }
+                    else
+                    {
+                        rv = TypeKind.Imported;
+                    }
+                }
+
+                if (rv != TypeKind.Normal)
+                {
+                    if (implmentedConstructor
+                        || (rv != TypeKind.Extended && hasStaticConstructor))
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Imported or Extended Type: '{0}' can not have constructor implementation",
+                                typeDefinition));
+                    }
+                }
+            }
+
+            this.typeKindMapping.Add(typeDefinition, rv);
+
+            return rv;
+        }
+
+        /// <summary>
         /// Determines whether the specified STR is caps name.
         /// </summary>
         /// <param name="str">The STR.</param>
@@ -587,6 +875,59 @@ namespace Cs2JsC.Converter
         private static bool IsCapsName(string str)
         {
             return str.ToUpperInvariant() == str;
+        }
+
+        /// <summary>
+        /// Query if 'typeReference' is wrapped type.
+        /// </summary>
+        /// <param name="typeReference"> The type reference. </param>
+        /// <returns>
+        /// true if wrapped type, false if not.
+        /// </returns>
+        private bool IsWrappedType(TypeReference typeReference)
+        {
+            if (typeReference is ArrayType)
+            {
+                return true;
+            }
+
+            GenericInstanceType genericInstanceType = typeReference as GenericInstanceType;
+            if (genericInstanceType != null
+                && this.KnownReferences.ListGeneric.IsSameDefinition(genericInstanceType.DeclaringType))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the specified member definition is implemented.
+        /// </summary>
+        /// <param name="memberDefinition">The member definition.</param>
+        /// <returns>
+        /// <c>true</c> if the specified member definition is implemented; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsImplementedInternal(MethodDefinition memberDefinition)
+        {
+            MethodDefinition methodDefinition = memberDefinition as MethodDefinition;
+            if (methodDefinition != null)
+            {
+                return !this.IsExtern(methodDefinition)
+                    || (methodDefinition.DeclaringType.IsInterface && !this.IsPsudoType(methodDefinition.DeclaringType));
+            }
+
+            return false;
+        }
+
+        [Flags]
+        public enum TypeKind
+        {
+            Normal,
+            Interface,
+            Extended,
+            Imported,
+            JSONType
         }
     }
 }

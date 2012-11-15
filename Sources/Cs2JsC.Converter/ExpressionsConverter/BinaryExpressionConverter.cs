@@ -425,10 +425,10 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         leftConditionPartExpression.Location,
                         converter.Scope,
                         JST.BinaryOperator.Assignment,
-                        new JST.IdentifierExpression(tmpVar),
+                        new JST.IdentifierExpression(tmpVar, converter.Scope),
                         leftConditionPartExpression);
 
-                    leftJstExpression = new JST.IdentifierExpression(tmpVar);
+                    leftJstExpression = new JST.IdentifierExpression(tmpVar, converter.Scope);
                 }
             }
             else
@@ -453,10 +453,10 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         rightConditionPartExpression.Location,
                         converter.Scope,
                         JST.BinaryOperator.Assignment,
-                        new JST.IdentifierExpression(tmpVar),
+                        new JST.IdentifierExpression(tmpVar, converter.Scope),
                         rightConditionPartExpression);
 
-                    rightJstExpression = new JST.IdentifierExpression(tmpVar);
+                    rightJstExpression = new JST.IdentifierExpression(tmpVar, converter.Scope);
                 }
             }
             else

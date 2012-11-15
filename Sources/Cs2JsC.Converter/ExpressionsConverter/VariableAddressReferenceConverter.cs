@@ -66,7 +66,8 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 new JST.IdentifierExpression(
                     isReader
                         ? converter.RuntimeManager.ReferenceManager.ReaderIdentifier
-                        : converter.RuntimeManager.ReferenceManager.WriterIdentifier));
+                        : converter.RuntimeManager.ReferenceManager.WriterIdentifier,
+                    converter.Scope));
         }
     }
 }

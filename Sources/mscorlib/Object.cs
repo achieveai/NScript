@@ -1,5 +1,6 @@
 ﻿namespace System
 {
+    using System.Collections;
     using System.Runtime.CompilerServices;
 
     [IgnoreNamespace]
@@ -12,6 +13,14 @@
         [PreserveName]
         [IntrinsicField]
         internal readonly Type Constructor;
+
+        /// <summary>
+        /// The imported extension.
+        /// This is really a store for extension fields on imported and JSONType types.
+        /// </summary>
+        internal object importedExtension;
+
+        public extern Object();
 
         [MakeStaticUsage]
         [Script("return this.constructor;")]
@@ -30,5 +39,11 @@
         [Script("return obj === null || typeof obj == \"undefined\";")]
         [IgnoreGenericArguments]
         public extern static bool IsNullOrUndefined<T>(T obj);
+
+        [Script("return {toJSON: @{[mscorlib]System.Object::NoReturn()}};")]
+        private extern static object GetNewImportedExtension();
+
+        [Script("return undefined;")]
+        private extern static void NoReturn();
     }
 }

@@ -12,13 +12,31 @@ namespace RealScript
     /// <summary>
     /// Definition for TestPsudoType
     /// </summary>
-    [PsudoType]
     public class TestPsudoType
     {
-        [IntrinsicField]
-        public readonly int TempI;
+        private string tmpStr;
 
-        [IntrinsicField]
-        public readonly int TempJ;
+        public extern int TempI
+        { get; set; }
+
+        public extern int TempJ
+        { get; }
+
+        public extern int[] TheArray
+        { get; set; }
+
+        public extern event Action<int, float> TestEvent;
+
+        public void WorkOnString()
+        {
+            if (this.tmpStr == null)
+            {
+                this.tmpStr = "";
+            }
+            else
+            {
+                this.tmpStr = this.tmpStr + this.tmpStr.Length;
+            }
+        }
     }
 }

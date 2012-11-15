@@ -45,7 +45,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Creates the constructor function.
         /// </summary>
         /// <returns>Returns constructor function.</returns>
-        protected override Expression CreateConstructorFunction(Identifier typeName)
+        protected override Expression CreateConstructorFunction(IIdentifier typeName)
         {
             FunctionExpression objExpression;
             IdentifierScope innerScope =
@@ -68,7 +68,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         innerScope,
                         new ThisExpression(null, innerScope),
                         new IdentifierExpression(
-                            this.Resolve(this.Context.KnownReferences.BoxedValueField))),
+                            this.Resolve(this.Context.KnownReferences.BoxedValueField), innerScope)),
                     new IdentifierExpression(
                         innerScope.ParameterIdentifiers[0],
                         innerScope)));
@@ -189,7 +189,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                                 null,
                                 this.Scope,
                                 prototype,
-                                new IdentifierExpression(this.TypeScopeManager.ResolveMethod(method)))));
+                                new IdentifierExpression(this.TypeScopeManager.ResolveMethod(method), this.Scope))));
                 }
             }
 
@@ -245,7 +245,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     null,
                     this.Scope,
                     funcScope,
-                    new Identifier[0],
+                    new IIdentifier[0],
                     null);
 
             functionExpression.AddStatement(

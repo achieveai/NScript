@@ -17,7 +17,7 @@ namespace Cs2JsC.JST
         /// <summary>
         /// Backing field for idnetifier.
         /// </summary>
-        private readonly Identifier identifier;
+        private readonly IIdentifier identifier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentifierExpression"/> class.
@@ -25,21 +25,9 @@ namespace Cs2JsC.JST
         /// <param name="identifier">The identifier.</param>
         /// <param name="scope">The scope.</param>
         public IdentifierExpression(
-            Identifier identifier,
+            IIdentifier identifier,
             IdentifierScope scope)
             : base(null, scope)
-        {
-            this.identifier = identifier;
-            this.identifier.AddUsage(this.Scope);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentifierExpression"/> class.
-        /// </summary>
-        /// <param name="identifier">The identifier.</param>
-        public IdentifierExpression(
-            Identifier identifier)
-            : base(null, identifier.OwnerScope)
         {
             this.identifier = identifier;
             this.identifier.AddUsage(this.Scope);
@@ -55,7 +43,7 @@ namespace Cs2JsC.JST
         public static Expression Create(
             Location location,
             IdentifierScope scope,
-            IList<Identifier> identifiers,
+            IList<IIdentifier> identifiers,
             int lastIndex = -1)
         {
             if (lastIndex == -1)
@@ -86,7 +74,7 @@ namespace Cs2JsC.JST
         /// Gets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
-        public Identifier Identifier
+        public IIdentifier Identifier
         {
             get
             {

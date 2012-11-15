@@ -24,24 +24,24 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Backing field for ReaderIdentifier;
         /// </summary>
-        private Identifier readerIdentifier;
+        private IIdentifier readerIdentifier;
 
         /// <summary>
         /// Backing field for WriterIdentifier;
         /// </summary>
-        private Identifier writerIdentifier;
+        private IIdentifier writerIdentifier;
 
         /// <summary>
         /// Gets the reader identifier.
         /// </summary>
         /// <value>The reader identifier.</value>
-        public Identifier ReaderIdentifier
+        public IIdentifier ReaderIdentifier
         {
             get
             {
                 if (this.readerIdentifier == null)
                 {
-                    this.readerIdentifier = Identifier.CreateScopeIdentifier(this.identifierScope, "read", false);
+                    this.readerIdentifier = SimpleIdentifier.CreateScopeIdentifier(this.identifierScope, "read", false);
                 }
 
                 return this.readerIdentifier;
@@ -52,14 +52,14 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Gets the writer identifier.
         /// </summary>
         /// <value>The writer identifier.</value>
-        public Identifier WriterIdentifier
+        public IIdentifier WriterIdentifier
         {
             get
             {
                 if (this.writerIdentifier == null)
                 {
                     this.writerIdentifier =
-                        Identifier.CreateScopeIdentifier(
+                        SimpleIdentifier.CreateScopeIdentifier(
                             this.identifierScope,
                             "write",
                             false);

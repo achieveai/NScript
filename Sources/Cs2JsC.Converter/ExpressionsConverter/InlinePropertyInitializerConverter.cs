@@ -36,7 +36,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 expression.Location,
                 converter.Scope,
                 newScope, 
-                new Identifier[0],
+                new SimpleIdentifier[0],
                 null);
 
             // initialize a varible that will be used to hold object for initialization.
@@ -51,13 +51,13 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                         initExpression.Location,
                         function.Scope,
                         JST.BinaryOperator.Assignment,
-                        new JST.IdentifierExpression(variable),
+                        new JST.IdentifierExpression(variable, converter.Scope),
                         initExpression));
 
             foreach (var setter in expression.Setters)
             {
                 JST.Expression assignmentExpression;
-                var thisVariable = new JST.IdentifierExpression(variable);
+                var thisVariable = new JST.IdentifierExpression(variable, converter.Scope);
 
                 if (setter.Item1 is MethodReferenceExpression)
                 {
@@ -92,7 +92,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                                 thisVariable,
                                 new JST.IdentifierExpression(
                                     converter.Resolve(
-                                        (FieldReference)setter.Item1.MemberReference)));
+                                        (FieldReference)setter.Item1.MemberReference), converter.Scope));
 
                         assignmentExpression = new JST.BinaryExpression(
                             setter.Item2[0].Location,
@@ -112,7 +112,9 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                                     setter.Item2[0].Location,
                                     function.Scope,
                                     thisVariable,
-                                    new JST.IdentifierExpression(converter.Resolve(propertyReference)));
+                                    new JST.IdentifierExpression(
+                                        converter.Resolve(propertyReference),
+                                        function.Scope));
 
                             assignmentExpression = new JST.BinaryExpression(
                                 setter.Item2[0].Location,
@@ -146,7 +148,7 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 expressions.Add(assignmentExpression);
             }
 
-            expressions.Add(new JST.IdentifierExpression(variable));
+            expressions.Add(new JST.IdentifierExpression(variable, converter.Scope));
             JST.ExpressionsList expressionList = new ExpressionsList(expression.Location, converter.Scope, expressions);
 
             return expressionList;

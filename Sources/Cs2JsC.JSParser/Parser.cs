@@ -363,7 +363,7 @@ namespace Cs2JsC.JSParser
             CommonTree tree,
             ScopeResolver resolver)
         {
-            Identifier identifier = null;
+            IIdentifier identifier = null;
             if (tree.ChildCount == 3)
             {
                 identifier = resolver.CreateIdentifier(((CommonTree)tree.Children[0]).Text);
@@ -509,7 +509,7 @@ namespace Cs2JsC.JSParser
 
             if (tree.ChildCount == 4)
             {
-                key = new IdentifierExpression(resolver.CreateIdentifier(tree.Children[1].Text));
+                key = new IdentifierExpression(resolver.CreateIdentifier(tree.Children[1].Text), resolver.Scope);
             }
             else
             {

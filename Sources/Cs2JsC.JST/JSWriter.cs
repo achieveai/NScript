@@ -220,14 +220,31 @@ namespace Cs2JsC.JST
         /// </summary>
         /// <param name="identifier">The identifier.</param>
         /// <returns>Self</returns>
-        public JSWriter Write(Identifier identifier)
+        public JSWriter Write(IIdentifier identifier)
         {
-            this.tokens.AddLast(
-                new LinkedListNode<TokenBase>(
-                    new GenericStrToken(
-                        this.GetTopLocation(),
-                        identifier.GetName(),
-                        TokenType.IdentifierToken)));
+            SimpleIdentifier simpleIdentifier = identifier as SimpleIdentifier;
+            if (simpleIdentifier != null)
+            {
+                this.tokens.AddLast(
+                    new LinkedListNode<TokenBase>(
+                        new GenericStrToken(
+                            this.GetTopLocation(),
+                            identifier.GetName(),
+                            TokenType.IdentifierToken)));
+            }
+            else
+            {
+                CompoundIdentifier compoundIdentifier = (CompoundIdentifier)identifier;
+                this.Write(compoundIdentifier.Identifiers[0]);
+                for (int iIdentifier = 1; iIdentifier < compoundIdentifier.Identifiers.Count; iIdentifier++)
+                {
+                    this.tokens.AddLast(
+                        new LinkedListNode<TokenBase>(
+                            new SymbolToken(this.GetTopLocation(), Symbols.Dot)));
+
+                    this.Write(compoundIdentifier.Identifiers[iIdentifier]);
+                }
+            }
 
             return this;
         }

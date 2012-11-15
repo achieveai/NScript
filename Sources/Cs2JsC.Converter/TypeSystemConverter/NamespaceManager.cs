@@ -27,13 +27,13 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <summary>
         /// Backing field for Identifier.
         /// </summary>
-        private readonly Identifier scopeIdentifier;
+        private readonly IIdentifier scopeIdentifier;
 
         /// <summary>
         /// These are not 
         /// </summary>
-        private readonly Dictionary<Identifier, IdentifierScope> childrenScopes =
-            new Dictionary<Identifier, IdentifierScope>();
+        private readonly Dictionary<IIdentifier, IdentifierScope> childrenScopes =
+            new Dictionary<IIdentifier, IdentifierScope>();
 
         /// <summary>
         /// Backing collection of all the childNamespaces.
@@ -53,7 +53,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             bool enforceName)
         {
             this.parentNamespace = parentNamespace;
-            this.scopeIdentifier = Identifier.CreateScopeIdentifier(
+            this.scopeIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                 this.parentNamespace.Scope,
                 name,
                 enforceName);
@@ -88,7 +88,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// Gets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
-        public Identifier Identifier
+        public IIdentifier Identifier
         {
             get { return this.scopeIdentifier; }
         }
@@ -138,7 +138,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="identifier">The identifier.</param>
         /// <returns>IdentifierScope keyed with given identifier.</returns>
-        public IdentifierScope GetScope(Identifier identifier)
+        public IdentifierScope GetScope(IIdentifier identifier)
         {
             IdentifierScope identifierScope;
 

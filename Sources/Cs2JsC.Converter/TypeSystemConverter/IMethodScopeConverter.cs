@@ -6,7 +6,7 @@
     using System.Text;
     using Cs2JsC.CLR;
     using Cs2JsC.CLR.AST;
-using Cs2JsC.Utils;
+    using Cs2JsC.Utils;
     using Mono.Cecil;
 
     public interface IMethodScopeConverter : IResolver
@@ -27,21 +27,21 @@ using Cs2JsC.Utils;
 
         void PopScopeBlock();
 
-        JST.Identifier GetTempVariable();
+        JST.IIdentifier GetTempVariable();
 
         JST.Expression GetReplacementExpression(Expression clrExpression);
 
-        JST.Identifier ResolveLocal(string localName);
+        JST.IIdentifier ResolveLocal(string localName);
 
         JST.Expression ResolveThis(JST.IdentifierScope identifierScope);
 
         JST.Expression ProcessParameterBlock(ParameterBlock parameterBlock);
 
-        void ReleaseTempVariable(JST.Identifier tmpIdentifier);
+        void ReleaseTempVariable(JST.IIdentifier tmpIdentifier);
 
-        JST.Identifier ResolveArgument(string argumentName);
+        JST.IIdentifier ResolveArgument(string argumentName);
 
-        JST.Identifier Resolve(Mono.Cecil.PropertyReference keyReference);
+        JST.IIdentifier Resolve(Mono.Cecil.PropertyReference keyReference);
 
         JST.Expression CreateInstanceMethodCallExpression(
             Location location,

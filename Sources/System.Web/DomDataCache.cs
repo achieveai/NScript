@@ -17,7 +17,7 @@ namespace System.Web
     {
         private StringDictionary<Action<T>> capturePhaseEvents = new StringDictionary<Action<T>>();
         private StringDictionary<Action<T>> bubblePhaseEvents = new StringDictionary<Action<T>>();
-        private Dictionary dataDictionary = new Dictionary();
+        private Dictionary dataDictionary = null;
         private object target;
         private bool disposed = false;
 
@@ -30,17 +30,26 @@ namespace System.Web
             string dataId,
             object dataItem)
         {
+            if (this.dataDictionary == null)
+            {
+                this.dataDictionary = new Dictionary();
+            }
+
             this.dataDictionary[dataId] = dataItem;
         }
 
-        public U GetDataItem<U>(
-            string dataId)
+        public U GetDataItem<U>(string dataId)
         {
             return (U)this.dataDictionary[dataId];
         }
 
         public bool HasDataItem(string dataId)
         {
+            if (this.dataDictionary == null)
+            {
+                return false;
+            }
+
             return this.dataDictionary.ContainsKey(dataId);
         }
 

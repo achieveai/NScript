@@ -40,6 +40,7 @@ namespace Cs2JsC.Converter.Test.TypeConverterTests
             TypeConverterHelper.RunTest(
                 ImportedTypeConverterTest.TestFilesNSStr + "PsudoTypeSimple.js",
                 TestType.All,
+                true,
                 "TestPsudoType");
         }
     }

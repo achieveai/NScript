@@ -44,7 +44,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             JST.IdentifierScope scope,
             string identifierName)
         {
-            Identifier identifier;
+            IIdentifier identifier;
             if (!this.converter.TryResolveArgument(
                 identifierName,
                 out identifier))
