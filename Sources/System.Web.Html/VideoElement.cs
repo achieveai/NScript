@@ -12,42 +12,37 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for VideoElement.
     /// </summary>
-    [IgnoreNamespace, PsudoType]
+    [IgnoreNamespace]
     public class VideoElement : MediaElement
     {
         /// <summary>
         /// Constructor that prevents a default instance of this class from being created.
         /// </summary>
-        private VideoElement() { }
+        private extern VideoElement();
 
         /// <summary>
         /// The height.
         /// </summary>
-        [IntrinsicField]
-        public string Height;
+        public extern string Height {get; set; }
 
         /// <summary>
         /// The width.
         /// </summary>
-        [IntrinsicField]
-        public string Width;
+        public extern string Width {get; set; }
 
         /// <summary>
         /// The poster.
         /// </summary>
-        [IntrinsicField]
-        public string Poster;
+        public extern string Poster {get; set; }
 
         /// <summary>
         /// Height of the video.
         /// </summary>
-        [IntrinsicField]
-        public readonly int VideoHeight;
+        public extern int VideoHeight { get; }
 
         /// <summary>
         /// Width of the video.
         /// </summary>
-        [IntrinsicField]
-        public readonly int VideoWidth;
+        public extern int VideoWidth { get; }
     }
 }

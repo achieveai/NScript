@@ -11,11 +11,10 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for Gradient
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class Gradient
     {
-        private Gradient() { }
+        private extern Gradient();
 
         public extern void AddColorStop(double offset, string color);
     }

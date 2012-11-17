@@ -758,7 +758,8 @@ using Cs2JsC.Utils;
 
                 foreach (var field in typeDefinition.Fields)
                 {
-                    if (!field.IsPrivate)
+                    if (!field.IsPrivate
+                        && field.Constant == null)
                     {
                         hasPublicFields = true;
                     }
@@ -913,14 +914,13 @@ using Cs2JsC.Utils;
             MethodDefinition methodDefinition = memberDefinition as MethodDefinition;
             if (methodDefinition != null)
             {
-                return !this.IsExtern(methodDefinition)
+                return (!this.IsExtern(methodDefinition) && !memberDefinition.IsAbstract)
                     || (methodDefinition.DeclaringType.IsInterface && !this.IsPsudoType(methodDefinition.DeclaringType));
             }
 
             return false;
         }
 
-        [Flags]
         public enum TypeKind
         {
             Normal,

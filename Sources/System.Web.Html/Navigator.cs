@@ -10,72 +10,126 @@ namespace System.Web.Html
     using System.Web.Html.Geolocation;
 
     /// <summary>
-    /// Definition for Navigator
+    /// Definition for Navigator.
     /// </summary>
-    [PsudoType]
     [IgnoreNamespace]
     public sealed class Navigator
     {
-        private Navigator() { }
+        /// <summary>
+        /// Gets the navigator.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern Navigator();
 
         /// <summary>
         /// Returns the name of the browser.
         /// </summary>
-        [IntrinsicField]
-        public readonly string AppName;
+        /// <value>
+        /// The name of the application.
+        /// </value>
+        public extern string AppName
+        { get; }
 
         /// <summary>
         /// Returns the version of the browser.
         /// </summary>
-        [IntrinsicField]
-        public readonly string AppVersion;
+        /// <value>
+        /// The application version.
+        /// </value>
+        public extern string AppVersion
+        { get; }
 
         /// <summary>
         /// Retrieves the current language (applies to IE and Opera).
         /// </summary>
-        [IntrinsicField]
-        public readonly string BrowserLanguage;
-
-        [IntrinsicField]
-        public readonly bool CookieEnabled;
+        /// <value>
+        /// The browser language.
+        /// </value>
+        public extern string BrowserLanguage
+        { get; }
 
         /// <summary>
-        /// Returns a string representing the language of the browser (applies to Gecko, Opera, and WebKit).
+        /// Gets a value indicating whether the cookie is enabled.
         /// </summary>
-        [IntrinsicField]
-        public readonly string Language;
+        /// <value>
+        /// true if cookie enabled, false if not.
+        /// </value>
+        public extern bool CookieEnabled
+        { get; }
+
+        /// <summary>
+        /// Returns a string representing the language of the browser (applies to Gecko, Opera, and
+        /// WebKit).
+        /// </summary>
+        /// <value>
+        /// The language.
+        /// </value>
+        public extern string Language
+        { get; }
 
         /// <summary>
         /// Retrieves the default language used by the operating system (applies to IE).
         /// </summary>
-        [IntrinsicField]
-        public readonly string SystemLanguage;
+        /// <value>
+        /// The system language.
+        /// </value>
+        public extern string SystemLanguage
+        { get; }
 
         /// <summary>
         /// Retrieves the operating system's natural language setting (applies to IE and Opera).
         /// </summary>
-        [IntrinsicField]
-        public readonly string UserLanguage;
+        /// <value>
+        /// The user language.
+        /// </value>
+        public extern string UserLanguage
+        { get; }
 
-        [IntrinsicField]
-        public readonly GeolocationService Geolocation;
+        /// <summary>
+        /// Gets the geolocation.
+        /// </summary>
+        /// <value>
+        /// The geolocation.
+        /// </value>
+        public extern GeolocationService Geolocation
+        { get; }
 
-        [IntrinsicField]
-        public readonly bool OnLine;
+        /// <summary>
+        /// Gets a value indicating whether the on line.
+        /// </summary>
+        /// <value>
+        /// true if on line, false if not.
+        /// </value>
+        public extern bool OnLine
+        { get; }
 
         /// <summary>
         /// Returns the name of the platform.
         /// </summary>
-        [IntrinsicField]
-        public readonly string Platform;
+        /// <value>
+        /// The platform.
+        /// </value>
+        public extern string Platform
+        { get; }
 
-        [IntrinsicField]
-        public readonly bool Standalone;
+        /// <summary>
+        /// Gets a value indicating whether the standalone.
+        /// </summary>
+        /// <value>
+        /// true if standalone, false if not.
+        /// </value>
+        public extern bool Standalone
+        { get; }
 
         /// <summary>
         /// Returns the complete User-Agent header.
         /// </summary>
-        [IntrinsicField]
-        public readonly string UserAgent;
+        /// <value>
+        /// The user agent.
+        /// </value>
+        public extern string UserAgent
+        { get; }
     }
 }

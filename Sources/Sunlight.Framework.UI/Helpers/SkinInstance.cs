@@ -115,7 +115,7 @@ namespace Sunlight.Framework.UI.Helpers
 
             if (this.rootElement != skinable.Element)
             {
-                var list = this.rootElement.GetChildNodes();
+                var list = this.rootElement.ChildNodes;
 
                 for (int i = 0, j = this.childElements.Length; i < j; i++)
                 {
@@ -123,9 +123,9 @@ namespace Sunlight.Framework.UI.Helpers
                     this.childElements[i].PreActivate();
                 }
 
-                for (int i = 0, j = list.Count; i < j; i++)
+                for (int i = 0, j = list.Length; i < j; i++)
                 {
-                    skinable.Element.AppendChild((Element)list[i]);
+                    skinable.Element.AppendChild(list[i].As<Element>());
                 }
             }
         }

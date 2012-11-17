@@ -10,18 +10,41 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for WheelEvent
+    /// Definition for WheelEvent.
     /// </summary>
-    [PsudoType, IgnoreNamespace]
+    [IgnoreNamespace]
     public class WheelEvent : ElementEvent
     {
-        [IntrinsicField]
-        public readonly int WheelDelta;
+        /// <summary>
+        /// Gets the wheel event.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern WheelEvent();
 
-        [IntrinsicField]
-        public readonly int WheelDeltaX;
+        /// <summary>
+        /// Gets the wheel delta.
+        /// </summary>
+        /// <value>
+        /// The wheel delta.
+        /// </value>
+        public extern int WheelDelta { get; }
 
-        [IntrinsicField]
-        public readonly int WheelDeltaY;
+        /// <summary>
+        /// Gets the wheel delta x coordinate.
+        /// </summary>
+        /// <value>
+        /// The wheel delta x coordinate.
+        /// </value>
+        public extern int WheelDeltaX { get; }
+
+        /// <summary>
+        /// Gets the wheel delta y coordinate.
+        /// </summary>
+        /// <value>
+        /// The wheel delta y coordinate.
+        /// </value>
+        public extern int WheelDeltaY { get; }
     }
 }

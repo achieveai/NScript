@@ -9,119 +9,279 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for Node
+    /// Definition for Node.
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
-    [PsudoType]
     public class Node
     {
-        internal Node() { }
+        /// <summary>
+        /// Gets the node.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        internal extern Node();
 
-        [IntrinsicField]
-        public readonly string BaseURI;
+        /// <summary>
+        /// Gets URI of the base.
+        /// </summary>
+        /// <value>
+        /// The base uri.
+        /// </value>
+        public extern string BaseURI
+        { get; }
 
-        [IntrinsicField]
-        public readonly Node FirstChild;
+        /// <summary>
+        /// Gets the first child.
+        /// </summary>
+        /// <value>
+        /// The first child.
+        /// </value>
+        public extern Node FirstChild
+        { get; }
 
-        [IntrinsicField]
-        public readonly Node LastChild;
+        /// <summary>
+        /// Gets the last child.
+        /// </summary>
+        /// <value>
+        /// The last child.
+        /// </value>
+        public extern Node LastChild
+        { get; }
 
-        [IntrinsicField]
-        public readonly Node NextSibling;
+        /// <summary>
+        /// Gets the next sibling.
+        /// </summary>
+        /// <value>
+        /// The next sibling.
+        /// </value>
+        public extern Node NextSibling
+        { get; }
 
-        [IntrinsicField]
-        public readonly Node PreviousSibling;
+        /// <summary>
+        /// Gets the previous sibling.
+        /// </summary>
+        /// <value>
+        /// The previous sibling.
+        /// </value>
+        public extern Node PreviousSibling
+        { get; }
 
-        [IntrinsicField]
-        public readonly string LocalName;
+        /// <summary>
+        /// Gets the name of the local.
+        /// </summary>
+        /// <value>
+        /// The name of the local.
+        /// </value>
+        public extern string LocalName
+        { get; }
 
-        [IntrinsicField]
-        public readonly string NamespaceURI;
+        /// <summary>
+        /// Gets URI of the namespace.
+        /// </summary>
+        /// <value>
+        /// The namespace uri.
+        /// </value>
+        public extern string NamespaceURI
+        { get; }
 
-        [IntrinsicField]
-        public readonly string NodeName;
+        /// <summary>
+        /// Gets the name of the node.
+        /// </summary>
+        /// <value>
+        /// The name of the node.
+        /// </value>
+        public extern string NodeName
+        { get; }
 
-        [IntrinsicField]
-        public readonly ElementType NodeType;
+        /// <summary>
+        /// Gets the type of the node.
+        /// </summary>
+        /// <value>
+        /// The type of the node.
+        /// </value>
+        public extern ElementType NodeType
+        { get; }
 
-        [IntrinsicField]
-        public readonly string NodeValue;
+        /// <summary>
+        /// Gets the node value.
+        /// </summary>
+        /// <value>
+        /// The node value.
+        /// </value>
+        public extern string NodeValue
+        { get; }
 
-        [IntrinsicField]
-        public readonly Document OwnerDocument;
+        /// <summary>
+        /// Gets the document that owns this item.
+        /// </summary>
+        /// <value>
+        /// The owner document.
+        /// </value>
+        public extern Document OwnerDocument
+        { get; }
 
-        [IntrinsicField]
-        public readonly Node ParentNode;
+        /// <summary>
+        /// Gets the parent node.
+        /// </summary>
+        /// <value>
+        /// The parent node.
+        /// </value>
+        public extern Node ParentNode
+        { get; }
 
-        [IntrinsicField]
-        public string TextContent;
+        /// <summary>
+        /// Gets or sets the text content.
+        /// </summary>
+        /// <value>
+        /// The text content.
+        /// </value>
+        public extern string TextContent
+        { get; set; }
 
         /// <summary>
         /// Returns NodeAttribute[] but in nativeFormat.
         /// </summary>
-        [IntrinsicField]
-        private readonly NativeArray Attributes;
-
-        [IntrinsicField]
-        private readonly NativeArray ChildNodes;
-
-        [IntrinsicField]
-        private readonly NativeArray Children;
-
-        public extern string GetAttribute(string name);
-
-        public extern NodeAttribute GetAttributeNode(string name);
-
-        public extern bool HasAttribute(string name);
-
-        public extern bool HasChildNodes();
-
-        public extern Node InsertBefore(Node newChild);
-
-        public extern Node InsertBefore(Node newChild, Node referenceChild);
-
-        public extern bool RemoveAttribute(string name);
-
-        public extern NodeAttribute RemoveAttributeNode(NodeAttribute attribute);
-
-        public extern Node RemoveChild(Node child);
-
-        public extern Node ReplaceChild(Node newChild, Node oldChild);
-
-        public extern void SetAttribute(string name, string value);
-
-        public extern NodeAttribute SetAttributeNode(NodeAttribute attribute);
-
-        [IgnoreGenericArguments]
-        [Script("return this;")]
-        public extern TNode As<TNode>() where TNode : Node;
-
-        /// <summary>
-        /// Gets the attributes.
-        /// </summary>
-        /// <returns>Attributes list</returns>
-        public DomList<NodeAttribute> GetAttributes()
-        {
-            return new DomList<NodeAttribute>(this.Attributes);
-        }
+        /// <value>
+        /// The attributes.
+        /// </value>
+        public extern NodeAttribute[] Attributes
+        { get; }
 
         /// <summary>
         /// Gets the child nodes.
         /// </summary>
-        /// <returns>Child nodes.</returns>
-        public DomList<Node> GetChildNodes()
-        {
-            return new DomList<Node>(this.ChildNodes);
-        }
+        /// <value>
+        /// The child nodes.
+        /// </value>
+        public extern Node[] ChildNodes
+        { get; }
 
         /// <summary>
         /// Gets the children.
         /// </summary>
-        /// <returns>Children collection.</returns>
-        public DomList<Node> GetChildren()
-        {
-            return new DomList<Node>(this.Children);
-        }
+        /// <value>
+        /// The children.
+        /// </value>
+        public extern Node[] Children
+        { get; }
+
+        /// <summary>
+        /// Gets an attribute.
+        /// </summary>
+        /// <param name="name"> The name. </param>
+        /// <returns>
+        /// The attribute.
+        /// </returns>
+        public extern string GetAttribute(string name);
+
+        /// <summary>
+        /// Gets an attribute node.
+        /// </summary>
+        /// <param name="name"> The name. </param>
+        /// <returns>
+        /// The attribute node.
+        /// </returns>
+        public extern NodeAttribute GetAttributeNode(string name);
+
+        /// <summary>
+        /// Query if 'name' has attribute.
+        /// </summary>
+        /// <param name="name"> The name. </param>
+        /// <returns>
+        /// true if attribute, false if not.
+        /// </returns>
+        public extern bool HasAttribute(string name);
+
+        /// <summary>
+        /// Query if this object has child nodes.
+        /// </summary>
+        /// <returns>
+        /// true if child nodes, false if not.
+        /// </returns>
+        public extern bool HasChildNodes();
+
+        /// <summary>
+        /// Inserts a before described by newChild.
+        /// </summary>
+        /// <param name="newChild"> The new child. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public extern Node InsertBefore(Node newChild);
+
+        /// <summary>
+        /// Inserts a before.
+        /// </summary>
+        /// <param name="newChild">       The new child. </param>
+        /// <param name="referenceChild"> The reference child. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public extern Node InsertBefore(Node newChild, Node referenceChild);
+
+        /// <summary>
+        /// Removes the attribute described by name.
+        /// </summary>
+        /// <param name="name"> The name. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public extern bool RemoveAttribute(string name);
+
+        /// <summary>
+        /// Removes the attribute node described by attribute.
+        /// </summary>
+        /// <param name="attribute"> The attribute. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public extern NodeAttribute RemoveAttributeNode(NodeAttribute attribute);
+
+        /// <summary>
+        /// Removes the child described by child.
+        /// </summary>
+        /// <param name="child"> The child. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public extern Node RemoveChild(Node child);
+
+        /// <summary>
+        /// Replace child.
+        /// </summary>
+        /// <param name="newChild"> The new child. </param>
+        /// <param name="oldChild"> The old child. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public extern Node ReplaceChild(Node newChild, Node oldChild);
+
+        /// <summary>
+        /// Sets an attribute.
+        /// </summary>
+        /// <param name="name">  The name. </param>
+        /// <param name="value"> The value. </param>
+        public extern void SetAttribute(string name, string value);
+
+        /// <summary>
+        /// Sets an attribute node.
+        /// </summary>
+        /// <param name="attribute"> The attribute. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public extern NodeAttribute SetAttributeNode(NodeAttribute attribute);
+
+        /// <summary>
+        /// Gets as.
+        /// </summary>
+        /// <typeparam name="TNode"> Type of the node. </typeparam>
+        /// <returns>
+        /// .
+        /// </returns>
+        [IgnoreGenericArguments]
+        [Script("return this;")]
+        public extern TNode As<TNode>() where TNode : Node;
     }
 }

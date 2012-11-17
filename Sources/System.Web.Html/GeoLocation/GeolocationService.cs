@@ -11,9 +11,9 @@ namespace System.Web.Html.Geolocation
     /// <summary>
     /// Definition for GeolocationService
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public class GeolocationService
     {
+        private extern GeolocationService();
     }
 }

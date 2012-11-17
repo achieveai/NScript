@@ -11,13 +11,11 @@ namespace System.Web.Html.Filters
     /// <summary>
     /// Definition for VisualFilter
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public class VisualFilter
     {
-        internal VisualFilter() { }
+        internal extern VisualFilter();
 
-        [IntrinsicField]
-        public bool Enabled;
+        public extern bool Enabled { get; set; }
     }
 }

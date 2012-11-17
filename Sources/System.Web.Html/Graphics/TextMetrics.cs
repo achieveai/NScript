@@ -11,13 +11,11 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for TextMetrics
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class TextMetrics
     {
-        private TextMetrics() { }
+        private extern TextMetrics();
 
-        [IntrinsicField]
-        public readonly double Width;
+        public extern double Width { get; }
     }
 }

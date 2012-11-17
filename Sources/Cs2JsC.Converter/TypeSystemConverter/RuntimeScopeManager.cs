@@ -623,7 +623,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         {
             IList<IIdentifier> returnValue;
 
-            if (this.context.IsPsudoType((TypeDefinition)typeReference.GetDefinition()))
+            if (this.context.IsJsonType(typeReference.Resolve()))
             {
                 typeReference = this.context.ClrKnownReferences.Object;
             }
@@ -635,7 +635,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 IIdentifier resolvedIdentifier;
                 var typeName = this.GetTypeName(typeReference);
                 NamespaceManager nameSpace = this.globalNamespaceManager;
-                bool isExtended = this.context.IsExtended(typeReference);
+                bool isExtended = this.context.IsExtended(typeReference)
+                    || this.context.IsPsudoType(typeReference.Resolve());
 
                 // put in queue to process. In case of conversion using dependency
                 // walk, this will be used to start converting these types as well.
@@ -646,7 +647,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 {
                     resolvedIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                         nameSpace.Scope,
-                        isExtended
+                        isExtended || string.IsNullOrEmpty(typeName.Item1)
                             ? typeName.Item2
                             : (typeName.Item1 + '.' + typeName.Item2).Replace('.', '_'),
                         isExtended);

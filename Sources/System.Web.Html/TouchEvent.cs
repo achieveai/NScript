@@ -9,63 +9,41 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for TouchEvent
+    /// Definition for TouchEvent.
     /// </summary>
-    [PsudoType, IgnoreNamespace]
+    [IgnoreNamespace]
     public sealed class TouchEvent : ElementEvent
     {
-        private TouchEvent() { }
+        /// <summary>
+        /// Gets the touch event.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern TouchEvent();
 
-        public TouchInfo[] ChangedTouches
-        {
-            get
-            {
-                if (object.IsNullOrUndefined(this.changedTouchesInternal))
-                {
-                    this.changedTouchesInternal = this.changedTouches.GetArray<TouchInfo>();
-                }
+        /// <summary>
+        /// Gets the touches.
+        /// </summary>
+        /// <value>
+        /// The touches.
+        /// </value>
+        public extern TouchInfo[] Touches { get; }
 
-                return this.changedTouchesInternal;
-            }
-        }
+        /// <summary>
+        /// Gets target touches.
+        /// </summary>
+        /// <value>
+        /// The target touches.
+        /// </value>
+        public extern TouchInfo[] TargetTouches { get; }
 
-        public TouchInfo[] TargetTouches
-        {
-            get
-            {
-                if (object.IsNullOrUndefined(this.targetTouchesInternal))
-                {
-                    this.targetTouchesInternal = this.targetTouches.GetArray<TouchInfo>();
-                }
-
-                return this.targetTouchesInternal;
-            }
-        }
-
-        public TouchInfo[] Touches
-        {
-            get
-            {
-                if (object.IsNullOrUndefined(this.touchesInternal))
-                {
-                    this.touchesInternal = this.touches.GetArray<TouchInfo>();
-                }
-
-                return this.touchesInternal;
-            }
-        }
-
-        [IntrinsicField]
-        private readonly NativeArray changedTouches;
-
-        [IntrinsicField]
-        private readonly NativeArray targetTouches;
-
-        [IntrinsicField]
-        private readonly NativeArray touches;
-
-        private TouchInfo[] touchesInternal;
-        private TouchInfo[] targetTouchesInternal;
-        private TouchInfo[] changedTouchesInternal;
+        /// <summary>
+        /// Gets the changed touches.
+        /// </summary>
+        /// <value>
+        /// The changed touches.
+        /// </value>
+        public extern TouchInfo[] ChangedTouches { get; }
     }
 }

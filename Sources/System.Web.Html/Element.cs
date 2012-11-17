@@ -13,7 +13,6 @@ namespace System.Web.Html
     /// Definition for Element.
     /// </summary>
     [IgnoreNamespace]
-    [PsudoType]
     public class Element : Node
     {
         /// <summary>
@@ -119,190 +118,185 @@ namespace System.Web.Html
         /// <summary>
         /// Default constructor.
         /// </summary>
-        protected Element() { }
+        protected extern Element();
 
         /// <summary>
         /// The previous element sibling.
         /// </summary>
-        [IntrinsicField]
-        public readonly Element PreviousElementSibling;
+        public extern Element PreviousElementSibling
+        { get; }
 
         /// <summary>
         /// The next element sibling.
         /// </summary>
-        [IntrinsicField]
-        public readonly Element NextElementSibling;
+        public extern Element NextElementSibling
+        { get; }
 
         /// <summary>
         /// The access key.
         /// </summary>
-        [IntrinsicField]
-        public string AccessKey;
+        public extern string AccessKey
+        { get; set; }
 
         /// <summary>
         /// Name of the class.
         /// </summary>
-        [IntrinsicField]
-        public string ClassName;
+        public extern string ClassName
+        { get; set; }
 
         /// <summary>
         /// Height of the client.
         /// </summary>
-        [IntrinsicField]
-        public readonly double ClientHeight;
+        public extern double ClientHeight
+        { get; }
 
         /// <summary>
         /// The client left.
         /// </summary>
-        [IntrinsicField]
-        public readonly double ClientLeft;
+        public extern double ClientLeft
+        { get; }
 
         /// <summary>
         /// The client top.
         /// </summary>
-        [IntrinsicField]
-        public readonly double ClientTop;
+        public extern double ClientTop
+        { get; }
 
         /// <summary>
         /// Width of the client.
         /// </summary>
-        [IntrinsicField]
-        public readonly double ClientWidth;
+        public extern double ClientWidth
+        { get; }
 
         /// <summary>
         /// The current style.
         /// </summary>
-        [IntrinsicField]
-        public readonly Style CurrentStyle;
+        public extern Style CurrentStyle
+        { get; }
 
         /// <summary>
         /// The dir.
         /// </summary>
-        [IntrinsicField]
-        public string Dir;
+        public extern string Dir
+        { get; set; }
 
         // TODO: Is this on Element or just some types of elements?
 
         /// <summary>
         /// true to disable, false to enable.
         /// </summary>
-        [IntrinsicField]
-        public bool Disabled;
+        public extern bool Disabled
+        { get; set; }
 
         /// <summary>
         /// The identifier.
         /// </summary>
-        [IntrinsicField]
         [ScriptName("id")]
-        public string ID;
+        public extern string ID
+        { get; set; }
 
         /// <summary>
         /// The inner html.
         /// </summary>
-        [IntrinsicField]
-        public string InnerHTML;
+        public extern string InnerHTML
+        { get; set; }
 
         /// <summary>
         /// The inner text.
         /// </summary>
-        [IntrinsicField]
-        public string InnerText;
+        public extern string InnerText
+        { get; set; }
 
         /// <summary>
         /// Height of the offset.
         /// </summary>
-        [IntrinsicField]
-        public readonly double OffsetHeight;
+        public extern double OffsetHeight
+        { get; }
 
         /// <summary>
         /// The offset left.
         /// </summary>
-        [IntrinsicField]
-        public readonly double OffsetLeft;
+        public extern double OffsetLeft
+        { get; }
 
         /// <summary>
         /// The offset parent.
         /// </summary>
-        [IntrinsicField]
-        public readonly Element OffsetParent;
+        public extern Element OffsetParent
+        { get; }
 
         /// <summary>
         /// The offset top.
         /// </summary>
-        [IntrinsicField]
-        public readonly double OffsetTop;
+        public extern double OffsetTop
+        { get; }
 
         /// <summary>
         /// Width of the offset.
         /// </summary>
-        [IntrinsicField]
-        public readonly double OffsetWidth;
+        public extern double OffsetWidth
+        { get; }
 
         /// <summary>
         /// The runtime style.
         /// </summary>
-        [IntrinsicField]
-        public readonly Style RuntimeStyle;
+        public extern Style RuntimeStyle
+        { get; }
 
         /// <summary>
         /// Height of the scroll.
         /// </summary>
-        [IntrinsicField]
-        public readonly double ScrollHeight;
+        public extern double ScrollHeight
+        { get; }
 
         /// <summary>
         /// The scroll left.
         /// </summary>
-        [IntrinsicField]
-        public double ScrollLeft;
+        public extern double ScrollLeft
+        { get; set; }
 
         /// <summary>
         /// The scroll top.
         /// </summary>
-        [IntrinsicField]
-        public double ScrollTop;
+        public extern double ScrollTop
+        { get; set; }
 
         /// <summary>
         /// Width of the scroll.
         /// </summary>
-        [IntrinsicField]
-        public readonly double ScrollWidth;
+        public extern double ScrollWidth
+        { get; }
 
         /// <summary>
         /// The style.
         /// </summary>
-        [IntrinsicField]
-        public readonly Style Style;
+        public extern Style Style
+        { get; }
 
         /// <summary>
         /// Zero-based index of the tab.
         /// </summary>
-        [IntrinsicField]
-        public int TabIndex;
+        public extern int TabIndex
+        { get; set; }
 
         /// <summary>
         /// Name of the tag.
         /// </summary>
-        [IntrinsicField]
-        public readonly string TagName;
+        public extern string TagName
+        { get; }
 
         /// <summary>
         /// The title.
         /// </summary>
-        [IntrinsicField]
-        public string Title;
+        public extern string Title
+        { get; set; }
 
         /// <summary>
         /// Need support for static instance methods for filters. the return type is List&lt;
         /// VisualFilter&gt;
         /// </summary>
-        [IntrinsicField]
-        private readonly NativeArray filters;
-
-        /// <summary>
-        /// The element binder.
-        /// </summary>
-        private DomDataCache<ElementEvent> elementBinder;
+        private extern NativeArray filters
+        { get; }
 
         /// <summary>
         /// Gets the on key down.
@@ -310,11 +304,7 @@ namespace System.Web.Html
         /// <value>
         /// The on key down.
         /// </value>
-        public event Action<ElementEvent> OnKeyDown
-        {
-            add { this.Bind(OnKeyDownEvtName, value); }
-            remove { this.UnBind(OnKeyDownEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnKeyDown;
 
         /// <summary>
         /// Gets the on key up.
@@ -322,11 +312,7 @@ namespace System.Web.Html
         /// <value>
         /// The on key up.
         /// </value>
-        public event Action<ElementEvent> OnKeyUp
-        {
-            add { this.Bind(OnKeyUpEvtName, value); }
-            remove { this.UnBind(OnKeyUpEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnKeyUp;
 
         /// <summary>
         /// Gets the on key press.
@@ -334,11 +320,7 @@ namespace System.Web.Html
         /// <value>
         /// The on key press.
         /// </value>
-        public event Action<ElementEvent> OnKeyPress
-        {
-            add { this.Bind(OnKeyPressEvtName, value); }
-            remove { this.UnBind(OnKeyPressEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnKeyPress;
 
         /// <summary>
         /// Gets the on mouse up.
@@ -346,11 +328,7 @@ namespace System.Web.Html
         /// <value>
         /// The on mouse up.
         /// </value>
-        public event Action<ElementEvent> OnMouseUp
-        {
-            add { this.Bind(OnMouseUpEvtName, value); }
-            remove { this.UnBind(OnMouseUpEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnMouseUp;
 
         /// <summary>
         /// Gets the on mouse down.
@@ -358,11 +336,7 @@ namespace System.Web.Html
         /// <value>
         /// The on mouse down.
         /// </value>
-        public event Action<ElementEvent> OnMouseDown
-        {
-            add { this.Bind(OnMouseDownEvtName, value); }
-            remove { this.UnBind(OnMouseDownEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnMouseDown;
 
         /// <summary>
         /// Gets the on mouse enter.
@@ -370,11 +344,7 @@ namespace System.Web.Html
         /// <value>
         /// The on mouse enter.
         /// </value>
-        public event Action<ElementEvent> OnMouseEnter
-        {
-            add { this.Bind(OnMouseEnterEvtName, value); }
-            remove { this.UnBind(OnMouseEnterEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnMouseEnter;
 
         /// <summary>
         /// Gets the on mouse out.
@@ -382,11 +352,7 @@ namespace System.Web.Html
         /// <value>
         /// The on mouse out.
         /// </value>
-        public event Action<ElementEvent> OnMouseOut
-        {
-            add { this.Bind(OnMouseOutEvtName, value); }
-            remove { this.UnBind(OnMouseOutEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnMouseOut;
 
         /// <summary>
         /// Gets the on mouse move event.
@@ -394,11 +360,7 @@ namespace System.Web.Html
         /// <value>
         /// The on mouse move event.
         /// </value>
-        public event Action<ElementEvent> OnMouseMove
-        {
-            add { this.Bind(OnMouseMoveEvtName, value); }
-            remove { this.UnBind(OnMouseMoveEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnMouseMove;
 
         /// <summary>
         /// Gets the on mouse wheel event handler.
@@ -406,11 +368,7 @@ namespace System.Web.Html
         /// <value>
         /// The on mouse wheel event handler.
         /// </value>
-        public event Action<ElementEvent> OnMouseWheel
-        {
-            add { this.Bind(OnMouseWheelEvtName, value); }
-            remove { this.UnBind(OnMouseWheelEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnMouseWheel;
 
         /// <summary>
         /// Gets the on click.
@@ -418,11 +376,7 @@ namespace System.Web.Html
         /// <value>
         /// The on click.
         /// </value>
-        public event Action<ElementEvent> OnClick
-        {
-            add { this.Bind(OnClickEvtName, value); }
-            remove { this.UnBind(OnClickEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnClick;
 
         /// <summary>
         /// Gets the on focus event handler.
@@ -430,11 +384,7 @@ namespace System.Web.Html
         /// <value>
         /// The on focus event handler.
         /// </value>
-        public event Action<ElementEvent> OnFocus
-        {
-            add { this.Bind(OnFocusEvtName, value); }
-            remove { this.UnBind(OnFocusEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnFocus;
 
         /// <summary>
         /// Gets the on blur event handler.
@@ -442,11 +392,7 @@ namespace System.Web.Html
         /// <value>
         /// The on blur event handler.
         /// </value>
-        public event Action<ElementEvent> OnBlur
-        {
-            add { this.Bind(OnBlurEvtName, value); }
-            remove { this.UnBind(OnBlurEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnBlur;
 
         /// <summary>
         /// Gets the on touch start event handler.
@@ -454,11 +400,7 @@ namespace System.Web.Html
         /// <value>
         /// The on touch start event handler.
         /// </value>
-        public event Action<ElementEvent> OnTouchStart
-        {
-            add { this.Bind(OnTouchStartEvtName, value); }
-            remove { this.UnBind(OnTouchStartEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnTouchStart;
 
         /// <summary>
         /// Gets the on touch end event handler.
@@ -466,11 +408,7 @@ namespace System.Web.Html
         /// <value>
         /// The on touch end event handler.
         /// </value>
-        public event Action<ElementEvent> OnTouchEnd
-        {
-            add { this.Bind(OnTouchEndEvtName, value); }
-            remove { this.UnBind(OnTouchEndEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnTouchEnd;
 
         /// <summary>
         /// Gets the on touch move event handler.
@@ -478,11 +416,7 @@ namespace System.Web.Html
         /// <value>
         /// The on touch move event handler.
         /// </value>
-        public event Action<ElementEvent> OnTouchMove
-        {
-            add { this.Bind(OnTouchMoveEvtName, value); }
-            remove { this.UnBind(OnTouchMoveEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnTouchMove;
 
         /// <summary>
         /// Gets the on scroll event handler.
@@ -490,11 +424,7 @@ namespace System.Web.Html
         /// <value>
         /// The on scroll event handler.
         /// </value>
-        public event Action<ElementEvent> OnScroll
-        {
-            add { this.Bind(OnScrollEvtName, value); }
-            remove { this.UnBind(OnScrollEvtName, value); }
-        }
+        public extern event Action<Element, ElementEvent> OnScroll;
 
         /// <summary>
         /// Gets the on animation start event handler.
@@ -502,7 +432,7 @@ namespace System.Web.Html
         /// <value>
         /// The on animation start event handler.
         /// </value>
-        public event Action<ElementEvent> OnAnimationStart
+        public event Action<Element, ElementEvent> OnAnimationStart
         {
             add
             {
@@ -523,7 +453,7 @@ namespace System.Web.Html
         /// <value>
         /// The on animation end event handler.
         /// </value>
-        public event Action<ElementEvent> OnAnimationEnd
+        public event Action<Element, ElementEvent> OnAnimationEnd
         {
             add
             {
@@ -770,14 +700,9 @@ namespace System.Web.Html
         /// <param name="eventName"> The name of the event such as 'load'. </param>
         /// <param name="handler">   The handler. </param>
         /// <param name="capture">   (optional) the capture. </param>
-        public void Bind(string eventName, Action<ElementEvent> handler, bool capture = false)
+        public void Bind(string eventName, Action<Element, ElementEvent> handler, bool capture = false)
         {
-            if (object.IsNullOrUndefined(this.elementBinder))
-            {
-                this.elementBinder = new DomDataCache<ElementEvent>(this);
-            }
-
-            this.elementBinder.AddEvent(eventName, handler, capture);
+            EventBinder.AddEvent(this, eventName, handler, capture);
         }
 
         /// <summary>
@@ -786,12 +711,9 @@ namespace System.Web.Html
         /// <param name="eventName"> The name of the event such as 'load'. </param>
         /// <param name="handler">   The handler. </param>
         /// <param name="capture">   (optional) the capture. </param>
-        public void UnBind(string eventName, Action<ElementEvent> handler, bool capture = false)
+        public void UnBind(string eventName, Action<Element, ElementEvent> handler, bool capture = false)
         {
-            if (!object.IsNullOrUndefined(this.elementBinder))
-            {
-                this.elementBinder.RemoveEvent(eventName, handler, capture);
-            }
+            EventBinder.RemoveEvent(this, eventName, handler, capture);
         }
 
         /// <summary>
@@ -800,10 +722,8 @@ namespace System.Web.Html
         /// <param name="eventName"> The name of the event such as 'load'. </param>
         public void UnBind(string eventName)
         {
-            if (!object.IsNullOrUndefined(this.elementBinder))
-            {
-                this.elementBinder.RemoveEvent(eventName);
-            }
+            EventBinder.RemoveEvent(this, eventName, true);
+            EventBinder.RemoveEvent(this, eventName, false);
         }
 
         /// <summary>
@@ -811,11 +731,7 @@ namespace System.Web.Html
         /// </summary>
         public void UnBindAll()
         {
-            if (!object.IsNullOrUndefined(this.elementBinder))
-            {
-                this.elementBinder.Dispose();
-                this.elementBinder = null;
-            }
+            EventBinder.CleanUp(this);
         }
 
         /// <summary>

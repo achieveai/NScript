@@ -9,15 +9,26 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for CustomEvent
+    /// Definition for CustomEvent.
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class CustomEvent : ElementEvent
     {
-        internal CustomEvent() { }
+        /// <summary>
+        /// Gets the custom event.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        internal extern CustomEvent();
 
-        [IntrinsicField]
-        public object Data;
+        /// <summary>
+        /// Gets or sets the data.
+        /// </summary>
+        /// <value>
+        /// The data.
+        /// </value>
+        public extern object Data
+        { get; set; }
     }
 }

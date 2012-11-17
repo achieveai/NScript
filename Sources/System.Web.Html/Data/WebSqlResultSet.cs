@@ -11,19 +11,15 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlResult
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class WebSqlResultSet
     {
-        private WebSqlResultSet() { }
+        private extern WebSqlResultSet();
 
-        [IntrinsicField]
-        public readonly int InsertId;
+        public extern int InsertId { get; }
 
-        [IntrinsicField]
-        public readonly int RowsAffected;
+        public extern int RowsAffected { get; }
 
-        [IntrinsicField]
-        public readonly NativeArray /*WebSqlResultSetRow[]*/ Rows;
+        public extern WebSqlResultSetRow[] Rows { get; }
     }
 }

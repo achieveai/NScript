@@ -11,12 +11,11 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for MutableEvent
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     [ScriptName("MutationEvent")]
     public class MutableEvent
     {
-        private MutableEvent() { }
+        private extern MutableEvent();
 
         /// <summary>
         /// Inits the custom event.

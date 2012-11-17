@@ -11,23 +11,22 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for History
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class History
     {
-        private History() { }
+        private extern History();
 
         /// <summary>
         /// Retrieves the number of elements in the history list.
         /// </summary>
-        [IntrinsicField]
-        public readonly int Length;
+        public extern int Length
+        { get; }
 
         /// <summary>
         /// Retrieves the current state object.
         /// </summary>
-        [IntrinsicField]
-        public readonly object State;
+        public extern object State
+        { get; }
 
         /// <summary>
         /// Navigates to the previous page in history.

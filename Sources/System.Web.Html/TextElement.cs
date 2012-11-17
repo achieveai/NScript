@@ -11,16 +11,31 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for TextElement
     /// </summary>
-    [PsudoType]
     [IgnoreNamespace]
     public sealed class TextElement : InputElement
     {
-        internal TextElement() { }
+        /// <summary>
+        /// Gets the text element.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        internal extern TextElement();
 
-        [IntrinsicField]
-        public int MaxLength;
+        /// <summary>
+        /// Gets or sets the length of the maximum.
+        /// </summary>
+        /// <value>
+        /// The length of the maximum.
+        /// </value>
+        public extern int MaxLength {get; set; }
 
-        [IntrinsicField]
-        public bool ReadOnly;
+        /// <summary>
+        /// Gets or sets a value indicating whether the only should be read.
+        /// </summary>
+        /// <value>
+        /// true if read only, false if not.
+        /// </value>
+        public extern bool ReadOnly {get; set; }
     }
 }

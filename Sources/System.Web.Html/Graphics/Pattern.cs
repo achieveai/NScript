@@ -11,10 +11,9 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for Pattern
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public class Pattern
     {
-        private Pattern() { }
+        private extern Pattern();
     }
 }

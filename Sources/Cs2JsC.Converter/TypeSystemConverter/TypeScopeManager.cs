@@ -664,7 +664,8 @@ namespace Cs2JsC.Converter
 
             if (!this.typeDefinition.IsAbstract
                 && !this.typeDefinition.IsSealed
-                && !this.context.IsExtended(typeDefinition))
+                && !this.context.IsExtended(typeDefinition)
+                && !this.context.IsPsudoType(typeDefinition))
             {
                 this.hasMultipleConstructorImpls = methodSlots[".ctor"].Count > 1;
             }

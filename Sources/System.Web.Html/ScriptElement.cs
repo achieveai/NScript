@@ -11,19 +11,26 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ScriptElement
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class ScriptElement : Element
     {
-        private ScriptElement() { }
+        private extern ScriptElement();
 
-        [IntrinsicField]
-        public string Src;
+        public extern string Src
+        { get; set; }
 
-        [IntrinsicField]
-        public string Type;
+        public extern string Type
+        { get; set; }
 
-        [IntrinsicField]
-        public string ReadyState;
+        public extern string ReadyState
+        { get; set; }
+
+        public extern bool? Async
+        { get; set; }
+
+        public extern bool? Defer
+        { get; set; }
+
+        public extern event Action<ScriptElement, ElementEvent> OnLoad;
     }
 }

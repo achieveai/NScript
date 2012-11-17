@@ -11,15 +11,16 @@ namespace System.Web.Html
     /// <summary>
     /// Definition of DataTransfer
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class DataTransfer
     {
-        [IntrinsicField]
-        public DropEffect DropEffect;
+        private extern DataTransfer();
 
-        [IntrinsicField]
-        public DropEffects EffectAllowed;
+        public extern DropEffect DropEffect
+        { get; set; }
+
+        public extern DropEffects EffectAllowed
+        { get; set; }
 
         public extern void ClearData();
 

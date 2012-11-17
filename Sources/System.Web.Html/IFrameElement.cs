@@ -11,22 +11,21 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for IFrameElement
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class IFrameElement : Element
     {
-        private IFrameElement() { }
+        private extern IFrameElement();
 
-        [IntrinsicField]
-        public readonly Window ContentWindow;
+        public extern Window ContentWindow
+        { get; }
 
-        [IntrinsicField]
-        public string FrameBorder;
+        public extern string FrameBorder
+        { get; set; }
 
-        [IntrinsicField]
-        public string Scrolling;
+        public extern string Scrolling
+        { get; set; }
 
-        [IntrinsicField]
-        public string Src;
+        public extern string Src
+        { get; set; }
     }
 }

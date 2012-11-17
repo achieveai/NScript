@@ -11,19 +11,15 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for ImageData
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class ImageData
     {
-        private ImageData() { }
+        private extern ImageData();
 
-        [IntrinsicField]
-        public readonly NativeArray Data;
+        public extern NativeArray Data { get; }
 
-        [IntrinsicField]
-        public readonly int Height;
+        public extern int Height { get; }
 
-        [IntrinsicField]
-        public readonly int Width;
+        public extern int Width { get; }
     }
 }

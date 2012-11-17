@@ -9,36 +9,81 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for TouchInfo
+    /// Definition for TouchInfo.
     /// </summary>
-    [PsudoType]
     [IgnoreNamespace]
     public sealed class TouchInfo
     {
-        private TouchInfo() { }
+        /// <summary>
+        /// Gets the touch information.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern TouchInfo();
 
-        [IntrinsicField]
-        public readonly int ClientX;
+        /// <summary>
+        /// Gets the client x coordinate.
+        /// </summary>
+        /// <value>
+        /// The client x coordinate.
+        /// </value>
+        public extern int ClientX { get; }
 
-        [IntrinsicField]
-        public readonly int ClientY;
+        /// <summary>
+        /// Gets the client y coordinate.
+        /// </summary>
+        /// <value>
+        /// The client y coordinate.
+        /// </value>
+        public extern int ClientY { get; }
 
-        [IntrinsicField]
-        public readonly int Identifier;
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public extern int Identifier { get; }
 
-        [IntrinsicField]
-        public readonly int PageX;
+        /// <summary>
+        /// Gets the page x coordinate.
+        /// </summary>
+        /// <value>
+        /// The page x coordinate.
+        /// </value>
+        public extern int PageX { get; }
 
-        [IntrinsicField]
-        public readonly int PageY;
+        /// <summary>
+        /// Gets the page y coordinate.
+        /// </summary>
+        /// <value>
+        /// The page y coordinate.
+        /// </value>
+        public extern int PageY { get; }
 
-        [IntrinsicField]
-        public readonly int ScreenX;
+        /// <summary>
+        /// Gets the screen x coordinate.
+        /// </summary>
+        /// <value>
+        /// The screen x coordinate.
+        /// </value>
+        public extern int ScreenX { get; }
 
-        [IntrinsicField]
-        public readonly long ScreenY;
+        /// <summary>
+        /// Gets the screen y coordinate.
+        /// </summary>
+        /// <value>
+        /// The screen y coordinate.
+        /// </value>
+        public extern long ScreenY { get; }
 
-        [IntrinsicField]
-        public readonly Element Target;
+        /// <summary>
+        /// Gets target for the.
+        /// </summary>
+        /// <value>
+        /// The target.
+        /// </value>
+        public extern Element Target { get; }
     }
 }

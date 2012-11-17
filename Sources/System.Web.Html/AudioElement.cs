@@ -11,9 +11,9 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for AudioElement
     /// </summary>
-    [IgnoreNamespace, PsudoType]
+    [IgnoreNamespace]
     public sealed class AudioElement : MediaElement
     {
-        private AudioElement() { }
+        private extern AudioElement();
     }
 }

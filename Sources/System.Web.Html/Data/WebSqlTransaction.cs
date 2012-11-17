@@ -11,11 +11,10 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlTransaction
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class WebSqlTransaction
     {
-        private WebSqlTransaction() { }
+        private extern WebSqlTransaction();
 
         public extern void ExecuteSql(
             string sql,

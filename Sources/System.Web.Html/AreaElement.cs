@@ -9,30 +9,68 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for AreaElement
+    /// Definition for AreaElement.
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class AreaElement : Element
     {
-        private AreaElement() { }
+        /// <summary>
+        /// Constructor that prevents a default instance of this class from being created.
+        /// </summary>
+        private extern AreaElement();
 
-        [IntrinsicField]
-        public string Shape;
+        /// <summary>
+        /// Gets or sets the shape.
+        /// </summary>
+        /// <value>
+        /// The shape.
+        /// </value>
+        public extern string Shape
+        { get; set; }
 
-        [IntrinsicField]
-        public string Coords;
+        /// <summary>
+        /// Gets or sets the coords.
+        /// </summary>
+        /// <value>
+        /// The coords.
+        /// </value>
+        public extern string Coords
+        { get; set; }
 
-        [IntrinsicField]
-        public string Name;
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public extern string Name
+        { get; set; }
 
-        [IntrinsicField]
-        public string Alt;
+        /// <summary>
+        /// Gets or sets the alternate.
+        /// </summary>
+        /// <value>
+        /// The alternate.
+        /// </value>
+        public extern string Alt
+        { get; set; }
 
-        [IntrinsicField]
-        public string Href;
+        /// <summary>
+        /// Gets or sets the href.
+        /// </summary>
+        /// <value>
+        /// The href.
+        /// </value>
+        public extern string Href
+        { get; set; }
 
-        [IntrinsicField]
-        public string NoHref;
+        /// <summary>
+        /// Gets or sets the no href.
+        /// </summary>
+        /// <value>
+        /// The no href.
+        /// </value>
+        public extern string NoHref
+        { get; set; }
     }
 }

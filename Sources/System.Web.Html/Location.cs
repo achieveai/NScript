@@ -9,43 +9,96 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for Location
+    /// Definition for Location.
     /// </summary>
-    [PsudoType]
     [IgnoreNamespace]
     public sealed class Location
     {
-        private Location() { }
+        /// <summary>
+        /// Gets the location.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern Location();
 
-        [IntrinsicField]
-        public readonly string Hostname;
+        /// <summary>
+        /// Gets the hostname.
+        /// </summary>
+        /// <value>
+        /// The hostname.
+        /// </value>
+        public extern string Hostname
+        { get; }
 
-        [IntrinsicField]
+        /// <summary>
+        /// Gets the hostname and port.
+        /// </summary>
+        /// <value>
+        /// The hostname and port.
+        /// </value>
         [ScriptName("host")]
-        public readonly string HostnameAndPort;
+        public extern string HostnameAndPort
+        { get; }
 
-        [IntrinsicField]
-        public readonly string Pathname;
+        /// <summary>
+        /// Gets the full pathname of the file.
+        /// </summary>
+        /// <value>
+        /// The full pathname of the file.
+        /// </value>
+        public extern string Pathname
+        { get; }
 
-        [IntrinsicField]
-        public readonly string Port;
+        /// <summary>
+        /// Gets the port.
+        /// </summary>
+        /// <value>
+        /// The port.
+        /// </value>
+        public extern string Port
+        { get; }
 
-        [IntrinsicField]
-        public readonly string Protocol;
+        /// <summary>
+        /// Gets the protocol.
+        /// </summary>
+        /// <value>
+        /// The protocol.
+        /// </value>
+        public extern string Protocol
+        { get; }
 
-        [IntrinsicField]
-        public readonly string Search;
+        /// <summary>
+        /// Gets the search.
+        /// </summary>
+        /// <value>
+        /// The search.
+        /// </value>
+        public extern string Search
+        { get; }
 
-        [IntrinsicField]
-        public string Hash;
+        /// <summary>
+        /// Gets or sets the hash.
+        /// </summary>
+        /// <value>
+        /// The hash.
+        /// </value>
+        public extern string Hash
+        { get; set; }
 
-        [IntrinsicField]
-        public string Href;
+        /// <summary>
+        /// Gets or sets the href.
+        /// </summary>
+        /// <value>
+        /// The href.
+        /// </value>
+        public extern string Href
+        { get; set; }
 
         /// <summary>
         /// Navigates the window to a new location and updates the browser's history.
         /// </summary>
-        /// <param name="url">The URL to navigate to.</param>
+        /// <param name="url"> The URL to navigate to. </param>
         public extern void Assign(string url);
 
         /// <summary>
@@ -56,13 +109,14 @@ namespace System.Web.Html
         /// <summary>
         /// Reload the current document.
         /// </summary>
-        /// <param name="forceGet">If true, the document will be reloaded from the server, otherwise it may be loaded from the browser's cache.</param>
+        /// <param name="forceGet"> If true, the document will be reloaded from the server, otherwise it
+        ///     may be loaded from the browser's cache. </param>
         public extern void Reload(bool forceGet);
 
         /// <summary>
         /// Navigates the window to a new location without updating the browser's history.
         /// </summary>
-        /// <param name="url">The URL to navigate to.</param>
+        /// <param name="url"> The URL to navigate to. </param>
         public extern void Replace(string url);
     }
 }

@@ -11,22 +11,21 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for AnchorElement
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class AnchorElement : Element
     {
-        private AnchorElement() { }
+        private extern AnchorElement();
 
-        [IntrinsicField]
-        public string Href;
+        public extern string Href
+        { get; set; }
 
-        [IntrinsicField]
-        public string Rel;
+        public extern string Rel
+        { get; set; }
 
-        [IntrinsicField]
-        public string Target;
+        public extern string Target
+        { get; set; }
 
-        [IntrinsicField]
-        public string Download;
+        public extern string Download
+        { get; set; }
     }
 }

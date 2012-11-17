@@ -12,14 +12,12 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlDb
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class WebSqlDb
     {
-        private WebSqlDb() { }
+        private extern WebSqlDb();
 
-        [IntrinsicField]
-        public string Version;
+        public extern string Version { get; set; }
 
         public extern void ChangeVersion(
             string oldVersion,

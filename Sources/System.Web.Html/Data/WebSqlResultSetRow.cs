@@ -11,13 +11,11 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlResultSetRow
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public class WebSqlResultSetRow
     {
-        private WebSqlResultSetRow() { }
+        private extern WebSqlResultSetRow();
 
-        [IntrinsicProperty]
         public extern object this[string name]
         { get; }
     }

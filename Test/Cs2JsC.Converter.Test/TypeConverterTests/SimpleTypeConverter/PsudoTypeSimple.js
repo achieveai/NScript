@@ -1,4 +1,12 @@
-﻿function RealScript__TestPsudoType__get_TheArray(this_) {
+﻿function RealScript__TestPsudoType__get_TempI(this_) {
+  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
+  return this_.importedExtension.TempI;
+};
+function RealScript__TestPsudoType__set_TempI(this_, value) {
+  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
+  return this_.importedExtension.TempI = value;
+};
+function RealScript__TestPsudoType__get_TheArray(this_) {
   this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
   return this_.importedExtension.TheArray = this_.importedExtension.TheArray || this_.theArray ? System_ArrayG_$Int32$_.__ctor(this_.theArray) : null;
 };
@@ -20,4 +28,3 @@ function RealScript__TestPsudoType__WorkOnString(this_) {
   else
     this_.importedExtension.tmpStr = System__String__Concat(this_.importedExtension.tmpStr, System_Int32.box(this_.importedExtension.tmpStr.length));
 };
-

@@ -11,13 +11,11 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for TableSectionElement
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class TableSectionElement : Element
     {
-        private TableSectionElement() { }
+        private extern TableSectionElement();
 
-        [IntrinsicField]
-        public readonly NodeCollection Rows;
+        public extern TableRowElement[] Rows { get; }
     }
 }

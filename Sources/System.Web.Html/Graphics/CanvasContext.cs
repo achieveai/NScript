@@ -11,10 +11,9 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for CanvasContext
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public abstract class CanvasContext
     {
-        internal CanvasContext() { }
+        internal extern CanvasContext();
     }
 }

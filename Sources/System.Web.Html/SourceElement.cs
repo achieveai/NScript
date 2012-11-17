@@ -10,17 +10,33 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for SourceElement
+    /// Definition for SourceElement.
     /// </summary>
-    [IgnoreNamespace, PsudoType]
+    [IgnoreNamespace]
     public class SourceElement : Element
     {
-        protected SourceElement() { }
+        /// <summary>
+        /// Gets the source element.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        protected extern SourceElement();
 
-        [IntrinsicField]
-        public string Src;
+        /// <summary>
+        /// Gets or sets source for the.
+        /// </summary>
+        /// <value>
+        /// The source.
+        /// </value>
+        public extern string Src {get; set; }
 
-        [IntrinsicField]
-        public string Type;
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>
+        /// The type.
+        /// </value>
+        public extern string Type {get; set; }
     }
 }

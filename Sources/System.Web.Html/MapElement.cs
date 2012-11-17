@@ -9,15 +9,26 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for MapElement
+    /// Definition for MapElement.
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class MapElement : Element
     {
-        private MapElement() { }
+        /// <summary>
+        /// Gets the map element.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern MapElement();
 
-        [IntrinsicField]
-        public string Name;
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public extern string Name
+        { get; set; }
     }
 }

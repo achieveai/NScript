@@ -11,38 +11,33 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for SelectElement
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class SelectElement : Element
     {
         /// <summary>
         /// Prevents a default instance of the <see cref="SelectElement"/> class from being created.
         /// </summary>
-        private SelectElement() { }
+        private extern SelectElement();
 
         /// <summary>
         /// Options
         /// </summary>
-        [IntrinsicField]
-        public readonly NodeCollection Options;
+        public extern Node[] Options { get; }
 
         /// <summary>
         /// Can select multiple options.
         /// </summary>
-        [IntrinsicField]
-        public bool Multiple;
+        public extern bool Multiple { get; set; }
 
         /// <summary>
         /// Selected Index.
         /// </summary>
-        [IntrinsicField]
-        public int SelectedIndex;
+        public extern int SelectedIndex {get; set; }
 
         /// <summary>
         /// Size of options
         /// </summary>
-        [IntrinsicField]
-        public int Size;
+        public extern int Size {get; set; }
 
         /// <summary>
         /// Adds an element to the end of the <see cref="Options"/> collection.

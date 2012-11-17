@@ -9,74 +9,203 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for ElementEvent
+    /// Definition for ElementEvent.
     /// </summary>
-    [PsudoType, IgnoreNamespace]
+    [IgnoreNamespace]
     public class ElementEvent
     {
-        internal ElementEvent() { }
+        /// <summary>
+        /// Gets the element event.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        internal extern ElementEvent();
 
-        [IntrinsicField]
-        public readonly bool AltKey;
+        /// <summary>
+        /// Gets a value indicating whether the alternate key.
+        /// </summary>
+        /// <value>
+        /// true if alternate key, false if not.
+        /// </value>
+        public extern bool AltKey
+        { get; }
 
-        [IntrinsicField]
-        public readonly int Button;
+        /// <summary>
+        /// Gets the button.
+        /// </summary>
+        /// <value>
+        /// The button.
+        /// </value>
+        public extern int Button
+        { get; }
 
-        [IntrinsicField]
-        public bool CancelBubble;
+        /// <summary>
+        /// Gets or sets a value indicating whether the cancel bubble.
+        /// </summary>
+        /// <value>
+        /// true if we cancel bubble, false if not.
+        /// </value>
+        public extern bool CancelBubble
+        { get; set; }
 
-        [IntrinsicField]
-        public readonly bool CtrlKey;
+        /// <summary>
+        /// Gets a value indicating whether the control key.
+        /// </summary>
+        /// <value>
+        /// true if control key, false if not.
+        /// </value>
+        public extern bool CtrlKey
+        { get; }
 
-        [IntrinsicField]
-        public readonly Element CurrentTarget;
+        /// <summary>
+        /// Gets the current target.
+        /// </summary>
+        /// <value>
+        /// The current target.
+        /// </value>
+        public extern Element CurrentTarget
+        { get; }
 
-        [IntrinsicField]
-        public readonly DataTransfer DataTransfer;
+        /// <summary>
+        /// Gets the data transfer.
+        /// </summary>
+        /// <value>
+        /// The data transfer.
+        /// </value>
+        public extern DataTransfer DataTransfer
+        { get; }
 
-        [IntrinsicField]
-        public readonly string Detail;
+        /// <summary>
+        /// Gets the detail.
+        /// </summary>
+        /// <value>
+        /// The detail.
+        /// </value>
+        public extern string Detail
+        { get; }
 
-        [IntrinsicField]
-        public readonly Element FromElement;
+        /// <summary>
+        /// Gets from element.
+        /// </summary>
+        /// <value>
+        /// from element.
+        /// </value>
+        public extern Element FromElement
+        { get; }
 
-        [IntrinsicField]
-        public readonly int KeyCode;
+        /// <summary>
+        /// Gets the key code.
+        /// </summary>
+        /// <value>
+        /// The key code.
+        /// </value>
+        public extern int KeyCode
+        { get; }
 
-        [IntrinsicField]
-        public readonly bool MetaKey;
+        /// <summary>
+        /// Gets a value indicating whether the meta key.
+        /// </summary>
+        /// <value>
+        /// true if meta key, false if not.
+        /// </value>
+        public extern bool MetaKey
+        { get; }
 
-        [IntrinsicField]
-        public readonly int OffsetX;
+        /// <summary>
+        /// Gets the offset x coordinate.
+        /// </summary>
+        /// <value>
+        /// The offset x coordinate.
+        /// </value>
+        public extern int OffsetX
+        { get; }
 
-        [IntrinsicField]
-        public readonly int OffsetY;
+        /// <summary>
+        /// Gets the offset y coordinate.
+        /// </summary>
+        /// <value>
+        /// The offset y coordinate.
+        /// </value>
+        public extern int OffsetY
+        { get; }
 
-        [IntrinsicField]
-        public bool ReturnValue;
+        /// <summary>
+        /// Gets or sets a value indicating whether the return value.
+        /// </summary>
+        /// <value>
+        /// true if return value, false if not.
+        /// </value>
+        public extern bool ReturnValue
+        { get; set; }
 
-        [IntrinsicField]
-        public readonly bool ShiftKey;
+        /// <summary>
+        /// Gets a value indicating whether the shift key.
+        /// </summary>
+        /// <value>
+        /// true if shift key, false if not.
+        /// </value>
+        public extern bool ShiftKey
+        { get; }
 
-        [IntrinsicField]
-        public readonly Element SrcElement;
+        /// <summary>
+        /// Gets source element.
+        /// </summary>
+        /// <value>
+        /// The source element.
+        /// </value>
+        public extern Element SrcElement
+        { get; }
 
-        [IntrinsicField]
-        public readonly Element Target;
+        /// <summary>
+        /// Gets target for the.
+        /// </summary>
+        /// <value>
+        /// The target.
+        /// </value>
+        public extern Element Target
+        { get; }
 
-        [IntrinsicField]
-        public readonly DateTime TimeStamp;
+        /// <summary>
+        /// Gets the Date/Time of the time stamp.
+        /// </summary>
+        /// <value>
+        /// The time stamp.
+        /// </value>
+        public extern DateTime TimeStamp
+        { get; }
 
-        [IntrinsicField]
-        public readonly Element ToElement;
+        /// <summary>
+        /// Gets to element.
+        /// </summary>
+        /// <value>
+        /// to element.
+        /// </value>
+        public extern Element ToElement
+        { get; }
 
-        [IntrinsicField]
-        public readonly string Type;
+        /// <summary>
+        /// Gets the type.
+        /// </summary>
+        /// <value>
+        /// The type.
+        /// </value>
+        public extern string Type
+        { get; }
 
+        /// <summary>
+        /// Prevent default.
+        /// </summary>
         public extern void PreventDefault();
 
+        /// <summary>
+        /// Stops an immediate propagation.
+        /// </summary>
         public extern void StopImmediatePropagation();
 
+        /// <summary>
+        /// Stops a propagation.
+        /// </summary>
         public extern void StopPropagation();
     }
 }

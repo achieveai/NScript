@@ -64,49 +64,42 @@ namespace System.Web
     /// <summary>
     /// Definition for Class.
     /// </summary>
-    [Extended, IgnoreNamespace, ScriptName("XMLHttpRequest")]
+    [IgnoreNamespace, ScriptName("XMLHttpRequest")]
     public class XMLHttpRequest
     {
         /// <summary>
         /// State of the ready.
         /// </summary>
-        [IntrinsicField]
-        public readonly ReadyState ReadyState;
+        public extern ReadyState ReadyState { get; }
 
         /// <summary>
         /// The response text.
         /// </summary>
-        [IntrinsicField]
-        public readonly string ResponseText;
+        public extern string ResponseText { get; }
 
         /// <summary>
         /// The status.
         /// </summary>
-        [IntrinsicField]
-        public readonly short Status;
+        public extern short Status { get; }
 
         /// <summary>
         /// The status text.
         /// </summary>
-        [IntrinsicField]
-        public readonly string StatusText;
+        public extern string StatusText { get; }
 
         /// <summary>
         /// The timeout.
         /// </summary>
-        [IntrinsicField]
-        public int Timeout;
+        public extern int Timeout { get; set; }
 
         /// <summary>
         /// The on read sate change.
         /// </summary>
-        [IntrinsicField]
-        public Action OnReadSateChange;
+        public extern event Action<XMLHttpRequest, ProgressEvent> OnReadSateChange;
 
-        /// <summary>
-        /// The data cache.
-        /// </summary>
-        private DomDataCache<ProgressEvent> dataCache;
+        public extern event Action<XMLHttpRequest, ProgressEvent> OnLoad;
+
+        public extern event Action<XMLHttpRequest, ProgressEvent> OnError;
 
         /// <summary>
         /// Gets the given document.
@@ -131,25 +124,22 @@ namespace System.Web
                 }
             }
 
-            request.Bind(
-                "load",
-                (e) =>
+            if (cb != null)
             {
-                if (cb != null)
-                {
-                    cb(request.ResponseText, request.Status, false);
-                }
-            });
-
-            request.Bind(
-                "error",
-                (e) =>
-                {
-                    if (cb != null)
+                request.OnLoad +=
+                    (s, e) =>
                     {
+                        EventBinder.CleanUp(request);
+                        cb(request.ResponseText, request.Status, false);
+                    };
+
+                request.OnError +=
+                    (s, e) =>
+                    {
+                        EventBinder.CleanUp(request);
                         cb(null, request.Status, true);
-                    }
-                });
+                    };
+            }
 
             request.Send();
         }
@@ -181,25 +171,22 @@ namespace System.Web
                 }
             }
 
-            request.Bind(
-                "load",
-                (e) =>
+            if (cb != null)
             {
-                if (cb != null)
-                {
-                    cb(request.ResponseText, request.Status, false);
-                }
-            });
-
-            request.Bind(
-                "error",
-                (e) =>
-                {
-                    if (cb != null)
+                request.OnLoad +=
+                    (s, e) =>
                     {
+                        EventBinder.CleanUp(request);
+                        cb(request.ResponseText, request.Status, false);
+                    };
+
+                request.OnError +=
+                    (s, e) =>
+                    {
+                        EventBinder.CleanUp(request);
                         cb(null, request.Status, true);
-                    }
-                });
+                    };
+            }
 
             request.Send(data);
         }
@@ -287,14 +274,9 @@ namespace System.Web
         /// </summary>
         /// <param name="eventName"> The name of the event such as 'load'. </param>
         /// <param name="handler">   The handler. </param>
-        public void Bind(string eventName, Action<ProgressEvent> handler)
+        public void Bind(string eventName, Action<XMLHttpRequest, ProgressEvent> handler)
         {
-            if (object.IsNullOrUndefined(this.dataCache))
-            {
-                this.dataCache = new DomDataCache<ProgressEvent>(this);
-            }
-
-            this.dataCache.AddEvent(eventName, handler);
+            EventBinder.AddEvent(this, eventName, handler);
         }
 
         /// <summary>
@@ -302,12 +284,9 @@ namespace System.Web
         /// </summary>
         /// <param name="eventName"> The name of the event such as 'load'. </param>
         /// <param name="handler">   The handler. </param>
-        public void UnBind(string eventName, Action<ProgressEvent> handler)
+        public void UnBind(string eventName, Action<XMLHttpRequest, ProgressEvent> handler)
         {
-            if (!object.IsNullOrUndefined(this.dataCache))
-            {
-                dataCache.RemoveEvent(eventName, handler);
-            }
+            EventBinder.RemoveEvent(this, eventName, handler);
         }
 
         /// <summary>

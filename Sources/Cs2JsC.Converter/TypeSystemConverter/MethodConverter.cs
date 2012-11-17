@@ -1589,7 +1589,8 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                            new JST.IdentifierExpression(
                                this.RuntimeManager.Resolve(
                                    this.methodDefinition.GetPropertyDefinition()), this.Scope)),
-                       new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0], this.Scope))));
+                       new JST.IdentifierExpression(
+                           this.ResolveArgument(methodDefinition.Parameters[0].Name), this.Scope))));
         }
 
         /// <summary>
@@ -1866,6 +1867,21 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <returns></returns>
         private JST.Expression GetMethodSlotParentExpression()
         {
+            if (this.context.IsPsudoType(this.typeConverter.TypeDefinition))
+            {
+                if (this.methodDefinition.IsStatic)
+                {
+                    throw new InvalidProgramException("Static Compiler generated properties not supported for imported or JsonType");
+                }
+                else
+                {
+                    return new JST.IdentifierExpression(
+                        new CompoundIdentifier(this.thisIdentifier, 
+                            this.Resolve(this.KnownReferences.ImportedExtensionField)),
+                            this.Scope);
+                }
+            }
+
             if (this.methodDefinition.IsStatic)
             {
                 return JST.IdentifierExpression.Create(

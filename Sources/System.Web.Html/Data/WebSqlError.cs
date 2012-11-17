@@ -11,16 +11,13 @@ namespace System.Web.Html.Data
     /// <summary>
     /// Definition for WebSqlError
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class WebSqlError
     {
-        private WebSqlError() { }
+        private extern WebSqlError();
 
-        [IntrinsicField]
-        public readonly int Code;
+        public extern int Code { get; }
 
-        [IntrinsicField]
-        public readonly string Message;
+        public extern string Message { get; }
     }
 }

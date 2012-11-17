@@ -11,19 +11,18 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for MessageEvent
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class MessageEvent : ElementEvent
     {
-        private MessageEvent() { }
+        private extern MessageEvent();
 
-        [IntrinsicField]
-        public readonly string Data;
+        public extern string Data
+        { get; }
 
-        [IntrinsicField]
-        public readonly string Origin;
+        public extern string Origin
+        { get; }
 
-        [IntrinsicField]
-        public readonly Window Source;
+        public extern Window Source
+        { get; }
     }
 }

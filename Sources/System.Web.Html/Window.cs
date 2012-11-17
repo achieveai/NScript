@@ -12,14 +12,13 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Window.
     /// </summary>
-    [PsudoType]
     [IgnoreNamespace]
     public sealed class Window
     {
         /// <summary>
         /// Constructor that prevents a default instance of this class from being created.
         /// </summary>
-        private Window() { }
+        private extern Window();
 
         /// <summary>
         /// Gets the instance.
@@ -35,110 +34,87 @@ namespace System.Web.Html
         /// <summary>
         /// The application cache.
         /// </summary>
-        [IntrinsicField]
-        public readonly ApplicationCache ApplicationCache;
+        public extern ApplicationCache ApplicationCache { get; }
 
         /// <summary>
         /// IE only.
         /// </summary>
-        [IntrinsicField]
-        public readonly DataTransfer ClipboardData;
+        public extern DataTransfer ClipboardData { get; }
 
         /// <summary>
         /// The closed.
         /// </summary>
-        [IntrinsicField]
-        public readonly bool Closed;
+        public extern bool Closed { get; }
 
         /// <summary>
         /// The dialog arguments.
         /// </summary>
-        [IntrinsicField]
-        public readonly object DialogArguments;
+        public extern object DialogArguments { get; }
 
         /// <summary>
         /// The default status.
         /// </summary>
-        [IntrinsicField]
-        public string DefaultStatus;
+        public extern string DefaultStatus {get; set; }
 
         /// <summary>
         /// The document.
         /// </summary>
-        [IntrinsicField]
-        public readonly Document Document;
+        public extern Document Document { get; }
 
         /// <summary>
         /// Provides information about the current event being handled.
         /// </summary>
-        [IntrinsicField]
-        public readonly ElementEvent Event;
+        public extern ElementEvent Event { get; }
 
         /// <summary>
         /// The frame element.
         /// </summary>
-        [IntrinsicField]
-        public readonly IFrameElement FrameElement;
+        public extern IFrameElement FrameElement { get; }
 
         /// <summary>
         /// The history.
         /// </summary>
-        [IntrinsicField]
-        public readonly History History;
+        public extern History History { get; }
 
         /// <summary>
         /// Height of the inner.
         /// </summary>
-        [IntrinsicField]
-        public readonly int InnerHeight;
+        public extern int InnerHeight { get; }
 
         /// <summary>
         /// Width of the inner.
         /// </summary>
-        [IntrinsicField]
-        public readonly int InnerWidth;
+        public extern int InnerWidth { get; }
 
         /// <summary>
         /// The local storage.
         /// </summary>
-        [IntrinsicField]
-        public readonly Storage LocalStorage;
+        public extern Storage LocalStorage { get; }
 
         /// <summary>
         /// The location.
         /// </summary>
-        [IntrinsicField]
-        public readonly Location Location;
+        public extern Location Location { get; }
 
         /// <summary>
         /// The navigator.
         /// </summary>
-        [IntrinsicField]
-        public readonly Navigator Navigator;
+        public extern Navigator Navigator { get; }
 
         /// <summary>
         /// The parent.
         /// </summary>
-        [IntrinsicField]
-        public readonly Window Parent;
+        public extern Window Parent { get; }
 
         /// <summary>
         /// The onerror.
         /// </summary>
-        [IntrinsicField]
-        private Action<string, string, int> onerror;
-
-        /// <summary>
-        /// The onload.
-        /// </summary>
-        [IntrinsicField]
-        private Action Onload;
+        public extern event Action<Window, string, string, int> OnError;
 
         /// <summary>
         /// The onresize.
         /// </summary>
-        [IntrinsicField]
-        private Action Onresize;
+        public extern event Action<Window> OnResize;
 
         /// <summary>
         /// Gets the on load event handler.
@@ -146,152 +122,67 @@ namespace System.Web.Html
         /// <value>
         /// The on load event handler.
         /// </value>
-        public event Action OnLoad
-        {
-            add
-            {
-                if (this.Onload != null)
-                {
-                    this.Onload = this.Onload + value;
-                }
-                else
-                {
-                    this.Onload = value;
-                }
-            }
-
-            remove
-            {
-                if (this.Onload != null)
-                {
-                    this.Onload = this.Onload - value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the on resize event handler.
-        /// </summary>
-        /// <value>
-        /// The on resize event handler.
-        /// </value>
-        public event Action OnResize
-        {
-            add
-            {
-                if (this.Onresize != null)
-                {
-                    this.Onresize = this.Onresize + value;
-                }
-                else
-                {
-                    this.Onresize = value;
-                }
-            }
-
-            remove
-            {
-                if (this.Onresize != null)
-                {
-                    this.Onresize = this.Onresize - value;
-                }
-            }
-        }
-
-        public event Action<string, string, int> OnError
-        {
-            add
-            {
-                if (this.onerror != null)
-                {
-                    this.onerror = this.onerror + value;
-                }
-                else
-                {
-                    this.onerror = value;
-                }
-            }
-
-            remove
-            {
-                if (this.onerror != null)
-                {
-                    this.onerror = this.onerror - value;
-                }
-            }
-        }
+        public extern event Action<Window> OnLoad;
 
         /// <summary>
         /// The opener.
         /// </summary>
-        [IntrinsicField]
-        public readonly Window Opener;
+        public extern Window Opener { get; }
 
         /// <summary>
         /// The orientation.
         /// </summary>
-        [IntrinsicField]
-        public Orientation Orientation;
+        public extern Orientation Orientation {get; set; }
 
         /// <summary>
         /// Height of the outer.
         /// </summary>
-        [IntrinsicField]
-        public readonly int OuterHeight;
+        public extern int OuterHeight { get; }
 
         /// <summary>
         /// Width of the outer.
         /// </summary>
-        [IntrinsicField]
-        public readonly int OuterWidth;
+        public extern int OuterWidth { get; }
 
         /// <summary>
         /// The page x coordinate offset.
         /// </summary>
-        [IntrinsicField]
-        public readonly int PageXOffset;
+        public extern int PageXOffset { get; }
 
         /// <summary>
         /// The page y coordinate offset.
         /// </summary>
-        [IntrinsicField]
-        public readonly int PageYOffset;
+        public extern int PageYOffset { get; }
 
         /// <summary>
         /// The screen.
         /// </summary>
-        [IntrinsicField]
-        public readonly Screen Screen;
+        public extern Screen Screen { get; }
 
         /// <summary>
         /// The self.
         /// </summary>
-        [IntrinsicField]
-        public readonly Window Self;
+        public extern Window Self { get; }
 
         /// <summary>
         /// The session storage.
         /// </summary>
-        [IntrinsicField]
-        public readonly Storage SessionStorage;
+        public extern Storage SessionStorage { get; }
 
         /// <summary>
         /// The status.
         /// </summary>
-        [IntrinsicField]
-        public readonly string Status;
+        public extern string Status { get; }
 
         /// <summary>
         /// The top.
         /// </summary>
-        [IntrinsicField]
-        public readonly Window Top;
+        public extern Window Top { get; }
 
         /// <summary>
         /// The frames.
         /// </summary>
-        [IntrinsicField]
-        public readonly Window[] Frames;
+        public extern Window[] Frames { get; }
 
         /// <summary>
         /// Opens the given document.

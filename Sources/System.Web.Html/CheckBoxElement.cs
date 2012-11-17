@@ -11,16 +11,15 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for CheckBoxElement
     /// </summary>
-    [PsudoType]
     [IgnoreNamespace]
     public class CheckBoxElement : InputElement
     {
-        internal CheckBoxElement() { }
+        internal extern CheckBoxElement();
 
-        [IntrinsicField]
-        public readonly bool DefaultChecked;
+        public extern bool DefaultChecked
+        { get; }
 
-        [IntrinsicField]
-        public bool Checked;
+        public extern bool Checked
+        { get; set; }
     }
 }

@@ -18,22 +18,15 @@ namespace System.Web.Html.Filters
     /// <summary>
     /// Definition for VisualTransition
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class VisualTransition : VisualFilter
     {
-        private VisualTransition() { }
+        private extern VisualTransition();
 
-        [IntrinsicField]
-        public double Duration;
+        public extern double Duration { get; set; }
 
-        [IntrinsicField]
-        public readonly int Percent;
+        public extern int Percent { get; }
 
-        [IntrinsicField]
-        private readonly string status;
-
-        [MakeStaticUsage]
         public VisualTransitionState Status
         {
             get
@@ -56,5 +49,7 @@ namespace System.Web.Html.Filters
         public extern void Play();
 
         public extern void Stop();
+
+        private extern string status { get; }
     }
 }

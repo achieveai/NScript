@@ -11,9 +11,9 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for Rendering
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class Rendering
     {
+        private extern Rendering();
     }
 }

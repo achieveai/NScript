@@ -9,24 +9,53 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for ClientRect
+    /// Definition for ClientRect.
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class ClientRect
     {
-        private ClientRect() { }
+        /// <summary>
+        /// Gets the client rectangle.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern ClientRect();
 
-        [IntrinsicField]
-        public readonly double Bottom; 
+        /// <summary>
+        /// Gets the bottom.
+        /// </summary>
+        /// <value>
+        /// The bottom.
+        /// </value>
+        public extern double Bottom
+        { get; }
 
-        [IntrinsicField]
-        public readonly double Left; 
+        /// <summary>
+        /// Gets the left.
+        /// </summary>
+        /// <value>
+        /// The left.
+        /// </value>
+        public extern double Left
+        { get; }
 
-        [IntrinsicField]
-        public readonly double Right; 
+        /// <summary>
+        /// Gets the right.
+        /// </summary>
+        /// <value>
+        /// The right.
+        /// </value>
+        public extern double Right
+        { get; }
 
-        [IntrinsicField]
-        public readonly double Top; 
+        /// <summary>
+        /// Gets the top.
+        /// </summary>
+        /// <value>
+        /// The top.
+        /// </value>
+        public extern double Top
+        { get; }
     }
 }

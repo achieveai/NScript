@@ -16,7 +16,7 @@ namespace RealScript
     {
         private string tmpStr;
 
-        public extern int TempI
+        public int? TempI
         { get; set; }
 
         public extern int TempJ

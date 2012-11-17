@@ -12,7 +12,6 @@ namespace System.Web.Html
     /// Definition for InputElement.
     /// </summary>
     [IgnoreNamespace]
-    [PsudoType]
     public class InputElement : Element
     {
         /// <summary>
@@ -23,7 +22,7 @@ namespace System.Web.Html
         /// <summary>
         /// Default constructor.
         /// </summary>
-        internal InputElement() { }
+        internal extern InputElement();
 
         /// <summary>
         /// Gets the on change event handler.
@@ -31,41 +30,37 @@ namespace System.Web.Html
         /// <value>
         /// The on change event handler.
         /// </value>
-        public event Action<ElementEvent> OnChange
-        {
-            add { this.Bind(OnChangeEvtName, value); }
-            remove { this.UnBind(OnChangeEvtName, value); }
-        }
+        public event Action<InputElement, ElementEvent> OnChange;
 
         /// <summary>
         /// The default value.
         /// </summary>
-        [IntrinsicField]
-        public readonly string DefaultValue;
+        public extern string DefaultValue
+        { get; }
 
         /// <summary>
         /// The form.
         /// </summary>
-        [IntrinsicField]
-        public readonly FormElement Form;
+        public extern FormElement Form
+        { get; }
 
         /// <summary>
         /// The name.
         /// </summary>
-        [IntrinsicField]
-        public string Name;
+        public extern string Name
+        { get; set; }
 
         /// <summary>
         /// The type.
         /// </summary>
-        [IntrinsicField]
-        public string Type;
+        public extern string Type
+        { get; set; }
 
         /// <summary>
         /// The value.
         /// </summary>
-        [IntrinsicField]
-        public string Value;
+        public extern string Value
+        { get; set; }
 
         /// <summary>
         /// Selects this object.

@@ -9,19 +9,35 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for DivElement
+    /// Definition for DivElement.
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
-    [PsudoType]
     public sealed class DivElement : Element
     {
-        private DivElement() { }
+        /// <summary>
+        /// Gets the div element.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern DivElement();
 
-        [IntrinsicField]
-        public string Align;
+        /// <summary>
+        /// Gets or sets the align.
+        /// </summary>
+        /// <value>
+        /// The align.
+        /// </value>
+        public extern string Align
+        { get; set; }
 
-        [IntrinsicField]
-        public bool NoWrap;
+        /// <summary>
+        /// Gets or sets a value indicating whether the no wrap.
+        /// </summary>
+        /// <value>
+        /// true if no wrap, false if not.
+        /// </value>
+        public extern bool NoWrap
+        { get; set; }
     }
 }

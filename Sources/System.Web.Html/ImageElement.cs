@@ -11,31 +11,36 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ImageElement
     /// </summary>
-    [PsudoType]
     [IgnoreNamespace]
     public sealed class ImageElement : Element
     {
-        private ImageElement() { }
+        private extern ImageElement();
 
-        [IntrinsicField]
-        public string Alt;
+        public extern bool Complete
+        { get; }
 
-        [IntrinsicField]
-        public bool Complete;
+        public extern string Alt
+        { get; set; }
 
-        [IntrinsicField]
-        public string Src;
+        public extern string Src
+        { get; set; }
 
-        [IntrinsicField]
-        public int Height;
+        public extern int Height
+        { get; set; }
 
-        [IntrinsicField]
-        public int Width;
+        public extern int Width
+        { get; set; }
 
-        [IntrinsicField]
-        public int NaturalHeight;
+        public extern int? NaturalHeight
+        { get; }
 
-        [IntrinsicField]
-        public int NaturalWidth;
+        public extern int? NaturalWidth
+        { get; }
+
+        public extern event Action<ImageElement, ElementEvent> OnLoad;
+
+        public extern event Action<ImageElement, ElementEvent> OnError;
+
+        public extern event Action<ImageElement, ElementEvent> OnAbort;
     }
 }

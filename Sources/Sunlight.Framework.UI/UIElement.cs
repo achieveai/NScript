@@ -222,7 +222,7 @@ namespace Sunlight.Framework.UI
         /// Handler, called when the event.
         /// </summary>
         /// <param name="evt"> The event. </param>
-        private void EventHandler(ElementEvent evt)
+        private void EventHandler(Element sender, ElementEvent evt)
         {
             string eventName = evt.Type;
 

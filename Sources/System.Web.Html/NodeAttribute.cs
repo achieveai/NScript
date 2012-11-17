@@ -9,19 +9,44 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for NodeAttribute
+    /// Definition for NodeAttribute.
     /// </summary>
-    [Extended]
     [ScriptName("Attr")]
     public sealed class NodeAttribute
     {
-        [IntrinsicField]
-        public readonly string Name;
+        /// <summary>
+        /// Gets the node attribute.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern NodeAttribute();
 
-        [IntrinsicField]
-        public readonly bool Specified;
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public extern string Name
+        { get; }
 
-        [IntrinsicField]
-        public string Value;
+        /// <summary>
+        /// Gets a value indicating whether the specified.
+        /// </summary>
+        /// <value>
+        /// true if specified, false if not.
+        /// </value>
+        public extern bool Specified
+        { get; }
+
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
+        public extern string Value
+        { get; set; }
     }
 }

@@ -11,58 +11,33 @@ namespace System.Web.Html.Graphics
     /// <summary>
     /// Definition for CanvasContext2D
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class CanvasContext2D : CanvasContext
     {
-        private CanvasContext2D() { }
+        private extern CanvasContext2D();
 
-        [IntrinsicField]
-        public double GlobalAlpha;
+        public extern double GlobalAlpha { get; set; }
 
-        [IntrinsicField]
-        public object FillStyle;
+        public extern object FillStyle { get; set; }
 
-        [IntrinsicField]
-        public string Font;
+        public extern string Font { get; set; }
 
-        [IntrinsicField]
-        public double LineWidth;
+        public extern double LineWidth { get; set; }
 
-        [IntrinsicField]
-        public int MiterLimit;
+        public extern int MiterLimit { get; set; }
 
-        [IntrinsicField]
-        public double ShadowBlur;
+        public extern double ShadowBlur { get; set; }
 
-        [IntrinsicField]
-        public string ShadowColor;
+        public extern string ShadowColor { get; set; }
 
-        [IntrinsicField]
-        public double ShadowOffsetX;
+        public extern double ShadowOffsetX { get; set; }
 
-        [IntrinsicField]
-        public double ShadowOffsetY;
+        public extern double ShadowOffsetY { get; set; }
 
-        [IntrinsicField]
-        public object StrokeStyle;
+        public extern object StrokeStyle { get; set; }
 
-        [IntrinsicField]
-        private string globalCompositeOperation;
+        public extern string lineJoin { get; set; }
 
-        [IntrinsicField]
-        private string textBaseline;
-
-        [IntrinsicField]
-        private string lineCap;
-
-        [IntrinsicField]
-        public string lineJoin;
-
-        [IntrinsicField]
-        private string textAlign;
-
-        [MakeStaticUsage]
         public CompositeOperation CompositeOperation
         {
             get
@@ -407,5 +382,13 @@ namespace System.Web.Html.Graphics
         public extern void Transform(double m11, double m12, double m21, double m22, double dx, double dy);
 
         public extern void Translate(double x, double y);
+
+        private extern string globalCompositeOperation { get; set; }
+
+        private extern string textBaseline { get; set; }
+
+        private extern string lineCap { get; set; }
+
+        private extern string textAlign { get; set; }
     }
 }

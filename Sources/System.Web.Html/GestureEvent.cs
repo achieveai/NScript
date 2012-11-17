@@ -9,18 +9,35 @@ namespace System.Web.Html
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Definition for GestureEvent
+    /// Definition for GestureEvent.
     /// </summary>
-    [Extended]
     [IgnoreNamespace]
     public sealed class GestureEvent : ElementEvent
     {
-        private GestureEvent() { }
+        /// <summary>
+        /// Gets the gesture event.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private extern GestureEvent();
 
-        [IntrinsicField]
-        public readonly double Rotation;
+        /// <summary>
+        /// Gets the rotation.
+        /// </summary>
+        /// <value>
+        /// The rotation.
+        /// </value>
+        public extern double Rotation
+        { get; }
 
-        [IntrinsicField]
-        public readonly double Scale;
+        /// <summary>
+        /// Gets the scale.
+        /// </summary>
+        /// <value>
+        /// The scale.
+        /// </value>
+        public extern double Scale
+        { get; }
     }
 }

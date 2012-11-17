@@ -102,14 +102,14 @@ namespace System.Web.Html
     /// <summary>
     /// Time ranges.
     /// </summary>
-    [IgnoreNamespace, PsudoType]
+    [IgnoreNamespace]
     public class TimeRanges
     {
         /// <summary>
         /// The length.
         /// </summary>
-        [IntrinsicField]
-        public int Length;
+        public extern int Length
+        { get; set; }
 
         /// <summary>
         /// Starts.
@@ -133,7 +133,7 @@ namespace System.Web.Html
     /// <summary>
     /// Media element.
     /// </summary>
-    [IgnoreNamespace, PsudoType]
+    [IgnoreNamespace]
     public abstract class MediaElement : SourceElement
     {
         /// <summary>
@@ -239,141 +239,141 @@ namespace System.Web.Html
         /// <summary>
         /// true to automatic play.
         /// </summary>
-        [IntrinsicField]
-        public bool AutoPlay;
+        public extern bool AutoPlay
+        { get; set; }
 
         /// <summary>
         /// The buffered.
         /// </summary>
-        [IntrinsicField]
-        public readonly TimeRanges Buffered;
+        public extern TimeRanges Buffered
+        { get; }
 
         /// <summary>
         /// true to show, false to hide the controls.
         /// </summary>
-        [IntrinsicField]
         [ScriptName("controls")]
-        public bool ShowControls;
+        public extern bool ShowControls
+        { get; set; }
 
         /// <summary>
         /// The cross origin.
         /// </summary>
-        [IntrinsicField]
-        public string CrossOrigin;
+        public extern string CrossOrigin
+        { get; set; }
 
         /// <summary>
         /// The current source.
         /// </summary>
-        [IntrinsicField]
-        public readonly string CurrentSrc;
+        public extern string CurrentSrc
+        { get; }
 
         /// <summary>
         /// The current time.
         /// </summary>
-        [IntrinsicField]
-        public double CurrentTime;
+        public extern double CurrentTime
+        { get; set; }
 
         /// <summary>
         /// true if default muted.
         /// </summary>
-        [IntrinsicField]
-        public bool DefaultMuted;
+        public extern bool DefaultMuted
+        { get; set; }
 
         /// <summary>
         /// The default playback rate.
         /// </summary>
-        [IntrinsicField]
-        public double DefaultPlaybackRate;
+        public extern double DefaultPlaybackRate
+        { get; set; }
 
         /// <summary>
         /// The duration.
         /// </summary>
-        [IntrinsicField]
-        public readonly double Duration;
+        public extern double Duration
+        { get; }
 
         /// <summary>
         /// The ended.
         /// </summary>
-        [IntrinsicField]
-        public readonly bool Ended;
+        public extern bool Ended
+        { get; }
 
         /// <summary>
         /// The error.
         /// </summary>
-        [IntrinsicField]
-        public readonly MediaError? Error;
+        public extern MediaError? Error
+        { get; }
 
         /// <summary>
         /// Time of the initial.
         /// </summary>
-        [IntrinsicField]
-        public readonly double InitialTime;
+        public extern double InitialTime
+        { get; }
 
         /// <summary>
         /// true to loop.
         /// </summary>
-        [IntrinsicField]
-        public bool Loop;
+        public extern bool Loop
+        { get; set; }
 
         /// <summary>
         /// true if muted.
         /// </summary>
-        [IntrinsicField]
-        public bool Muted;
+        public extern bool Muted
+        { get; set; }
 
         /// <summary>
         /// State of the network.
         /// </summary>
-        [IntrinsicField]
-        public readonly MediaNetworkState? NetworkState;
+        public extern MediaNetworkState? NetworkState
+        { get; }
 
         /// <summary>
         /// true if paused.
         /// </summary>
-        [IntrinsicField]
-        public bool Paused;
+        public extern bool Paused
+        { get; set; }
 
         /// <summary>
         /// The playback rate.
         /// </summary>
-        [IntrinsicField]
-        public double PlaybackRate;
+        public extern double PlaybackRate
+        { get; set; }
 
         /// <summary>
         /// The played.
         /// </summary>
-        [IntrinsicField]
-        public readonly TimeRanges Played;
+        public extern TimeRanges Played
+        { get; }
 
         /// <summary>
         /// The preload.
         /// </summary>
-        [IntrinsicField]
-        public string Preload;
+        public extern string Preload
+        { get; set; }
 
         /// <summary>
         /// State of the ready.
         /// </summary>
-        [IntrinsicField]
-        public MediaReadyState ReadyState;
+        public extern MediaReadyState ReadyState
+        { get; set; }
 
         /// <summary>
         /// The seekable.
         /// </summary>
-        [IntrinsicField]
-        public readonly TimeRanges Seekable;
+        public extern TimeRanges Seekable
+        { get; }
 
         /// <summary>
         /// The seeking.
         /// </summary>
-        [IntrinsicField]
-        public readonly bool Seeking;
+        public extern bool Seeking
+        { get; }
 
         /// <summary>
         /// The volume.
         /// </summary>
-        [IntrinsicField]
-        public double Volume;
+        public extern double Volume
+        { get; set; }
 
         /// <summary>
         /// Gets the on load start handler.
@@ -381,11 +381,7 @@ namespace System.Web.Html
         /// <value>
         /// The on load start handler.
         /// </value>
-        public event Action<ElementEvent> OnLoadStart
-		{
-			add { this.Bind(OnLoadStartEvtName, value); }
-			remove { this.UnBind(OnLoadStartEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnLoadStart;
 
         /// <summary>
         /// Gets the on progress handler.
@@ -393,11 +389,7 @@ namespace System.Web.Html
         /// <value>
         /// The on progress handler.
         /// </value>
-		public event Action<ElementEvent> OnProgress
-		{
-			add { this.Bind(OnProgressEvtName, value); }
-			remove { this.UnBind(OnProgressEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnProgress;
 
         /// <summary>
         /// Gets the on suspend handler.
@@ -405,11 +397,7 @@ namespace System.Web.Html
         /// <value>
         /// The on suspend handler.
         /// </value>
-		public event Action<ElementEvent> OnSuspend
-		{
-			add { this.Bind(OnSuspendEvtName, value); }
-			remove { this.UnBind(OnSuspendEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnSuspend;
 
         /// <summary>
         /// Gets the on abort handler.
@@ -417,11 +405,7 @@ namespace System.Web.Html
         /// <value>
         /// The on abort handler.
         /// </value>
-		public event Action<ElementEvent> OnAbort
-		{
-			add { this.Bind(OnAbortEvtName, value); }
-			remove { this.UnBind(OnAbortEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnAbort;
 
         /// <summary>
         /// Gets the on error handler.
@@ -429,11 +413,7 @@ namespace System.Web.Html
         /// <value>
         /// The on error handler.
         /// </value>
-		public event Action<ElementEvent> OnError
-		{
-			add { this.Bind(OnErrorEvtName, value); }
-			remove { this.UnBind(OnErrorEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnError;
 
         /// <summary>
         /// Gets the on stalled handler.
@@ -441,11 +421,7 @@ namespace System.Web.Html
         /// <value>
         /// The on stalled handler.
         /// </value>
-		public event Action<ElementEvent> OnStalled
-		{
-			add { this.Bind(OnStalledEvtName, value); }
-			remove { this.UnBind(OnStalledEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnStalled;
 
         /// <summary>
         /// Gets the on emptied handler.
@@ -453,11 +429,7 @@ namespace System.Web.Html
         /// <value>
         /// The on emptied handler.
         /// </value>
-		public event Action<ElementEvent> OnEmptied
-		{
-			add { this.Bind(OnEmptiedEvtName, value); }
-			remove { this.UnBind(OnEmptiedEvtName, value); }
-		}
+		public extern event Action<MediaElement, ElementEvent> OnEmptied;
 
         /// <summary>
         /// Gets the on loaded metadata handler.
@@ -465,11 +437,7 @@ namespace System.Web.Html
         /// <value>
         /// The on loaded metadata handler.
         /// </value>
-		public event Action<ElementEvent> OnLoadedMetadata
-		{
-			add { this.Bind(OnLoadedMetadataEvtName, value); }
-			remove { this.UnBind(OnLoadedMetadataEvtName, value); }
-		}
+		public extern event Action<MediaElement, ElementEvent> OnLoadedMetadata;
 
         /// <summary>
         /// Gets the information describing the on loaded handler.
@@ -477,11 +445,7 @@ namespace System.Web.Html
         /// <value>
         /// Information describing the on loaded handler.
         /// </value>
-		public event Action<ElementEvent> OnLoadedData
-		{
-			add { this.Bind(OnLoadedDataEvtName, value); }
-			remove { this.UnBind(OnLoadedDataEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnLoadedData;
 
         /// <summary>
         /// Gets the on can play handler.
@@ -489,11 +453,7 @@ namespace System.Web.Html
         /// <value>
         /// The on can play handler.
         /// </value>
-		public event Action<ElementEvent> OnCanPlay
-		{
-			add { this.Bind(OnCanPlayEvtName, value); }
-			remove { this.UnBind(OnCanPlayEvtName, value); }
-		}
+		public extern event Action<MediaElement, ElementEvent> OnCanPlay;
 
         /// <summary>
         /// Gets the on can play through handler.
@@ -501,11 +461,7 @@ namespace System.Web.Html
         /// <value>
         /// The on can play through handler.
         /// </value>
-		public event Action<ElementEvent> OnCanPlayThrough
-		{
-			add { this.Bind(OnCanPlayThroughEvtName, value); }
-			remove { this.UnBind(OnCanPlayThroughEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnCanPlayThrough;
 
         /// <summary>
         /// Gets the on playing handler.
@@ -513,11 +469,7 @@ namespace System.Web.Html
         /// <value>
         /// The on playing handler.
         /// </value>
-		public event Action<ElementEvent> OnPlaying
-		{
-			add { this.Bind(OnPlayingEvtName, value); }
-			remove { this.UnBind(OnPlayingEvtName, value); }
-		}
+		public extern event Action<MediaElement, ElementEvent> OnPlaying;
 
         /// <summary>
         /// Gets the on ended handler.
@@ -525,11 +477,7 @@ namespace System.Web.Html
         /// <value>
         /// The on ended handler.
         /// </value>
-		public event Action<ElementEvent> OnEnded
-		{
-			add { this.Bind(OnEndedEvtName, value); }
-			remove { this.UnBind(OnEndedEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnEnded;
 
         /// <summary>
         /// Gets the on waiting handler.
@@ -537,11 +485,7 @@ namespace System.Web.Html
         /// <value>
         /// The on waiting handler.
         /// </value>
-		public event Action<ElementEvent> OnWaiting
-		{
-			add { this.Bind(OnWaitingEvtName, value); }
-			remove { this.UnBind(OnWaitingEvtName, value); }
-		}
+		public extern event Action<MediaElement, ElementEvent> OnWaiting;
 
         /// <summary>
         /// Gets the on duration change handler.
@@ -549,11 +493,7 @@ namespace System.Web.Html
         /// <value>
         /// The on duration change handler.
         /// </value>
-		public event Action<ElementEvent> OnDurationChange
-		{
-			add { this.Bind(OnDurationChangeEvtName, value); }
-			remove { this.UnBind(OnDurationChangeEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnDurationChange;
 
         /// <summary>
         /// Gets the on time upate handler.
@@ -561,11 +501,7 @@ namespace System.Web.Html
         /// <value>
         /// The on time upate handler.
         /// </value>
-		public event Action<ElementEvent> OnTimeUpate
-		{
-			add { this.Bind(OnTimeUpateEvtName, value); }
-			remove { this.UnBind(OnTimeUpateEvtName, value); }
-		}
+		public extern event Action<MediaElement, ElementEvent> OnTimeUpdate;
 
         /// <summary>
         /// Gets the on play handler.
@@ -573,11 +509,7 @@ namespace System.Web.Html
         /// <value>
         /// The on play handler.
         /// </value>
-		public event Action<ElementEvent> OnPlay
-		{
-			add { this.Bind(OnPlayEvtName, value); }
-			remove { this.UnBind(OnPlayEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnPlay;
 
         /// <summary>
         /// Gets the on pause handler.
@@ -585,11 +517,7 @@ namespace System.Web.Html
         /// <value>
         /// The on pause handler.
         /// </value>
-		public event Action<ElementEvent> OnPause
-		{
-			add { this.Bind(OnPauseEvtName, value); }
-			remove { this.UnBind(OnPauseEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnPause;
 
         /// <summary>
         /// Gets the on rate change handler.
@@ -597,11 +525,7 @@ namespace System.Web.Html
         /// <value>
         /// The on rate change handler.
         /// </value>
-		public event Action<ElementEvent> OnRateChange
-		{
-			add { this.Bind(OnRateChangeEvtName, value); }
-			remove { this.UnBind(OnRateChangeEvtName, value); }
-		}
+        public extern event Action<MediaElement, ElementEvent> OnRateChange;
 
         /// <summary>
         /// Gets the on volume change handler.
@@ -609,11 +533,7 @@ namespace System.Web.Html
         /// <value>
         /// The on volume change handler.
         /// </value>
-		public event Action<ElementEvent> OnVolumeChange
-		{
-			add { this.Bind(OnVolumeChangeEvtName, value); }
-			remove { this.UnBind(OnVolumeChangeEvtName, value); }
-		}
+		public extern event Action<ElementEvent> OnVolumeChange;
 
         /// <summary>
         /// Can play type.

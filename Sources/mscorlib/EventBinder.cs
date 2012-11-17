@@ -258,7 +258,7 @@ namespace System
         [Script("return !(!element.addEventListener);")]
         private extern static bool IsW3wc(object element);
 
-        [Script("this.@{[System.Web]System.Web.DomDataCache`1::EventHandlerBubble(!0)}(event);")]
+        [Script("this.@{[mscorlib]System.EventBinder::EventHandlerBubble([mscorlib]System.Object)}(event);")]
         private extern void EventHandlerIE();
 
         [Script("return evt.type;")]
