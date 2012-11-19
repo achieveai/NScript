@@ -30,7 +30,7 @@ namespace System.Web.Html
         /// <value>
         /// The on change event handler.
         /// </value>
-        public event Action<InputElement, ElementEvent> OnChange;
+        public extern event Action<InputElement, ElementEvent> OnChange;
 
         /// <summary>
         /// The default value.

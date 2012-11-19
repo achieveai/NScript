@@ -106,6 +106,11 @@ namespace System.Web.Html
     public class TimeRanges
     {
         /// <summary>
+        /// Default constructor for TimeRanges
+        /// </summary>
+        private extern TimeRanges();
+
+        /// <summary>
         /// The length.
         /// </summary>
         public extern int Length

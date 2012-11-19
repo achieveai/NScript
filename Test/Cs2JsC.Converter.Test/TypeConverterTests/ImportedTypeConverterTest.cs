@@ -35,13 +35,22 @@ namespace Cs2JsC.Converter.Test.TypeConverterTests
         /// Tests the type of the simple static.
         /// </summary>
         [Test]
-        public void TestGenericType()
+        [Row("TestJsonType.js",
+             TestType.All,
+             new[]{"TestJsonType"})]
+        [Row("TestImportedType.js",
+             TestType.All,
+             new[]{"TestImportedType"})]
+        [Row("PsudoTypeSimple.js",
+             TestType.All,
+             new[]{"PsudoUsage"})]
+        public void TestImportedTypes(string resourceName, TestType testType, params string[] classNames)
         {
-            TypeConverterHelper.RunTest(
-                ImportedTypeConverterTest.TestFilesNSStr + "PsudoTypeSimple.js",
+            ScriptConverterHelper.RunTest(
+                ImportedTypeConverterTest.TestFilesNSStr + resourceName,
                 TestType.All,
                 true,
-                "TestPsudoType");
+                classNames);
         }
     }
 }

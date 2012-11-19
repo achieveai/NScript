@@ -35,8 +35,9 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                 return converter(methodConverter, newObjectExpression);
             }
 
-            if (!methodConverter.RuntimeManager.Context.IsExtended(
-                    methodReference.DeclaringType.Resolve()))
+            TypeDefinition typeDef = methodReference.DeclaringType.Resolve();
+            if (!methodConverter.RuntimeManager.Context.IsExtended(typeDef)
+                && !methodConverter.RuntimeManager.Context.IsPsudoType(typeDef))
             {
                 // Call into factory methods that will create and return the type.
                 return new JST.MethodCallExpression(
@@ -50,6 +51,16 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             }
             else
             {
+                var typeIdentifier = methodConverter.Resolve(typeDef);
+                JST.SimpleIdentifier simpleIdentifier = typeIdentifier.Count == 1 ? typeIdentifier[0] as JST.SimpleIdentifier : null;
+                if (simpleIdentifier != null
+                    && !methodReference.HasParameters
+                    && simpleIdentifier.SuggestedName == "Object"
+                    && simpleIdentifier.ShouldEnforceSuggestion)
+                {
+                    return new JST.InlineObjectInitializer(newObjectExpression.Location, methodConverter.Scope);
+                }
+
                 return new JST.NewObjectExpression(
                     newObjectExpression.Location,
                     methodConverter.Scope,

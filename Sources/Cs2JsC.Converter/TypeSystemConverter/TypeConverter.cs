@@ -101,6 +101,12 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             new HashSet<TypeReference>(MemberReferenceComparer.Instance);
 
         /// <summary>
+        /// Tracks if methods were added or not.
+        /// </summary>
+        private readonly HashSet<MethodDefinition> methodsAdded =
+            new HashSet<MethodDefinition>(MemberReferenceComparer.Instance);
+
+        /// <summary>
         /// Tracking field for all the implemented methods.
         /// </summary>
         private readonly Dictionary<MethodDefinition, MethodConverter> implementedMethods =
@@ -237,6 +243,15 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         { get { return this.typeScopeManager; } }
 
         /// <summary>
+        /// Gets the methods added.
+        /// </summary>
+        /// <value>
+        /// The methods added.
+        /// </value>
+        protected HashSet<MethodDefinition> MethodsAdded
+        { get { return this.methodsAdded; } }
+
+        /// <summary>
         /// Gets the type registration method.
         /// </summary>
         protected abstract MethodReference TypeRegistrationMethod
@@ -335,6 +350,13 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             {
                 return;
             }
+
+            if (this.methodsAdded.Contains(methodDefinition))
+            {
+                return;
+            }
+
+            this.methodsAdded.Add(methodDefinition);
 
             // If we can't implement this method, let's skip.
             if (!this.TypeScopeManager.IsImplemented(methodDefinition)
@@ -987,8 +1009,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             // If a class is extended and it has ignore namespace, the constructor is
             // already defined.
             if (!this.Context.IsExtended(this.typeDefinition)
-                && !this.Context.IsPsudoType(this.typeDefinition)
-                && !this.Context.HasIgnoreNamespaceAttribute(this.typeDefinition))
+                && !this.Context.IsPsudoType(this.typeDefinition))
             {
                 var typeExpr = this.ResolveTypeToExpression(this.typeDefinition, this.Scope);
                 var identifierTypeExpr = typeExpr as IdentifierExpression;
@@ -1777,7 +1798,9 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     addDependenciesCallback(this, returnValue);
                 }
 
-                if (!this.typeDefinition.IsStatic())
+                if (!this.typeDefinition.IsStatic()
+                    && !this.context.IsPsudoType(this.typeDefinition)
+                    && !this.context.IsJsonType(this.typeDefinition))
                 {
                     this.InitializePrototype(returnValue);
                 }
@@ -2028,6 +2051,34 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             return new CompoundIdentifier(
                 this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
                 this.typeScopeManager.ResolveImportedExtendedProperty(propertyDefinition));
+        }
+
+        /// <summary>
+        /// Resolve wrapped method.
+        /// </summary>
+        /// <param name="methodDefinition"> The method definition. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public IIdentifier ResolveWrappedMethod(MethodDefinition methodDefinition)
+        {
+            if (methodDefinition.IsStatic)
+            {
+                bool isFixed, isAlias;
+                string name = this.context.GetMemberName(methodDefinition, true, out isFixed, out isAlias);
+                if (isAlias)
+                {
+                    return new CompoundIdentifier(this.RuntimeManager.ResolveScriptAlias(name));
+                }
+                else
+                {
+                    return new CompoundIdentifier(
+                        new CompoundIdentifier(this.Resolve(this.typeDefinition)),
+                        this.typeScopeManager.ResolveUnderlyingMethod(methodDefinition));
+                }
+            }
+
+            return this.typeScopeManager.ResolveUnderlyingMethod(methodDefinition);
         }
 
         public Expression ResolveMethodSlotName(MethodReference methodReference, bool isVirtualCall, IdentifierScope identifierScope)

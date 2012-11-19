@@ -25,6 +25,11 @@ namespace System.Collections.Generic
             this.nativeArray = nativeArray;
         }
 
+        public List(T[] array)
+        {
+            this.nativeArray = NativeArray.GetNativeArray(array).Slice(0, 0);
+        }
+
         public extern T this[int index]
         {
             [Script(@"

@@ -403,6 +403,8 @@
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFull.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestImportedType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestJsonType.js" />
     <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\PsudoTypeSimple.js" />
     <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ArrayTypeMcs.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullMcs.js" />

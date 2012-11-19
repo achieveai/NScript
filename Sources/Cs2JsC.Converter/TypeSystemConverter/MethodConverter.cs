@@ -368,6 +368,98 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         }
 
         /// <summary>
+        /// Generates a wrapper expression.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="expressionType"> Type of the expression. </param>
+        /// <param name="expression">     The expression. </param>
+        /// <param name="converter">      The converter. </param>
+        /// <param name="scope">          The scope. </param>
+        /// <returns>
+        /// The wrapper expression.
+        /// </returns>
+        public static JST.MethodCallExpression GenerateWrapperExpression(
+            TypeReference expressionType,
+            JST.Expression expression,
+            IMethodScopeConverter converter,
+            IdentifierScope scope)
+        {
+            MethodReference constructorMethod = null;
+            var knownReferences = converter.RuntimeManager.Context.KnownReferences;
+
+            if (expressionType is ArrayType)
+            {
+                constructorMethod = knownReferences.GetArrayNativeArrayArgCtor(((ArrayType)expressionType).ElementType);
+            }
+            else
+            {
+                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
+                if (genericInstanceType == null
+                    || !genericInstanceType.DeclaringType.Resolve().IsSameDefinition(knownReferences.ListGeneric))
+                {
+                    throw new InvalidProgramException("Can't generate ImportedWrapper for properties of type other than Array and List");
+                }
+
+                constructorMethod = knownReferences.GetListNativeArrayArgCtor(genericInstanceType.GenericArguments[0]);
+            }
+
+            return new JST.MethodCallExpression(
+                        null,
+                        scope,
+                        JST.IdentifierExpression.Create(null, scope, converter.ResolveFactory(constructorMethod)),
+                        expression);
+        }
+
+        /// <summary>
+        /// Generates an extration expression.
+        /// </summary>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="expressionType"> Type of the expression. </param>
+        /// <param name="expression">     The expression. </param>
+        /// <param name="converter">      The converter. </param>
+        /// <param name="scope">          The scope. </param>
+        /// <returns>
+        /// The extration expression.
+        /// </returns>
+        public static JST.MethodCallExpression GenerateExtrationExpression(
+            TypeReference expressionType,
+            JST.Expression expression,
+            IMethodScopeConverter converter,
+            IdentifierScope scope)
+        {
+            MethodReference converterMethod = null;
+            var knownReferences = converter.RuntimeManager.Context.KnownReferences;
+
+            if (expressionType is ArrayType)
+            {
+                converterMethod = knownReferences.GetNativeArrayFromArrayMethod(
+                    ((ArrayType)expressionType).ElementType);
+            }
+            else
+            {
+                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
+                if (genericInstanceType == null
+                    || !genericInstanceType.ElementType.IsSameDefinition(knownReferences.ListGeneric))
+                {
+                    throw new InvalidProgramException("Can't generate ImportedWrapper for properties of type other than Array and List");
+                }
+
+                converterMethod = knownReferences.GetNativeArrayFromListMethod(genericInstanceType.GenericArguments[0]);
+            }
+
+            return new JST.MethodCallExpression(
+                            null,
+                            scope,
+                            JST.IdentifierExpression.Create(
+                                null,
+                                scope,
+                                converter.ResolveStaticMember(converterMethod)),
+                            expression);
+        }
+
+        /// <summary>
         /// Determines whether this instance can implement the specified method definition.
         /// </summary>
         /// <param name="methodDefinition">The method definition.</param>
@@ -1460,7 +1552,7 @@ namespace Cs2JsC.Converter.TypeSystemConverter
             }
             else
             {
-                throw new InvalidProgramException();
+                this.GenerateMethodWrapper(returnValue);
             }
 
             return returnValue;
@@ -1629,9 +1721,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                     null,
                     this.Scope,
                     new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
-                    this.GenerateWrapperExpression(
+                    MethodConverter.GenerateWrapperExpression(
                         valueParameter,
-                        new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope)),
+                        new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                        this,
+                        this.Scope),
                     new JST.NullLiteralExpression(this.Scope));
 
                 functionExpression.AddStatement(
@@ -1663,14 +1757,16 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                         this.ResolveThis(this.Scope),
                         new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
                         false),
-                    this.GenerateWrapperExpression(
+                    MethodConverter.GenerateWrapperExpression(
                         valueParameter,
                         new JST.IndexExpression(
                             null,
                             this.Scope,
                             this.ResolveThis(this.Scope),
                             new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
-                            false)),
+                            false),
+                        this,
+                        this.Scope),
                     new JST.NullLiteralExpression(this.Scope));
 
                 functionExpression.AddStatement(
@@ -1711,9 +1807,11 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                 functionExpression.AddStatement(
                     JST.ExpressionStatement.CreateAssignmentExpression(
                         new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
-                        this.GenerateExtrationExpression(
+                        MethodConverter.GenerateExtrationExpression(
                             this.methodDefinition.Parameters[0].ParameterType,
-                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope))));
+                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope),
+                            this,
+                            this.Scope)));
             }
             else
             {
@@ -1732,88 +1830,89 @@ namespace Cs2JsC.Converter.TypeSystemConverter
                             this.ResolveThis(this.Scope),
                             new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
                             false),
-                        this.GenerateExtrationExpression(
+                        MethodConverter.GenerateExtrationExpression(
                             this.methodDefinition.Parameters[0].ParameterType,
-                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope))));
+                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope),
+                            this,
+                            this.Scope)));
             }
         }
 
         /// <summary>
-        /// Generates a wrapper expression.
+        /// Generates a method wrapper.
         /// </summary>
-        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
-        ///     occurs. </exception>
-        /// <param name="expressionType"> Type of the expression. </param>
-        /// <param name="expression">     The expression. </param>
-        /// <returns>
-        /// The wrapper expression.
-        /// </returns>
-        private JST.Expression GenerateWrapperExpression(TypeReference expressionType, JST.Expression expression)
+        /// <param name="functionExpression"> The function expression. </param>
+        private void GenerateMethodWrapper(FunctionExpression functionExpression)
         {
-            MethodReference constructorMethod = null;
-
-            if (expressionType is ArrayType)
+            List<JST.Expression> arguments = new List<JST.Expression>();
+            for (int iParameter = 0; iParameter < this.methodDefinition.Parameters.Count; iParameter++)
             {
-                constructorMethod = this.KnownReferences.GetArrayNativeArrayArgCtor(((ArrayType)expressionType).ElementType);
+                var parameterType = this.methodDefinition.Parameters[iParameter].ParameterType;
+                var parameterExpression = 
+                        new IdentifierExpression(
+                            this.ResolveArgument(this.methodDefinition.Parameters[iParameter].Name),
+                            this.Scope);
+                if (this.context.IsWrappedType(parameterType))
+                {
+                    arguments.Add(
+                        MethodConverter.GenerateExtrationExpression(
+                            parameterType,
+                            parameterExpression,
+                            this,
+                            this.Scope));
+                }
+                else
+                {
+                    arguments.Add(parameterExpression);
+                }
+            }
+
+            JST.MethodCallExpression methodCallExpression = null;
+            JST.Expression methodExpression = null;
+            if (this.methodDefinition.IsStatic)
+            {
+                methodExpression = new JST.IdentifierExpression(this.typeConverter.ResolveWrappedMethod(this.methodDefinition), this.Scope);
             }
             else
             {
-                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
-                if (genericInstanceType == null
-                    || !genericInstanceType.DeclaringType.Resolve().IsSameDefinition(this.KnownReferences.ListGeneric))
-                {
-                    throw new InvalidProgramException("Can't generate ImportedWrapper for properties of type other than Array and List");
-                }
-
-                constructorMethod = this.KnownReferences.GetListNativeArrayArgCtor(genericInstanceType.GenericArguments[0]);
-            }
-
-            return new JST.MethodCallExpression(
+                methodExpression =
+                    new IndexExpression(
                         null,
                         this.Scope,
-                        JST.IdentifierExpression.Create(null, this.Scope, this.ResolveFactory(constructorMethod)),
-                        expression);
-        }
+                        this.ResolveThis(this.Scope),
+                        new JST.IdentifierExpression(
+                            this.typeConverter.ResolveWrappedMethod(this.methodDefinition),
+                            this.Scope));
+            }
 
-        /// <summary>
-        /// Generates an extration expression.
-        /// </summary>
-        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
-        ///     occurs. </exception>
-        /// <param name="expressionType"> Type of the expression. </param>
-        /// <param name="expression">     The expression. </param>
-        /// <returns>
-        /// The extration expression.
-        /// </returns>
-        private JST.Expression GenerateExtrationExpression(TypeReference expressionType, JST.Expression expression)
-        {
-            MethodReference converterMethod = null;
+            methodCallExpression = new MethodCallExpression(
+                null,
+                this.Scope,
+                methodExpression,
+                arguments);
 
-            if (expressionType is ArrayType)
+            if (!this.methodDefinition.ReturnType.IsSameDefinition(this.ClrKnownReferences.Void))
             {
-                converterMethod = this.KnownReferences.GetNativeArrayFromArrayMethod(
-                    ((ArrayType)expressionType).ElementType);
+                var returnType = this.methodDefinition.ReturnType;
+                if (this.context.IsWrappedType(returnType))
+                {
+                    methodCallExpression = MethodConverter.GenerateWrapperExpression(
+                        returnType,
+                        methodCallExpression,
+                        this,
+                        this.Scope);
+                }
+
+                functionExpression.AddStatement(
+                    new JST.ReturnStatement(
+                        null,
+                        this.Scope,
+                        methodCallExpression));
             }
             else
             {
-                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
-                if (genericInstanceType == null
-                    || !genericInstanceType.DeclaringType.Resolve().IsSameDefinition(this.KnownReferences.ListGeneric))
-                {
-                    throw new InvalidProgramException("Can't generate ImportedWrapper for properties of type other than Array and List");
-                }
-
-                converterMethod = this.KnownReferences.GetNativeArrayFromListMethod(genericInstanceType.GenericArguments[0]);
+                functionExpression.AddStatement(new ExpressionStatement(null, this.Scope, methodCallExpression));
             }
-
-            return new JST.MethodCallExpression(
-                            null,
-                            this.Scope,
-                            JST.IdentifierExpression.Create(
-                                null,
-                                this.Scope,
-                                this.ResolveStaticMember(converterMethod)),
-                            expression);
         }
 
         /// <summary>
@@ -1836,6 +1935,9 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <param name="functionExpression"> The function expression. </param>
         private void InitializeImportedWrapper(FunctionExpression functionExpression)
         {
+            if (!this.methodDefinition.HasThis)
+            { return; }
+
             FieldReference importedAdapterField = this.KnownReferences.ImportedExtensionField;
             functionExpression.AddStatement(
                 JST.ExpressionStatement.CreateAssignmentExpression(

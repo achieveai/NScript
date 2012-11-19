@@ -9,10 +9,18 @@ namespace System.Runtime.CompilerServices
     using System;
 
     /// <summary>
-    /// Definition for PsudoTypeAttribute
+    /// Definition for ImportedTypeAttribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Type), NonScriptable]
-    public class PsudoTypeAttribute : ExtendedAttribute
+    public class ImportedTypeAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Attribute for json type.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Type), NonScriptable]
+    public class JsonTypeAttribute : Attribute
     {
     }
 }

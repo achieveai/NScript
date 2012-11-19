@@ -12,7 +12,7 @@ namespace RealScript
     /// <summary>
     /// Definition for JsScriptImport
     /// </summary>
-    [PsudoType]
+    [ImportedType]
     public class JsScriptImport
     {
         [ScriptAlias("jsScriptImportTest")]

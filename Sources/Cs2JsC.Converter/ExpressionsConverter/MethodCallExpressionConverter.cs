@@ -273,13 +273,16 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                             resolver.Resolve(exp))).ToList();
             }
 
+            MethodDefinition methodDefinition = methodReference.Resolve();
+            TypeDefinition declaringTypeDefinition = methodDefinition != null ? methodDefinition.DeclaringType : null;
+            bool isExtendedOrPsudo = runtimeManager.Context.IsExtended(declaringTypeDefinition)
+                || runtimeManager.Context.IsPsudoType(declaringTypeDefinition);
             if (methodReference.HasThis
                 && !(methodReference.DeclaringType.IsValueType
-                    && (!runtimeManager.Context.IsExtended(methodReference.DeclaringType.Resolve())
-                        || runtimeManager.Context.IsImplemented(methodReference.Resolve())))
+                    && (!isExtendedOrPsudo || runtimeManager.Context.IsImplemented(methodDefinition)))
                 && (callContext.IsVirtual
-                    || !runtimeManager.Context.IsExtended(methodReference.DeclaringType.Resolve())
-                    || !runtimeManager.Context.IsImplemented(methodReference.Resolve())
+                    || !isExtendedOrPsudo
+                    || !runtimeManager.Context.IsImplemented(methodDefinition)
                     || methodReference.Resolve().CustomAttributes.SelectAttribute(
                             runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) != null)
                 && !runtimeManager.ImplementInstanceAsStatic)

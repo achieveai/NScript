@@ -1,30 +1,22 @@
-﻿function RealScript__TestPsudoType__get_TempI(this_) {
-  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
-  return this_.importedExtension.TempI;
+﻿function RealScript_PsudoUsage() {
 };
-function RealScript__TestPsudoType__set_TempI(this_, value) {
-  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
-  return this_.importedExtension.TempI = value;
+function RealScript__PsudoUsage__F1(t, test) {
+  return System_Nullable_$Int32$_.get_hasValue(RealScript__TestImportedType__get_TempI(t)) ? test + System_Nullable_$Int32$_.get_value(RealScript__TestImportedType__get_TempI(t)) : test - 1;
 };
-function RealScript__TestPsudoType__get_TheArray(this_) {
-  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
-  return this_.importedExtension.TheArray = this_.importedExtension.TheArray || this_.theArray ? System_ArrayG_$Int32$_.__ctor(this_.theArray) : null;
+function RealScript__PsudoUsage__F1a(t, test) {
+  return System_Nullable_$Int32$_.get_hasValue(t.tempI) ? test + System_Nullable_$Int32$_.get_value(t.tempI) : test - 1;
 };
-function RealScript__TestPsudoType__set_TheArray(this_, value) {
-  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
-  this_.importedExtension.TheArray = value;
-  this_.theArray = System__NativeArray__GetNativeArray(value);
+function RealScript__PsudoUsage__C1(t, i, a) {
+  var stmtTemp1;
+  return stmtTemp1 = new TestImportedType(), RealScript__TestImportedType__set_TempI(stmtTemp1, i === null ? null : i + t.tempJ), stmtTemp1.theArray = System__NativeArray__GetNativeArray(a), stmtTemp1;
 };
-function RealScript__TestPsudoType__add_TestEvent(this_, value) {
-  System__EventBinder__AddEvent(this_, "testevent", value, false);
+function RealScript__PsudoUsage__C1a(t, i, a) {
+  var stmtTemp1;
+  return {
+    tempI: i === null ? null : i + t.tempJ,
+    theArray: System__NativeArray__GetNativeArray(a)
+  };
 };
-function RealScript__TestPsudoType__remove_TestEvent(this_, value) {
-  System__EventBinder__RemoveEvent(this_, "testevent", value, false);
-};
-function RealScript__TestPsudoType__WorkOnString(this_) {
-  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
-  if (this_.importedExtension.tmpStr === null)
-    this_.importedExtension.tmpStr = "";
-  else
-    this_.importedExtension.tmpStr = System__String__Concat(this_.importedExtension.tmpStr, System_Int32.box(this_.importedExtension.tmpStr.length));
+function RealScript__PsudoUsage__M1(t) {
+  return RealScript__TestImportedType__ProcessData(t, System_Collections_Generic_List_$Int32$_.__ctor(RealScript__TestImportedType__get_TheArray(t)));
 };

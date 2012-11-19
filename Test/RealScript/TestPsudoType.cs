@@ -12,7 +12,45 @@ namespace RealScript
     /// <summary>
     /// Definition for TestPsudoType
     /// </summary>
-    public class TestPsudoType
+    public class TestJsonType
+    {
+        private string tmpStr;
+
+        public extern int? TempI
+        { get; set; }
+
+        public extern int TempJ
+        { get; }
+
+        public extern int[] TheArray
+        { get; set; }
+
+        public string Str
+        {
+            get
+            {
+                return this.tmpStr;
+            }
+            set
+            {
+                this.tmpStr = value;
+            }
+        }
+
+        public void WorkOnString()
+        {
+            if (this.tmpStr == null)
+            {
+                this.tmpStr = "";
+            }
+            else
+            {
+                this.tmpStr = this.tmpStr + this.tmpStr.Length;
+            }
+        }
+    }
+
+    public class TestImportedType
     {
         private string tmpStr;
 
@@ -25,7 +63,21 @@ namespace RealScript
         public extern int[] TheArray
         { get; set; }
 
+        public string Str
+        {
+            get
+            {
+                return this.tmpStr;
+            }
+            set
+            {
+                this.tmpStr = value;
+            }
+        }
+
         public extern event Action<int, float> TestEvent;
+
+        public extern string[] ProcessData(System.Collections.Generic.List<int> data);
 
         public void WorkOnString()
         {
@@ -37,6 +89,42 @@ namespace RealScript
             {
                 this.tmpStr = this.tmpStr + this.tmpStr.Length;
             }
+        }
+    }
+
+    public static class PsudoUsage
+    {
+        public static int F1(TestImportedType t, int test)
+        {
+            return t.TempI.HasValue ? test + t.TempI.Value : test - 1;
+        }
+
+        public static int F1(TestJsonType t, int test)
+        {
+            return t.TempI.HasValue ? test + t.TempI.Value : test - 1;
+        }
+
+        public static TestImportedType C1(TestImportedType t, int? i, int[] a)
+        {
+            return new TestImportedType()
+            {
+                TempI = i + t.TempJ,
+                TheArray = a
+            };
+        }
+
+        public static TestJsonType C1(TestJsonType t, int? i, int[] a)
+        {
+            return new TestJsonType()
+            {
+                TempI = i + t.TempJ,
+                TheArray = a
+            };
+        }
+
+        public static string[] M1(TestImportedType t)
+        {
+            return t.ProcessData(new System.Collections.Generic.List<int>(t.TheArray));
         }
     }
 }

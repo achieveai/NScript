@@ -10,7 +10,7 @@ function System__Type__AsType(this_, instance) {
   return this_.isInstanceOfType(instance) ? instance : null;
 };
 function System__Type__CastType(this_, instance) {
-  if (this_.isInstanceOfType(instance) || instance === null) {
+  if (this_.isInstanceOfType(instance) || instance === null || typeof instance === "undefined") {
     if (this_.isStruct)
       return instance.boxedValue;
     return instance;
@@ -94,6 +94,10 @@ function System__Type_factory() {
   var this_;
   this_ = Function.getDefaultValue();
 };
+function System__Type_factory() {
+  return new Function();
+};
+Function.defaultConstructor = System__Type_factory;
 ptyp_ = Function.prototype;
 ptyp_.isDelegate = false;
 ptyp_.isClass = false;
@@ -111,11 +115,13 @@ ptyp_.enumLowerStrToValueMap = null;
 ptyp_.isFlagEnum = false;
 ptyp_.interfaces = null;
 ptyp_.isInstanceOfType = function System__Type__IsInstanceOfType(instance) {
+  if (instance === null || typeof instance === "undefined")
+    return false;
   if (!this.isInterface)
     return instance instanceof this || instance && instance.constructor == this;
-  else if (instance && !instance.constructor.baseInterfaces)
+  else if (!instance.constructor.baseInterfaces)
     System__Type__InitializeBaseInterfaces(instance.constructor);
-  return instance && instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
+  return instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
 };
 ptyp_.box = function System__Type__Box(instance) {
   if (this.isStruct)

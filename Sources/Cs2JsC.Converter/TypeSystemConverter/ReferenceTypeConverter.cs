@@ -340,16 +340,28 @@ namespace Cs2JsC.Converter.TypeSystemConverter
         /// <param name="statements">The statements.</param>
         private void CreateFactories(List<Statement> statements)
         {
-            if (!this.TypeDefinition.IsAbstract
-                && !this.Context.IsExtended(this.TypeDefinition))
+            if (!this.Context.IsJsonType(this.TypeDefinition)
+                && !this.TypeDefinition.IsAbstract)
             {
                 foreach (var function in this.TypeDefinition.Methods)
                 {
-                    if (!function.HasThis
+                    MethodConverter methodConverter = this.GetMethodConverter(function);
+                    if (!function.HasThis 
                         || function.Name != ".ctor"
-                        || this.GetMethodConverter(function) == null)
+                        || methodConverter == null)
                     {
-                        continue;
+                        if (!function.HasParameters
+                            && function.IsConstructor
+                            && this.MethodsAdded.Contains(function)
+                            && function.IsPublic
+                            && methodConverter == null)
+                        {
+                            // This is a default constructor for an imported or extended class.
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
 
                     List<string> argumentNames = new List<string>();
@@ -387,9 +399,9 @@ namespace Cs2JsC.Converter.TypeSystemConverter
 
                     // If we extend object, and instruction count is 3, this means that
                     // this is empty constructor.
-                    if (function.Body.Instructions.Count == 3
-                        && this.Context.ClrKnownReferences.Object.IsSameDefinition(
-                            this.TypeDefinition.BaseType))
+                    if (methodConverter == null
+                        || (function.Body.Instructions.Count == 3
+                            && this.Context.ClrKnownReferences.Object.IsSameDefinition(this.TypeDefinition.BaseType)))
                     {
                         factoryFunction.AddStatement(
                             new ReturnStatement(

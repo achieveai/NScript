@@ -15,14 +15,6 @@ namespace System.Web.Html
     public sealed class TouchInfo
     {
         /// <summary>
-        /// Gets the touch information.
-        /// </summary>
-        /// <returns>
-        /// .
-        /// </returns>
-        private extern TouchInfo();
-
-        /// <summary>
         /// Gets the client x coordinate.
         /// </summary>
         /// <value>

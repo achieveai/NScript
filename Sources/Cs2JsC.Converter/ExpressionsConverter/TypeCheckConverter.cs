@@ -33,6 +33,26 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     expression.Expression);
 
             JST.Expression typeReferenceExpression = null;
+            TypeDefinition expressionTypeDefinition = expression.Type.Resolve();
+
+            // There is no point to check JSON Type or imported type for typeCheck. The reason being
+            // type checks do not always work. The problem is that the type would only work for current type
+            // and not base types.
+            if (expressionTypeDefinition != null
+                && (converter.RuntimeManager.Context.IsJsonType(expressionTypeDefinition)
+                    || converter.RuntimeManager.Context.IsPsudoType(expressionTypeDefinition)
+                    || expressionTypeDefinition.IsSameDefinition(converter.ClrKnownReferences.Object)))
+            {
+                switch (expression.CheckType)
+                {
+                    case TypeCheckType.AsType:
+                    case TypeCheckType.CastType:
+                        return nestedExpression;
+                    case TypeCheckType.IsType:
+                        return new JST.BooleanLiteralExpression(converter.Scope, true);
+                }
+            }
+
             // There are cases when casting from Delegate to concrete delegate
             // we end up creating types for delegates. To avoid this let's check
             // if we are casting from delegate to concrete delegate or not.

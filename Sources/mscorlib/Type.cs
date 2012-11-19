@@ -110,13 +110,14 @@
         public extern bool IsAssignableFrom(Type type);
 
         [Script(@"
+            if (instance === null || typeof instance === 'undefined')
+                return false;
             if (!this.@{[mscorlib]System.Type::IsInterface})
                 return instance instanceof this || (instance && instance.constructor == this);
-            else if (instance && !instance.constructor.@{[mscorlib]System.Type::baseInterfaces})
+            else if (!instance.constructor.@{[mscorlib]System.Type::baseInterfaces})
                 @{[mscorlib]System.Type::InitializeBaseInterfaces([mscorlib]System.Type)}(instance.constructor);
 
-            return instance
-                    && instance.constructor.@{[mscorlib]System.Type::baseInterfaces}
+            return instance.constructor.@{[mscorlib]System.Type::baseInterfaces}
                     && instance.constructor.@{[mscorlib]System.Type::baseInterfaces}[this.@{[mscorlib]System.Type::FullName}];
             ")]
         [KeepInstanceUsage]
@@ -126,7 +127,7 @@
         public extern object AsType(object instance);
 
         [Script(@"
-            if (this.@{[mscorlib]System.Type::IsInstanceOfType([mscorlib]System.Object)}(instance) || instance === null) {
+            if (this.@{[mscorlib]System.Type::IsInstanceOfType([mscorlib]System.Object)}(instance) || instance === null || typeof instance === ""undefined"") {
                 if (this.@{[mscorlib]System.Type::IsStruct})
                     return instance.@{[mscorlib]System.ValueType::boxedValue};
                 return instance;

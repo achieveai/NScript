@@ -28,35 +28,34 @@ namespace Cs2JsC.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             InlinePropertyInitilizationExpression expression)
         {
-            // we are creating inline function for this initialization.
-            var newScope =
-                new IdentifierScope(converter.Scope);
-
-            var function = new JST.FunctionExpression(
-                expression.Location,
-                converter.Scope,
-                newScope, 
-                new SimpleIdentifier[0],
-                null);
-
             // initialize a varible that will be used to hold object for initialization.
             var variable = converter.GetTempVariable();
 
             List<JST.Expression> expressions = new List<JST.Expression>();
-            JST.Expression initExpression = ExpressionConverterBase.Convert(converter, expression.Constructor);
+            JST.InlineObjectInitializer inlineObjectInitializer = null;
+            JST.Expression initExpression = null;
+
+            if (!converter.RuntimeManager.Context.IsJsonType(expression.Constructor.ResultType.Resolve()))
+            {
+                initExpression = ExpressionConverterBase.Convert(converter, expression.Constructor);
+            }
+            else
+            {
+                initExpression = inlineObjectInitializer = new InlineObjectInitializer(expression.Location, converter.Scope);
+            }
 
             // Add the constructor statement.
             expressions.Add(
                     new JST.BinaryExpression(
                         initExpression.Location,
-                        function.Scope,
+                        converter.Scope,
                         JST.BinaryOperator.Assignment,
                         new JST.IdentifierExpression(variable, converter.Scope),
                         initExpression));
 
             foreach (var setter in expression.Setters)
             {
-                JST.Expression assignmentExpression;
+                JST.Expression assignmentExpression = null;
                 var thisVariable = new JST.IdentifierExpression(variable, converter.Scope);
 
                 if (setter.Item1 is MethodReferenceExpression)
@@ -85,43 +84,71 @@ namespace Cs2JsC.Converter.ExpressionsConverter
 
                     if (setter.Item1 is FieldReferenceExpression)
                     {
-                        var fieldAccessExpression =
-                            new JST.IndexExpression(
-                                setter.Item2[0].Location,
-                                function.Scope,
-                                thisVariable,
-                                new JST.IdentifierExpression(
-                                    converter.Resolve(
-                                        (FieldReference)setter.Item1.MemberReference), converter.Scope));
+                        if (inlineObjectInitializer != null)
+                        {
+                            inlineObjectInitializer.AddInitializer(
+                                    converter.Resolve((FieldReference)setter.Item1.MemberReference),
+                                    valueExpression);
+                        }
+                        else
+                        {
+                            var fieldAccessExpression =
+                                new JST.IndexExpression(
+                                    setter.Item2[0].Location,
+                                    converter.Scope,
+                                    thisVariable,
+                                    new JST.IdentifierExpression(
+                                        converter.Resolve(
+                                            (FieldReference)setter.Item1.MemberReference), converter.Scope));
 
-                        assignmentExpression = new JST.BinaryExpression(
-                            setter.Item2[0].Location,
-                            function.Scope,
-                            JST.BinaryOperator.Assignment,
-                            fieldAccessExpression,
-                            valueExpression);
+                            assignmentExpression = new JST.BinaryExpression(
+                                setter.Item2[0].Location,
+                                converter.Scope,
+                                JST.BinaryOperator.Assignment,
+                                fieldAccessExpression,
+                                valueExpression);
+                        }
                     }
                     else
                     {
                         PropertyReference propertyReference = (PropertyReference)setter.Item1.MemberReference;
 
-                        if (converter.RuntimeManager.Context.IsIntrinsicProperty(propertyReference.Resolve()))
+                        if (converter.RuntimeManager.Context.IsIntrinsicProperty(propertyReference.Resolve())
+                            || converter.RuntimeManager.Context.IsWrappedType(propertyReference.PropertyType))
                         {
-                            var fieldAccessExpression =
-                                new JST.IndexExpression(
-                                    setter.Item2[0].Location,
-                                    function.Scope,
-                                    thisVariable,
-                                    new JST.IdentifierExpression(
-                                        converter.Resolve(propertyReference),
-                                        function.Scope));
+                            if (converter.RuntimeManager.Context.IsWrappedType(propertyReference.PropertyType))
+                            {
+                                valueExpression = MethodConverter.GenerateExtrationExpression(
+                                    propertyReference.PropertyType,
+                                    valueExpression,
+                                    converter,
+                                    converter.Scope);
+                            }
 
-                            assignmentExpression = new JST.BinaryExpression(
-                                setter.Item2[0].Location,
-                                function.Scope,
-                                JST.BinaryOperator.Assignment,
-                                fieldAccessExpression,
-                                valueExpression);
+                            if (inlineObjectInitializer != null)
+                            {
+                                inlineObjectInitializer.AddInitializer(
+                                        converter.Resolve(propertyReference),
+                                        valueExpression);
+                            }
+                            else
+                            {
+                                var fieldAccessExpression =
+                                    new JST.IndexExpression(
+                                        setter.Item2[0].Location,
+                                        converter.Scope,
+                                        thisVariable,
+                                        new JST.IdentifierExpression(
+                                            converter.Resolve(propertyReference),
+                                            converter.Scope));
+
+                                assignmentExpression = new JST.BinaryExpression(
+                                    setter.Item2[0].Location,
+                                    converter.Scope,
+                                    JST.BinaryOperator.Assignment,
+                                    fieldAccessExpression,
+                                    valueExpression);
+                            }
                         }
                         else
                         {
@@ -145,13 +172,21 @@ namespace Cs2JsC.Converter.ExpressionsConverter
                     }
                 }
 
-                expressions.Add(assignmentExpression);
+                if (assignmentExpression != null)
+                {
+                    expressions.Add(assignmentExpression);
+                }
             }
 
-            expressions.Add(new JST.IdentifierExpression(variable, converter.Scope));
-            JST.ExpressionsList expressionList = new ExpressionsList(expression.Location, converter.Scope, expressions);
-
-            return expressionList;
+            if (expressions.Count > 1 || inlineObjectInitializer == null)
+            {
+                expressions.Add(new JST.IdentifierExpression(variable, converter.Scope));
+                return new ExpressionsList(expression.Location, converter.Scope, expressions);
+            }
+            else
+            {
+                return inlineObjectInitializer;
+            }
         }
     }
 }

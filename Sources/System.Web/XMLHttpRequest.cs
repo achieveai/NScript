@@ -39,26 +39,28 @@ namespace System.Web
     /// <summary>
     /// Progress event.
     /// </summary>
-    [PsudoType, IgnoreNamespace]
+    [IgnoreNamespace]
     public class ProgressEvent
     {
         /// <summary>
+        /// Gets the progress event.
+        /// </summary>
+        private extern ProgressEvent();
+
+        /// <summary>
         /// The length computable.
         /// </summary>
-        [IntrinsicField]
-        public readonly bool LengthComputable;
+        public extern bool LengthComputable { get; }
 
         /// <summary>
         /// The loaded.
         /// </summary>
-        [IntrinsicField]
-        public readonly long Loaded;
+        public extern long Loaded { get; }
 
         /// <summary>
         /// Number of.
         /// </summary>
-        [IntrinsicField]
-        public readonly long Total;
+        public extern long Total { get; }
     }
 
     /// <summary>

@@ -32,6 +32,10 @@ namespace System
             if (Object.IsNullOrUndefined(importedElement.importedExtension))
             {
                 importedElement.importedExtension = new Dictionary();
+            }
+
+            if (Object.IsNullOrUndefined(importedElement.importedExtension.importedExtension))
+            {
                 importedElement.importedExtension.importedExtension = new EventBinder(importedElement);
             }
 

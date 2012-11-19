@@ -117,6 +117,11 @@ namespace Cs2JsC.Converter
         private TypeReference psudoTypeAttribute;
 
         /// <summary>
+        /// The json type attribute.
+        /// </summary>
+        private TypeReference jsonTypeAttribute;
+
+        /// <summary>
         /// The keep instance usage attribute.
         /// </summary>
         private TypeReference keepInstanceUsageAttribute;
@@ -900,6 +905,27 @@ namespace Cs2JsC.Converter
         }
 
         /// <summary>
+        /// Gets the json type attribute.
+        /// </summary>
+        /// <value>
+        /// The json type attribute.
+        /// </value>
+        public TypeReference JsonTypeAttribute
+        {
+            get
+            {
+                if (this.jsonTypeAttribute == null)
+                {
+                    this.jsonTypeAttribute = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "JsonTypeAttribute");
+                }
+
+                return this.jsonTypeAttribute;
+            }
+        }
+
+        /// <summary>
         /// Gets the keep instance usage attribute.
         /// </summary>
         /// <value>
@@ -1367,7 +1393,7 @@ namespace Cs2JsC.Converter
 
                     this.getNativeArrayFromList.GenericParameters.Add(new GenericParameter("T", this.getNativeArrayFromArray));
                     GenericInstanceType listType = new GenericInstanceType(this.ListGeneric);
-                    listType.GenericParameters.Add(new GenericParameter(0, GenericParameterType.Method, this.NativeArray.Module));
+                    listType.GenericArguments.Add(new GenericParameter(0, GenericParameterType.Method, this.NativeArray.Module));
                     this.getNativeArrayFromList.Parameters.Add(new ParameterDefinition(listType));
                 }
 

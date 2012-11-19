@@ -654,6 +654,18 @@ using Cs2JsC.Utils;
         }
 
         /// <summary>
+        /// Query if 'typeDefinition' is imported type.
+        /// </summary>
+        /// <param name="typeDefinition"> The type definition. </param>
+        /// <returns>
+        /// true if imported type, false if not.
+        /// </returns>
+        public bool IsImportedType(TypeDefinition typeDefinition)
+        {
+            return this.GetTypeKind(typeDefinition) == TypeKind.Imported;
+        }
+
+        /// <summary>
         /// Query if 'propertyDefinition' is compiler generated property.
         /// </summary>
         /// <param name="propertyDefinition"> The property definition. </param>
@@ -700,9 +712,15 @@ using Cs2JsC.Utils;
                 baseKind = this.GetTypeKind(baseType);
             }
 
-            if (typeDefinition.IsInterface && null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute))
+            // Delegate is one of the few types which have extern method that is native to CLR.
+            if (typeDefinition.IsDelegate())
             {
-                rv = TypeKind.Imported;
+                rv = TypeKind.Normal;
+            }
+            else if (typeDefinition.IsInterface && null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute))
+            {
+                //  rv = TypeKind.Imported;
+                throw new InvalidProgramException("Imported interfaces yet to be supported");
             }
             else
             {
@@ -727,8 +745,12 @@ using Cs2JsC.Utils;
                         }
                         // TODO: move below logic into it's own function so that it can be used
                         // to simplify constructor code.
-                        else if ((method.Body.CodeSize != 7 && method.Body.Instructions.Count != 3)
-                            || typeDefinition.IsValueType)
+                        // method.Body == null for static type.
+                        // method.Body.CodeSize == 0 for extern constructor.
+                        else if (
+                            method.Body != null
+                            && ((method.Body.CodeSize != 7 && method.Body.Instructions.Count != 3)
+                                || typeDefinition.IsValueType))
                         {
                             hasConstructor = true;
                             implmentedConstructor = implmentedConstructor || !this.IsExtern(method);
@@ -744,12 +766,12 @@ using Cs2JsC.Utils;
                             hasImplementedVirtual = true;
                         }
 
-                        if (!method.IsGetter && !method.IsSetter)
+                        if (isExtern && !method.IsGetter && !method.IsSetter)
                         {
                             hasNonPropertyMethods = true;
                         }
 
-                        if (method.IsVirtual || method.IsAbstract)
+                        if ((method.IsVirtual || method.IsAbstract) && !method.IsFinal)
                         {
                             hasVirtualMethods = true;
                         }
@@ -846,6 +868,81 @@ using Cs2JsC.Utils;
                     {
                         rv = TypeKind.Imported;
                     }
+
+                    if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute))
+                    {
+                    }
+                }
+
+                if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute)
+                    && rv != TypeKind.Imported)
+                {
+                    if (!hasExternMethod)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Imported Type: '{0}' does not have any extern member",
+                                typeDefinition));
+                    }
+                    else if (rv == TypeKind.Extended)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Type: '{0}' can't be both Extended Type and Imported Type as the same time. Only use Extended type as is supersedes ImportedType",
+                                typeDefinition));
+                    }
+                    else if (rv == TypeKind.JSONType)
+                    {
+                        rv = TypeKind.Imported;
+                    }
+                }
+
+                if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute)
+                    && rv != TypeKind.JSONType)
+                {
+                    if (!hasExternMethod)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Imported Type: '{0}' does not have any extern member",
+                                typeDefinition));
+                    }
+                    else if (rv == TypeKind.Extended)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Type: '{0}' can't be both Extended Type and JSON Type as the same time. Only use Extended type as is supersedes JSON type",
+                                typeDefinition));
+                    }
+                    else if (rv == TypeKind.Imported)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "Type: '{0}' can't be both Imported Type and JSON Type as the same time. Only use Imported type as is supersedes JSON type",
+                                typeDefinition));
+                    }
+                    else if (hasNonPropertyMethods)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "JSON Type: '{0}' can't have extern Methods or Events.",
+                                typeDefinition));
+                    }
+                    else if (hasConstructor)
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "JSON Type: '{0}' can't have a constructor",
+                                typeDefinition));
+                    }
+                    else if (baseType != null
+                            || (baseKind != TypeKind.JSONType && !baseType.IsSameDefinition(this.ClrKnownReferences.Object)))
+                    {
+                        throw new InvalidDataException(
+                            string.Format(
+                                "JSON Type: '{0}' can only be derived from other JSON types.",
+                                typeDefinition));
+                    }
                 }
 
                 if (rv != TypeKind.Normal)
@@ -885,7 +982,7 @@ using Cs2JsC.Utils;
         /// <returns>
         /// true if wrapped type, false if not.
         /// </returns>
-        private bool IsWrappedType(TypeReference typeReference)
+        public bool IsWrappedType(TypeReference typeReference)
         {
             if (typeReference is ArrayType)
             {
@@ -894,7 +991,7 @@ using Cs2JsC.Utils;
 
             GenericInstanceType genericInstanceType = typeReference as GenericInstanceType;
             if (genericInstanceType != null
-                && this.KnownReferences.ListGeneric.IsSameDefinition(genericInstanceType.DeclaringType))
+                && this.KnownReferences.ListGeneric.IsSameDefinition(genericInstanceType.ElementType))
             {
                 return true;
             }

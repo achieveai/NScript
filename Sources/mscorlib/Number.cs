@@ -16,6 +16,8 @@
         [PreserveCase]
         public const int POSITIVE_INFINITY = 0;
 
+        public extern Number();
+
         public extern string Format(string format);
 
         public extern static bool IsFinite(Number n);
