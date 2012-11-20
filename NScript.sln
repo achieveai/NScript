@@ -49,24 +49,24 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NScript_Library", "NScript_Library", "{B1C5E03F-37EC-44B6-B624-8917D9FB29F8}"
 	ProjectSection(SolutionItems) = preProject
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Library\Class.cs = NScriptToolSet\Templates\ProjectTemplate\NScript_Library\Class.cs
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Library\Logo.ico = NScriptToolSet\Templates\ProjectTemplate\NScript_Library\Logo.ico
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Library\NScript_Library.csproj = NScriptToolSet\Templates\ProjectTemplate\NScript_Library\NScript_Library.csproj
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Library\NScript_Library.vstemplate = NScriptToolSet\Templates\ProjectTemplate\NScript_Library\NScript_Library.vstemplate
-		NScriptToolSet\Templates\ProjectTemplate\NScript_Library\Logo.ico = NScriptToolSet\Templates\ProjectTemplate\NScript_Library\Logo.ico
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NScript_Application", "NScript_Application", "{562DF6A9-98E6-4C83-94E1-7A5310CE1962}"
 	ProjectSection(SolutionItems) = preProject
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Application\Class.cs = NScriptToolSet\Templates\ProjectTemplate\NScript_Application\Class.cs
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Application\Logo.ico = NScriptToolSet\Templates\ProjectTemplate\NScript_Application\Logo.ico
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Application\NScript_Application.csproj = NScriptToolSet\Templates\ProjectTemplate\NScript_Application\NScript_Application.csproj
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Application\NScript_Application.vstemplate = NScriptToolSet\Templates\ProjectTemplate\NScript_Application\NScript_Application.vstemplate
-		NScriptToolSet\Templates\ProjectTemplate\NScript_Application\Logo.ico = NScriptToolSet\Templates\ProjectTemplate\NScript_Application\Logo.ico
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NScript_Test", "NScript_Test", "{CF45FAE8-3DAD-4159-BBDD-CC6D3C06B91F}"
 	ProjectSection(SolutionItems) = preProject
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Test\Logo.ico = NScriptToolSet\Templates\ProjectTemplate\NScript_Test\Logo.ico
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Test\NScript_Test.csproj = NScriptToolSet\Templates\ProjectTemplate\NScript_Test\NScript_Test.csproj
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Test\NScript_Test.vstemplate = NScriptToolSet\Templates\ProjectTemplate\NScript_Test\NScript_Test.vstemplate
-		NScriptToolSet\Templates\ProjectTemplate\NScript_Test\Logo.ico = NScriptToolSet\Templates\ProjectTemplate\NScript_Test\Logo.ico
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Test\PluginConfig.xml = NScriptToolSet\Templates\ProjectTemplate\NScript_Test\PluginConfig.xml
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Test\TestClass.cs = NScriptToolSet\Templates\ProjectTemplate\NScript_Test\TestClass.cs
 	EndProjectSection
