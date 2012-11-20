@@ -16,9 +16,9 @@
     <FileAlignment>512</FileAlignment>
     <GenerateJs>True</GenerateJs>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
-    <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\Cs2JsC)</Cs2JsCToolSetPath>
-    <Cs2JsCToolSetPath Condition=" '$(Cs2JsCToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Cs2JsC)</Cs2JsCToolSetPath>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\NScript)</NScriptToolSetPath>
+    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\NScript)</NScriptToolSetPath>
     <OutputPath>bin\$(Configuration)</OutputPath>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <!--
@@ -48,9 +48,9 @@
     <None Include="PluginConfig.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Sources\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\..\Sources\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Sources\System.Web.Html\System.Web.Html.csproj">
       <Project>{A60706FF-08D7-4320-99F9-A2413275CDF6}</Project>
@@ -65,7 +65,7 @@
       <Name>SunlightUnit</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy *.js ..\..\..\TestWebApplication\GeneratedScripts
 copy *.js.map ..\..\..\TestWebApplication\GeneratedScripts</PostBuildEvent>

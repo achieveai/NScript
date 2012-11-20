@@ -14,7 +14,7 @@
     <RootNamespace>Sunlight.Framework.Test</RootNamespace>
     <AssemblyName>Sunlight.Framework.Test</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
@@ -49,9 +49,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\sources\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\..\sources\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\sources\Sunlight.Framework\Sunlight.Framework.csproj">
       <Project>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</Project>
@@ -67,7 +67,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy *.js ..\..\..\TestWebApplication\GeneratedScripts
 copy *.js.map ..\..\..\TestWebApplication\GeneratedScripts</PostBuildEvent>

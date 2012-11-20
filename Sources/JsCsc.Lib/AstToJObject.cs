@@ -13,7 +13,7 @@ namespace JsCsc.Lib
     using Mono.CSharp.Linq;
     using Mono.CSharp.Nullable;
     using Newtonsoft.Json.Linq;
-    using Ast = Cs2JsC.CLR.AST;
+    using Ast = NScript.CLR.AST;
 
     /// <summary>
     /// Definition for SerializeAst
@@ -295,40 +295,40 @@ namespace JsCsc.Lib
 
             switch (op.Value)
             {
-                case Cs2JsC.CLR.AST.BinaryOperator.Assignment:
+                case NScript.CLR.AST.BinaryOperator.Assignment:
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.BitwiseAnd:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.BitwiseAndAssignment;
+                case NScript.CLR.AST.BinaryOperator.BitwiseAnd:
+                    op = NScript.CLR.AST.BinaryOperator.BitwiseAndAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.BitwiseOr:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.BitwiseOrAssignment;
+                case NScript.CLR.AST.BinaryOperator.BitwiseOr:
+                    op = NScript.CLR.AST.BinaryOperator.BitwiseOrAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.BitwiseXor:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.BitwiseXorAssignment;
+                case NScript.CLR.AST.BinaryOperator.BitwiseXor:
+                    op = NScript.CLR.AST.BinaryOperator.BitwiseXorAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.Div:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.DivAssignment;
+                case NScript.CLR.AST.BinaryOperator.Div:
+                    op = NScript.CLR.AST.BinaryOperator.DivAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.LeftShift:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.LeftShiftAssignment;
+                case NScript.CLR.AST.BinaryOperator.LeftShift:
+                    op = NScript.CLR.AST.BinaryOperator.LeftShiftAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.Minus:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.MinusAssignment;
+                case NScript.CLR.AST.BinaryOperator.Minus:
+                    op = NScript.CLR.AST.BinaryOperator.MinusAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.Mod:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.ModAssignment;
+                case NScript.CLR.AST.BinaryOperator.Mod:
+                    op = NScript.CLR.AST.BinaryOperator.ModAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.Plus:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.PlusAssignment;
+                case NScript.CLR.AST.BinaryOperator.Plus:
+                    op = NScript.CLR.AST.BinaryOperator.PlusAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.RightShift:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.RightShiftAssignment;
+                case NScript.CLR.AST.BinaryOperator.RightShift:
+                    op = NScript.CLR.AST.BinaryOperator.RightShiftAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.Mul:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.MulAssignment;
+                case NScript.CLR.AST.BinaryOperator.Mul:
+                    op = NScript.CLR.AST.BinaryOperator.MulAssignment;
                     break;
-                case Cs2JsC.CLR.AST.BinaryOperator.UnsignedRightShift:
-                    op = Cs2JsC.CLR.AST.BinaryOperator.UnsignedRightShiftAssignment;
+                case NScript.CLR.AST.BinaryOperator.UnsignedRightShift:
+                    op = NScript.CLR.AST.BinaryOperator.UnsignedRightShiftAssignment;
                     break;
                 default:
                     throw new NotImplementedException();
