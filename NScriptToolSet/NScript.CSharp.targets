@@ -34,7 +34,7 @@
           Condition="$(GenerateJs) == True">
 
     <Message
-        Text="Running Cs2JsC to produce $(OutputPath)$(AssemblyName).js."/>
+        Text="Running NScript to produce $(OutputPath)$(AssemblyName).js."/>
 
     <PropertyGroup>
       <Refs>&quot;@(ReferencePath->'%(identity)','&quot;,&quot;')&quot;</Refs>
@@ -49,7 +49,7 @@
       <ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)\lib&quot;"/>
     </ItemGroup>
 
-    <Exec Command="&quot;$(MSBuildThisFileDirectory)\bin\Cs2JsC.exe&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
+    <Exec Command="&quot;$(MSBuildThisFileDirectory)\bin\NScript.exe&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
 
   </Target>
   <Target Name="CopyJsFile"
