@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ProductVersion="1.0.0.0" ?>
-  <?define ToolsetDir="$(var.SolutionDir)Cs2JscToolset" ?>
+  <?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
 
   <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
@@ -54,34 +54,34 @@
   <Fragment>
     <ComponentGroup Id="ProductComponents">
       <Component Id="RegistryEntry" Directory="INSTALLFOLDER" Guid="{E995DA69-5D6E-4F76-979D-D86DA16189AA}">
-        <RegistryKey Root="HKCU" Key="Software\Cs2JsC">
+        <RegistryKey Root="HKCU" Key="Software\NScript">
           <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
         </RegistryKey>
 
-        <RegistryKey Root="HKCU" Key="Software\WOW6432Node\Cs2JsC">
+        <RegistryKey Root="HKCU" Key="Software\WOW6432Node\NScript">
           <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
         </RegistryKey>
       </Component>
 
       <Component Id="TargetsFileComponent" Directory="INSTALLFOLDER" Guid="{CF8FC4F5-9B73-47E2-A3C5-EFC72C4A1AEF}">
-        <File Source="$(var.ToolsetDir)\Cs2JsC.CSharp.targets" />
+        <File Source="$(var.ToolsetDir)\NScript.CSharp.targets" />
       </Component>
 
       <Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
         <File Source="$(var.ToolsetDir)\bin\Antlr3.Runtime.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.CLR.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.CLR.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Converter.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Converter.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.exe" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.exe.config" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JSParser.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JSParser.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JST.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.JST.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Cs2JsC.Utils.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.CLR.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.CLR.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.exe" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.exe.config" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.JSParser.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.JSParser.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.JST.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.JST.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Utils.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Utils.pdb" />
         <File Source="$(var.ToolsetDir)\bin\Csc.exe" KeyPath="yes" />
         <File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
         <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
@@ -120,16 +120,16 @@
       </Component>
 
       <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR_CLASS" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.cs" />
-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\Cs2JsC_Class.vstemplate" />
+        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\NScriptClass.cs" />
+        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\NScriptClass.vstemplate" />
       </Component>
 
       <Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\AssemblyInfo.cs" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.csproj" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Cs2JsC_Application.vstemplate" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Logo.ico" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\Cs2JsC_Application\Program.cs" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\AssemblyInfo.cs" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\NScript_Application.csproj" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\NScript_Application.vstemplate" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\Logo.ico" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\Program.cs" />
       </Component>
 		</ComponentGroup>
 	</Fragment>

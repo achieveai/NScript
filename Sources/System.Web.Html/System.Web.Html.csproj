@@ -20,7 +20,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,14 +28,14 @@
     <Optimize>false</Optimize>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <NoWarn>0626</NoWarn>
-    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <NoWarn>0626</NoWarn>
     <DefineConstants>TRACE</DefineConstants>
-    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AnchorElement.cs" />
@@ -110,9 +110,9 @@
     <Compile Include="Window.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
     <ProjectReference Include="..\System.Web\System.Web.csproj">
       <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
@@ -122,5 +122,5 @@
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
-  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
 </Project>

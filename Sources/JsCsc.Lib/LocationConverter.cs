@@ -11,7 +11,7 @@ namespace JsCsc.Lib
     using Mono.CSharp;
     using Mono.CSharp.Linq;
     using Mono.CSharp.Nullable;
-    using Location = Cs2JsC.Utils.Location;
+    using Location = NScript.Utils.Location;
     using MonoLocation = Mono.CSharp.Location;
 
     /// <summary>

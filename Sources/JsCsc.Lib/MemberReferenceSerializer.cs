@@ -8,7 +8,7 @@ namespace JsCsc.Lib
 {
     using System;
     using System.Collections.Generic;
-    using Cs2JsC.Utils;
+    using NScript.Utils;
     using Mono.Cecil;
     using Mono.CSharp;
     using Newtonsoft.Json.Linq;

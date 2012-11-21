@@ -76,13 +76,13 @@
     <Compile Include="SerializeTokens.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cs2JsC.CLR\Cs2JsC.CLR.csproj">
+    <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj">
       <Project>{83FB5360-CE27-4255-8457-13E789DC5B0C}</Project>
-      <Name>Cs2JsC.CLR</Name>
+      <Name>NScript.CLR</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Cs2JsC.Utils\Cs2JsC.Utils.csproj">
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj">
       <Project>{030B10DD-4861-4BE1-B0D6-DB43587E603F}</Project>
-      <Name>Cs2JsC.Utils</Name>
+      <Name>NScript.Utils</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

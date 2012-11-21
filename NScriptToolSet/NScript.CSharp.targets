@@ -1,0 +1,77 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CscToolPath>$(MSBuildThisFileDirectory)\bin</CscToolPath>
+  </PropertyGroup>
+  <ItemGroup>
+	  <AdditionalLibPaths Include="$(MSBuildThisFileDirectory)\lib"/>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  
+  <Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
+    <MsBuild
+        Condition="$(GenerateJs) == True"
+        Projects="$(MSBuildProjectFile)"
+        Targets="ScriptGenerate" /> 
+    <MsBuild
+        Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''"
+        Projects="$(MSBuildProjectFile)"
+        Targets="CopyJsFile" /> 
+    <MsBuild
+        Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''"
+        Projects="$(MSBuildProjectFile)"
+        Targets="CopyMapFile" /> 
+  </Target> 
+
+  <PropertyGroup Condition="$(GenerateJs) == True">
+    <Ext Condition="'$(OutputType)' == 'Library'">dll</Ext>
+    <Ext Condition="'$(OutputType)' != 'Library'">exe</Ext>
+  </PropertyGroup>
+
+  <Target Name="ScriptGenerate"
+          Inputs="$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext);@(ReferencePath)"
+          Outputs="$(OutputPath)$(AssemblyName).js"
+          DependsOnTargets="$(CoreCompile)"
+          Condition="$(GenerateJs) == True">
+
+    <Message
+        Text="Running NScript to produce $(OutputPath)$(AssemblyName).js."/>
+
+    <PropertyGroup>
+      <Refs>&quot;@(ReferencePath->'%(identity)','&quot;,&quot;')&quot;</Refs>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ScriptGenerateOption Include="-outJs &quot;$(OutputPath)$(AssemblyName).js&quot;"/>
+      <ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext)&quot;"/>
+      <ScriptGenerateOption Include="-references $(Refs)"/>
+      <ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
+      <ScriptGenerateOption Include="-pluginHintPath &quot;$(MsBuildThisFileDirectory)\bin;&quot;" Condition="'$(PluginConfig)' != ''"/>
+      <ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)\lib&quot;"/>
+    </ItemGroup>
+
+    <Exec Command="&quot;$(MSBuildThisFileDirectory)\bin\NScript.exe&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
+
+  </Target>
+  <Target Name="CopyJsFile"
+          Inputs="$(OutputPath)$(AssemblyName).js"
+          Outputs="$(JsOutputPath)$(AssemblyName).js"
+          DependsOnTargets="ScriptGenerate"
+          Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''">
+    <Copy
+        Retries="3"
+        RetryDelayMilliseconds="100"
+        SourceFiles="$(OutputPath)$(AssemblyName).js"
+        DestinationFolder="$(JsOutputPath)" />
+  </Target>
+  <Target Name="CopyMapFile"
+          Inputs="$(OutputPath)$(AssemblyName).js.map"
+          Outputs="$(JsOutputPath)$(AssemblyName).js.map"
+          DependsOnTargets="ScriptGenerate"
+          Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''">
+    <Copy
+        Retries="3"
+        RetryDelayMilliseconds="100"
+        SourceFiles="$(OutputPath)$(AssemblyName).js.map"
+        DestinationFolder="$(JsOutputPath)" />
+  </Target>
+</Project>

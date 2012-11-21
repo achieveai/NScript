@@ -8,7 +8,7 @@ namespace JsCsc.Lib
 {
     using System;
     using System.Collections.Generic;
-    using Cs2JsC.CLR;
+    using NScript.CLR;
     using Mono.Cecil;
     using Mono.CSharp;
     using ParameterAttributes = Mono.Cecil.ParameterAttributes;
@@ -277,7 +277,7 @@ namespace JsCsc.Lib
         /// <returns></returns>
         public PropertyReference GetPropertyReference(MethodSpec getterOrSetter)
         {
-            return new Cs2JsC.CLR.AST.InternalPropertyReference(
+            return new NScript.CLR.AST.InternalPropertyReference(
                 getterOrSetter.Name.Contains("get_") ? this.GetMethodReference(getterOrSetter) : null,
                 getterOrSetter.Name.Contains("set_") ? this.GetMethodReference(getterOrSetter) : null);
         }
