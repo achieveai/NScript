@@ -15,8 +15,8 @@
     <AssemblyName>System.Web</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
-    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -41,10 +41,10 @@
     <Compile Include="XMLHttpRequest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
 </Project>

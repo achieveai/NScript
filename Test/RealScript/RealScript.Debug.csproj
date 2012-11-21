@@ -16,11 +16,11 @@
     <RootNamespace>RealScript.Debug</RootNamespace>
     <AssemblyName>RealScript.Debug</AssemblyName>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
-    <Cs2JsCToolSetPath>..\Cs2JsCToolSet</Cs2JsCToolSetPath>
+    <NScriptToolSetPath>..\NScriptToolSet</NScriptToolSetPath>
     <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Debug\</OutputPath>
+    <OutputPath>$(ProjectDir)..\NScript.CLR.Test\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,11 +29,11 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Release\</OutputPath>
+    <OutputPath>$(ProjectDir)..\NScript.CLR.Test\bin\Release\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>$(ProjectDir)..\Cs2JsC.CLR.Test\bin\Release\RealScript.Debug.xml</DocumentationFile>
+    <DocumentationFile>$(ProjectDir)..\NScript.CLR.Test\bin\Release\RealScript.Debug.xml</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
@@ -82,9 +82,9 @@
     <None Include="RealScript.il" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Sources\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\..\Sources\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
   </ItemGroup>
   <!--

@@ -15,8 +15,8 @@
     <AssemblyName>Windows</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
-    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0067; 0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
   </PropertyGroup>
@@ -3174,10 +3174,10 @@
     <Compile Include="Windows.Web\WebErrorStatus.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
 </Project>

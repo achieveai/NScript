@@ -11,7 +11,7 @@ namespace JsCsc.Lib
     using Mono.CSharp;
     using Mono.CSharp.Linq;
     using Mono.CSharp.Nullable;
-    using JAst = Cs2JsC.CLR.AST;
+    using JAst = NScript.CLR.AST;
 
     /// <summary>
     /// Definition for MonoAstVisitor

@@ -14,7 +14,7 @@
     <RootNamespace>Sunlight.Framework.UI</RootNamespace>
     <AssemblyName>Sunlight.Framework.UI</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -23,7 +23,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,7 +32,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\NScriptToolSet\lib\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -56,9 +56,9 @@
     <Compile Include="UISkinableElement.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sunlight.Framework\Sunlight.Framework.csproj">
       <Project>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</Project>
@@ -69,7 +69,7 @@
       <Name>System.Web.Html</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

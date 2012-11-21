@@ -14,7 +14,7 @@
     <RootNamespace>Sunlight.Framework</RootNamespace>
     <AssemblyName>Sunlight.Framework</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <Cs2JsCToolSetPath>..\..\Cs2JsCToolSet</Cs2JsCToolSetPath>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
@@ -24,7 +24,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,7 +33,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Cs2JsCToolSet\lib\</OutputPath>
+    <OutputPath>..\NScriptToolSet\lib\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -69,12 +69,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\Cs2JsC.MsCorlib.csproj">
+    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
-      <Name>Cs2JsC.MsCorlib</Name>
+      <Name>NScript.MsCorlib</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(Cs2JsCToolSetPath)\Cs2JsC.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

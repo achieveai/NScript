@@ -6,7 +6,7 @@
 
 namespace JsCsc.Lib
 {
-    using Cs2JsC.Utils;
+    using NScript.Utils;
     using Newtonsoft.Json.Linq;
 
     /// <summary>

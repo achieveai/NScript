@@ -8,12 +8,12 @@ namespace JsCsc.Lib
 {
     using System;
     using System.Collections.Generic;
-    using Cs2JsC.Utils;
+    using NScript.Utils;
     using Mono.Cecil;
     using Mono.CSharp;
     using Mono.CSharp.Linq;
     using Mono.CSharp.Nullable;
-    using Ast = Cs2JsC.CLR.AST;
+    using Ast = NScript.CLR.AST;
 
     /// <summary>
     /// Definition for SerializeAst
