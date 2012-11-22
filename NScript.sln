@@ -144,6 +144,34 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Setup", "Sources\Setup\Setu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Windows", "Sources\WinRT\Windows.csproj", "{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NScript_Windows_Application", "NScript_Windows_Application", "{4FB86E4A-B69A-4A49-94A7-6DA60AEA46FD}"
+	ProjectSection(SolutionItems) = preProject
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\AssemblyInfo.cs = NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\AssemblyInfo.cs
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\Logo.ico = NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\Logo.ico
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\NScript_Windows_Application.csproj = NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\NScript_Windows_Application.csproj
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\NScript_Windows_Application.vstemplate = NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\NScript_Windows_Application.vstemplate
+		NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\Program.cs = NScriptToolSet\Templates\ProjectTemplate\NScript_Windows_Application\Program.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ItemTemplate", "ItemTemplate", "{CA40C954-A18B-40F8-963B-E094B18A7050}"
+	ProjectSection(SolutionItems) = preProject
+		NScriptToolSet\Templates\ItemTemplate\NScript.VSTDIR = NScriptToolSet\Templates\ItemTemplate\NScript.VSTDIR
+		NScriptToolSet\Templates\ItemTemplate\NScriptClass.zip = NScriptToolSet\Templates\ItemTemplate\NScriptClass.zip
+		NScriptToolSet\Templates\ItemTemplate\NScriptTestClass.zip = NScriptToolSet\Templates\ItemTemplate\NScriptTestClass.zip
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Class", "Class", "{28A76871-90D6-499A-9E3A-317541FDB7D9}"
+	ProjectSection(SolutionItems) = preProject
+		NScriptToolSet\Templates\ItemTemplate\Class\NScriptClass.cs = NScriptToolSet\Templates\ItemTemplate\Class\NScriptClass.cs
+		NScriptToolSet\Templates\ItemTemplate\Class\NScriptClass.vstemplate = NScriptToolSet\Templates\ItemTemplate\Class\NScriptClass.vstemplate
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestClass", "TestClass", "{BD6B70AE-CA40-4A9D-810F-3EDDBD0B6817}"
+	ProjectSection(SolutionItems) = preProject
+		NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.cs = NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.cs
+		NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.vstemplate = NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.vstemplate
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = NScript1.vsmdi
@@ -604,13 +632,17 @@ Global
 		{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA} = {A64B5AAF-7EF9-42F8-8F93-00424C95C99A}
 		{ABBF9A84-B0E7-4275-934B-D128C85BC290} = {9A6CC298-B900-4F93-9906-247E2ACBC5DF}
 		{5A091F50-4BF6-4325-9120-F9CAB4F8F318} = {ABBF9A84-B0E7-4275-934B-D128C85BC290}
+		{CA40C954-A18B-40F8-963B-E094B18A7050} = {ABBF9A84-B0E7-4275-934B-D128C85BC290}
 		{B1C5E03F-37EC-44B6-B624-8917D9FB29F8} = {5A091F50-4BF6-4325-9120-F9CAB4F8F318}
 		{562DF6A9-98E6-4C83-94E1-7A5310CE1962} = {5A091F50-4BF6-4325-9120-F9CAB4F8F318}
 		{CF45FAE8-3DAD-4159-BBDD-CC6D3C06B91F} = {5A091F50-4BF6-4325-9120-F9CAB4F8F318}
+		{4FB86E4A-B69A-4A49-94A7-6DA60AEA46FD} = {5A091F50-4BF6-4325-9120-F9CAB4F8F318}
 		{650BBE9A-D0C5-4590-A82A-8E63C664A893} = {7F129FBE-E40C-4B53-8536-492D677B25D5}
 		{650BBE9A-D0C5-4590-A82A-8E63C664A894} = {7F129FBE-E40C-4B53-8536-492D677B25D5}
 		{BA7A45C0-990C-4BD0-B0C0-4984054576E2} = {F7FBA37A-2304-49E1-B499-D030FA58074E}
 		{142D8B13-3EED-43A9-96BD-353FFA72E536} = {F7FBA37A-2304-49E1-B499-D030FA58074E}
+		{28A76871-90D6-499A-9E3A-317541FDB7D9} = {CA40C954-A18B-40F8-963B-E094B18A7050}
+		{BD6B70AE-CA40-4A9D-810F-3EDDBD0B6817} = {CA40C954-A18B-40F8-963B-E094B18A7050}
 	EndGlobalSection
 	GlobalSection(SubversionScc) = preSolution
 		Manager = AnkhSVN - Subversion Support for Visual Studio

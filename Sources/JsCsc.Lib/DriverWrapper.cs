@@ -284,8 +284,8 @@ namespace JsCsc.Lib
                         }
 
                         if (this.methodBlocks.ContainsKey(constructor)
-                            || (constructor.IsStatic && typeDef.InitializedStaticFields.Count > 0)
-                            || (!constructor.IsStatic && typeDef.InitializedFields.Count > 0))
+                            || (constructor.IsStatic && typeDef.InitializedStaticFields != null && typeDef.InitializedStaticFields.Count > 0)
+                            || (!constructor.IsStatic && typeDef.InitializedFields != null && typeDef.InitializedFields.Count > 0))
                         {
                             jarray.Add(
                                 toJObject.SerializeMethodBody(

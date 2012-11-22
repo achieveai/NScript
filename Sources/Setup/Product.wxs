@@ -119,17 +119,18 @@
         <File Source="$(var.ToolsetDir)\lib\Windows.pdb" />
       </Component>
 
-      <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR_CLASS" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\NScriptClass.cs" />
-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\Class\NScriptClass.vstemplate" />
+      <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
+        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScriptClass.zip" />
+        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScriptTestClass.zip" />
+        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScript_Item.VSTDIR" />
       </Component>
 
       <Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\AssemblyInfo.cs" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\NScript_Application.csproj" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\NScript_Application.vstemplate" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\Logo.ico" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application\Program.cs" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application.zip" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Windows_Application.zip" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Library.zip" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Test.zip" />
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript.VSTDIR" />
       </Component>
 		</ComponentGroup>
 	</Fragment>
