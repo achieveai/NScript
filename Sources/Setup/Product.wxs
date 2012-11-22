@@ -115,8 +115,8 @@
         <File Source="$(var.ToolsetDir)\lib\System.Web.Html.dll" />
         <File Source="$(var.ToolsetDir)\lib\System.Web.Html.pdb" />
         <File Source="$(var.ToolsetDir)\lib\System.Web.pdb" />
-        <File Source="$(var.Windows.TargetDir)Windows.dll" />
-        <File Source="$(var.Windows.TargetDir)Windows.pdb" />
+        <File Source="$(var.ToolsetDir)\lib\Windows.dll" />
+        <File Source="$(var.ToolsetDir)\lib\Windows.pdb" />
       </Component>
 
       <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR_CLASS" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
