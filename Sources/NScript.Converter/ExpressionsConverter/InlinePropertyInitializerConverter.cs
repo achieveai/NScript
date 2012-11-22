@@ -9,7 +9,6 @@ namespace NScript.Converter.ExpressionsConverter
     using NScript.CLR.AST;
     using NScript.Converter.StatementsConverter;
     using NScript.Converter.TypeSystemConverter;
-    using NScript.JST;
     using Mono.Cecil;
     using System.Collections.Generic;
 
@@ -41,7 +40,7 @@ namespace NScript.Converter.ExpressionsConverter
             }
             else
             {
-                initExpression = inlineObjectInitializer = new InlineObjectInitializer(expression.Location, converter.Scope);
+                initExpression = inlineObjectInitializer = new JST.InlineObjectInitializer(expression.Location, converter.Scope);
             }
 
             // Add the constructor statement.
@@ -118,11 +117,24 @@ namespace NScript.Converter.ExpressionsConverter
                         {
                             if (converter.RuntimeManager.Context.IsWrappedType(propertyReference.PropertyType))
                             {
-                                valueExpression = MethodConverter.GenerateExtrationExpression(
-                                    propertyReference.PropertyType,
-                                    valueExpression,
-                                    converter,
-                                    converter.Scope);
+                                JST.MethodCallExpression arrayConstruction = valueExpression as JST.MethodCallExpression;
+                                if (propertyReference.PropertyType.IsArray
+                                    && setter.Item2[0] is InlineArrayInitialization
+                                    && arrayConstruction != null
+                                    && arrayConstruction.Arguments.Count == 1
+                                    && (arrayConstruction.Arguments[0] is JST.InlineNewArrayInitialization
+                                        || arrayConstruction.Arguments[0] is JST.NewArrayExpression))
+                                {
+                                    valueExpression = arrayConstruction.Arguments[0];
+                                }
+                                else
+                                {
+                                    valueExpression = MethodConverter.GenerateExtrationExpression(
+                                        propertyReference.PropertyType,
+                                        valueExpression,
+                                        converter,
+                                        converter.Scope);
+                                }
                             }
 
                             if (inlineObjectInitializer != null)
@@ -181,7 +193,7 @@ namespace NScript.Converter.ExpressionsConverter
             if (expressions.Count > 1 || inlineObjectInitializer == null)
             {
                 expressions.Add(new JST.IdentifierExpression(variable, converter.Scope));
-                return new ExpressionsList(expression.Location, converter.Scope, expressions);
+                return new JST.ExpressionsList(expression.Location, converter.Scope, expressions);
             }
             else
             {

@@ -367,6 +367,11 @@ namespace NScript.JST
                 sourceMapping.SourceRoot = sourceRoot.Replace("\\", "\\\\");
             }
 
+            if (jsFileName != null)
+            {
+                writer.Write("(function(){");
+            }
+
             foreach (var token in this.tokens)
             {
                 string str = string.Empty;
@@ -466,6 +471,11 @@ namespace NScript.JST
                 writer.Write("//@ sourceMappingURL={0}", Path.GetFileName(mapFileName));
                 using (StreamWriter mapWriter = new StreamWriter(mapFileName, false, System.Text.Encoding.ASCII))
                     mapWriter.Write(sourceMapping.ToString());
+            }
+
+            if (jsFileName != null)
+            {
+                writer.Write("\r\n})();");
             }
         }
 

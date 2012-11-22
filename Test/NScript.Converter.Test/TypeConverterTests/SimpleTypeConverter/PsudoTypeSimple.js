@@ -17,6 +17,13 @@ function RealScript__PsudoUsage__C1a(t, i, a) {
     theArray: System__NativeArray__GetNativeArray(a)
   };
 };
+function RealScript__PsudoUsage__C2(t, i, j, k) {
+  var stmtTemp1;
+  return {
+    tempI: i === null ? null : i + t.tempJ,
+    theArray: [j, k]
+  };
+};
 function RealScript__PsudoUsage__M1(t) {
   return RealScript__TestImportedType__ProcessData(t, System_Collections_Generic_List_$Int32$_.__ctor(RealScript__TestImportedType__get_TheArray(t)));
 };

@@ -13,6 +13,7 @@ namespace JsCsc.Lib
     using Mono.CSharp.Linq;
     using Mono.CSharp.Nullable;
     using Newtonsoft.Json.Linq;
+    using System.Linq;
     using Ast = NScript.CLR.AST;
 
     /// <summary>
@@ -107,7 +108,15 @@ namespace JsCsc.Lib
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.MethodBody;
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(constructor.Spec);
-            rv[NameTokens.FileName] = rootBlock.loc.NameFullPath;
+            if (rootBlock != null)
+            {
+                rv[NameTokens.FileName] = rootBlock.loc.NameFullPath;
+            }
+            else if (fields.FirstOrDefault() != null)
+            {
+                rv[NameTokens.FileName] = fields.First().Location.NameFullPath;
+            }
+
             rv[NameTokens.Block] = this.Visit(
                 rootBlock,
                 constructor.Initializer,
@@ -894,13 +903,25 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ParameterBlock;
-            rv[NameTokens.IsMethodOwned] = expression is ToplevelBlock;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
-            rv[NameTokens.Parameters] = this.GetParameters(expression.Parameters);
-
+            JArray jArray = null;
             rv[NameTokens.Id] = ++this.id;
-            this.scopeBlockStack.AddFirst(Tuple.Create(this.id, (ExplicitBlock)expression));
-            JArray jArray = this.Dispatch(expression.Statements);
+
+            // Expression can be null for static field initializer constructors.
+            if (expression != null)
+            {
+                rv[NameTokens.IsMethodOwned] = expression is ToplevelBlock;
+                rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+                rv[NameTokens.Parameters] = this.GetParameters(expression.Parameters);
+
+                this.scopeBlockStack.AddFirst(Tuple.Create(this.id, (ExplicitBlock)expression));
+                jArray = this.Dispatch(expression.Statements);
+            }
+            else
+            {
+                jArray = new JArray();
+                rv[NameTokens.Loc] = fields.FirstOrDefault().Location.GetStrLoc();
+                rv[NameTokens.Parameters] = new JArray();
+            }
 
             int insertOffset = 0;
             if (initializer != null
@@ -925,7 +946,10 @@ namespace JsCsc.Lib
             }
 
             rv[NameTokens.Value] = jArray;
-            this.scopeBlockStack.RemoveFirst();
+            if (expression != null)
+            {
+                this.scopeBlockStack.RemoveFirst();
+            }
 
             return rv;
         }

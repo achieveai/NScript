@@ -622,8 +622,9 @@ namespace NScript.Converter.TypeSystemConverter
         public IList<IIdentifier> ResolveType(TypeReference typeReference)
         {
             IList<IIdentifier> returnValue;
+            TypeDefinition typeDefinition = typeReference.Resolve();
 
-            if (this.context.IsJsonType(typeReference.Resolve()))
+            if (this.context.IsJsonType(typeDefinition))
             {
                 typeReference = this.context.ClrKnownReferences.Object;
             }
@@ -636,7 +637,7 @@ namespace NScript.Converter.TypeSystemConverter
                 var typeName = this.GetTypeName(typeReference);
                 NamespaceManager nameSpace = this.globalNamespaceManager;
                 bool isExtended = this.context.IsExtended(typeReference)
-                    || this.context.IsPsudoType(typeReference.Resolve());
+                    || this.context.IsPsudoType(typeDefinition);
 
                 // put in queue to process. In case of conversion using dependency
                 // walk, this will be used to start converting these types as well.
@@ -653,8 +654,13 @@ namespace NScript.Converter.TypeSystemConverter
                         isExtended);
 
                     returnValue = new List<IIdentifier>();
-
                     returnValue.Add(resolvedIdentifier);
+                    if (isExtended
+                        && !string.IsNullOrEmpty(typeName.Item1)
+                        && !this.context.HasIgnoreNamespaceAttribute(typeDefinition))
+                    {
+                        nameSpace = nameSpace.GetNamespace(typeName.Item1, true);
+                    }
 
                     while (nameSpace.Parent != null)
                     {

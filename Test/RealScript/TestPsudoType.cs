@@ -122,6 +122,15 @@ namespace RealScript
             };
         }
 
+        public static TestJsonType C2(TestJsonType t, int? i, int j, int k)
+        {
+            return new TestJsonType()
+            {
+                TempI = i + t.TempJ,
+                TheArray = new int[] { j, k}
+            };
+        }
+
         public static string[] M1(TestImportedType t)
         {
             return t.ProcessData(new System.Collections.Generic.List<int>(t.TheArray));

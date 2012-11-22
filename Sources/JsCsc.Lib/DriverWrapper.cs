@@ -278,17 +278,25 @@ namespace JsCsc.Lib
                     Constructor constructor = member as Constructor;
                     if (constructor != null)
                     {
-                        if (constructor.IsCompilerGenerated
-                            || !this.methodBlocks.ContainsKey(constructor))
+                        if (constructor.IsCompilerGenerated)
                         {
                             continue;
                         }
 
-                        jarray.Add(
-                            toJObject.SerializeMethodBody(
-                                constructor,
-                                typeDef.InitializedFields,
-                                this.methodBlocks[constructor]));
+                        if (this.methodBlocks.ContainsKey(constructor)
+                            || (constructor.IsStatic && typeDef.InitializedStaticFields.Count > 0)
+                            || (!constructor.IsStatic && typeDef.InitializedFields.Count > 0))
+                        {
+                            jarray.Add(
+                                toJObject.SerializeMethodBody(
+                                    constructor,
+                                    constructor.IsStatic
+                                        ? typeDef.InitializedStaticFields
+                                        : typeDef.InitializedFields,
+                                    this.methodBlocks.ContainsKey(constructor)
+                                        ? this.methodBlocks[constructor]
+                                        : null));
+                        }
                     }
                 }
             }
