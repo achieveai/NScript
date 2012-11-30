@@ -144,6 +144,14 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
+    <ProjectReference Include="..\WinRT\Windows.csproj">
+      <Name>Windows</Name>
+      <Project>{0eb34c67-4e1f-4d7b-a1e0-16061a857dea}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
     <ProjectReference Include="..\XwmlParser\XwmlParser.csproj">
       <Name>XwmlParser</Name>
       <Project>{e3fe7841-2db8-4713-8c41-fb399d921a77}</Project>
