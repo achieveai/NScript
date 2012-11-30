@@ -47,7 +47,7 @@ namespace NScript.JST
             this.ownerScope = ownerScope;
             this.enforceSuggestion = enforceSuggestion;
             this.suggestedName = string.IsNullOrWhiteSpace(suggestedName)
-                    ? null
+                    ? string.Empty
                     : enforceSuggestion
                         ? suggestedName
                         : Utils.ToJSIdentifier(suggestedName);
@@ -97,6 +97,20 @@ namespace NScript.JST
         }
 
         /// <summary>
+        /// Gets a value indicating whether this object is empty.
+        /// </summary>
+        /// <value>
+        /// true if this object is empty, false if not.
+        /// </value>
+        public bool IsEmpty
+        {
+            get
+            {
+                return this.enforceSuggestion && this.suggestedName.Length == 0;
+            }
+        }
+
+        /// <summary>
         /// Gets the owner scope.
         /// </summary>
         /// <value>The owner scope.</value>
@@ -133,12 +147,13 @@ namespace NScript.JST
             string suggestedName,
             bool enforceSuggestion)
         {
-            if (enforceSuggestion && string.IsNullOrWhiteSpace(suggestedName))
+            if (enforceSuggestion && suggestedName == null)
             {
                 throw new ArgumentException("suggestedName");
             }
 
             SimpleIdentifier returnValue = null;
+            suggestedName = suggestedName.Trim();
 
             if (!enforceSuggestion
                 || !ownerScope.TryGetKnownIdentifier(suggestedName, out returnValue))

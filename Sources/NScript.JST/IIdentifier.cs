@@ -17,5 +17,6 @@ namespace NScript.JST
         string GetName();
         void AddUsage(IdentifierScope scope);
         string SuggestedName { get; }
+        bool IsEmpty { get; }
     }
 }

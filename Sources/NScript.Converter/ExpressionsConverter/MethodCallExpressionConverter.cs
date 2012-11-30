@@ -201,9 +201,7 @@ namespace NScript.Converter.ExpressionsConverter
                     : null;
 
             if (genericMethod != null
-                && null == genericMethod.ElementMethod.Resolve()
-                    .CustomAttributes.SelectAttribute(
-                        methodConverter.KnownReferences.IgnoreGenericArgumentsAttribute))
+                && methodConverter.RuntimeManager.Context.HasGenericArguments(genericMethod))
             {
                 // If we are to ignore GenericArguments, let's skip creating
                 // arguments for genericArguments.
@@ -259,9 +257,7 @@ namespace NScript.Converter.ExpressionsConverter
             List<JST.Expression> genericArguments = new List<JST.Expression>();
 
             if (genericMethod != null
-                && genericMethod.ElementMethod.Resolve()
-                    .CustomAttributes.SelectAttribute(
-                        runtimeManager.Context.KnownReferences.IgnoreGenericArgumentsAttribute) == null)
+                && runtimeManager.Context.HasGenericArguments(methodReference))
             {
                 // If we are to ignore GenericArguments, let's skip creating
                 // arguments for genericArguments.

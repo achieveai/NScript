@@ -27,6 +27,9 @@ namespace RealScript
         public int this[int index]
         { get { return 1; } set { } }
 
+        [ScriptName("")]
+        public static extern int SelfMethodCall(int i);
+
         [Script("var a,b = 10; a = b + 1; b += a;")]
         public static extern void Simple0ArgScript();
 
@@ -38,6 +41,8 @@ namespace RealScript
 
         [Script(@"return @{[RealScript]RealScript.TmpC::Foo([mscorlib]System.String)}(str);")]
         public static extern int SimpleStatic1ArgCsMethodCall(string str);
+
+        public static extern T ExternGenericCall<T>(object t);
 
         public static int AccessStringElement(string str, int index)
         {
@@ -53,6 +58,16 @@ namespace RealScript
         {
             obj[0] = foo;
             return obj[1];
+        }
+
+        public static int GetSomething()
+        {
+            return JsScriptImport.SelfMethodCall(10);
+        }
+
+        public static long TestExternGenericCall()
+        {
+            return JsScriptImport.ExternGenericCall<long>(10);
         }
     }
 }

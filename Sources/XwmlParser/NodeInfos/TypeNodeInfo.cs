@@ -65,7 +65,8 @@ namespace XwmlParser.NodeInfos
                 {
                     throw new ApplicationException(
                         string.Format(
-                            "Can't resolve PropertyName: {0}, more than one properties found"
+                            "Can't resolve PropertyName: {0}, more than one properties found",
+                            fullAttributeName.Item2));
                 }
             }
 

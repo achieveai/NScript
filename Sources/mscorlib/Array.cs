@@ -3,7 +3,7 @@
     using System.Collections;
     using System.Runtime.CompilerServices;
 
-    [Extended]
+    [Extended, IgnoreNamespace]
     public abstract class Array : IEnumerable
     {
         public extern int Length

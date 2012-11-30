@@ -168,9 +168,7 @@ namespace NScript.Converter.TypeSystemConverter
             context = typeConverter.RuntimeManager.Context;
             clrKnownReferences = context.ClrKnownReferences;
             cnvtKnownReferences = context.KnownReferences;
-            hasGenericArguments = methodDefinition.HasGenericParameters
-                                  && methodDefinition.CustomAttributes.SelectAttribute(
-                                      cnvtKnownReferences.IgnoreGenericArgumentsAttribute) == null;
+            hasGenericArguments = this.context.HasGenericArguments(methodDefinition);
 
             if (methodDefinition.HasGenericParameters
                 && !hasGenericArguments

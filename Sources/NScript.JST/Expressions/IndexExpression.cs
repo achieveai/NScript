@@ -129,6 +129,20 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
+            IdentifierExpression identifierExpresison = this.leftExpression as IdentifierExpression;
+            if (identifierExpresison != null && identifierExpresison.Identifier.IsEmpty)
+            {
+                this.RightExpression.Write(writer);
+                return;
+            }
+
+            identifierExpresison = this.rightExpression as IdentifierExpression;
+            if (identifierExpresison != null && identifierExpresison.Identifier.IsEmpty)
+            {
+                this.leftExpression.Write(writer);
+                return;
+            }
+
             writer.Write(
                 this.LeftExpression,
                 this.LeftExpression.OperatorPlacement != JST.OperatorPlacement.Postfix

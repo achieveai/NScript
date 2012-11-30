@@ -86,6 +86,28 @@ namespace NScript.JST
         { get { return this.identifiers; } }
 
         /// <summary>
+        /// Gets a value indicating whether this object is empty.
+        /// </summary>
+        /// <value>
+        /// true if this object is empty, false if not.
+        /// </value>
+        public bool IsEmpty
+        {
+            get
+            {
+                for (int i = 0; i < this.identifiers.Count; i++)
+                {
+                    if (!this.identifiers[i].IsEmpty)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Gets the name.
         /// </summary>
         /// <returns>

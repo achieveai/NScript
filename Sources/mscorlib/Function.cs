@@ -2,6 +2,7 @@
 {
     using System.Runtime.CompilerServices;
 
+    [IgnoreNamespace]
     public struct Function
     {
         public extern int Length

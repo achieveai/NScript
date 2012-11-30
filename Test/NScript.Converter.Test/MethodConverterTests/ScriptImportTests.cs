@@ -85,5 +85,27 @@ namespace NScript.Converter.Test.MethodConverterTests
                 TestType.All,
                 true);
         }
+
+        [Test]
+        public void SelfMethodCallTest()
+        {
+            ConverterTestHelpers.RunTest(
+                ScriptImportTests.TemplateNamespace + "SelfMethodCallTest.js",
+                ScriptImportTests.TestClassNameStr,
+                "GetSomething",
+                TestType.All,
+                true);
+        }
+
+        [Test]
+        public void ExternGenericCallTest()
+        {
+            ConverterTestHelpers.RunTest(
+                ScriptImportTests.TemplateNamespace + "ExternGenericCallTest.js",
+                ScriptImportTests.TestClassNameStr,
+                "TestExternGenericCall",
+                TestType.All,
+                true);
+        }
     }
 }

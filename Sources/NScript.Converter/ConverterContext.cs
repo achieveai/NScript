@@ -338,6 +338,39 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Ignore generic arguments.
+        /// </summary>
+        /// <param name="methodReference"> The method reference. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public bool HasGenericArguments(MethodReference methodReference)
+        {
+            GenericInstanceMethod genericInstanceType = methodReference as GenericInstanceMethod;
+            if (genericInstanceType != null)
+            {
+                return this.HasGenericArguments(genericInstanceType.ElementMethod);
+            }
+
+            return this.HasGenericArguments(methodReference.Resolve());
+        }
+
+        /// <summary>
+        /// Ignore generic arguments.
+        /// </summary>
+        /// <param name="methodDefinition"> The method definition. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public bool HasGenericArguments(
+            MethodDefinition methodDefinition)
+        {
+            return methodDefinition.HasGenericParameters
+                && methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.IgnoreGenericArgumentsAttribute) == null
+                && this.IsImplemented(methodDefinition);
+        }
+
+        /// <summary>
         /// Determines whether the specified type definition has ignore namespace attribute .
         /// </summary>
         /// <param name="typeDefinition"> The type definition. </param>
