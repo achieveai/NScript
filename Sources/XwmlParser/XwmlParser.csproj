@@ -57,17 +57,36 @@
   <ItemGroup>
     <Compile Include="AttributeInfos\AttributeInfo.cs" />
     <Compile Include="AttributeInfos\HtmlAttributeInfo.cs" />
+    <Compile Include="Binding\AttachedPropertyTargetBindingInfo.cs" />
+    <Compile Include="Binding\AttributeTargetBindingInfo.cs" />
     <Compile Include="Binding\BinderInfo.cs" />
+    <Compile Include="Binding\BindingParser.cs" />
     <Compile Include="Binding\BoundProperty.cs" />
     <Compile Include="Binding\BoundSource.cs" />
     <Compile Include="Binding\BoundValue.cs" />
+    <Compile Include="Binding\ConverterInfo.cs" />
+    <Compile Include="Binding\CssClassTargetBindingInfo.cs" />
+    <Compile Include="Binding\EnumSourceBindingInfo.cs" />
+    <Compile Include="Binding\EventSourceBindingInfo.cs" />
+    <Compile Include="Binding\EventTargetBindingInfo.cs" />
+    <Compile Include="Binding\NumberSourceBindingInfo.cs" />
+    <Compile Include="Binding\MethodSourceBindingInfo.cs" />
+    <Compile Include="Binding\MethodTargetBindingInfo.cs" />
+    <Compile Include="Binding\PropertySourceBindingInfo.cs" />
+    <Compile Include="Binding\PropertyTargetBindingInfo.cs" />
+    <Compile Include="Binding\SourceBindingInfo.cs" />
+    <Compile Include="Binding\StaticSourceBindingInfo.cs" />
+    <Compile Include="Binding\StringSourceBindingInfo.cs" />
+    <Compile Include="Binding\TargetBindingInfo.cs" />
     <Compile Include="DocumentContext.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="IResolver.cs" />
     <Compile Include="KnownTemplateTypes.cs" />
     <Compile Include="NodeInfos\CollectionNodeInfo.cs" />
     <Compile Include="NodeInfos\ContextBindableNodeInfo.cs" />
+    <Compile Include="NodeInfos\IDocumentContext.cs" />
     <Compile Include="NodeInfos\IHtmlNodeGenerator.cs" />
+    <Compile Include="NodeInfos\INamespaceResolver.cs" />
     <Compile Include="NodeInfos\SkinnableNodeInfo.cs" />
     <Compile Include="NodeInfos\FactoryNodeInfo.cs" />
     <Compile Include="NodeInfos\HtmlNodeInfo.cs" />
@@ -92,6 +111,14 @@
     <ProjectReference Include="..\CssParser\CssParser.csproj">
       <Project>{c2534dea-af8c-43f3-81ed-86e6b5932cf6}</Project>
       <Name>CssParser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj">
+      <Project>{83fb5360-ce27-4255-8457-13e789dc5b0c}</Project>
+      <Name>NScript.CLR</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NScript.Converter\NScript.Converter.csproj">
+      <Project>{2cb180c7-d96a-4e43-8676-f928e4736a1f}</Project>
+      <Name>NScript.Converter</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

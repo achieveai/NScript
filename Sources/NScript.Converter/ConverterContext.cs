@@ -17,53 +17,119 @@ namespace NScript.Converter
     using Mono.Cecil;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
-using NScript.Utils;
+    using NScript.Utils;
 
     /// <summary>
-    /// Definition for ConverterContext
+    /// Definition for ConverterContext.
     /// </summary>
     public class ConverterContext
     {
+        /// <summary>
+        /// The real name string.
+        /// </summary>
         public const string RealNameStr = "realName";
+
+        /// <summary>
+        /// The function name string that owns this item.
+        /// </summary>
         public const string OwnerFuncNameStr = "ownerFuncName";
+
+        /// <summary>
+        /// The generated local variable string.
+        /// </summary>
         public const string GeneratedLocalVarStr = @"^CS\$[\w\d]+\$\d+$";
+
+        /// <summary>
+        /// The generated this variable string.
+        /// </summary>
         public const string GeneratedThisVarStr = @"^<>[\w\d]+__this$";
+
+        /// <summary>
+        /// The generated field name regular expression string.
+        /// </summary>
         public const string GeneratedFieldNameRegexStr = @"^CS\$<>[\d\w]+__(?<realName>.*)$";
+
+        /// <summary>
+        /// The generated method name regular expression string.
+        /// </summary>
         public const string GeneratedMethodNameRegexStr = @"^<(?<ownerFuncName>[^>]*)>[\w\d]+__[\w\d]+$";
+
+        /// <summary>
+        /// The generated type name regular expression string.
+        /// </summary>
         public const string GeneratedTypeNameRegexStr = @"^<>[\w\d]+__DisplayClass[\w\d]+$";
 
+        /// <summary>
+        /// .
+        /// </summary>
         public readonly static Regex GeneratedFieldNameRegex = new Regex(
                 ConverterContext.GeneratedFieldNameRegexStr,
                 RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        /// <summary>
+        /// .
+        /// </summary>
         public readonly static Regex GeneratedMethodNameRegex = new Regex(
                 ConverterContext.GeneratedMethodNameRegexStr,
                 RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        /// <summary>
+        /// .
+        /// </summary>
         public readonly static Regex GeneratedTypeNameRegex = new Regex(
                 ConverterContext.GeneratedTypeNameRegexStr,
                 RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        /// <summary>
+        /// .
+        /// </summary>
         public readonly static Regex GeneratedLocalVarRegex = new Regex(
                 ConverterContext.GeneratedLocalVarStr,
                 RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        /// <summary>
+        /// .
+        /// </summary>
         public readonly static Regex GeneratedThisVarRegex = new Regex(
                 ConverterContext.GeneratedThisVarStr,
                 RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        /// <summary>
+        /// Context for the colour.
+        /// </summary>
         private readonly ClrContext clrContext;
+
+        /// <summary>
+        /// The converter known references.
+        /// </summary>
         private readonly ConverterKnownReferences converterKnownReferences;
 
+        /// <summary>
+        /// .
+        /// </summary>
         private readonly Dictionary<MethodDefinition, TopLevelBlock> methodAstMapping
             = new Dictionary<MethodDefinition, TopLevelBlock>(MemberReferenceComparer.Instance);
 
+        /// <summary>
+        /// .
+        /// </summary>
         private readonly Dictionary<TypeDefinition, TypeKind> typeKindMapping
             = new Dictionary<TypeDefinition, TypeKind>(MemberReferenceComparer.Instance);
 
+        /// <summary>
+        /// The errors.
+        /// </summary>
         private readonly List<Tuple<Location, string>> errors = new List<Tuple<Location, string>>();
+
+        /// <summary>
+        /// The warnings.
+        /// </summary>
         private readonly List<Tuple<Location, string>> warnings = new List<Tuple<Location, string>>();
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="clrContext"> Context for the colour. </param>
         public ConverterContext(ClrContext clrContext)
         {
             this.clrContext = clrContext;
@@ -106,25 +172,50 @@ using NScript.Utils;
         /// <summary>
         /// Gets the CLR context.
         /// </summary>
+        /// <value>
+        /// The colour context.
+        /// </value>
         public ClrContext ClrContext
         { get { return this.clrContext; } }
 
         /// <summary>
         /// Gets the CLR known references.
         /// </summary>
+        /// <value>
+        /// The colour known references.
+        /// </value>
         public ClrKnownReferences ClrKnownReferences
         { get { return this.clrContext.KnownReferences; } }
 
         /// <summary>
         /// Gets the known references.
         /// </summary>
+        /// <value>
+        /// The known references.
+        /// </value>
         public ConverterKnownReferences KnownReferences
         { get { return this.converterKnownReferences; } }
 
+        /// <summary>
+        /// Adds an error.
+        /// </summary>
+        /// <param name="location">  The location. </param>
+        /// <param name="error">     The error. </param>
+        /// <param name="isWarning"> true if this object is warning. </param>
         public void AddError(Location location, string error, bool isWarning)
         {
+            List<Tuple<Location, string>> list = isWarning ? this.warnings : this.errors;
+            list.Add(Tuple.Create(location, error));
         }
 
+        /// <summary>
+        /// Try get method ast.
+        /// </summary>
+        /// <param name="method">    The method. </param>
+        /// <param name="rootBlock"> [out] The root block. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
         public bool TryGetMethodAst(
             MethodDefinition method,
             out ParameterBlock rootBlock)
@@ -145,7 +236,7 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified type reference is Extended type.
         /// </summary>
-        /// <param name="paramDef">The type reference.</param>
+        /// <param name="typeReference"> The type reference. </param>
         /// <returns>
         /// <c>true</c> if the specified type reference is Extended type; otherwise, <c>false</c>.
         /// </returns>
@@ -157,7 +248,7 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified type definition base is Extended type.
         /// </summary>
-        /// <param name="typeDefinitionBase">The type definition base.</param>
+        /// <param name="typeDefinition"> The type definition base. </param>
         /// <returns>
         /// <c>true</c> if the specified type definition base is Extended type; otherwise, <c>false</c>.
         /// </returns>
@@ -180,7 +271,7 @@ using NScript.Utils;
         /// <summary>
         /// Gets the name of the type.
         /// </summary>
-        /// <param name="paramDef">The type reference.</param>
+        /// <param name="typeReference"> The type reference. </param>
         /// <returns>
         /// Type name of the given type. If ScriptName attribute is set then use it.
         /// </returns>
@@ -249,9 +340,10 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified type definition has ignore namespace attribute .
         /// </summary>
-        /// <param name="typeDefinition">The type definition.</param>
+        /// <param name="typeDefinition"> The type definition. </param>
         /// <returns>
-        /// <c>true</c> if [the specified type definition] [has ignore namespace attribute]; otherwise, <c>false</c>.
+        /// <c>true</c> if [the specified type definition] [has ignore namespace attribute]; otherwise,
+        /// <c>false</c>.
         /// </returns>
         public bool HasIgnoreNamespaceAttribute(
             TypeDefinition typeDefinition)
@@ -263,7 +355,8 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified member definition is implemented.
         /// </summary>
-        /// <param name="memberDefinition">The member definition.</param>
+        /// <exception cref="NotSupportedException"> Thrown when the requested operation is not supported. </exception>
+        /// <param name="memberDefinition"> The member definition. </param>
         /// <returns>
         /// <c>true</c> if the specified member definition is implemented; otherwise, <c>false</c>.
         /// </returns>
@@ -287,7 +380,7 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified member definition is implemented.
         /// </summary>
-        /// <param name="fieldDef">The field def.</param>
+        /// <param name="fieldDef"> The field def. </param>
         /// <returns>
         /// <c>true</c> if the specified member definition is implemented; otherwise, <c>false</c>.
         /// </returns>
@@ -305,7 +398,7 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified member definition is implemented.
         /// </summary>
-        /// <param name="memberDefinition">The member definition.</param>
+        /// <param name="methodDefinition"> The member definition. </param>
         /// <returns>
         /// <c>true</c> if the specified member definition is implemented; otherwise, <c>false</c>.
         /// </returns>
@@ -371,7 +464,7 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified member definition is implemented.
         /// </summary>
-        /// <param name="propDef">The prop def.</param>
+        /// <param name="propDef"> The prop def. </param>
         /// <returns>
         /// <c>true</c> if the specified member definition is implemented; otherwise, <c>false</c>.
         /// </returns>
@@ -415,9 +508,10 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified type definition is anonymous delegate wrapper.
         /// </summary>
-        /// <param name="typeDefinition">The type definition.</param>
+        /// <param name="typeDefinition"> The type definition. </param>
         /// <returns>
-        /// <c>true</c> if the specified type definition is anonymous delegate wrapper; otherwise, <c>false</c>.
+        /// <c>true</c> if the specified type definition is anonymous delegate wrapper; otherwise,
+        /// <c>false</c>.
         /// </returns>
         public bool IsAnonymousDelegateWrapper(TypeDefinition typeDefinition)
         {
@@ -433,9 +527,15 @@ using NScript.Utils;
         /// <summary>
         /// Gets the name of the member.
         /// </summary>
-        /// <param name="memberDefinition">The member definition.</param>
-        /// <param name="isFixedName">if set to <c>true</c> [is fixed name].</param>
-        /// <returns>Member's name</returns>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <param name="memberDefinition">  The member definition. </param>
+        /// <param name="resolveUnderlying"> true to resolve underlying. </param>
+        /// <param name="isFixedName">       [out] if set to <c>true</c> [is fixed name]. </param>
+        /// <param name="isAlias">           [out] The is alias. </param>
+        /// <returns>
+        /// Member's name.
+        /// </returns>
         public string GetMemberName(
             IMemberDefinition memberDefinition,
             bool resolveUnderlying,
@@ -598,9 +698,10 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified property definition is intrinsic property.
         /// </summary>
-        /// <param name="propertyDefinition">The property definition.</param>
+        /// <param name="propertyDefinition"> The property definition. </param>
         /// <returns>
-        /// <c>true</c> if [is intrinsic property] [the specified property definition]; otherwise, <c>false</c>.
+        /// <c>true</c> if [is intrinsic property] [the specified property definition]; otherwise,
+        /// <c>false</c>.
         /// </returns>
         public bool IsIntrinsicProperty(PropertyDefinition propertyDefinition)
         {
@@ -690,7 +791,10 @@ using NScript.Utils;
         /// <summary>
         /// Gets a type kind.
         /// </summary>
-        /// <exception cref="InvalidDataException"> Thrown when an invalid data error condition occurs. </exception>
+        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
+        ///     occurs. </exception>
+        /// <exception cref="InvalidDataException">    Thrown when an invalid data error condition
+        ///     occurs. </exception>
         /// <param name="typeDefinition"> The type definition. </param>
         /// <returns>
         /// The type kind.
@@ -966,7 +1070,7 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified STR is caps name.
         /// </summary>
-        /// <param name="str">The STR.</param>
+        /// <param name="str"> The STR. </param>
         /// <returns>
         /// <c>true</c> if the specified STR is caps name ; otherwise, <c>false</c>.
         /// </returns>
@@ -1002,7 +1106,7 @@ using NScript.Utils;
         /// <summary>
         /// Determines whether the specified member definition is implemented.
         /// </summary>
-        /// <param name="memberDefinition">The member definition.</param>
+        /// <param name="memberDefinition"> The member definition. </param>
         /// <returns>
         /// <c>true</c> if the specified member definition is implemented; otherwise, <c>false</c>.
         /// </returns>
@@ -1018,12 +1122,30 @@ using NScript.Utils;
             return false;
         }
 
+        /// <summary>
+        /// Values that represent TypeKind.
+        /// </summary>
         public enum TypeKind
         {
+            /// <summary>
+            /// .
+            /// </summary>
             Normal,
+            /// <summary>
+            /// .
+            /// </summary>
             Interface,
+            /// <summary>
+            /// .
+            /// </summary>
             Extended,
+            /// <summary>
+            /// .
+            /// </summary>
             Imported,
+            /// <summary>
+            /// .
+            /// </summary>
             JSONType
         }
     }

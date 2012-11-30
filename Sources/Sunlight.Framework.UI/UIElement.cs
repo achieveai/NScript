@@ -76,6 +76,23 @@ namespace Sunlight.Framework.UI
         }
 
         /// <summary>
+        /// Gets the skinned parent.
+        /// </summary>
+        /// <value>
+        /// The skinned parent.
+        /// </value>
+        public UISkinableElement SkinnedParent
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+            }
+        }
+
+        /// <summary>
         /// Attach event.
         /// </summary>
         /// <param name="eventName"> Name of the event. </param>
@@ -132,16 +149,7 @@ namespace Sunlight.Framework.UI
         /// <param name="className"> Name of the CSS class. </param>
         public void RemoveClass(string className)
         {
-            int idx = this.CssClassIndex(className);
-            if (idx >= 0)
-            {
-                string cssClassName = this.element.ClassName;
-
-                cssClassName = (idx > 0 ? cssClassName.Substring(0, idx - 1) : String.Empty)
-                    + (idx < cssClassName.Length - className.Length ? cssClassName.Substring(idx + cssClassName.Length + 1) : String.Empty);
-
-                this.element.ClassName = cssClassName;
-            }
+            this.element.RemoveClassName(className);
         }
 
         /// <summary>
@@ -150,57 +158,7 @@ namespace Sunlight.Framework.UI
         /// <param name="className"> Name of the CSS class. </param>
         public void AddClass(string className)
         {
-            if (this.CssClassIndex(className) >= 0)
-            {
-                return;
-            }
-
-            string cssClassName = this.element.ClassName;
-
-            if (cssClassName != null && cssClassName.Length > 0)
-            {
-                cssClassName = cssClassName + " " + className;
-            }
-            else
-            {
-                cssClassName = className;
-            }
-
-            this.element.ClassName = cssClassName;
-        }
-
-        /// <summary>
-        /// Css class index.
-        /// </summary>
-        /// <param name="className"> Name of the CSS class. </param>
-        /// <returns>
-        /// Index of className in CssClass of this element.
-        /// </returns>
-        public int CssClassIndex(string className)
-        {
-            int idx = -1;
-            string cssClassName = this.element.ClassName;
-
-            if (cssClassName == null || cssClassName.Length < className.Length)
-            {
-                return -1;
-            }
-
-            do
-            {
-                idx = cssClassName.IndexOf(className, idx + 1);
-                if (idx == 0 || (idx > 0 && cssClassName[idx - 1] == ' '))
-                {
-                    if (idx == cssClassName.Length - className.Length
-                        || (cssClassName[idx + className.Length + 1] == ' '))
-                    {
-                        break;
-                    }
-                }
-
-            } while (idx != -1);
-
-            return idx;
+            this.element.AddClassName(className);
         }
 
         /// <summary>

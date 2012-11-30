@@ -53,5 +53,7 @@ namespace XwmlParser.NodeInfos
         /// </value>
         public Tuple<string, string> TagInfo
         { get { return this.tagInfo; } }
+
+        public abstract void ParseNode(TemplateParser parser);
     }
 }

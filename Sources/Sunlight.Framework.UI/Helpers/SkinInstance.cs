@@ -6,6 +6,7 @@
 
 namespace Sunlight.Framework.UI.Helpers
 {
+    using Sunlight.Framework.Binders;
     using System;
     using System.Collections.Generic;
     using System.Web.Html;
@@ -98,10 +99,13 @@ namespace Sunlight.Framework.UI.Helpers
             return this.childElements[index];
         }
 
-        /// <summary>   Binds the given UISkinableElement. </summary>
-        /// <exception cref="Exception">    Thrown when an exception error condition occurs. </exception>
-        /// <param name="skinable"> The skinable. </param>
-        public void Bind(UISkinableElement skinable)
+        /// <summary>
+        /// Binds the given UISkinableElement.
+        /// </summary>
+        /// <exception cref="Exception"> Thrown when an exception error condition occurs. </exception>
+        /// <param name="skinable">          The skinable. </param>
+        /// <param name="dataContextParent"> The data context parent. </param>
+        public void Bind(UISkinableElement skinable, ContextBindableObject dataContextParent)
         {
             if (this.rootElement == null || this.isDiposed)
             {
@@ -119,8 +123,10 @@ namespace Sunlight.Framework.UI.Helpers
 
                 for (int i = 0, j = this.childElements.Length; i < j; i++)
                 {
-                    this.childElements[i].Parent = skinable;
-                    this.childElements[i].PreActivate();
+                    var childElement = this.childElements[i];
+                    childElement.Parent = dataContextParent;
+                    childElement.SkinnedParent = skinable;
+                    childElement.PreActivate();
                 }
 
                 for (int i = 0, j = list.Length; i < j; i++)

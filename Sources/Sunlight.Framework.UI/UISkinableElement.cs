@@ -68,7 +68,7 @@ using Sunlight.Framework.UI.Helpers;
 
                     if (this.skin != null)
                     {
-                        this.skin.Bind(this);
+                        this.skin.Bind(this, this.Parent);
 
                         if (this.IsActive)
                         {

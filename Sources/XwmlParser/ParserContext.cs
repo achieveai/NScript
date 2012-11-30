@@ -6,6 +6,7 @@
 
 namespace XwmlParser
 {
+    using NScript.Converter;
     using System;
     using System.Collections.Generic;
 
@@ -18,11 +19,6 @@ namespace XwmlParser
         /// The resolver.
         /// </summary>
         IResolver resolver;
-
-        /// <summary>
-        /// The abbr to namespace mapping.
-        /// </summary>
-        List<Tuple<string, string>> abbrToNamespaceMapping = new List<Tuple<string, string>>();
 
         /// <summary>
         /// Constructor.
@@ -56,6 +52,9 @@ namespace XwmlParser
             get;
             set;
         }
+
+        public ConverterContext ConverterContext
+        { get; }
 
         /// <summary>
         /// Gets the resolver.

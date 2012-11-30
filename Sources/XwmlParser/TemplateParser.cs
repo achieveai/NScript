@@ -61,7 +61,7 @@ namespace XwmlParser
             try
             {
                 this.context.PushNode(node);
-                var nodeName = this.parentParser.GetFullNodeName(node.OriginalName);
+                var nodeName = this.parentParser.GetFullName(node.OriginalName);
                 NodeType nodeType = this.parentParser.GetNodeType(node, parentNodeInfo);
                 NodeInfo rv = null;
                 switch (nodeType)
@@ -130,7 +130,7 @@ namespace XwmlParser
             {
                 return new HtmlNodeInfo(
                     node,
-                    this.parentParser.GetFullNodeName(node.OriginalName))
+                    this.parentParser.GetFullName(node.OriginalName))
                     {
                         GeneratedNode = this.document.CreateTextNode(((HtmlTextNode)node).Text)
                     };
@@ -138,7 +138,7 @@ namespace XwmlParser
             else if (node.NodeType == HtmlNodeType.Element)
             {
                 // TOOD: add id tracking and munging.
-                HtmlNodeInfo htmlNodeInfo = new HtmlNodeInfo(node, this.parentParser.GetFullNodeName(node.OriginalName));
+                HtmlNodeInfo htmlNodeInfo = new HtmlNodeInfo(node, this.parentParser.GetFullName(node.OriginalName));
                 HtmlNode rv = this.document.CreateElement(node.OriginalName);
                 foreach (var attr in node.Attributes)
                 {
@@ -159,7 +159,7 @@ namespace XwmlParser
 
                 return new HtmlNodeInfo(
                     node,
-                    this.parentParser.GetFullNodeName(node.OriginalName))
+                    this.parentParser.GetFullName(node.OriginalName))
                     { GeneratedNode = rv };
             }
 
@@ -185,7 +185,7 @@ namespace XwmlParser
             List<AttributeInfo> rv = new List<AttributeInfo>();
             foreach (var attribute in node.Attributes)
             {
-                var nameInfo = this.parentParser.GetFullNodeName(attribute.OriginalName);
+                var nameInfo = this.parentParser.GetFullName(attribute.OriginalName);
 
                 if (nameInfo.Item1 != null)
                 {
@@ -231,16 +231,56 @@ namespace XwmlParser
 
         private TypeNodeInfo ParseObjectNode(HtmlNode node)
         {
-            throw new NotImplementedException();
+            var tuple = this.GetTypeReference(node);
+            TypeNodeInfo rv = new TypeNodeInfo(
+                tuple.Item1,
+                node,
+                tuple.Item2);
+
+            this.ParseObjectNode(node, rv);
+
+            return rv;
+        }
+
+        private void ParseObjectNode(HtmlNode node, TypeNodeInfo typeNodeInfo)
+        {
         }
 
         private TypeNodeInfo ParseObservableObject(HtmlNode node)
         {
+            var tuple = this.GetTypeReference(node);
+            TypeNodeInfo rv = new TypeNodeInfo(
+                tuple.Item1,
+                node,
+                tuple.Item2);
+
+            this.ParseObservableObject(node, rv);
+
+            return rv;
+        }
+
+        private void ParseObservableObject(HtmlNode node, TypeNodeInfo typeNodeInfo)
+        {
+            this.ParseObjectNode(node, typeNodeInfo);
             throw new NotImplementedException();
         }
 
         private ContextBindableNodeInfo ParseContextBindableObject(HtmlNode node)
         {
+            var tuple = this.GetTypeReference(node);
+            ContextBindableNodeInfo rv = new ContextBindableNodeInfo(
+                tuple.Item1,
+                node,
+                tuple.Item2);
+
+            this.ParseContextBindableObject(node, rv);
+
+            return rv;
+        }
+
+        private void ParseContextBindableObject(HtmlNode node, ContextBindableNodeInfo typeNodeInfo)
+        {
+            this.ParseObservableObject(node, typeNodeInfo);
             throw new NotImplementedException();
         }
 
@@ -253,18 +293,69 @@ namespace XwmlParser
         /// </returns>
         private UIElementNodeInfo ParseElementNode(HtmlNode node)
         {
-            return null;
+            var tuple = this.GetTypeReference(node);
+            UIElementNodeInfo rv = new UIElementNodeInfo(
+                tuple.Item1,
+                node,
+                tuple.Item2);
+
+            this.ParseElementNode(node, rv);
+
+            return rv;
+        }
+
+        private void ParseElementNode(HtmlNode node, UIElementNodeInfo typeNodeInfo)
+        {
+            this.ParseContextBindableObject(node, typeNodeInfo);
+            throw new NotImplementedException();
         }
 
         private NodeInfo ParsePanelElementNode(HtmlNode node)
         {
+            var tuple = this.GetTypeReference(node);
+            PanelNodeInfo rv = new PanelNodeInfo(
+                tuple.Item1,
+                node,
+                tuple.Item2);
+
+            this.ParsePanelElementNode(node, rv);
+
+            return rv;
+        }
+
+        private void ParsePanelElementNode(HtmlNode node, PanelNodeInfo typeNodeInfo)
+        {
+            this.ParseElementNode(node, typeNodeInfo);
             throw new NotImplementedException();
         }
 
         private NodeInfo ParseSkinableElementNode(HtmlNode node)
         {
+            var tuple = this.GetTypeReference(node);
+            SkinnableNodeInfo rv = new SkinnableNodeInfo(
+                tuple.Item1,
+                node,
+                tuple.Item2);
+
+            this.ParseSkinableElementNode(node, rv);
+
+            return rv;
+        }
+
+        private void ParseSkinableElementNode(HtmlNode node, SkinnableNodeInfo typeNodeInfo)
+        {
+            this.ParseElementNode(node, typeNodeInfo);
             throw new NotImplementedException();
         }
 
+        private Tuple<TypeReference, Tuple<string, string>> GetTypeReference(HtmlNode node)
+        {
+            var fullNameTuple = this.parentParser.GetFullName(node.Name);
+            var fullName = fullNameTuple.Item1 + "." + fullNameTuple.Item2;
+
+            return Tuple.Create(
+                this.context.ParserContext.Resolver.GetTypeReference(fullName),
+                fullNameTuple);
+        }
     }
 }

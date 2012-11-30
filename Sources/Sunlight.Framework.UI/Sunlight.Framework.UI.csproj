@@ -45,6 +45,7 @@
     <Compile Include="Attributes\TemplatePartAttribute.cs" />
     <Compile Include="EventNames.cs" />
     <Compile Include="EventTypes.cs" />
+    <Compile Include="Helpers\AttributeTargetBinder.cs" />
     <Compile Include="Helpers\CssTargetBinder.cs" />
     <Compile Include="Helpers\SkinFactory.cs" />
     <Compile Include="Helpers\SkinInstance.cs" />

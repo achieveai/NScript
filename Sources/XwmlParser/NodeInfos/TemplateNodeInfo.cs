@@ -51,5 +51,9 @@ namespace XwmlParser.NodeInfos
         /// </value>
         public TypeReference DataType
         { get; private set; }
+
+        public void ParseNode(TemplateParser parser)
+        {
+        }
     }
 }

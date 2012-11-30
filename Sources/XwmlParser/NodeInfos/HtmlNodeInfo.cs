@@ -51,5 +51,9 @@ namespace XwmlParser.NodeInfos
                 this.generatedNode = value;
             }
         }
+
+        public void ParseNode(TemplateParser parser)
+        {
+        }
     }
 }

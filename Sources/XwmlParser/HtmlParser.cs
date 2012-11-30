@@ -33,49 +33,25 @@ namespace XwmlParser
     /// <summary>
     /// Definition for Parser
     /// </summary>
-    public class HtmlParser
+    public class HtmlParser : IDocumentContext
     {
         private ParserContext context;
         private HtmlNode node;
         private List<Dictionary<string, string>> namespaceStack = new List<Dictionary<string, string>>();
 
-        public HtmlParser(HtmlDocument htmlDoc)
+        public HtmlParser(
+            HtmlDocument htmlDoc,
+            ParserContext context)
         {
+            this.context = context;
         }
 
-        /// <summary>
-        /// Gets a full node name.
-        /// </summary>
-        /// <param name="nodeName"> Name of the node. </param>
-        /// <returns>
-        /// The full node name.
-        /// </returns>
-        public Tuple<string, string> GetFullNodeName(string nodeName)
+        public void ProcessNode(
+            HtmlNode node,
+            NodeInfo parentNode,
+            Action<HtmlNode, NodeInfo, NodeType> callback)
         {
-            string[] nameParts = nodeName.Split(':');
-            if (nameParts.Length > 2)
-            {
-                throw new ApplicationException(
-                    "Invalid name");
-            }
-            else if (nameParts.Length == 1)
-            {
-                return Tuple.Create((string)null, nameParts[0]);
-            }
-
-            for (int iNamespaceMap = this.namespaceStack.Count - 1; iNamespaceMap >= 0; iNamespaceMap--)
-            {
-                if (this.namespaceStack[iNamespaceMap] != null)
-                {
-                    string ns;
-                    if (this.namespaceStack[iNamespaceMap].TryGetValue(nameParts[0], out ns))
-                    {
-                        return Tuple.Create(ns, nameParts[1]);
-                    }
-                }
-            }
-
-            throw new ApplicationException(string.Format("Can't resolve name space: {0}", nameParts[0]));
+            throw new NotImplementedException();
         }
 
         private HtmlNode ParseNode(
@@ -84,7 +60,7 @@ namespace XwmlParser
         {
             try
             {
-                var nodeName = this.GetFullNodeName(node.OriginalName);
+                var nodeName = this.GetFullName(node.OriginalName);
                 NodeType nodeType = this.GetNodeType(node, parentNodeInfo);
                 if (nodeType == NodeType.Html)
                 {
@@ -101,7 +77,7 @@ namespace XwmlParser
 
         public NodeType GetNodeType(HtmlNode node, NodeInfo parentNodeInfo)
         {
-            var nodeName = this.GetFullNodeName(node.OriginalName);
+            var nodeName = this.GetFullName(node.OriginalName);
 
             if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStypeTag)
             {
@@ -197,6 +173,44 @@ namespace XwmlParser
             }
 
             return NodeType.Html;
+        }
+
+        public ParserContext ParserContext
+        {
+            get { return this.context; }
+        }
+
+        public IResolver Resolver
+        {
+            get { return this.context.Resolver; }
+        }
+
+        public Tuple<string, string> GetFullName(string name)
+        {
+            string[] nameParts = name.Split(':');
+            if (nameParts.Length > 2)
+            {
+                throw new ApplicationException(
+                    "Invalid name");
+            }
+            else if (nameParts.Length == 1)
+            {
+                return Tuple.Create((string)null, nameParts[0]);
+            }
+
+            for (int iNamespaceMap = this.namespaceStack.Count - 1; iNamespaceMap >= 0; iNamespaceMap--)
+            {
+                if (this.namespaceStack[iNamespaceMap] != null)
+                {
+                    string ns;
+                    if (this.namespaceStack[iNamespaceMap].TryGetValue(nameParts[0], out ns))
+                    {
+                        return Tuple.Create(ns, nameParts[1]);
+                    }
+                }
+            }
+
+            throw new ApplicationException(string.Format("Can't resolve name space: {0}", nameParts[0]));
         }
     }
 }

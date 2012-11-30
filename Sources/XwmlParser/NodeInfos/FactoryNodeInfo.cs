@@ -39,5 +39,9 @@ namespace XwmlParser.NodeInfos
         /// </value>
         public TypeReference ControlType
         { get; private set; }
+
+        public void ParseNode(TemplateParser parser)
+        {
+        }
     }
 }
