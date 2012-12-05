@@ -92,6 +92,32 @@ namespace RealScript
         }
     }
 
+    public class ImportedGeneric<T>
+    {
+        public extern ImportedGeneric();
+
+        public extern T[] TheArray
+        { get; set; }
+
+        public extern T Something
+        {
+            [ScriptName("get_Something")]
+            get;
+            [ScriptName("set_Something")]
+            set;
+        }
+
+        public extern T KoSelf
+        {
+            [ScriptName("")]
+            get;
+            [ScriptName("")]
+            set;
+        }
+
+        public static extern T HasSomething();
+    }
+
     public static class PsudoUsage
     {
         public static int F1(TestImportedType t, int test)
@@ -134,6 +160,23 @@ namespace RealScript
         public static string[] M1(TestImportedType t)
         {
             return t.ProcessData(new System.Collections.Generic.List<int>(t.TheArray));
+        }
+
+        public static string TestImportedGeneric(ImportedGeneric<string> tmp)
+        {
+            if (tmp.KoSelf == null)
+            {
+                tmp.Something = tmp.TheArray[0];
+                return tmp.KoSelf = tmp.Something;
+            }
+            else if (tmp.KoSelf.Length == 10)
+            {
+                tmp.Something = ImportedGeneric<string>.HasSomething();
+                tmp.KoSelf = tmp.Something;
+                tmp.TheArray[0] = tmp.KoSelf;
+            }
+
+            return tmp.KoSelf;
         }
     }
 }

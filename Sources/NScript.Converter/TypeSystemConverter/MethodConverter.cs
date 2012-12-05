@@ -360,8 +360,7 @@ namespace NScript.Converter.TypeSystemConverter
             get
             {
                 return this.HasStaticImplementation
-                    && !this.typeConverter.TypeDefinition.IsGenericInstance
-                    && !this.typeConverter.TypeDefinition.HasGenericParameters;
+                    && !this.typeConverter.IsGenericLike;
             }
         }
 
@@ -1535,11 +1534,13 @@ namespace NScript.Converter.TypeSystemConverter
                 Scope.ParameterIdentifiers,
                 functionName);
 
-            if (this.methodDefinition.IsSetter)
+            if (this.methodDefinition.IsSetter
+                && !this.context.IsRenamed(this.methodDefinition))
             {
                 this.GenerateSetterImportedWrapper(returnValue);
             }
-            else if (this.methodDefinition.IsGetter)
+            else if (this.methodDefinition.IsGetter
+                && !this.context.IsRenamed(this.methodDefinition))
             {
                 this.GenerateGetterImportedWrapper(returnValue);
             }

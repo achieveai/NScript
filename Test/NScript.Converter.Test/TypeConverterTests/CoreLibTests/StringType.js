@@ -140,10 +140,9 @@ function System__String__TrimStart(this_) {
 function System__String__get_Item(this_, index) {
   return this_.charCodeAt(index);
 };
-function System__String_factory() {
+String.defaultConstructor = function System_String_factory() {
   return new String();
 };
-String.defaultConstructor = System__String_factory;
 System__String__EndsWith = function System__String__EndsWith(this_, ch) {
   if (!this_.length)
     return this_.charCodeAt(this_.length - 1) == ch;

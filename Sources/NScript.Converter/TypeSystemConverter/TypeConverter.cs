@@ -225,6 +225,21 @@ namespace NScript.Converter.TypeSystemConverter
         { get { return this.runtimeScopeManager; } }
 
         /// <summary>
+        /// Gets a value indicating whether this object is generic like.
+        /// </summary>
+        /// <value>
+        /// true if this object is generic like, false if not.
+        /// </value>
+        public bool IsGenericLike
+        {
+            get
+            {
+                return this.typeDefinition.HasGenericParameters
+                    && !this.context.IsPsudoType(this.typeDefinition);
+            }
+        }
+
+        /// <summary>
         /// Gets the context.
         /// </summary>
         public ConverterContext Context
@@ -407,8 +422,10 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             GenericParameterType? typeScope = typeReference.GetGenericTypeScope();
+            TypeDefinition typeDefinition = typeReference.Resolve();
 
-            if (typeScope.HasValue
+            if ((typeDefinition == null || !this.context.IsPsudoType(typeDefinition))
+                && typeScope.HasValue
                 && typeScope.Value == GenericParameterType.Type)
             {
                 IIdentifier rv;
@@ -751,7 +768,7 @@ namespace NScript.Converter.TypeSystemConverter
             // Make sure that we have all the methodConverters for all implementations created.
             this.CheckImplementation();
 
-            if (this.typeDefinition.HasGenericParameters)
+            if (this.IsGenericLike)
             {
                 // This is generic type so we will have to create generic type init functions.
                 this.ConvertGenericType(returnValue, addDependenciesCallback);
@@ -1037,7 +1054,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
-            if (this.typeDefinition.HasGenericParameters)
+            if (this.IsGenericLike)
             {
                 // Add shortcut for the current type's self reference, so that we can
                 // keep using self reference of created type.
@@ -1145,7 +1162,7 @@ namespace NScript.Converter.TypeSystemConverter
                 new StringLiteralExpression(
                     this.Scope,
                     this.RuntimeManager.GetTypeId(this.typeDefinition) +
-                        (this.typeDefinition.HasGenericParameters
+                        (this.IsGenericLike
                             ? "$"
                             : string.Empty));
 
@@ -1179,7 +1196,7 @@ namespace NScript.Converter.TypeSystemConverter
                             this.Scope)));
             }
 
-            if (this.typeDefinition.HasGenericParameters)
+            if (this.IsGenericLike)
             {
                 idExpression = new BinaryExpression(
                     null,
@@ -1210,7 +1227,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         protected virtual void GenerateLocalTypeRefInitializer(List<Statement> statements)
         {
-            if (!this.typeDefinition.HasGenericParameters)
+            if (!this.IsGenericLike)
             {
                 return;
             }
@@ -1878,7 +1895,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             List<Expression> createArguments = new List<Expression>();
 
-            if (!this.typeDefinition.HasGenericParameters)
+            if (!this.IsGenericLike)
             {
                 typeNameExpression =
                     new StringLiteralExpression(

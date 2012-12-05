@@ -8,7 +8,7 @@ function RealScript__PsudoUsage__F1a(t, test) {
 };
 function RealScript__PsudoUsage__C1(t, i, a) {
   var stmtTemp1;
-  return stmtTemp1 = new TestImportedType(), RealScript__TestImportedType__set_TempI(stmtTemp1, i === null ? null : i + t.tempJ), stmtTemp1.theArray = System__NativeArray__GetNativeArray(a), stmtTemp1;
+  return stmtTemp1 = new RealScript.TestImportedType(), RealScript__TestImportedType__set_TempI(stmtTemp1, i === null ? null : i + t.tempJ), stmtTemp1.theArray = System__NativeArray__GetNativeArray(a), stmtTemp1;
 };
 function RealScript__PsudoUsage__C1a(t, i, a) {
   var stmtTemp1;
@@ -26,4 +26,16 @@ function RealScript__PsudoUsage__C2(t, i, j, k) {
 };
 function RealScript__PsudoUsage__M1(t) {
   return RealScript__TestImportedType__ProcessData(t, System_Collections_Generic_List_$Int32$_.__ctor(RealScript__TestImportedType__get_TheArray(t)));
+};
+function RealScript__PsudoUsage__TestImportedGeneric(tmp) {
+  if (tmp() === null) {
+    tmp.set_Something(RealScript.ImportedGeneric.get_theArray(tmp).get_item(0));
+    return tmp(tmp.get_Something());
+  }
+  else if (tmp().length === 10) {
+    tmp.set_Something(RealScript.ImportedGeneric.hasSomething());
+    tmp(tmp.get_Something());
+    RealScript.ImportedGeneric.get_theArray(tmp).set_item(0, tmp());
+  }
+  return tmp();
 };

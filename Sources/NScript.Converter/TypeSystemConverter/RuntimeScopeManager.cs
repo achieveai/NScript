@@ -639,6 +639,17 @@ namespace NScript.Converter.TypeSystemConverter
                 bool isExtended = this.context.IsExtended(typeReference)
                     || this.context.IsPsudoType(typeDefinition);
 
+                // Imported types do not have generic symbols.
+                // 
+                if (typeDefinition.HasGenericParameters
+                    && isExtended
+                    && typeName.Item2.Contains("`"))
+                {
+                    typeName = Tuple.Create(
+                        typeName.Item1,
+                        typeName.Item2.Substring(0, typeName.Item2.IndexOf('`')));
+                }
+
                 // put in queue to process. In case of conversion using dependency
                 // walk, this will be used to start converting these types as well.
                 this.usedTypeReferencesToProcess.Enqueue(typeReference);
@@ -944,8 +955,8 @@ namespace NScript.Converter.TypeSystemConverter
         public IIdentifier ResolveStatic(MethodDefinition methodDefinition)
         {
             TypeDefinition typeDef = methodDefinition.DeclaringType.Resolve();
-            if (typeDef.IsGenericInstance
-                || typeDef.HasGenericParameters)
+            if ((typeDef.IsGenericInstance || typeDef.HasGenericParameters)
+                && !this.context.IsPsudoType(typeDef))
             {
                 throw new InvalidOperationException(
                     "Can't resolve (static) method to global identifier if method is on generic type.");

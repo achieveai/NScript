@@ -23,6 +23,8 @@
             String.trimEndHelperRegex = new RegularExpression(@"\s*$");
         }
 
+        public extern String();
+
         public extern char CharCodeAt(int index);
 
         [Script(@"

@@ -35,12 +35,15 @@ namespace NScript.Converter.Test.TypeConverterTests
         /// Tests the type of the simple static.
         /// </summary>
         [Test]
-        // [Row("TestJsonType.js",
-        //      TestType.All,
-        //      new[]{"TestJsonType"})]
-        // [Row("TestImportedType.js",
-        //      TestType.All,
-        //      new[]{"TestImportedType"})]
+        [Row("TestJsonType.js",
+             TestType.All,
+             new[]{"TestJsonType"})]
+        [Row("TestImportedType.js",
+             TestType.All,
+             new[]{"TestImportedType"})]
+        [Row("TestImportedGeneric.js",
+             TestType.All,
+             new[]{"ImportedGeneric`1"})]
         [Row("PsudoTypeSimple.js",
              TestType.All,
              new[]{"PsudoUsage"})]

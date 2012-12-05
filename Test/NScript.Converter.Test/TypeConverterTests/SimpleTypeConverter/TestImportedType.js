@@ -40,6 +40,6 @@ function RealScript__TestImportedType__WorkOnString(this_) {
     this_.importedExtension.tmpStr = System__String__Concat(this_.importedExtension.tmpStr, System_Int32.box(this_.importedExtension.tmpStr.length));
 };
 function RealScript__TestImportedType_factory() {
-  return new TestImportedType();
+  return new RealScript.TestImportedType();
 };
-TestImportedType.defaultConstructor = RealScript__TestImportedType_factory;
+RealScript.TestImportedType.defaultConstructor = RealScript__TestImportedType_factory;

@@ -728,6 +728,12 @@ namespace NScript.Converter
                 + name.Substring(1);
         }
 
+        public bool IsRenamed(
+            IMemberDefinition memberDefinition)
+        {
+            return memberDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.ScriptNameAttribute) != null;
+        }
+
         /// <summary>
         /// Determines whether the specified property definition is intrinsic property.
         /// </summary>
@@ -738,8 +744,14 @@ namespace NScript.Converter
         /// </returns>
         public bool IsIntrinsicProperty(PropertyDefinition propertyDefinition)
         {
-            return (propertyDefinition.GetMethod == null || (this.IsExtern(propertyDefinition.GetMethod) && !this.IsWrapped(propertyDefinition.GetMethod)))
-                && (propertyDefinition.SetMethod == null || (this.IsExtern(propertyDefinition.SetMethod) && !this.IsWrapped(propertyDefinition.SetMethod)));
+            return (propertyDefinition.GetMethod == null
+                    || (this.IsExtern(propertyDefinition.GetMethod)
+                        && !this.IsWrapped(propertyDefinition.GetMethod)
+                        && !this.IsRenamed(propertyDefinition.GetMethod)))
+                && (propertyDefinition.SetMethod == null
+                    || (this.IsExtern(propertyDefinition.SetMethod)
+                        && !this.IsWrapped(propertyDefinition.SetMethod)
+                        && !this.IsRenamed(propertyDefinition.SetMethod)));
 
             /*
             return null != propertyDefinition.CustomAttributes.SelectAttribute(
