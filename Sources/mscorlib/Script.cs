@@ -13,7 +13,7 @@
         public static extern bool Confirm(string message);
         public static extern object Eval(string s);
 
-        [Script(@"return o === undefined")]
+        [Script(@"return o === undefined;")]
         public static extern bool IsUndefined(object o);
 
         // TODO: make literal work
