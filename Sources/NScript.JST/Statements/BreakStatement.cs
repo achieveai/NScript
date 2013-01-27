@@ -40,8 +40,10 @@ namespace NScript.JST
         public override void Write(JSWriter writer)
         {
             writer.WriteNewLine()
+                .EnterLocation(this.Location)
                 .Write(Keyword.Break)
-                .Write(Symbols.SemiColon);
+                .Write(Symbols.SemiColon)
+                .LeaveLocation();
         }
     }
 }

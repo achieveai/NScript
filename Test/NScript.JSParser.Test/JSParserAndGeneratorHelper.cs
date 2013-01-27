@@ -38,8 +38,7 @@ namespace NScript.JSParser.Test
 
             if (scope.UsedLocalIdentifiers.Count > 0)
             {
-                writer.WriteNewLine()
-                    .Write(Keyword.Var);
+                writer.Write(Keyword.Var);
 
                 for (int identifierIndex = 0; identifierIndex < scope.UsedLocalIdentifiers.Count; identifierIndex++)
                 {

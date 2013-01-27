@@ -59,7 +59,8 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.WriteNewLine();
+            writer.WriteNewLine()
+                .EnterLocation(this.Location);
 
             for (int iInitializer = 0; iInitializer < this.initializerExpressions.Count; iInitializer++)
             {
@@ -71,7 +72,8 @@ namespace NScript.JST
                 this.initializerExpressions[iInitializer].Write(writer);
             }
 
-            writer.Write(Symbols.SemiColon);
+            writer.Write(Symbols.SemiColon)
+                .LeaveLocation();
         }
     }
 }

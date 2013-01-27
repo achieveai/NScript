@@ -134,10 +134,8 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.EnterLocation(this.Location)
-                .Write(this.MethodExpression, this.MethodExpression.Precedence < this.Precedence)
-                .WriteArguments(this.arguments)
-                .LeaveLocation();
+            writer.Write(this.MethodExpression, this.MethodExpression.Precedence < this.Precedence)
+                .WriteArguments(this.arguments);
         }
     }
 }

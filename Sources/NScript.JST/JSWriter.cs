@@ -315,7 +315,19 @@ namespace NScript.JST
         public JSWriter Write(JST.Node node)
         {
             if (node != null)
-            { node.Write(this); }
+            {
+                if (node is JST.Expression
+                    && node.Location != null)
+                {
+                    this.EnterLocation(node.Location);
+                    node.Write(this);
+                    this.LeaveLocation();
+                }
+                else
+                {
+                    node.Write(this);
+                }
+            }
 
             return this;
         }
@@ -367,6 +379,13 @@ namespace NScript.JST
                 sourceMapping.SourceRoot = sourceRoot.Replace("\\", "\\\\");
             }
 
+            sourceMapping.AddMapping(
+                curLine,
+                0,
+                curLine,
+                0,
+                jsFileName);
+
             if (jsFileName != null)
             {
                 writer.Write("(function(){");
@@ -380,6 +399,17 @@ namespace NScript.JST
                     && token.Type != TokenType.Newline
                     && token.Location != lastLocation)
                 {
+                    if (lastLocation != null
+                        && lastLocation.EndLine != int.MaxValue)
+                    {
+                        sourceMapping.AddMapping(
+                            curLine,
+                            curCol,
+                            lastLocation.EndLine - 1,
+                            lastLocation.EndColumn - 1,
+                            lastLocation.FileName);
+                    }
+
                     lastLocation = token.Location;
 
                     if (lastLocation == null
@@ -389,9 +419,9 @@ namespace NScript.JST
                         sourceMapping.AddMapping(
                             curLine,
                             curCol,
-                            0,
-                            0,
-                            null);
+                            curLine,
+                            curCol,
+                            jsFileName);
                     }
                     else
                     {
@@ -442,21 +472,21 @@ namespace NScript.JST
                         throw new ArgumentOutOfRangeException();
                 }
 
-                for (int iStr = 0; iStr < str.Length; iStr++)
+                if (token.Type == TokenType.Newline)
                 {
-                    if (str[iStr] == '\r')
-                    {
-                        curLine++;
-                        curCol = 0;
-                        if (iStr < str.Length - 1 && str[iStr] == '\n')
-                        {
-                            iStr++;
-                        }
-                    }
-                    else
-                    {
-                        curCol++;
-                    }
+                    curLine++;
+                    curCol = str.Length - 2;
+                    lastLocation = null;
+                    sourceMapping.AddMapping(
+                        curLine,
+                        0,
+                        curLine,
+                        0,
+                        jsFileName);
+                }
+                else if (!string.IsNullOrEmpty(str))
+                {
+                    curCol += str.Length;
                 }
 
                 if (!string.IsNullOrEmpty(str))
@@ -469,13 +499,29 @@ namespace NScript.JST
             {
                 writer.WriteLine();
                 writer.Write("//@ sourceMappingURL={0}", Path.GetFileName(mapFileName));
-                using (StreamWriter mapWriter = new StreamWriter(mapFileName, false, System.Text.Encoding.ASCII))
-                    mapWriter.Write(sourceMapping.ToString());
+                sourceMapping.AddMapping(
+                    ++curLine,
+                    0,
+                    curLine,
+                    0,
+                    jsFileName);
             }
 
             if (jsFileName != null)
             {
                 writer.Write("\r\n})();");
+                sourceMapping.AddMapping(
+                    ++curLine,
+                    0,
+                    curLine,
+                    0,
+                    jsFileName);
+            }
+
+            if (mapFileName != null)
+            {
+                using (StreamWriter mapWriter = new StreamWriter(mapFileName, false, System.Text.Encoding.ASCII))
+                    mapWriter.Write(sourceMapping.ToString());
             }
         }
 
@@ -1024,18 +1070,22 @@ namespace NScript.JST
         /// <param name="spaceCount">The space count.</param>
         private void InsertSpace(LinkedListNode<TokenBase> node, bool before, int spaceCount = 1)
         {
-            var newNode =
-                new LinkedListNode<TokenBase>(
-                    new SpaceToken(node.Value.Location) {SpaceCount = spaceCount});
-
             if (before)
             {
+                var newNode =
+                    new LinkedListNode<TokenBase>(
+                        new SpaceToken(node.Previous != null ? node.Previous.Value.Location : null) {SpaceCount = spaceCount});
+
                 this.tokens.AddBefore(
                     node,
                     newNode);
             }
             else
             {
+                var newNode =
+                    new LinkedListNode<TokenBase>(
+                        new SpaceToken(node.Value.Location) {SpaceCount = spaceCount});
+
                 this.tokens.AddAfter(
                     node,
                     newNode);

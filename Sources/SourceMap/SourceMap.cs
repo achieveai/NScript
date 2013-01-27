@@ -85,10 +85,14 @@ namespace OwaSourceMapper
         /// <returns>
         /// previousMapping as a string.
         /// </returns>
-        public string ToStringRelative(SourceMapping previousMapping)
+        public string ToStringRelative(SourceMapping previousMapping, bool firstSegment)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(Base64VLQ.ConvertToBase64VLQ(this.SourceColumn - previousMapping.SourceColumn));
+            sb.Append(
+                Base64VLQ.ConvertToBase64VLQ(
+                firstSegment
+                    ? this.SourceColumn
+                    : this.SourceColumn - previousMapping.SourceColumn));
 
             if (this.SourceFileIndex >= 0)
             {
@@ -249,7 +253,30 @@ namespace OwaSourceMapper
             
             if (this.files.Count > 0)
             {
-                sb.Append("\t\"sources\": [\"" + string.Join("\",\n\t\t\"", this.files) + "\"],\n");
+                Dictionary<string, int> fileMap = new Dictionary<string, int>(this.files.Count);
+                sb.Append("\t\"sources\": [");
+                for (int i = 0; i < this.files.Count; i++)
+                {
+                    var fileName = System.IO.Path.GetFileName(this.files[i]);
+                    int tmp;
+                    if (fileMap.TryGetValue(fileName, out tmp))
+                    {
+                        fileMap[fileName] = tmp + 1;
+                        fileName = fileName + tmp + 1;
+                    }
+                    else
+                    {
+                        fileMap[fileName] = 1;
+                    }
+
+                    if (i > 0)
+                    {
+                        sb.Append(",\n\t\t");
+                    }
+                    sb.Append("\"" + fileName + "\"");
+                }
+                sb.Append("],\n");
+                sb.Append("\t\"sourcesLong\": [\"" + string.Join("\",\n\t\t\"", this.files) + "\"],\n");
             }
 
             if (this.names.Count > 0)
@@ -273,15 +300,16 @@ namespace OwaSourceMapper
                 if (currentSourceLine != mapping.SourceLine)
                 {
                     mappingSb.Append(new string(';', mapping.SourceLine - currentSourceLine));
+                    firstSegment = true;
                     // previousMapping = SourceMapping.DefaultMapping;
                 }
-                else
+                else if (mapping.SourceColumn > 0)
                 {
                     mappingSb.Append(',');
+                    firstSegment = false;
                 }
 
-                mappingSb.Append(mapping.ToStringRelative(previousMapping));
-
+                mappingSb.Append(mapping.ToStringRelative(previousMapping, firstSegment));
                 currentSourceLine = mapping.SourceLine;
                 if (mapping.SourceFileIndex >= 0)
                 {

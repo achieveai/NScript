@@ -132,14 +132,14 @@ namespace NScript.JST
             IdentifierExpression identifierExpresison = this.leftExpression as IdentifierExpression;
             if (identifierExpresison != null && identifierExpresison.Identifier.IsEmpty)
             {
-                this.RightExpression.Write(writer);
+                writer.Write(this.RightExpression);
                 return;
             }
 
             identifierExpresison = this.rightExpression as IdentifierExpression;
             if (identifierExpresison != null && identifierExpresison.Identifier.IsEmpty)
             {
-                this.leftExpression.Write(writer);
+                writer.Write(this.leftExpression);
                 return;
             }
 

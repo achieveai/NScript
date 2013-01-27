@@ -50,14 +50,14 @@
 
             TestAssemblyLoader.IsLoaded = true;
 
+            TestAssemblyLoader.DllBuilder = new DllBuilder();
+            TestAssemblyLoader.LoadMcsCorlibAssemblies();
+            TestAssemblyLoader.LoadMcsAssemblies();
+
             TestAssemblyLoader.Context = new ClrContext();
             TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"mscorlib.dll"));
             TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.dll"));
             TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.Debug.dll"));
-
-            TestAssemblyLoader.DllBuilder = new DllBuilder();
-            TestAssemblyLoader.LoadMcsCorlibAssemblies();
-            TestAssemblyLoader.LoadMcsAssemblies();
         }
 
         /// <summary>

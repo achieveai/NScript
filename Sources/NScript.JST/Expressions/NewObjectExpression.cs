@@ -97,14 +97,13 @@ using System.Collections.ObjectModel;
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.EnterLocation(this.Location)
+            writer
                 .Write(Keyword.New)
                 .Write(
                     this.objectAccessExpression,
                     this.objectAccessExpression.OperatorPlacement != JST.OperatorPlacement.Prefix
                         && this.objectAccessExpression.Precedence < this.Precedence)
-                .WriteArguments(this.arguments)
-                .LeaveLocation();
+                .WriteArguments(this.arguments);
         }
     }
 }

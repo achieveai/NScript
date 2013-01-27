@@ -171,8 +171,7 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.EnterLocation(this.Location)
-                .Write(Keyword.Function);
+            writer.Write(Keyword.Function);
 
             if (this.name != null)
             {
@@ -217,9 +216,7 @@ namespace NScript.JST
                 writer.Write(statement);
             }
 
-            writer.ExitScope()
-                .Write(Symbols.BracketCloseCurly)
-                .LeaveLocation();
+            writer.ExitScope().Write(Symbols.BracketCloseCurly);
         }
     }
 }

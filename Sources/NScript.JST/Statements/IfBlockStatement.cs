@@ -106,8 +106,7 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         private void WriteNestedIf(JSWriter writer)
         {
-            writer.EnterLocation(this.Location)
-                .Write(Keyword.If)
+            writer.Write(Keyword.If)
                 .Write(this.conditionExpression, true);
 
             if (this.FalseBlock != null
@@ -138,8 +137,6 @@ namespace NScript.JST
                         .Write(this.falseBlock);
                 }
             }
-
-            writer.LeaveLocation();
         }
 
         /// <summary>

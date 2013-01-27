@@ -18,6 +18,9 @@ namespace System.Web.Html
         /// <summary>
         /// Constructor that prevents a default instance of this class from being created.
         /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
         private extern Window();
 
         /// <summary>
@@ -34,76 +37,121 @@ namespace System.Web.Html
         /// <summary>
         /// The application cache.
         /// </summary>
+        /// <value>
+        /// The application cache.
+        /// </value>
         public extern ApplicationCache ApplicationCache { get; }
 
         /// <summary>
         /// IE only.
         /// </summary>
+        /// <value>
+        /// Information describing the clipboard.
+        /// </value>
         public extern DataTransfer ClipboardData { get; }
 
         /// <summary>
         /// The closed.
         /// </summary>
+        /// <value>
+        /// true if closed, false if not.
+        /// </value>
         public extern bool Closed { get; }
 
         /// <summary>
         /// The dialog arguments.
         /// </summary>
+        /// <value>
+        /// The dialog arguments.
+        /// </value>
         public extern object DialogArguments { get; }
 
         /// <summary>
         /// The default status.
         /// </summary>
+        /// <value>
+        /// The default status.
+        /// </value>
         public extern string DefaultStatus {get; set; }
 
         /// <summary>
         /// The document.
         /// </summary>
+        /// <value>
+        /// The document.
+        /// </value>
         public extern Document Document { get; }
 
         /// <summary>
         /// Provides information about the current event being handled.
         /// </summary>
+        /// <value>
+        /// The event.
+        /// </value>
         public extern ElementEvent Event { get; }
 
         /// <summary>
         /// The frame element.
         /// </summary>
+        /// <value>
+        /// The frame element.
+        /// </value>
         public extern IFrameElement FrameElement { get; }
 
         /// <summary>
         /// The history.
         /// </summary>
+        /// <value>
+        /// The history.
+        /// </value>
         public extern History History { get; }
 
         /// <summary>
         /// Height of the inner.
         /// </summary>
+        /// <value>
+        /// The height of the inner.
+        /// </value>
         public extern int InnerHeight { get; }
 
         /// <summary>
         /// Width of the inner.
         /// </summary>
+        /// <value>
+        /// The width of the inner.
+        /// </value>
         public extern int InnerWidth { get; }
 
         /// <summary>
         /// The local storage.
         /// </summary>
+        /// <value>
+        /// The local storage.
+        /// </value>
         public extern Storage LocalStorage { get; }
 
         /// <summary>
         /// The location.
         /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
         public extern Location Location { get; }
 
         /// <summary>
         /// The navigator.
         /// </summary>
+        /// <value>
+        /// The navigator.
+        /// </value>
         public extern Navigator Navigator { get; }
 
         /// <summary>
         /// The parent.
         /// </summary>
+        /// <value>
+        /// The parent.
+        /// </value>
         public extern Window Parent { get; }
 
         /// <summary>
@@ -119,69 +167,102 @@ namespace System.Web.Html
         /// <summary>
         /// Gets the on load event handler.
         /// </summary>
-        /// <value>
-        /// The on load event handler.
-        /// </value>
         public extern event Action<Window> OnLoad;
 
         /// <summary>
         /// The opener.
         /// </summary>
+        /// <value>
+        /// The opener.
+        /// </value>
         public extern Window Opener { get; }
 
         /// <summary>
         /// The orientation.
         /// </summary>
+        /// <value>
+        /// The orientation.
+        /// </value>
         public extern Orientation Orientation {get; set; }
 
         /// <summary>
         /// Height of the outer.
         /// </summary>
+        /// <value>
+        /// The height of the outer.
+        /// </value>
         public extern int OuterHeight { get; }
 
         /// <summary>
         /// Width of the outer.
         /// </summary>
+        /// <value>
+        /// The width of the outer.
+        /// </value>
         public extern int OuterWidth { get; }
 
         /// <summary>
         /// The page x coordinate offset.
         /// </summary>
+        /// <value>
+        /// The page x coordinate offset.
+        /// </value>
         public extern int PageXOffset { get; }
 
         /// <summary>
         /// The page y coordinate offset.
         /// </summary>
+        /// <value>
+        /// The page y coordinate offset.
+        /// </value>
         public extern int PageYOffset { get; }
 
         /// <summary>
         /// The screen.
         /// </summary>
+        /// <value>
+        /// The screen.
+        /// </value>
         public extern Screen Screen { get; }
 
         /// <summary>
         /// The self.
         /// </summary>
+        /// <value>
+        /// The self.
+        /// </value>
         public extern Window Self { get; }
 
         /// <summary>
         /// The session storage.
         /// </summary>
+        /// <value>
+        /// The session storage.
+        /// </value>
         public extern Storage SessionStorage { get; }
 
         /// <summary>
         /// The status.
         /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
         public extern string Status { get; }
 
         /// <summary>
         /// The top.
         /// </summary>
+        /// <value>
+        /// The top.
+        /// </value>
         public extern Window Top { get; }
 
         /// <summary>
         /// The frames.
         /// </summary>
+        /// <value>
+        /// The frames.
+        /// </value>
         public extern Window[] Frames { get; }
 
         /// <summary>

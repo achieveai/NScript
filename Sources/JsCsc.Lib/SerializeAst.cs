@@ -47,7 +47,7 @@ namespace JsCsc.Lib
                 MemberReferenceSerializer.Serialize);
             serializer.AddValue(
                 NameTokens.FileName,
-                rootBlock.loc.NameFullPath);
+                rootBlock.Location.NameFullPath);
             serializer.AddValue(
                 NameTokens.Block,
                 rootBlock,
@@ -492,14 +492,14 @@ namespace JsCsc.Lib
         public object Visit(EmptyStatement expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.EmptyStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             return null;
         }
 
         public object Visit(StatementExpression expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.StatementExpr);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(NameTokens.Expr, expression.Expr, this.Dispatch);
             return null;
         }
@@ -512,7 +512,7 @@ namespace JsCsc.Lib
         public object Visit(StatementList expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.StatementList);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(NameTokens.Value, expression.Statements, this.Dispatch);
             return null;
         }
@@ -520,7 +520,7 @@ namespace JsCsc.Lib
         public object Visit(Return expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ReturnStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Value,
                 expression.Expr,
@@ -551,7 +551,7 @@ namespace JsCsc.Lib
         public object Visit(Throw expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ThrowStatment);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(NameTokens.Value, expression.Expr, this.Dispatch);
             return null;
         }
@@ -559,14 +559,14 @@ namespace JsCsc.Lib
         public object Visit(Break expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.BreakExpression);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             return null;
         }
 
         public object Visit(Continue expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ContinueExpression);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             return null;
         }
 
@@ -579,7 +579,7 @@ namespace JsCsc.Lib
             else
             {
                 this.serializer.AddValue(NameTokens.TypeName, TypeTokens.EmptyStatement);
-                this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+                this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             }
 
             return null;
@@ -598,7 +598,7 @@ namespace JsCsc.Lib
         public object Visit(If expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.IfStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Condition,
                 expression.Expr,
@@ -618,7 +618,7 @@ namespace JsCsc.Lib
         public object Visit(Do expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.DoWhileStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Condition,
                 expression.expr,
@@ -634,7 +634,7 @@ namespace JsCsc.Lib
         public object Visit(While expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.WhileStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Condition,
                 expression.expr,
@@ -650,7 +650,7 @@ namespace JsCsc.Lib
         public object Visit(For expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ForStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Initializer,
                 expression.Initializer,
@@ -679,7 +679,7 @@ namespace JsCsc.Lib
         public object Visit(Foreach.ArrayForeach expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ForEachStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Iterator,
                 expression.ForEach.Expr,
@@ -698,7 +698,7 @@ namespace JsCsc.Lib
         public object Visit(Foreach.CollectionForeach expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ForEachStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Iterator,
                 expression.Expr,
@@ -718,7 +718,7 @@ namespace JsCsc.Lib
         public object Visit(Switch expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.SwitchStatement);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Blocks,
                 expression.Sections,
@@ -755,7 +755,7 @@ namespace JsCsc.Lib
         public object Visit(Block expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.StatementList);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Value,
                 expression.Statements,
@@ -766,7 +766,7 @@ namespace JsCsc.Lib
         public object Visit(ExplicitBlock expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ScopeBlock);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(NameTokens.Id, ++this.id);
             this.scopeBlockStack.AddFirst(Tuple.Create(this.id, expression));
             this.serializer.AddValue(
@@ -781,7 +781,7 @@ namespace JsCsc.Lib
         public object Visit(ParametersBlock expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.ParameterBlock);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Parameters,
                 this.GetParameters(expression.Parameters),
@@ -824,7 +824,7 @@ namespace JsCsc.Lib
         public object Visit(TryFinally expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.TryFinally);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.TryBlock,
                 expression.Statement,
@@ -840,7 +840,7 @@ namespace JsCsc.Lib
         public object Visit(TryCatch expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.TryCatch);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.TryBlock,
                 expression.Block,
@@ -851,7 +851,7 @@ namespace JsCsc.Lib
                 delegate(ICustomSerializer serializer, Catch catchBlock)
                 {
                     this.serializer.AddValue(NameTokens.TypeName, TypeTokens.CatchBlock);
-                    this.serializer.AddValue(NameTokens.Loc, catchBlock.loc.GetStrLoc());
+                    this.serializer.AddValue(NameTokens.Loc, catchBlock.Location.GetStrLoc());
                     this.serializer.AddValue(
                         NameTokens.Type,
                         catchBlock.CatchType,
@@ -917,7 +917,7 @@ namespace JsCsc.Lib
         public object Visit(Yield expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.Yield);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             this.serializer.AddValue(
                 NameTokens.Expr,
                 expression.Expr,
@@ -928,7 +928,7 @@ namespace JsCsc.Lib
         public object Visit(YieldBreak expression)
         {
             this.serializer.AddValue(NameTokens.TypeName, TypeTokens.Yield);
-            this.serializer.AddValue(NameTokens.Loc, expression.loc.GetStrLoc());
+            this.serializer.AddValue(NameTokens.Loc, expression.Location.GetStrLoc());
             return null;
         }
 

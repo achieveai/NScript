@@ -59,8 +59,8 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.EnterLocation(this.Location);
             writer.WriteNewLine()
+                .EnterLocation(this.Location)
                 .Write(Keyword.Return);
 
             if (this.ReturnExpression != null)

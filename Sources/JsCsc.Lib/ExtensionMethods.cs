@@ -34,6 +34,48 @@ namespace JsCsc.Lib
             return null;
         }
 
+        public static string GetStrLoc(this Mono.CSharp.Expression expression)
+        {
+            if (expression.Location.IsNull)
+            {
+                return null;
+            }
+
+            return string.Format("{0}:{1}-{2}:{3}",
+                expression.Location.Row,
+                expression.Location.Column,
+                expression.EndLocation.Row,
+                expression.EndLocation.Column);
+        }
+
+        public static string GetStrLoc(this Mono.CSharp.Statement statement)
+        {
+            if (statement.Location.IsNull)
+            {
+                return null;
+            }
+
+            return string.Format("{0}:{1}-{2}:{3}",
+                statement.Location.Row,
+                statement.Location.Column,
+                statement.EndLocation.Row,
+                statement.EndLocation.Column);
+        }
+
+        public static string GetStrLoc(this Mono.CSharp.Block block)
+        {
+            if (block.Location.IsNull)
+            {
+                return null;
+            }
+
+            return string.Format("{0}:{1}-{2}:{3}",
+                block.Location.Row,
+                block.Location.Column,
+                block.EndLocation.Row,
+                block.EndLocation.Column);
+        }
+
         public static T Val<T>(this JObject jObject, string propertyName)
         {
             var value = jObject[propertyName];

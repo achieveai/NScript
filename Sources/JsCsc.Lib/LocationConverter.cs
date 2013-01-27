@@ -36,7 +36,7 @@ namespace JsCsc.Lib
 
             public MonoLocation Location
             {
-                get { return this.Statement != null ? this.Statement.loc : this.Expression.Location; }
+                get { return this.Statement != null ? this.Statement.Location : this.Expression.Location; }
             }
 
             public override bool Equals(object obj)

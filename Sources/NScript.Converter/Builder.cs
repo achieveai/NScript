@@ -121,7 +121,7 @@ namespace NScript.Converter
                 }
             }
 
-            writer.Write(this.jsScript, "..\\SrcMapper.ashx?path=");
+            writer.Write(this.jsScript, string.Format("SrcMapper.ashx?js={0}&fname=", Path.GetFileName(this.jsScript)));
 
             return true;
         }

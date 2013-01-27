@@ -110,7 +110,7 @@ namespace JsCsc.Lib
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(constructor.Spec);
             if (rootBlock != null)
             {
-                rv[NameTokens.FileName] = rootBlock.loc.NameFullPath;
+                rv[NameTokens.FileName] = rootBlock.Location.NameFullPath;
             }
             else if (fields.FirstOrDefault() != null)
             {
@@ -133,7 +133,7 @@ namespace JsCsc.Lib
             rv[NameTokens.TypeName] = TypeTokens.MethodBody;
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(propertyMethod.Spec);
             rv[NameTokens.FileName] = rootBlock != null
-                    ? rootBlock.loc.NameFullPath
+                    ? rootBlock.Location.NameFullPath
                     : null;
             rv[NameTokens.Block] =
                 rootBlock != null
@@ -150,7 +150,7 @@ namespace JsCsc.Lib
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.MethodBody;
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(method);
-            rv[NameTokens.FileName] = rootBlock.loc.NameFullPath;
+            rv[NameTokens.FileName] = rootBlock.Location.NameFullPath;
             rv[NameTokens.Block] = this.Dispatch(rootBlock);
             return rv;
         }
@@ -164,7 +164,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.NullLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             return rv;
         }
 
@@ -172,7 +172,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.BoolLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -181,7 +181,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.CharLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -190,7 +190,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.IntLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -199,7 +199,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.UIntLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -208,7 +208,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.LongLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -217,7 +217,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ULongLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -226,7 +226,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.FloatLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -235,7 +235,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DoubleLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -244,7 +244,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DecimalLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -253,7 +253,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.StringLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -265,7 +265,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.Assignment;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.LeftExpr] = this.Dispatch(expression.Target);
             rv[NameTokens.RightExpr] = this.Dispatch(expression.Source);
             return rv;
@@ -288,7 +288,7 @@ namespace JsCsc.Lib
                 EventExpr evtExpr = expression.Target as EventExpr;
 
                 rv[NameTokens.TypeName] = TypeTokens.MethodCall;
-                rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+                rv[NameTokens.Loc] = expression.GetStrLoc();
                 rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(evtExpr.Operator);
                 rv[NameTokens.Instance] = this.Dispatch(evtExpr.InstanceExpression);
                 rv[NameTokens.Arguments] = this.Dispatch(new Expression[] { expression.Source });
@@ -344,7 +344,7 @@ namespace JsCsc.Lib
             }
 
             rv[NameTokens.TypeName] = TypeTokens.BinaryExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Operator] = op.Value.ToString();
             rv[NameTokens.LeftExpr] = this.Dispatch(expression.Left);
             rv[NameTokens.RightExpr] = this.Dispatch(expression.Right);
@@ -367,7 +367,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.BoxExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.Child);
 
             return rv;
@@ -377,7 +377,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.UnBoxExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
             rv[NameTokens.Expr] = this.Dispatch(expression.Child);
 
@@ -393,7 +393,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TypeCast;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = this.Dispatch(expression.TargetType);
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
 
@@ -409,7 +409,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.BoolLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -418,7 +418,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ByteLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = (int)expression.Value;
             return rv;
         }
@@ -427,7 +427,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.CharLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -436,7 +436,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.SByteLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -445,7 +445,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ShortLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -454,7 +454,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.UShortConstant;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -463,7 +463,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.IntLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -472,7 +472,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.UIntLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -481,7 +481,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.LongLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -490,7 +490,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ULongLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -499,7 +499,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.FloatLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -508,7 +508,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DoubleLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -517,7 +517,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DecimalLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -526,7 +526,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.MethodCall;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(expression.Method);
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.Arguments);
 
@@ -537,7 +537,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.NullLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             return rv;
         }
 
@@ -545,7 +545,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TypeCast;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.child);
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
 
@@ -636,7 +636,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.EmptyStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             return rv;
         }
 
@@ -644,7 +644,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.StatementExpr;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
             return rv;
         }
@@ -659,7 +659,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.StatementList;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = this.Dispatch(expression.Statements);
             return rv;
         }
@@ -668,7 +668,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ReturnStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = this.Dispatch(expression.Expr);
             return rv;
         }
@@ -699,7 +699,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ThrowStatment;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = this.Dispatch(expression.Expr);
             return rv;
         }
@@ -708,7 +708,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.BreakExpression;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             return rv;
         }
 
@@ -716,7 +716,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ContinueExpression;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             return rv;
         }
 
@@ -739,13 +739,13 @@ namespace JsCsc.Lib
                 }
 
                 rv[NameTokens.TypeName] = TypeTokens.VariableInitializer;
-                rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+                rv[NameTokens.Loc] = expression.GetStrLoc();
                 rv[NameTokens.Value] = this.Dispatch(expressions);
             }
             else
             {
                 rv[NameTokens.TypeName] = TypeTokens.EmptyStatement;
-                rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+                rv[NameTokens.Loc] = expression.GetStrLoc();
             }
 
             return rv;
@@ -763,7 +763,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.IfStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Condition] = this.Dispatch(expression.Expr);
             rv[NameTokens.TrueStatement] = this.Dispatch(expression.TrueStatement);
             rv[NameTokens.FalseCondition] = this.Dispatch(expression.FalseStatement);
@@ -775,7 +775,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DoWhileStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Condition] = this.Dispatch(expression.expr);
 
             rv[NameTokens.Loop] = this.Dispatch(expression.EmbeddedStatement);
@@ -786,7 +786,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.WhileStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Condition] = this.Dispatch(expression.expr);
 
             rv[NameTokens.Loop] = this.Dispatch(expression.Statement);
@@ -797,7 +797,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ForStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Initializer] = this.Dispatch(expression.Initializer);
             rv[NameTokens.Condition] = this.Dispatch(expression.Condition);
             rv[NameTokens.Iterator] = this.Dispatch(expression.Iterator);
@@ -815,7 +815,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ForEachStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Iterator] = this.Dispatch(expression.ForEach.Expr);
             rv[NameTokens.LocalVariable] = expression.Variable.local_info.Name;
             rv[NameTokens.Loop] = this.Dispatch(expression.ForEach.Body);
@@ -826,7 +826,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ForEachStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Iterator] = this.Dispatch(expression.Expr);
             rv[NameTokens.LocalVariable] = expression.variable.Name;
             // rv[NameTokens.Loop] = this.Dispatch(((While)((Using)expression.Statement).Statement).Statement);
@@ -839,7 +839,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.SwitchStatement;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
             JArray jarray = new JArray();
 
@@ -878,7 +878,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.StatementList;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = this.Dispatch(expression.Statements);
             return rv;
         }
@@ -887,7 +887,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ScopeBlock;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Id] = ++this.id;
             this.scopeBlockStack.AddFirst(Tuple.Create(this.id, expression));
             rv[NameTokens.Value] = this.Dispatch(expression.Statements);
@@ -910,7 +910,7 @@ namespace JsCsc.Lib
             if (expression != null)
             {
                 rv[NameTokens.IsMethodOwned] = expression is ToplevelBlock;
-                rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+                rv[NameTokens.Loc] = expression.GetStrLoc();
                 rv[NameTokens.Parameters] = this.GetParameters(expression.Parameters);
 
                 this.scopeBlockStack.AddFirst(Tuple.Create(this.id, (ExplicitBlock)expression));
@@ -919,7 +919,7 @@ namespace JsCsc.Lib
             else
             {
                 jArray = new JArray();
-                rv[NameTokens.Loc] = fields.FirstOrDefault().Location.GetStrLoc();
+                rv[NameTokens.Loc] = fields.FirstOrDefault().GetStrLoc();
                 rv[NameTokens.Parameters] = new JArray();
             }
 
@@ -986,7 +986,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TryFinally;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.TryBlock] = this.Dispatch(expression.Statement);
             rv[NameTokens.FinallyBlock] = this.Dispatch(expression.Finallyblock);
 
@@ -997,7 +997,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TryCatch;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.TryBlock] = this.Dispatch(expression.Block);
 
             JArray jarray = new JArray();
@@ -1005,7 +1005,7 @@ namespace JsCsc.Lib
             {
                 JObject rv1 = new JObject();
                 rv1[NameTokens.TypeName] = TypeTokens.CatchBlock;
-                rv1[NameTokens.Loc] = catchBlock.loc.GetStrLoc();
+                rv1[NameTokens.Loc] = catchBlock.GetStrLoc();
                 rv1[NameTokens.Type] = MemberReferenceSerializer.Serialize(catchBlock.CatchType);
                 rv1[NameTokens.Block] = this.Dispatch(catchBlock.Block);
 
@@ -1036,7 +1036,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.UnwrapFromNullable;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.Original);
 
             return rv;
@@ -1049,7 +1049,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.WrapToNullable;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.Child);
 
             return rv;
@@ -1059,7 +1059,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DefaultValue;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
 
             return rv;
@@ -1088,7 +1088,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.NullCoalascing;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.LeftExpr] = this.Dispatch(expression.LeftExpression);
             rv[NameTokens.RightExpr] = this.Dispatch(expression.RightExpression);
             return rv;
@@ -1098,7 +1098,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.Yield;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
             return rv;
         }
@@ -1107,7 +1107,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.Yield;
-            rv[NameTokens.Loc] = expression.loc.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = null;
             return rv;
         }
@@ -1126,7 +1126,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.Iterator;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
             rv[NameTokens.Block] = this.Dispatch(expression.Block);
 
@@ -1140,7 +1140,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.AnonymousMethod;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
             rv[NameTokens.Block] = this.Dispatch(expression.Block);
 
@@ -1151,7 +1151,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.MethodCall;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(expression.oper);
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.arguments);
             return rv;
@@ -1170,7 +1170,7 @@ namespace JsCsc.Lib
 
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.UnaryExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Operator] = oper.Value.ToString();
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
 
@@ -1203,7 +1203,7 @@ namespace JsCsc.Lib
 
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.UnaryExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Operator] = oper.ToString();
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
 
@@ -1214,7 +1214,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.BinaryExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Operator] = AstToJObject.GetOperator(expression.Oper).Value.ToString();
             rv[NameTokens.LeftExpr] = this.Dispatch(expression.Left);
 
@@ -1227,7 +1227,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.IsExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.ProbeType.Type);
 
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
@@ -1239,7 +1239,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.AsExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.ProbeType.Type);
 
             rv[NameTokens.Expr] = this.Dispatch(expression.Expr);
@@ -1260,7 +1260,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.Conditional;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Condition] = this.Dispatch(expression.Expr);
             rv[NameTokens.TrueStatement] = this.Dispatch(expression.TrueExpr);
             rv[NameTokens.FalseCondition] = this.Dispatch(expression.FalseExpr);
@@ -1280,7 +1280,7 @@ namespace JsCsc.Lib
                 rv[NameTokens.TypeName] = TypeTokens.VariableReference;
             }
 
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = this.Dispatch(expression.local_info);
             return rv;
         }
@@ -1289,7 +1289,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ParameterReference;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = this.Dispatch(expression.Parameter);
             return rv;
         }
@@ -1298,7 +1298,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.Invocation;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Method] = this.Dispatch(expression.MethodGroup);
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.Arguments);
             return rv;
@@ -1308,7 +1308,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.New;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = MemberReferenceSerializer.Serialize(expression.Constructor);
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.Arguments);
@@ -1323,7 +1323,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ArrayCreation;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
             rv[NameTokens.ElementType] = MemberReferenceSerializer.Serialize(expression.ArrayElementType);
             rv[NameTokens.Initializer] = this.Dispatch(expression.ResolvedInitializers);
@@ -1336,7 +1336,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ThisExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             return rv;
         }
 
@@ -1364,7 +1364,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TypeOf;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.TypeArgument);
 
             return rv;
@@ -1394,7 +1394,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.ArrayElementAccess;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.LeftExpr] = this.Dispatch(expression.Expr);
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.Arguments);
 
@@ -1410,7 +1410,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.BaseExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
 
             return rv;
@@ -1460,7 +1460,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.NewInitializer;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = MemberReferenceSerializer.Serialize(expression.Constructor);
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.Arguments);
 
@@ -1491,7 +1491,7 @@ namespace JsCsc.Lib
                                 fieldExpr.Spec);
                         }
 
-                        initializerObj[NameTokens.Loc] = init.Location.GetStrLoc();
+                        initializerObj[NameTokens.Loc] = init.GetStrLoc();
                         initializerObj[NameTokens.Value] =
                             this.Dispatch(initializer.Source);
                     }
@@ -1547,7 +1547,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.MethodExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = MemberReferenceSerializer.Serialize(expression.BestCandidate);
             rv[NameTokens.Instance] = this.Dispatch(expression.InstanceExpression);
 
@@ -1558,7 +1558,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.FieldExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Field] = MemberReferenceSerializer.Serialize(expression.Spec);
             rv[NameTokens.Instance] = this.Dispatch(expression.InstanceExpression);
 
@@ -1569,7 +1569,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.PropertyExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Getter] = MemberReferenceSerializer.Serialize(expression.Getter);
             rv[NameTokens.Setter] = MemberReferenceSerializer.Serialize(expression.Setter);
             rv[NameTokens.Instance] = this.Dispatch(expression.InstanceExpression);
@@ -1581,7 +1581,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.IndexerExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Getter] = MemberReferenceSerializer.Serialize(expression.Getter);
             rv[NameTokens.Setter] = MemberReferenceSerializer.Serialize(expression.Setter);
             rv[NameTokens.Instance] = this.Dispatch(expression.InstanceExpression);
@@ -1603,7 +1603,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DelegateInvocation;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.InstanceExpr);
 
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.Arguments);
@@ -1615,11 +1615,11 @@ namespace JsCsc.Lib
         {
             JObject thisObject = new JObject();
             thisObject[NameTokens.TypeName] = TypeTokens.ThisExpr;
-            thisObject[NameTokens.Loc] = expression.Location.GetStrLoc();
+            thisObject[NameTokens.Loc] = expression.GetStrLoc();
 
             JObject ctorCall = new JObject();
             ctorCall[NameTokens.TypeName] = TypeTokens.MethodCall;
-            ctorCall[NameTokens.Loc] = expression.Location.GetStrLoc();
+            ctorCall[NameTokens.Loc] = expression.GetStrLoc();
             ctorCall[NameTokens.Method] = MemberReferenceSerializer.Serialize(
                 expression.BaseConstructor);
             ctorCall[NameTokens.Instance] = thisObject;
@@ -1628,7 +1628,7 @@ namespace JsCsc.Lib
             JObject rv = new JObject();
 
             rv[NameTokens.TypeName] = TypeTokens.StatementExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = ctorCall;
 
             return rv;
@@ -1662,7 +1662,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.StringLiteral;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = expression.Value;
             return rv;
         }
@@ -1680,7 +1680,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DefaultValue;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
             return rv;
         }
@@ -1703,7 +1703,7 @@ namespace JsCsc.Lib
                 rv[NameTokens.TypeName] = TypeTokens.TempVariableReference;
             }
 
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Value] = this.Dispatch(expression.LocalInfo);
             return rv;
         }
@@ -1721,7 +1721,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TypeExpr;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
 
             return rv;
@@ -1747,7 +1747,7 @@ namespace JsCsc.Lib
             // throw new NotImplementedException();
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.MethodCall;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(expression.Method);
             JArray jArray = new JArray();
             jArray.Add(this.Dispatch(expression.Source));
@@ -1760,7 +1760,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.TypeCast;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Expr] = this.Dispatch(expression.Child);
 
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);
@@ -1787,7 +1787,7 @@ namespace JsCsc.Lib
         {
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.DelegateCreation;
-            rv[NameTokens.Loc] = expression.Location.GetStrLoc();
+            rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Method] = this.Dispatch(expression.MethodGroup);
 
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(expression.Type);

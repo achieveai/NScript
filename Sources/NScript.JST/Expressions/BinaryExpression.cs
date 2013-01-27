@@ -351,8 +351,7 @@ namespace NScript.JST
                     throw new InvalidOperationException();
             }
 
-            writer.EnterLocation(this.Location)
-                .Write(
+            writer.Write(
                     this.Left,
                     this.Left.OperatorPlacement != JST.OperatorPlacement.Postfix
                         && this.Left.Precedence < this.Precedence);
@@ -369,8 +368,7 @@ namespace NScript.JST
             writer.Write(
                 this.rightExpression,
                 this.Right.OperatorPlacement != JST.OperatorPlacement.Prefix
-                    && this.Right.Precedence < this.Precedence)
-                .LeaveLocation();
+                    && this.Right.Precedence < this.Precedence);
         }
     }
 }

@@ -1416,12 +1416,28 @@ namespace JsCsc.Lib
                 return null;
             }
 
-            string[] parts = str.Split(':');
+            string[] locParts = str.Split('-');
+            if (locParts.Length == 2)
+            {
+                string[] parts = locParts[0].Split(':');
+                string[] endParts = locParts[1].Split(':');
 
-            return new Location(
-                this._currentMethodFileName,
-                int.Parse(parts[0]),
-                int.Parse(parts[1]));
+                return new Location(
+                    this._currentMethodFileName,
+                    int.Parse(parts[0]),
+                    int.Parse(parts[1]),
+                    int.Parse(endParts[0]),
+                    int.Parse(endParts[1]));
+            }
+            else
+            {
+                string[] parts = locParts[0].Split(':');
+
+                return new Location(
+                    this._currentMethodFileName,
+                    int.Parse(parts[0]),
+                    int.Parse(parts[1]));
+            }
         }
 
         private TypeReference DeserializeType(JObject jObject)
