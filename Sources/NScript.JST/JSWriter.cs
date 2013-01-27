@@ -520,8 +520,7 @@ namespace NScript.JST
 
             if (mapFileName != null)
             {
-                using (StreamWriter mapWriter = new StreamWriter(mapFileName, false, System.Text.Encoding.ASCII))
-                    mapWriter.Write(sourceMapping.ToString());
+                sourceMapping.Write(mapFileName);
             }
         }
 

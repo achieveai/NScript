@@ -1,6 +1,7 @@
 ﻿using OwaSourceMapper.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace OwaSourceMapper
@@ -321,6 +322,30 @@ namespace OwaSourceMapper
             sb.Append("\"\n}");
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Writes the given file.
+        /// </summary>
+        /// <param name="fileName"> The file name to write. </param>
+        public void Write(string fileName)
+        {
+            using (StreamWriter mapWriter = new StreamWriter(fileName, false, System.Text.Encoding.ASCII))
+                mapWriter.Write(this.ToString());
+
+            string directoryName = Path.GetDirectoryName(fileName);
+            
+            using (var stream = typeof(SourceMap)
+                .Assembly.GetManifestResourceStream("SourceMapper.ashx"))
+            {
+                if (stream != null)
+                {
+                    System.IO.TextReader reader = new System.IO.StreamReader(stream);
+                    System.IO.File.WriteAllText(
+                        Path.Combine(directoryName, "SourceMapper.ashx"),
+                        reader.ReadToEnd().Trim());
+                }
+            }
         }
     }
 }
