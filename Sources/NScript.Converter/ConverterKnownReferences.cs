@@ -1391,7 +1391,7 @@ namespace NScript.Converter
                         this.NativeArray,
                         this.NativeArray);
 
-                    this.getNativeArrayFromList.GenericParameters.Add(new GenericParameter("T", this.getNativeArrayFromArray));
+                    this.getNativeArrayFromList.GenericParameters.Add(new GenericParameter("T", this.getNativeArrayFromList));
                     GenericInstanceType listType = new GenericInstanceType(this.ListGeneric);
                     listType.GenericArguments.Add(new GenericParameter(0, GenericParameterType.Method, this.NativeArray.Module));
                     this.getNativeArrayFromList.Parameters.Add(new ParameterDefinition(listType));
@@ -2730,6 +2730,55 @@ namespace NScript.Converter
             return new InternalPropertyReference(
                 getItemMethod,
                 null);
+        }
+
+        public TypeReference FixArrayType(TypeReference type)
+        {
+            TypeReference fixedType = null;
+            if (type.IsArray)
+            {
+                ArrayType arrayType = type as ArrayType;
+                var genericInstanceType = new GenericInstanceType(this.ArrayImplGeneric);
+                TypeReference tmpType = this.FixArrayType(arrayType.ElementType);
+                genericInstanceType.GenericArguments.Add(tmpType ?? arrayType.ElementType);
+
+                fixedType = genericInstanceType;
+            }
+            else if (type.IsGenericInstance)
+            {
+                GenericInstanceType genericInstanceType = type as GenericInstanceType;
+                var genericArgs = genericInstanceType.GenericArguments;
+                bool changed = false;
+                for (int iGeneric = 0; iGeneric < genericArgs.Count; iGeneric++)
+                {
+                    TypeReference tmpType;
+                    if ((tmpType = this.FixArrayType(genericArgs[iGeneric])) != null)
+                    {
+                        if (!changed)
+                        {
+                            genericInstanceType = new GenericInstanceType(genericInstanceType.ElementType);
+                            for (int j = 0; j < iGeneric; j++)
+                            {
+                                genericInstanceType.GenericArguments.Add(genericArgs[j]);
+                            }
+                        }
+
+                        changed = true;
+                    }
+
+                    if (changed)
+                    {
+                        genericInstanceType.GenericArguments.Add(tmpType ?? genericArgs[iGeneric]);
+                    }
+                }
+
+                if (changed)
+                {
+                    fixedType = genericInstanceType;
+                }
+            }
+
+            return fixedType;
         }
 
         /// <summary>

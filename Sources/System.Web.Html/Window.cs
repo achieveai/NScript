@@ -271,5 +271,45 @@ namespace System.Web.Html
         /// <param name="url">    URL of the document. </param>
         /// <param name="target"> Target for the. </param>
         public extern void Open(string url, string target);
+
+        /// <summary>
+        /// Binds.
+        /// </summary>
+        /// <param name="eventName"> The name of the event such as 'load'. </param>
+        /// <param name="handler">   The handler. </param>
+        /// <param name="capture">   (optional) the capture. </param>
+        public void Bind(string eventName, Action<Window, ElementEvent> handler, bool capture = false)
+        {
+            EventBinder.AddEvent(this, eventName, handler, capture);
+        }
+
+        /// <summary>
+        /// Un bind.
+        /// </summary>
+        /// <param name="eventName"> The name of the event such as 'load'. </param>
+        /// <param name="handler">   The handler. </param>
+        /// <param name="capture">   (optional) the capture. </param>
+        public void UnBind(string eventName, Action<Window, ElementEvent> handler, bool capture = false)
+        {
+            EventBinder.RemoveEvent(this, eventName, handler, capture);
+        }
+
+        /// <summary>
+        /// Un bind.
+        /// </summary>
+        /// <param name="eventName"> The name of the event such as 'load'. </param>
+        public void UnBind(string eventName)
+        {
+            EventBinder.RemoveEvent(this, eventName, true);
+            EventBinder.RemoveEvent(this, eventName, false);
+        }
+
+        /// <summary>
+        /// Unbinds all events registered through Bind.
+        /// </summary>
+        public void UnBindAll()
+        {
+            EventBinder.CleanUp(this);
+        }
     }
 }

@@ -113,7 +113,8 @@ namespace NScript.Converter.ExpressionsConverter
                         PropertyReference propertyReference = (PropertyReference)setter.Item1.MemberReference;
 
                         if (converter.RuntimeManager.Context.IsIntrinsicProperty(propertyReference.Resolve())
-                            || converter.RuntimeManager.Context.IsWrappedType(propertyReference.PropertyType))
+                            && (converter.RuntimeManager.Context.GetTypeKind(propertyReference.DeclaringType.Resolve())
+                                & (ConverterContext.TypeKind.Imported | ConverterContext.TypeKind.JSONType)) != 0)
                         {
                             if (converter.RuntimeManager.Context.IsWrappedType(propertyReference.PropertyType))
                             {

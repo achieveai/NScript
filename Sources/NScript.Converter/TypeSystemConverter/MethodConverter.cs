@@ -393,7 +393,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
                 if (genericInstanceType == null
-                    || !genericInstanceType.DeclaringType.Resolve().IsSameDefinition(knownReferences.ListGeneric))
+                    || !genericInstanceType.ElementType.Resolve().IsSameDefinition(knownReferences.ListGeneric))
                 {
                     throw new InvalidProgramException("Can't generate ImportedWrapper for properties of type other than Array and List");
                 }

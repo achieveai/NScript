@@ -175,6 +175,15 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
+        /// Gets a list of class.
+        /// </summary>
+        /// <value>
+        /// A List of class.
+        /// </value>
+        public extern TokenList ClassList
+        { get; }
+
+        /// <summary>
         /// The dir.
         /// </summary>
         public extern string Dir
@@ -634,19 +643,25 @@ namespace System.Web.Html
         /// <returns>
         /// true if it succeeds, false if it fails.
         /// </returns>
-        public bool AddClassName(string className)
+        public void AddClassName(string className)
         {
+            if (!object.IsNullOrUndefined(this.ClassList))
+            {
+                this.ClassList.Add(className);
+                return;
+            }
+
             if (className == null
                 || (className = className.Trim()).Length == 0)
             {
-                return false;
+                return;
             }
 
             if (this.ClassName == null
                 || this.ClassName.Length == 0)
             {
                 this.ClassName = className;
-                return true;
+                return;
             }
 
             int index = 0;
@@ -655,12 +670,43 @@ namespace System.Web.Html
                 if ((index == 0 || this.ClassName[index - 1] == ' ')
                     && (index == this.ClassName.Length - className.Length || this.ClassName[index + className.Length] == ' '))
                 {
-                    return false;
+                    return;
                 }
+
+                index++;
             }
 
             this.ClassName = this.ClassName + " " + className;
-            return true;
+            return;
+        }
+
+        /// <summary>
+        /// Query if 'className' has class name.
+        /// </summary>
+        /// <param name="className"> The name of the event such as 'load'. </param>
+        /// <returns>
+        /// true if class name, false if not.
+        /// </returns>
+        public bool HasClassName(string className)
+        {
+            if (!object.IsNullOrUndefined(this.ClassList))
+            {
+                return this.ClassList.Contains(className);
+            }
+
+            int index = 0;
+            while ((index = this.ClassName.IndexOf(className, index + 1)) != -1)
+            {
+                if ((index == 0 || this.ClassName[index - 1] == ' ')
+                    && (index == this.ClassName.Length - className.Length || this.ClassName[index + className.Length] == ' '))
+                {
+                    return true;
+                }
+
+                index++;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -670,14 +716,20 @@ namespace System.Web.Html
         /// <returns>
         /// true if it succeeds, false if it fails.
         /// </returns>
-        public bool RemoveClassName(string className)
+        public void RemoveClassName(string className)
         {
+            if (!object.IsNullOrUndefined(this.ClassList))
+            {
+                this.ClassList.Remove(className);
+                return;
+            }
+
             if (className == null
                 || (className = className.Trim()).Length == 0
                 || this.ClassName == null
                 || this.ClassName.Length == 0)
             {
-                return false;
+                return;
             }
 
             int index = 0;
@@ -687,11 +739,34 @@ namespace System.Web.Html
                     && (index == this.ClassName.Length - className.Length || this.ClassName[index + className.Length] == ' '))
                 {
                     this.ClassName = this.ClassName.Substring(0, index > 0 ? index - 1 : 0) + this.ClassName.Substring(index + className.Length);
-                    return true;
+                    return;
                 }
+
+                index++;
             }
 
-            return false;
+            return;
+        }
+
+        /// <summary>
+        /// Toggle class name.
+        /// </summary>
+        /// <param name="className"> Name of the class. </param>
+        public void ToggleClassName(string className)
+        {
+            if (!object.IsNullOrUndefined(this.ClassList))
+            {
+                this.ClassList.Toggle(className);
+            }
+
+            if (this.HasClassName(className))
+            {
+                this.RemoveClassName(className);
+            }
+            else
+            {
+                this.AddClassName(className);
+            }
         }
 
         /// <summary>

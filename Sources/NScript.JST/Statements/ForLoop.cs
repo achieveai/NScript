@@ -114,12 +114,15 @@ namespace NScript.JST
         public override void Write(JSWriter writer)
         {
             writer.WriteNewLine()
+                .EnterLocation(this.Location)
                 .Write(Keyword.For)
                 .Write(Symbols.BracketOpenRound);
 
             if (this.InitializationBlock is InitializerStatement)
             {
-                writer.Write(this.initializationBlock);
+                writer.EnterLocation(this.initializationBlock.Location)
+                    .Write(this.initializationBlock)
+                    .LeaveLocation();
             }
             else
             {
@@ -131,7 +134,9 @@ namespace NScript.JST
 
             if (this.Condition != null)
             {
-                writer.Write(this.Condition)
+                writer.EnterLocation(this.Condition.Location)
+                    .Write(this.Condition)
+                    .LeaveLocation()
                     .Write(Symbols.SemiColon);
             }
             else
@@ -162,6 +167,8 @@ namespace NScript.JST
                     writer.Write(Symbols.SemiColon);
                 }
             }
+
+            writer.LeaveLocation();
         }
 
         /// <summary>
@@ -209,7 +216,9 @@ namespace NScript.JST
             JSWriter writer,
             ExpressionStatement statement)
         {
-            writer.Write(statement.Expression);
+            writer.EnterLocation(statement.Location)
+                .Write(statement.Expression)
+                .LeaveLocation();
         }
     }
 }

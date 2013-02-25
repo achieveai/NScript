@@ -48,8 +48,8 @@
       <DependentUpon>CssGrammer.g3</DependentUpon>
     </Compile>
     <Compile Include="CssParts.cs" />
-    <Compile Include="obj\Debug\CssGrammerLexer.cs" />
-    <Compile Include="obj\Debug\CssGrammerParser.cs" />
+    <Compile Include="obj\$(Configuration)\CssGrammerLexer.cs" />
+    <Compile Include="obj\$(Configuration)\CssGrammerParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

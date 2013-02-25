@@ -629,6 +629,8 @@ namespace NScript.Converter.TypeSystemConverter
                 typeReference = this.context.ClrKnownReferences.Object;
             }
 
+            typeReference = this.Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
+
             if (!this.typeReferenceIdentifiers.TryGetValue(
                 typeReference,
                 out returnValue))
@@ -707,6 +709,8 @@ namespace NScript.Converter.TypeSystemConverter
             Expression initializeRefsAndStaticCtor = null)
         {
             TypeReference typeReference = (TypeReference)typeReferenceBase;
+            typeReference = this.Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
+
 
             if (typeReferenceBase.GetGenericTypeScope().HasValue)
             {
@@ -755,17 +759,6 @@ namespace NScript.Converter.TypeSystemConverter
                     }
 
                     arguments.Add(initializeRefsAndStaticCtor);
-
-                    if (typeReference.IsArray)
-                    {
-                        ArrayType arrayType = (ArrayType)typeReference;
-                        GenericInstanceType genericArrayType = new GenericInstanceType(
-                            this.context.KnownReferences.ArrayImplGeneric);
-
-                        genericArrayType.GenericArguments.Add(arrayType.ElementType);
-
-                        typeReference = genericArrayType;
-                    }
 
                     return new MethodCallExpression(
                         null,

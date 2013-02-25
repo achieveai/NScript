@@ -106,8 +106,10 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         private void WriteNestedIf(JSWriter writer)
         {
-            writer.Write(Keyword.If)
-                .Write(this.conditionExpression, true);
+            writer.EnterLocation(this.conditionExpression.Location)
+                .Write(Keyword.If)
+                .Write(this.conditionExpression, true)
+                .LeaveLocation();
 
             if (this.FalseBlock != null
                 && this.ShouldForceIfBlockEncapsulation(this.TrueBlock))

@@ -149,6 +149,19 @@ namespace OwaSourceMapper
         /// </value>
         public string File { get; set; }
 
+        public string MapFile
+        {
+            get
+            {
+                if (this.File != null)
+                {
+                    return Path.GetFileNameWithoutExtension(this.File) + ".map";
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Gets or sets source root.
         /// </summary>
@@ -247,11 +260,8 @@ namespace OwaSourceMapper
                 sb.Append("\t\"file\": \"" + this.File + "\",\n");
             }
 
-            if (this.SourceRoot != null)
-            {
-                sb.Append("\t\"sourceRoot\": \"" + this.SourceRoot + "\",\n");
-            }
-            
+            sb.Append("\t\"sourceRoot\": \"" + Path.GetFileNameWithoutExtension(this.File) +".ashx?f=\",\n");
+
             if (this.files.Count > 0)
             {
                 Dictionary<string, int> fileMap = new Dictionary<string, int>(this.files.Count);
@@ -328,21 +338,22 @@ namespace OwaSourceMapper
         /// Writes the given file.
         /// </summary>
         /// <param name="fileName"> The file name to write. </param>
-        public void Write(string fileName)
+        public void Write(string dirctory)
         {
-            using (StreamWriter mapWriter = new StreamWriter(fileName, false, System.Text.Encoding.ASCII))
+            string fileName = Path.Combine(
+                dirctory,
+                Path.GetFileNameWithoutExtension(this.File));
+            using (StreamWriter mapWriter = new StreamWriter(fileName + ".map", false, System.Text.Encoding.ASCII))
                 mapWriter.Write(this.ToString());
-
-            string directoryName = Path.GetDirectoryName(fileName);
             
             using (var stream = typeof(SourceMap)
-                .Assembly.GetManifestResourceStream("SourceMapper.ashx"))
+                .Assembly.GetManifestResourceStream("SourceMap.SrcMapper.ashx"))
             {
                 if (stream != null)
                 {
                     System.IO.TextReader reader = new System.IO.StreamReader(stream);
                     System.IO.File.WriteAllText(
-                        Path.Combine(directoryName, "SourceMapper.ashx"),
+                        fileName + ".ashx",
                         reader.ReadToEnd().Trim());
                 }
             }

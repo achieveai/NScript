@@ -86,9 +86,10 @@ namespace NScript.JST
         /// <summary>
         /// Leaves the location.
         /// </summary>
-        public void LeaveLocation()
+        public JSWriter LeaveLocation()
         {
             this.locationStack.Pop();
+            return this;
         }
 
         /// <summary>
@@ -341,7 +342,11 @@ namespace NScript.JST
         {
             using (StreamWriter streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8))
             {
-                this.Write(streamWriter, Path.GetFileName(jsFileName), sourceRoot, jsFileName + ".map");
+                this.Write(
+                    streamWriter,
+                    Path.GetFileName(jsFileName),
+                    Path.GetDirectoryName(jsFileName),
+                    true);
             }
         }
 
@@ -351,7 +356,7 @@ namespace NScript.JST
         /// <param name="writer"> The TextWriter to write. </param>
         public void Write(TextWriter writer)
         {
-            this.Write(writer, null, null, null);
+            this.Write(writer, null, null, false);
         }
 
         /// <summary>
@@ -364,7 +369,7 @@ namespace NScript.JST
         /// <param name="jsFileName">  Filename of the js file. </param>
         /// <param name="sourceRoot">  Source root. </param>
         /// <param name="mapFileName"> Filename of the map file. </param>
-        private void Write(TextWriter writer, string jsFileName, string sourceRoot, string mapFileName)
+        private void Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap)
         {
             this.ArrangeSpaces();
 
@@ -376,7 +381,6 @@ namespace NScript.JST
             if (jsFileName != null)
             {
                 sourceMapping.File = jsFileName;
-                sourceMapping.SourceRoot = sourceRoot.Replace("\\", "\\\\");
             }
 
             sourceMapping.AddMapping(
@@ -495,10 +499,10 @@ namespace NScript.JST
                 }
             }
 
-            if (mapFileName != null)
+            if (outputMap)
             {
                 writer.WriteLine();
-                writer.Write("//@ sourceMappingURL={0}", Path.GetFileName(mapFileName));
+                writer.Write("//@ sourceMappingURL={0}", sourceMapping.MapFile);
                 sourceMapping.AddMapping(
                     ++curLine,
                     0,
@@ -518,9 +522,9 @@ namespace NScript.JST
                     jsFileName);
             }
 
-            if (mapFileName != null)
+            if (outputMap)
             {
-                sourceMapping.Write(mapFileName);
+                sourceMapping.Write(outputDirectory);
             }
         }
 

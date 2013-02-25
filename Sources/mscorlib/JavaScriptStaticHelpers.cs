@@ -14,7 +14,7 @@ namespace System
     public static class JavaScriptStaticHelpers
     {
         [IgnoreGenericArguments]
-        [Script(@"return left === right")]
+        [Script(@"return left === right;")]
         public extern static bool AreEqual<T>(this T left, T right);
     }
 }

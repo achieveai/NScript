@@ -2,12 +2,21 @@
 {
     using System.Runtime.CompilerServices;
 
-    [Extended, IgnoreNamespace, ScriptName("String")]
     public struct Char
     {
         public static explicit operator string(char ch)
         {
-            return null;
+            return string.FromCharCode(ch) ;
+        }
+
+        public override string ToLocaleString()
+        {
+            return string.FromCharCode(this);
+        }
+
+        public override string ToString()
+        {
+            return string.FromCharCode(this);
         }
     }
 }

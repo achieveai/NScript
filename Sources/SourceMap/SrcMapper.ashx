@@ -15,21 +15,15 @@ namespace NScript
         public void ProcessRequest(HttpContext context)
         {
             context.Response.ContentType = "text/plain";
-            var jsFileName = context.Request.Params["js"];
-            var fileName = context.Request.Params["fname"].Substring(1);
+            var fileName = context.Request.Params["f"].Substring(1);
             context.Response.ContentType = "text";
 
+            var dirName = Path.GetDirectoryName(context.Request.PhysicalPath);
+            var myName = Path.GetFileNameWithoutExtension(context.Request.PhysicalPath);
             var path = GetFileToOpen(
-                Path.GetDirectoryName(context.Request.PhysicalApplicationPath),
-                jsFileName,
+                dirName,
+                myName,
                 fileName);
-
-            if (path == jsFileName)
-            {
-                path = Path.Combine(
-                    Path.GetDirectoryName(context.Request.PhysicalApplicationPath),
-                    jsFileName);
-            }
 
             using (StreamReader reader = new StreamReader(path))
             {
@@ -39,12 +33,12 @@ namespace NScript
 
         public string GetFileToOpen(
             string directory,
-            string jsFileName,
+            string myName,
             string fileName)
         {
             string lines = File.ReadAllText(
-                Path.Combine(directory, jsFileName + ".map"));
-            string defaultFileToReturn = Path.Combine(directory, jsFileName);
+                Path.Combine(directory, myName + ".map"));
+            string defaultFileToReturn = Path.Combine(directory, myName + ".js");
             const string sourcesMarker = "\"sources\": [";
             const string sourcesLongMarker = "\"sourcesLong\": [";
             const string endMarker = "\"],";
@@ -76,7 +70,14 @@ namespace NScript
             {
                 if (fileNames[i] == fileName)
                 {
-                    return fileLongNames[i];
+                    if (fileNames[i].StartsWith(myName) && fileNames[i] == myName + ".js")
+                    {
+                        return defaultFileToReturn;
+                    }
+                    else
+                    {
+                        return fileLongNames[i];
+                    }
                 }
             }
 

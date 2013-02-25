@@ -1,8 +1,6 @@
 ﻿namespace System
 {
     using System.Runtime.CompilerServices;
-
-    [ScriptNamespace("ss")]
     public sealed class StringBuilder
     {
         private NativeArray internalArray;
@@ -26,7 +24,7 @@
 
         public StringBuilder Append(char c)
         {
-            this.Append(c.ToString());
+            this.Append(string.FromCharCode(c));
             return this;
         }
 
@@ -83,7 +81,7 @@
 
         public override string ToString()
         {
-            return this.internalArray.Join();
+            return this.internalArray.Join("");
         }
 
         public string ToString(string separator)

@@ -27,19 +27,20 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <NoWarn>0626</NoWarn>
+    <NoWarn>0626, 0067,0824</NoWarn>
     <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <NoWarn>0626</NoWarn>
+    <NoWarn>0626, 0067,0824</NoWarn>
     <DefineConstants>TRACE</DefineConstants>
     <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AnchorElement.cs" />
     <Compile Include="CheckBoxElement.cs" />
+    <Compile Include="TokenList.cs" />
     <Compile Include="Data\ApplicationCache.cs" />
     <Compile Include="AreaElement.cs" />
     <Compile Include="AudioElement.cs" />

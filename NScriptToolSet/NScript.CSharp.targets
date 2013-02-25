@@ -64,14 +64,19 @@
         DestinationFolder="$(JsOutputPath)" />
   </Target>
   <Target Name="CopyMapFile"
-          Inputs="$(OutputPath)$(AssemblyName).js.map"
-          Outputs="$(JsOutputPath)$(AssemblyName).js.map"
+          Inputs="$(OutputPath)$(AssemblyName).map"
+          Outputs="$(JsOutputPath)$(AssemblyName).map"
           DependsOnTargets="ScriptGenerate"
           Condition="$(GenerateJs) == True AND '$(JsOutputPath)' != ''">
     <Copy
         Retries="3"
         RetryDelayMilliseconds="100"
-        SourceFiles="$(OutputPath)$(AssemblyName).js.map"
+        SourceFiles="$(OutputPath)$(AssemblyName).map"
+        DestinationFolder="$(JsOutputPath)" />
+    <Copy
+        Retries="3"
+        RetryDelayMilliseconds="100"
+        SourceFiles="$(OutputPath)$(AssemblyName).ashx"
         DestinationFolder="$(JsOutputPath)" />
   </Target>
 </Project>

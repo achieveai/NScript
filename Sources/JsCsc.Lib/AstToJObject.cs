@@ -1772,7 +1772,7 @@ namespace JsCsc.Lib
         { return this.Visit((TypeCast)expression); }
 
         public JObject Visit(ReducedExpression expression)
-        { throw new NotImplementedException(); }
+        { return this.Dispatch(expression.Expression); }
 
         public JObject Visit(AnonymousMethodExpression expression)
         { throw new NotImplementedException(); }
