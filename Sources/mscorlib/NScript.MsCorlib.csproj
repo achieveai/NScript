@@ -290,12 +290,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="NativeArray.cs" />
-    <Compile Include="Net\ReadyState.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Net\XmlHttpRequest.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Nullable.cs" />
     <Compile Include="Number.cs">
       <SubType>Code</SubType>

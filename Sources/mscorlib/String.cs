@@ -19,8 +19,8 @@
         static String()
         {
             String.formatHelperRegex = new RegularExpression(@"(\{[^\}^\{]+\})", "g");
-            String.trimStartHelperRegex = new RegularExpression(@"^\s*");
-            String.trimEndHelperRegex = new RegularExpression(@"\s*$");
+            String.trimStartHelperRegex = new RegularExpression(@"^[\s\xA0]+");
+            String.trimEndHelperRegex = new RegularExpression(@"[\s\xA0]+$");
         }
 
         public extern String();
@@ -229,13 +229,13 @@
 
         [MakeStaticUsage]
         [Script(@"
-            return this.replace(@{[mscorlib]System.String::trimEndHelperRegex}, '');
+            return this.trimLeft ? this.trimLeft() : this.replace(@{[mscorlib]System.String::trimEndHelperRegex}, '');
             ")]
         public extern string TrimEnd();
 
         [MakeStaticUsage]
         [Script(@"
-            return this.replace(@{[mscorlib]System.String::trimStartHelperRegex}, '');
+            return this.trimRight ? this.trimRight() : this.replace(@{[mscorlib]System.String::trimStartHelperRegex}, '');
             ")]
         public extern string TrimStart();
 
