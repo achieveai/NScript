@@ -74,6 +74,9 @@
     <Compile Include="ExpressionsConverter\VariableAddressReferenceConverter.cs" />
     <Compile Include="ExpressionsConverter\VariableReferenceConverter.cs" />
     <Compile Include="IConverterPlugin.cs" />
+    <Compile Include="IMethodConverterPlugin.cs" />
+    <Compile Include="IRuntimeConverterPlugin.cs" />
+    <Compile Include="ITypeConverterPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatementsConverter\DoWhileConverter.cs" />
     <Compile Include="StatementsConverter\ExpressionStatementConverter.cs" />
@@ -99,7 +102,6 @@
     <Compile Include="TypeSystemConverter\NullableTypeConverter.cs" />
     <Compile Include="TypeSystemConverter\ReferenceIdentifierManager.cs" />
     <Compile Include="TypeSystemConverter\ReferenceTypeConverter.cs" />
-    <Content Include="TypeSystemConverter\RuntimeReferences.cs" />
     <Compile Include="TypeSystemConverter\RuntimeScopeManager.cs" />
     <Content Include="TypeSystemConverter\ScriptSharpAttributes.cs" />
     <Compile Include="TypeSystemConverter\StructTypeConverter.cs" />

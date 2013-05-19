@@ -272,8 +272,6 @@
                 @"MulticastDelegate.cs",
                 @"Nullable.cs",
                 @"NativeArray.cs",
-                @"Net\ReadyState.cs",
-                @"Net\XmlHttpRequest.cs",
                 @"Number.cs",
                 @"NumberFormatInfo.cs",
                 @"Object.cs",

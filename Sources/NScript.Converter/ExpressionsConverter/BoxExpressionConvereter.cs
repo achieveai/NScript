@@ -25,15 +25,16 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return MethodCallExpressionConverter.CreateMethodCallExpression(
                 new MethodCallContext(
-                    JST.IdentifierExpression.Create(
-                        boxExpression.Location,
-                        converter.Scope,
-                        converter.Resolve(
-                            boxExpression.BoxedExpression.ResultType)),
-                        converter.KnownReferences.BoxMethod,
-                        false),
+                    converter.KnownReferences.BoxMethod,
+                    boxExpression.Location,
+                    converter.Scope),
                     new JST.Expression[]
                     {
+                        JST.IdentifierExpression.Create(
+                            boxExpression.Location,
+                            converter.Scope,
+                            converter.Resolve(
+                                boxExpression.BoxedExpression.ResultType)),
                         ExpressionsConverter.ExpressionConverterBase.Convert(
                                 converter,
                                 boxExpression.BoxedExpression)
@@ -54,15 +55,16 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return MethodCallExpressionConverter.CreateMethodCallExpression(
                 new MethodCallContext(
+                    converter.KnownReferences.UnboxMethod,
+                    boxExpression.Location,
+                    converter.Scope),
+                new JST.Expression[]
+                {
                     JST.IdentifierExpression.Create(
                         boxExpression.Location,
                         converter.Scope,
                         converter.Resolve(
                             boxExpression.ResultType)),
-                    converter.KnownReferences.UnboxMethod,
-                    false),
-                new JST.Expression[]
-                {
                     ExpressionsConverter.ExpressionConverterBase.Convert(
                             converter,
                             boxExpression.InnerExpression)

@@ -14,6 +14,7 @@ ptyp_ = Function.prototype;
 ptyp_.isClass = false;
 ptyp_.baseType = null;
 ptyp_.fullName = null;
+ptyp_.typeId = null;
 ptyp_.interfaces = null;
 ptyp_.getDefaultValue = function System__Type__GetDefaultValue() {
   return null;

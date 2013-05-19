@@ -30,6 +30,9 @@
         public readonly bool IsInterface;
 
         [Implement]
+        public readonly bool IsNullable;
+
+        [Implement]
         public readonly Type BaseType;
 
         [Implement]
@@ -198,33 +201,51 @@
             string typeName,
             bool isFlag);
 
+
         [Script(@"
-            if (this.@{[mscorlib]System.Type::IsStruct}) {
-              return new (this)(instance);
+            if (type.@{[mscorlib]System.Type::IsNullable}) {
+              return type.@{[mscorlib]System.Type::NullableBox([mscorlib]System.Object)}(instance);
+            } else if (type.@{[mscorlib]System.Type::IsStruct}) {
+              return new (type)(instance);
             } else {
               return instance;
             }")]
-        [KeepInstanceUsage]
-        private extern object Box(object instance);
+        private extern static object BoxTypeInstance(Type type, object instance);
 
         [Script(@"
-            if (this.@{[mscorlib]System.Type::IsStruct}) {
+            if (type.@{[mscorlib]System.Type::IsNullable} && instance === null) {
+              return null;
+            } else if (type.@{[mscorlib]System.Type::IsStruct}) {
               return instance.@{[mscorlib]System.Type::boxedValue};
             } else {
               return instance;
             }")]
-        [KeepInstanceUsage]
-        private extern object Unbox(object instance);
+        private extern static object UnBoxTypeInstance(Type type, object instance);
 
         [Script(@"
-            if (this.@{[mscorlib]System.Type::IsStruct}) return this.@{[mscorlib]System.Type::GetDefaultValue()}();
+            if (type.@{[mscorlib]System.Type::IsStruct}) return type.@{[mscorlib]System.Type::GetDefaultValue()};
+            else if (type.@{[mscorlib]System.Type::DefaultConstructor()}) return type.@{[mscorlib]System.Type::DefaultConstructor()};
+            else return function() { return null; };")]
+        private extern static object GetDefaultConstructor(Type type);
+
+        [Script(@"
+            if (type.@{[mscorlib]System.Type::IsStruct}) return type.@{[mscorlib]System.Type::GetDefaultValue()}();
+            return null;")]
+        private extern static object GetDefaultValueStatic(Type type);
+
+        [Script(@"
+            if (this.@{[mscorlib]System.Type::IsStruct}) return this.@{[mscorlib]System.Type::GetDefaultValue()};
             throw ""Default constructor not implemented"";")]
         [KeepInstanceUsage]
         private extern object DefaultConstructor();
 
-        [KeepInstanceUsage]
         [Script("return null;")]
+        [KeepInstanceUsage]
         private extern object GetDefaultValue();
+
+        [Script("return null;")]
+        [KeepInstanceUsage]
+        private extern object NullableBox(object instance);
 
         [Script(@"
             var key;

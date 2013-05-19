@@ -15,6 +15,8 @@
             var i, j, idx, fullMatch, leftArr, rightArr;
             if (left == right)
                 return true;
+            if (!left || !right)
+                return false;
             if (typeof left.funcs == ""undefined"")
                 return false;
             if (typeof right.funcs == ""undefined"") {

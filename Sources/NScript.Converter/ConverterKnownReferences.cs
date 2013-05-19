@@ -217,6 +217,11 @@ namespace NScript.Converter
         private MethodReference boxMethod;
 
         /// <summary>
+        /// The nullable box method.
+        /// </summary>
+        private MethodReference typeNullableBoxMethod;
+
+        /// <summary>
         /// Backing field for UnboxMethod.
         /// </summary>
         private MethodReference unboxMethod;
@@ -255,6 +260,11 @@ namespace NScript.Converter
         /// Backing field for GetDefaultMethod.
         /// </summary>
         private MethodReference getDefaultValueMethod;
+
+        /// <summary>
+        /// The get default value method static.
+        /// </summary>
+        private MethodReference getDefaultValueMethodStatic;
 
         /// <summary>
         /// Backing field for ToStringMethod.
@@ -390,6 +400,11 @@ namespace NScript.Converter
         /// The type default constructor.
         /// </summary>
         private MethodReference typeDefaultConstructor;
+
+        /// <summary>
+        /// The type get default constructor.
+        /// </summary>
+        private MethodReference typeGetDefaultConstructor;
 
         /// <summary>
         /// The nullable box method.
@@ -1778,13 +1793,37 @@ namespace NScript.Converter
                 if (this.boxMethod == null)
                 {
                     this.boxMethod = this.GetMethodReference(
-                        "Box",
+                        "BoxTypeInstance",
                         this.ClrReferences.Object,
+                        this.ClrReferences.TypeType,
                         this.ClrReferences.TypeType,
                         this.ClrReferences.Object);
                 }
 
                 return this.boxMethod;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type nullable box method.
+        /// </summary>
+        /// <value>
+        /// The type nullable box method.
+        /// </value>
+        public MethodReference TypeNullableBoxMethod
+        {
+            get
+            {
+                if (this.typeNullableBoxMethod == null)
+                {
+                    this.typeNullableBoxMethod = this.GetMethodReference(
+                        "NullableBox",
+                        this.ClrReferences.Object,
+                        this.ClrReferences.TypeType,
+                        this.ClrReferences.Object);
+                }
+
+                return this.typeNullableBoxMethod;
             }
         }
 
@@ -1801,59 +1840,14 @@ namespace NScript.Converter
                 if (this.unboxMethod == null)
                 {
                     this.unboxMethod = this.GetMethodReference(
-                        "Unbox",
+                        "UnBoxTypeInstance",
                         this.ClrReferences.Object,
+                        this.ClrReferences.TypeType,
                         this.ClrReferences.TypeType,
                         this.ClrReferences.Object);
                 }
 
                 return this.unboxMethod;
-            }
-        }
-
-        /// <summary>
-        /// Gets the value box method.
-        /// </summary>
-        /// <value>
-        /// The value box method.
-        /// </value>
-        public MethodReference ValueBoxMethod
-        {
-            get
-            {
-                if (this.valueBoxMethod == null)
-                {
-                    this.valueBoxMethod = this.GetMethodReference(
-                        "Box",
-                        this.ClrReferences.Object,
-                        this.ClrReferences.ValueType,
-                        this.ClrReferences.Object);
-                }
-
-                return this.valueBoxMethod;
-            }
-        }
-
-        /// <summary>
-        /// Gets the value unbox method.
-        /// </summary>
-        /// <value>
-        /// The value unbox method.
-        /// </value>
-        public MethodReference ValueUnboxMethod
-        {
-            get
-            {
-                if (this.valueUnboxMethod == null)
-                {
-                    this.valueUnboxMethod = this.GetMethodReference(
-                        "Unbox",
-                        this.ClrReferences.Object,
-                        this.ClrReferences.ValueType,
-                        this.ClrReferences.Object);
-                }
-
-                return this.valueUnboxMethod;
             }
         }
 
@@ -1880,6 +1874,29 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Gets the get default method.
+        /// </summary>
+        /// <value>
+        /// The get default method.
+        /// </value>
+        public MethodReference GetDefaultMethodStatic
+        {
+            get
+            {
+                if (this.getDefaultValueMethodStatic == null)
+                {
+                    this.getDefaultValueMethodStatic = this.GetMethodReference(
+                        "GetDefaultValueStatic",
+                        this.ClrReferences.Object,
+                        this.ClrReferences.TypeType,
+                        this.ClrReferences.TypeType);
+                }
+
+                return this.getDefaultValueMethodStatic;
+            }
+        }
+
+        /// <summary>
         /// Gets the get default constructor method.
         /// </summary>
         /// <value>
@@ -1898,6 +1915,29 @@ namespace NScript.Converter
                 }
 
                 return this.typeDefaultConstructor;
+            }
+        }
+
+        /// <summary>
+        /// Gets the get default constructor method.
+        /// </summary>
+        /// <value>
+        /// The get default constructor method.
+        /// </value>
+        public MethodReference GetGetDefaultConstructorMethod
+        {
+            get
+            {
+                if (this.typeGetDefaultConstructor == null)
+                {
+                    this.typeGetDefaultConstructor = this.GetMethodReference(
+                        "GetDefaultConstructor",
+                        this.ClrReferences.Object,
+                        this.ClrReferences.TypeType,
+                        this.ClrReferences.TypeType);
+                }
+
+                return this.typeGetDefaultConstructor;
             }
         }
 

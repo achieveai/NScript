@@ -407,6 +407,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             int typesGenerated = -1;
+            int membersGenerated = -1;
             this.WalkUsedDependencies();
             List<Statement> returnValue = new List<Statement>();
 
@@ -529,12 +530,14 @@ namespace NScript.Converter.TypeSystemConverter
                 }
 
                 typesGenerated = this.typesDefinitionsUsed.Count;
+                membersGenerated = this.membersProcessed.Count;
                 this.WalkUsedDependencies();
                 foreach (var typeDefConverter in this.typesDefinitionsUsed.Values)
                 {
                     typeDefConverter.ClearVariableInitializedTracking();
                 }
-            } while (typesGenerated < this.typesDefinitionsUsed.Count);
+            } while (typesGenerated < this.typesDefinitionsUsed.Count
+                || membersGenerated < this.membersProcessed.Count);
 
             return returnValue;
         }
@@ -824,7 +827,7 @@ namespace NScript.Converter.TypeSystemConverter
                 && memberReference.Parameters.Count == 0)
             {
                 // This means that we are looking at finding factory method for this constructor
-                // This constructor has 0 arguments, so we can as well return GetDefaultConstructor
+                // This constructor has 0 arguments, so we can as well return GetGetDefaultConstructor
                 // function on Type.
                 return this.GetTypeScope(this.Context.ClrKnownReferences.TypeType)
                     .ResolveMethod(this.Context.KnownReferences.GetDefaultConstructorMethod, false);

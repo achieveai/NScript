@@ -20,5 +20,5 @@ function RealScript__TestJsonType__WorkOnString(this_) {
   if (this_.importedExtension.tmpStr === null)
     this_.importedExtension.tmpStr = "";
   else
-    this_.importedExtension.tmpStr = System__String__Concat(this_.importedExtension.tmpStr, System_Int32.box(this_.importedExtension.tmpStr.length));
+    this_.importedExtension.tmpStr = System__String__Concat(this_.importedExtension.tmpStr, System__Type__BoxTypeInstance(System_Int32, this_.importedExtension.tmpStr.length));
 };

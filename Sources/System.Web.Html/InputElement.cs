@@ -32,6 +32,12 @@ namespace System.Web.Html
         /// </value>
         public extern event Action<InputElement, ElementEvent> OnChange;
 
+        public extern string AutoComplete
+        { get; set; }
+
+        public extern bool AutoFocus
+        { get; set; }
+
         /// <summary>
         /// The default value.
         /// </summary>

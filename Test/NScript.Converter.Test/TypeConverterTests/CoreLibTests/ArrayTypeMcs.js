@@ -79,7 +79,7 @@ function System__NativeArray__RemoveAt(this_, index) {
   var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  len = this_.length - 2;
+  len = this_.length - 1;
   for (i = index; i < len; i++)
     this_[i] = this_[i + 1];
   this_.pop();
@@ -126,7 +126,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     var def, i;
     this.__ctor();
     this.innerArray = new Array(size);
-    def = T.getDefaultValue();
+    def = System__Type__GetDefaultValueStatic(T);
     for (i = 0; i < size; i++)
       System__NativeArray__SetAt(this.innerArray, i, def);
   };
@@ -169,12 +169,12 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.indexOf = function System__ArrayG$1__IndexOf(item) {
     if (!T.isInstanceOfType(item))
       return -1;
-    return System__NativeArray__IndexOf(this.innerArray, T.unbox(item), 0);
+    return System__NativeArray__IndexOf(this.innerArray, System__Type__UnBoxTypeInstance(T, item), 0);
   };
   ptyp_.indexOfa = function System__ArrayG$1__IndexOfa(item, startIndex) {
     if (!T.isInstanceOfType(item))
       return -1;
-    return System__NativeArray__IndexOf(this.innerArray, T.unbox(item), startIndex);
+    return System__NativeArray__IndexOf(this.innerArray, System__Type__UnBoxTypeInstance(T, item), startIndex);
   };
   ptyp_.reverse = function System__ArrayG$1__Reverse() {
     this.innerArray.reverse();
@@ -183,10 +183,10 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     this.innerArray.sort(compareCallback);
   };
   ptyp_.getValue = function System__ArrayG$1__GetValue(index) {
-    return T.box(this.get_item(index));
+    return System__Type__BoxTypeInstance(T, this.get_item(index));
   };
   ptyp_.setValue = function System__ArrayG$1__SetValue(index, value) {
-    this.set_item(index, T.unbox(value));
+    this.set_item(index, System__Type__UnBoxTypeInstance(T, value));
   };
   ptyp_.indexOfb = function System__ArrayG$1__IndexOfb(item) {
     return System__NativeArray__IndexOf(this.innerArray, item, 0);

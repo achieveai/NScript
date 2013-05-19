@@ -15,6 +15,16 @@ namespace NScript
     using NScript.Utils;
 
     /// <summary>
+    /// Values that represent PluginKind.
+    /// </summary>
+    enum PluginKind
+    {
+        Script,
+        Method,
+        Type,
+    }
+
+    /// <summary>
     /// Definition for PluginLoadInfo
     /// </summary>
     public class PluginLoadInfo
@@ -161,10 +171,12 @@ namespace NScript
         }
 
         /// <summary>
-        /// Gets the plugin.
+        /// Gets script plugin.
         /// </summary>
-        /// <returns>Plugin</returns>
-        public IConverterPlugin GetPlugin()
+        /// <returns>
+        /// The script plugin.
+        /// </returns>
+        public IConverterPlugin GetScriptPlugin()
         {
             Assembly pluginAssembly = Assembly.LoadFrom(this.AssemblyName);
             Type className = pluginAssembly.GetType(this.ClassName, true, true);

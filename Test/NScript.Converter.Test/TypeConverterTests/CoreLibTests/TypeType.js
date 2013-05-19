@@ -69,6 +69,37 @@ function System__Type__RegisterEnum(this_, typeName, isFlag) {
     };
   System__Type__typeMapping[this_.fullName] = this_;
 };
+function System__Type__BoxTypeInstance(type, instance) {
+  if (type.isNullable)
+    return type.nullableBox(instance);
+  else if (type.isStruct)
+    return new type(instance);
+  else
+    return instance;
+};
+function System__Type__UnBoxTypeInstance(type, instance) {
+  if (type.isNullable && instance === null)
+    return null;
+  else if (type.isStruct)
+    return instance.boxedValue;
+  else
+    return instance;
+};
+function System__Type__GetDefaultConstructor(type) {
+  if (type.isStruct)
+    return type.getDefaultValue;
+  else if (type.defaultConstructor)
+    return type.defaultConstructor;
+  else
+    return function() {
+        return null;
+    };
+};
+function System__Type__GetDefaultValueStatic(type) {
+  if (type.isStruct)
+    return type.getDefaultValue();
+  return null;
+};
 function System__Type__InitializeBaseInterfaces(type) {
   var rv, baseType, baseInterfaces, key, interfaces;
   if (!type.baseInterfaces) {
@@ -104,6 +135,7 @@ ptyp_.isClass = false;
 ptyp_.isEnum = false;
 ptyp_.isStruct = false;
 ptyp_.isInterface = false;
+ptyp_.isNullable = false;
 ptyp_.baseType = null;
 ptyp_.fullName = null;
 ptyp_.typeId = null;
@@ -123,24 +155,15 @@ ptyp_.isInstanceOfType = function System__Type__IsInstanceOfType(instance) {
     System__Type__InitializeBaseInterfaces(instance.constructor);
   return instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
 };
-ptyp_.box = function System__Type__Box(instance) {
-  if (this.isStruct)
-    return new this(instance);
-  else
-    return instance;
-};
-ptyp_.unbox = function System__Type__Unbox(instance) {
-  if (this.isStruct)
-    return instance.boxedValue;
-  else
-    return instance;
-};
 ptyp_.defaultConstructor = function System__Type__DefaultConstructor() {
   if (this.isStruct)
-    return this.getDefaultValue();
+    return this.getDefaultValue;
   throw "Default constructor not implemented";
 };
 ptyp_.getDefaultValue = function System__Type__GetDefaultValue() {
+  return null;
+};
+ptyp_.nullableBox = function System__Type__NullableBox(instance) {
   return null;
 };
 ptyp_.toLocaleString = function() {

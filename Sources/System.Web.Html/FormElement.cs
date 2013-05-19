@@ -112,5 +112,20 @@ namespace System.Web.Html
         /// Submits this object.
         /// </summary>
         public extern void Submit();
+
+        /// <summary>
+        /// Check validity.
+        /// </summary>
+        public extern void CheckValidity();
+
+        /// <summary>
+        /// Dispatch form change.
+        /// </summary>
+        public extern void DispatchFormChange();
+
+        /// <summary>
+        /// Dispatch form input.
+        /// </summary>
+        public extern void DispatchFormInput();
     }
 }

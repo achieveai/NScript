@@ -259,15 +259,21 @@ namespace NScript.Converter.StatementsConverter
             if (expectedType.IsValueType
                 || expectedType.IsGenericParameter)
             {
-                rv = converter.CreateInstanceMethodCallExpression(
-                    enumerator.Location,
-                    converter.Scope,
-                    JST.IdentifierExpression.Create(
+                rv = MethodCallExpressionConverter.CreateMethodCallExpression(
+                    new MethodCallContext(
+                        converter.KnownReferences.UnboxMethod,
                         enumerator.Location,
-                        converter.Scope,
-                        converter.Resolve(expectedType)),
-                    converter.KnownReferences.UnboxMethod,
-                    new JST.Expression[] { rv });
+                        converter.Scope),
+                    new JST.Expression[]
+                    {
+                        JST.IdentifierExpression.Create(
+                            enumerator.Location,
+                            converter.Scope,
+                            converter.Resolve(expectedType)),
+                        rv
+                    },
+                    converter,
+                    converter.RuntimeManager);
             }
 
             return rv;

@@ -124,6 +124,10 @@ namespace NScript.JSParser
                     return Parser.ParseForBlock(
                         tree,
                         resolver);
+                case JavaScriptParser.WHILE_BLOCK:
+                    return Parser.ParseWhileBlock(
+                        tree,
+                        resolver);
                 case JavaScriptParser.STATEMENT_BLOCK:
                     return Parser.ParseStatementBlock(
                         tree,
@@ -155,6 +159,21 @@ namespace NScript.JSParser
                         return null;
                     }
             }
+        }
+
+        private static Statement ParseWhileBlock(CommonTree tree, ScopeResolver resolver)
+        {
+            Expression condition = Parser.ParseExpression(
+                (CommonTree)tree.Children[0],
+                resolver);
+
+            return new WhileLoop(
+                null,
+                resolver.Scope,
+                condition,
+                Parser.ParseStatementNode(
+                    (CommonTree)tree.Children[1],
+                    resolver));
         }
 
         /// <summary>

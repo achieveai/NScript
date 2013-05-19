@@ -9,7 +9,6 @@ namespace System.Web.Html
     using System;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
-    using System.Text;
 
     /// <summary>
     /// Values that represent MediaReadyState.

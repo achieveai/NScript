@@ -1,3 +1,3 @@
 ﻿function RealScript__JsScriptImport__TestExternGenericCall() {
-  return RealScript.JsScriptImport.externGenericCall(System_Int32.box(10));
+  return RealScript.JsScriptImport.externGenericCall(System__Type__BoxTypeInstance(System_Int32, 10));
 }

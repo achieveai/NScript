@@ -32,6 +32,35 @@ namespace NScript.Converter.ExpressionsConverter
                     converter,
                     expression.Expression);
 
+            if (expression.CheckType == TypeCheckType.CastType
+                && expression.Expression.ResultType.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType)
+                && ((GenericInstanceType)expression.Expression.ResultType).GenericArguments[0].IsSame(expression.ResultType))
+            {
+                return MethodCallExpressionConverter.CreateMethodCallExpression(
+                    new MethodCallContext(
+                        nestedExpression,
+                        converter.KnownReferences.NullableValuePropertyGetter(expression.ResultType),
+                        false),
+                    new JST.Expression[] { },
+                    converter,
+                    converter.RuntimeManager);
+            }
+
+            if (expression.CheckType == TypeCheckType.CastType
+                && expression.ResultType.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType))
+            {
+                if (!TypeCheckConverter.ReferenceEquals(
+                    ((GenericInstanceType)expression.ResultType).GenericArguments[0],
+                    expression.Expression.ResultType))
+                {
+                    return nestedExpression;
+                }
+                else if (expression.Expression.ResultType.IsValueType)
+                {
+                    throw new NotImplementedException("Don't know how to handle this case");
+                }
+            }
+
             JST.Expression typeReferenceExpression = null;
             TypeDefinition expressionTypeDefinition = expression.Type.Resolve();
 

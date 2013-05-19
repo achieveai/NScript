@@ -239,6 +239,21 @@ namespace System.Web.Html
         public extern NodeAttribute RemoveAttributeNode(NodeAttribute attribute);
 
         /// <summary>
+        /// Clears the children.
+        /// </summary>
+        [Script("var tmp; while((tmp = this.firstChild)) { this.removeChild(tmp); }")]
+        public extern void ClearChildren();
+
+        /// <summary>
+        /// Removes this object.
+        /// </summary>
+        /// <returns>
+        /// Node itself.
+        /// </returns>
+        [Script("return this.parentNode ? this.parentNode.removeChild(this) : this;")]
+        public extern Node Remove();
+
+        /// <summary>
         /// Removes the child described by child.
         /// </summary>
         /// <param name="child"> The child. </param>

@@ -217,6 +217,15 @@ namespace System.Web.Html
         { get; set; }
 
         /// <summary>
+        /// Gets the outer HTML.
+        /// </summary>
+        /// <value>
+        /// The outer HTML.
+        /// </value>
+        public extern string OuterHTML
+        { get; }
+
+        /// <summary>
         /// Height of the offset.
         /// </summary>
         public extern double OffsetHeight
@@ -484,7 +493,7 @@ namespace System.Web.Html
         /// <returns>
         /// .
         /// </returns>
-        public extern Element AppendChild(Element child);
+        public extern Element AppendChild(Node child);
 
         /// <summary>
         /// Appends a child.

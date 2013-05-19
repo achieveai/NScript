@@ -48,24 +48,9 @@ namespace NScript.Converter.TypeSystemConverter
                             this.Scope,
                             this.Resolve(this.TypeDefinition)),
                         new JST.IdentifierExpression(
-                            this.Resolve(this.Context.KnownReferences.BoxMethod),
+                            this.Resolve(this.Context.KnownReferences.TypeNullableBoxMethod),
                             this.Scope)),
                     this.boxMethod.MethodFunctionExpression));
-
-            // Add binding for UnboxMethod.
-            statements.Add(
-                JST.ExpressionStatement.CreateAssignmentExpression(
-                    new JST.IndexExpression(
-                        null,
-                        this.Scope,
-                        JST.IdentifierExpression.Create(
-                            null,
-                            this.Scope,
-                            this.Resolve(this.TypeDefinition)),
-                        new JST.IdentifierExpression(
-                            this.Resolve(this.Context.KnownReferences.UnboxMethod),
-                            this.Scope)),
-                    this.unboxMehtod.MethodFunctionExpression));
         }
 
         protected override List<Tuple<JST.Expression, JST.Expression>> GetPrototypeInitializers(JST.Expression prototype)

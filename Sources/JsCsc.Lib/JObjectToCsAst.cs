@@ -378,12 +378,22 @@ namespace JsCsc.Lib
             var trueStatement = this.GetScopeBlock(jObject.Value<JObject>(NameTokens.TrueStatement));
             var falseStatement = this.GetScopeBlock(jObject.Value<JObject>(NameTokens.FalseCondition));
 
-            return new IfBlockStatement(
-                this._clrContext,
-                this.LocFromJObject(jObject),
-                this.ParseExpression(jObject.Value<JObject>(NameTokens.Condition)),
-                trueStatement,
-                falseStatement);
+            if (trueStatement == null && falseStatement == null)
+            {
+                return new ExpressionStatement(
+                    this.ParseExpression(
+                        jObject.Value<JObject>(
+                            NameTokens.Condition)));
+            }
+            else
+            {
+                return new IfBlockStatement(
+                    this._clrContext,
+                    this.LocFromJObject(jObject),
+                    this.ParseExpression(jObject.Value<JObject>(NameTokens.Condition)),
+                    trueStatement,
+                    falseStatement);
+            }
         }
 
         private Node ParseDoWhileStatement(JObject jObject)

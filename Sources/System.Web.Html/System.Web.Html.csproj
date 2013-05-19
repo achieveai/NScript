@@ -40,6 +40,11 @@
   <ItemGroup>
     <Compile Include="AnchorElement.cs" />
     <Compile Include="CheckBoxElement.cs" />
+    <Compile Include="DomError.cs" />
+    <Compile Include="File.cs" />
+    <Compile Include="FileInput.cs" />
+    <Compile Include="FileReader.cs" />
+    <Compile Include="FormData.cs" />
     <Compile Include="TokenList.cs" />
     <Compile Include="Data\ApplicationCache.cs" />
     <Compile Include="AreaElement.cs" />
@@ -119,9 +124,6 @@
       <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
       <Name>System.Web</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
 </Project>

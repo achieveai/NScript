@@ -28,7 +28,7 @@ ptyp_.genericMethodCall3 = function RealScript__GenericSamples__GenericMethodCal
   return TestSubClass2_$T_x_T$_.foo(Boolean, bar, foo, true);
 };
 ptyp_.getDefaultValue = function RealScript__GenericSamples__GetDefaultValue(T) {
-  return T.getDefaultValue();
+  return System__Type__GetDefaultValueStatic(T);
 };
 ptyp_.__ctor = function RealScript__GenericSamples____ctor() {
 };

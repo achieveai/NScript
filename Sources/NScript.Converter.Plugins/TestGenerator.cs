@@ -17,7 +17,7 @@ namespace NScript.Converter.Plugins
     /// <summary>
     /// Definition for TestGenerator
     /// </summary>
-    public class TestGenerator : IConverterPlugin
+    public class TestGenerator : IRuntimeConverterPlugin
     {
         /// <summary>
         /// ClrContext for conversoin sessoin.

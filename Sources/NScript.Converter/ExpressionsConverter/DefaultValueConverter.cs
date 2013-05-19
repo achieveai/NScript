@@ -127,15 +127,18 @@ namespace NScript.Converter.ExpressionsConverter
 
             return MethodCallExpressionConverter.CreateMethodCallExpression(
                 new MethodCallContext(
+                    runtimeScopeManager.Context.KnownReferences.GetDefaultMethodStatic,
+                    location,
+                    scope),
+                new JST.Expression[]
+                {
                      JST.IdentifierExpression.Create(
                         location,
                         scope,
                         resolver.Resolve(typeReference)),
-                        runtimeScopeManager.Context.KnownReferences.GetDefaultMethod,
-                        false),
-                    new JST.Expression[0],
-                    resolver,
-                    runtimeScopeManager);
+                },
+                resolver,
+                runtimeScopeManager);
         }
 
         /// <summary>

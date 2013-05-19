@@ -13,17 +13,52 @@ namespace NScript.Converter
     using NScript.JST;
     using NScript.Utils;
     using Mono.Cecil;
+    using System.Linq;
 
     /// <summary>
-    /// Definition for Builder
+    /// Definition for Builder.
     /// </summary>
     public class Builder
     {
+        /// <summary>
+        /// The main assembly.
+        /// </summary>
         private readonly string mainAssembly;
-        private readonly string jsScript;
-        private readonly string[] references;
-        private readonly IConverterPlugin[] plugins;
 
+        /// <summary>
+        /// The js script.
+        /// </summary>
+        private readonly string jsScript;
+
+        /// <summary>
+        /// The references.
+        /// </summary>
+        private readonly string[] references;
+
+        /// <summary>
+        /// The plugins.
+        /// </summary>
+        private readonly IRuntimeConverterPlugin[] plugins;
+
+        /// <summary>
+        /// The method converter plugins.
+        /// </summary>
+        private readonly IMethodConverterPlugin[] methodConverterPlugins;
+
+        /// <summary>
+        /// The type converter plugins.
+        /// </summary>
+        private readonly ITypeConverterPlugin[] typeConverterPlugins;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="jsScript">               The js script. </param>
+        /// <param name="mainAssembly">           The main assembly. </param>
+        /// <param name="references">             The references. </param>
+        /// <param name="plugins">                The plugins. </param>
+        /// <param name="typeConverterPlugins">   The type converter plugins. </param>
+        /// <param name="methodConverterPlugins"> The method converter plugins. </param>
         public Builder(
             string jsScript,
             string mainAssembly,
@@ -33,9 +68,20 @@ namespace NScript.Converter
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
             this.references = references;
-            this.plugins = plugins;
+            this.plugins = (from p in plugins where p is IRuntimeConverterPlugin select p as IRuntimeConverterPlugin)
+                .ToArray<IRuntimeConverterPlugin>();
+            this.methodConverterPlugins = (from p in plugins where p is IMethodConverterPlugin select p as IMethodConverterPlugin)
+                .ToArray<IMethodConverterPlugin>();
+            this.typeConverterPlugins = (from p in plugins where p is IRuntimeConverterPlugin select p as ITypeConverterPlugin)
+                .ToArray<ITypeConverterPlugin>();
         }
 
+        /// <summary>
+        /// Executes this object.
+        /// </summary>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
         public bool Execute()
         {
             if (!this.VerifyPaths())
@@ -126,6 +172,12 @@ namespace NScript.Converter
             return true;
         }
 
+        /// <summary>
+        /// Determines if we can verify paths.
+        /// </summary>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
         private bool VerifyPaths()
         {
             bool returnValue = true;
@@ -149,6 +201,14 @@ namespace NScript.Converter
             return returnValue;
         }
 
+        /// <summary>
+        /// Gets entry point.
+        /// </summary>
+        /// <param name="context">      The context. </param>
+        /// <param name="mainAssembly"> The main assembly. </param>
+        /// <returns>
+        /// The entry point.
+        /// </returns>
         private MethodDefinition GetEntryPoint(ConverterContext context, string mainAssembly)
         {
             ModuleDefinition module;

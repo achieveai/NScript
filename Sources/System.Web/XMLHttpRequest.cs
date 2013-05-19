@@ -265,6 +265,12 @@ namespace System.Web
         public extern void Send(string data);
 
         /// <summary>
+        /// Send this message.
+        /// </summary>
+        /// <param name="data"> The name of the event such as 'load'. </param>
+        public extern void Send(object data);
+
+        /// <summary>
         /// Sets a request header.
         /// </summary>
         /// <param name="header"> The name of the event such as 'load'. </param>

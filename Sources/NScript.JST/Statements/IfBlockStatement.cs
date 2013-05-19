@@ -104,10 +104,15 @@ namespace NScript.JST
         /// Writes the nested if.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        private void WriteNestedIf(JSWriter writer)
+        private void WriteNestedIf(JSWriter writer, bool nested = false)
         {
-            writer.EnterLocation(this.conditionExpression.Location)
-                .Write(Keyword.If)
+            writer.EnterLocation(this.conditionExpression.Location);
+            if (nested)
+            {
+                writer.Write(Keyword.Else);
+            }
+
+            writer.Write(Keyword.If)
                 .Write(this.conditionExpression, true)
                 .LeaveLocation();
 
@@ -128,9 +133,8 @@ namespace NScript.JST
                 if (this.FalseBlock.Statements.Count == 1 &&
                     this.FalseBlock.Statements[0] is IfBlockStatement)
                 {
-                    writer.WriteNewLine()
-                        .Write(Keyword.Else);
-                    ((IfBlockStatement)this.FalseBlock.Statements[0]).WriteNestedIf(writer);
+                    writer.WriteNewLine();
+                    ((IfBlockStatement)this.FalseBlock.Statements[0]).WriteNestedIf(writer, true);
                 }
                 else
                 {

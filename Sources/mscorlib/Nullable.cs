@@ -148,7 +148,7 @@ namespace System
         [Script(@" return this !== null; ")]
         private extern bool GetHasValue();
 
-        [Script(@"return o === null ? null : @{T}.@{[mscorlib]System.Type::Box([mscorlib]System.Object)}(o);")]
+        [Script(@"return o === null ? null : @{[mscorlib]System.Type::BoxTypeInstance([mscorlib]System.Type, [mscorlib]System.Object)}(@{T},o);")]
         private extern static object Box(T? o);
 
         private static T? Unbox(object o)

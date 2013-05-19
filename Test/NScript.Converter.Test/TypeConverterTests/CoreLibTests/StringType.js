@@ -4,8 +4,8 @@ System__String__trimStartHelperRegex = null;
 System__String__trimEndHelperRegex = null;
 function System__String____cctor() {
   System__String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
-  System__String__trimStartHelperRegex = new RegExp("^\\s*");
-  System__String__trimEndHelperRegex = new RegExp("\\s*$");
+  System__String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
+  System__String__trimEndHelperRegex = new RegExp("[\\s\\xA0]+$");
 };
 function System__String__Compare(s1, s2) {
   s1 = s1 || "";
@@ -132,10 +132,10 @@ function System__String__Trim(this_) {
   return System__String__TrimEnd(System__String__TrimStart(this_));
 };
 function System__String__TrimEnd(this_) {
-  return this_.replace(System__String__trimEndHelperRegex, "");
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(System__String__trimEndHelperRegex, "");
 };
 function System__String__TrimStart(this_) {
-  return this_.replace(System__String__trimStartHelperRegex, "");
+  return this_.trimRight ? this_.trimRight() : this_.replace(System__String__trimStartHelperRegex, "");
 };
 function System__String__get_Item(this_, index) {
   return this_.charCodeAt(index);
@@ -168,9 +168,9 @@ System__String__LastIndexOfa = function System__String__LastIndexOfa(this_, ch, 
   return this_.lastIndexOf(String.fromCharCode(ch), startIndex);
 };
 System__String__TrimEnd = function System__String__TrimEnd(this_) {
-  return this_.replace(System__String__trimEndHelperRegex, "");
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(System__String__trimEndHelperRegex, "");
 };
 System__String__TrimStart = function System__String__TrimStart(this_) {
-  return this_.replace(System__String__trimStartHelperRegex, "");
+  return this_.trimRight ? this_.trimRight() : this_.replace(System__String__trimStartHelperRegex, "");
 };
 System__Type__RegisterReferenceType(String, "System.String", Object, []);

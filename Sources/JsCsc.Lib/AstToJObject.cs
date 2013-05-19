@@ -559,7 +559,7 @@ namespace JsCsc.Lib
 
         public JObject Visit(SideEffectConstant expression)
         {
-            throw new NotImplementedException();
+            return this.Dispatch(expression.value);
         }
 
         public JObject Visit(QueryExpression expression)
@@ -1066,7 +1066,9 @@ namespace JsCsc.Lib
         }
 
         public JObject Visit(Lifted expression)
-        { throw new NotImplementedException(); }
+        {
+            return this.Dispatch(expression.InnerExpression);
+        }
 
         public JObject Visit(LiftedUnaryOperator expression)
         {

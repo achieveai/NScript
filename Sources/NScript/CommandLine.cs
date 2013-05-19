@@ -29,7 +29,7 @@ namespace NScript
 
             foreach (var pluginInfo in pluginsInfos)
             {
-                var plugin = pluginInfo.GetPlugin();
+                var plugin = pluginInfo.GetScriptPlugin();
 
                 if (plugin != null)
                 {
