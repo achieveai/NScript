@@ -1,4 +1,4 @@
-﻿function RealScript__StructClass2____ctor(i, j, foo) {
+﻿function RealScript__StructClass2_factory(i, j, foo) {
   var this_;
   this_ = RealScript_StructClass2.getDefaultValue();
   this_.i = i + j;

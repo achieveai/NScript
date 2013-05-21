@@ -155,6 +155,11 @@ namespace NScript.Converter.TypeSystemConverter
         private bool usingMcs;
 
         /// <summary>
+        /// true to initialize wrapper done.
+        /// </summary>
+        private bool initializeWrapperDone;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MethodConverter"/> class.
         /// </summary>
         /// <param name="typeConverter">The type converter.</param>
@@ -1249,7 +1254,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// Imports the js script.
         /// </summary>
         /// <returns>Function Expression after parsing js script.</returns>
-        private FunctionExpression ImportJsScript()
+        private List<Statement> ImportJsScript()
         {
             CustomAttribute scriptAttribute = methodDefinition.CustomAttributes.SelectAttribute(
                 KnownReferences.ScriptAttribute);
@@ -1288,20 +1293,13 @@ namespace NScript.Converter.TypeSystemConverter
                     ex);
             }
 
-            var returnValue = new FunctionExpression(
-                null,
-                typeConverter.Scope,
-                Scope,
-                Scope.ParameterIdentifiers,
-                GetMethodName(methodDefinition));
-
+            List<Statement> returnValue = new List<Statement>();
             if (IsConstructor
                 && thisIdentifier != null
                 && Scope.UsedLocalIdentifiers.Contains(thisIdentifier))
             {
                 // We are in struct constructor. So we need to initialize this.
-                returnValue.AddStatement(
-                    GetConstructorDefaultInitializationStatement());
+                returnValue.Add(GetConstructorDefaultInitializationStatement());
             }
 
             if (this.HasWrappedField())
@@ -1309,8 +1307,8 @@ namespace NScript.Converter.TypeSystemConverter
                 this.InitializeImportedWrapper(returnValue);
             }
 
-            returnValue.AddStatements(scopeBlock.Statements);
 
+            returnValue.AddRange(scopeBlock.Statements);
             return returnValue;
         }
 
@@ -1320,24 +1318,57 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         private FunctionExpression Convert()
         {
-            if (this.context.IsWrapped(this.methodDefinition))
+            List<Statement> statements = this.InnerConvert();
+            FunctionExpression functionExpression = this.GetFunctionExpressionShell();
+
+            foreach (var plugin in this.context.MethodConverterPlugins)
             {
-                return this.GenerateWrapperImplementation();
+                switch (plugin.GetInterestLevel(this))
+                {
+                    case IntrestLevel.PreEmitStatements:
+                        statements.InsertRange(0, plugin.GetPreInsertionStatements(this));
+                        break;
+                    case IntrestLevel.PostEmitStatements:
+                        statements.AddRange(plugin.GetPostInsertionStatements(this));
+                        break;
+                    case IntrestLevel.Encapsulate:
+                        statements = plugin.GetEncapsulationStatements(this, statements);
+                        break;
+                    case IntrestLevel.Overwrite:
+                        statements = plugin.GetOverwrite(this);
+                        functionExpression.AddStatements(statements);
+                        return functionExpression;
+                    case IntrestLevel.None:
+                    default:
+                        break;
+                }
             }
 
-            if (!methodDefinition.HasBody
-                || methodDefinition.Body.Instructions.Count == 0)
-            {
-                return ImportJsScript();
-            }
+            functionExpression.AddStatements(statements);
+            return functionExpression;
+        }
 
+        /// <summary>
+        /// Gets the convert cst.
+        /// </summary>
+        /// <returns>
+        /// object converted to a cst.
+        /// </returns>
+        private List<Statement> ConvertCST()
+        {
             var statements = new List<Statement>();
             ParameterBlock rootBlock = GetRootBlock();
+
+            if (this.HasWrappedField())
+            {
+                this.InitializeImportedWrapper(statements);
+            }
 
             // This means that we have compiler implemented method for Property or Event.
             if (rootBlock == null)
             {
-                return this.GenerateCompilerImplemented();
+                this.GenerateCompilerImplemented(statements);
+                return statements;
             }
 
             // Initialize all the scope stacks.
@@ -1424,8 +1455,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
-            if (IsConstructor
-                && thisIdentifier != null)
+            if (IsConstructor && thisIdentifier != null)
             {
                 // We are in struct constructor. So we need to initialize this.
                 statements.Insert(
@@ -1433,6 +1463,39 @@ namespace NScript.Converter.TypeSystemConverter
                     GetConstructorDefaultInitializationStatement());
             }
 
+            return statements;
+        }
+
+        /// <summary>
+        /// Gets the inner convert.
+        /// </summary>
+        /// <returns>
+        /// .
+        /// </returns>
+        private List<Statement> InnerConvert()
+        {
+            if (this.context.IsWrapped(this.methodDefinition))
+            {
+                return this.GenerateWrapperImplementation();
+            }
+
+            if (!methodDefinition.HasBody
+                || methodDefinition.Body.Instructions.Count == 0)
+            {
+                return ImportJsScript();
+            }
+
+            return this.ConvertCST();
+        }
+
+        /// <summary>
+        /// Gets function expression shell.
+        /// </summary>
+        /// <returns>
+        /// The function expression shell.
+        /// </returns>
+        private FunctionExpression GetFunctionExpressionShell()
+        {
             IIdentifier functionName = this.GetMethodName(methodDefinition);
 
             if (this.IsGlobalStaticImplementation)
@@ -1454,36 +1517,17 @@ namespace NScript.Converter.TypeSystemConverter
                 Scope.ParameterIdentifiers,
                 functionName);
 
-            if (this.HasWrappedField())
-            {
-                this.InitializeImportedWrapper(returnValue);
-            }
-
-            returnValue.AddStatements(statements);
-
             return returnValue;
         }
 
         /// <summary>
         /// Generates the compiler implemented.
         /// </summary>
-        /// <returns></returns>
-        private FunctionExpression GenerateCompilerImplemented()
+        /// <exception cref="InvalidProgramException"> Thrown when an Invalid Program error condition
+        ///     occurs. </exception>
+        /// <param name="returnValue"> The return value. </param>
+        private void GenerateCompilerImplemented(List<Statement> returnValue )
         {
-            IIdentifier functionName = this.GetMethodName(methodDefinition);
-
-            if (this.IsGlobalStaticImplementation)
-            {
-                functionName = this.RuntimeManager.ResolveStatic(this.methodDefinition);
-            }
-
-            var returnValue = new FunctionExpression(
-                null,
-                typeConverter.Scope,
-                Scope,
-                Scope.ParameterIdentifiers,
-                functionName);
-
             if (this.HasWrappedField())
             {
                 this.InitializeImportedWrapper(returnValue);
@@ -1506,33 +1550,19 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 throw new InvalidProgramException();
             }
-
-            return returnValue;
         }
 
         /// <summary>
         /// Generates a wrapper implementation.
         /// </summary>
-        /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
-        ///     occurs. </exception>
         /// <returns>
         /// The wrapper implementation.
         /// </returns>
-        private FunctionExpression GenerateWrapperImplementation()
+        private List<Statement> GenerateWrapperImplementation()
         {
             IIdentifier functionName = this.GetMethodName(methodDefinition);
 
-            if (this.IsGlobalStaticImplementation)
-            {
-                functionName = this.RuntimeManager.ResolveStatic(this.methodDefinition);
-            }
-
-            var returnValue = new FunctionExpression(
-                null,
-                typeConverter.Scope,
-                Scope,
-                Scope.ParameterIdentifiers,
-                functionName);
+            List<Statement> returnValue = new List<Statement>();
 
             if (this.methodDefinition.IsSetter
                 && !this.context.IsRenamed(this.methodDefinition))
@@ -1561,7 +1591,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// Generates the addon or remove on implementation.
         /// </summary>
         /// <param name="functionExpression">The function expression.</param>
-        private void GenerateAddonOrRemoveOnImplementation(FunctionExpression functionExpression)
+        private void GenerateAddonOrRemoveOnImplementation(List<Statement> statements)
         {
             int matchOffset = this.methodDefinition.IsAddOn
                 ? "add_".Length
@@ -1599,7 +1629,7 @@ namespace NScript.Converter.TypeSystemConverter
                         new JST.IdentifierExpression(this.Resolve(fieldReference), this.Scope)),
                 new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0], this.Scope));
 
-            functionExpression.AddStatement(
+            statements.Add(
                 JST.ExpressionStatement.CreateAssignmentExpression(
                     fieldReference.Resolve().IsStatic
                         ? JST.IdentifierExpression.Create(
@@ -1617,8 +1647,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>
         /// Generates an addon or remove on imported wrapper.
         /// </summary>
-        /// <param name="functionExpression"> The function expression. </param>
-        private void GenerateAddonOrRemoveOnImportedWrapper(FunctionExpression functionExpression)
+        /// <param name="statements"> The statements. </param>
+        private void GenerateAddonOrRemoveOnImportedWrapper(List<Statement> statements)
         {
             var methodCallExpr = new JST.MethodCallExpression(
                 null,
@@ -1635,7 +1665,7 @@ namespace NScript.Converter.TypeSystemConverter
                 new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope),
                 new JST.BooleanLiteralExpression(this.Scope, false));
 
-            functionExpression.AddStatement(new ExpressionStatement(null, this.Scope, methodCallExpr));
+            statements.Add(new ExpressionStatement(null, this.Scope, methodCallExpr));
         }
 
         /// <summary>
@@ -1663,9 +1693,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// Generates the setter implementation.
         /// </summary>
         /// <param name="functionExpression">The function expression.</param>
-        private void GenerateSetterImplementation(FunctionExpression functionExpression)
+        private void GenerateSetterImplementation(List<Statement> statements)
         {
-            functionExpression.AddStatement(
+            statements.Add(
                 new JST.ReturnStatement(
                     null,
                     this.Scope,
@@ -1687,10 +1717,10 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>
         /// Generates the getter implementation.
         /// </summary>
-        /// <param name="functionExpression">The function expression.</param>
-        private void GenerateGetterImplementation(FunctionExpression functionExpression)
+        /// <param name="statements"> The statements. </param>
+        private void GenerateGetterImplementation(List<Statement> statements)
         {
-            functionExpression.AddStatement(
+            statements.Add(
                 new JST.ReturnStatement(
                     null,
                     this.Scope,
@@ -1709,7 +1739,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
         ///     occurs. </exception>
         /// <param name="functionExpression"> The function expression. </param>
-        public void GenerateGetterImportedWrapper(FunctionExpression functionExpression)
+        public void GenerateGetterImportedWrapper(List<Statement> statements)
         {
             PropertyDefinition propertyDefinition = (PropertyDefinition)this.methodDefinition.GetAssociatedMember();
             var valueParameter = this.methodDefinition.ReturnType;
@@ -1727,7 +1757,7 @@ namespace NScript.Converter.TypeSystemConverter
                         this.Scope),
                     new JST.NullLiteralExpression(this.Scope));
 
-                functionExpression.AddStatement(
+                statements.Add(
                     new JST.ReturnStatement(
                         null,
                         this.Scope,
@@ -1745,7 +1775,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
             else
             {
-                this.InitializeImportedWrapper(functionExpression);
+                this.InitializeImportedWrapper(statements);
 
                 JST.Expression valueExpression = new JST.ConditionalOperatorExpression(
                     null,
@@ -1768,7 +1798,7 @@ namespace NScript.Converter.TypeSystemConverter
                         this.Scope),
                     new JST.NullLiteralExpression(this.Scope));
 
-                functionExpression.AddStatement(
+                statements.Add(
                     new JST.ReturnStatement(
                         null,
                         this.Scope,
@@ -1792,18 +1822,18 @@ namespace NScript.Converter.TypeSystemConverter
         /// <exception cref="InvalidProgramException"> Thrown when an invalid program error condition
         ///     occurs. </exception>
         /// <param name="functionExpression"> The function expression. </param>
-        private void GenerateSetterImportedWrapper(FunctionExpression functionExpression)
+        private void GenerateSetterImportedWrapper(List<Statement> statements)
         {
             PropertyDefinition propertyDefinition = (PropertyDefinition)this.methodDefinition.GetAssociatedMember();
 
             if (this.methodDefinition.IsStatic)
             {
-                functionExpression.AddStatement(
+                statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
                         new JST.IdentifierExpression(this.typeConverter.ResolveImplementedVersion(propertyDefinition), this.Scope),
                         new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope)));
 
-                functionExpression.AddStatement(
+                statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
                         new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
                         MethodConverter.GenerateExtrationExpression(
@@ -1814,14 +1844,14 @@ namespace NScript.Converter.TypeSystemConverter
             }
             else
             {
-                this.InitializeImportedWrapper(functionExpression);
+                this.InitializeImportedWrapper(statements);
 
-                functionExpression.AddStatement(
+                statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
                         new JST.IdentifierExpression(this.GetImportedWrapperIdentifier(propertyDefinition), this.Scope),
                         new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope)));
 
-                functionExpression.AddStatement(
+                statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
                         new JST.IndexExpression(
                             null,
@@ -1840,8 +1870,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>
         /// Generates a method wrapper.
         /// </summary>
-        /// <param name="functionExpression"> The function expression. </param>
-        private void GenerateMethodWrapper(FunctionExpression functionExpression)
+        /// <param name="statements"> The statements. </param>
+        private void GenerateMethodWrapper(List<Statement> statements)
         {
             List<JST.Expression> arguments = new List<JST.Expression>();
             for (int iParameter = 0; iParameter < this.methodDefinition.Parameters.Count; iParameter++)
@@ -1902,7 +1932,7 @@ namespace NScript.Converter.TypeSystemConverter
                         this.Scope);
                 }
 
-                functionExpression.AddStatement(
+                statements.Add(
                     new JST.ReturnStatement(
                         null,
                         this.Scope,
@@ -1910,7 +1940,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
             else
             {
-                functionExpression.AddStatement(new ExpressionStatement(null, this.Scope, methodCallExpression));
+                statements.Add(new ExpressionStatement(null, this.Scope, methodCallExpression));
             }
         }
 
@@ -1932,13 +1962,14 @@ namespace NScript.Converter.TypeSystemConverter
         /// Initializes the imported wrapper.
         /// </summary>
         /// <param name="functionExpression"> The function expression. </param>
-        private void InitializeImportedWrapper(FunctionExpression functionExpression)
+        private void InitializeImportedWrapper(List<Statement> statements)
         {
-            if (!this.methodDefinition.HasThis)
+            if (!this.methodDefinition.HasThis
+                || this.initializeWrapperDone)
             { return; }
 
             FieldReference importedAdapterField = this.KnownReferences.ImportedExtensionField;
-            functionExpression.AddStatement(
+            statements.Add(
                 JST.ExpressionStatement.CreateAssignmentExpression(
                     new JST.IndexExpression(
                         null,
@@ -1959,7 +1990,11 @@ namespace NScript.Converter.TypeSystemConverter
                         new JST.MethodCallExpression(
                             null,
                             this.Scope,
-                            JST.IdentifierExpression.Create(null, this.Scope, this.ResolveStaticMember(this.KnownReferences.GetNewImportedExtensionMethod))))));
+                            JST.IdentifierExpression.Create(
+                                null,
+                                this.Scope,
+                                this.ResolveStaticMember(this.KnownReferences.GetNewImportedExtensionMethod))))));
+            this.initializeWrapperDone = true;
         }
 
         /// <summary>

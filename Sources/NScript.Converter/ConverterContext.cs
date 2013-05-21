@@ -127,13 +127,28 @@ namespace NScript.Converter
         private readonly List<Tuple<Location, string>> warnings = new List<Tuple<Location, string>>();
 
         /// <summary>
+        /// The method converter plugins.
+        /// </summary>
+        private readonly List<IMethodConverterPlugin> methodConverterPlugins;
+
+        /// <summary>
+        /// The method converter plugins.
+        /// </summary>
+        private readonly List<ITypeConverterPlugin> typeConverterPlugins;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="clrContext"> Context for the colour. </param>
-        public ConverterContext(ClrContext clrContext)
+        public ConverterContext(
+            ClrContext clrContext,
+            List<IMethodConverterPlugin> methodConverterPlugins = null,
+            List<ITypeConverterPlugin> typeConverterPlugins = null)
         {
             this.clrContext = clrContext;
             this.converterKnownReferences = new ConverterKnownReferences(this.clrContext);
+            this.methodConverterPlugins = methodConverterPlugins ?? new List<IMethodConverterPlugin>();
+            this.typeConverterPlugins = typeConverterPlugins ?? new List<ITypeConverterPlugin>();
 
             JObjectToCsAst toAst = new JObjectToCsAst(clrContext);
             foreach (var module in clrContext.Modules)
@@ -195,6 +210,24 @@ namespace NScript.Converter
         /// </value>
         public ConverterKnownReferences KnownReferences
         { get { return this.converterKnownReferences; } }
+
+        /// <summary>
+        /// Gets the method converter plugins.
+        /// </summary>
+        /// <value>
+        /// The method converter plugins.
+        /// </value>
+        public List<IMethodConverterPlugin> MethodConverterPlugins
+        {get { return this.methodConverterPlugins; } }
+
+        /// <summary>
+        /// Gets the type converter plugins.
+        /// </summary>
+        /// <value>
+        /// The type converter plugins.
+        /// </value>
+        public List<ITypeConverterPlugin> TypeConverterPlugins
+        { get { return this.typeConverterPlugins; } }
 
         /// <summary>
         /// Adds an error.

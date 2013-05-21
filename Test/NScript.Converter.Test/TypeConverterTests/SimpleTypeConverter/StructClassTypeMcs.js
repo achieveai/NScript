@@ -15,7 +15,7 @@ function RealScript__StructClass_factory(i, foo) {
   this_.foo = foo;
   return this_;
 };
-function RealScript__StructClass____ctora(i, j, foo) {
+function RealScript__StructClass_factorya(i, j, foo) {
   var this_;
   this_ = RealScript_StructClass.getDefaultValue();
   this_.i = i + j;
@@ -76,7 +76,7 @@ RealScript_StructClass2.getDefaultValue = function() {
     foo: null
   };
 };
-function RealScript__StructClass2____ctor(i, j, foo) {
+function RealScript__StructClass2_factory(i, j, foo) {
   var this_;
   this_ = RealScript_StructClass2.getDefaultValue();
   this_.i = i + j;
