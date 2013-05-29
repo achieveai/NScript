@@ -25,15 +25,15 @@ namespace NScript.Converter.Test.JsExecutionTests
             TestAssemblyLoader.LoadAssemblies();
         }
 
-        [Test]
+        // [Test]
         // [Row(TestType.All, "FactorialCalculator", "Main")]
         // [Row(TestType.All, "GetMin", "RunTest")]
         // [Row(TestType.All, "QuickSort", "RunTest")]
         // [Row(TestType.All, "TestArithmetics", "Main")]
-        // [Row(TestType.All, "TestControlFlow", "Main")]
+        // [Row(TestType.Retail, "TestControlFlow", "Main")]
         // [Row(TestType.All, "TestInitializer", "Main")]
         // [Row(TestType.All, "TestDelegates", "Main")]
-        [Row(TestType.Retail, "TestGenerics", "Main")]
+        // [Row(TestType.Retail, "TestGenerics", "Main")]
         public void Test(
                 TestType testType,
                 string className,
@@ -64,7 +64,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         [Row(TestType.All, "TestControlFlow", "Main")]
         [Row(TestType.All, "TestInitializer", "Main")]
         [Row(TestType.All, "TestDelegates", "Main")]
-        [Row(TestType.Retail, "TestGenerics", "Main")]
+        [Row(TestType.All, "TestGenerics", "Main")]
         [Row(TestType.All, "NullableTests", "Main")]
         public void TestMcs(
                 TestType testType,

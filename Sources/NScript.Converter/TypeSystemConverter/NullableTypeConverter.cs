@@ -33,6 +33,26 @@ namespace NScript.Converter.TypeSystemConverter
                 this.Context.KnownReferences.NullableUnboxMethod.Resolve());
         }
 
+        protected override void InitializeStaticVariables(List<JST.Statement> statements)
+        {
+            // Add binding for BoxMethod.
+            statements.Add(
+                JST.ExpressionStatement.CreateAssignmentExpression(
+                    new JST.IndexExpression(
+                        null,
+                        this.Scope,
+                        JST.IdentifierExpression.Create(
+                            null,
+                            this.Scope,
+                            this.Resolve(this.TypeDefinition)),
+                        new JST.IdentifierExpression(
+                            this.Resolve(this.Context.KnownReferences.IsNullableField),
+                            this.Scope)),
+                    new JST.BooleanLiteralExpression(this.Scope, true)));
+
+            base.InitializeStaticVariables(statements);
+        }
+
         protected override void InitializeStaticFunctions(List<JST.Statement> statements)
         {
             base.InitializeStaticFunctions(statements);

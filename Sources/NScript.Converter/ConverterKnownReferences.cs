@@ -477,6 +477,11 @@ namespace NScript.Converter
         private FieldReference boxedValueField;
 
         /// <summary>
+        /// Backing field for isNullable field.
+        /// </summary>
+        private FieldReference isNullableField;
+
+        /// <summary>
         /// Backing field for PrototypeField.
         /// </summary>
         private FieldReference prototypeField;
@@ -2336,6 +2341,28 @@ namespace NScript.Converter
                 }
 
                 return this.boxedValueField;
+            }
+        }
+
+        /// <summary>
+        /// Gets the boxed value field.
+        /// </summary>
+        /// <value>
+        /// The boxed value field.
+        /// </value>
+        public FieldReference IsNullableField
+        {
+            get
+            {
+                if (this.isNullableField == null)
+                {
+                    this.isNullableField = new FieldReference(
+                        "IsNullable",
+                        this.ClrReferences.Boolean,
+                        this.ClrReferences.TypeType);
+                }
+
+                return this.isNullableField;
             }
         }
 

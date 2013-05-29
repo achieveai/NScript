@@ -474,6 +474,12 @@ namespace NScript.Converter.TypeSystemConverter
                     // This is done so that we don't reinit the type again (case of generics).
                     typeRegistered.Add(typeReference.Resolve());
                     typesInitializedInOrder.Add(typeReference);
+
+                    // Investigate: why do we have to specifically resolve this type and why can't
+                    // this be added in typeReferenceIdentifiers if it gets inside typesToConvert
+                    // Result: The reason why we get here is because this type is referenced through
+                    // second level Generic (or higher level generic).
+                    this.ResolveType(typeReference);
                 }
 
                 // There is chance that we may have missed some Generic types that are
