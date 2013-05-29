@@ -42,7 +42,7 @@ namespace XwmlParser.NodeInfos
         public TypeReference Type
         { get; private set; }
 
-        public void ParseNode(TemplateParser parser)
+        public override void ParseNode(TemplateParser parser)
         {
         }
 

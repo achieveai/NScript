@@ -54,7 +54,7 @@ namespace XwmlParser
         }
 
         public ConverterContext ConverterContext
-        { get; }
+        { get; set; }
 
         /// <summary>
         /// Gets the resolver.

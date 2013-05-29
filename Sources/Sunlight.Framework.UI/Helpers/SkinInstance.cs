@@ -17,6 +17,11 @@ namespace Sunlight.Framework.UI.Helpers
     public class SkinInstance : IDisposable
     {
         /// <summary>
+        /// The parent factory.
+        /// </summary>
+        SkinFactory parentFactory;
+
+        /// <summary>
         /// The child elements.
         /// </summary>
         private UIElement[] childElements;
@@ -32,16 +37,6 @@ namespace Sunlight.Framework.UI.Helpers
         private StringDictionary<UIElement> childIdMappings = new StringDictionary<UIElement>();
 
         /// <summary>
-        /// Type of the skinable.
-        /// </summary>
-        private Type skinableType;
-
-        /// <summary>
-        /// Type of the data context.
-        /// </summary>
-        private Type dataContextType;
-
-        /// <summary>
         /// true if this object is active.
         /// </summary>
         bool isActive;
@@ -51,23 +46,24 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         bool isDiposed;
 
-        /// <summary>   Initializes a new instance of the SkinInstance class. </summary>
-        /// <param name="rootElement">      The root element. </param>
-        /// <param name="childElements">    The child elements. </param>
-        /// <param name="skinableType">     Type of the skinable. </param>
-        /// <param name="dataContextType">  Type of the data context. </param>
+        /// <summary>
+        /// Initializes a new instance of the SkinInstance class.
+        /// </summary>
+        /// <param name="factory">         The factory. </param>
+        /// <param name="rootElement">     The root element. </param>
+        /// <param name="childElements">   The child elements. </param>
+        /// <param name="skinableType">    Type of the skinable. </param>
+        /// <param name="dataContextType"> Type of the data context. </param>
         public SkinInstance(
+            SkinFactory factory,
             Element rootElement,
-            UIElement[] childElements,
-            Type skinableType,
-            Type dataContextType)
+            UIElement[] childElements)
         {
             ExceptionHelpers.IsNullOrUndefined(rootElement);
 
+            this.parentFactory = factory;
             this.rootElement = rootElement;
             this.childElements = childElements;
-            this.skinableType = skinableType;
-            this.dataContextType = dataContextType;
         }
 
         /// <summary>   Registers the child by identifier. </summary>
@@ -112,7 +108,7 @@ namespace Sunlight.Framework.UI.Helpers
                 throw new Exception("InvalidOperation, Skin already applied");
             }
 
-            if (!this.skinableType.IsInstanceOfType(skinable))
+            if (!this.parentFactory.SkinableType.IsInstanceOfType(skinable))
             {
                 throw new Exception("Skin being applied to wrong Skinable");
             }

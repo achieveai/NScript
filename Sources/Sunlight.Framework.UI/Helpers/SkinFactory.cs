@@ -13,9 +13,36 @@ namespace Sunlight.Framework.UI.Helpers
     /// </summary>
     public class SkinFactory
     {
+        Func<SkinFactory, SkinInstance> factoryMethod;
+        Type skinableType;
+        Type dataContextType;
+        string id;
+
+        public SkinFactory(
+            Type skinableType,
+            Type dataContextType,
+            Func<SkinFactory, SkinInstance> factoryMethod,
+            string id)
+        {
+            this.factoryMethod = factoryMethod;
+            this.skinableType = skinableType;
+            this.dataContextType = dataContextType;
+            this.id = id;
+        }
+
+        public Type SkinableType
+        {
+            get { return this.skinableType; }
+        }
+
+        public Type DataContextType
+        {
+            get { return this.dataContextType; }
+        }
+
         public SkinInstance CreateInstance()
         {
-            return null;
+            return factoryMethod(this);
         }
     }
 }

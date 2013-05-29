@@ -52,7 +52,7 @@ namespace XwmlParser.NodeInfos
             }
         }
 
-        public void ParseNode(TemplateParser parser)
+        public override void ParseNode(TemplateParser parser)
         {
         }
     }

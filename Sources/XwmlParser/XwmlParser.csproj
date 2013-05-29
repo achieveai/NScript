@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\NScriptToolSet\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\NScriptToolSet\bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -100,6 +100,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="TemplateParser.cs" />
+    <Compile Include="XwmlTemplatingPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -119,6 +120,14 @@
     <ProjectReference Include="..\NScript.Converter\NScript.Converter.csproj">
       <Project>{2cb180c7-d96a-4e43-8676-f928e4736a1f}</Project>
       <Name>NScript.Converter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj">
+      <Project>{35789c27-44de-4251-8528-6b0de5c66608}</Project>
+      <Name>NScript.JS.AST</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj">
+      <Project>{030b10dd-4861-4be1-b0d6-db43587e603f}</Project>
+      <Name>NScript.Utils</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -100,6 +100,10 @@
         <File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll" />
+        <File Source="$(var.ToolsetDir)\bin\XwmlParser.pdb" />
       </Component>
 
       <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">

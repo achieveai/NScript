@@ -14,5 +14,9 @@ namespace XwmlParser.Binding
     /// </summary>
     public class PropertyTargetBindingInfo : TargetBindingInfo
     {
+        public override Mono.Cecil.TypeReference BindingType
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

@@ -172,6 +172,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestClass", "TestClass", "{
 		NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.vstemplate = NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.vstemplate
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI.Test", "Test\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = NScript1.vsmdi
@@ -596,6 +598,20 @@ Global
 		{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA}.Release|x64.ActiveCfg = Release|Any CPU
 		{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA}.Release|x86.ActiveCfg = Release|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|ARM.ActiveCfg = Release|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|x64.ActiveCfg = Release|Any CPU
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -625,6 +641,7 @@ Global
 		{5702ADA9-6583-4019-ADA1-A48CCC3F53EA} = {00C42FFB-D661-40EB-A872-448DD7EA18C8}
 		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914} = {00C42FFB-D661-40EB-A872-448DD7EA18C8}
 		{F7FBA37A-2304-49E1-B499-D030FA58074E} = {00C42FFB-D661-40EB-A872-448DD7EA18C8}
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB} = {00C42FFB-D661-40EB-A872-448DD7EA18C8}
 		{B8231F8C-0F37-43B8-B20A-6F71E9CFAA3E} = {D40F5B9D-0573-4366-8519-DD11968A29A3}
 		{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB} = {A64B5AAF-7EF9-42F8-8F93-00424C95C99A}
 		{A60706FF-08D7-4320-99F9-A2413275CDF6} = {A64B5AAF-7EF9-42F8-8F93-00424C95C99A}
