@@ -3,13 +3,22 @@
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
+    using NScript.CLR;
     using System;
     using System.Collections.Generic;
 
     class XwmlTemplatingPlugin : IMethodConverterPlugin
     {
+
         public IntrestLevel GetInterestLevel(MethodConverter methodConverter)
         {
+            if (methodConverter.MethodDefinition.CustomAttributes.SelectAttribute(
+					methodConverter.RuntimeManager.Context.ClrContext.GetTypeDefinition(
+						Tuple.Create("", ""))) != null)
+            {
+                return IntrestLevel.Overwrite;
+            }
+
             return IntrestLevel.None;
         }
 

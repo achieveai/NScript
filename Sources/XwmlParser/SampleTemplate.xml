@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<html xmlns:ctrl="Sunlight.Framework.UI" xmlns:vm="MyApp.ViewModels">
+  <head>
+    <style>
+    </style>
+  </head>
+  <template ControlType="ctrl:Control" DataContext="vm:AppViewModel">
+    <div class="X Y" ClassBinder.Z ="{Prop1}">
+		Hi {{Name}}!!!
+    </div>
+    <div class="X" StyleBInder.display="{HasLastName, Converter=ValueIfTrue('none')">
+      You last name is: {{LastName}}
+    </div>
+  </template>
+</html>
