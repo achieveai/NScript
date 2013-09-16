@@ -32,9 +32,13 @@ namespace NScript.Converter.ExpressionsConverter
                     converter,
                     expression.Expression);
 
+            TypeReference innerUnderlyingType = TypeCheckConverter.GetUnderlyingType(
+                converter,
+                expression.Expression);
+
             if (expression.CheckType == TypeCheckType.CastType
-                && expression.Expression.ResultType.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType)
-                && ((GenericInstanceType)expression.Expression.ResultType).GenericArguments[0].IsSame(expression.ResultType))
+                && innerUnderlyingType.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType)
+                && ((GenericInstanceType)innerUnderlyingType).GenericArguments[0].IsSame(expression.ResultType))
             {
                 return MethodCallExpressionConverter.CreateMethodCallExpression(
                     new MethodCallContext(
@@ -122,7 +126,20 @@ namespace NScript.Converter.ExpressionsConverter
             switch (expression.CheckType)
             {
                 case TypeCheckType.IsType:
-                    methodReference = converter.KnownReferences.IsInstanceOfMethod;
+                    if (!TypeCheckConverter.RequireCast(
+                            converter.RuntimeManager.Context,
+                            expression.ResultType,
+                            innerUnderlyingType))
+                    {
+                        return new JST.BooleanLiteralExpression(
+                            converter.Scope,
+                            true);
+                    }
+                    else
+                    {
+                        methodReference = converter.KnownReferences.IsInstanceOfMethod;
+                    }
+
                     break;
                 case TypeCheckType.CastType:
                     if (BinaryExpressionConverter.IsIntBased(expression.ResultType)
@@ -138,7 +155,7 @@ namespace NScript.Converter.ExpressionsConverter
                     else if (!TypeCheckConverter.RequireCast(
                             converter.RuntimeManager.Context,
                             expression.ResultType,
-                            expression.Expression.ResultType))
+                            innerUnderlyingType))
                     {
                         return nestedExpression;
                     }
@@ -167,10 +184,27 @@ namespace NScript.Converter.ExpressionsConverter
             TypeReference t1,
             TypeReference t2)
         {
+            if (t1.IsSame(t2))
+            {
+                return false;
+            }
+
             if ((t1.IsDouble() || t1.IsIntegerOrEnum())
                 && t2.IsIntegerOrEnum())
             {
                 return false;
+            }
+
+            if (t1.IsArray && t2.Resolve().IsSameDefinition(context.KnownReferences.ArrayImplGeneric)
+                || t2.IsArray && t1.Resolve().IsSameDefinition(context.KnownReferences.ArrayImplGeneric))
+            {
+                TypeReference ct1 = t1.IsArray ? t1.GetElementType() : t2.GetElementType();
+                TypeReference ct2 = ((GenericInstanceType)(t1.IsArray ? t2 : t1)).GenericArguments[0];
+
+                return TypeCheckConverter.RequireCast(
+                    context,
+                    ct1,
+                    ct2);
             }
 
             TypeDefinition tr1 = t1.Resolve();
@@ -187,6 +221,21 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             return true;
+        }
+
+        private static TypeReference GetUnderlyingType(
+            IMethodScopeConverter converter,
+            Expression expression)
+        {
+            TypeCheckExpression castExpression = expression as TypeCheckExpression;
+            if (castExpression != null
+                && castExpression.CheckType == TypeCheckType.CastType
+                && castExpression.ResultType.IsSameDefinition(converter.ClrKnownReferences.Object))
+            {
+                return castExpression.Expression.ResultType;
+            }
+
+            return expression.ResultType;
         }
     }
 }

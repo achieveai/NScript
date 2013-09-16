@@ -138,8 +138,6 @@ function Sunlight_Framework_Binders_DataBinder() {
 };
 Sunlight_Framework_Binders_DataBinder.typeId = "m";
 System__Type__RegisterReferenceType(Sunlight_Framework_Binders_DataBinder, "Sunlight.Framework.Binders.DataBinder", Object, []);
-Array.typeId = "n";
-System__Type__RegisterReferenceType(Array, "System.NativeArray", Object, []);
 function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstructor) {
   var StringDictionary$1_$TValue$_, $5f_initTracker;
   if (System_Collections_Generic_StringDictionary[TValue.typeId])
@@ -149,7 +147,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "o$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "n$" + TValue.typeId + "$";
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factorya() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -183,7 +181,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_ = System_Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = System_Action;
-  Action$1_$T1$_.typeId = "p$" + T1.typeId + "$";
+  Action$1_$T1$_.typeId = "o$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", System_MulticastDelegate, []);
   Action$1_$T1$_._tri = function() {
@@ -206,7 +204,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   List$1_$T$_ = System_Collections_Generic_List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = System_Collections_Generic_List;
-  List$1_$T$_.typeId = "q$" + T.typeId + "$";
+  List$1_$T$_.typeId = "p$" + T.typeId + "$";
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factorya() {
     var this_;
     this_ = new List$1_$T$_();

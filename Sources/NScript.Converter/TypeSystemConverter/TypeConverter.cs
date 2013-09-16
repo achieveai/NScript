@@ -2026,7 +2026,9 @@ namespace NScript.Converter.TypeSystemConverter
 
             List<IIdentifier> returnValue = new List<IIdentifier>();
             TypeDefinition memberTypeDef = method.DeclaringType.Resolve();
-            if (!memberTypeDef.IsGeneric()
+            if ((!memberTypeDef.IsGeneric()
+                || this.RuntimeManager.Context.IsPsudoType(memberTypeDef)
+                || this.RuntimeManager.Context.IsExtended(memberTypeDef))
                 && this.RuntimeManager.Context.IsImplemented(method.Resolve()))
             {
                 if (!isFactory)

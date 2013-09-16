@@ -26,6 +26,9 @@ namespace Sunlight.Framework.Binders
         /// </summary>
         private Func<object, object>[] propertyGetterChain;
 
+        /// <summary>
+        /// The change registrations.
+        /// </summary>
         private Action<INotifyPropertyChanged, string>[] changeRegistrations;
 
         /// <summary>
@@ -53,6 +56,12 @@ namespace Sunlight.Framework.Binders
         /// </summary>
         private bool isActive;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="propertyPartNames">   Property part names. </param>
+        /// <param name="propertyGetterChain"> Property getter chain. </param>
+        /// <param name="propertySetter">      PropertySetter for leaf property. </param>
         public SourcePropertyBinder(
             string[] propertyPartNames,
             Func<object, object>[] propertyGetterChain,

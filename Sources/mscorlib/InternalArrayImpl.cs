@@ -15,11 +15,11 @@ namespace System
     /// </summary>
     internal class ArrayG<T> : ArrayImpl, IList<T>
     {
-        private readonly NativeArray innerArray;
+        private readonly NativeArray<T> innerArray;
 
         public ArrayG(int size)
         {
-            this.innerArray = new NativeArray(size);
+            this.innerArray = new NativeArray<T>(size);
 
             T def = default(T);
             for (int i = 0; i < size; i++)
@@ -28,7 +28,7 @@ namespace System
             }
         }
 
-        public ArrayG(NativeArray nativeArray)
+        public ArrayG(NativeArray<T> nativeArray)
         {
             this.innerArray = nativeArray;
         }
@@ -65,7 +65,7 @@ namespace System
             get { return false; }
         }
 
-        internal NativeArray InnerArray
+        internal NativeArray<T> InnerArray
         {
             get { return this.innerArray; }
         }

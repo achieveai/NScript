@@ -2,54 +2,50 @@
 function System__Array__Sort(T, array, comparator) {
   var ArrayG_$T$_;
   ArrayG_$T$_ = System_ArrayG(T, true);
-  System__Type__CastType(ArrayG_$T$_, array).sort(comparator);
+  array.sort(comparator);
 };
 System__Type__RegisterReferenceType(Array, "System.Array", Object, [System_Collections_IEnumerable]);
-Array.typeId = "c";
-function System__NativeArray__GetArray(T, this_) {
-  var ArrayG_$T$_, T$5b$5d_$T$_;
-  T$5b$5d_$T$_ = System_ArrayG(T, true);
-  ArrayG_$T$_ = System_ArrayG(T, true);
-  return System__Type__CastType(T$5b$5d_$T$_, ArrayG_$T$_.__ctor(this_));
+function System__NativeArray$1__GetArray(this_) {
+  return ArrayG$1_$T$_.__ctor(this_);
 };
-function System__NativeArray__GetNativeArray(array) {
+function System__NativeArray$1__GetNativeArray(array) {
   return array ? array.innerArray : null;
 };
-function System__NativeArray__GetNativeArraya(array) {
+function System__NativeArray$1__GetNativeArraya(array) {
   return array ? array.nativeArray : null;
 };
-function System__NativeArray__Concat(this_, arrays) {
+function System__NativeArray$1__Concat(this_, arrays) {
   return this_.concat.apply(this_, arrays.nativeArray);
 };
-function System__NativeArray__Concata(this_, array) {
+function System__NativeArray$1__Concata(this_, array) {
   return this_.concat(array);
 };
-function System__NativeArray__Concatb(this_, array, array2) {
+function System__NativeArray$1__Concatb(this_, array, array2) {
   return this_.concat(array, array2);
 };
-function System__NativeArray__Concatc(this_, array, array2, array3) {
+function System__NativeArray$1__Concatc(this_, array, array2, array3) {
   return this_.concat(array, array2, array3);
 };
-function System__NativeArray__Pop(this_) {
+function System__NativeArray$1__Pop(this_) {
   return this_.pop();
 };
-function System__NativeArray__Push(this_, value) {
+function System__NativeArray$1__Push(this_, value) {
   return this_.push(value);
 };
-function System__NativeArray__Shift(this_) {
+function System__NativeArray$1__Shift(this_) {
   return this_.shift();
 };
-function System__NativeArray__Unshift(this_, value) {
+function System__NativeArray$1__Unshift(this_, value) {
   return this_.unshift(value);
 };
-function System__NativeArray__Splice(this_, index, howMany, elements) {
+function System__NativeArray$1__Splice(this_, index, howMany, elements) {
   var newArray;
   newArray = elements.innerArray.slice(0);
   newArray.unshift(howMany);
   newArray.unshift(index);
   return this_.splice.apply(this_, newArray);
 };
-function System__NativeArray__IndexOf(this_, value, startIndex) {
+function System__NativeArray$1__IndexOf(this_, value, startIndex) {
   var i;
   startIndex = startIndex < 0 ? 0 : startIndex;
   for (i = this_.length; i >= startIndex && i >= 0; --i)
@@ -57,7 +53,7 @@ function System__NativeArray__IndexOf(this_, value, startIndex) {
       return i;
   return -1;
 };
-function System__NativeArray__InsertAt(this_, index, value) {
+function System__NativeArray$1__InsertAt(this_, index, value) {
   var i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
@@ -65,7 +61,7 @@ function System__NativeArray__InsertAt(this_, index, value) {
     this_[i + 1] = this_[i];
   this_[index] = value;
 };
-function System__NativeArray__InsertRangeAt(this_, index, values) {
+function System__NativeArray$1__InsertRangeAt(this_, index, values) {
   var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
@@ -75,7 +71,7 @@ function System__NativeArray__InsertRangeAt(this_, index, values) {
   for (i = len - 1; --i; )
     this_[index + i] = values[i];
 };
-function System__NativeArray__RemoveAt(this_, index) {
+function System__NativeArray$1__RemoveAt(this_, index) {
   var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
@@ -84,13 +80,12 @@ function System__NativeArray__RemoveAt(this_, index) {
     this_[i] = this_[i + 1];
   this_.pop();
 };
-function System__NativeArray__SetAt(this_, index, value) {
+function System__NativeArray$1__SetAt(this_, index, value) {
   this_[index] = value;
 };
-function System__NativeArray__GetFrom(this_, index) {
+function System__NativeArray$1__GetFrom(this_, index) {
   return this_[index];
 };
-System__Type__RegisterReferenceType(Array, "System.NativeArray", Object, []);
 function System_ArrayG(T, $5fcallStatiConstructor) {
   var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_ArrayG[T.typeId])
@@ -100,7 +95,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_ = System_ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = System_ArrayG;
-  ArrayG$1_$T$_.typeId = "d$" + T.typeId + "$";
+  ArrayG$1_$T$_.typeId = "c$" + T.typeId + "$";
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
@@ -128,7 +123,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     this.innerArray = new Array(size);
     def = System__Type__GetDefaultValueStatic(T);
     for (i = 0; i < size; i++)
-      System__NativeArray__SetAt(this.innerArray, i, def);
+      System__NativeArray$1__SetAt(this.innerArray, i, def);
   };
   ptyp_.__ctorb = function System__ArrayG$1____ctora(nativeArray) {
     this.__ctor();
@@ -169,12 +164,12 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.indexOf = function System__ArrayG$1__IndexOf(item) {
     if (!T.isInstanceOfType(item))
       return -1;
-    return System__NativeArray__IndexOf(this.innerArray, System__Type__UnBoxTypeInstance(T, item), 0);
+    return System__NativeArray$1__IndexOf(this.innerArray, System__Type__UnBoxTypeInstance(T, item), 0);
   };
   ptyp_.indexOfa = function System__ArrayG$1__IndexOfa(item, startIndex) {
     if (!T.isInstanceOfType(item))
       return -1;
-    return System__NativeArray__IndexOf(this.innerArray, System__Type__UnBoxTypeInstance(T, item), startIndex);
+    return System__NativeArray$1__IndexOf(this.innerArray, System__Type__UnBoxTypeInstance(T, item), startIndex);
   };
   ptyp_.reverse = function System__ArrayG$1__Reverse() {
     this.innerArray.reverse();
@@ -189,7 +184,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     this.set_item(index, System__Type__UnBoxTypeInstance(T, value));
   };
   ptyp_.indexOfb = function System__ArrayG$1__IndexOfb(item) {
-    return System__NativeArray__IndexOf(this.innerArray, item, 0);
+    return System__NativeArray$1__IndexOf(this.innerArray, item, 0);
   };
   ptyp_.insert = function System__ArrayG$1__Insert(index, item) {
     throw new Error("Not Implemented.");
@@ -204,7 +199,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     throw new Error("Not Implemented.");
   };
   ptyp_.containsa = function System__ArrayG$1__Containsa(item) {
-    return System__NativeArray__IndexOf(this.innerArray, item, 0) !== -1;
+    return System__NativeArray$1__IndexOf(this.innerArray, item, 0) !== -1;
   };
   ptyp_.copyTo = function System__ArrayG$1__CopyTo(arr, index) {
     var i;
@@ -212,7 +207,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
       arr.set_item(index + i, this.get_item(i));
   };
   ptyp_.remove = function System__ArrayG$1__Remove(item) {
-    return System__NativeArray__IndexOf(this.innerArray, item, 0) !== -1;
+    return System__NativeArray$1__IndexOf(this.innerArray, item, 0) !== -1;
   };
   ptyp_.getEnumerator = function System__ArrayG$1__GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);

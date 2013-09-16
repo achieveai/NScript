@@ -660,6 +660,13 @@ namespace NScript.Converter.TypeSystemConverter
                         typeName.Item1,
                         typeName.Item2.Substring(0, typeName.Item2.IndexOf('`')));
                 }
+                else if (isExtended
+                    && typeName.Item2.Contains("<"))
+                {
+                    typeName = Tuple.Create(
+                        typeName.Item1,
+                        typeName.Item2.Substring(0, typeName.Item2.IndexOf('<')));
+                }
 
                 // put in queue to process. In case of conversion using dependency
                 // walk, this will be used to start converting these types as well.
