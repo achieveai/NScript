@@ -11,6 +11,8 @@
     <AssemblyName>XwmlParser</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <AntlrPath>$(ProjectDir)..\..\Dependencies\Antlr</AntlrPath>
@@ -78,8 +82,9 @@
     <Compile Include="Binding\StaticSourceBindingInfo.cs" />
     <Compile Include="Binding\StringSourceBindingInfo.cs" />
     <Compile Include="Binding\TargetBindingInfo.cs" />
+    <Compile Include="Binding\TextContentTargetBinder.cs" />
+    <Compile Include="CodeGenerator.cs" />
     <Compile Include="DocumentContext.cs" />
-    <Compile Include="Driver.cs" />
     <Compile Include="IResolver.cs" />
     <Compile Include="KnownTemplateTypes.cs" />
     <Compile Include="NodeInfos\CollectionNodeInfo.cs" />
@@ -100,6 +105,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="TemplateParser.cs" />
+    <Compile Include="TypeResolver.cs" />
     <Compile Include="XwmlTemplatingPlugin.cs" />
   </ItemGroup>
   <ItemGroup>

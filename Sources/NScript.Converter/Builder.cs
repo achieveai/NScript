@@ -97,7 +97,10 @@ namespace NScript.Converter
 
             clrContext.LoadAssembly(this.mainAssembly);
 
-            ConverterContext converterContext = new ConverterContext(clrContext);
+            ConverterContext converterContext = new ConverterContext(
+                clrContext,
+                this.methodConverterPlugins,
+                this.typeConverterPlugins);
             RuntimeScopeManager runtimeManager = new RuntimeScopeManager(converterContext);
             List<MethodDefinition> methodDefinitionsToEmit = new List<MethodDefinition>();
             MethodDefinition entryPoint =
@@ -134,7 +137,7 @@ namespace NScript.Converter
             }
 
             // Let's convert all the code to JS.
-            var statements = runtimeManager.Convert(methodDefinitionsToEmit);
+            var statements = runtimeManager.Convert(methodDefinitionsToEmit, plugins);
 
             if (this.plugins != null)
             {

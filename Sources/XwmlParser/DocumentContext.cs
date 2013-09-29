@@ -13,12 +13,14 @@ namespace XwmlParser
     /// <summary>
     /// Definition for DocumentContext
     /// </summary>
-    public class DocumentContext
+    public class DocumentContext : IDocumentContext
     {
         /// <summary>
         /// Context for the parser.
         /// </summary>
         ParserContext parserContext;
+
+        List<CssParser.CssRule> cssRules = new List<CssParser.CssRule>();
 
         /// <summary>
         /// Stack of namespaces.
@@ -35,6 +37,15 @@ namespace XwmlParser
         }
 
         /// <summary>
+        /// Gets the resolver.
+        /// </summary>
+        /// <value>
+        /// The resolver.
+        /// </value>
+        public IResolver Resolver
+        { get { return this.parserContext.Resolver; } }
+
+        /// <summary>
         /// Gets a context for the parser.
         /// </summary>
         /// <value>
@@ -42,6 +53,15 @@ namespace XwmlParser
         /// </value>
         public ParserContext ParserContext
         { get { return this.parserContext; } }
+
+        /// <summary>
+        /// Adds the CSS rules.
+        /// </summary>
+        /// <param name="rules"> The rules. </param>
+        public void AddCssRules(List<CssParser.CssRule> rules)
+        {
+            this.cssRules.AddRange(rules);
+        }
 
         /// <summary>
         /// Pushes a node.
@@ -59,6 +79,34 @@ namespace XwmlParser
         {
             // Remove the namespace mapping that was inserted for this node.
             this.namespaceStack.RemoveAt(this.namespaceStack.Count - 1);
+        }
+
+        public Tuple<string, string> GetFullName(string name)
+        {
+            string[] nameParts = name.Split(':');
+            if (nameParts.Length > 2)
+            {
+                throw new ApplicationException(
+                    "Invalid name");
+            }
+            else if (nameParts.Length == 1)
+            {
+                return Tuple.Create((string)null, nameParts[0]);
+            }
+
+            for (int iNamespaceMap = this.namespaceStack.Count - 1; iNamespaceMap >= 0; iNamespaceMap--)
+            {
+                if (this.namespaceStack[iNamespaceMap] != null)
+                {
+                    string ns;
+                    if (this.namespaceStack[iNamespaceMap].TryGetValue(nameParts[0], out ns))
+                    {
+                        return Tuple.Create(ns, nameParts[1]);
+                    }
+                }
+            }
+
+            throw new ApplicationException(string.Format("Can't resolve name space: {0}", nameParts[0]));
         }
 
         /// <summary>

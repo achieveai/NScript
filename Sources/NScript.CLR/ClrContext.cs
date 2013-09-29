@@ -21,18 +21,33 @@ namespace NScript.CLR
     /// </summary>
     public class ClrContext
     {
+        /// <summary>
+        /// The assembly resolver.
+        /// </summary>
         private readonly DefaultAssemblyResolver assemblyResolver =
             new DefaultAssemblyResolver();
 
+        /// <summary>
+        /// The assemblies.
+        /// </summary>
         private readonly Dictionary<string, ModuleDefinition> assemblies =
             new Dictionary<string, ModuleDefinition>();
 
+        /// <summary>
+        /// Name of the simple name to assembly.
+        /// </summary>
         private readonly Dictionary<string, string> simpleNameToAssemblyName =
             new Dictionary<string, string>();
 
+        /// <summary>
+        /// The directories to look at.
+        /// </summary>
         private readonly HashSet<string> directoriesToLookAt =
             new HashSet<string>();
 
+        /// <summary>
+        /// The type reference to definition map.
+        /// </summary>
         private readonly Dictionary<TypeReference, TypeDefinition> typeReferenceToDefinitionMap =
             new Dictionary<TypeReference, TypeDefinition>();
 
@@ -272,8 +287,8 @@ namespace NScript.CLR
             }
 
             var rv = new TypeReference(
-                typeName.Item2.Substring(0, typeName.Item2.LastIndexOf('.')),
-                typeName.Item2.Substring(typeName.Item2.LastIndexOf('.') + 1),
+                nspace,
+                tName,
                 moduleDefinition,
                 moduleDefinition).Resolve();
 

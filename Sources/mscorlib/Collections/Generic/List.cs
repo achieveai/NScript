@@ -54,7 +54,7 @@ namespace System.Collections.Generic
                 this.nativeArray = new NativeArray<T>(arrayNativeArray.Length);
                 for (int i = arrayNativeArray.Length - 1; i >= 0; i--)
                 {
-                    this.nativeArray.SetAt(i, arrayNativeArray.GetFrom(i));
+                    this.nativeArray[i] = arrayNativeArray[i];
                 }
             }
         }

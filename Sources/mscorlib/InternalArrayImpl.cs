@@ -24,7 +24,7 @@ namespace System
             T def = default(T);
             for (int i = 0; i < size; i++)
             {
-                this.innerArray.SetAt(i, def);
+                this.innerArray[i] = def;
             }
         }
 

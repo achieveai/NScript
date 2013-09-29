@@ -41,6 +41,7 @@
     <Compile Include="Attributes\CssNameAttribute.cs" />
     <Compile Include="Attributes\DefaultDataBindingAttribute.cs" />
     <Compile Include="Attributes\DomAttribute.cs" />
+    <Compile Include="Attributes\SkinAttribute.cs" />
     <Compile Include="Attributes\TagNameAttribute.cs" />
     <Compile Include="Attributes\TemplatePartAttribute.cs" />
     <Compile Include="EventNames.cs" />

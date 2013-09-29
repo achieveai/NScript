@@ -29,7 +29,7 @@ namespace System.Collections.Generic
         {
             if (this.Count > 0)
             {
-                return this.nativeArray.GetFrom(0);
+                return this.nativeArray[0];
             }
 
             throw new Exception("No elements in stack");
@@ -89,7 +89,7 @@ namespace System.Collections.Generic
                         throw new Exception("Out of range");
                     }
 
-                    return this.queue.nativeArray.GetFrom(this.currentIndex);
+                    return this.queue.nativeArray[this.currentIndex];
                 }
             }
 

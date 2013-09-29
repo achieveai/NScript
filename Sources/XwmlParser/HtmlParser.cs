@@ -11,6 +11,8 @@ namespace XwmlParser
     using HtmlAgilityPack;
     using XwmlParser.NodeInfos;
     using Mono.Cecil;
+    using NScript.Utils;
+    using NScript.Converter;
 
     public enum NodeType
     {
@@ -33,19 +35,68 @@ namespace XwmlParser
     /// <summary>
     /// Definition for Parser
     /// </summary>
-    public class HtmlParser : IDocumentContext
+    public class HtmlParser
     {
-        private ParserContext context;
-        private HtmlNode node;
-        private List<Dictionary<string, string>> namespaceStack = new List<Dictionary<string, string>>();
+        /// <summary>
+        /// Context for the document.
+        /// </summary>
+        private readonly DocumentContext documentContext;
 
+        /// <summary>
+        /// The context.
+        /// </summary>
+        private readonly ParserContext context;
+
+        /// <summary>
+        /// The node.
+        /// </summary>
+        private readonly HtmlNode node;
+
+        /// <summary>
+        /// Name of the resource.
+        /// </summary>
+        private readonly string resourceName;
+
+        /// <summary>
+        /// The template parsers.
+        /// </summary>
+        private readonly Dictionary<string, TemplateParser> templateParsers = new Dictionary<string, TemplateParser>();
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="fullResourceName"> Name of the full resource. </param>
+        /// <param name="htmlDoc">          The HTML document. </param>
+        /// <param name="context">          The context. </param>
         public HtmlParser(
+            string fullResourceName,
             HtmlDocument htmlDoc,
             ParserContext context)
         {
+            this.resourceName = fullResourceName;
             this.context = context;
+            this.documentContext = new DocumentContext(context);
+            this.node = htmlDoc.DocumentNode;
+            this.documentContext.PushNode(this.node);
         }
 
+        /// <summary>
+        /// Gets the name of the resource.
+        /// </summary>
+        /// <value>
+        /// The name of the resource.
+        /// </value>
+        public string ResourceName
+        { get { return this.resourceName; } }
+
+        /// <summary>
+        /// Process the node.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="node">       The node. </param>
+        /// <param name="parentNode"> The parent node. </param>
+        /// <param name="callback">   The callback. </param>
         public void ProcessNode(
             HtmlNode node,
             NodeInfo parentNode,
@@ -54,13 +105,21 @@ namespace XwmlParser
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Parse node.
+        /// </summary>
+        /// <param name="node">           The node. </param>
+        /// <param name="parentNodeInfo"> Information describing the parent node. </param>
+        /// <returns>
+        /// .
+        /// </returns>
         private HtmlNode ParseNode(
             HtmlNode node,
             NodeInfo parentNodeInfo)
         {
             try
             {
-                var nodeName = this.GetFullName(node.OriginalName);
+                var nodeName = this.documentContext.GetFullName(node.OriginalName);
                 NodeType nodeType = this.GetNodeType(node, parentNodeInfo);
                 if (nodeType == NodeType.Html)
                 {
@@ -71,13 +130,45 @@ namespace XwmlParser
             finally
             {
                 // Remove the namespace mapping that was inserted for this node.
-                this.namespaceStack.RemoveAt(this.namespaceStack.Count - 1);
+                this.documentContext.PopNode();
             }
         }
 
+        /// <summary>
+        /// Gets template parser.
+        /// </summary>
+        /// <param name="templateId"> Identifier for the template. </param>
+        /// <returns>
+        /// The template parser.
+        /// </returns>
+        public TemplateParser GetTemplateParser(string templateId)
+        {
+            if (string.IsNullOrEmpty(templateId))
+            {
+                templateId = "::";
+            }
+
+            TemplateParser rv;
+            if (this.templateParsers.TryGetValue(templateId, out rv))
+            {
+                return rv;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets node type.
+        /// </summary>
+        /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
+        /// <param name="node">           The node. </param>
+        /// <param name="parentNodeInfo"> Information describing the parent node. </param>
+        /// <returns>
+        /// The node type.
+        /// </returns>
         public NodeType GetNodeType(HtmlNode node, NodeInfo parentNodeInfo)
         {
-            var nodeName = this.GetFullName(node.OriginalName);
+            var nodeName = this.documentContext.GetFullName(node.OriginalName);
 
             if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStypeTag)
             {
@@ -88,9 +179,9 @@ namespace XwmlParser
                 // There are 2 possibilities,
                 // 1. This is either a constructor parameter or Property
                 // 2. This is a HTML node.
-                List<PropertyReference> properties = null;
+                PropertyReference property = null;
                 if (parentNodeInfo is TypeNodeInfo
-                    && (properties = this.context.Resolver.GetPropertyReference(
+                    && (property = this.context.Resolver.GetPropertyReference(
                             ((TypeNodeInfo)parentNodeInfo).Type,
                             nodeName.Item2)) != null)
                 {
@@ -131,8 +222,7 @@ namespace XwmlParser
                 {
                     var property = this.context.Resolver.GetPropertyReference(typeReference, nameParts[1]);
 
-                    if (property == null
-                        || property.Count == 0)
+                    if (property == null)
                     {
                         throw new ApplicationException(
                             string.Format("Can't resolve proeprty {0}.{1}", nodeName.Item1, nodeName.Item2));
@@ -175,42 +265,136 @@ namespace XwmlParser
             return NodeType.Html;
         }
 
+        /// <summary>
+        /// Gets a context for the parser.
+        /// </summary>
+        /// <value>
+        /// The parser context.
+        /// </value>
         public ParserContext ParserContext
         {
             get { return this.context; }
         }
 
+        /// <summary>
+        /// Gets a context for the document.
+        /// </summary>
+        /// <value>
+        /// The document context.
+        /// </value>
+        public DocumentContext DocumentContext
+        { get { return this.documentContext; } }
+
+        /// <summary>
+        /// Gets the resolver.
+        /// </summary>
+        /// <value>
+        /// The resolver.
+        /// </value>
         public IResolver Resolver
         {
             get { return this.context.Resolver; }
         }
 
-        public Tuple<string, string> GetFullName(string name)
+        /// <summary>
+        /// Parse document.
+        /// </summary>
+        /// <exception cref="ConverterLocationException"> Thrown when a Converter Location error condition
+        ///     occurs. </exception>
+        /// <param name="node">        The node. </param>
+        /// <param name="parsingHead"> (optional) the parsing head. </param>
+        private void ParseDocument(HtmlNode node, bool parsingHead = false)
         {
-            string[] nameParts = name.Split(':');
-            if (nameParts.Length > 2)
+            bool headParsed = false;
+            foreach (var item in this.node.ChildNodes)
             {
-                throw new ApplicationException(
-                    "Invalid name");
-            }
-            else if (nameParts.Length == 1)
-            {
-                return Tuple.Create((string)null, nameParts[0]);
-            }
-
-            for (int iNamespaceMap = this.namespaceStack.Count - 1; iNamespaceMap >= 0; iNamespaceMap--)
-            {
-                if (this.namespaceStack[iNamespaceMap] != null)
+                try
                 {
-                    string ns;
-                    if (this.namespaceStack[iNamespaceMap].TryGetValue(nameParts[0], out ns))
+                    string nodeName = item.OriginalName.ToLowerInvariant();
+                    this.documentContext.PushNode(item);
+                    if (nodeName == "head")
                     {
-                        return Tuple.Create(ns, nameParts[1]);
+                        if (headParsed)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    node.Line,
+                                    node.LinePosition),
+                                "Head node present more than once.");
+                        }
+
+                        this.ParseDocument(item, true);
+                        headParsed = true;
+                    }
+                    else if (nodeName == "style")
+                    {
+                        // Parse Css.
+                        var grammer = new CssParser.CssGrammer(node.InnerText);
+                        this.documentContext.AddCssRules(grammer.Rules);
+                    }
+                    else if (nodeName == "template")
+                    {
+                        if (parsingHead)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    node.Line,
+                                    node.LinePosition),
+                                "Head node can't contain template.");
+                        }
+
+                        // Parse Template.
+                        TemplateParser parser = new TemplateParser(
+                            this,
+                            node,
+                            null);
+
+                        string templateName = parser.TemplateName ?? "::";
+                        if (this.templateParsers.ContainsKey(templateName))
+                        {
+                            if (templateName == "::")
+                            {
+                                throw new ConverterLocationException(
+                                    new Location(
+                                        this.resourceName,
+                                        node.Line,
+                                        node.LinePosition),
+                                    "There can't be more than 1 default template in one template file.");
+                            }
+                            else
+                            {
+                                throw new ConverterLocationException(
+                                    new Location(
+                                        this.resourceName,
+                                        node.Line,
+                                        node.LinePosition),
+                                    string.Format(
+                                        "There can't be more than 1 default template in one template file.",
+                                        templateName));
+                            }
+                        }
+
+                        this.templateParsers.Add(parser.TemplateName, parser);
+                    }
+                    else
+                    {
+                        throw new ConverterLocationException(
+                            new Location(
+                                this.resourceName,
+                                node.Line,
+                                node.LinePosition),
+                            string.Format(
+                                "Don't know how to parse {0} node.",
+                                nodeName));
                     }
                 }
+                finally
+                {
+                    this.documentContext.PopNode();
+                }
             }
-
-            throw new ApplicationException(string.Format("Can't resolve name space: {0}", nameParts[0]));
         }
     }
 }

@@ -22,6 +22,11 @@ namespace XwmlParser.NodeInfos
         private HtmlNode generatedNode;
 
         /// <summary>
+        /// Full pathname of the node file.
+        /// </summary>
+        private List<int> nodePath;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="type">     The type. </param>
@@ -43,16 +48,28 @@ namespace XwmlParser.NodeInfos
         public HtmlNode GeneratedNode
         {
             get { return this.generatedNode; }
+        }
 
-            set
-            {
-                if (this.generatedNode != null)
-                {
-                    throw new InvalidOperationException("Can't set generated node more than once");
-                }
+        /// <summary>
+        /// Gets the full pathname of the node file.
+        /// </summary>
+        /// <value>
+        /// The full pathname of the node file.
+        /// </value>
+        public List<int> NodePath
+        { get { return this.nodePath; } }
 
-                this.generatedNode = value;
-            }
+        /// <summary>
+        /// Sets new node and path.
+        /// </summary>
+        /// <param name="node">     The node. </param>
+        /// <param name="nodePath"> Full pathname of the node file. </param>
+        public void SetNewNodeAndPath(
+            HtmlNode node,
+            List<int> nodePath)
+        {
+            this.generatedNode = node;
+            this.nodePath = nodePath;
         }
     }
 }

@@ -46,6 +46,7 @@
     <Compile Include="Builder.cs" />
     <Compile Include="ConverterContext.cs" />
     <Compile Include="ConverterKnownReferences.cs" />
+    <Compile Include="ConverterLocationException.cs" />
     <Compile Include="DependencyBuilder\InheritanceDependencyBuilder.cs" />
     <Content Include="DependencyBuilder\TypeDependencyInfo.cs" />
     <Compile Include="ExpressionsConverter\AnonymousMethodBodyExpressionConverter.cs" />

@@ -24,7 +24,12 @@ namespace Sunlight.Framework.UI.Helpers
         /// <summary>
         /// The child elements.
         /// </summary>
-        private UIElement[] childElements;
+        private NativeArray<object> elementsOfIntrest;
+
+        /// <summary>
+        /// The child elements.
+        /// </summary>
+        private NativeArray<UIElement> childElements;
 
         /// <summary>
         /// The root element.
@@ -47,23 +52,33 @@ namespace Sunlight.Framework.UI.Helpers
         bool isDiposed;
 
         /// <summary>
+        /// The binders.
+        /// </summary>
+        private NativeArray<SkinBinderInfo> binders;
+
+        /// <summary>
         /// Initializes a new instance of the SkinInstance class.
         /// </summary>
-        /// <param name="factory">         The factory. </param>
-        /// <param name="rootElement">     The root element. </param>
-        /// <param name="childElements">   The child elements. </param>
-        /// <param name="skinableType">    Type of the skinable. </param>
+        /// <param name="factory">             The factory. </param>
+        /// <param name="rootElement">         The root element. </param>
+        /// <param name="elementsOfIntrests">  The child elements. </param>
+        /// <param name="binders">             Type of the skinable. </param>
         /// <param name="dataContextType"> Type of the data context. </param>
         public SkinInstance(
             SkinFactory factory,
             Element rootElement,
-            UIElement[] childElements)
+            NativeArray<UIElement> childElements,
+            NativeArray<object> elementsOfIntrests,
+            NativeArray<SkinBinderInfo> binders,
+            Type dataContextType)
         {
             ExceptionHelpers.IsNullOrUndefined(rootElement);
 
             this.parentFactory = factory;
             this.rootElement = rootElement;
+            this.binders = binders;
             this.childElements = childElements;
+            this.elementsOfIntrest = elementsOfIntrests;
         }
 
         /// <summary>   Registers the child by identifier. </summary>
@@ -71,7 +86,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="childIndex">   Zero-based index of the child. </param>
         public void RegisterChildById(string id, int childIndex)
         {
-            this.childIdMappings.Add(id, this.childElements[childIndex]);
+            this.childIdMappings.Add(id, (UIElement)this.elementsOfIntrest[childIndex]);
         }
 
         /// <summary>   Gets a child by identifier. </summary>
@@ -85,14 +100,6 @@ namespace Sunlight.Framework.UI.Helpers
             }
 
             return null;
-        }
-
-        /// <summary>   Gets a child by index. </summary>
-        /// <param name="index">    Zero-based index of the. </param>
-        /// <returns>   The child by index. </returns>
-        public UIElement GetChildByIndex(int index)
-        {
-            return this.childElements[index];
         }
 
         /// <summary>
@@ -115,20 +122,10 @@ namespace Sunlight.Framework.UI.Helpers
 
             if (this.rootElement != skinable.Element)
             {
-                var list = this.rootElement.ChildNodes;
-
-                for (int i = 0, j = this.childElements.Length; i < j; i++)
-                {
-                    var childElement = this.childElements[i];
-                    childElement.Parent = dataContextParent;
-                    childElement.SkinnedParent = skinable;
-                    childElement.PreActivate();
-                }
-
-                for (int i = 0, j = list.Length; i < j; i++)
-                {
-                    skinable.Element.AppendChild(list[i].As<Element>());
-                }
+                SkinBinderHelper.BindTemplateParent(
+                    this.binders,
+                    skinable,
+                    this.elementsOfIntrest);
             }
         }
 
@@ -171,7 +168,7 @@ namespace Sunlight.Framework.UI.Helpers
             if (!this.isDiposed)
             {
                 this.isDiposed = true;
-                for (int i = 0, j = this.childElements.Length; i < j; i++)
+                for (int i = 0, j = this.elementsOfIntrest.Length; i < j; i++)
                 {
                     this.childElements[i].Dispose();
                 }

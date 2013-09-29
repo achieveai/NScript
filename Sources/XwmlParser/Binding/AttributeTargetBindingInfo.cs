@@ -6,6 +6,7 @@
 
 namespace XwmlParser.Binding
 {
+    using Mono.Cecil;
     using System;
     using System.Collections.Generic;
 
@@ -14,7 +15,18 @@ namespace XwmlParser.Binding
     /// </summary>
     public class AttributeTargetBindingInfo : TargetBindingInfo
     {
-        public override Mono.Cecil.TypeReference BindingType
+        private TypeReference stringType;
+        private string attributeName;
+
+        public AttributeTargetBindingInfo(
+            TypeReference stringType,
+            string attributeName)
+        {
+            this.attributeName = attributeName;
+            this.stringType = stringType;
+        }
+
+        public override TypeReference BindingType
         {
             get { throw new NotImplementedException(); }
         }

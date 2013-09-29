@@ -1323,7 +1323,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             foreach (var plugin in this.context.MethodConverterPlugins)
             {
-                switch (plugin.GetInterestLevel(this))
+                switch (plugin.GetInterestLevel(this.methodDefinition, this.context))
                 {
                     case IntrestLevel.PreEmitStatements:
                         statements.InsertRange(0, plugin.GetPreInsertionStatements(this));

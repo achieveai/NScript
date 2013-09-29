@@ -18,13 +18,17 @@ using System.Runtime.CompilerServices;
         /// <summary>
         /// Full pathname of the property getter file.
         /// </summary>
-        public readonly Func<object, object>[] PropertyGetterPath;
+        public readonly NativeArray<Func<object, object>> PropertyGetterPath;
 
         /// <summary>
         /// The property setter.
         /// </summary>
         public readonly Action<object, object> PropertySetter;
-        public readonly string[] PropertyNames;
+
+        /// <summary>
+        /// List of names of the properties.
+        /// </summary>
+        public readonly NativeArray<string> PropertyNames;
 
         /// <summary>
         /// Target property setter.
@@ -81,7 +85,7 @@ using System.Runtime.CompilerServices;
         /// <param name="forwardConverter">     The forward converter. </param>
         /// <param name="defaultValue">         The default value. </param>
         public SkinBinderInfo(
-            Func<object, object>[] propertyGetterPath,
+            NativeArray<Func<object, object>> propertyGetterPath,
             Action<object, object> targetPropertySetter,
             bool isDataContextBinder,
             int objectIndex,
@@ -114,8 +118,8 @@ using System.Runtime.CompilerServices;
         /// <param name="defaultValue">         The default value. </param>
         /// <param name="mode">                 The mode. </param>
         public SkinBinderInfo(
-            Func<object, object>[] propertyGetterPath,
-            string[] propertyNames,
+            NativeArray<Func<object, object>> propertyGetterPath,
+            NativeArray<string> propertyNames,
             Action<object, object> targetPropertySetter,
             bool isDataContextBinder,
             int objectIndex,
@@ -152,9 +156,9 @@ using System.Runtime.CompilerServices;
         /// <param name="backwardConverter">    The backward converter. </param>
         /// <param name="defaultValue">         The default value. </param>
         public SkinBinderInfo(
-            Func<object, object>[] propertyGetterPath,
+            NativeArray<Func<object, object>> propertyGetterPath,
             Action<object, object> propertySetter,
-            string[] propertyNames,
+            NativeArray<string> propertyNames,
             Action<object, object> targetPropertySetter,
             Func<object,object> targetPropertyGetter,
             string targetPropertyName,

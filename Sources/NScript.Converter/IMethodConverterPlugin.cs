@@ -50,11 +50,12 @@ namespace NScript.Converter
         /// <summary>
         /// Gets interest level.
         /// </summary>
-        /// <param name="methodConverter"> The method. </param>
+        /// <param name="methodDefinition"> The method. </param>
+        /// <param name="converterContext"> Context for the converter. </param>
         /// <returns>
         /// The interest level.
         /// </returns>
-        IntrestLevel GetInterestLevel(MethodConverter methodConverter);
+        IntrestLevel GetInterestLevel(MethodDefinition methodDefinition, ConverterContext converterContext);
 
         /// <summary>
         /// Gets pre insertion statements.

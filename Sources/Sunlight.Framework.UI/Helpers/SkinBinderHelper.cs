@@ -21,13 +21,13 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="dataContext">    Context for the data. </param>
         /// <param name="targetElements"> Target elements. </param>
         public static void BindDataContext(
-            NativeArray binders,
+            NativeArray<SkinBinderInfo> binders,
             Object dataContext,
-            object[] targetElements)
+            NativeArray<object> targetElements)
         {
             for (int i = 0, j = binders.Length; i < j; i++)
             {
-                SkinBinderInfo info = binders.GetFrom<SkinBinderInfo>(i);
+                SkinBinderInfo info = binders[i];
                 if (info.IsDataContextBinder)
                 {
                     SkinBinderHelper.SetPropertyValue(
@@ -45,13 +45,13 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="templateParent"> The template parent. </param>
         /// <param name="targetElements"> Target elements. </param>
         public static void BindTemplateParent(
-            NativeArray binders,
+            NativeArray<SkinBinderInfo> binders,
             UISkinableElement templateParent,
-            object[] targetElements)
+            NativeArray<object> targetElements)
         {
             for (int i = 0, j = binders.Length; i < j; i++)
             {
-                SkinBinderInfo info = binders.GetFrom<SkinBinderInfo>(i);
+                SkinBinderInfo info = binders[i];
                 if (info.IsDataContextBinder)
                 {
                     SkinBinderHelper.SetPropertyValue(

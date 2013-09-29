@@ -80,12 +80,6 @@ function System__NativeArray$1__RemoveAt(this_, index) {
     this_[i] = this_[i + 1];
   this_.pop();
 };
-function System__NativeArray$1__SetAt(this_, index, value) {
-  this_[index] = value;
-};
-function System__NativeArray$1__GetFrom(this_, index) {
-  return this_[index];
-};
 function System_ArrayG(T, $5fcallStatiConstructor) {
   var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_ArrayG[T.typeId])
@@ -123,7 +117,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     this.innerArray = new Array(size);
     def = System__Type__GetDefaultValueStatic(T);
     for (i = 0; i < size; i++)
-      System__NativeArray$1__SetAt(this.innerArray, i, def);
+      this.innerArray[i] = def;
   };
   ptyp_.__ctorb = function System__ArrayG$1____ctora(nativeArray) {
     this.__ctor();

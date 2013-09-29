@@ -80,12 +80,6 @@ function System__NativeArray$1__RemoveAt(this_, index) {
     this_[i] = this_[i + 1];
   this_.pop();
 };
-function System__NativeArray$1__SetAt(this_, index, value) {
-  this_[index] = value;
-};
-function System__NativeArray$1__GetFrom(this_, index) {
-  return this_[index];
-};
 function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   var ListEnumerator$1_$T$_, List$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_Collections_Generic_List[T.typeId])
@@ -136,7 +130,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
     else {
       this.nativeArray = new Array(arrayNativeArray.length);
       for (i = arrayNativeArray.length - 1; i >= 0; i--)
-        System__NativeArray$1__SetAt(this.nativeArray, i, System__NativeArray$1__GetFrom(arrayNativeArray, i));
+        this.nativeArray[i] = arrayNativeArray[i];
     }
   };
   ptyp_.get_item = function System__Collections__Generic__List$1__get_Item(index) {

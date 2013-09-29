@@ -25,6 +25,15 @@ namespace XwmlParser
         TypeReference GetTypeReference(string fullName);
 
         /// <summary>
+        /// Gets a type reference.
+        /// </summary>
+        /// <param name="typeName"> Name of the type. </param>
+        /// <returns>
+        /// The type reference.
+        /// </returns>
+        TypeReference GetTypeReference(Tuple<string, string> typeName);
+
+        /// <summary>
         /// Gets a property reference.
         /// </summary>
         /// <param name="typeReference"> The type reference. </param>
@@ -32,7 +41,7 @@ namespace XwmlParser
         /// <returns>
         /// The property reference.
         /// </returns>
-        List<PropertyReference> GetPropertyReference(TypeReference typeReference, string propertyName);
+        PropertyReference GetPropertyReference(TypeReference typeReference, string propertyName);
 
         /// <summary>
         /// Gets a method reference.
@@ -52,7 +61,7 @@ namespace XwmlParser
         /// <returns>
         /// The event references.
         /// </returns>
-        List<EventReference> GetEventReferences(TypeReference typeReference, string eventName);
+        EventReference GetEventReferences(TypeReference typeReference, string eventName);
 
         /// <summary>
         /// Type implements.

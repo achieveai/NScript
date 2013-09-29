@@ -18,28 +18,47 @@ namespace XwmlParser
         /// <summary>
         /// The resolver.
         /// </summary>
-        IResolver resolver;
+        private readonly IResolver resolver;
+
+        /// <summary>
+        /// The code generator.
+        /// </summary>
+        private readonly CodeGenerator codeGenerator;
+
+        /// <summary>
+        /// The document.
+        /// </summary>
+        private readonly HtmlAgilityPack.HtmlDocument document =
+            new HtmlAgilityPack.HtmlDocument();
+
+        /// <summary>
+        /// The HTML parsers.
+        /// </summary>
+        Dictionary<string, HtmlParser> htmlParsers = new Dictionary<string, HtmlParser>();
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="resolver"> The resolver. </param>
         public ParserContext(
+            KnownTemplateTypes knownTypes,
+            CodeGenerator codeGenerator,
             IResolver resolver)
         {
+            this.resolver = resolver;
+            this.KnownTypes = knownTypes;
+            this.codeGenerator = codeGenerator;
+            this.codeGenerator.ParserContext = this;
         }
 
         /// <summary>
-        /// Gets or sets a list of types of the attributes.
+        /// Gets the document.
         /// </summary>
         /// <value>
-        /// A list of types of the attributes.
+        /// The document.
         /// </value>
-        public KnownAttributeTypes AttributeTypes
-        {
-            get;
-            set;
-        }
+        public HtmlAgilityPack.HtmlDocument Document
+        { get { return this.document; } }
 
         /// <summary>
         /// Gets or sets a list of types of the knowns.
@@ -50,9 +69,15 @@ namespace XwmlParser
         public KnownTemplateTypes KnownTypes
         {
             get;
-            set;
+            private set;
         }
 
+        /// <summary>
+        /// Gets or sets a context for the converter.
+        /// </summary>
+        /// <value>
+        /// The converter context.
+        /// </value>
         public ConverterContext ConverterContext
         { get; set; }
 
@@ -64,5 +89,23 @@ namespace XwmlParser
         /// </value>
         public IResolver Resolver
         { get { return this.resolver; } }
+
+        /// <summary>
+        /// Gets HTML parser.
+        /// </summary>
+        /// <param name="templateResourceName"> Name of the template resource. </param>
+        /// <returns>
+        /// The HTML parser.
+        /// </returns>
+        internal HtmlParser GetHtmlParser(string templateResourceName)
+        {
+            HtmlParser rv = null;
+            if (this.htmlParsers.TryGetValue(templateResourceName, out rv))
+            {
+                return rv;
+            }
+
+            return null;
+        }
     }
 }

@@ -285,11 +285,8 @@ namespace System
             ")]
         public extern void RemoveAt(int index);
 
-        [Script(@"this[index] = value;")]
-        public extern void SetAt(int index, T value);
-
-        [Script(@"return this[index];")]
-        public extern T GetFrom(int index);
+        public extern T this[int i]
+        { get; set; }
 
         public extern void Sort();
 

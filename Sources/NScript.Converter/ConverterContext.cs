@@ -129,12 +129,12 @@ namespace NScript.Converter
         /// <summary>
         /// The method converter plugins.
         /// </summary>
-        private readonly List<IMethodConverterPlugin> methodConverterPlugins;
+        private readonly IList<IMethodConverterPlugin> methodConverterPlugins;
 
         /// <summary>
         /// The method converter plugins.
         /// </summary>
-        private readonly List<ITypeConverterPlugin> typeConverterPlugins;
+        private readonly IList<ITypeConverterPlugin> typeConverterPlugins;
 
         /// <summary>
         /// Constructor.
@@ -142,8 +142,8 @@ namespace NScript.Converter
         /// <param name="clrContext"> Context for the colour. </param>
         public ConverterContext(
             ClrContext clrContext,
-            List<IMethodConverterPlugin> methodConverterPlugins = null,
-            List<ITypeConverterPlugin> typeConverterPlugins = null)
+            IList<IMethodConverterPlugin> methodConverterPlugins = null,
+            IList<ITypeConverterPlugin> typeConverterPlugins = null)
         {
             this.clrContext = clrContext;
             this.converterKnownReferences = new ConverterKnownReferences(this.clrContext);
@@ -217,7 +217,7 @@ namespace NScript.Converter
         /// <value>
         /// The method converter plugins.
         /// </value>
-        public List<IMethodConverterPlugin> MethodConverterPlugins
+        public IList<IMethodConverterPlugin> MethodConverterPlugins
         {get { return this.methodConverterPlugins; } }
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace NScript.Converter
         /// <value>
         /// The type converter plugins.
         /// </value>
-        public List<ITypeConverterPlugin> TypeConverterPlugins
+        public IList<ITypeConverterPlugin> TypeConverterPlugins
         { get { return this.typeConverterPlugins; } }
 
         /// <summary>
@@ -761,6 +761,13 @@ namespace NScript.Converter
                 + name.Substring(1);
         }
 
+        /// <summary>
+        /// Query if 'memberDefinition' is renamed.
+        /// </summary>
+        /// <param name="memberDefinition"> The member definition. </param>
+        /// <returns>
+        /// true if renamed, false if not.
+        /// </returns>
         public bool IsRenamed(
             IMemberDefinition memberDefinition)
         {
