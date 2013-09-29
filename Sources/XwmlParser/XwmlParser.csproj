@@ -103,6 +103,7 @@
     <Compile Include="HtmlParser.cs" />
     <Compile Include="ParserContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="SampleTemplate.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="TemplateParser.cs" />
     <Compile Include="TypeResolver.cs" />
@@ -135,6 +136,9 @@
       <Project>{030b10dd-4861-4be1-b0d6-db43587e603f}</Project>
       <Name>NScript.Utils</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleTemplate.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(AntlrPath)\Antlr3.targets" />

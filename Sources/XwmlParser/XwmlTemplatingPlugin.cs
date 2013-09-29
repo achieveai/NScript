@@ -5,11 +5,13 @@
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
+    using NScript.CLR;
     using System;
     using System.Collections.Generic;
 
     class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
+<<<<<<< HEAD
         private KnownTemplateTypes knownTemplateTypes;
 
         private TypeResolver typeResolver;
@@ -43,6 +45,19 @@
                 return IntrestLevel.Overwrite;
             }
             else return IntrestLevel.None;
+=======
+
+        public IntrestLevel GetInterestLevel(MethodConverter methodConverter)
+        {
+            if (methodConverter.MethodDefinition.CustomAttributes.SelectAttribute(
+					methodConverter.RuntimeManager.Context.ClrContext.GetTypeDefinition(
+						Tuple.Create("", ""))) != null)
+            {
+                return IntrestLevel.Overwrite;
+            }
+
+            return IntrestLevel.None;
+>>>>>>> 9f6c573321795a06d47dd20eb957750760c6a620
         }
 
         public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter)
