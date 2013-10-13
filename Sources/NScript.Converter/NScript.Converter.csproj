@@ -103,6 +103,7 @@
     <Compile Include="TypeSystemConverter\NullableTypeConverter.cs" />
     <Compile Include="TypeSystemConverter\ReferenceIdentifierManager.cs" />
     <Compile Include="TypeSystemConverter\ReferenceTypeConverter.cs" />
+    <Compile Include="TypeSystemConverter\ResolverHelper.cs" />
     <Compile Include="TypeSystemConverter\RuntimeScopeManager.cs" />
     <Content Include="TypeSystemConverter\ScriptSharpAttributes.cs" />
     <Compile Include="TypeSystemConverter\StructTypeConverter.cs" />

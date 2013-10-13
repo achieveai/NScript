@@ -33,7 +33,7 @@ namespace XwmlParser.Test
         public ParserContext ParserContext
         { get { return this.parserContext; } }
 
-        public IResolver Resolver
+        public IClrResolver Resolver
         { get { return this.resolver; } }
 
         public Tuple<string, string> GetFullName(string name)

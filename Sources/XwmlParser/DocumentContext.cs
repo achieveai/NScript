@@ -7,6 +7,7 @@
 namespace XwmlParser
 {
     using HtmlAgilityPack;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -20,6 +21,14 @@ namespace XwmlParser
         /// </summary>
         ParserContext parserContext;
 
+        /// <summary>
+        /// List of names of the class.
+        /// </summary>
+        Dictionary<string, IIdentifier> classNames = new Dictionary<string, IIdentifier>();
+
+        /// <summary>
+        /// The CSS rules.
+        /// </summary>
         List<CssParser.CssRule> cssRules = new List<CssParser.CssRule>();
 
         /// <summary>
@@ -42,8 +51,8 @@ namespace XwmlParser
         /// <value>
         /// The resolver.
         /// </value>
-        public IResolver Resolver
-        { get { return this.parserContext.Resolver; } }
+        public IClrResolver Resolver
+        { get { return this.parserContext.ClrResolver; } }
 
         /// <summary>
         /// Gets a context for the parser.
@@ -61,6 +70,24 @@ namespace XwmlParser
         public void AddCssRules(List<CssParser.CssRule> rules)
         {
             this.cssRules.AddRange(rules);
+
+            for (int iRule = 0; iRule < rules.Count; iRule++)
+            {
+                var selectors = rules[iRule].Selectors;
+                for (int iSelector = 0; iSelector < selectors.Count; iSelector++)
+                {
+                    var selector = selectors[iSelector];
+                    CssParser.CssClass classSelector = selector as CssParser.CssClass;
+                    if (classSelector != null
+                        && !this.classNames.ContainsKey(classSelector.ClassName))
+                    {
+                        this.classNames[classSelector.ClassName] =
+                            parserContext.RegisterCssClassName(classSelector.ClassName);
+                    }
+
+                    this.classNames[classSelector.ClassName].AddUsage(null);
+                }
+            }
         }
 
         /// <summary>
@@ -81,6 +108,14 @@ namespace XwmlParser
             this.namespaceStack.RemoveAt(this.namespaceStack.Count - 1);
         }
 
+        /// <summary>
+        /// Gets full name.
+        /// </summary>
+        /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
+        /// <param name="name"> The name. </param>
+        /// <returns>
+        /// The full name.
+        /// </returns>
         public Tuple<string, string> GetFullName(string name)
         {
             string[] nameParts = name.Split(':');
@@ -107,6 +142,24 @@ namespace XwmlParser
             }
 
             throw new ApplicationException(string.Format("Can't resolve name space: {0}", nameParts[0]));
+        }
+
+        /// <summary>
+        /// Try get CSS class identifier.
+        /// </summary>
+        /// <param name="className">  Name of the class. </param>
+        /// <param name="identifier"> [out] The identifier. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public bool TryGetCssClassIdentifier(string className, out IIdentifier identifier)
+        {
+            if (!this.classNames.TryGetValue(className, out identifier))
+            {
+                return this.parserContext.TryGetCssClassIdentifier(className, out identifier);
+            }
+
+            return true;
         }
 
         /// <summary>

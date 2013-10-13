@@ -331,6 +331,34 @@ namespace NScript.CLR
         }
 
         /// <summary>
+        /// Gets the method reference.
+        /// </summary>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="returnType">Type of the return.</param>
+        /// <param name="declaringType">Type of the declaring.</param>
+        /// <param name="arguments">The arguments.</param>
+        /// <returns>MethodReference</returns>
+        public MethodReference GetMethodReference(
+            string methodName,
+            TypeReference returnType,
+            TypeReference declaringType,
+            params TypeReference[] arguments)
+        {
+            MethodReference methodReference = new MethodReference(
+                methodName,
+                returnType,
+                declaringType);
+
+            foreach (var argument in arguments)
+            {
+                methodReference.Parameters.Add(
+                    new ParameterDefinition(argument));
+            }
+
+            return methodReference;
+        }
+
+        /// <summary>
         /// Gets the virtual overridables. The method is the method that creates the slot
         /// and not the method in passed in typeDefinition.
         /// </summary>

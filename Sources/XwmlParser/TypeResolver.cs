@@ -8,24 +8,32 @@ namespace XwmlParser
 {
     using Mono.Cecil;
     using NScript.CLR;
+    using NScript.Converter.TypeSystemConverter;
+    using NScript.JST;
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for TypeResolver.
     /// </summary>
-    public class TypeResolver : IResolver
+    public class TypeResolver : IClrResolver, NScript.Converter.TypeSystemConverter.IResolver
     {
         /// <summary>
         /// The context.
         /// </summary>
         private readonly ClrContext context;
 
+        private readonly RuntimeScopeManager runtimeManager;
+
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="context"> The context. </param>
-        public TypeResolver(ClrContext context)
+        public TypeResolver(
+            RuntimeScopeManager runtimeManager,
+            ClrContext context)
         {
+            this.runtimeManager = runtimeManager;
             this.context = context;
         }
 
@@ -188,6 +196,241 @@ namespace XwmlParser
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Resolves the virtual method.
+        /// </summary>
+        /// <param name="methodReference">The method reference.</param>
+        /// <param name="scope">The scope.</param>
+        /// <returns>Expression to get slot for this virtual function.</returns>
+        public Expression ResolveVirtualMethod(
+            MethodReference methodReference,
+            IdentifierScope scope)
+        {
+            return this.ResolveVirtualMethod(
+                methodReference,
+                scope,
+                this.Resolve);
+        }
+
+        /// <summary>
+        /// Resolves the virtual method.
+        /// </summary>
+        /// <param name="methodReference">The method reference.</param>
+        /// <param name="scope">The scope.</param>
+        /// <returns>Expression to get slot for this virtual function.</returns>
+        public Expression ResolveVirtualMethod(
+            MethodReference methodReference,
+            IdentifierScope scope,
+            Func<TypeReference, IList<IIdentifier>> typeResolver)
+        {
+            return this.runtimeManager.ResolveVirtualMethod(
+                methodReference,
+                scope,
+                typeResolver);
+        }
+
+        /// <summary>
+        /// Resolves the specified type reference base.
+        /// </summary>
+        /// <param name="paramDef">The type reference base.</param>
+        /// <returns>Identifier for givenType.</returns>
+        public IList<IIdentifier> Resolve(TypeReference typeReference)
+        {
+            return ResolverHelper.Resolve(
+                this.runtimeManager,
+                delegate(TypeReference typeRef)
+                {
+                    return null;
+                },
+                typeReference);
+        }
+
+        /// <summary>
+        /// Resolves the specified member reference.
+        /// </summary>
+        /// <param name="fieldReference">The field reference.</param>
+        /// <returns>
+        /// Identifier identifying the member.
+        /// </returns>
+        public IIdentifier Resolve(FieldReference fieldReference)
+        {
+            return ResolverHelper.Resolve(
+                this.runtimeManager,
+                this,
+                fieldReference);
+        }
+
+        /// <summary>
+        /// Resolves the specified member reference.
+        /// </summary>
+        /// <param name="propertyReference">The member reference.</param>
+        /// <returns>
+        /// Identifier identifying the member.
+        /// </returns>
+        public IIdentifier Resolve(PropertyReference propertyReference)
+        {
+            return this.runtimeManager.Resolve(propertyReference);
+        }
+
+        /// <summary>
+        /// Resolves the specified method reference.
+        /// </summary>
+        /// <param name="methodReference">The method reference.</param>
+        /// <returns>Identifier identifying the member.</returns>
+        public IIdentifier Resolve(MethodReference methodReference)
+        {
+            return this.Resolve(methodReference, false);
+        }
+
+        /// <summary>
+        /// Resolves the specified member reference.
+        /// </summary>
+        /// <param name="memberReference">The member reference.</param>
+        /// <returns>Identifier identifying the member.</returns>
+        public IIdentifier Resolve(MethodReference memberReference, bool forceStatic)
+        {
+            return this.runtimeManager.Resolve(memberReference, forceStatic);
+        }
+
+        /// <summary>
+        /// Resolves the static member.
+        /// </summary>
+        /// <param name="member">The member.</param>
+        /// <param name="resolver">The resolver.</param>
+        /// <returns>Idnentifiers for accessing static member.</returns>
+        public IList<IIdentifier> ResolveStaticMember(
+            FieldReference member,
+            Func<TypeReference, IList<IIdentifier>> resolver)
+        {
+            return ResolverHelper.ResolveStaticMember(
+                this.runtimeManager,
+                this,
+                member,
+                resolver);
+        }
+
+        /// <summary>
+        /// Resolve static member.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <param name="resolver">           The resolver. </param>
+        /// <returns>
+        /// Identifier for static member.
+        /// </returns>
+        public IIdentifier ResolveStaticMember(
+            PropertyDefinition propertyDefinition,
+            Func<TypeReference, IList<IIdentifier>> resolver)
+        {
+            return ResolverHelper.ResolveStaticMember(
+                this.runtimeManager,
+                propertyDefinition,
+                resolver);
+        }
+
+        /// <summary>
+        /// Resolves the static member.
+        /// </summary>
+        /// <param name="member">The member.</param>
+        /// <param name="resolver">The resolver.</param>
+        /// <returns>Idnentifiers for accessing static member.</returns>
+        public IList<IIdentifier> ResolveStaticMember(
+            MethodReference member,
+            Func<TypeReference, IList<IIdentifier>> resolver)
+        {
+            return ResolverHelper.ResolveStaticMember(
+                this.runtimeManager,
+                member,
+                resolver,
+                false);
+        }
+
+        /// <summary>
+        /// Resolve factory.
+        /// </summary>
+        /// <param name="constructor"> The constructor. </param>
+        /// <param name="resolver">    The resolver. </param>
+        /// <returns>
+        /// A list of identifiers.
+        /// </returns>
+        public IList<IIdentifier> ResolveFactory(
+            MethodReference constructor,
+            Func<TypeReference, IList<IIdentifier>> resolver)
+        {
+            return ResolverHelper.ResolveStaticMember(
+                this.runtimeManager,
+                constructor,
+                resolver,
+                false);
+        }
+
+        /// <summary>
+        /// Resolves the static member.
+        /// </summary>
+        /// <param name="member">The member.</param>
+        /// <returns>Resolve static member</returns>
+        public IList<IIdentifier> ResolveStaticMember(
+            FieldReference member)
+        {
+            return this.ResolveStaticMember(
+                member,
+                this.Resolve);
+        }
+
+        /// <summary>
+        /// Resolves the static member.
+        /// </summary>
+        /// <param name="member">The member.</param>
+        /// <returns>Resolve static member</returns>
+        public IList<IIdentifier> ResolveStaticMember(
+            MethodReference member)
+        {
+            return this.ResolveStaticMember(
+                member,
+                this.Resolve);
+        }
+
+        /// <summary>
+        /// Resolve static member.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <returns>
+        /// Identifier for static member.
+        /// </returns>
+        public IIdentifier ResolveStaticMember(PropertyDefinition propertyDefinition)
+        {
+            return this.ResolveStaticMember(propertyDefinition, this.Resolve);
+        }
+
+        /// <summary>
+        /// Resolve factory.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="methodReference"> The method reference. </param>
+        /// <returns>
+        /// A list of.
+        /// </returns>
+        public IList<IIdentifier> ResolveFactory(MethodReference methodReference)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Resolve method slot name.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="methodReference"> The method reference. </param>
+        /// <param name="isVirtualCall">   true if this object is virtual call. </param>
+        /// <param name="identifierScope"> The identifier scope. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public Expression ResolveMethodSlotName(MethodReference methodReference, bool isVirtualCall, IdentifierScope identifierScope)
+        {
+            throw new NotImplementedException();
         }
     }
 }

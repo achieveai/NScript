@@ -87,6 +87,7 @@
     <Compile Include="DocumentContext.cs" />
     <Compile Include="IResolver.cs" />
     <Compile Include="KnownTemplateTypes.cs" />
+    <Compile Include="ListComparer.cs" />
     <Compile Include="NodeInfos\CollectionNodeInfo.cs" />
     <Compile Include="NodeInfos\ContextBindableNodeInfo.cs" />
     <Compile Include="NodeInfos\IDocumentContext.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="NodeInfos\HtmlNodeInfo.cs" />
     <Compile Include="NodeInfos\NodeInfo.cs" />
     <Compile Include="NodeInfos\PanelNodeInfo.cs" />
+    <Compile Include="NodeInfos\SkinNodeInfo.cs" />
     <Compile Include="NodeInfos\TemplateNodeInfo.cs" />
     <Compile Include="NodeInfos\TypeNodeInfo.cs" />
     <Compile Include="NodeInfos\UIElementNodeInfo.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="ParserContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="SampleTemplate.cs" />
+    <Compile Include="SkinCodeGenerator.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="TemplateParser.cs" />
     <Compile Include="TypeResolver.cs" />

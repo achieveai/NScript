@@ -11,7 +11,8 @@
 
     class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
-<<<<<<< HEAD
+        private string knownCssClasses = string.Empty;
+
         private KnownTemplateTypes knownTemplateTypes;
 
         private TypeResolver typeResolver;
@@ -19,16 +20,6 @@
         private ParserContext parserContext;
 
         private CodeGenerator codeGenerator;
-
-        private CodeGenerator GetCodeGenerator(MethodConverter methodConverter)
-        {
-            if (this.codeGenerator == null)
-            {
-                this.codeGenerator = new CodeGenerator(methodConverter.RuntimeManager);
-            }
-
-            return this.codeGenerator;
-        }
 
         public IntrestLevel GetInterestLevel(
             MethodDefinition methodDefinition,
@@ -45,19 +36,6 @@
                 return IntrestLevel.Overwrite;
             }
             else return IntrestLevel.None;
-=======
-
-        public IntrestLevel GetInterestLevel(MethodConverter methodConverter)
-        {
-            if (methodConverter.MethodDefinition.CustomAttributes.SelectAttribute(
-					methodConverter.RuntimeManager.Context.ClrContext.GetTypeDefinition(
-						Tuple.Create("", ""))) != null)
-            {
-                return IntrestLevel.Overwrite;
-            }
-
-            return IntrestLevel.None;
->>>>>>> 9f6c573321795a06d47dd20eb957750760c6a620
         }
 
         public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter)
@@ -99,27 +77,39 @@
         public void Initialize(NScript.CLR.ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
         {
             this.knownTemplateTypes = new KnownTemplateTypes(runtimeScopeManager.Context.ClrKnownReferences);
-            this.typeResolver = new TypeResolver(runtimeScopeManager.Context.ClrContext);
-            this.codeGenerator = new CodeGenerator(runtimeScopeManager);
+            this.typeResolver = new TypeResolver(
+                runtimeScopeManager,
+                runtimeScopeManager.Context.ClrContext);
+            this.codeGenerator = new CodeGenerator(runtimeScopeManager, this.knownTemplateTypes);
             this.parserContext = new ParserContext(
                 this.knownTemplateTypes,
                 this.codeGenerator,
-                this.typeResolver);
+                this.typeResolver,
+                this.typeResolver,
+                this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries));
 
             this.parserContext.ConverterContext = runtimeScopeManager.Context;
         }
 
         public void ParseArgs(IList<Tuple<string, string>> args)
         {
+            foreach (var tupl in args)
+            {
+                if (tupl.Item1 == "KnownCssClasses")
+                {
+                    this.knownCssClasses = tupl.Item2;
+                }
+            }
         }
 
         public List<MethodReference> GetMethodsToEmitPass1()
         {
-            return new List<MethodReference>();
+            return this.GetMethodsToEmitPassN();
         }
 
         public List<MethodReference> GetMethodsToEmitPassN()
         {
+            this.codeGenerator.IterateParsing();
             return new List<MethodReference>();
         }
 
@@ -130,7 +120,7 @@
 
         public List<Statement> GetPostJavascript()
         {
-            return new List<Statement>();
+            return this.codeGenerator.GetAllTemplateStatements(); ;
         }
     }
 }

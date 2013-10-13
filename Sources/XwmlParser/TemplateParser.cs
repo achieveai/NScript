@@ -47,17 +47,17 @@ namespace XwmlParser
         /// <summary>
         /// The document.
         /// </summary>
-        private readonly HtmlDocument document;
+        private readonly HtmlDocument generatedDocument;
 
         /// <summary>
         /// The new node.
         /// </summary>
-        private readonly HtmlNode newNode;
+        private readonly HtmlNode generatedNode;
 
         /// <summary>
         /// The resolver.
         /// </summary>
-        private readonly IResolver resolver;
+        private readonly IClrResolver resolver;
 
         /// <summary>
         /// The sub template.
@@ -70,6 +70,21 @@ namespace XwmlParser
         private readonly string templateName;
 
         /// <summary>
+        /// Information describing the root template node.
+        /// </summary>
+        private TemplateNodeInfo rootTemplateNodeInfo;
+
+        /// <summary>
+        /// Information describing the root skin node.
+        /// </summary>
+        private SkinNodeInfo rootSkinNodeInfo;
+
+        /// <summary>
+        /// true if this object is template.
+        /// </summary>
+        private readonly bool isTemplate;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="htmlNode">         The HTML node. </param>
@@ -77,14 +92,15 @@ namespace XwmlParser
         public TemplateParser(
             HtmlParser htmlParser,
             HtmlNode htmlNode,
+            bool isSkin,
             NodeInfo parentNodeInfo)
         {
             this.parentParser = htmlParser;
             this.context = htmlParser.DocumentContext;
             this.node = htmlNode;
-            this.resolver = this.context.ParserContext.Resolver;
-            this.document = this.context.ParserContext.Document;
-            this.newNode = this.document.CreateElement("div");
+            this.resolver = this.context.ParserContext.ClrResolver;
+            this.generatedDocument = this.context.ParserContext.Document;
+            this.generatedNode = this.generatedDocument.CreateElement("div");
 
             if (parentNodeInfo != null)
             {
@@ -103,7 +119,7 @@ namespace XwmlParser
                         this.HtmlParser.ResourceName,
                         htmlNode.Line,
                         htmlNode.LinePosition),
-                    "Template does not have ControlType attribute");
+                    "Template/Skin does not have ControlType attribute");
             }
 
             this.controlType = this.resolver.GetTypeReference(
@@ -115,9 +131,9 @@ namespace XwmlParser
                         this.HtmlParser.ResourceName,
                         attr.Line,
                         attr.LinePosition),
-                    string.Format(
-                        "Can't resolve ControlType:{0}.",
-                        attr.Value));
+                        string.Format(
+                            "Can't resolve ControlType:{0}.",
+                            attr.Value));
             }
 
             attr = htmlNode.Attributes["DataContextType"];
@@ -128,12 +144,12 @@ namespace XwmlParser
                         this.HtmlParser.ResourceName,
                         htmlNode.Line,
                         htmlNode.LinePosition),
-                    "Template does not have DataContextType attribute");
+                    "Template/Skin does not have DataContextType attribute");
             }
 
             this.dataContextType = this.resolver.GetTypeReference(
                 attr.Value);
-            if (this.controlType == null)
+            if (this.dataContextType == null)
             {
                 throw new ConverterLocationException(
                     new NScript.Utils.Location(
@@ -144,16 +160,58 @@ namespace XwmlParser
                         "Can't resolve DataContextType:{0}.",
                         attr.Value));
             }
+
+            if (isSkin)
+            {
+                this.rootSkinNodeInfo = new SkinNodeInfo(
+                    dataContextType,
+                    controlType,
+                    this.node);
+            }
+            else
+            {
+                this.rootTemplateNodeInfo = new TemplateNodeInfo(
+                    controlType,
+                    dataContextType,
+                    this.node);
+            }
         }
 
+        /// <summary>
+        /// Gets the type of the data context.
+        /// </summary>
+        /// <value>
+        /// The type of the data context.
+        /// </value>
         public TypeReference DataContextType
         { get { return this.dataContextType; } }
 
+        /// <summary>
+        /// Gets the type of the control.
+        /// </summary>
+        /// <value>
+        /// The type of the control.
+        /// </value>
         public TypeReference ControlType
         { get { return this.controlType; } }
 
+        /// <summary>
+        /// Gets a context for the document.
+        /// </summary>
+        /// <value>
+        /// The document context.
+        /// </value>
         public DocumentContext DocumentContext
         { get { return this.context; } }
+
+        /// <summary>
+        /// Gets the generated document.
+        /// </summary>
+        /// <value>
+        /// The generated document.
+        /// </value>
+        public HtmlDocument GeneratedDocument
+        { get { return this.generatedDocument; } }
 
         /// <summary>
         /// Gets the HTML parser.
@@ -182,14 +240,30 @@ namespace XwmlParser
         public bool IsSubTemplate
         { get { return this.subTemplate; } }
 
+        public SkinNodeInfo SkinNodeInfo
+        { get { return this.rootSkinNodeInfo; } }
+
+        public TemplateNodeInfo TemplateNodeInfo
+        { get { return this.rootTemplateNodeInfo; } }
+
         /// <summary>
         /// Parses this object.
         /// </summary>
         internal void Parse()
         {
-            this.ParseNode(
-                this.node,
-                null);
+
+            NodeInfo nodeInfo =
+                ((NodeInfo)this.rootTemplateNodeInfo) ?? this.rootSkinNodeInfo;
+
+            foreach (var childNode in node.ChildNodes)
+            {
+                var childNodeInfo = this.ParseNode(childNode, nodeInfo);
+                if (!nodeInfo.ProcessChildNode(childNodeInfo))
+                {
+                    throw new ApplicationException(
+                        "Incompatible nested nodes");
+                }
+            }
         }
 
         /// <summary>
@@ -245,14 +319,26 @@ namespace XwmlParser
                         rv = this.ParseHtmlNode(node);
                         break;
                     case NodeType.Template:
+                        rv = this.ParseTemplateNode(node);
                         break;
                     case NodeType.Skin:
+                        rv = this.ParseSkinNode(node);
                         break;
                     case NodeType.CssStyle:
                         throw new ApplicationException(
                             string.Format("can't have style tag in middle of a template"));
                     default:
                         break;
+                }
+
+                foreach (var childNode in node.ChildNodes)
+                {
+                    var childNodeInfo = this.ParseNode(childNode, rv);
+                    if (!rv.ProcessChildNode(childNodeInfo))
+                    {
+                        throw new ApplicationException(
+                            "Incompatible nested nodes");
+                    }
                 }
 
                 return rv;
@@ -265,6 +351,44 @@ namespace XwmlParser
         }
 
         /// <summary>
+        /// Parse skin node.
+        /// </summary>
+        /// <param name="node"> The node. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        private NodeInfo ParseSkinNode(HtmlNode node)
+        {
+            SkinNodeInfo rv = new SkinNodeInfo(
+                this.dataContextType,
+                this.controlType,
+                node);
+
+            return rv;
+        }
+
+        /// <summary>
+        /// Parse template node.
+        /// </summary>
+        /// <param name="node"> The node. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        private NodeInfo ParseTemplateNode(HtmlNode node)
+        {
+            /*
+            TemplateNodeInfo rv = new TemplateNodeInfo(
+                this.controlType,
+                this.dataContextType,
+                node);
+
+            return rv;
+            */
+
+            throw new InvalidOperationException();
+        }
+
+        /// <summary>
         /// Parse html node.
         /// </summary>
         /// <param name="node"> The node. </param>
@@ -273,46 +397,13 @@ namespace XwmlParser
         /// </returns>
         private HtmlNodeInfo ParseHtmlNode(HtmlNode node)
         {
-            if (node.NodeType == HtmlNodeType.Text)
-            {
-                return new HtmlNodeInfo(
-                    node,
-                    this.context.GetFullName(node.OriginalName))
-                    {
-                        GeneratedNode = this.document.CreateTextNode(((HtmlTextNode)node).Text)
-                    };
-            }
-            else if (node.NodeType == HtmlNodeType.Element)
-            {
-                // TOOD: add id tracking and munging.
-                HtmlNodeInfo htmlNodeInfo = new HtmlNodeInfo(
-                    node,
-                    this.context.GetFullName(node.OriginalName));
-                HtmlNode rv = this.document.CreateElement(node.OriginalName);
-                foreach (var attr in node.Attributes)
-                {
-                    rv.SetAttributeValue(attr.OriginalName, attr.Value);
-                }
+            HtmlNodeInfo rv = new HtmlNodeInfo(
+                node,
+                this.DocumentContext.GetFullName(node.OriginalName));
 
-                foreach (var childNode in node.ChildNodes)
-                {
-                    var tmpNode = this.ParseNode(childNode, null);
+            rv.ParseNode(this);
 
-                    IHtmlNodeGenerator generatorNode = tmpNode as IHtmlNodeGenerator;
-
-                    if (generatorNode != null)
-                    {
-                        rv.AppendChild(generatorNode.GeneratedNode);
-                    }
-                }
-
-                return new HtmlNodeInfo(
-                    node,
-                    this.context.GetFullName(node.OriginalName))
-                    { GeneratedNode = rv };
-            }
-
-            return null;
+            return rv;
         }
 
         /// <summary>
@@ -341,7 +432,7 @@ namespace XwmlParser
                     throw new NotImplementedException();
                 }
 
-                var property = this.context.ParserContext.Resolver.GetPropertyReference(
+                var property = this.context.ParserContext.ClrResolver.GetPropertyReference(
                     parentNodeType,
                     nameInfo.Item2);
 
@@ -358,7 +449,7 @@ namespace XwmlParser
                 rv.Add(
                     new HtmlAttributeInfo(attribute)
                     {
-                        GeneratedAttribute = this.document.CreateAttribute(nameInfo.Item2, attribute.Value)
+                        GeneratedAttribute = this.generatedDocument.CreateAttribute(nameInfo.Item2, attribute.Value)
                     });
             }
 
@@ -512,6 +603,13 @@ namespace XwmlParser
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Parse panel element node.
+        /// </summary>
+        /// <param name="node"> The node. </param>
+        /// <returns>
+        /// .
+        /// </returns>
         private NodeInfo ParsePanelElementNode(HtmlNode node)
         {
             var tuple = this.GetTypeReference(node);
@@ -525,12 +623,26 @@ namespace XwmlParser
             return rv;
         }
 
+        /// <summary>
+        /// Parse panel element node.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="node">         The node. </param>
+        /// <param name="typeNodeInfo"> Information describing the type node. </param>
         private void ParsePanelElementNode(HtmlNode node, PanelNodeInfo typeNodeInfo)
         {
             this.ParseElementNode(node, typeNodeInfo);
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Parse skinable element node.
+        /// </summary>
+        /// <param name="node"> The node. </param>
+        /// <returns>
+        /// .
+        /// </returns>
         private NodeInfo ParseSkinableElementNode(HtmlNode node)
         {
             var tuple = this.GetTypeReference(node);
@@ -544,19 +656,33 @@ namespace XwmlParser
             return rv;
         }
 
+        /// <summary>
+        /// Parse skinable element node.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="node">         The node. </param>
+        /// <param name="typeNodeInfo"> Information describing the type node. </param>
         private void ParseSkinableElementNode(HtmlNode node, SkinnableNodeInfo typeNodeInfo)
         {
             this.ParseElementNode(node, typeNodeInfo);
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Gets type reference.
+        /// </summary>
+        /// <param name="node"> The node. </param>
+        /// <returns>
+        /// The type reference.
+        /// </returns>
         private Tuple<TypeReference, Tuple<string, string>> GetTypeReference(HtmlNode node)
         {
             var fullNameTuple = this.context.GetFullName(node.Name);
             var fullName = fullNameTuple.Item1 + "." + fullNameTuple.Item2;
 
             return Tuple.Create(
-                this.context.ParserContext.Resolver.GetTypeReference(fullName),
+                this.context.ParserContext.ClrResolver.GetTypeReference(fullName),
                 fullNameTuple);
         }
     }

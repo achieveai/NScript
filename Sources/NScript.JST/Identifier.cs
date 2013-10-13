@@ -167,6 +167,7 @@ namespace NScript.JST
 
                 ownerScope.AddIdentifier(returnValue);
             }
+
             return returnValue;
         }
 

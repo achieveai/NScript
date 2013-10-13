@@ -40,7 +40,9 @@ namespace XwmlParser.Test
                 context.LoadAssembly(SunlightFrameworkUi, false);
                 context.LoadAssembly(SunlightFrameworkUITest, false);
 
-                resolver = new TypeResolver(context);
+                resolver = new TypeResolver(
+                    null,
+                    context);
             }
         }
 

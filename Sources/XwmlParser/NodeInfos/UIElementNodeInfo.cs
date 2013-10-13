@@ -22,11 +22,6 @@ namespace XwmlParser.NodeInfos
         private HtmlNode generatedNode;
 
         /// <summary>
-        /// Full pathname of the node file.
-        /// </summary>
-        private List<int> nodePath;
-
-        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="type">     The type. </param>
@@ -51,25 +46,19 @@ namespace XwmlParser.NodeInfos
         }
 
         /// <summary>
-        /// Gets the full pathname of the node file.
-        /// </summary>
-        /// <value>
-        /// The full pathname of the node file.
-        /// </value>
-        public List<int> NodePath
-        { get { return this.nodePath; } }
-
-        /// <summary>
         /// Sets new node and path.
         /// </summary>
         /// <param name="node">     The node. </param>
         /// <param name="nodePath"> Full pathname of the node file. </param>
         public void SetNewNodeAndPath(
-            HtmlNode node,
-            List<int> nodePath)
+            HtmlNode node)
         {
             this.generatedNode = node;
-            this.nodePath = nodePath;
+        }
+
+        public void FinalizeGeneratedNode(SkinCodeGenerator codeGenerator)
+        {
+            throw new NotImplementedException();
         }
     }
 }

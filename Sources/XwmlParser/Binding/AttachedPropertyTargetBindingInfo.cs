@@ -6,6 +6,7 @@
 
 namespace XwmlParser.Binding
 {
+    using Mono.Cecil;
     using System;
     using System.Collections.Generic;
 
@@ -14,9 +15,14 @@ namespace XwmlParser.Binding
     /// </summary>
     public class AttachedPropertyTargetBindingInfo : TargetBindingInfo
     {
-        public override Mono.Cecil.TypeReference BindingType
+        public AttachedPropertyTargetBindingInfo(
+            PropertyReference property)
+            : base(property.PropertyType.GenericParameters[0])
         {
-            get { throw new NotImplementedException(); }
+            this.Property = property;
         }
+
+        public PropertyReference Property
+        { get; private set; }
     }
 }

@@ -41,6 +41,18 @@ using System.Runtime.CompilerServices;
         public readonly Func<object, object> TargetPropertyGetter;
 
         /// <summary>
+        /// Target property setter with argument.
+        /// </summary>
+        public readonly Action<object, object, object> TargetPropertySetterWithArg;
+
+        /// <summary>
+        /// Target property setter argument.
+        /// This is mainly used for things like
+        /// Attribute Binding, Style Binding, Css Binding, etc.
+        /// </summary>
+        public readonly object TargetPropertySetterArg;
+
+        /// <summary>
         /// Name of the target property.
         /// </summary>
         public readonly string TargetPropertyName;
@@ -93,15 +105,38 @@ using System.Runtime.CompilerServices;
             object defaultValue)
         {
             this.PropertyGetterPath = propertyGetterPath;
-            this.PropertySetter = null;
-            this.PropertyNames = null;
             this.TargetPropertySetter = targetPropertySetter;
-            this.TargetPropertyGetter = null;
-            this.TargetPropertyName = null;
             this.IsDataContextBinder = isDataContextBinder;
             this.ObjectIndex = objectIndex;
             this.ForwardConverter = forwardConverter;
-            this.BackwardConverter = null;
+            this.DefaultValue = defaultValue;
+            this.Mode = DataBindingMode.OneTime;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="propertyGetterPath">   Full pathname of the property getter file. </param>
+        /// <param name="targetPropertySetter"> Target property setter. </param>
+        /// <param name="isDataContextBinder">  true if this object is data context binder. </param>
+        /// <param name="objectIndex">          Zero-based index of the object. </param>
+        /// <param name="forwardConverter">     The forward converter. </param>
+        /// <param name="defaultValue">         The default value. </param>
+        public SkinBinderInfo(
+            NativeArray<Func<object, object>> propertyGetterPath,
+            Action<object, object, object> targetPropertySetter,
+            object targetPropertySetterArg,
+            bool isDataContextBinder,
+            int objectIndex,
+            Func<object, object> forwardConverter,
+            object defaultValue)
+        {
+            this.PropertyGetterPath = propertyGetterPath;
+            this.TargetPropertySetterWithArg = targetPropertySetter;
+            this.TargetPropertySetterArg = targetPropertySetterArg;
+            this.IsDataContextBinder = isDataContextBinder;
+            this.ObjectIndex = objectIndex;
+            this.ForwardConverter = forwardConverter;
             this.DefaultValue = defaultValue;
             this.Mode = DataBindingMode.OneTime;
         }
@@ -124,19 +159,46 @@ using System.Runtime.CompilerServices;
             bool isDataContextBinder,
             int objectIndex,
             Func<object, object> forwardConverter,
-            object defaultValue,
-            DataBindingMode mode)
+            object defaultValue)
         {
             this.PropertyGetterPath = propertyGetterPath;
-            this.PropertySetter = null;
             this.PropertyNames = propertyNames;
             this.TargetPropertySetter = targetPropertySetter;
-            this.TargetPropertyGetter = null;
-            this.TargetPropertyName = null;
             this.IsDataContextBinder = isDataContextBinder;
             this.ObjectIndex = objectIndex;
             this.ForwardConverter = forwardConverter;
-            this.BackwardConverter = null;
+            this.DefaultValue = defaultValue;
+            this.Mode = DataBindingMode.OneWay;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="propertyGetterPath">   Full pathname of the property getter file. </param>
+        /// <param name="propertyNames">        List of names of the properties. </param>
+        /// <param name="targetPropertySetter"> Target property setter. </param>
+        /// <param name="isDataContextBinder">  true if this object is data context binder. </param>
+        /// <param name="objectIndex">          Zero-based index of the object. </param>
+        /// <param name="forwardConverter">     The forward converter. </param>
+        /// <param name="defaultValue">         The default value. </param>
+        /// <param name="mode">                 The mode. </param>
+        public SkinBinderInfo(
+            NativeArray<Func<object, object>> propertyGetterPath,
+            NativeArray<string> propertyNames,
+            Action<object, object, object> targetPropertySetter,
+            object targetPropertySetterArg,
+            bool isDataContextBinder,
+            int objectIndex,
+            Func<object, object> forwardConverter,
+            object defaultValue)
+        {
+            this.PropertyGetterPath = propertyGetterPath;
+            this.PropertyNames = propertyNames;
+            this.TargetPropertySetterWithArg = targetPropertySetter;
+            this.TargetPropertySetterArg = targetPropertySetterArg;
+            this.IsDataContextBinder = isDataContextBinder;
+            this.ObjectIndex = objectIndex;
+            this.ForwardConverter = forwardConverter;
             this.DefaultValue = defaultValue;
             this.Mode = DataBindingMode.OneWay;
         }

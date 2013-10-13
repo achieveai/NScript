@@ -18,7 +18,7 @@ namespace XwmlParser
         ParserContext ParserContext
         { get; }
 
-        IResolver Resolver
+        IClrResolver Resolver
         { get; }
 
         Tuple<string, string> GetFullName(string name);

@@ -51,11 +51,10 @@
     <Compile Include="Helpers\CssTargetBinder.cs" />
     <Compile Include="Helpers\SkinBinderHelper.cs" />
     <Compile Include="Helpers\SkinBinderInfo.cs" />
-    <Compile Include="Helpers\SkinFactory.cs" />
+    <Compile Include="SkinFactory.cs" />
     <Compile Include="Helpers\SkinInstance.cs" />
     <Compile Include="Helpers\TemplateManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TemplateInstance.cs" />
     <Compile Include="UIElement.cs" />
     <Compile Include="UIEvent.cs" />
     <Compile Include="UIPanel.cs" />

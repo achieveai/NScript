@@ -79,6 +79,7 @@ selectop
         | '+'  -> PRECEDEDS
 	;
 
+public
 properties
 	: declaration (';' declaration?)* ->  declaration+
 	;

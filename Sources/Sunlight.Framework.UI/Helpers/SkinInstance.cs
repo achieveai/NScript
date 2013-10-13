@@ -19,7 +19,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <summary>
         /// The parent factory.
         /// </summary>
-        SkinFactory parentFactory;
+        Skin parentFactory;
 
         /// <summary>
         /// The child elements.
@@ -65,12 +65,11 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="binders">             Type of the skinable. </param>
         /// <param name="dataContextType"> Type of the data context. </param>
         public SkinInstance(
-            SkinFactory factory,
+            Skin factory,
             Element rootElement,
             NativeArray<UIElement> childElements,
             NativeArray<object> elementsOfIntrests,
-            NativeArray<SkinBinderInfo> binders,
-            Type dataContextType)
+            NativeArray<SkinBinderInfo> binders)
         {
             ExceptionHelpers.IsNullOrUndefined(rootElement);
 

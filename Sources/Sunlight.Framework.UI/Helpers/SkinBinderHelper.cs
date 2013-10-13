@@ -8,6 +8,7 @@ namespace Sunlight.Framework.UI.Helpers
 {
     using Sunlight.Framework.Binders;
     using System;
+    using System.Web.Html;
 
     /// <summary>
     /// Definition for SkinBinderHelper
@@ -60,6 +61,79 @@ namespace Sunlight.Framework.UI.Helpers
                         targetElements[info.ObjectIndex]);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets an attribute.
+        /// </summary>
+        /// <param name="node">     The node. </param>
+        /// <param name="value">    The value. </param>
+        /// <param name="attrName"> Name of the attribute. </param>
+        public static void SetAttribute(
+            Node node,
+            string value,
+            string attrName)
+        {
+            if (value != null)
+            {
+                node.SetAttribute(attrName, value);
+            }
+            else
+            {
+                node.RemoveAttribute(attrName);
+            }
+        }
+
+        /// <summary>
+        /// Sets text content.
+        /// </summary>
+        /// <param name="element"> The element. </param>
+        /// <param name="value">   The value. </param>
+        public static void SetTextContent(
+            Element element,
+            string value)
+        {
+            if (value != null)
+            {
+                element.TextContent = value;
+            }
+            else
+            {
+                element.TextContent = String.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Sets CSS class.
+        /// </summary>
+        /// <param name="element">   The element. </param>
+        /// <param name="add">       true to add. </param>
+        /// <param name="className"> Name of the class. </param>
+        public static void SetCssClass(
+            Element element,
+            bool add,
+            string className)
+        {
+            if (add)
+            {
+                element.AddClassName(className);
+            }
+            else
+            {
+                element.RemoveClassName(className);
+            }
+        }
+
+        public static Element GetElementFromPath(
+            Element element,
+            NativeArray<int> path)
+        {
+            for (int iPath = 0; iPath < path.Length; iPath++)
+            {
+                element = (Element)element.ChildNodes[path[iPath]];
+            }
+
+            return element;
         }
 
         /// <summary>

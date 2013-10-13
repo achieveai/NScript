@@ -7,6 +7,7 @@
 namespace XwmlParser.Binding
 {
     using Mono.Cecil;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -15,20 +16,32 @@ namespace XwmlParser.Binding
     /// </summary>
     public class AttributeTargetBindingInfo : TargetBindingInfo
     {
-        private TypeReference stringType;
         private string attributeName;
 
         public AttributeTargetBindingInfo(
             TypeReference stringType,
             string attributeName)
+            : base(stringType)
         {
             this.attributeName = attributeName;
-            this.stringType = stringType;
         }
 
-        public override TypeReference BindingType
+        public string AttributeName
+        { get { return this.attributeName; } }
+
+        internal override
+            Tuple<string, IIdentifier, IIdentifier, Expression, Expression>
+            GenerateGetterSetter(SkinCodeGenerator codeGenerator, bool isTwoWay)
         {
-            get { throw new NotImplementedException(); }
+            IIdentifier attributeSetter = codeGenerator.CodeGenerator.GetAttributeSetter();
+            return Tuple.Create(
+                (string)null,
+                attributeSetter,
+                (IIdentifier)null,
+                (Expression)new StringLiteralExpression(
+                    codeGenerator.CodeGenerator.ScopeManager.Scope,
+                    this.AttributeName),
+                (Expression)null);
         }
     }
 }

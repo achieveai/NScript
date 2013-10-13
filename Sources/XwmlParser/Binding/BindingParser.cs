@@ -151,6 +151,26 @@ namespace XwmlParser.Binding
         }
 
         /// <summary>
+        /// Query if 'str' is binding text.
+        /// </summary>
+        /// <param name="str"> The. </param>
+        /// <returns>
+        /// true if binding text, false if not.
+        /// </returns>
+        public static bool IsBindingText(string str)
+        {
+            if (str.Length > 3
+                && str[0] == '{'
+                && str[1] != '{'
+                && str[str.Length - 1] == '}')
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets binding mode.
         /// </summary>
         /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
@@ -383,7 +403,7 @@ namespace XwmlParser.Binding
         /// </summary>
         private static Dictionary<BindingPart, Tuple<int, int>> GetBreakups(string binderString)
         {
-            List<int> commaIndexes = GetCommaIndexes(binderString);
+            List<int> commaIndexes = GetCommaIndexes(binderString, true);
             Dictionary<BindingPart, Tuple<int, int>> bindingParts = new Dictionary<BindingPart, Tuple<int, int>>();
 
             for (int i = 1; i < commaIndexes.Count; i++)
@@ -444,11 +464,12 @@ namespace XwmlParser.Binding
         /// <returns>
         /// The comma indexes.
         /// </returns>
-        private static List<int> GetCommaIndexes(string str)
+        private static List<int> GetCommaIndexes(string str, bool skipCorners = false)
         {
             List<int> commaIndexes = new List<int>(2);
-            commaIndexes.Add(-1);
-            for (int i = 0; i < str.Length; i++)
+            int delta = skipCorners ? 1 : 0;
+            commaIndexes.Add(delta - 1);
+            for (int i = 0; i < str.Length - delta; i++)
             {
                 char ch = str[i];
                 if (ch == ',')
@@ -461,7 +482,7 @@ namespace XwmlParser.Binding
                 }
             }
 
-            commaIndexes.Add(str.Length);
+            commaIndexes.Add(str.Length - delta);
             return commaIndexes;
         }
 

@@ -58,7 +58,7 @@ namespace XwmlParser.NodeInfos
         /// <returns>
         /// true if it succeeds, false if it fails.
         /// </returns>
-        public virtual bool ParseAttribute(HtmlAttribute attribute, IResolver resolver)
+        public virtual bool ParseAttribute(HtmlAttribute attribute, IClrResolver resolver)
         {
             return false;
         }

@@ -13,7 +13,7 @@ namespace XwmlParser
     /// <summary>
     /// Definition for IResolver
     /// </summary>
-    public interface IResolver
+    public interface IClrResolver
     {
         /// <summary>
         /// Gets a type reference.

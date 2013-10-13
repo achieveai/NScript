@@ -16,6 +16,7 @@ namespace XwmlParser
 
     public enum NodeType
     {
+        Head,
         Object,
         ObservableObject,
         ExtensibleObject,
@@ -170,6 +171,11 @@ namespace XwmlParser
         {
             var nodeName = this.documentContext.GetFullName(node.OriginalName);
 
+            if (nodeName.Item2 == "head"
+                && nodeName.Item1 == null)
+            {
+                return NodeType.Head;
+            }
             if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStypeTag)
             {
                 return NodeType.CssStyle;
@@ -181,7 +187,7 @@ namespace XwmlParser
                 // 2. This is a HTML node.
                 PropertyReference property = null;
                 if (parentNodeInfo is TypeNodeInfo
-                    && (property = this.context.Resolver.GetPropertyReference(
+                    && (property = this.context.ClrResolver.GetPropertyReference(
                             ((TypeNodeInfo)parentNodeInfo).Type,
                             nodeName.Item2)) != null)
                 {
@@ -201,7 +207,7 @@ namespace XwmlParser
             else
             {
                 string[] nameParts = nodeName.Item2.Split('.');
-                TypeReference typeReference = this.context.Resolver.GetTypeReference(nodeName.Item1 + '.' + nameParts[0]);
+                TypeReference typeReference = this.context.ClrResolver.GetTypeReference(nodeName.Item1 + '.' + nameParts[0]);
 
                 if (typeReference == null)
                 {
@@ -220,7 +226,7 @@ namespace XwmlParser
 
                 if (nameParts.Length == 2)
                 {
-                    var property = this.context.Resolver.GetPropertyReference(typeReference, nameParts[1]);
+                    var property = this.context.ClrResolver.GetPropertyReference(typeReference, nameParts[1]);
 
                     if (property == null)
                     {
@@ -231,23 +237,23 @@ namespace XwmlParser
                     return NodeType.AttachedProperty;
                 }
 
-                if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UISkinableElement))
+                if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.UISkinableElement))
                 {
                     return NodeType.SkinableElement;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UIPanel))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.UIPanel))
                 {
                     return NodeType.Panel;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UIElement))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.UIElement))
                 {
                     return NodeType.UIElement;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.ContextBindableObject))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.ContextBindableObject))
                 {
                     return NodeType.ContextBindableObject;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.ObservableObject))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.ObservableObject))
                 {
                     return NodeType.ObservableObject;
                 }
@@ -291,9 +297,9 @@ namespace XwmlParser
         /// <value>
         /// The resolver.
         /// </value>
-        public IResolver Resolver
+        public IClrResolver Resolver
         {
-            get { return this.context.Resolver; }
+            get { return this.context.ClrResolver; }
         }
 
         /// <summary>
@@ -312,7 +318,8 @@ namespace XwmlParser
                 {
                     string nodeName = item.OriginalName.ToLowerInvariant();
                     this.documentContext.PushNode(item);
-                    if (nodeName == "head")
+                    var nodeType = this.GetNodeType(node, null);
+                    if (nodeType == NodeType.Head)
                     {
                         if (headParsed)
                         {
@@ -327,13 +334,14 @@ namespace XwmlParser
                         this.ParseDocument(item, true);
                         headParsed = true;
                     }
-                    else if (nodeName == "style")
+                    else if (nodeType == NodeType.CssStyle)
                     {
                         // Parse Css.
                         var grammer = new CssParser.CssGrammer(node.InnerText);
                         this.documentContext.AddCssRules(grammer.Rules);
                     }
-                    else if (nodeName == "template")
+                    else if (nodeType == NodeType.Template
+                        || nodeType == NodeType.Skin)
                     {
                         if (parsingHead)
                         {
@@ -349,6 +357,7 @@ namespace XwmlParser
                         TemplateParser parser = new TemplateParser(
                             this,
                             node,
+                            nodeType == NodeType.Skin,
                             null);
 
                         string templateName = parser.TemplateName ?? "::";
@@ -377,6 +386,7 @@ namespace XwmlParser
                         }
 
                         this.templateParsers.Add(parser.TemplateName, parser);
+                        parser.Parse();
                     }
                     else
                     {

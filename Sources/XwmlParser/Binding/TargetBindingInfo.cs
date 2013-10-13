@@ -7,6 +7,7 @@
 namespace XwmlParser.Binding
 {
     using Mono.Cecil;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -15,10 +16,22 @@ namespace XwmlParser.Binding
     /// </summary>
     public abstract class TargetBindingInfo
     {
+        protected TargetBindingInfo(TypeReference bindingType)
+        {
+            this.BindingType = bindingType;
+        }
+
         public virtual bool CanHaveDynamicBinding
         { get { return false; } }
 
-        public abstract TypeReference BindingType
-        { get; }
+        public TypeReference BindingType
+        { get; private set; }
+
+        internal virtual
+            Tuple<string, IIdentifier, IIdentifier, Expression, Expression>
+            GenerateGetterSetter(SkinCodeGenerator codeGenerator, bool isTwoWay)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

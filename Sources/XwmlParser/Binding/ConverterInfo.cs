@@ -7,6 +7,7 @@
 namespace XwmlParser.Binding
 {
     using Mono.Cecil;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -67,6 +68,21 @@ namespace XwmlParser.Binding
         /// </value>
         public TypeReference ToType
         { get; private set; }
+
+        /// <summary>
+        /// Gets to and from methods.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="codeGenerator"> The code generator. </param>
+        /// <returns>
+        /// to and from methods.
+        /// </returns>
+        public virtual Tuple<IIdentifier, IIdentifier> GetToAndFromMethods(
+            CodeGenerator codeGenerator)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class TypeConverterInfo : ConverterInfo

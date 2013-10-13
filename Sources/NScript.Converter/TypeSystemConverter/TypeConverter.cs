@@ -421,49 +421,45 @@ namespace NScript.Converter.TypeSystemConverter
                 typeReference = this.localTypeReference;
             }
 
-            GenericParameterType? typeScope = typeReference.GetGenericTypeScope();
-            TypeDefinition typeDefinition = typeReference.Resolve();
-
-            if ((typeDefinition == null || !this.context.IsPsudoType(typeDefinition))
-                && typeScope.HasValue
-                && typeScope.Value == GenericParameterType.Type)
-            {
-                IIdentifier rv;
-                if (!this.localTypeReferences.TryGetValue(typeReference, out rv))
+            return ResolverHelper.Resolve(
+                this.RuntimeManager,
+                delegate(TypeReference typeRef)
                 {
-                    GenericParameter genericParam = typeReference as GenericParameter;
-                    if (genericParam != null)
+                    IIdentifier rv;
+                    if (!this.localTypeReferences.TryGetValue(typeReference, out rv))
                     {
-                        rv = this.typeScope.ParameterIdentifiers[genericParam.Position];
-                        this.localTypeReferencesInitialized.Add(typeReference);
+                        GenericParameter genericParam = typeReference as GenericParameter;
+                        if (genericParam != null)
+                        {
+                            rv = this.typeScope.ParameterIdentifiers[genericParam.Position];
+                            this.localTypeReferencesInitialized.Add(typeReference);
+                        }
+                        else
+                        {
+                            StringBuilder strBuilder = new StringBuilder();
+
+                            RuntimeScopeManager.CalculateFriendlyTypeReferenceName(
+                                typeReference,
+                                strBuilder,
+                                (typeDefinitionBase, typeNameBuilder) =>
+                                {
+                                    typeNameBuilder.Append(
+                                        RuntimeScopeManager.GetSplitName(
+                                            typeDefinitionBase.Name).Item2);
+                                });
+
+                            rv = SimpleIdentifier.CreateScopeIdentifier(
+                                this.typeScope,
+                                strBuilder.ToString(),
+                                false);
+                        }
+
+                        this.localTypeReferences.Add(typeReference, rv);
                     }
-                    else
-                    {
-                        StringBuilder strBuilder = new StringBuilder();
 
-                        RuntimeScopeManager.CalculateFriendlyTypeReferenceName(
-                            typeReference,
-                            strBuilder,
-                            (typeDefinitionBase, typeNameBuilder) =>
-                            {
-                                typeNameBuilder.Append(
-                                    RuntimeScopeManager.GetSplitName(
-                                        typeDefinitionBase.Name).Item2);
-                            });
-
-                        rv = SimpleIdentifier.CreateScopeIdentifier(
-                            this.typeScope,
-                            strBuilder.ToString(),
-                            false);
-                    }
-
-                    this.localTypeReferences.Add(typeReference, rv);
-                }
-
-                return new IIdentifier[] { rv };
-            }
-
-            return this.runtimeScopeManager.ResolveType((TypeReference)typeReference);
+                    return rv;
+                },
+                typeReference);
         }
 
         /// <summary>
@@ -475,14 +471,10 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         public IIdentifier Resolve(FieldReference fieldReference)
         {
-            if (this.context.IsPsudoType(fieldReference.DeclaringType.Resolve()))
-            {
-                return new CompoundIdentifier(
-                    this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
-                    this.runtimeScopeManager.Resolve(fieldReference));
-            }
-
-            return this.runtimeScopeManager.Resolve(fieldReference);
+            return ResolverHelper.Resolve(
+                this.RuntimeManager,
+                this,
+                fieldReference);
         }
 
         /// <summary>
@@ -527,36 +519,11 @@ namespace NScript.Converter.TypeSystemConverter
             FieldReference member,
             Func<TypeReference, IList<IIdentifier>> resolver)
         {
-            bool isFixedName, isAlias;
-
-            string name = this.Context.GetMemberName(
-                member.GetDefinition(),
-                false,
-                out isFixedName,
-                out isAlias);
-
-            if (isAlias)
-            {
-                return this.RuntimeManager.ResolveScriptAlias(name);
-            }
-
-            List<IIdentifier> returnValue = new List<IIdentifier>();
-            TypeDefinition memberTypeDef = member.DeclaringType.Resolve();
-            if (!memberTypeDef.IsGeneric()
-                && this.RuntimeManager.Context.IsImplemented(member.Resolve()))
-            {
-                returnValue.Add(this.RuntimeManager.ResolveStatic(member.Resolve()));
-                return returnValue;
-            }
-
-            IList<IIdentifier> parentPath = resolver(member.DeclaringType);
-            if (parentPath != null)
-            {
-                returnValue.AddRange(parentPath);
-            }
-
-            returnValue.Add(this.Resolve(member));
-            return returnValue;
+            return ResolverHelper.ResolveStaticMember(
+                this.RuntimeManager,
+                this,
+                member,
+                resolver);
         }
 
         /// <summary>
@@ -571,36 +538,10 @@ namespace NScript.Converter.TypeSystemConverter
             PropertyDefinition propertyDefinition,
             Func<TypeReference, IList<IIdentifier>> resolver)
         {
-            bool isFixedName, isAlias;
-
-            string name = this.Context.GetMemberName(
+            return ResolverHelper.ResolveStaticMember(
+                this.RuntimeManager,
                 propertyDefinition,
-                false,
-                out isFixedName,
-                out isAlias);
-
-            if (isAlias)
-            {
-                return new CompoundIdentifier(this.RuntimeManager.ResolveScriptAlias(name));
-            }
-
-            List<IIdentifier> returnValue = new List<IIdentifier>();
-            TypeDefinition memberTypeDef = propertyDefinition.DeclaringType.Resolve();
-            if (!memberTypeDef.IsGeneric()
-                && this.RuntimeManager.Context.IsImplemented(propertyDefinition))
-            {
-                returnValue.Add(this.RuntimeManager.ResolveStatic(propertyDefinition));
-                return new CompoundIdentifier(returnValue);
-            }
-
-            IList<IIdentifier> parentPath = resolver(propertyDefinition.DeclaringType);
-            if (parentPath != null)
-            {
-                returnValue.AddRange(parentPath);
-            }
-
-            returnValue.Add(this.Resolve(propertyDefinition));
-            return new CompoundIdentifier(returnValue);
+                resolver);
         }
 
         /// <summary>
@@ -613,14 +554,22 @@ namespace NScript.Converter.TypeSystemConverter
             MethodReference member,
             Func<TypeReference, IList<IIdentifier>> resolver)
         {
-            return this.ResolveStaticMember(member, resolver, false);
+            return ResolverHelper.ResolveStaticMember(
+                this.RuntimeManager,
+                member,
+                resolver,
+                false);
         }
 
         public IList<IIdentifier> ResolveFactory(
             MethodReference constructor,
             Func<TypeReference, IList<IIdentifier>> resolver)
         {
-            return this.ResolveStaticMember(constructor, resolver, true);
+            return ResolverHelper.ResolveStaticMember(
+                this.RuntimeManager,
+                constructor,
+                resolver,
+                true);
         }
 
         /// <summary>
@@ -788,6 +737,78 @@ namespace NScript.Converter.TypeSystemConverter
         public void ClearVariableInitializedTracking()
         {
             this.localTypeReferencesInitialized.Clear();
+        }
+
+        /// <summary>
+        /// Resolve factory.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="methodReference"> The method reference. </param>
+        /// <returns>
+        /// A list of.
+        /// </returns>
+        public IList<IIdentifier> ResolveFactory(MethodReference methodReference)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Resolve implemented version.
+        /// </summary>
+        /// <param name="propertyDefinition"> The property definition. </param>
+        /// <returns>
+        /// Identifier for ImplementedVersion of imported property.
+        /// </returns>
+        public IIdentifier ResolveImplementedVersion(PropertyDefinition propertyDefinition)
+        {
+            return new CompoundIdentifier(
+                this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
+                this.typeScopeManager.ResolveImportedExtendedProperty(propertyDefinition));
+        }
+
+        /// <summary>
+        /// Resolve wrapped method.
+        /// </summary>
+        /// <param name="methodDefinition"> The method definition. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public IIdentifier ResolveWrappedMethod(MethodDefinition methodDefinition)
+        {
+            if (methodDefinition.IsStatic)
+            {
+                bool isFixed, isAlias;
+                string name = this.context.GetMemberName(methodDefinition, true, out isFixed, out isAlias);
+                if (isAlias)
+                {
+                    return new CompoundIdentifier(this.RuntimeManager.ResolveScriptAlias(name));
+                }
+                else
+                {
+                    return new CompoundIdentifier(
+                        new CompoundIdentifier(this.Resolve(this.typeDefinition)),
+                        this.typeScopeManager.ResolveUnderlyingMethod(methodDefinition));
+                }
+            }
+
+            return this.typeScopeManager.ResolveUnderlyingMethod(methodDefinition);
+        }
+
+        /// <summary>
+        /// Resolve method slot name.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="methodReference"> The method reference. </param>
+        /// <param name="isVirtualCall">   true if this object is virtual call. </param>
+        /// <param name="identifierScope"> The identifier scope. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        public Expression ResolveMethodSlotName(MethodReference methodReference, bool isVirtualCall, IdentifierScope identifierScope)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -1998,111 +2019,6 @@ namespace NScript.Converter.TypeSystemConverter
                     arguments,
                     this,
                     this.RuntimeManager));
-        }
-
-        /// <summary>
-        /// Resolves the static member.
-        /// </summary>
-        /// <param name="method">The member.</param>
-        /// <param name="resolver">The resolver.</param>
-        /// <returns>Idnentifiers for accessing static member.</returns>
-        private IList<IIdentifier> ResolveStaticMember(
-            MethodReference method,
-            Func<TypeReference, IList<IIdentifier>> resolver,
-            bool isFactory)
-        {
-            bool isFixedName, isAlias;
-
-            string name = this.Context.GetMemberName(
-                method.GetDefinition(),
-                false,
-                out isFixedName,
-                out isAlias);
-
-            if (isAlias)
-            {
-                return this.RuntimeManager.ResolveScriptAlias(name);
-            }
-
-            List<IIdentifier> returnValue = new List<IIdentifier>();
-            TypeDefinition memberTypeDef = method.DeclaringType.Resolve();
-            if ((!memberTypeDef.IsGeneric()
-                || this.RuntimeManager.Context.IsPsudoType(memberTypeDef)
-                || this.RuntimeManager.Context.IsExtended(memberTypeDef))
-                && this.RuntimeManager.Context.IsImplemented(method.Resolve()))
-            {
-                if (!isFactory)
-                {
-                    returnValue.Add(this.RuntimeManager.ResolveStatic(method.Resolve()));
-                }
-                else
-                {
-                    returnValue.Add(this.RuntimeManager.ResolveFactory(method.Resolve()));
-                }
-
-                return returnValue;
-            }
-
-            IList<IIdentifier> parentPath = resolver(method.DeclaringType);
-            if (parentPath != null)
-            {
-                returnValue.AddRange(parentPath);
-            }
-
-            returnValue.Add(this.Resolve(method, true));
-            return returnValue;
-        }
-
-        public IList<IIdentifier> ResolveFactory(MethodReference methodReference)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Resolve implemented version.
-        /// </summary>
-        /// <param name="propertyDefinition"> The property definition. </param>
-        /// <returns>
-        /// Identifier for ImplementedVersion of imported property.
-        /// </returns>
-        public IIdentifier ResolveImplementedVersion(PropertyDefinition propertyDefinition)
-        {
-            return new CompoundIdentifier(
-                this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
-                this.typeScopeManager.ResolveImportedExtendedProperty(propertyDefinition));
-        }
-
-        /// <summary>
-        /// Resolve wrapped method.
-        /// </summary>
-        /// <param name="methodDefinition"> The method definition. </param>
-        /// <returns>
-        /// .
-        /// </returns>
-        public IIdentifier ResolveWrappedMethod(MethodDefinition methodDefinition)
-        {
-            if (methodDefinition.IsStatic)
-            {
-                bool isFixed, isAlias;
-                string name = this.context.GetMemberName(methodDefinition, true, out isFixed, out isAlias);
-                if (isAlias)
-                {
-                    return new CompoundIdentifier(this.RuntimeManager.ResolveScriptAlias(name));
-                }
-                else
-                {
-                    return new CompoundIdentifier(
-                        new CompoundIdentifier(this.Resolve(this.typeDefinition)),
-                        this.typeScopeManager.ResolveUnderlyingMethod(methodDefinition));
-                }
-            }
-
-            return this.typeScopeManager.ResolveUnderlyingMethod(methodDefinition);
-        }
-
-        public Expression ResolveMethodSlotName(MethodReference methodReference, bool isVirtualCall, IdentifierScope identifierScope)
-        {
-            throw new NotImplementedException();
         }
     }
 }

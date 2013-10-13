@@ -6,6 +6,8 @@
 
 namespace XwmlParser.Binding
 {
+    using Mono.Cecil;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -14,9 +16,32 @@ namespace XwmlParser.Binding
     /// </summary>
     public class CssClassTargetBindingInfo : TargetBindingInfo
     {
-        public override Mono.Cecil.TypeReference BindingType
+        public CssClassTargetBindingInfo(
+            TypeReference booleanType,
+            IIdentifier className)
+            : base(booleanType)
         {
-            get { throw new NotImplementedException(); }
+            this.ClassName = className;
+        }
+
+        public IIdentifier ClassName
+        { get; private set; }
+
+        internal override
+            Tuple<string, IIdentifier, IIdentifier, Expression, Expression>
+            GenerateGetterSetter(SkinCodeGenerator codeGenerator, bool isTwoWay)
+        {
+            return new Tuple<string, IIdentifier, IIdentifier, Expression, Expression>(
+                null,
+                codeGenerator.CodeGenerator.GetCssClassSetter(),
+                null,
+                new IdentifierStringExpression(
+                    null,
+                    codeGenerator.CodeGenerator.ScopeManager.Scope,
+                    new IdentifierExpression(
+                        this.ClassName,
+                        codeGenerator.CodeGenerator.ScopeManager.Scope)),
+                null);
         }
     }
 }

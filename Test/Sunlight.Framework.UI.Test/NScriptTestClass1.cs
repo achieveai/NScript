@@ -10,6 +10,7 @@ namespace Sunlight.Framework.UI.Test
     using SunlightUnit;
     using System.Web.Html;
     using System.Runtime.CompilerServices;
+    using Sunlight.Framework.UI.Helpers;
 
     public class AppViewModel
     {
@@ -78,7 +79,8 @@ namespace Sunlight.Framework.UI.Test
         /// </summary>
         public static void Test()
         {
-            Func<Document, TemplateInstance> instanceFactory = delegate(Document document)
+            /*
+            Func<Document, SkinInstance> instanceFactory = delegate(Document document)
             {
                 Element elem = document.CreateElement("div");
                 elem.InnerHTML = "<div class='x y'>Hi <span></span>!!!</div><div class='x'>Your last name is: <span></span></div>";
@@ -117,11 +119,12 @@ namespace Sunlight.Framework.UI.Test
                         "initializing binders");
                 };
 
-                return new TemplateInstance(
+                return new SkinInstance(
                     elem,
                     binder,
                     null);
             };
+            */
             Assert.IsTrue(true, "true should be true");
         }
     }

@@ -18,7 +18,7 @@ namespace Sunlight.Framework.UI
         public const string SkinFactoryPropertyName = "SkinFactory";
         public const string SkinPropertyName = "Skin";
 
-        private SkinFactory skinFactory;
+        private Skin skinFactory;
         private SkinInstance skin;
 
         public UISkinableElement(Element element)
@@ -26,7 +26,7 @@ namespace Sunlight.Framework.UI
         {
         }
 
-        public SkinFactory SkinFactory
+        public Skin SkinFactory
         {
             get
             {

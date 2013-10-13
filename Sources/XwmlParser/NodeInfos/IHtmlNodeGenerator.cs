@@ -25,21 +25,18 @@ namespace XwmlParser.NodeInfos
         { get; }
 
         /// <summary>
-        /// Gets the full pathname of the node file.
-        /// </summary>
-        /// <value>
-        /// The full pathname of the node file.
-        /// </value>
-        List<int> NodePath
-        { get; }
-
-        /// <summary>
         /// Sets new node and path.
         /// </summary>
         /// <param name="node">     The node. </param>
         /// <param name="nodePath"> Full pathname of the node file. </param>
         void SetNewNodeAndPath(
-            HtmlNode node,
-            List<int> nodePath);
+            HtmlNode node);
+
+        /// <summary>
+        /// Finalize generated node.
+        /// </summary>
+        /// <param name="codeGenerator"> The code generator. </param>
+        void FinalizeGeneratedNode(
+            SkinCodeGenerator codeGenerator);
     }
 }
