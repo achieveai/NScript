@@ -13,7 +13,7 @@ namespace Sunlight.Framework
         int taskId;
     }
 
-	enum NativeTimerHandleType
+	public enum NativeTimerHandleType
 	{
 		None,
 		Timeout,
@@ -21,7 +21,7 @@ namespace Sunlight.Framework
 		Immediate
 	}
 
-    enum TaskState
+    public enum TaskState
     {
 		Waiting,
 		Canceled,
@@ -37,7 +37,10 @@ namespace Sunlight.Framework
         Task parentTask;
         Action work;
 
-        public Task(Action work);
+        public Task(Action work)
+        {
+            this.work = work;
+        }
 
 		public Task(
 			int nativeTimerId,
