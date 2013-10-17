@@ -61,14 +61,9 @@ namespace XwmlParser
         IIdentifier objectStorageIdentifier;
 
         /// <summary>
-        /// Identifier for the binding storage.
-        /// </summary>
-        IIdentifier bindingStorageIdentifier;
-
-        /// <summary>
         /// Zero-based index of the data.
         /// </summary>
-        int dataIndex;
+        int dataIndex = -1;
 
         /// <summary>
         /// The node to storage index map.
@@ -119,6 +114,11 @@ namespace XwmlParser
 
         public void GenerateCodeFinalPass()
         {
+            if (dataIndex >= 0)
+            {
+                return;
+            }
+
             this.dataIndex = this.codeGenerator.GetDataStorageIndex(this);
             this.IterateChildNodesForHtml(this.skinNodeInfo);
             this.GenerateSkinFactory();
@@ -189,19 +189,6 @@ namespace XwmlParser
             return this.objectStorageIdentifier;
         }
 
-        internal IIdentifier GetBindingStorageIdentifier()
-        {
-            if (this.bindingStorageIdentifier == null)
-            {
-                this.bindingStorageIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                    this.Scope,
-                    "bindingStorage",
-                    false);
-            }
-
-            return this.bindingStorageIdentifier;
-        }
-
         internal void AddStatement(Statement statement)
         {
             this.code.Add(statement);
@@ -230,8 +217,6 @@ namespace XwmlParser
                 {
                     htmlNode.FinalizeGeneratedNode(this);
                 }
-
-                this.IterateChildNodes(childNode);
             }
         }
 
@@ -246,7 +231,7 @@ namespace XwmlParser
             this.skinFactoryMethodIdentifier =
                 SimpleIdentifier.CreateScopeIdentifier(
                     this.CodeGenerator.ScopeManager.Scope,
-                    this.parser.TemplateName + "_factory",
+                    this.parser.GetUniqueTemplateId() + "_factory",
                     false);
 
             var factoryFunction = new FunctionExpression(
@@ -270,7 +255,7 @@ namespace XwmlParser
             this.skinStorageVariable =
                 SimpleIdentifier.CreateScopeIdentifier(
                     codeGenerator.ScopeManager.Scope,
-                    this.parser.TemplateName + "_var",
+                    this.parser.GetUniqueTemplateId() + "_var",
                     false);
 
             IdentifierScope methodScope = new IdentifierScope(
@@ -316,7 +301,11 @@ namespace XwmlParser
             var initializationIfStatement = new IfBlockStatement(
                 null,
                 methodScope,
-                new IdentifierExpression(skinStorageVariable, methodScope),
+                new UnaryExpression(
+                    null,
+                    methodScope,
+                    UnaryOperator.LogicalNot,
+                    new IdentifierExpression(skinStorageVariable, methodScope)),
                 new ScopeBlock(
                     null,
                     methodScope,
@@ -344,7 +333,7 @@ namespace XwmlParser
             rv.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IdentifierExpression(
-                        this.rootHtmlNodeIdentifier,
+                        this.GetDomRootIdentifier(),
                         this.Scope),
                     new MethodCallExpression(
                         null,
@@ -371,19 +360,7 @@ namespace XwmlParser
             rv.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IdentifierExpression(
-                        this.objectStorageIdentifier,
-                        this.Scope),
-                    new NewArrayExpression(
-                        null,
-                        this.Scope,
-                        new NumberLiteralExpression(
-                            this.Scope,
-                            this.nodeToStorageIndexMap.Count))));
-
-            rv.Add(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IdentifierExpression(
-                        this.bindingStorageIdentifier,
+                        this.GetObjectStorageIdentifier(),
                         this.Scope),
                     new NewArrayExpression(
                         null,
@@ -398,15 +375,20 @@ namespace XwmlParser
         private Statement GetInitializerBlock()
         {
             IIdentifier globalStateVariable = this.codeGenerator.GetGlobalStateVariable();
-            Expression checkStateInitialized = new IndexExpression(
-                null,
-                this.Scope,
-                new IdentifierExpression(
-                    globalStateVariable,
-                    this.Scope),
-                new NumberLiteralExpression(
+            Expression checkStateInitialized =
+                new UnaryExpression(
+                    null,
                     this.Scope,
-                    this.dataIndex * 2));
+                    UnaryOperator.LogicalNot,
+                    new IndexExpression(
+                        null,
+                        this.Scope,
+                        new IdentifierExpression(
+                            globalStateVariable,
+                            this.Scope),
+                        new NumberLiteralExpression(
+                            this.Scope,
+                            this.dataIndex * 2)));
 
             IIdentifier documentIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                 this.codeGenerator.ScopeManager.Scope,
@@ -459,7 +441,7 @@ namespace XwmlParser
                             "innerHTML")),
                     new StringLiteralExpression(
                         this.Scope,
-                        this.skinNodeInfo.GeneratedNode.ToString())));
+                        this.skinNodeInfo.GeneratedNode.WriteTo())));
 
             scopeStatements.Add(
                 ExpressionStatement.CreateAssignmentExpression(
@@ -540,9 +522,15 @@ namespace XwmlParser
                     new IdentifierExpression(
                         this.objectStorageIdentifier, this.Scope),
                     // Binders
-                    new IdentifierExpression(
-                        this.bindingStorageIdentifier,
-                        this.Scope)));
+                    new IndexExpression(
+                        null,
+                        this.Scope,
+                        new IdentifierExpression(
+                            this.codeGenerator.GetGlobalStateVariable(),
+                            this.Scope),
+                        new NumberLiteralExpression(
+                            this.Scope,
+                            2 * this.codeGenerator.GetDataStorageIndex(this) + 1))));
         }
     }
 }

@@ -420,7 +420,7 @@ namespace XwmlParser.Binding
                 }
                 else if (i == 1)
                 {
-                    bindingParts[BindingPart.Path] = Tuple.Create(0, commaIndexes[i]);
+                    bindingParts[BindingPart.Path] = Tuple.Create(commaIndexes[i - 1] + 1, commaIndexes[i]);
                 }
             }
 

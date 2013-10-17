@@ -176,6 +176,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI.Test"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XwmlParser.Test", "Test\XwmlParser.Test\XwmlParser.Test.csproj", "{D54C40D0-8658-41F3-9426-7747CE9E6FA6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{24FDD8D7-FC72-4366-ADC9-B917C8388942}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = NScript1.vsmdi

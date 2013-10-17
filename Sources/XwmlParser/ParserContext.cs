@@ -38,8 +38,14 @@ namespace XwmlParser
         /// </summary>
         Dictionary<string, HtmlParser> htmlParsers = new Dictionary<string, HtmlParser>();
 
+        /// <summary>
+        /// List of identifiers for the known CSS class.
+        /// </summary>
         Dictionary<string, IIdentifier> knownCssClassIdentifiers = new Dictionary<string, IIdentifier>();
 
+        /// <summary>
+        /// The CSS names scope.
+        /// </summary>
         private readonly IdentifierScope cssNamesScope = new IdentifierScope(false);
 
         /// <summary>
@@ -169,6 +175,16 @@ namespace XwmlParser
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Registers the HTML parser.
+        /// </summary>
+        /// <param name="templateResourceName"> Name of the template resource. </param>
+        /// <param name="parser">               The parser. </param>
+        public void RegisterHtmlParser(string templateResourceName, HtmlParser parser)
+        {
+            this.htmlParsers.Add(templateResourceName, parser);
         }
 
         /// <summary>

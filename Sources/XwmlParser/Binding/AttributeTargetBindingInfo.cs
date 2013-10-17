@@ -41,7 +41,7 @@ namespace XwmlParser.Binding
                 (Expression)new StringLiteralExpression(
                     codeGenerator.CodeGenerator.ScopeManager.Scope,
                     this.AttributeName),
-                (Expression)null);
+                (Expression)new NullLiteralExpression(codeGenerator.Scope));
         }
     }
 }

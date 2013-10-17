@@ -412,9 +412,13 @@ namespace XwmlParser
         /// <returns>
         /// A list of.
         /// </returns>
-        public IList<IIdentifier> ResolveFactory(MethodReference methodReference)
+        public IList<IIdentifier> ResolveFactory(MethodReference constructor)
         {
-            throw new NotImplementedException();
+            return ResolverHelper.ResolveStaticMember(
+                this.runtimeManager,
+                constructor,
+                this.Resolve,
+                true);
         }
 
         /// <summary>

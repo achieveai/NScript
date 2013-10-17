@@ -32,7 +32,7 @@ namespace XwmlParser.Binding
                 textContentSetter,
                 (IIdentifier)null,
                 (Expression)null,
-                (Expression)null);
+                (Expression)new StringLiteralExpression(codeGenerator.Scope, string.Empty));
         }
     }
 }

@@ -4,12 +4,12 @@
     <style>
     </style>
   </head>
-  <template ControlType="ctrl:Control" DataContext="vm:AppViewModel">
+  <skin ControlType="ctrl:Control" DataContext="vm:AppViewModel">
     <div class="X Y" ClassBinder.Z ="{Prop1}">
-		Hi {{Name}}!!!
+    Hi {{Name}}!!!
     </div>
     <div class="X" StyleBInder.display="{HasLastName, Converter=ValueIfTrue('none')">
       You last name is: {{LastName}}
     </div>
-  </template>
+  </skin>
 </html>

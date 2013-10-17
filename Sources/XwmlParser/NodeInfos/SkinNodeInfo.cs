@@ -61,6 +61,7 @@ namespace XwmlParser.NodeInfos
             }
 
             this.AddChildNodeInfo(childNode);
+            this.generatedNode.AppendChild(nodeGenerator.GeneratedNode);
             return true;
         }
 
@@ -71,7 +72,7 @@ namespace XwmlParser.NodeInfos
 
         public void SetNewNodeAndPath(HtmlAgilityPack.HtmlNode node)
         {
-            throw new InvalidOperationException();
+            this.generatedNode = node;
         }
 
         public void FinalizeGeneratedNode(SkinCodeGenerator codeGenerator)

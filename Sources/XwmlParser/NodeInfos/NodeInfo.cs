@@ -33,12 +33,12 @@ namespace XwmlParser.NodeInfos
         /// <summary>
         /// The bindings.
         /// </summary>
-        private List<BinderInfo> bindings;
+        private List<BinderInfo> bindings = new List<BinderInfo>();
 
         /// <summary>
         /// The child node infos.
         /// </summary>
-        private List<NodeInfo> childNodeInfos;
+        private List<NodeInfo> childNodeInfos = new List<NodeInfo>();
 
         /// <summary>
         /// Identifier for the part.

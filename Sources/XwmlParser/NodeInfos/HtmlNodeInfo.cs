@@ -108,8 +108,14 @@ namespace XwmlParser.NodeInfos
                 }
                 else
                 {
-                    this.generatedNode = parser.GeneratedDocument.CreateTextNode(
-                        ((HtmlTextNode)this.Node).Text);
+                    string text = ((HtmlTextNode)this.Node).Text;
+                    text = text.Trim();
+                    if (text.Length == 0)
+                    {
+                        text = " ";
+                    }
+
+                    this.generatedNode = parser.GeneratedDocument.CreateTextNode(text);
                 }
             }
             else if (this.Node.NodeType == HtmlNodeType.Element)
@@ -299,9 +305,9 @@ namespace XwmlParser.NodeInfos
 
             return MethodCallExpressionConverter.CreateMethodCallExpression(
                 new MethodCallContext(
-                    null,
                     codeGenerator.KnownTypes.ElementFromPathGetter,
-                    false),
+                    null,
+                    codeGenerator.Scope),
                 new Expression[]{
                     new IdentifierExpression(domIdentifier, codeGenerator.Scope),
                     newArrayExpr

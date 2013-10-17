@@ -41,9 +41,29 @@ namespace XwmlParser
         IdentifierScope cssNameScope = new IdentifierScope(false);
 
         /// <summary>
-        /// Identifier for the root HTML node.
+        /// The text content setter.
         /// </summary>
-        IIdentifier rootHtmlNodeIdentifier;
+        IIdentifier textContentSetter;
+
+        /// <summary>
+        /// The attribute setter.
+        /// </summary>
+        IIdentifier attributeSetter;
+
+        /// <summary>
+        /// The CSS class setter.
+        /// </summary>
+        IIdentifier cssClassSetter;
+
+        /// <summary>
+        /// Identifier for the storage array.
+        /// </summary>
+        IIdentifier storageArrayIdentifier;
+
+        /// <summary>
+        /// Identifier for the HTML storage initializer.
+        /// </summary>
+        IIdentifier htmlStorageInitializerIdentifier;
 
         /// <summary>
         /// List of identifiers for the template getters.
@@ -62,6 +82,12 @@ namespace XwmlParser
         /// </summary>
         Dictionary<TemplateParser, SkinCodeGenerator> skinCodeGenerators =
             new Dictionary<TemplateParser, SkinCodeGenerator>();
+
+        /// <summary>
+        /// The skin code generator storage indexs.
+        /// </summary>
+        Dictionary<SkinCodeGenerator, int> skinCodeGeneratorStorageIndexs =
+            new Dictionary<SkinCodeGenerator, int>();
 
         /// <summary>
         /// Property -> Value Getter map.
@@ -104,21 +130,6 @@ namespace XwmlParser
             new Dictionary<string, IIdentifier>();
 
         /// <summary>
-        /// The text content setter.
-        /// </summary>
-        IIdentifier textContentSetter;
-
-        /// <summary>
-        /// The attribute setter.
-        /// </summary>
-        IIdentifier attributeSetter;
-
-        /// <summary>
-        /// The CSS class setter.
-        /// </summary>
-        IIdentifier cssClassSetter;
-
-        /// <summary>
         /// The generated code.
         /// </summary>
         List<Statement> generatedCode = new List<Statement>();
@@ -135,6 +146,12 @@ namespace XwmlParser
             new Dictionary<string, EmbeddedResource>();
 
         /// <summary>
+        /// The CSS registry methods.
+        /// </summary>
+        Dictionary<DocumentContext, IIdentifier> cssRegistryMethods =
+            new Dictionary<DocumentContext, IIdentifier>();
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="scopeManager"> Manager for scope. </param>
@@ -142,11 +159,6 @@ namespace XwmlParser
         {
             this.scopeManager = scopeManager;
             this.knownReferences = knownReferences;
-            this.rootHtmlNodeIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                this.scopeManager.Scope,
-                "rootHtml",
-                false);
-
             foreach (var module in this.scopeManager.Context.ClrContext.Modules)
             {
                 foreach (var resource in module.Resources)
@@ -245,6 +257,10 @@ namespace XwmlParser
                         templateNameSplits[0],
                         document,
                         this.parserContext);
+
+                    this.parserContext.RegisterHtmlParser(
+                        templateNameSplits[0],
+                        htmlParser);
                 }
 
                 if (htmlParser == null)
@@ -289,35 +305,11 @@ namespace XwmlParser
                 return rv;
             }
 
-            string templateName = templateParser.HtmlParser.ResourceName;
-
-            if (templateName.EndsWith(".html", StringComparison.InvariantCultureIgnoreCase))
-            {
-                templateName = templateName.Substring(0, templateName.Length - 5);
-            }
-            else if (templateName.EndsWith(".htm", StringComparison.InvariantCultureIgnoreCase))
-            {
-                templateName = templateName.Substring(0, templateName.Length - 4);
-            }
-
-            if (templateName.LastIndexOf('.') != -1)
-            {
-                templateName = templateName.Substring(templateName.LastIndexOf('.') + 1);
-            }
-
-            if (templateParser.TemplateName != null)
-            {
-                templateName += "_" + templateParser.TemplateName;
-            }
-            else
-            {
-                templateName += "_private";
-            }
-
             rv = SimpleIdentifier.CreateScopeIdentifier(
                 this.scopeManager.Scope,
-                templateName,
+                templateParser.GetUniqueTemplateId(),
                 false);
+
             this.templateGetterIds.Add(templateParser, rv);
 
             return rv;
@@ -344,6 +336,9 @@ namespace XwmlParser
                     skinCodeGenerator.GenerateCodePass1();
 
                     this.skinCodeGenerators.Add(templateParser, skinCodeGenerator);
+                    this.skinCodeGeneratorStorageIndexs.Add(
+                        skinCodeGenerator,
+                        this.skinCodeGeneratorStorageIndexs.Count);
                 }
             }
         }
@@ -357,6 +352,19 @@ namespace XwmlParser
         public List<Statement> GetAllTemplateStatements()
         {
             this.parserContext.CompressCssNames();
+
+            this.generatedCode.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IdentifierExpression(
+                        this.GetGlobalStateVariable(),
+                        this.scopeManager.Scope),
+                    new NewArrayExpression(
+                        null,
+                        this.scopeManager.Scope,
+                        new NumberLiteralExpression(
+                            this.scopeManager.Scope,
+                            this.skinCodeGeneratorStorageIndexs.Count * 2))));
+
             foreach (var kvPair in this.skinCodeGenerators)
             {
                 kvPair.Value.GenerateCodeFinalPass();
@@ -739,19 +747,30 @@ namespace XwmlParser
             return rv;
         }
 
+        internal IIdentifier HtmlStorageInitializerIdentifier;
+
         internal int GetDataStorageIndex(SkinCodeGenerator skinCodeGenerator)
         {
-            throw new NotImplementedException();
+            return this.skinCodeGeneratorStorageIndexs[skinCodeGenerator];
         }
 
         internal IIdentifier GetGlobalStateVariable()
         {
-            throw new NotImplementedException();
+            if (this.storageArrayIdentifier == null)
+            {
+                this.storageArrayIdentifier =
+                    SimpleIdentifier.CreateScopeIdentifier(
+                        this.scopeManager.Scope,
+                        "tmplStore",
+                        false);
+            }
+
+            return this.storageArrayIdentifier;
         }
 
         internal void AddStatement(ExpressionStatement expressionStatement)
         {
-            throw new NotImplementedException();
+            this.generatedCode.Add(expressionStatement);
         }
     }
 }

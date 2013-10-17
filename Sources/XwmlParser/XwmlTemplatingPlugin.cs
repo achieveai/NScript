@@ -5,11 +5,10 @@
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
-    using NScript.CLR;
     using System;
     using System.Collections.Generic;
 
-    class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
+    public class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
         private string knownCssClasses = string.Empty;
 
@@ -20,6 +19,15 @@
         private ParserContext parserContext;
 
         private CodeGenerator codeGenerator;
+
+        public ParserContext ParserContext
+        { get { return this.parserContext; } }
+
+        public TypeResolver TypeResolver
+        { get { return this.typeResolver; } }
+
+        public CodeGenerator CodeGenerator
+        { get { return this.codeGenerator; } }
 
         public IntrestLevel GetInterestLevel(
             MethodDefinition methodDefinition,
@@ -93,6 +101,8 @@
 
         public void ParseArgs(IList<Tuple<string, string>> args)
         {
+            if (args == null) return;
+
             foreach (var tupl in args)
             {
                 if (tupl.Item1 == "KnownCssClasses")

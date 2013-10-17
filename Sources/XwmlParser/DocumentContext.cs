@@ -10,6 +10,7 @@ namespace XwmlParser
     using NScript.JST;
     using System;
     using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// Definition for DocumentContext
@@ -78,8 +79,12 @@ namespace XwmlParser
                 {
                     var selector = selectors[iSelector];
                     CssParser.CssClass classSelector = selector as CssParser.CssClass;
-                    if (classSelector != null
-                        && !this.classNames.ContainsKey(classSelector.ClassName))
+                    if (classSelector == null)
+                    {
+                        throw new ApplicationException(
+                            "Can't use any other selector than Class name selector in Css");
+                    }
+                    if (!this.classNames.ContainsKey(classSelector.ClassName))
                     {
                         this.classNames[classSelector.ClassName] =
                             parserContext.RegisterCssClassName(classSelector.ClassName);
@@ -160,6 +165,48 @@ namespace XwmlParser
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets CSS string.
+        /// </summary>
+        /// <returns>
+        /// The CSS string.
+        /// </returns>
+        public string GetCssString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var cssRule in this.cssRules)
+            {
+                bool first = true;
+                foreach (var selector in cssRule.Selectors)
+                {
+                    if (!first)
+                    {
+                        sb.Append(',');
+                    }
+
+                    CssParser.CssClass classSelector = (CssParser.CssClass)selector;
+                    sb.Append('.');
+                    IIdentifier identifier;
+                    this.TryGetCssClassIdentifier(classSelector.ClassName, out identifier);
+                    sb.Append(identifier.GetName());
+                    first = false;
+                }
+
+                sb.Append('{');
+                foreach (var prop in cssRule.Properties)
+                {
+                    sb.Append(prop.PropertyName);
+                    sb.Append(':');
+                    sb.Append(prop.PropertyArgs);
+                    sb.Append(';');
+                }
+
+                sb.Append('}');
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>

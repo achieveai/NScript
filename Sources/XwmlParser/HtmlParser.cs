@@ -30,7 +30,10 @@ namespace XwmlParser
         Text,
         Template,
         Skin,
-        CssStyle
+        CssStyle,
+        Comment,
+        Meta,
+        Body
     }
 
     /// <summary>
@@ -79,6 +82,23 @@ namespace XwmlParser
             this.documentContext = new DocumentContext(context);
             this.node = htmlDoc.DocumentNode;
             this.documentContext.PushNode(this.node);
+
+            foreach (var node in this.node.ChildNodes)
+            {
+                if (node.Name == "html")
+                {
+                    try
+                    {
+                        documentContext.PushNode(node);
+                        this.ParseDocument(node);
+                    }
+                    finally
+                    {
+                        documentContext.PopNode();
+                    }
+                    break;
+                }
+            }
         }
 
         /// <summary>
@@ -171,6 +191,14 @@ namespace XwmlParser
         {
             var nodeName = this.documentContext.GetFullName(node.OriginalName);
 
+            if (node is HtmlCommentNode)
+            {
+                return NodeType.Comment;
+            }
+            if (node is HtmlTextNode)
+            {
+                return NodeType.Text;
+            }
             if (nodeName.Item2 == "head"
                 && nodeName.Item1 == null)
             {
@@ -179,6 +207,12 @@ namespace XwmlParser
             if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStypeTag)
             {
                 return NodeType.CssStyle;
+            }
+            if (nodeName.Item1 == null &&
+                (nodeName.Item2 == Strings.Meta
+                || nodeName.Item2 == Strings.Title))
+            {
+                return NodeType.Meta;
             }
             if (nodeName.Item1 == null)
             {
@@ -200,6 +234,10 @@ namespace XwmlParser
                 else if (nodeName.Item2 == Strings.Skin)
                 {
                     return NodeType.Skin;
+                }
+                else if (nodeName.Item2 == Strings.Body)
+                {
+                    return NodeType.Body;
                 }
 
                 return NodeType.Html;
@@ -307,56 +345,104 @@ namespace XwmlParser
         /// </summary>
         /// <exception cref="ConverterLocationException"> Thrown when a Converter Location error condition
         ///     occurs. </exception>
-        /// <param name="node">        The node. </param>
+        /// <param name="nodeToProcess">        The node. </param>
         /// <param name="parsingHead"> (optional) the parsing head. </param>
-        private void ParseDocument(HtmlNode node, bool parsingHead = false)
+        private void ParseDocument(
+            HtmlNode nodeToProcess,
+            bool parsingHead = false,
+            bool parsingBody = false)
         {
             bool headParsed = false;
-            foreach (var item in this.node.ChildNodes)
+            bool bodyParsed = false;
+            foreach (var childNode in nodeToProcess.ChildNodes)
             {
                 try
                 {
-                    string nodeName = item.OriginalName.ToLowerInvariant();
-                    this.documentContext.PushNode(item);
-                    var nodeType = this.GetNodeType(node, null);
+                    string nodeName = childNode.OriginalName.ToLowerInvariant();
+                    this.documentContext.PushNode(childNode);
+                    var nodeType = this.GetNodeType(childNode, null);
                     if (nodeType == NodeType.Head)
                     {
-                        if (headParsed)
+                        if (headParsed
+                            || parsingHead)
                         {
                             throw new ConverterLocationException(
                                 new Location(
                                     this.resourceName,
-                                    node.Line,
-                                    node.LinePosition),
+                                    childNode.Line,
+                                    childNode.LinePosition),
                                 "Head node present more than once.");
                         }
+                        else if (parsingBody)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Head node present in body.");
+                        }
 
-                        this.ParseDocument(item, true);
+                        this.ParseDocument(childNode, true);
                         headParsed = true;
+                    }
+                    else if (nodeType == NodeType.Body)
+                    {
+                        if (bodyParsed
+                            || parsingBody)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Body node present more than once.");
+                        }
+                        else if (parsingHead)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Body node present in head.");
+                        }
+
+                        this.ParseDocument(childNode, false, true);
+                        bodyParsed = true;
                     }
                     else if (nodeType == NodeType.CssStyle)
                     {
-                        // Parse Css.
-                        var grammer = new CssParser.CssGrammer(node.InnerText);
-                        this.documentContext.AddCssRules(grammer.Rules);
-                    }
-                    else if (nodeType == NodeType.Template
-                        || nodeType == NodeType.Skin)
-                    {
-                        if (parsingHead)
+                        if (!parsingHead)
                         {
                             throw new ConverterLocationException(
                                 new Location(
                                     this.resourceName,
-                                    node.Line,
-                                    node.LinePosition),
-                                "Head node can't contain template.");
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Css style can only be defined in Head.");
+                        }
+
+                        // Parse Css.
+                        var grammer = new CssParser.CssGrammer(childNode.InnerText);
+                        this.documentContext.AddCssRules(grammer.Rules);
+                    }
+                    else if (nodeType == NodeType.Template || nodeType == NodeType.Skin)
+                    {
+                        if (!parsingBody)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Template and Skin can only be defined in Body.");
                         }
 
                         // Parse Template.
                         TemplateParser parser = new TemplateParser(
                             this,
-                            node,
+                            childNode,
                             nodeType == NodeType.Skin,
                             null);
 
@@ -368,8 +454,8 @@ namespace XwmlParser
                                 throw new ConverterLocationException(
                                     new Location(
                                         this.resourceName,
-                                        node.Line,
-                                        node.LinePosition),
+                                        childNode.Line,
+                                        childNode.LinePosition),
                                     "There can't be more than 1 default template in one template file.");
                             }
                             else
@@ -377,24 +463,34 @@ namespace XwmlParser
                                 throw new ConverterLocationException(
                                     new Location(
                                         this.resourceName,
-                                        node.Line,
-                                        node.LinePosition),
+                                        childNode.Line,
+                                        childNode.LinePosition),
                                     string.Format(
                                         "There can't be more than 1 default template in one template file.",
                                         templateName));
                             }
                         }
 
-                        this.templateParsers.Add(parser.TemplateName, parser);
+                        this.templateParsers.Add(templateName, parser);
                         parser.Parse();
+                    }
+                    else if (nodeType == NodeType.Comment
+                        || nodeType == NodeType.Meta)
+                    {
+                        continue;
+                    }
+                    else if (nodeType == NodeType.Text
+                        && string.IsNullOrWhiteSpace(((HtmlTextNode)childNode).Text))
+                    {
+                        continue;
                     }
                     else
                     {
                         throw new ConverterLocationException(
                             new Location(
                                 this.resourceName,
-                                node.Line,
-                                node.LinePosition),
+                                childNode.Line,
+                                childNode.LinePosition),
                             string.Format(
                                 "Don't know how to parse {0} node.",
                                 nodeName));

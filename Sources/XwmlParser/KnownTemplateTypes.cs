@@ -150,7 +150,7 @@ namespace XwmlParser
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Func`3"));
 
             var act2 = clrContext.GetTypeDefinition(
-                Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`3"));
+                Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`2"));
 
             var act3 = clrContext.GetTypeDefinition(
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`3"));
@@ -169,7 +169,7 @@ namespace XwmlParser
             act3ObjObjObj.GenericArguments.Add(clrKnownReferences.Object);
 
             var nativeArray1Func2 = new GenericInstanceType(nativeArray1);
-            nativeArray1Func2.GenericArguments.Add(func2);
+            nativeArray1Func2.GenericArguments.Add(funcObjObj);
 
             var nativeArray1Str = new GenericInstanceType(nativeArray1);
             nativeArray1Str.GenericArguments.Add(clrKnownReferences.String);
@@ -183,7 +183,7 @@ namespace XwmlParser
                 clrKnownReferences.Boolean,
                 clrKnownReferences.Int32,
                 funcObjObj,
-                clrKnownReferences.Object);
+                clrKnownReferences.Object).Resolve();
 
             this.SkinBinderCtorOneTime2 = clrContext.GetMethodReference(
                 ".ctor",
@@ -195,7 +195,7 @@ namespace XwmlParser
                 clrKnownReferences.Boolean,
                 clrKnownReferences.Int32,
                 funcObjObj,
-                clrKnownReferences.Object);
+                clrKnownReferences.Object).Resolve();
 
             this.SkinBinderCtorOneWay1 = clrContext.GetMethodReference(
                 ".ctor",
@@ -207,9 +207,9 @@ namespace XwmlParser
                 clrKnownReferences.Boolean,
                 clrKnownReferences.Int32,
                 funcObjObj,
-                clrKnownReferences.Object);
+                clrKnownReferences.Object).Resolve();
 
-            this.SkinBinderCtorTwoWay = clrContext.GetMethodReference(
+            this.SkinBinderCtorOneWay2 = clrContext.GetMethodReference(
                 ".ctor",
                 clrKnownReferences.Void,
                 this.SkinBinderInfo,
@@ -220,25 +220,14 @@ namespace XwmlParser
                 clrKnownReferences.Boolean,
                 clrKnownReferences.Int32,
                 funcObjObj,
-                clrKnownReferences.Object);
+                clrKnownReferences.Object).Resolve();
 
-            this.SkinBinderCtorOneWay2 = clrContext.GetMethodReference(
+            this.SkinBinderCtorTwoWay = clrContext.GetMethodReference(
                 ".ctor",
                 clrKnownReferences.Void,
                 this.SkinBinderInfo,
                 nativeArray1Func2,
-                nativeArray1Str,
                 act2ObjObj,
-                clrKnownReferences.Boolean,
-                clrKnownReferences.Int32,
-                funcObjObj,
-                clrKnownReferences.Object);
-
-            this.SkinBinderCtorOneTime1 = clrContext.GetMethodReference(
-                ".ctor",
-                clrKnownReferences.Void,
-                this.SkinBinderInfo,
-                nativeArray1Func2,
                 nativeArray1Str,
                 act2ObjObj,
                 funcObjObj,
@@ -247,16 +236,16 @@ namespace XwmlParser
                 clrKnownReferences.Int32,
                 funcObjObj,
                 funcObjObj,
-                clrKnownReferences.Object);
+                clrKnownReferences.Object).Resolve();
 
             var nativeArrayUIElement = new GenericInstanceType(nativeArray1);
             nativeArrayUIElement.GenericArguments.Add(this.UIElement);
 
             var nativeArrayObject = new GenericInstanceType(nativeArray1);
-            nativeArrayUIElement.GenericArguments.Add(clrKnownReferences.Object);
+            nativeArrayObject.GenericArguments.Add(clrKnownReferences.Object);
 
             var nativeArraySkinBinderInfo = new GenericInstanceType(nativeArray1);
-            nativeArrayUIElement.GenericArguments.Add(this.SkinBinderInfo);
+            nativeArraySkinBinderInfo.GenericArguments.Add(this.SkinBinderInfo);
 
             this.SkinInstanceCtor = clrContext.GetMethodReference(
                 ".ctor",
@@ -266,7 +255,7 @@ namespace XwmlParser
                 this.ElementRef,
                 nativeArrayUIElement,
                 nativeArrayObject,
-                nativeArraySkinBinderInfo);
+                nativeArraySkinBinderInfo).Resolve();
 
             var func3SkinDocSI = new GenericInstanceType(func3);
             func3SkinDocSI.GenericArguments.Add(this.Skin);
@@ -279,7 +268,8 @@ namespace XwmlParser
                 this.Skin,
                 clrKnownReferences.TypeType,
                 clrKnownReferences.TypeType,
-                func3SkinDocSI);
+                func3SkinDocSI,
+                clrKnownReferences.String).Resolve();
         }
 
         /// <summary>

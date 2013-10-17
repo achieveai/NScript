@@ -85,6 +85,11 @@ namespace XwmlParser
         private readonly bool isTemplate;
 
         /// <summary>
+        /// true if this object is parsed.
+        /// </summary>
+        private bool isParsed = false;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="htmlNode">         The HTML node. </param>
@@ -123,7 +128,7 @@ namespace XwmlParser
             }
 
             this.controlType = this.resolver.GetTypeReference(
-                attr.Value);
+                this.DocumentContext.GetFullName(attr.Value));
             if (this.controlType == null)
             {
                 throw new ConverterLocationException(
@@ -148,7 +153,7 @@ namespace XwmlParser
             }
 
             this.dataContextType = this.resolver.GetTypeReference(
-                attr.Value);
+                this.DocumentContext.GetFullName(attr.Value));
             if (this.dataContextType == null)
             {
                 throw new ConverterLocationException(
@@ -167,6 +172,9 @@ namespace XwmlParser
                     dataContextType,
                     controlType,
                     this.node);
+
+                this.rootSkinNodeInfo.SetNewNodeAndPath(
+                    this.generatedDocument.CreateElement("div"));
             }
             else
             {
@@ -247,13 +255,56 @@ namespace XwmlParser
         { get { return this.rootTemplateNodeInfo; } }
 
         /// <summary>
+        /// Gets unique template identifier.
+        /// </summary>
+        /// <returns>
+        /// The unique template identifier.
+        /// </returns>
+        public string GetUniqueTemplateId()
+        {
+            string templateName = this.HtmlParser.ResourceName;
+
+            if (templateName.EndsWith(".html", StringComparison.InvariantCultureIgnoreCase))
+            {
+                templateName = templateName.Substring(0, templateName.Length - 5);
+            }
+            else if (templateName.EndsWith(".htm", StringComparison.InvariantCultureIgnoreCase))
+            {
+                templateName = templateName.Substring(0, templateName.Length - 4);
+            }
+
+            if (templateName.LastIndexOf('.') != -1)
+            {
+                templateName = templateName.Substring(templateName.LastIndexOf('.') + 1);
+            }
+
+            if (this.TemplateName != null)
+            {
+                templateName += "_" + this.TemplateName;
+            }
+            else if (this.IsSubTemplate)
+            {
+                templateName += "_private";
+            }
+
+            return templateName;
+        }
+
+        /// <summary>
         /// Parses this object.
         /// </summary>
         internal void Parse()
         {
+            if (this.isParsed)
+            {
+                return;
+            }
 
+            this.isParsed = true;
             NodeInfo nodeInfo =
                 ((NodeInfo)this.rootTemplateNodeInfo) ?? this.rootSkinNodeInfo;
+
+            IHtmlNodeGenerator rootHtmlNode = nodeInfo as IHtmlNodeGenerator;
 
             foreach (var childNode in node.ChildNodes)
             {
@@ -319,10 +370,8 @@ namespace XwmlParser
                         rv = this.ParseHtmlNode(node);
                         break;
                     case NodeType.Template:
-                        rv = this.ParseTemplateNode(node);
-                        break;
                     case NodeType.Skin:
-                        rv = this.ParseSkinNode(node);
+                        throw new ApplicationException("can't declare Template or Skin in middle of other Skins or templates");
                         break;
                     case NodeType.CssStyle:
                         throw new ApplicationException(
@@ -348,23 +397,6 @@ namespace XwmlParser
                 // Remove the namespace mapping that was inserted for this node.
                 this.context.PopNode();
             }
-        }
-
-        /// <summary>
-        /// Parse skin node.
-        /// </summary>
-        /// <param name="node"> The node. </param>
-        /// <returns>
-        /// .
-        /// </returns>
-        private NodeInfo ParseSkinNode(HtmlNode node)
-        {
-            SkinNodeInfo rv = new SkinNodeInfo(
-                this.dataContextType,
-                this.controlType,
-                node);
-
-            return rv;
         }
 
         /// <summary>
