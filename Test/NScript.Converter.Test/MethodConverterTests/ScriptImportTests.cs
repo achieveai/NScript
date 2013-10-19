@@ -107,5 +107,16 @@ namespace NScript.Converter.Test.MethodConverterTests
                 TestType.All,
                 true);
         }
+
+        [Test]
+        public void CallStaticScriptMethodOnImportedClass()
+        {
+            ConverterTestHelpers.RunTest(
+                ScriptImportTests.TemplateNamespace + "CallStaticScriptMethodOnImportedClass.js",
+                "System.Collections.Generic.List`1",
+                "Add",
+                TestType.All,
+                true);
+        }
     }
 }

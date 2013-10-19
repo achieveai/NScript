@@ -6,6 +6,7 @@
 
 namespace XwmlParser.Binding
 {
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -14,5 +15,12 @@ namespace XwmlParser.Binding
     /// </summary>
     public abstract class SourceBindingInfo
     {
+        internal virtual Tuple<IList<string>, IList<IIdentifier>, IIdentifier>
+            GenerateGetterSetterInfo(
+                SkinCodeGenerator codeGenerator,
+                BindingMode mode)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

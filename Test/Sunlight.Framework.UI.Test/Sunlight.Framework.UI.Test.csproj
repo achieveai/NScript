@@ -75,8 +75,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NScriptsTemplateTests.cs" />
+    <Compile Include="NScriptTemplatesClass.cs" />
+    <Compile Include="TestViewModels.cs" />
     <Compile Include="NScriptTestClass1.cs" />
     <Compile Include="UIElementTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestTemplate1.html" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>

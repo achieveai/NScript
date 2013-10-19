@@ -22,6 +22,16 @@ using Mono.Cecil;
         private readonly ClrContext clrContext;
 
         /// <summary>
+        /// The type references.
+        /// </summary>
+        private Dictionary<string, TypeReference> typeReferences;
+
+        /// <summary>
+        /// The method references.
+        /// </summary>
+        private Dictionary<string, MethodReference> methodReferences;
+
+        /// <summary>
         /// Backing field for the ModuleDefinition.
         /// </summary>
         private ModuleDefinition msCorlibModule;
@@ -189,6 +199,24 @@ using Mono.Cecil;
         {
             this.clrContext = clrContext;
         }
+
+        /// <summary>
+        /// Gets the type references.
+        /// </summary>
+        /// <value>
+        /// The type references.
+        /// </value>
+        public Dictionary<string, TypeReference> TypeReferences
+        { get { return this.typeReferences; } }
+
+        /// <summary>
+        /// Gets the method references.
+        /// </summary>
+        /// <value>
+        /// The method references.
+        /// </value>
+        public Dictionary<string, MethodReference> MethodReferences
+        {get { return this.methodReferences; } }
 
         /// <summary>
         /// Gets the void reference.
@@ -812,6 +840,20 @@ using Mono.Cecil;
                 }
 
                 return this.arrayLengthGetter;
+            }
+        }
+
+        /// <summary>
+        /// Gets a context for the colour.
+        /// </summary>
+        /// <value>
+        /// The colour context.
+        /// </value>
+        public ClrContext ClrContext
+        {
+            get
+            {
+                return this.clrContext;
             }
         }
 

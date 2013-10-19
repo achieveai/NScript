@@ -118,7 +118,7 @@ namespace NScript.Converter.Plugins
         /// </summary>
         /// <param name="methodsEmitted">The methods emitted.</param>
         /// <returns></returns>
-        public List<MethodReference> GetMethodsToEmitPassN(List<MethodReference> methodsEmitted)
+        public List<MethodReference> GetMethodsToEmitPassN()
         {
             return null;
         }

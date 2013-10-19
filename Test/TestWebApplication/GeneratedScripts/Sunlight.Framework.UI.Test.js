@@ -11,6 +11,11 @@ function System__Type__RegisterReferenceType(this_, typeName, parentType, interf
     };
   System__Type__typeMapping[this_.fullName] = this_;
 };
+function System__Type__GetDefaultValueStatic(type) {
+  if (type.isStruct)
+    return type.getDefaultValue();
+  return null;
+};
 ptyp_ = Function.prototype;
 ptyp_.isClass = false;
 ptyp_.isStruct = false;
@@ -29,9 +34,28 @@ ptyp_.getDefaultValue = function System__Type__GetDefaultValue() {
 System__Type__RegisterReferenceType(Function, "System.Type", Object, []);
 Object.typeId = "c";
 System__Type__RegisterReferenceType(Object, "System.Object", null, []);
+function Sunlight_Framework_UI_Test_NScriptsTemplateTests() {
+};
+Sunlight_Framework_UI_Test_NScriptsTemplateTests.typeId = "d";
+function Sunlight__Framework__UI__Test__NScriptsTemplateTests__Test() {
+  QUnit.notEqual(null, Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplate1(), "Template should not be null");
+  QUnit.ok(true, "true should be true");
+};
+System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_NScriptsTemplateTests, "Sunlight.Framework.UI.Test.NScriptsTemplateTests", Object, []);
+function Sunlight_Framework_UI_Test_ManualTemplateTests() {
+};
+Sunlight_Framework_UI_Test_ManualTemplateTests.typeId = "e";
+Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue = null;
+function Sunlight__Framework__UI__Test__ManualTemplateTests__Test() {
+  QUnit.ok(true, "true should be true");
+};
+function Sunlight__Framework__UI__Test__ManualTemplateTests____cctor() {
+  Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue = Sunlight_Framework_UI_Test_ValueIfTrue_$String$_.__ctor("none");
+};
+System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_ManualTemplateTests, "Sunlight.Framework.UI.Test.ManualTemplateTests", Object, []);
 function Sunlight_Framework_UI_Test_UIElementTests() {
 };
-Sunlight_Framework_UI_Test_UIElementTests.typeId = "d";
+Sunlight_Framework_UI_Test_UIElementTests.typeId = "f";
 function Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement() {
   var doc, element;
   doc = window.document;
@@ -40,16 +64,35 @@ function Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement() {
   QUnit.equal(element.get_element().tagName, "DIV", "element.Element.TagName == 'DIV'");
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_UIElementTests, "Sunlight.Framework.UI.Test.UIElementTests", Object, []);
+String.typeId = "g";
+System__String__formatHelperRegex = null;
+System__String__trimStartHelperRegex = null;
+System__String__trimEndHelperRegex = null;
+function System__String____cctor() {
+  System__String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
+  System__String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
+  System__String__trimEndHelperRegex = new RegExp("[\\s\\xA0]+$");
+};
+System__Type__RegisterReferenceType(String, "System.String", Object, []);
+RegExp.typeId = "h";
+System__Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
+function Sunlight_Framework_UI_Test_NScriptsTemplatesClass() {
+};
+Sunlight_Framework_UI_Test_NScriptsTemplatesClass.typeId = "i";
+function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplate1() {
+  return null;
+};
+System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_NScriptsTemplatesClass, "Sunlight.Framework.UI.Test.NScriptsTemplatesClass", Object, []);
 function Sunlight_Framework_Observables_ObservableObject() {
 };
-Sunlight_Framework_Observables_ObservableObject.typeId = "e";
+Sunlight_Framework_Observables_ObservableObject.typeId = "j";
 ptyp_ = Sunlight_Framework_Observables_ObservableObject.prototype;
 ptyp_.__ctor = function Sunlight__Framework__Observables__ObservableObject____ctor() {
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_Observables_ObservableObject, "Sunlight.Framework.Observables.ObservableObject", Object, []);
 function Sunlight_Framework_Observables_ExtensibleObservableObject() {
 };
-Sunlight_Framework_Observables_ExtensibleObservableObject.typeId = "f";
+Sunlight_Framework_Observables_ExtensibleObservableObject.typeId = "k";
 function Sunlight__Framework__Observables__ExtensibleObservableObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Observables_ExtensibleObservableObject();
@@ -68,7 +111,7 @@ ptyp_.__ctora = function Sunlight__Framework__Observables__ExtensibleObservableO
 System__Type__RegisterReferenceType(Sunlight_Framework_Observables_ExtensibleObservableObject, "Sunlight.Framework.Observables.ExtensibleObservableObject", Sunlight_Framework_Observables_ObservableObject, []);
 function Sunlight_Framework_Binders_ContextBindableObject() {
 };
-Sunlight_Framework_Binders_ContextBindableObject.typeId = "g";
+Sunlight_Framework_Binders_ContextBindableObject.typeId = "l";
 function Sunlight__Framework__Binders__ContextBindableObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Binders_ContextBindableObject();
@@ -97,7 +140,7 @@ ptyp_.__ctorb = function Sunlight__Framework__Binders__ContextBindableObject____
 System__Type__RegisterReferenceType(Sunlight_Framework_Binders_ContextBindableObject, "Sunlight.Framework.Binders.ContextBindableObject", Sunlight_Framework_Observables_ExtensibleObservableObject, []);
 function Sunlight_Framework_UI_UIElement() {
 };
-Sunlight_Framework_UI_UIElement.typeId = "h";
+Sunlight_Framework_UI_UIElement.typeId = "m";
 function Sunlight__Framework__UI__UIElement_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_UIElement();
@@ -119,27 +162,60 @@ ptyp_.get_element = function Sunlight__Framework__UI__UIElement__get_Element() {
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UIElement, "Sunlight.Framework.UI.UIElement", Sunlight_Framework_Binders_ContextBindableObject, []);
 function Sunlight_Framework_UI_UIEvent() {
 };
-Sunlight_Framework_UI_UIEvent.typeId = "i";
+Sunlight_Framework_UI_UIEvent.typeId = "n";
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UIEvent, "Sunlight.Framework.UI.UIEvent", Object, []);
 function System_Delegate() {
 };
-System_Delegate.typeId = "j";
+System_Delegate.typeId = "o";
 System__Type__RegisterReferenceType(System_Delegate, "System.Delegate", Object, []);
 function System_MulticastDelegate() {
 };
-System_MulticastDelegate.typeId = "k";
+System_MulticastDelegate.typeId = "p";
 System_MulticastDelegate.prototype = new System_Delegate();
 System__Type__RegisterReferenceType(System_MulticastDelegate, "System.MulticastDelegate", System_Delegate, []);
 function Sunlight_Framework_Binders_OneTimeDataBinder() {
 };
-Sunlight_Framework_Binders_OneTimeDataBinder.typeId = "l";
+Sunlight_Framework_Binders_OneTimeDataBinder.typeId = "q";
 System__Type__RegisterReferenceType(Sunlight_Framework_Binders_OneTimeDataBinder, "Sunlight.Framework.Binders.OneTimeDataBinder", Object, []);
 function Sunlight_Framework_Binders_DataBinder() {
 };
-Sunlight_Framework_Binders_DataBinder.typeId = "m";
+Sunlight_Framework_Binders_DataBinder.typeId = "r";
 System__Type__RegisterReferenceType(Sunlight_Framework_Binders_DataBinder, "Sunlight.Framework.Binders.DataBinder", Object, []);
-Array.typeId = "n";
-System__Type__RegisterReferenceType(Array, "System.NativeArray", Object, []);
+function Sunlight_Framework_UI_Test_ValueIfTrue(T, $5fcallStatiConstructor) {
+  var ValueIfTrue$1_$T$_, $5f_initTracker;
+  if (Sunlight_Framework_UI_Test_ValueIfTrue[T.typeId])
+    return Sunlight_Framework_UI_Test_ValueIfTrue[T.typeId];
+  Sunlight_Framework_UI_Test_ValueIfTrue[T.typeId] = function Sunlight__Framework__UI__Test__ValueIfTrue$1a() {
+  };
+  ValueIfTrue$1_$T$_ = Sunlight_Framework_UI_Test_ValueIfTrue[T.typeId];
+  ValueIfTrue$1_$T$_.genericParameters = [T];
+  ValueIfTrue$1_$T$_.genericClosure = Sunlight_Framework_UI_Test_ValueIfTrue;
+  ValueIfTrue$1_$T$_.typeId = "s$" + T.typeId + "$";
+  ValueIfTrue$1_$T$_.__ctor = function Sunlight_Framework_UI_Test_ValueIfTrue$1_factorya(value) {
+    var this_;
+    this_ = new ValueIfTrue$1_$T$_();
+    this_.__ctor(value);
+    return this_;
+  };
+  ptyp_ = ValueIfTrue$1_$T$_.prototype;
+  ptyp_.value = System__Type__GetDefaultValueStatic(T);
+  ptyp_.defaultValue = System__Type__GetDefaultValueStatic(T);
+  ptyp_.__ctor = function Sunlight__Framework__UI__Test__ValueIfTrue$1____ctor(value) {
+    this.value = value;
+    this.defaultValue = System__Type__GetDefaultValueStatic(T);
+  };
+  System__Type__RegisterReferenceType(ValueIfTrue$1_$T$_, "Sunlight.Framework.UI.Test.ValueIfTrue`1<" + T.fullName + ">", Object, []);
+  ValueIfTrue$1_$T$_._tri = function() {
+    if ($5f_initTracker)
+      return;
+    $5f_initTracker = true;
+    T = T;
+    ValueIfTrue$1_$T$_ = Sunlight_Framework_UI_Test_ValueIfTrue(T, true);
+  };
+  if ($5fcallStatiConstructor)
+    ValueIfTrue$1_$T$_._tri();
+  return ValueIfTrue$1_$T$_;
+};
 function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstructor) {
   var StringDictionary$1_$TValue$_, $5f_initTracker;
   if (System_Collections_Generic_StringDictionary[TValue.typeId])
@@ -149,7 +225,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "o$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "t$" + TValue.typeId + "$";
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factorya() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -183,7 +259,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_ = System_Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = System_Action;
-  Action$1_$T1$_.typeId = "p$" + T1.typeId + "$";
+  Action$1_$T1$_.typeId = "u$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", System_MulticastDelegate, []);
   Action$1_$T1$_._tri = function() {
@@ -206,7 +282,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   List$1_$T$_ = System_Collections_Generic_List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = System_Collections_Generic_List;
-  List$1_$T$_.typeId = "q$" + T.typeId + "$";
+  List$1_$T$_.typeId = "v$" + T.typeId + "$";
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factorya() {
     var this_;
     this_ = new List$1_$T$_();
@@ -230,14 +306,22 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
     List$1_$T$_._tri();
   return List$1_$T$_;
 };
+Sunlight_Framework_UI_Test_ValueIfTrue_$String$_ = Sunlight_Framework_UI_Test_ValueIfTrue(String);
 System_Action_$UIEvent$_ = System_Action(Sunlight_Framework_UI_UIEvent);
 System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_ = System_Collections_Generic_StringDictionary(System_Action_$UIEvent$_);
 System_Collections_Generic_List_$OneTimeDataBinder$_ = System_Collections_Generic_List(Sunlight_Framework_Binders_OneTimeDataBinder);
 System_Collections_Generic_List_$DataBinder$_ = System_Collections_Generic_List(Sunlight_Framework_Binders_DataBinder);
+Sunlight__Framework__UI__Test__ManualTemplateTests____cctor();
+System__String____cctor();
+Sunlight_Framework_UI_Test_ValueIfTrue_$String$_._tri();
 System_Action_$UIEvent$_._tri();
 System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_._tri();
 System_Collections_Generic_List_$OneTimeDataBinder$_._tri();
 System_Collections_Generic_List_$DataBinder$_._tri();
+module("Sunlight.Framework.UI.Test.NScriptsTemplateTests");
+test("Test", 0, Sunlight__Framework__UI__Test__NScriptsTemplateTests__Test);
+module("Sunlight.Framework.UI.Test.ManualTemplateTests");
+test("Test", 0, Sunlight__Framework__UI__Test__ManualTemplateTests__Test);
 module("Sunlight.Framework.UI.Test.UIElementTests");
 test("TestNewUIElement", 0, Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement);
 //@ sourceMappingURL=Sunlight.Framework.UI.Test.map

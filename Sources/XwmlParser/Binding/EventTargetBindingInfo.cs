@@ -6,6 +6,7 @@
 
 namespace XwmlParser.Binding
 {
+    using Mono.Cecil;
     using System;
     using System.Collections.Generic;
 
@@ -14,9 +15,12 @@ namespace XwmlParser.Binding
     /// </summary>
     public class EventTargetBindingInfo : TargetBindingInfo
     {
-        public override Mono.Cecil.TypeReference BindingType
+        public EventTargetBindingInfo(EventReference evt)
+            : base(evt.EventType)
         {
-            get { throw new NotImplementedException(); }
+            this.Event = evt;
         }
+
+        public EventReference Event { get; private set; }
     }
 }

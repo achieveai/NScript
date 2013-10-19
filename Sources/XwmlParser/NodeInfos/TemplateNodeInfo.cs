@@ -26,9 +26,8 @@ namespace XwmlParser.NodeInfos
         public TemplateNodeInfo(
             TypeReference controlType,
             TypeReference dataType,
-            HtmlNode node,
-            Tuple<string, string> tagInfo)
-            : base(node, tagInfo)
+            HtmlNode node)
+            : base(node, null)
         {
             this.ControlType = controlType;
             this.DataType = dataType;

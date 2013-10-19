@@ -1,0 +1,147 @@
+﻿//-----------------------------------------------------------------------
+// <copyright file="Helper.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace XwmlParser.Test
+{
+    using Gallio.Framework;
+    using MbUnit.Framework;
+    using NScript.CLR;
+    using NScript.Converter;
+    using NScript.Converter.TypeSystemConverter;
+    using NScript.JST;
+    using System;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// Definition for Helper
+    /// </summary>
+    public class Helper
+    {
+        const string MsCorLib = "MsCorLib.dll";
+        const string SystemWeb = "System.Web.dll";
+        const string SystemWebHtml = "System.Web.Html.dll";
+        const string SunlightFramework = "Sunlight.Framework.dll";
+        const string SunlightFrameworkUi = "Sunlight.Framework.UI.dll";
+        const string SunlightUnit = "SunlightUnit.dll";
+        const string SunlightFrameworkTest = "Sunlight.Framework.Test.dll";
+        const string SunlightFrameworkUITest = "Sunlight.Framework.UI.Test.dll";
+
+        static ClrContext context;
+        static TypeResolver resolver;
+        static RuntimeScopeManager runtimeScopeManager;
+
+        public static void Initialize()
+        {
+            if (context == null)
+            {
+                context = new ClrContext();
+                context.LoadAssembly(MsCorLib, false);
+                context.LoadAssembly(SystemWeb, false);
+                context.LoadAssembly(SystemWebHtml, false);
+                context.LoadAssembly(SunlightFramework, false);
+                context.LoadAssembly(SunlightUnit, false);
+                context.LoadAssembly(SunlightFrameworkUi, false);
+                context.LoadAssembly(SunlightFrameworkUITest, false);
+
+                ConverterContext converterContext =
+                    new ConverterContext(
+                        context,
+                        null,
+                        null);
+                runtimeScopeManager = new RuntimeScopeManager(converterContext);
+
+                resolver = new TypeResolver(
+                    runtimeScopeManager,
+                    context);
+            }
+        }
+
+        internal static TypeResolver CreateResolver()
+        {
+            return new TypeResolver(
+                Helper.runtimeScopeManager,
+                Helper.context);
+        }
+
+        internal static XwmlParser.XwmlTemplatingPlugin CreatePlugin(
+            List<Tuple<string,string>> args)
+        {
+            XwmlTemplatingPlugin rv = new XwmlTemplatingPlugin();
+            ConverterContext converterContext =
+                new ConverterContext(
+                    context,
+                    null,
+                    null);
+            var runtimeScopeManager = new RuntimeScopeManager(converterContext);
+            rv.ParseArgs(args);
+            rv.Initialize(
+                context,
+                runtimeScopeManager);
+
+            return rv;
+        }
+
+        internal static void LoadHtmlParser(
+            string resourceName,
+            ParserContext parserContext)
+        {
+            using (var stream = typeof(Helper).Assembly.GetManifestResourceStream("XwmlParser.Test.Templates." + resourceName))
+            {
+                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                doc.Load(stream);
+
+                HtmlParser parser = new HtmlParser(
+                    resourceName,
+                    doc,
+                    parserContext);
+
+                parserContext.RegisterHtmlParser(
+                    resourceName,
+                    parser);
+            }
+        }
+
+        internal static string ConvertCodeToString(IList<Statement> code)
+        {
+            System.IO.StringWriter writer = new System.IO.StringWriter();
+            var serializer = new NScript.JST.JSWriter(
+                true,
+                false);
+
+            foreach (var statement in code)
+            {
+                serializer.Write(statement);
+            }
+
+            serializer.Write(writer);
+            return writer.ToString();
+        }
+
+        internal static void CheckCode(
+            string codeFileName,
+            IList<Statement> code)
+        {
+            string expectedValue;
+            using (var stream = typeof(Helper).Assembly.GetManifestResourceStream("XwmlParser.Test.TemplateCode." + codeFileName))
+            {
+                var reader = new System.IO.StreamReader(stream);
+
+                expectedValue = reader.ReadToEnd().Trim();
+            }
+
+            var actualValue = Helper.ConvertCodeToString(code).Trim();
+            if (expectedValue != actualValue)
+            {
+                TestLog.WriteLine("====== Expected ================================> ");
+                TestLog.WriteLine(expectedValue.Replace("<", "&lt").Replace(">", "&gt"));
+                TestLog.WriteLine("====== Actual ==================================> ");
+                TestLog.WriteLine(actualValue.Replace("<", "&lt").Replace(">", "&gt"));
+            }
+
+            Assert.AreEqual(expectedValue, actualValue);
+        }
+    }
+}

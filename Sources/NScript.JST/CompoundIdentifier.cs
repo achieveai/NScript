@@ -8,11 +8,13 @@ namespace NScript.JST
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Text;
 
     /// <summary>
     /// Definition for CompoundIdentifier.
     /// </summary>
+    [DebuggerDisplay("Name={GetName()}")]
     public class CompoundIdentifier : IIdentifier
     {
         /// <summary>

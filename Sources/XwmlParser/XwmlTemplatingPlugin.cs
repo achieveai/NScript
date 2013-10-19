@@ -1,25 +1,49 @@
 ﻿namespace XwmlParser
 {
+    using Mono.Cecil;
+    using NScript.CLR;
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
-    using NScript.CLR;
     using System;
     using System.Collections.Generic;
 
-    class XwmlTemplatingPlugin : IMethodConverterPlugin
+    public class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
+        private string knownCssClasses = string.Empty;
 
-        public IntrestLevel GetInterestLevel(MethodConverter methodConverter)
+        private KnownTemplateTypes knownTemplateTypes;
+
+        private TypeResolver typeResolver;
+
+        private ParserContext parserContext;
+
+        private CodeGenerator codeGenerator;
+
+        public ParserContext ParserContext
+        { get { return this.parserContext; } }
+
+        public TypeResolver TypeResolver
+        { get { return this.typeResolver; } }
+
+        public CodeGenerator CodeGenerator
+        { get { return this.codeGenerator; } }
+
+        public IntrestLevel GetInterestLevel(
+            MethodDefinition methodDefinition,
+            ConverterContext converterContext)
         {
-            if (methodConverter.MethodDefinition.CustomAttributes.SelectAttribute(
-					methodConverter.RuntimeManager.Context.ClrContext.GetTypeDefinition(
-						Tuple.Create("", ""))) != null)
+            var skinAttribute = this.knownTemplateTypes.SkinAttribute;
+            PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
+            if (propertyDefinition != null
+                && propertyDefinition.SetMethod == null
+                && propertyDefinition.CustomAttributes != null
+                && propertyDefinition.CustomAttributes.SelectAttribute(
+                    this.knownTemplateTypes.SkinAttribute) != null)
             {
                 return IntrestLevel.Overwrite;
             }
-
-            return IntrestLevel.None;
+            else return IntrestLevel.None;
         }
 
         public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter)
@@ -39,16 +63,74 @@
 
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {
-            throw new NotImplementedException();
+            var attr = methodConverter.MethodDefinition.GetPropertyDefinition()
+                .CustomAttributes.SelectAttribute(this.knownTemplateTypes.SkinAttribute);
+
+            var templateName = attr.ConstructorArguments[0].Value as string;
+
+            return new List<Statement>()
+                {
+                    new ReturnStatement(
+                        null,
+                        methodConverter.Scope,
+                        new MethodCallExpression(
+                            null,
+                            methodConverter.Scope,
+                            new IdentifierExpression(
+                                this.codeGenerator.GetTemplateGetterIdentifier(templateName),
+                                methodConverter.Scope)))
+                };
         }
 
         public void Initialize(NScript.CLR.ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
         {
-            throw new NotImplementedException();
+            this.knownTemplateTypes = new KnownTemplateTypes(runtimeScopeManager.Context.ClrKnownReferences);
+            this.typeResolver = new TypeResolver(
+                runtimeScopeManager,
+                runtimeScopeManager.Context.ClrContext);
+            this.codeGenerator = new CodeGenerator(runtimeScopeManager, this.knownTemplateTypes);
+            this.parserContext = new ParserContext(
+                this.knownTemplateTypes,
+                this.codeGenerator,
+                this.typeResolver,
+                this.typeResolver,
+                this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries));
+
+            this.parserContext.ConverterContext = runtimeScopeManager.Context;
         }
 
         public void ParseArgs(IList<Tuple<string, string>> args)
         {
+            if (args == null) return;
+
+            foreach (var tupl in args)
+            {
+                if (tupl.Item1 == "KnownCssClasses")
+                {
+                    this.knownCssClasses = tupl.Item2;
+                }
+            }
+        }
+
+        public List<MethodReference> GetMethodsToEmitPass1()
+        {
+            return this.GetMethodsToEmitPassN();
+        }
+
+        public List<MethodReference> GetMethodsToEmitPassN()
+        {
+            this.codeGenerator.IterateParsing();
+            return new List<MethodReference>();
+        }
+
+        public List<Statement> GetPreJavascript()
+        {
+            return new List<Statement>();
+        }
+
+        public List<Statement> GetPostJavascript()
+        {
+            return this.codeGenerator.GetAllTemplateStatements(); ;
         }
     }
 }

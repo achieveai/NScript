@@ -13,6 +13,7 @@ namespace Sunlight.Framework
         int taskId;
     }
 
+<<<<<<< HEAD
 	public enum NativeTimerHandleType
 	{
 		None,
@@ -20,13 +21,22 @@ namespace Sunlight.Framework
 		Intervale,
 		Immediate
 	}
+=======
+    public enum NativeTimerHandleType
+    {
+        None,
+        Timeout,
+        Intervale,
+        Immediate
+    }
+>>>>>>> 67c21b7702788ea6d42f3a2e0c4b588ee67d594e
 
     public enum TaskState
     {
-		Waiting,
-		Canceled,
-		Completed,
-		Running
+        Waiting,
+        Canceled,
+        Completed,
+        Running
     }
 
     public class Task
@@ -42,15 +52,15 @@ namespace Sunlight.Framework
             this.work = work;
         }
 
-		public Task(
-			int nativeTimerId,
-			NativeTimerHandleType nativeTimerType,
-			Action work)
-		{
+        public Task(
+            int nativeTimerId,
+            NativeTimerHandleType nativeTimerType,
+            Action work)
+        {
             this.nativeTimerId = nativeTimerId;
             this.nativeTimerType = nativeTimerType;
             this.work = work;
-		}
+        }
     }
 
     /// <summary>
@@ -59,12 +69,12 @@ namespace Sunlight.Framework
     public class TaskScheduler
     {
         private static int taskId;
-		private static TaskScheduler instance;
+        private static TaskScheduler instance;
 
         private Task currentTask;
         private int currentContextId;
 
-		public TaskScheduler(int workQuanta, int idleTimeOut)
+        public TaskScheduler(int workQuanta, int idleTimeOut)
         {
         }
 
@@ -74,10 +84,10 @@ namespace Sunlight.Framework
             {
                 if (TaskScheduler.instance != null)
                 {
-					TaskScheduler.instance = new TaskScheduler(16, 25);
+                    TaskScheduler.instance = new TaskScheduler(16, 25);
                 }
 
-				return TaskScheduler.instance;
+                return TaskScheduler.instance;
             }
         }
 

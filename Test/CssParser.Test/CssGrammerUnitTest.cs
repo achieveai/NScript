@@ -21,5 +21,38 @@
                 new string[] { "#ddeeff", "thin", "1px", "solid" },
                 grammer.Rules[0].Properties[0].PropertyArgs);
         }
+
+        [Test]
+        public void PropertyOnlyTest()
+        {
+            CssGrammer grammer = new CssGrammer("border: #ddeeff thin 1px solid;", true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(1, grammer.Properties.Count);
+
+            Assert.AreEqual("border", grammer.Properties[0].PropertyName);
+            Assert.AreElementsNotSame(
+                new string[] { "#ddeeff", "thin", "1px", "solid" },
+                grammer.Properties[0].PropertyArgs);
+        }
+
+        [Test]
+        public void PropertiesOnlyTest()
+        {
+            CssGrammer grammer = new CssGrammer("border: #ddeeff thin 1px solid; background-color: #ffeedd;", true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(2, grammer.Properties.Count);
+
+            Assert.AreEqual("border", grammer.Properties[0].PropertyName);
+            Assert.AreElementsNotSame(
+                new string[] { "#ddeeff", "thin", "1px", "solid" },
+                grammer.Properties[0].PropertyArgs);
+
+            Assert.AreEqual("background-color", grammer.Properties[1].PropertyName);
+            Assert.AreElementsNotSame(
+                new string[] { "#fffeedd" },
+                grammer.Properties[1].PropertyArgs);
+        }
     }
 }

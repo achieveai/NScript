@@ -4,25 +4,25 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace XwmlParser.NodeInfos
+namespace XwmlParser
 {
     using HtmlAgilityPack;
     using System;
     using System.Collections.Generic;
 
-	/// <summary>
-	/// Definition for IDocumentContext
-	/// </summary>
-	public interface IDocumentContext
-	{
+    /// <summary>
+    /// Definition for IDocumentContext
+    /// </summary>
+    public interface IDocumentContext
+    {
         ParserContext ParserContext
         { get; }
 
-        IResolver Resolver
+        IClrResolver Resolver
         { get; }
 
-        void ProcessNode(HtmlNode node, NodeInfo parentNode, Action<HtmlNode, NodeInfo, NodeType> callback);
+        string GetCssString();
 
         Tuple<string, string> GetFullName(string name);
-	}
+    }
 }

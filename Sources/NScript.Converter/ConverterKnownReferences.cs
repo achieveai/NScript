@@ -167,6 +167,11 @@ namespace NScript.Converter
         private TypeReference nativeArrayType;
 
         /// <summary>
+        /// The native array type generic.
+        /// </summary>
+        private TypeReference nativeArrayTypeGeneric;
+
+        /// <summary>
         /// Backing field for ArrayImplGeneric.
         /// </summary>
         private TypeReference arrayImpl;
@@ -606,6 +611,27 @@ namespace NScript.Converter
                 }
 
                 return this.nativeArrayType;
+            }
+        }
+
+        /// <summary>
+        /// Gets the native array.
+        /// </summary>
+        /// <value>
+        /// An Array of natives.
+        /// </value>
+        public TypeReference NativeArrayGeneric
+        {
+            get
+            {
+                if (this.nativeArrayTypeGeneric == null)
+                {
+                    this.nativeArrayTypeGeneric = this.GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "NativeArray`1");
+                }
+
+                return this.nativeArrayTypeGeneric;
             }
         }
 
@@ -1340,11 +1366,13 @@ namespace NScript.Converter
             {
                 if (this.arrayImplNativeArrayCtor == null)
                 {
+                    GenericInstanceType nativeArray = new GenericInstanceType(this.NativeArrayGeneric);
+                    nativeArray.GenericArguments.Add(new GenericParameter(0, GenericParameterType.Type, this.NativeArray.Module));
                     this.arrayImplNativeArrayCtor = this.GetMethodReference(
                         ".ctor",
                         this.ClrReferences.Void,
                         this.ArrayImplGeneric,
-                        this.NativeArray);
+                        nativeArray);
                 }
 
                 return this.arrayImplNativeArrayCtor;
@@ -2799,6 +2827,13 @@ namespace NScript.Converter
                 null);
         }
 
+        /// <summary>
+        /// Fix array type.
+        /// </summary>
+        /// <param name="type"> The type. </param>
+        /// <returns>
+        /// .
+        /// </returns>
         public TypeReference FixArrayType(TypeReference type)
         {
             TypeReference fixedType = null;

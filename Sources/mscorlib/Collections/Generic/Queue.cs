@@ -13,23 +13,23 @@ namespace System.Collections.Generic
     /// </summary>
     public class Queue<T> : IEnumerable<T>
     {
-        NativeArray nativeArray = new NativeArray(0);
+        NativeArray<T> nativeArray = new NativeArray<T>(0);
 
         public void Clear()
         {
-            this.nativeArray = new NativeArray(0);
+            this.nativeArray = new NativeArray<T>(0);
         }
 
         public bool Contains(T item)
         {
-            return this.nativeArray.IndexOf<T>(item, 0) >= 0;
+            return this.nativeArray.IndexOf(item, 0) >= 0;
         }
 
         public T Peek()
         {
             if (this.Count > 0)
             {
-                return this.nativeArray.GetFrom<T>(0);
+                return this.nativeArray[0];
             }
 
             throw new Exception("No elements in stack");
@@ -39,7 +39,7 @@ namespace System.Collections.Generic
         {
             if (this.Count > 0)
             {
-                return this.nativeArray.Pop<T>();
+                return this.nativeArray.Pop();
             }
 
             throw new Exception("No elements in stack");
@@ -47,7 +47,7 @@ namespace System.Collections.Generic
 
         public void Enqueue(T item)
         {
-            this.nativeArray.InsertAt<T>(this.nativeArray.Length, item);
+            this.nativeArray.InsertAt(this.nativeArray.Length, item);
         }
 
         public int Count
@@ -89,7 +89,7 @@ namespace System.Collections.Generic
                         throw new Exception("Out of range");
                     }
 
-                    return this.queue.nativeArray.GetFrom<T>(this.currentIndex);
+                    return this.queue.nativeArray[this.currentIndex];
                 }
             }
 

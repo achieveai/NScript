@@ -8,10 +8,12 @@ namespace NScript.JST
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     /// <summary>
     /// Identifier base class
     /// </summary>
+    [DebuggerDisplay("Name={suggestedName}, enforce={enforceSuggestion}")]
     public class SimpleIdentifier : IIdentifier
     {
         /// <summary>
@@ -165,6 +167,7 @@ namespace NScript.JST
 
                 ownerScope.AddIdentifier(returnValue);
             }
+
             return returnValue;
         }
 

@@ -46,7 +46,7 @@ namespace NScript.Converter.Test.TypeConverterTests
              TestType.All,
              new[]{
                  "System.Array",
-                 "System.NativeArray",
+                 "System.NativeArray`1",
                  "System.ArrayG`1"})]
         public void Test(string resourceName, TestType testType, params string[] classNames)
         {
@@ -57,6 +57,12 @@ namespace NScript.Converter.Test.TypeConverterTests
                 classNames);
         }
 
+        /// <summary>
+        /// Tests mcs.
+        /// </summary>
+        /// <param name="resourceName"> Name of the resource. </param>
+        /// <param name="testType">     Type of the test. </param>
+        /// <param name="classNames">   List of names of the class. </param>
         [Test]
         [Row("ObjectType.js",
              TestType.All,
@@ -70,11 +76,17 @@ namespace NScript.Converter.Test.TypeConverterTests
         [Row("IntType.js",
              TestType.All,
              new[] { "System.Int32" })]
+        [Row("ListType.js",
+             TestType.All,
+             new[]{
+                 "System.Array",
+                 "System.NativeArray`1",
+                 "System.Collections.Generic.List`1"})]
         [Row("ArrayTypeMcs.js",
              TestType.All,
              new[]{
                  "System.Array",
-                 "System.NativeArray",
+                 "System.NativeArray`1",
                  "System.ArrayG`1"})]
         public void TestMcs(string resourceName, TestType testType, params string[] classNames)
         {

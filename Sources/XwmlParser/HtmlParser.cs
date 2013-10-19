@@ -11,9 +11,12 @@ namespace XwmlParser
     using HtmlAgilityPack;
     using XwmlParser.NodeInfos;
     using Mono.Cecil;
+    using NScript.Utils;
+    using NScript.Converter;
 
     public enum NodeType
     {
+        Head,
         Object,
         ObservableObject,
         ExtensibleObject,
@@ -27,25 +30,94 @@ namespace XwmlParser
         Text,
         Template,
         Skin,
-        CssStyle
+        CssStyle,
+        Comment,
+        Meta,
+        Body
     }
 
     /// <summary>
     /// Definition for Parser
     /// </summary>
-    public class HtmlParser : IDocumentContext
+    public class HtmlParser
     {
-        private ParserContext context;
-        private HtmlNode node;
-        private List<Dictionary<string, string>> namespaceStack = new List<Dictionary<string, string>>();
+        /// <summary>
+        /// Context for the document.
+        /// </summary>
+        private readonly DocumentContext documentContext;
 
+        /// <summary>
+        /// The context.
+        /// </summary>
+        private readonly ParserContext context;
+
+        /// <summary>
+        /// The node.
+        /// </summary>
+        private readonly HtmlNode node;
+
+        /// <summary>
+        /// Name of the resource.
+        /// </summary>
+        private readonly string resourceName;
+
+        /// <summary>
+        /// The template parsers.
+        /// </summary>
+        private readonly Dictionary<string, TemplateParser> templateParsers = new Dictionary<string, TemplateParser>();
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="fullResourceName"> Name of the full resource. </param>
+        /// <param name="htmlDoc">          The HTML document. </param>
+        /// <param name="context">          The context. </param>
         public HtmlParser(
+            string fullResourceName,
             HtmlDocument htmlDoc,
             ParserContext context)
         {
+            this.resourceName = fullResourceName;
             this.context = context;
+            this.documentContext = new DocumentContext(context);
+            this.node = htmlDoc.DocumentNode;
+            this.documentContext.PushNode(this.node);
+
+            foreach (var node in this.node.ChildNodes)
+            {
+                if (node.Name == "html")
+                {
+                    try
+                    {
+                        documentContext.PushNode(node);
+                        this.ParseDocument(node);
+                    }
+                    finally
+                    {
+                        documentContext.PopNode();
+                    }
+                    break;
+                }
+            }
         }
 
+        /// <summary>
+        /// Gets the name of the resource.
+        /// </summary>
+        /// <value>
+        /// The name of the resource.
+        /// </value>
+        public string ResourceName
+        { get { return this.resourceName; } }
+
+        /// <summary>
+        /// Process the node.
+        /// </summary>
+        /// <exception cref="NotImplementedException"> Thrown when the requested operation is
+        ///     unimplemented. </exception>
+        /// <param name="node">       The node. </param>
+        /// <param name="parentNode"> The parent node. </param>
+        /// <param name="callback">   The callback. </param>
         public void ProcessNode(
             HtmlNode node,
             NodeInfo parentNode,
@@ -54,13 +126,21 @@ namespace XwmlParser
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Parse node.
+        /// </summary>
+        /// <param name="node">           The node. </param>
+        /// <param name="parentNodeInfo"> Information describing the parent node. </param>
+        /// <returns>
+        /// .
+        /// </returns>
         private HtmlNode ParseNode(
             HtmlNode node,
             NodeInfo parentNodeInfo)
         {
             try
             {
-                var nodeName = this.GetFullName(node.OriginalName);
+                var nodeName = this.documentContext.GetFullName(node.OriginalName);
                 NodeType nodeType = this.GetNodeType(node, parentNodeInfo);
                 if (nodeType == NodeType.Html)
                 {
@@ -71,26 +151,77 @@ namespace XwmlParser
             finally
             {
                 // Remove the namespace mapping that was inserted for this node.
-                this.namespaceStack.RemoveAt(this.namespaceStack.Count - 1);
+                this.documentContext.PopNode();
             }
         }
 
+        /// <summary>
+        /// Gets template parser.
+        /// </summary>
+        /// <param name="templateId"> Identifier for the template. </param>
+        /// <returns>
+        /// The template parser.
+        /// </returns>
+        public TemplateParser GetTemplateParser(string templateId)
+        {
+            if (string.IsNullOrEmpty(templateId))
+            {
+                templateId = "::";
+            }
+
+            TemplateParser rv;
+            if (this.templateParsers.TryGetValue(templateId, out rv))
+            {
+                return rv;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets node type.
+        /// </summary>
+        /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
+        /// <param name="node">           The node. </param>
+        /// <param name="parentNodeInfo"> Information describing the parent node. </param>
+        /// <returns>
+        /// The node type.
+        /// </returns>
         public NodeType GetNodeType(HtmlNode node, NodeInfo parentNodeInfo)
         {
-            var nodeName = this.GetFullName(node.OriginalName);
+            var nodeName = this.documentContext.GetFullName(node.OriginalName);
 
+            if (node is HtmlCommentNode)
+            {
+                return NodeType.Comment;
+            }
+            if (node is HtmlTextNode)
+            {
+                return NodeType.Text;
+            }
+            if (nodeName.Item2 == "head"
+                && nodeName.Item1 == null)
+            {
+                return NodeType.Head;
+            }
             if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStypeTag)
             {
                 return NodeType.CssStyle;
+            }
+            if (nodeName.Item1 == null &&
+                (nodeName.Item2 == Strings.Meta
+                || nodeName.Item2 == Strings.Title))
+            {
+                return NodeType.Meta;
             }
             if (nodeName.Item1 == null)
             {
                 // There are 2 possibilities,
                 // 1. This is either a constructor parameter or Property
                 // 2. This is a HTML node.
-                List<PropertyReference> properties = null;
+                PropertyReference property = null;
                 if (parentNodeInfo is TypeNodeInfo
-                    && (properties = this.context.Resolver.GetPropertyReference(
+                    && (property = this.context.ClrResolver.GetPropertyReference(
                             ((TypeNodeInfo)parentNodeInfo).Type,
                             nodeName.Item2)) != null)
                 {
@@ -104,13 +235,17 @@ namespace XwmlParser
                 {
                     return NodeType.Skin;
                 }
+                else if (nodeName.Item2 == Strings.Body)
+                {
+                    return NodeType.Body;
+                }
 
                 return NodeType.Html;
             }
             else
             {
                 string[] nameParts = nodeName.Item2.Split('.');
-                TypeReference typeReference = this.context.Resolver.GetTypeReference(nodeName.Item1 + '.' + nameParts[0]);
+                TypeReference typeReference = this.context.ClrResolver.GetTypeReference(nodeName.Item1 + '.' + nameParts[0]);
 
                 if (typeReference == null)
                 {
@@ -129,10 +264,9 @@ namespace XwmlParser
 
                 if (nameParts.Length == 2)
                 {
-                    var property = this.context.Resolver.GetPropertyReference(typeReference, nameParts[1]);
+                    var property = this.context.ClrResolver.GetPropertyReference(typeReference, nameParts[1]);
 
-                    if (property == null
-                        || property.Count == 0)
+                    if (property == null)
                     {
                         throw new ApplicationException(
                             string.Format("Can't resolve proeprty {0}.{1}", nodeName.Item1, nodeName.Item2));
@@ -141,23 +275,23 @@ namespace XwmlParser
                     return NodeType.AttachedProperty;
                 }
 
-                if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UISkinableElement))
+                if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.UISkinableElement))
                 {
                     return NodeType.SkinableElement;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UIPanel))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.UIPanel))
                 {
                     return NodeType.Panel;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.UIElement))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.UIElement))
                 {
                     return NodeType.UIElement;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.ContextBindableObject))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.ContextBindableObject))
                 {
                     return NodeType.ContextBindableObject;
                 }
-                else if (this.context.Resolver.TypeInherits(typeReference, this.context.KnownTypes.ObservableObject))
+                else if (this.context.ClrResolver.TypeInherits(typeReference, this.context.KnownTypes.ObservableObject))
                 {
                     return NodeType.ObservableObject;
                 }
@@ -175,42 +309,198 @@ namespace XwmlParser
             return NodeType.Html;
         }
 
+        /// <summary>
+        /// Gets a context for the parser.
+        /// </summary>
+        /// <value>
+        /// The parser context.
+        /// </value>
         public ParserContext ParserContext
         {
             get { return this.context; }
         }
 
-        public IResolver Resolver
+        /// <summary>
+        /// Gets a context for the document.
+        /// </summary>
+        /// <value>
+        /// The document context.
+        /// </value>
+        public DocumentContext DocumentContext
+        { get { return this.documentContext; } }
+
+        /// <summary>
+        /// Gets the resolver.
+        /// </summary>
+        /// <value>
+        /// The resolver.
+        /// </value>
+        public IClrResolver Resolver
         {
-            get { return this.context.Resolver; }
+            get { return this.context.ClrResolver; }
         }
 
-        public Tuple<string, string> GetFullName(string name)
+        /// <summary>
+        /// Parse document.
+        /// </summary>
+        /// <exception cref="ConverterLocationException"> Thrown when a Converter Location error condition
+        ///     occurs. </exception>
+        /// <param name="nodeToProcess">        The node. </param>
+        /// <param name="parsingHead"> (optional) the parsing head. </param>
+        private void ParseDocument(
+            HtmlNode nodeToProcess,
+            bool parsingHead = false,
+            bool parsingBody = false)
         {
-            string[] nameParts = name.Split(':');
-            if (nameParts.Length > 2)
+            bool headParsed = false;
+            bool bodyParsed = false;
+            foreach (var childNode in nodeToProcess.ChildNodes)
             {
-                throw new ApplicationException(
-                    "Invalid name");
-            }
-            else if (nameParts.Length == 1)
-            {
-                return Tuple.Create((string)null, nameParts[0]);
-            }
-
-            for (int iNamespaceMap = this.namespaceStack.Count - 1; iNamespaceMap >= 0; iNamespaceMap--)
-            {
-                if (this.namespaceStack[iNamespaceMap] != null)
+                try
                 {
-                    string ns;
-                    if (this.namespaceStack[iNamespaceMap].TryGetValue(nameParts[0], out ns))
+                    string nodeName = childNode.OriginalName.ToLowerInvariant();
+                    this.documentContext.PushNode(childNode);
+                    var nodeType = this.GetNodeType(childNode, null);
+                    if (nodeType == NodeType.Head)
                     {
-                        return Tuple.Create(ns, nameParts[1]);
+                        if (headParsed
+                            || parsingHead)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Head node present more than once.");
+                        }
+                        else if (parsingBody)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Head node present in body.");
+                        }
+
+                        this.ParseDocument(childNode, true);
+                        headParsed = true;
+                    }
+                    else if (nodeType == NodeType.Body)
+                    {
+                        if (bodyParsed
+                            || parsingBody)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Body node present more than once.");
+                        }
+                        else if (parsingHead)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Body node present in head.");
+                        }
+
+                        this.ParseDocument(childNode, false, true);
+                        bodyParsed = true;
+                    }
+                    else if (nodeType == NodeType.CssStyle)
+                    {
+                        if (!parsingHead)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Css style can only be defined in Head.");
+                        }
+
+                        // Parse Css.
+                        var grammer = new CssParser.CssGrammer(childNode.InnerText);
+                        this.documentContext.AddCssRules(grammer.Rules);
+                    }
+                    else if (nodeType == NodeType.Template || nodeType == NodeType.Skin)
+                    {
+                        if (!parsingBody)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Template and Skin can only be defined in Body.");
+                        }
+
+                        // Parse Template.
+                        TemplateParser parser = new TemplateParser(
+                            this,
+                            childNode,
+                            nodeType == NodeType.Skin,
+                            null);
+
+                        string templateName = parser.TemplateName ?? "::";
+                        if (this.templateParsers.ContainsKey(templateName))
+                        {
+                            if (templateName == "::")
+                            {
+                                throw new ConverterLocationException(
+                                    new Location(
+                                        this.resourceName,
+                                        childNode.Line,
+                                        childNode.LinePosition),
+                                    "There can't be more than 1 default template in one template file.");
+                            }
+                            else
+                            {
+                                throw new ConverterLocationException(
+                                    new Location(
+                                        this.resourceName,
+                                        childNode.Line,
+                                        childNode.LinePosition),
+                                    string.Format(
+                                        "There can't be more than 1 default template in one template file.",
+                                        templateName));
+                            }
+                        }
+
+                        this.templateParsers.Add(templateName, parser);
+                        parser.Parse();
+                    }
+                    else if (nodeType == NodeType.Comment
+                        || nodeType == NodeType.Meta)
+                    {
+                        continue;
+                    }
+                    else if (nodeType == NodeType.Text
+                        && string.IsNullOrWhiteSpace(((HtmlTextNode)childNode).Text))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        throw new ConverterLocationException(
+                            new Location(
+                                this.resourceName,
+                                childNode.Line,
+                                childNode.LinePosition),
+                            string.Format(
+                                "Don't know how to parse {0} node.",
+                                nodeName));
                     }
                 }
+                finally
+                {
+                    this.documentContext.PopNode();
+                }
             }
-
-            throw new ApplicationException(string.Format("Can't resolve name space: {0}", nameParts[0]));
         }
     }
 }

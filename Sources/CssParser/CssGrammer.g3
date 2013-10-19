@@ -1,12 +1,12 @@
 ﻿grammar CssGrammer;
 
 options {
-    language=CSharp3;
-    TokenLabelType=CommonToken;
-    ASTLabelType=CommonTree;
-    backtrack=true;
-    memoize=true;
-    output=AST;
+	language=CSharp3;
+	TokenLabelType=CommonToken;
+	ASTLabelType=CommonTree;
+	backtrack=true;
+	memoize=true;
+	output=AST;
 	}
 
 tokens {
@@ -51,7 +51,7 @@ importRule
 	;
 
 nested
- 	: '@' nest '{' properties? nested* '}' -> ^( NESTED nest properties* nested* )
+	: '@' nest '{' properties? nested* '}' -> ^( NESTED nest properties* nested* )
 	;
 
 nest
@@ -59,7 +59,7 @@ nest
 	;
 	
 ruleset
- 	: selectors '{' properties? '}' -> ^( RULE selectors properties* )
+	: selectors '{' properties? '}' -> ^( RULE selectors properties* )
 	;
 	
 selectors
@@ -76,9 +76,10 @@ selectorOperation
 
 selectop
 	: '>' -> PARENTOF
-        | '+'  -> PRECEDEDS
+		| '+'  -> PRECEDEDS
 	;
 
+public
 properties
 	: declaration (';' declaration?)* ->  declaration+
 	;
@@ -164,22 +165,22 @@ Comment
 	;
 
 SkipSpace
-    : NewLine
+	: NewLine
 		{ $channel = Hidden; }
-    | WhiteSpace
+	| WhiteSpace
 		{ $channel = Hidden; }
-    ;
+	;
 
 fragment NewLine
-    : '\n'        // Line feed.
-    | '\r'        // Carriage return.
-    | '\u2028'    // Line separator.
-    | '\u2029'    // Paragraph separator.
-    ;
+	: '\n'        // Line feed.
+	| '\r'        // Carriage return.
+	| '\u2028'    // Line separator.
+	| '\u2029'    // Paragraph separator.
+	;
 
 fragment WhiteSpace
-    : ('\t' | '\v' | '\f' | ' ' | '\u00A0')
-    ;
+	: ('\t' | '\v' | '\f' | ' ' | '\u00A0')
+	;
 
 fragment HexDigits
 	: ('a'..'f')

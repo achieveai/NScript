@@ -265,7 +265,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="types">The types.</param>
         /// <returns>List of statements.</returns>
-        public List<Statement> Convert(IList<TypeDefinition> types)
+        public List<Statement> Convert(IList<TypeDefinition> types, IRuntimeConverterPlugin[] plugins = null)
         {
             List<TypeConverter> typeConverters = new List<TypeConverter>();
             Dictionary<TypeDefinition, TypeConverter> convertersAdded = new Dictionary<TypeDefinition, TypeConverter>();
@@ -397,7 +397,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="methods">The methods.</param>
         /// <returns></returns>
-        public List<Statement> Convert(IList<MethodDefinition> methods)
+        public List<Statement> Convert(IList<MethodDefinition> methods, IRuntimeConverterPlugin[] plugins = null)
         {
             // put all the members and types in to process queue.
             foreach (var methodDefinition in methods)
@@ -480,6 +480,21 @@ namespace NScript.Converter.TypeSystemConverter
                     // Result: The reason why we get here is because this type is referenced through
                     // second level Generic (or higher level generic).
                     this.ResolveType(typeReference);
+                }
+
+                if (plugins != null)
+                {
+                    foreach (var plugin in plugins)
+                    {
+                        var newMethods = plugin.GetMethodsToEmitPassN();
+                        if (newMethods != null)
+                        {
+                            foreach (var methodRef in newMethods)
+                            {
+                                this.Resolve(methodRef);
+                            }
+                        }
+                    }
                 }
 
                 // There is chance that we may have missed some Generic types that are
@@ -659,6 +674,13 @@ namespace NScript.Converter.TypeSystemConverter
                     typeName = Tuple.Create(
                         typeName.Item1,
                         typeName.Item2.Substring(0, typeName.Item2.IndexOf('`')));
+                }
+                else if (isExtended
+                    && typeName.Item2.Contains("<"))
+                {
+                    typeName = Tuple.Create(
+                        typeName.Item1,
+                        typeName.Item2.Substring(0, typeName.Item2.IndexOf('<')));
                 }
 
                 // put in queue to process. In case of conversion using dependency

@@ -403,6 +403,7 @@
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFull.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ListType.js" />
     <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestImportedGeneric.js" />
     <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestImportedType.js" />
     <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestJsonType.js" />
@@ -482,6 +483,7 @@
     <EmbeddedResource Include="MethodConverterTests\Regressions\OddNativeArrayPushBehavior.js" />
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\SelfMethodCallTest.js" />
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\ExternGenericCallTest.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\CallStaticScriptMethodOnImportedClass.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

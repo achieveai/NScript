@@ -16,29 +16,61 @@ namespace CssParser
     /// </summary>
     public partial class CssGrammer
     {
-        private List<CssRule> rules = new List<CssRule>();
-        public CssGrammer(string css)
+        private List<CssRule> rules;
+        private List<CssProperty> properties;
+        public CssGrammer(string css, bool parseProperties = false)
         {
             ANTLRStringStream input = new ANTLRStringStream(css);
             CssGrammerLexer lexer = new CssGrammerLexer(input);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             CssGrammerParser parser = new CssGrammerParser(tokenStream);
-            CommonTree tree = parser.stylesheet().Tree;
-            this.Parse(tree);
+            if (parseProperties)
+            {
+                CommonTree tree = parser.properties().Tree;
+
+                this.ParseStyle(tree);
+            }
+            else
+            {
+                CommonTree tree = parser.stylesheet().Tree;
+
+                this.ParseCss(tree);
+            }
         }
 
         public List<CssRule> Rules
         { get { return this.rules; } }
 
-        private void Parse(ITree tree)
+        public List<CssProperty> Properties
+        { get { return this.properties; } }
+
+        private void ParseStyle(ITree tree)
         {
+            this.properties = new List<CssProperty>();
+            switch (tree.Text)
+            {
+                case "PROPERTY":
+                    this.properties.Add(this.ParseProperty(tree));
+                    break;
+                default:
+                    for (int i = 0; i < tree.ChildCount; i++)
+                    {
+                        this.properties.Add(this.ParseProperty(tree.GetChild(i)));
+                    }
+                    break;
+            }
+        }
+
+        private void ParseCss(ITree tree)
+        {
+            this.rules = new List<CssRule>();
             switch (tree.Text)
             {
                 case "ruleset":
                     for (int i = 0; i < tree.ChildCount; i++)
                     {
                         var child = tree.GetChild(i);
-                        this.Parse(child);
+                        this.ParseCss(child);
                     }
 
                     break;

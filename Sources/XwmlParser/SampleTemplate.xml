@@ -4,12 +4,18 @@
     <style>
     </style>
   </head>
+<<<<<<< HEAD
   <template ControlType="ctrl:Control" DataContext="vm:AppViewModel">
     <div class="X Y" CSSClassBinder.Z ="{Prop1}">
 		Hi {{Name}}!!!
+=======
+  <skin ControlType="ctrl:Control" DataContext="vm:AppViewModel">
+    <div class="X Y" ClassBinder.Z ="{Prop1}">
+    Hi {{Name}}!!!
+>>>>>>> 67c21b7702788ea6d42f3a2e0c4b588ee67d594e
     </div>
     <div class="X" CSSStyleBinder.display="{HasLastName, Converter=ValueIfTrue('none')">
       You last name is: {{LastName}}
     </div>
-  </template>
+  </skin>
 </html>

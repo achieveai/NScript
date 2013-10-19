@@ -399,5 +399,9 @@ namespace NScript.JST
 
             identifierGroup.Add(identifier);
         }
+
+        public void Optimize()
+        {
+        }
     }
 }

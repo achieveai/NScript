@@ -144,7 +144,7 @@ namespace System.Collections.Generic
                 rv.push(key);
             return rv;
             ")]
-        private extern NativeArray GetKeys();
+        private extern NativeArray<string> GetKeys();
 
         [Script(@"
             var rv = [], key;
@@ -152,7 +152,7 @@ namespace System.Collections.Generic
                 rv.push(this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}[key]);
             return rv;
             ")]
-        private extern NativeArray GetValues();
+        private extern NativeArray<TValue> GetValues();
 
         [Script(@"
             var rv = 0, key;

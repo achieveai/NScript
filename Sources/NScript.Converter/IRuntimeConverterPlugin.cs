@@ -26,10 +26,8 @@ namespace NScript.Converter
         /// <summary>
         /// Gets the methods to emit pass N.
         /// </summary>
-        /// <param name="clrContext">The CLR context.</param>
-        /// <param name="methodsEmitted">The methods emitted.</param>
         /// <returns></returns>
-        List<MethodReference> GetMethodsToEmitPassN(List<MethodReference> methodsEmitted);
+        List<MethodReference> GetMethodsToEmitPassN();
 
         /// <summary>
         /// Gets the pre javascript.

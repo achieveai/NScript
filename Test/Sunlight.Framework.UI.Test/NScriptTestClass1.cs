@@ -10,6 +10,7 @@ namespace Sunlight.Framework.UI.Test
     using SunlightUnit;
     using System.Web.Html;
     using System.Runtime.CompilerServices;
+    using Sunlight.Framework.UI.Helpers;
 
     public class AppViewModel
     {
@@ -31,13 +32,13 @@ namespace Sunlight.Framework.UI.Test
 
     public class ValueIfTrue<T>
     {
-		T value;
+        T value;
         T defaultValue;
-		public ValueIfTrue(T value)
-		{
+        public ValueIfTrue(T value)
+        {
             this.value = value;
             this.defaultValue = default(T);
-		}
+        }
 
         public T Convert(bool isTrue)
         {
@@ -52,7 +53,7 @@ namespace Sunlight.Framework.UI.Test
     public class ManualTemplateTests
     {
         public static ValueIfTrue<string> noneValue = new ValueIfTrue<string>("none");
-		[IgnoreGenericArguments]
+        [IgnoreGenericArguments]
         public static T GetValue<T>(Func<T> func, T defaultValue)
         {
             try
@@ -78,7 +79,8 @@ namespace Sunlight.Framework.UI.Test
         /// </summary>
         public static void Test()
         {
-            Func<Document, TemplateInstance> instanceFactory = delegate(Document document)
+            /*
+            Func<Document, SkinInstance> instanceFactory = delegate(Document document)
             {
                 Element elem = document.CreateElement("div");
                 elem.InnerHTML = "<div class='x y'>Hi <span></span>!!!</div><div class='x'>Your last name is: <span></span></div>";
@@ -91,20 +93,20 @@ namespace Sunlight.Framework.UI.Test
                 {
                     AppViewModel appViewModel = (AppViewModel)obj;
 
-					Helpers.CssTargetBinder.Bind(elem1,
-						"z",
+                    Helpers.CssTargetBinder.Bind(elem1,
+                        "z",
                         ManualTemplateTests.GetValue<bool>(
-							() => appViewModel.FullContact,
+                            () => appViewModel.FullContact,
                             false));
 
-					elem2.TextContent =
+                    elem2.TextContent =
                         ManualTemplateTests.GetValue<string>(
-							() => appViewModel.Name,
+                            () => appViewModel.Name,
                             null);
 
-					elem3.Style.Display =
+                    elem3.Style.Display =
                         ManualTemplateTests.GetValue<string>(
-							() => noneValue.Convert(appViewModel.HasLastName),
+                            () => noneValue.Convert(appViewModel.HasLastName),
                             null);
 
                     elem4.TextContent =
@@ -117,11 +119,12 @@ namespace Sunlight.Framework.UI.Test
                         "initializing binders");
                 };
 
-                return new TemplateInstance(
+                return new SkinInstance(
                     elem,
                     binder,
                     null);
             };
+            */
             Assert.IsTrue(true, "true should be true");
         }
     }

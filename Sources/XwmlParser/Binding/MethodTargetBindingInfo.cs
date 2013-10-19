@@ -6,6 +6,7 @@
 
 namespace XwmlParser.Binding
 {
+    using Mono.Cecil;
     using System;
     using System.Collections.Generic;
 
@@ -14,9 +15,13 @@ namespace XwmlParser.Binding
     /// </summary>
     public class MethodTargetBindingInfo : TargetBindingInfo
     {
-        public override Mono.Cecil.TypeReference BindingType
+        public MethodTargetBindingInfo(
+            MethodReference method)
+            : base(null)
         {
-            get { throw new NotImplementedException(); }
+            this.Method = method;
         }
+
+        public MethodReference Method { get; private set; }
     }
 }

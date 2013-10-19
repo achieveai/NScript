@@ -17,21 +17,21 @@ namespace System.Collections.Generic
         /// <summary>
         /// Array of natives.
         /// </summary>
-        NativeArray nativeArray;
+        NativeArray<T> nativeArray;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
         public List()
         {
-            this.nativeArray = new NativeArray(0);
+            this.nativeArray = new NativeArray<T>(0);
         }
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="nativeArray"> Array of natives. </param>
-        public List(NativeArray nativeArray)
+        public List(NativeArray<T> nativeArray)
         {
             this.nativeArray = nativeArray;
         }
@@ -44,17 +44,17 @@ namespace System.Collections.Generic
         {
             // The problem is that not all arrays contain NativeArray, some of them (specially DOM stuff)
             // contain DOMList of DOMCollection which do not have splice methond on them
-            var arrayNativeArray = NativeArray.GetNativeArray(array);
-            if (((object)arrayNativeArray) is NativeArray)
+            var arrayNativeArray = NativeArray<T>.GetNativeArray(array);
+            if (((object)arrayNativeArray) is NativeArray<T>)
             {
-                this.nativeArray = NativeArray.GetNativeArray(array).Slice(0, 0);
+                this.nativeArray = NativeArray<T>.GetNativeArray(array).Slice(0, 0);
             }
             else
             {
-                this.nativeArray = new NativeArray(arrayNativeArray.Length);
+                this.nativeArray = new NativeArray<T>(arrayNativeArray.Length);
                 for (int i = arrayNativeArray.Length - 1; i >= 0; i--)
                 {
-                    this.nativeArray.SetAt(i, arrayNativeArray.GetFrom<T>(i));
+                    this.nativeArray[i] = arrayNativeArray[i];
                 }
             }
         }
@@ -112,7 +112,7 @@ namespace System.Collections.Generic
         /// <param name="items"> The items. </param>
         public void InsertRange(int index, T[] items)
         {
-            this.nativeArray.InsertRangeAt(index, NativeArray.GetNativeArray(items));
+            this.nativeArray.InsertRangeAt(index, NativeArray<T>.GetNativeArray(items));
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace System.Collections.Generic
         public void AddRange(T[] items)
         {
             this.nativeArray =
-                this.nativeArray.Concat(NativeArray.GetNativeArray(items));
+                this.nativeArray.Concat(NativeArray<T>.GetNativeArray(items));
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace System.Collections.Generic
         /// </returns>
         public T[] ToArray()
         {
-            return this.nativeArray.Slice(0, this.nativeArray.Length).GetArray<T>();
+            return this.nativeArray.Slice(0, this.nativeArray.Length).GetArray();
         }
 
         /// <summary>

@@ -8,7 +8,7 @@ namespace Sunlight.Framework.UI
 {
     using System;
     using System.Web.Html;
-using Sunlight.Framework.UI.Helpers;
+    using Sunlight.Framework.UI.Helpers;
 
     /// <summary>
     /// Definition for UISkinableElement
@@ -18,7 +18,7 @@ using Sunlight.Framework.UI.Helpers;
         public const string SkinFactoryPropertyName = "SkinFactory";
         public const string SkinPropertyName = "Skin";
 
-        private SkinFactory skinFactory;
+        private Skin skinFactory;
         private SkinInstance skin;
 
         public UISkinableElement(Element element)
@@ -26,7 +26,7 @@ using Sunlight.Framework.UI.Helpers;
         {
         }
 
-        public SkinFactory SkinFactory
+        public Skin SkinFactory
         {
             get
             {

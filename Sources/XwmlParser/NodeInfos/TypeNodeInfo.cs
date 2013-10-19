@@ -42,32 +42,44 @@ namespace XwmlParser.NodeInfos
         public TypeReference Type
         { get; private set; }
 
+        /// <summary>
+        /// Parse node.
+        /// </summary>
+        /// <param name="parser"> The parser. </param>
         public override void ParseNode(TemplateParser parser)
         {
         }
 
-        public virtual bool ParseAttribute(HtmlAttribute attribute, IResolver resolver)
+        /// <summary>
+        /// Parse attribute.
+        /// </summary>
+        /// <param name="attribute"> The attribute. </param>
+        /// <param name="resolver">  The resolver. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public virtual bool ParseAttribute(HtmlAttribute attribute, IClrResolver resolver)
         {
             return false;
         }
 
+        /// <summary>
+        /// Gets target binder information.
+        /// </summary>
+        /// <param name="fullAttributeName"> Name of the full attribute. </param>
+        /// <param name="context">           The context. </param>
+        /// <returns>
+        /// The target binder information.
+        /// </returns>
         public virtual TargetBindingInfo GetTargetBinderInfo(
             Tuple<string, string> fullAttributeName,
             IDocumentContext context)
         {
             if (string.IsNullOrEmpty(fullAttributeName.Item1))
             {
-                List<PropertyReference> propertyReferences = context.Resolver.GetPropertyReference(
+                var propertyReference = context.Resolver.GetPropertyReference(
                     this.Type,
                     fullAttributeName.Item2);
-
-                if (propertyReferences.Count > 1)
-                {
-                    throw new ApplicationException(
-                        string.Format(
-                            "Can't resolve PropertyName: {0}, more than one properties found",
-                            fullAttributeName.Item2));
-                }
             }
 
             return null;
@@ -78,7 +90,7 @@ namespace XwmlParser.NodeInfos
             IDocumentContext context,
             TargetBindingInfo targetBinding)
         {
-            var binder = BindingParser.ParseBinding(targetBinding, attributeValue, context);
+            var binder = BindingParser.ParseBinding(targetBinding, attributeValue, context, null, null);
             if (binder != null)
             {
                 return binder;
@@ -91,15 +103,15 @@ namespace XwmlParser.NodeInfos
 
             if (targetTypeDefinition.IsIntegerOrEnum())
             {
-                return new BinderInfo();
+                return null; // new BinderInfo();
             }
             else if (targetTypeDefinition.IsDouble())
             {
-                return new BinderInfo();
+                return null; //new BinderInfo();
             }
             else if (targetTypeDefinition.IsBoolean())
             {
-                return new BinderInfo();
+                return null; //new BinderInfo();
             }
 
             return null;

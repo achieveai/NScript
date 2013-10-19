@@ -8,6 +8,7 @@ namespace NScript.JST
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     /// <summary>
     /// Definition for IIdentifier

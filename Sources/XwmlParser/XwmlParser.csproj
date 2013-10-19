@@ -11,6 +11,8 @@
     <AssemblyName>XwmlParser</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <AntlrPath>$(ProjectDir)..\..\Dependencies\Antlr</AntlrPath>
@@ -37,12 +41,13 @@
     <AntlrToolPath>$(AntlrPath)\Antlr3.exe</AntlrToolPath>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\..\packages\HtmlAgilityPack.1.4.4\lib\Net40\HtmlAgilityPack.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\..\Dependencies\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -78,10 +83,12 @@
     <Compile Include="Binding\StaticSourceBindingInfo.cs" />
     <Compile Include="Binding\StringSourceBindingInfo.cs" />
     <Compile Include="Binding\TargetBindingInfo.cs" />
+    <Compile Include="Binding\TextContentTargetBinder.cs" />
+    <Compile Include="CodeGenerator.cs" />
     <Compile Include="DocumentContext.cs" />
-    <Compile Include="Driver.cs" />
     <Compile Include="IResolver.cs" />
     <Compile Include="KnownTemplateTypes.cs" />
+    <Compile Include="ListComparer.cs" />
     <Compile Include="NodeInfos\CollectionNodeInfo.cs" />
     <Compile Include="NodeInfos\ContextBindableNodeInfo.cs" />
     <Compile Include="NodeInfos\IDocumentContext.cs" />
@@ -92,19 +99,20 @@
     <Compile Include="NodeInfos\HtmlNodeInfo.cs" />
     <Compile Include="NodeInfos\NodeInfo.cs" />
     <Compile Include="NodeInfos\PanelNodeInfo.cs" />
+    <Compile Include="NodeInfos\SkinNodeInfo.cs" />
     <Compile Include="NodeInfos\TemplateNodeInfo.cs" />
     <Compile Include="NodeInfos\TypeNodeInfo.cs" />
     <Compile Include="NodeInfos\UIElementNodeInfo.cs" />
     <Compile Include="HtmlParser.cs" />
     <Compile Include="ParserContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="packages.config" />
     <None Include="SampleTemplate.cs" />
+    <Compile Include="SkinCodeGenerator.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="TemplateParser.cs" />
+    <Compile Include="TypeResolver.cs" />
     <Compile Include="XwmlTemplatingPlugin.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="StaticValues\" />

@@ -140,6 +140,8 @@ namespace NScript.Converter.Test
             string expectedValue,
             string actualValue)
         {
+            expectedValue = expectedValue.Trim();
+            actualValue = actualValue.Trim();
             if (string.IsNullOrWhiteSpace(expectedValue))
             {
                 TestLog.Write(actualValue);
@@ -150,9 +152,9 @@ namespace NScript.Converter.Test
                 if (expectedValue != actualValue)
                 {
                     TestLog.WriteLine("====== Expected ================================> ");
-                    TestLog.WriteLine(expectedValue);
+                    TestLog.WriteLine(expectedValue.Replace("<", "&lt").Replace(">", "&gt"));
                     TestLog.WriteLine("====== Actual ==================================> ");
-                    TestLog.WriteLine(actualValue);
+                    TestLog.WriteLine(actualValue.Replace("<", "&lt").Replace(">", "&gt"));
                 }
             }
 
