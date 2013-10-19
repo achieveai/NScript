@@ -48,5 +48,10 @@ namespace XwmlParser.Test
                 return Tuple.Create((string)null, name);
             }
         }
+
+        public string GetCssString()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -270,6 +270,15 @@ namespace XwmlParser
                 clrKnownReferences.TypeType,
                 func3SkinDocSI,
                 clrKnownReferences.String).Resolve();
+
+            this.CssInitializerMethod = clrContext.GetMethodReference(
+                "InitializeCss",
+                clrKnownReferences.Void,
+                this.BinderHelper,
+                this.DocumentRef,
+                nativeArrayInt,
+                nativeArray1Str,
+                clrKnownReferences.Int32);
         }
 
         /// <summary>
@@ -449,5 +458,7 @@ namespace XwmlParser
         public TypeDefinition Skin { get; set; }
 
         public TypeDefinition DocumentRef { get; set; }
+
+        public MethodReference CssInitializerMethod { get; set; }
     }
 }

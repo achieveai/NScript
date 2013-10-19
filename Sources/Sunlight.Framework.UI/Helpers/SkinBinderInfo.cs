@@ -7,8 +7,8 @@
 namespace Sunlight.Framework.UI.Helpers
 {
     using Sunlight.Framework.Binders;
-using System;
-using System.Runtime.CompilerServices;
+    using System;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Definition for SkinBinderInfo
