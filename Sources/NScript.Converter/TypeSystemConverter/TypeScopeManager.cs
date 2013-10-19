@@ -544,7 +544,7 @@ namespace NScript.Converter
         /// <param name="isInstance">if set to <c>true</c> [is instance].</param>
         /// <param name="enforce">if set to <c>true</c> [enforce].</param>
         /// <returns>identifier for given string</returns>
-        internal IIdentifier GetIdentifier(
+        public IIdentifier GetIdentifier(
             string identifierString,
             bool isInstance,
             bool enforce)

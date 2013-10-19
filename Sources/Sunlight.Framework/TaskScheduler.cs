@@ -13,7 +13,6 @@ namespace Sunlight.Framework
         int taskId;
     }
 
-<<<<<<< HEAD
 	public enum NativeTimerHandleType
 	{
 		None,
@@ -21,15 +20,6 @@ namespace Sunlight.Framework
 		Intervale,
 		Immediate
 	}
-=======
-    public enum NativeTimerHandleType
-    {
-        None,
-        Timeout,
-        Intervale,
-        Immediate
-    }
->>>>>>> 67c21b7702788ea6d42f3a2e0c4b588ee67d594e
 
     public enum TaskState
     {
