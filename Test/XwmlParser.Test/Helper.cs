@@ -6,14 +6,14 @@
 
 namespace XwmlParser.Test
 {
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using NScript.CLR;
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     /// <summary>
     /// Definition for Helper
@@ -135,10 +135,10 @@ namespace XwmlParser.Test
             var actualValue = Helper.ConvertCodeToString(code).Trim();
             if (expectedValue != actualValue)
             {
-                TestLog.WriteLine("====== Expected ================================> ");
-                TestLog.WriteLine(expectedValue.Replace("<", "&lt").Replace(">", "&gt"));
-                TestLog.WriteLine("====== Actual ==================================> ");
-                TestLog.WriteLine(actualValue.Replace("<", "&lt").Replace(">", "&gt"));
+                Debug.WriteLine("====== Expected ================================> ");
+                Debug.WriteLine(expectedValue);
+                Debug.WriteLine("====== Actual ==================================> ");
+                Debug.WriteLine(actualValue);
             }
 
             Assert.AreEqual(expectedValue, actualValue);

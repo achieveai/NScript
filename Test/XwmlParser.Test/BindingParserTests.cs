@@ -9,8 +9,9 @@ namespace XwmlParser.Test
     using System;
     using System.Collections.Generic;
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    // using MbUnit.Framework;
     using XwmlParser.Binding;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for BindingParserTests
@@ -31,10 +32,10 @@ namespace XwmlParser.Test
         }
 
         [Test]
-        [Row("{PropStr1}")]
-        [Row("{PropStr1, Mode=OneTime}")]
-        [Row("{PropStr1, Mode=OneTime, Source=DataContext}")]
-        [Row("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
+        [TestCase("{PropStr1}")]
+        [TestCase("{PropStr1, Mode=OneTime}")]
+        [TestCase("{PropStr1, Mode=OneTime, Source=DataContext}")]
+        [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
         public void TestParser1(string bindingStr)
         {
             var dataContextType = 
@@ -56,7 +57,7 @@ namespace XwmlParser.Test
                 SourceType.DataContext,
                 propertyBinding.SourceType);
 
-            Assert.IsInstanceOfType<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
 
             Assert.AreEqual(
                 null,
@@ -78,10 +79,10 @@ namespace XwmlParser.Test
         }
 
         [Test]
-        [Row("{TestIface.PropStr2}")]
-        [Row("{TestIface.PropStr2, Mode=OneTime}")]
-        [Row("{TestIface.PropStr2, Mode=OneTime, Source=DataContext}")]
-        [Row("{Mode=OneTime, Source=DataContext, Path=TestIface.PropStr2}")]
+        [TestCase("{TestIface.PropStr2}")]
+        [TestCase("{TestIface.PropStr2, Mode=OneTime}")]
+        [TestCase("{TestIface.PropStr2, Mode=OneTime, Source=DataContext}")]
+        [TestCase("{Mode=OneTime, Source=DataContext, Path=TestIface.PropStr2}")]
         public void TestParser2(string bindingStr)
         {
             var dataContextType = 
@@ -105,7 +106,7 @@ namespace XwmlParser.Test
                 SourceType.DataContext,
                 propertyBinding.SourceType);
 
-            Assert.IsInstanceOfType<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
 
             Assert.AreEqual(
                 null,
@@ -115,7 +116,7 @@ namespace XwmlParser.Test
                 dataContextType,
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).SourceType);
 
-            Assert.IsInstanceOfType<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
 
             Assert.AreEqual(
                 2,
@@ -135,10 +136,10 @@ namespace XwmlParser.Test
         }
 
         [Test]
-        [Row("{((testVM:TestViewModelB)TestIface).PropStrB}", BindingMode.OneTime)]
-        [Row("{((testVM:TestViewModelB)TestIface).PropStrB, Mode=OneWay}", BindingMode.OneWay)]
-        [Row("{((testVM:TestViewModelB)TestIface).PropStrB, Mode=OneWay, Source=DataContext}", BindingMode.OneWay)]
-        [Row("{Mode=OneTime, Source=DataContext, Path=((testVM:TestViewModelB)TestIface).PropStrB}", BindingMode.OneTime)]
+        [TestCase("{((testVM:TestViewModelB)TestIface).PropStrB}", BindingMode.OneTime)]
+        [TestCase("{((testVM:TestViewModelB)TestIface).PropStrB, Mode=OneWay}", BindingMode.OneWay)]
+        [TestCase("{((testVM:TestViewModelB)TestIface).PropStrB, Mode=OneWay, Source=DataContext}", BindingMode.OneWay)]
+        [TestCase("{Mode=OneTime, Source=DataContext, Path=((testVM:TestViewModelB)TestIface).PropStrB}", BindingMode.OneTime)]
         public void TestParserCast(string bindingStr, BindingMode mode)
         {
             var dataContextType = 
@@ -164,7 +165,7 @@ namespace XwmlParser.Test
                 SourceType.DataContext,
                 propertyBinding.SourceType);
 
-            Assert.IsInstanceOfType<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
 
             Assert.AreEqual(
                 null,
@@ -174,7 +175,7 @@ namespace XwmlParser.Test
                 dataContextType,
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).SourceType);
 
-            Assert.IsInstanceOfType<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
 
             Assert.AreEqual(
                 2,

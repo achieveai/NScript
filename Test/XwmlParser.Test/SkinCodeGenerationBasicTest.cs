@@ -6,7 +6,7 @@
 
 namespace XwmlParser.Test
 {
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using System;
     using System.Collections.Generic;
 
@@ -31,7 +31,11 @@ namespace XwmlParser.Test
         /// </summary>
         /// <param name="bindingStr"> The binding string. </param>
         [Test]
-        [Row("TestCss", null)]
+        [TestCase("TestCss", null)]
+        [TestCase("TestAttributeBinding", null)]
+        [TestCase("TestSkinWithId", "test")]
+        [TestCase("TestTemplate1", null)]
+        [TestCase("TestTextBinding1", null)]
         public void TestParser1(string name, string templateId)
         {
             plugin = Helper.CreatePlugin(null);
