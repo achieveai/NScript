@@ -13,6 +13,7 @@ namespace XwmlParser
     using NScript.JST;
     using System;
     using System.Collections.Generic;
+    using System.Text;
     using XwmlParser.NodeInfos;
 
     /// <summary>
@@ -23,47 +24,51 @@ namespace XwmlParser
         /// <summary>
         /// Manager for scope.
         /// </summary>
-        RuntimeScopeManager scopeManager;
+        private RuntimeScopeManager scopeManager;
 
         /// <summary>
         /// The known references.
         /// </summary>
-        KnownTemplateTypes knownReferences;
+        private KnownTemplateTypes knownReferences;
 
         /// <summary>
         /// Context for the parser.
         /// </summary>
-        ParserContext parserContext;
+        private ParserContext parserContext;
 
         /// <summary>
         /// The CSS name scope.
         /// </summary>
-        IdentifierScope cssNameScope = new IdentifierScope(false);
+        private IdentifierScope cssNameScope = new IdentifierScope(false);
 
         /// <summary>
         /// The text content setter.
         /// </summary>
-        IIdentifier textContentSetter;
+        private IIdentifier textContentSetter;
 
         /// <summary>
         /// The attribute setter.
         /// </summary>
-        IIdentifier attributeSetter;
+        private IIdentifier attributeSetter;
 
         /// <summary>
         /// The CSS class setter.
         /// </summary>
-        IIdentifier cssClassSetter;
+        private IIdentifier cssClassSetter;
 
         /// <summary>
         /// Identifier for the storage array.
         /// </summary>
-        IIdentifier storageArrayIdentifier;
+        private IIdentifier storageArrayIdentifier;
 
         /// <summary>
         /// Identifier for the HTML storage initializer.
         /// </summary>
-        IIdentifier htmlStorageInitializerIdentifier;
+        private IIdentifier htmlStorageInitializerIdentifier;
+
+        private IIdentifier documentStateStorage;
+
+        private IIdentifier documentStorageGetter;
 
         /// <summary>
         /// List of identifiers for the template getters.
@@ -117,11 +122,11 @@ namespace XwmlParser
             new Dictionary<IList<MemberReference>, IIdentifier>(
                 new ListEqualityComparer<MemberReference>(MemberReferenceComparer.Instance));
 
-        /// <summary>
-        /// The CSS class name mapping.
-        /// </summary>
-        Dictionary<Tuple<HtmlParser, string>, IIdentifier> cssClassNameMapping =
-            new Dictionary<Tuple<HtmlParser, string>, IIdentifier>();
+        Dictionary<HtmlParser, IIdentifier> cssInitializerMapping =
+            new Dictionary<HtmlParser, IIdentifier>();
+
+        Dictionary<HtmlParser, bool> cssInitializerCodeGenerated =
+            new Dictionary<HtmlParser, bool>();
 
         /// <summary>
         /// The style setter mapping.
@@ -718,36 +723,40 @@ namespace XwmlParser
             return this.cssClassSetter;
         }
 
-        /// <summary>
-        /// Gets CSS class identifier.
-        /// </summary>
-        /// <param name="classScope"> The class scope. </param>
-        /// <param name="className">  Name of the class. </param>
-        /// <returns>
-        /// The CSS class identifier.
-        /// </returns>
-        internal IIdentifier GetCssClassIdentifier(
-            HtmlParser classScope,
-            string className)
+        internal IIdentifier GetDocumentStorageGetter()
         {
-            IIdentifier rv;
-            if (this.cssClassNameMapping.TryGetValue(
-                Tuple.Create(classScope, className), out rv))
+            if (this.documentStateStorage == null)
             {
-                return rv;
+                this.documentStateStorage =
+                    this.scopeManager.GetTypeScope(
+                        this.knownReferences.DocumentRef).GetIdentifier(
+                            "stateStore",
+                            true,
+                            false);
+
+                this.documentStorageGetter =
+                    SimpleIdentifier.CreateScopeIdentifier(
+                        this.scopeManager.Scope,
+                        "DocStorageGetter",
+                        false);
             }
 
-            rv = SimpleIdentifier.CreateScopeIdentifier(
-                this.cssNameScope,
-                className,
-                false);
+            return this.documentStorageGetter;
+        }
 
-            this.cssClassNameMapping[Tuple.Create(classScope, className)] = rv;
+        internal IIdentifier GetCssInitializer(HtmlParser htmlParser)
+        {
+            IIdentifier rv;
+            if (!this.cssInitializerMapping.TryGetValue(htmlParser, out rv))
+            {
+                rv = SimpleIdentifier.CreateScopeIdentifier(
+                    this.scopeManager.Scope,
+                    "CssInitializer",
+                    false);
+            }
 
             return rv;
         }
-
-        internal IIdentifier HtmlStorageInitializerIdentifier;
 
         internal int GetDataStorageIndex(SkinCodeGenerator skinCodeGenerator)
         {
@@ -771,6 +780,188 @@ namespace XwmlParser
         internal void AddStatement(ExpressionStatement expressionStatement)
         {
             this.generatedCode.Add(expressionStatement);
+        }
+
+        private void GenerateCode()
+        {
+            this.generatedCode.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IdentifierExpression(
+                        this.GetGlobalStateVariable(),
+                        this.scopeManager.Scope),
+                    new NewArrayExpression(
+                        null,
+                        this.scopeManager.Scope,
+                        new NumberLiteralExpression(
+                            this.scopeManager.Scope,
+                            this.skinCodeGeneratorStorageIndexs.Count))));
+
+            this.generatedCode.Add(
+                new ExpressionStatement(
+                    null,
+                    this.scopeManager.Scope,
+                    this.GenerateDocumentInitializerMethod()));
+        }
+
+        private FunctionExpression GenerateDocumentInitializerMethod()
+        {
+            var methodScope = new IdentifierScope(
+                this.scopeManager.Scope,
+                new string[]{
+                    "doc"
+                },
+                false);
+
+            var rv = new FunctionExpression(
+                null,
+                this.scopeManager.Scope,
+                methodScope,
+                methodScope.ParameterIdentifiers,
+                this.GetDocumentStorageGetter());
+
+            // var style;
+            var styleElemIdentifier = SimpleIdentifier.CreateScopeIdentifier(
+                methodScope,
+                "style",
+                false);
+
+            // doc.storage = new Array(##);
+            List<Statement> initializers = new List<Statement>();
+            initializers.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    IdentifierExpression.Create(
+                        null,
+                        methodScope,
+                        new IIdentifier[] {
+                            methodScope.ParameterIdentifiers[0],
+                            this.documentStateStorage
+                        }),
+                    new NewArrayExpression(
+                        null,
+                        methodScope,
+                        new NumberLiteralExpression(
+                            methodScope,
+                            this.skinCodeGeneratorStorageIndexs.Count))));
+
+            // style = doc.createElement('style')
+            initializers.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IdentifierExpression(
+                        styleElemIdentifier,
+                        methodScope),
+                    new MethodCallExpression(
+                        null,
+                        methodScope,
+                        new IndexExpression(
+                            null,
+                            methodScope,
+                            new IdentifierExpression(
+                                methodScope.ParameterIdentifiers[0],
+                                methodScope),
+                            new StringLiteralExpression(
+                                methodScope,
+                                "createElement")),
+                        new StringLiteralExpression(
+                            methodScope,
+                            "style"))));
+
+            // style.textContent = "CSS"
+            initializers.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IndexExpression(
+                        null,
+                        methodScope,
+                        new IdentifierExpression(
+                            styleElemIdentifier,
+                            methodScope),
+                        new StringLiteralExpression(
+                            methodScope,
+                            "textContent")),
+                    new StringLiteralExpression(
+                        methodScope,
+                        this.GetAllCss())));
+
+            // doc.body.appendChild(style)
+            initializers.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IdentifierExpression(
+                        styleElemIdentifier,
+                        methodScope),
+                    new MethodCallExpression(
+                        null,
+                        methodScope,
+                        new IndexExpression(
+                            null,
+                            methodScope,
+                            new IndexExpression(
+                                null,
+                                methodScope,
+                                new IdentifierExpression(
+                                    methodScope.ParameterIdentifiers[0],
+                                    methodScope),
+                                new StringLiteralExpression(
+                                    methodScope,
+                                    "body")),
+                            new StringLiteralExpression(
+                                methodScope,
+                                "appendChild")),
+                        new IdentifierExpression(
+                            styleElemIdentifier,
+                            methodScope))));
+
+            // if (!doc.storage) {...}
+            var ifStatement = new IfBlockStatement(
+                null,
+                methodScope,
+                new UnaryExpression(
+                    null,
+                    methodScope,
+                    UnaryOperator.LogicalNot,
+                    IdentifierExpression.Create(
+                        null,
+                        methodScope,
+                        new IIdentifier[] {
+                            methodScope.ParameterIdentifiers[0],
+                            this.documentStateStorage
+                        })),
+                new ScopeBlock(
+                    null,
+                    methodScope,
+                    initializers),
+                null);
+
+            rv.AddStatement(ifStatement);
+
+            rv.AddStatement(
+                new ReturnStatement(
+                    null,
+                    methodScope,
+                    IdentifierExpression.Create(
+                        null,
+                        methodScope,
+                        new IIdentifier[] {
+                            methodScope.ParameterIdentifiers[0],
+                            this.documentStateStorage
+                        })));
+
+            return rv;
+        }
+
+        private string GetAllCss()
+        {
+            StringBuilder sb = new StringBuilder();
+            HashSet<DocumentContext> documentContexts = new HashSet<DocumentContext>();
+            foreach (var skinCodeGenerators in this.skinCodeGenerators.Keys)
+            {
+                var dc = skinCodeGenerators.HtmlParser.DocumentContext;
+                if (!documentContexts.Contains(dc))
+                {
+                    documentContexts.Add(dc);
+                    sb.Append(dc.GetCssString());
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }

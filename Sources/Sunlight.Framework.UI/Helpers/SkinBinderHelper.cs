@@ -136,6 +136,16 @@ namespace Sunlight.Framework.UI.Helpers
             return element;
         }
 
+        public static void InitializeTemplateDocumentStorage(
+            Document document,
+            string css,
+            int index)
+        {
+            var style = document.CreateElement("style");
+            style.TextContent = css;
+            document.Body.AppendChild(style);
+        }
+
         /// <summary>
         /// Sets property value.
         /// </summary>

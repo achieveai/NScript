@@ -222,10 +222,7 @@ namespace XwmlParser
 
         private void GenerateSkinFactory()
         {
-            this.code.Insert(0, this.GetInitializerBlock());
-            this.code.InsertRange(
-                1,
-                this.GetLocalInitializers());
+            this.GetInitializerBlock(this.code);
             this.code.Add(this.GetSkinInstanceCtorExpression());
 
             this.skinFactoryMethodIdentifier =
@@ -326,11 +323,12 @@ namespace XwmlParser
                     skinGetterFunction));
         }
 
-        private List<Statement> GetLocalInitializers()
+        private void GetLocalInitializers(
+            List<Statement> statements,
+            IIdentifier domStore,
+            IIdentifier globalStateVariable)
         {
-            List<Statement> rv = new List<Statement>();
-            IIdentifier globalStateVariable = this.codeGenerator.GetGlobalStateVariable();
-            rv.Add(
+            statements.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IdentifierExpression(
                         this.GetDomRootIdentifier(),
@@ -345,11 +343,11 @@ namespace XwmlParser
                                 null,
                                 this.Scope,
                                 new IdentifierExpression(
-                                    globalStateVariable,
+                                    domStore,
                                     this.Scope),
                                 new NumberLiteralExpression(
                                     this.Scope,
-                                    this.dataIndex * 2)),
+                                    this.dataIndex)),
                             new StringLiteralExpression(
                                 this.Scope,
                                 "cloneNode")),
@@ -357,7 +355,7 @@ namespace XwmlParser
                             this.Scope,
                             true))));
 
-            rv.Add(
+            statements.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IdentifierExpression(
                         this.GetObjectStorageIdentifier(),
@@ -368,13 +366,18 @@ namespace XwmlParser
                         new NumberLiteralExpression(
                             this.Scope,
                             this.nodeToStorageIndexMap.Count))));
-
-            return rv;
         }
 
-        private Statement GetInitializerBlock()
+        private void GetInitializerBlock(List<Statement> statements)
         {
             IIdentifier globalStateVariable = this.codeGenerator.GetGlobalStateVariable();
+            IIdentifier domInitializerMetod = this.codeGenerator.GetDocumentStorageGetter();
+            IIdentifier domStore = SimpleIdentifier.CreateScopeIdentifier(
+                this.Scope,
+                "domStore",
+                false);
+
+            // if (!(domStore = DomStorageInitializer(doc))[iDoc])
             Expression checkStateInitialized =
                 new UnaryExpression(
                     null,
@@ -383,17 +386,27 @@ namespace XwmlParser
                     new IndexExpression(
                         null,
                         this.Scope,
-                        new IdentifierExpression(
-                            globalStateVariable,
-                            this.Scope),
+                        new BinaryExpression(
+                            null,
+                            this.Scope,
+                            BinaryOperator.Assignment,
+                            new IdentifierExpression(
+                                domStore,
+                                this.Scope),
+                            new MethodCallExpression(
+                                null,
+                                this.Scope,
+                                new IdentifierExpression(
+                                    domInitializerMetod,
+                                    this.Scope),
+                                new IdentifierExpression(
+                                    this.Scope.ParameterIdentifiers[1],
+                                    this.Scope))),
                         new NumberLiteralExpression(
                             this.Scope,
-                            this.dataIndex * 2)));
+                            this.dataIndex)));
 
-            IIdentifier documentIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                this.codeGenerator.ScopeManager.Scope,
-                "document",
-                true);
+            IIdentifier documentIdentifier = this.Scope.ParameterIdentifiers[1];
 
             List<Statement> scopeStatements = new List<Statement>();
             scopeStatements.Add(ExpressionStatement.CreateAssignmentExpression(
@@ -401,11 +414,11 @@ namespace XwmlParser
                     null,
                     this.Scope,
                     new IdentifierExpression(
-                        globalStateVariable,
+                        domStore,
                         this.Scope),
                     new NumberLiteralExpression(
                         this.Scope,
-                        this.dataIndex * 2)),
+                        this.dataIndex)),
                 new MethodCallExpression(
                     null,
                     this.Scope,
@@ -431,11 +444,11 @@ namespace XwmlParser
                             null,
                             this.Scope,
                             new IdentifierExpression(
-                                globalStateVariable,
+                                domStore,
                                 this.Scope),
                             new NumberLiteralExpression(
                                 this.Scope,
-                                this.dataIndex * 2)),
+                                this.dataIndex)),
                         new StringLiteralExpression(
                             this.Scope,
                             "innerHTML")),
@@ -453,23 +466,47 @@ namespace XwmlParser
                             this.Scope),
                         new NumberLiteralExpression(
                             this.Scope,
-                            this.dataIndex * 2 + 1)),
-                    new InlineNewArrayInitialization(
+                            this.dataIndex)),
+                    new ConditionalOperatorExpression(
                         null,
                         this.Scope,
-                        this.bindings)));
+                        new IndexExpression(
+                            null,
+                            this.Scope,
+                            new IdentifierExpression(
+                                globalStateVariable,
+                                this.Scope),
+                            new NumberLiteralExpression(
+                                this.Scope,
+                                this.dataIndex)),
+                        new IndexExpression(
+                            null,
+                            this.Scope,
+                            new IdentifierExpression(
+                                globalStateVariable,
+                                this.Scope),
+                            new NumberLiteralExpression(
+                                this.Scope,
+                                this.dataIndex)),
+                        new InlineNewArrayInitialization(
+                            null,
+                            this.Scope,
+                            this.bindings))));
 
             ScopeBlock initializationBlock = new ScopeBlock(
                 null,
                 this.Scope,
                 scopeStatements);
 
-            return new IfBlockStatement(
-                null,
-                this.Scope,
-                checkStateInitialized,
-                initializationBlock,
-                null);
+            statements.Add(
+                new IfBlockStatement(
+                    null,
+                    this.Scope,
+                    checkStateInitialized,
+                    initializationBlock,
+                    null));
+
+            this.GetLocalInitializers(statements, domStore, globalStateVariable);
         }
 
         private Statement GetSkinInstanceCtorExpression()

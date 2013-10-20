@@ -13,15 +13,15 @@ namespace Sunlight.Framework
         int taskId;
     }
 
-    public enum NativeTimerHandleType
-    {
-        None,
-        Timeout,
-        Intervale,
-        Immediate
-    }
+	public enum NativeTimerHandleType
+	{
+		None,
+		Timeout,
+		Intervale,
+		Immediate
+	}
 
-    enum TaskState
+    public enum TaskState
     {
         Waiting,
         Canceled,

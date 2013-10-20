@@ -324,5 +324,6 @@ module("Sunlight.Framework.UI.Test.ManualTemplateTests");
 test("Test", 0, Sunlight__Framework__UI__Test__ManualTemplateTests__Test);
 module("Sunlight.Framework.UI.Test.UIElementTests");
 test("TestNewUIElement", 0, Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement);
+tmplStore = [];
 //@ sourceMappingURL=Sunlight.Framework.UI.Test.map
 })();
