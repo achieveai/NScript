@@ -8,7 +8,7 @@ function DocStorageGetter(doc) {
     doc.stateStore = new Array(1);
     style = doc.createElement("style");
     style.textContent = "";
-    style = doc.body.appendChild(style);
+    doc.body.appendChild(style);
   }
   return doc.stateStore;
 };

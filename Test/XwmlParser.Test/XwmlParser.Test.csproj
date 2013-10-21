@@ -106,6 +106,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="TemplateCode\TestAttributeBinding.min.js.map">
+      <DependentUpon>TestAttributeBinding.js</DependentUpon>
+    </None>
+    <None Include="TemplateCode\TestCss.min.js.map">
+      <DependentUpon>TestCss.js</DependentUpon>
+    </None>
+    <None Include="TemplateCode\TestCssBinding1.min.js.map">
+      <DependentUpon>TestCssBinding1.js</DependentUpon>
+    </None>
+    <None Include="TemplateCode\TestSkinWithId.min.js.map">
+      <DependentUpon>TestSkinWithId.js</DependentUpon>
+    </None>
+    <None Include="TemplateCode\TestTemplate1.min.js.map">
+      <DependentUpon>TestTemplate1.js</DependentUpon>
+    </None>
+    <None Include="TemplateCode\TestTextBinding1.min.js.map">
+      <DependentUpon>TestTextBinding1.js</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestTemplate1.html" />
@@ -138,7 +156,7 @@
     <EmbeddedResource Include="TemplateCode\TestCss.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TemplateCode\Copy %283%29 of Test.js" />
+    <EmbeddedResource Include="TemplateCode\TestCssBinding1.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\Copy %284%29 of Test.js" />
@@ -150,7 +168,7 @@
     <EmbeddedResource Include="Templates\TestCss.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\Copy %283%29 of Test.html" />
+    <EmbeddedResource Include="Templates\TestCssBinding1.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\Copy %284%29 of Test.html" />

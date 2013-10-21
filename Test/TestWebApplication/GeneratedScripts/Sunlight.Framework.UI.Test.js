@@ -325,5 +325,15 @@ test("Test", 0, Sunlight__Framework__UI__Test__ManualTemplateTests__Test);
 module("Sunlight.Framework.UI.Test.UIElementTests");
 test("TestNewUIElement", 0, Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement);
 tmplStore = [];
+function DocStorageGetter(doc) {
+  var style;
+  if (!doc.stateStore) {
+    doc.stateStore = [];
+    style = doc.createElement("style");
+    style.textContent = "";
+    style = doc.body.appendChild(style);
+  }
+  return doc.stateStore;
+};
 //@ sourceMappingURL=Sunlight.Framework.UI.Test.map
 })();

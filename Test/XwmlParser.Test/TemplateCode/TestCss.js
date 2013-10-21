@@ -5,7 +5,7 @@ function DocStorageGetter(doc) {
     doc.stateStore = new Array(1);
     style = doc.createElement("style");
     style.textContent = ".testClass{height:10px;}";
-    style = doc.body.appendChild(style);
+    doc.body.appendChild(style);
   }
   return doc.stateStore;
 };

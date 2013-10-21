@@ -17,7 +17,10 @@ namespace Sunlight.Framework.UI.Test
         public int PropInt1
         { get; set; }
 
-        public int PropStr1
+        public string PropStr1
+        { get; set; }
+
+        public bool PropBool1
         { get; set; }
 
         public TestInterface TestIface

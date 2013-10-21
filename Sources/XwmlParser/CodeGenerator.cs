@@ -873,31 +873,25 @@ namespace XwmlParser
 
             // doc.body.appendChild(style)
             initializers.Add(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IdentifierExpression(
-                        styleElemIdentifier,
-                        methodScope),
-                    new MethodCallExpression(
+                ExpressionStatement.CreateMethodCallExpression(
+                    new IndexExpression(
                         null,
                         methodScope,
                         new IndexExpression(
                             null,
                             methodScope,
-                            new IndexExpression(
-                                null,
-                                methodScope,
-                                new IdentifierExpression(
-                                    methodScope.ParameterIdentifiers[0],
-                                    methodScope),
-                                new StringLiteralExpression(
-                                    methodScope,
-                                    "body")),
+                            new IdentifierExpression(
+                                methodScope.ParameterIdentifiers[0],
+                                methodScope),
                             new StringLiteralExpression(
                                 methodScope,
-                                "appendChild")),
-                        new IdentifierExpression(
-                            styleElemIdentifier,
-                            methodScope))));
+                                "body")),
+                        new StringLiteralExpression(
+                            methodScope,
+                            "appendChild")),
+                    new IdentifierExpression(
+                        styleElemIdentifier,
+                        methodScope)));
 
             // if (!doc.storage) {...}
             var ifStatement = new IfBlockStatement(
