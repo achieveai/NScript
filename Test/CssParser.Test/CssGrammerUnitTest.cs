@@ -2,7 +2,7 @@
 {
     using System;
     using CssParser;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     [TestFixture]
     public class CssGrammerUnitTest
@@ -13,13 +13,16 @@
             CssGrammer grammer = new CssGrammer(".body { border: #ddeeff thin 1px solid; }");
             Assert.AreEqual(1, grammer.Rules.Count);
             Assert.AreEqual(1, grammer.Rules[0].Selectors.Count);
-            Assert.IsInstanceOfType<CssClass>(grammer.Rules[0].Selectors[0]);
+            Assert.IsInstanceOf<CssClass>(grammer.Rules[0].Selectors[0]);
 
             Assert.AreEqual(1, grammer.Rules[0].Properties.Count);
             Assert.AreEqual("border", grammer.Rules[0].Properties[0].PropertyName);
-            Assert.AreElementsNotSame(
-                new string[] { "#ddeeff", "thin", "1px", "solid" },
-                grammer.Rules[0].Properties[0].PropertyArgs);
+            var propertyArgs = new string[] { "#ddeeff", "thin", "1px", "solid" };
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            for (int i = 0; i < propertyArgs.Length; i++)
+            {
+                Assert.AreEqual(propertyArgs[i], grammer.Rules[0].Properties[0].PropertyArgs[i]);
+            }
         }
 
         [Test]
@@ -31,9 +34,13 @@
             Assert.AreEqual(1, grammer.Properties.Count);
 
             Assert.AreEqual("border", grammer.Properties[0].PropertyName);
-            Assert.AreElementsNotSame(
-                new string[] { "#ddeeff", "thin", "1px", "solid" },
-                grammer.Properties[0].PropertyArgs);
+
+            var propertyArgs = new string[] { "#ddeeff", "thin", "1px", "solid" };
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            for (int i = 0; i < propertyArgs.Length; i++)
+            {
+                Assert.AreEqual(propertyArgs[i], grammer.Rules[0].Properties[0].PropertyArgs[i]);
+            }
         }
 
         [Test]
@@ -44,15 +51,19 @@
             Assert.IsNotNull(grammer.Properties);
             Assert.AreEqual(2, grammer.Properties.Count);
 
-            Assert.AreEqual("border", grammer.Properties[0].PropertyName);
-            Assert.AreElementsNotSame(
-                new string[] { "#ddeeff", "thin", "1px", "solid" },
-                grammer.Properties[0].PropertyArgs);
+            var propertyArgs = new string[] { "#ddeeff", "thin", "1px", "solid" };
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            for (int i = 0; i < propertyArgs.Length; i++)
+            {
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[i]);
+            }
 
-            Assert.AreEqual("background-color", grammer.Properties[1].PropertyName);
-            Assert.AreElementsNotSame(
-                new string[] { "#fffeedd" },
-                grammer.Properties[1].PropertyArgs);
+            propertyArgs = new string[] { "#ffeedd" };
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            for (int i = 0; i < propertyArgs.Length; i++)
+            {
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[1].PropertyArgs[i]);
+            }
         }
     }
 }

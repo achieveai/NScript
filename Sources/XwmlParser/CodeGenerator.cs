@@ -358,17 +358,7 @@ namespace XwmlParser
         {
             this.parserContext.CompressCssNames();
 
-            this.generatedCode.Add(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IdentifierExpression(
-                        this.GetGlobalStateVariable(),
-                        this.scopeManager.Scope),
-                    new NewArrayExpression(
-                        null,
-                        this.scopeManager.Scope,
-                        new NumberLiteralExpression(
-                            this.scopeManager.Scope,
-                            this.skinCodeGeneratorStorageIndexs.Count * 2))));
+            this.GenerateCode();
 
             foreach (var kvPair in this.skinCodeGenerators)
             {

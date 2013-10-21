@@ -135,10 +135,10 @@ namespace XwmlParser.Test
             var actualValue = Helper.ConvertCodeToString(code).Trim();
             if (expectedValue != actualValue)
             {
-                Debug.WriteLine("====== Expected ================================> ");
-                Debug.WriteLine(expectedValue);
-                Debug.WriteLine("====== Actual ==================================> ");
-                Debug.WriteLine(actualValue);
+                Console.Error.WriteLine("====== Expected ================================> ");
+                Console.Error.WriteLine(expectedValue);
+                Console.Error.WriteLine("====== Actual ==================================> ");
+                Console.Error.WriteLine(actualValue);
             }
 
             Assert.AreEqual(expectedValue, actualValue);

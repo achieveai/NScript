@@ -199,7 +199,16 @@ namespace XwmlParser
                 {
                     sb.Append(prop.PropertyName);
                     sb.Append(':');
-                    sb.Append(prop.PropertyArgs);
+                    for (int iPropArg = 0; iPropArg < prop.PropertyArgs.Count; iPropArg++)
+                    {
+                        if (iPropArg > 0)
+                        {
+                            sb.Append(' ');
+                        }
+
+                        sb.Append(prop.PropertyArgs[iPropArg]);
+                    }
+
                     sb.Append(';');
                 }
 
