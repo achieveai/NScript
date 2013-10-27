@@ -8,6 +8,7 @@ namespace XwmlParser.NodeInfos
 {
     using HtmlAgilityPack;
     using Mono.Cecil;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -45,6 +46,9 @@ namespace XwmlParser.NodeInfos
         /// </value>
         public TypeReference ControlType
         { get; private set; }
+
+        public IIdentifier[] ClassNames
+        { get; set; }
 
         public override void ParseNode(TemplateParser parser)
         {

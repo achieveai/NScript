@@ -57,6 +57,16 @@ namespace Sunlight.Framework.UI.Helpers
         private NativeArray<SkinBinderInfo> binders;
 
         /// <summary>
+        /// The live binders.
+        /// </summary>
+        private NativeArray liveBinders;
+
+        /// <summary>
+        /// The extra objects.
+        /// </summary>
+        private NativeArray extraObjects;
+
+        /// <summary>
         /// Initializes a new instance of the SkinInstance class.
         /// </summary>
         /// <param name="factory">             The factory. </param>
@@ -69,7 +79,9 @@ namespace Sunlight.Framework.UI.Helpers
             Element rootElement,
             NativeArray<UIElement> childElements,
             NativeArray<object> elementsOfIntrests,
-            NativeArray<SkinBinderInfo> binders)
+            NativeArray<SkinBinderInfo> binders,
+            int liveBinderCount,
+            int extraObjectCount)
         {
             ExceptionHelpers.IsNullOrUndefined(rootElement);
 
@@ -78,6 +90,12 @@ namespace Sunlight.Framework.UI.Helpers
             this.binders = binders;
             this.childElements = childElements;
             this.elementsOfIntrest = elementsOfIntrests;
+
+            if (liveBinderCount > 0)
+            { this.liveBinders = new NativeArray(liveBinderCount); }
+
+            if (extraObjectCount > 0)
+            { this.extraObjects = new NativeArray(extraObjectCount); }
         }
 
         /// <summary>   Registers the child by identifier. </summary>

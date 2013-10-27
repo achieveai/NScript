@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Gallio.Framework;
-using MbUnit.Framework;
-using MbUnit.Framework.ContractVerifiers;
-using NScript.CLR.Decompiler.Blocks;
-
-namespace NScript.CLR.Test.BlockTests
+﻿namespace NScript.CLR.Test.BlockTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using NScript.CLR.Decompiler.Blocks;
+    using NUnit.Framework;
+
     [TestFixture]
     public class BasicStatementBuilderTestFixture
     {

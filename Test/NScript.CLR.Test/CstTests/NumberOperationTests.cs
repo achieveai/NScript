@@ -8,7 +8,7 @@ namespace NScript.CLR.Test.CstTests
 {
     using System;
     using System.Collections.Generic;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for NumberOperationTests
@@ -25,10 +25,10 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(NumberOperationTests.TestClassNameStr, "Div", true,  "IntDivide.xml")]
-        [Row(NumberOperationTests.TestClassNameStr, "Div", false,  "IntDivide.xml")]
-        [Row(NumberOperationTests.TestClassNameStr, "DoubleDivide", true,   "DoubleDivide.xml")]
-        [Row(NumberOperationTests.TestClassNameStr, "DoubleDivide", false,  "DoubleDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "Div", true,  "IntDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "Div", false,  "IntDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", true,   "DoubleDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", false,  "DoubleDivide.xml")]
         public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -37,10 +37,10 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(NumberOperationTests.TestClassNameStr, "Div", true,  "IntDivide.xml")]
-        [Row(NumberOperationTests.TestClassNameStr, "Div", false,  "IntDivide.xml")]
-        [Row(NumberOperationTests.TestClassNameStr, "DoubleDivide", true,   "DoubleDivide.xml")]
-        [Row(NumberOperationTests.TestClassNameStr, "DoubleDivide", false,  "DoubleDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "Div", true,  "IntDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "Div", false,  "IntDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", true,   "DoubleDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", false,  "DoubleDivide.xml")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(

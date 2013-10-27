@@ -331,7 +331,7 @@ function DocStorageGetter(doc) {
     doc.stateStore = [];
     style = doc.createElement("style");
     style.textContent = "";
-    style = doc.body.appendChild(style);
+    doc.body.appendChild(style);
   }
   return doc.stateStore;
 };

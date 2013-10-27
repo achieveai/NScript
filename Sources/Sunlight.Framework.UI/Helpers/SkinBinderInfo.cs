@@ -10,6 +10,21 @@ namespace Sunlight.Framework.UI.Helpers
     using System;
     using System.Runtime.CompilerServices;
 
+    [Flags]
+    public enum BinderType
+    {
+        DataContext = 0x1,
+        Static = 0x2,
+        TemplateParent = 0x4,
+        PropertyBinder = 0x10,
+        AttachedPropertyBinder = 0x20,
+        EventBinder = 0x30,
+        DomEventBinder = 0x40,
+        CssBinder = 0x50,
+        StyleBinder = 0x60,
+        AttributeBinder = 0x70,
+    }
+
     /// <summary>
     /// Definition for SkinBinderInfo
     /// </summary>
@@ -60,12 +75,22 @@ namespace Sunlight.Framework.UI.Helpers
         /// <summary>
         /// true if this object is data context binder.
         /// </summary>
-        public readonly bool IsDataContextBinder;
+        public readonly BinderType BinderType;
 
         /// <summary>
         /// Zero-based index of the object.
         /// </summary>
         public readonly int ObjectIndex;
+
+        /// <summary>
+        /// Zero-based index of the binder.
+        /// </summary>
+        public readonly int BinderIndex = -1;
+
+        /// <summary>
+        /// Zero-based index of the extra object.
+        /// </summary>
+        public readonly int ExtraObjectIndex = -1;
 
         /// <summary>
         /// The forward converter.
@@ -92,21 +117,21 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         /// <param name="propertyGetterPath">   Full pathname of the property getter file. </param>
         /// <param name="targetPropertySetter"> Target property setter. </param>
-        /// <param name="isDataContextBinder">  true if this object is data context binder. </param>
+        /// <param name="binderType">  true if this object is data context binder. </param>
         /// <param name="objectIndex">          Zero-based index of the object. </param>
         /// <param name="forwardConverter">     The forward converter. </param>
         /// <param name="defaultValue">         The default value. </param>
         public SkinBinderInfo(
             NativeArray<Func<object, object>> propertyGetterPath,
             Action<object, object> targetPropertySetter,
-            bool isDataContextBinder,
+            BinderType binderType,
             int objectIndex,
             Func<object, object> forwardConverter,
             object defaultValue)
         {
             this.PropertyGetterPath = propertyGetterPath;
             this.TargetPropertySetter = targetPropertySetter;
-            this.IsDataContextBinder = isDataContextBinder;
+            this.BinderType = binderType;
             this.ObjectIndex = objectIndex;
             this.ForwardConverter = forwardConverter;
             this.DefaultValue = defaultValue;
@@ -124,21 +149,22 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="defaultValue">         The default value. </param>
         public SkinBinderInfo(
             NativeArray<Func<object, object>> propertyGetterPath,
-            Action<object, object, object> targetPropertySetter,
+            Action<object, object, object> targetPropertySetterWithArg,
             object targetPropertySetterArg,
-            bool isDataContextBinder,
+            BinderType binderType,
             int objectIndex,
             Func<object, object> forwardConverter,
-            object defaultValue)
+            object defaultValue,
+            int extraObjectIndex)
         {
             this.PropertyGetterPath = propertyGetterPath;
-            this.TargetPropertySetterWithArg = targetPropertySetter;
             this.TargetPropertySetterArg = targetPropertySetterArg;
-            this.IsDataContextBinder = isDataContextBinder;
+            this.BinderType = binderType;
             this.ObjectIndex = objectIndex;
             this.ForwardConverter = forwardConverter;
             this.DefaultValue = defaultValue;
             this.Mode = DataBindingMode.OneTime;
+            this.ExtraObjectIndex = extraObjectIndex;
         }
 
         /// <summary>
@@ -147,7 +173,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="propertyGetterPath">   Full pathname of the property getter file. </param>
         /// <param name="propertyNames">        List of names of the properties. </param>
         /// <param name="targetPropertySetter"> Target property setter. </param>
-        /// <param name="isDataContextBinder">  true if this object is data context binder. </param>
+        /// <param name="binderType">  true if this object is data context binder. </param>
         /// <param name="objectIndex">          Zero-based index of the object. </param>
         /// <param name="forwardConverter">     The forward converter. </param>
         /// <param name="defaultValue">         The default value. </param>
@@ -156,15 +182,16 @@ namespace Sunlight.Framework.UI.Helpers
             NativeArray<Func<object, object>> propertyGetterPath,
             NativeArray<string> propertyNames,
             Action<object, object> targetPropertySetter,
-            bool isDataContextBinder,
+            BinderType binderType,
             int objectIndex,
+            int binderIndex,
             Func<object, object> forwardConverter,
             object defaultValue)
         {
             this.PropertyGetterPath = propertyGetterPath;
             this.PropertyNames = propertyNames;
             this.TargetPropertySetter = targetPropertySetter;
-            this.IsDataContextBinder = isDataContextBinder;
+            this.BinderType = binderType;
             this.ObjectIndex = objectIndex;
             this.ForwardConverter = forwardConverter;
             this.DefaultValue = defaultValue;
@@ -177,7 +204,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="propertyGetterPath">   Full pathname of the property getter file. </param>
         /// <param name="propertyNames">        List of names of the properties. </param>
         /// <param name="targetPropertySetter"> Target property setter. </param>
-        /// <param name="isDataContextBinder">  true if this object is data context binder. </param>
+        /// <param name="binderType">  true if this object is data context binder. </param>
         /// <param name="objectIndex">          Zero-based index of the object. </param>
         /// <param name="forwardConverter">     The forward converter. </param>
         /// <param name="defaultValue">         The default value. </param>
@@ -187,16 +214,19 @@ namespace Sunlight.Framework.UI.Helpers
             NativeArray<string> propertyNames,
             Action<object, object, object> targetPropertySetter,
             object targetPropertySetterArg,
-            bool isDataContextBinder,
+            BinderType binderType,
             int objectIndex,
+            int binderIndex,
             Func<object, object> forwardConverter,
-            object defaultValue)
+            object defaultValue,
+            int extraObjectIndex)
         {
             this.PropertyGetterPath = propertyGetterPath;
             this.PropertyNames = propertyNames;
             this.TargetPropertySetterWithArg = targetPropertySetter;
             this.TargetPropertySetterArg = targetPropertySetterArg;
-            this.IsDataContextBinder = isDataContextBinder;
+            this.BinderType = binderType;
+            this.BinderIndex = binderIndex;
             this.ObjectIndex = objectIndex;
             this.ForwardConverter = forwardConverter;
             this.DefaultValue = defaultValue;
@@ -212,7 +242,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="targetPropertySetter"> Target property setter. </param>
         /// <param name="targetPropertyGetter"> Target property getter. </param>
         /// <param name="targetPropertyName">   Name of the target property. </param>
-        /// <param name="isDataContextBinder">  true if this object is data context binder. </param>
+        /// <param name="binderType">  true if this object is data context binder. </param>
         /// <param name="objectIndex">          Zero-based index of the object. </param>
         /// <param name="forwardConverter">     The forward converter. </param>
         /// <param name="backwardConverter">    The backward converter. </param>
@@ -224,8 +254,9 @@ namespace Sunlight.Framework.UI.Helpers
             Action<object, object> targetPropertySetter,
             Func<object,object> targetPropertyGetter,
             string targetPropertyName,
-            bool isDataContextBinder,
+            BinderType binderType,
             int objectIndex,
+            int binderIndex,
             Func<object, object> forwardConverter,
             Func<object, object> backwardConverter,
             object defaultValue)
@@ -236,8 +267,9 @@ namespace Sunlight.Framework.UI.Helpers
             this.TargetPropertySetter = targetPropertySetter;
             this.TargetPropertyGetter = targetPropertyGetter;
             this.TargetPropertyName = targetPropertyName;
-            this.IsDataContextBinder = isDataContextBinder;
+            this.BinderType = binderType;
             this.ObjectIndex = objectIndex;
+            this.BinderIndex = binderIndex;
             this.ForwardConverter = forwardConverter;
             this.BackwardConverter = backwardConverter;
             this.DefaultValue = defaultValue;

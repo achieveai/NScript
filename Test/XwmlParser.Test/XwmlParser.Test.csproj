@@ -105,6 +105,7 @@
     <Compile Include="SkinCodeGenerationBasicTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="TemplateCode\TestAttributeBinding.min.js.map">
       <DependentUpon>TestAttributeBinding.js</DependentUpon>
@@ -159,7 +160,7 @@
     <EmbeddedResource Include="TemplateCode\TestCssBinding1.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TemplateCode\Copy %284%29 of Test.js" />
+    <EmbeddedResource Include="TemplateCode\TestDomEventBinding1.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestAttributeBinding.html" />
@@ -171,7 +172,7 @@
     <EmbeddedResource Include="Templates\TestCssBinding1.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\Copy %284%29 of Test.html" />
+    <EmbeddedResource Include="Templates\TestDomEventBinding1.html" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

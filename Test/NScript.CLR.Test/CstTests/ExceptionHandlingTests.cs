@@ -6,8 +6,8 @@
 
 namespace NScript.CLR.Test.CstTests
 {
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
+    using System.Diagnostics;
 
     /// <summary>
     /// Definition for ExceptionHandlingTests
@@ -25,16 +25,16 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", true,  "TryFinallySimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", false, "TryFinallySimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", true,  "TryFinallyWithReturn.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", false, "TryFinallyWithReturnRetail.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", true,  "TryCatchSimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", false, "TryCatchSimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", true,  "TryCatchWithReturnDebug.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", false, "TryCatchWithReturn.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", true,  "TryCatchFinallySimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", false, "TryCatchFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", true,  "TryFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", false, "TryFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", true,  "TryFinallyWithReturn.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", false, "TryFinallyWithReturnRetail.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", true,  "TryCatchSimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", false, "TryCatchSimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", true,  "TryCatchWithReturnDebug.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", false, "TryCatchWithReturn.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", true,  "TryCatchFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", false, "TryCatchFinallySimple.xml")]
         public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -46,16 +46,16 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", true,  "TryFinallySimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", false, "TryFinallySimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", true,  "TryFinallyWithReturnMcs.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", false, "TryFinallyWithReturnMcs.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", true,  "TryCatchSimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", false, "TryCatchSimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", true,  "TryCatchWithReturnMcs.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", false, "TryCatchWithReturnMcs.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", true,  "TryCatchFinallySimple.xml")]
-        [Row(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", false, "TryCatchFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", true,  "TryFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallySimple", false, "TryFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", true,  "TryFinallyWithReturnMcs.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryFinallyWithReturn", false, "TryFinallyWithReturnMcs.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", true,  "TryCatchSimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchSimple", false, "TryCatchSimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", true,  "TryCatchWithReturnMcs.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchWithReturn", false, "TryCatchWithReturnMcs.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", true,  "TryCatchFinallySimple.xml")]
+        [TestCase(ExceptionHandlingTests.TestClassNameStr, "TryCatchFinallySimple", false, "TryCatchFinallySimple.xml")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -75,7 +75,7 @@ namespace NScript.CLR.Test.CstTests
                 "TryCatchFinallySimple",
                 true).RootBlock;
 
-            TestLog.Write(TestHelpers.Serialize(rootBlock));
+            Debug.Write(TestHelpers.Serialize(rootBlock));
         }
     }
 }

@@ -61,7 +61,17 @@ namespace XwmlParser
         /// <returns>
         /// The event references.
         /// </returns>
-        EventReference GetEventReferences(TypeReference typeReference, string eventName);
+        EventReference GetEventReference(TypeReference typeReference, string eventName);
+
+        /// <summary>
+        /// Gets field reference.
+        /// </summary>
+        /// <param name="typeReference"> The type reference. </param>
+        /// <param name="fieldName">     Name of the field. </param>
+        /// <returns>
+        /// The field reference.
+        /// </returns>
+        FieldReference GetFieldReference(TypeReference typeReference, string fieldName);
 
         /// <summary>
         /// Type implements.

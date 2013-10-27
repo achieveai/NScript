@@ -1,0 +1,6 @@
+﻿<NUnitProject>
+  <Settings activeconfig="Default" />
+  <Config name="Default" binpathtype="Auto">
+    <assembly path="NScript.CLR.Test\bin\Debug\XwmlParser.Test.dll" />
+  </Config>
+</NUnitProject>

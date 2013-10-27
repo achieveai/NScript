@@ -6,8 +6,8 @@
 
 namespace NScript.CLR.Test.CstTests
 {
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
+    using System.Diagnostics;
 
     /// <summary>
     /// Definition for SwitchStatementTests
@@ -37,18 +37,18 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(SwitchStatementTests.TestClassNameStr, "SimpleIntSwitch", true,  "SimpleIntSwitch.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "SimpleIntSwitch", false, "SimpleIntSwitchRetail.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "SwitchOnlyFunction", true,  "SwitchOnlyFunction.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "SwitchOnlyFunction", false, "SwitchOnlyFunctionRetail.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "SwitchWithReturn", true,  "SwitchWithReturn.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "SwitchWithReturn", false, "SwitchWithReturnRetail.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "SwitchWithReturnsOnly", true,  "SwitchWithReturnsOnly.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "SwitchWithReturnsOnly", false, "SwitchWithReturnsOnlyRetail.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "RegressSwitchWithFor", true,  "RegressSwitchWithFor.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "RegressSwitchWithFor", false, "RegressSwitchWithForRetail.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "RegressionContinousSwitch2", true,  "RegressionContinousSwitch2.xml")]
-        [Row(SwitchStatementTests.TestClassNameStr, "RegressionContinousSwitch2", false, "RegressionContinousSwitch2.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SimpleIntSwitch", true,  "SimpleIntSwitch.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SimpleIntSwitch", false, "SimpleIntSwitchRetail.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SwitchOnlyFunction", true,  "SwitchOnlyFunction.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SwitchOnlyFunction", false, "SwitchOnlyFunctionRetail.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SwitchWithReturn", true,  "SwitchWithReturn.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SwitchWithReturn", false, "SwitchWithReturnRetail.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SwitchWithReturnsOnly", true,  "SwitchWithReturnsOnly.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "SwitchWithReturnsOnly", false, "SwitchWithReturnsOnlyRetail.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "RegressSwitchWithFor", true,  "RegressSwitchWithFor.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "RegressSwitchWithFor", false, "RegressSwitchWithForRetail.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "RegressionContinousSwitch2", true,  "RegressionContinousSwitch2.xml")]
+        [TestCase(SwitchStatementTests.TestClassNameStr, "RegressionContinousSwitch2", false, "RegressionContinousSwitch2.xml")]
         public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -72,15 +72,15 @@ namespace NScript.CLR.Test.CstTests
                 methodName,
                 true).RootBlock;
 
-            TestLog.Write(TestHelpers.Serialize(rootBlock));
-            TestLog.Write("\r\n");
+            Debug.Write(TestHelpers.Serialize(rootBlock));
+            Debug.Write("\r\n");
 
             rootBlock = TestHelpers.GetAST(
                 TestClassNameStr,
                 methodName,
                 false).RootBlock;
 
-            TestLog.Write(TestHelpers.Serialize(rootBlock));
+            Debug.Write(TestHelpers.Serialize(rootBlock));
         }
     }
 }

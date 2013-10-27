@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MbUnit.Framework;
-using System.IO;
-using NScript.CLR.Decompiler.Blocks;
-using System.Xml.Linq;
-
-namespace NScript.CLR.Test.BlockTests
+﻿namespace NScript.CLR.Test.BlockTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.IO;
+    using NScript.CLR.Decompiler.Blocks;
+    using System.Xml.Linq;
+    using NUnit.Framework;
+
     internal class BlockInfo
     {
         public static BlockInfo InstructionBlockInfo = new BlockInfo { BlockType = typeof(InstructionBlock), Children = new BlockInfo[] { } };
@@ -59,7 +59,7 @@ namespace NScript.CLR.Test.BlockTests
         {
             if (this.BlockType != null)
             {
-                Assert.IsInstanceOfType(
+                Assert.IsInstanceOf(
                     this.BlockType,
                     block,
                     "testId: {0}, actualId: {1}",

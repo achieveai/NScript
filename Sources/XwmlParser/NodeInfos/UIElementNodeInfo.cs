@@ -8,6 +8,7 @@ namespace XwmlParser.NodeInfos
 {
     using HtmlAgilityPack;
     using Mono.Cecil;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -44,6 +45,8 @@ namespace XwmlParser.NodeInfos
         {
             get { return this.generatedNode; }
         }
+        public IIdentifier[] ClassNames
+        { get; set; }
 
         /// <summary>
         /// Sets new node and path.

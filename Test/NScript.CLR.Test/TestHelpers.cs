@@ -6,12 +6,13 @@
     using NScript.CLR.Decompiler;
     using NScript.CLR.Decompiler.Blocks;
     using NScript.Utils;
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using Mono.Cecil;
     using System.Text;
     using System.Collections.Generic;
     using System.IO;
+    using System.Diagnostics;
+    using XmlUnit.Xunit;
 
     internal static class TestHelpers
     {
@@ -117,7 +118,7 @@
                 rootBlock = executionBlock.GetRootBlock();
             }
 
-            TestLog.Write(TestHelpers.Serialize(rootBlock));
+            Debug.Write(TestHelpers.Serialize(rootBlock));
         }
 
         /// <summary>
@@ -199,23 +200,33 @@
 
                 if (string.IsNullOrWhiteSpace(xmlString))
                 {
-                    TestLog.Write(str);
+                    Debug.Write(str);
                 }
 
                 try
                 {
-                    Assert.Xml.AreEqual(
-                        xmlString,
-                        str,
-                        XmlOptions.Custom.IgnoreComments);
+                    XmlInput xmlInput1 = new XmlInput(xmlString);
+                    XmlInput xmlInput2 = new XmlInput(str);
+                    DiffConfiguration config = new DiffConfiguration(
+                        "testDiff",
+                        true,
+                        WhitespaceHandling.Significant,
+                        true);
+
+                    XmlDiff diff = new XmlDiff(
+                        xmlInput1,
+                        xmlInput2,
+                        config);
+
+                    XmlAssertion.AssertXmlEquals(diff);
                 }
                 catch
                 {
-                    TestLog.WriteLine("Expected");
-                    TestLog.WriteLine(xmlString);
-                    TestLog.WriteLine("*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*--*-*-*-*-*-*-*-*-*-");
-                    TestLog.WriteLine("Actual");
-                    TestLog.WriteLine(str);
+                    Debug.WriteLine("Expected");
+                    Debug.WriteLine(xmlString);
+                    Debug.WriteLine("*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*--*-*-*-*-*-*-*-*-*-");
+                    Debug.WriteLine("Actual");
+                    Debug.WriteLine(str);
 
                     throw;
                 }

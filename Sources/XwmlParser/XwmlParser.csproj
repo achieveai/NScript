@@ -71,6 +71,7 @@
     <Compile Include="Binding\BoundValue.cs" />
     <Compile Include="Binding\ConverterInfo.cs" />
     <Compile Include="Binding\CssClassTargetBindingInfo.cs" />
+    <Compile Include="Binding\DomEventTargetBindingInfo.cs" />
     <Compile Include="Binding\EnumSourceBindingInfo.cs" />
     <Compile Include="Binding\EventSourceBindingInfo.cs" />
     <Compile Include="Binding\EventTargetBindingInfo.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Binding\SourceBindingInfo.cs" />
     <Compile Include="Binding\StaticSourceBindingInfo.cs" />
     <Compile Include="Binding\StringSourceBindingInfo.cs" />
+    <Compile Include="Binding\StyleTargetBindingInfo.cs" />
     <Compile Include="Binding\TargetBindingInfo.cs" />
     <Compile Include="Binding\TextContentTargetBinder.cs" />
     <Compile Include="CodeGenerator.cs" />

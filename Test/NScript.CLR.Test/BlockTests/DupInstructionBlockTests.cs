@@ -6,7 +6,7 @@
 
 namespace NScript.CLR.Test.BlockTests
 {
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for DupInstructionBlockTests
@@ -25,8 +25,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestPostfixOperation(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -37,8 +37,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestPostfixPropertyOperation(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -49,8 +49,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestPostfixSecondOrderPropertyOperation(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -61,8 +61,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(false, "PostfixPropertyInConditionOperation.xml")]
-        [Row(true, "PostfixPropertyInConditionOperationDebug.xml")]
+        [TestCase(false, "PostfixPropertyInConditionOperation.xml")]
+        [TestCase(true, "PostfixPropertyInConditionOperationDebug.xml")]
         public void TestPostfixPropertyInConditionOperation(bool isDebug, string fileName)
         {
             TestHelpers.TestILBlocks(
@@ -73,8 +73,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestPropertyInlineEquals(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -85,8 +85,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestFunctionCallWithInlineAssignment(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -97,8 +97,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestPostfixPropertyOnPropertyOperation(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -109,8 +109,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestLocalOpAssignmentOperation(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -121,8 +121,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestPropertyOpAssignmentOperation(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -133,8 +133,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestPropertyOnPropertyOpAssignmentOperation(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -145,8 +145,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestNullCheckAssignment(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -157,8 +157,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestInlineOpAssignment(bool isDebug)
         {
             TestHelpers.TestILBlocks(

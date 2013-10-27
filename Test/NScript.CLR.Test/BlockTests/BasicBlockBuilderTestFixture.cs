@@ -1,7 +1,7 @@
 ﻿namespace NScript.CLR.Test.BlockTests
 {
     using NScript.CLR.Decompiler.Blocks;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     [TestFixture]
     public class BasicBlockBuilderTestFixture
@@ -147,8 +147,8 @@
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void FuncIncrement(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -160,8 +160,8 @@
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void FuncPostIncrementWithProperty(bool isDebug)
         {
             TestHelpers.TestILBlocks(

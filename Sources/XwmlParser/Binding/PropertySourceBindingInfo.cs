@@ -18,7 +18,7 @@ namespace XwmlParser.Binding
     {
         public PropertySourceBindingInfo(
             TypeReference sourceType,
-            List<PropertyReference> propertyReferences)
+            List<MemberReference> propertyReferences)
         {
             this.SourceType = sourceType;
             this.PropertyReferencePath = new List<MemberReference>(propertyReferences);

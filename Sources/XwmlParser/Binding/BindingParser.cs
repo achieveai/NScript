@@ -7,9 +7,11 @@
 namespace XwmlParser.Binding
 {
     using Mono.Cecil;
+    using NScript.CLR;
     using System;
     using System.Collections.Generic;
     using XwmlParser.NodeInfos;
+    using System.Linq;
 
     public enum BindingMode
     {
@@ -138,7 +140,8 @@ namespace XwmlParser.Binding
                     dict,
                     bindingValue,
                     sourceInfo.Item1,
-                    documentContext),
+                    documentContext,
+                    targetBinding),
                 BindingParser.GetConverterInfo(
                     dict,
                     bindingValue,
@@ -296,7 +299,8 @@ namespace XwmlParser.Binding
             Dictionary<BindingPart, Tuple<int, int>> dict,
             string bindingStr,
             TypeReference sourceType,
-            IDocumentContext documentContext)
+            IDocumentContext documentContext,
+            TargetBindingInfo targetBindingInfo)
         {
             Tuple<int, int> stringPart;
             if (!dict.TryGetValue(BindingPart.Path, out stringPart))
@@ -309,26 +313,49 @@ namespace XwmlParser.Binding
                 stringPart.Item1,
                 stringPart.Item2);
 
+            var resolver = documentContext.Resolver;
             TypeReference currentType = sourceType;
-            List<PropertyReference> propertyReferences = new List<PropertyReference>();
+            List<MemberReference> propertyReferences = new List<MemberReference>();
             for (int iPath = 0; iPath < pathInfo.Count; iPath++)
             {
-                var property = documentContext.Resolver.GetPropertyReference(
+                var memberName = pathInfo[iPath].Item2;
+                var memberInfo = BindingParser.GetFieldOrPropertyReference(
                     currentType,
-                    pathInfo[iPath].Item2);
+                    memberName,
+                    resolver);
 
-                // TODO: we need to check for methodReferences as well for event binding.
-
-                if (property == null)
+                if (memberInfo == null)
                 {
+                    if (iPath == pathInfo.Count - 1
+                        && targetBindingInfo.BindingType.IsDelegate())
+                    {
+                        MethodReference method = BindingParser.GetMethodReferenceWithMatch(
+                            currentType,
+                            memberName,
+                            resolver,
+                            targetBindingInfo.BindingType,
+                            targetBindingInfo is DomEventTargetBindingInfo);
+
+                        if (method != null)
+                        {
+                            return new MethodSourceBindingInfo(
+                                propertyReferences.Count > 0
+                                    ? new PropertySourceBindingInfo(
+                                        sourceType,
+                                        propertyReferences)
+                                    : null,
+                                method);
+                        }
+                    }
+
                     throw new ApplicationException(
                         string.Format("Can't resolve propertyName: {0} on Type: {1}",
                             pathInfo[iPath].Item2,
                             currentType));
                 }
 
-                propertyReferences.Add(property);
-                currentType = property.PropertyType;
+                propertyReferences.Add(memberInfo.Item1);
+                currentType = memberInfo.Item2;
 
                 if (pathInfo[iPath].Item1 != null)
                 {
@@ -370,6 +397,88 @@ namespace XwmlParser.Binding
             return new PropertySourceBindingInfo(
                 sourceType,
                 propertyReferences);
+        }
+
+        private static Tuple<MemberReference, TypeReference> GetFieldOrPropertyReference(
+            TypeReference typeReference,
+            string memberName,
+            IClrResolver resolver)
+        {
+            FieldReference field = null;
+            PropertyReference property;
+            property = resolver.GetPropertyReference(
+                typeReference,
+                memberName);
+
+            // TODO: we need to check for methodReferences as well for event binding.
+
+            if (property != null)
+            {
+                return Tuple.Create<MemberReference, TypeReference>(
+                    property,
+                    property.PropertyType);
+            }
+
+            field = resolver.GetFieldReference(
+                typeReference,
+                memberName);
+
+            if (field != null)
+            {
+                return Tuple.Create<MemberReference, TypeReference>(
+                    field,
+                    field.FieldType);
+            }
+
+            return null;
+        }
+
+        private static MethodReference GetMethodReferenceWithMatch(
+            TypeReference typeReference,
+            string methodName,
+            IClrResolver resolver,
+            TypeReference delegateType,
+            bool skipParamsOk)
+        {
+            var methods = resolver.GetMethodReference(
+                typeReference,
+                methodName);
+
+            if (methods == null)
+            { return null; }
+
+            SortedDictionary<int, List<MethodReference>> matchedMethods = new SortedDictionary<int, List<MethodReference>>();
+            for (int iMethod = 0; iMethod < methods.Count; iMethod++)
+            {
+                var matchNum = delegateType.ImplementsDelegate(methods[iMethod], skipParamsOk);
+                if (matchNum.HasValue)
+                {
+                    List<MethodReference> coll;
+                    if (!matchedMethods.TryGetValue(matchNum.Value, out coll))
+                    {
+                        coll = new List<MethodReference>();
+                        matchedMethods.Add(matchNum.Value, coll);
+                    }
+
+                    coll.Add(methods[iMethod]);
+                }
+            }
+
+            if (matchedMethods.Count > 0)
+            {
+                var bestMatch = matchedMethods.First().Value;
+                if (bestMatch.Count > 1)
+                {
+                    throw new ApplicationException(
+                        string.Format(
+                            "More than one match found for Method:{0}",
+                            methodName));
+                }
+
+                return bestMatch[0];
+            }
+
+            return null;
         }
 
         /// <summary>

@@ -71,6 +71,16 @@ namespace XwmlParser
         Dictionary<NodeInfo, int> nodeToStorageIndexMap = new Dictionary<NodeInfo, int>();
 
         /// <summary>
+        /// The binder information to index map.
+        /// </summary>
+        Dictionary<BinderInfo, int> binderInfoToIndexMap = new Dictionary<BinderInfo, int>();
+
+        /// <summary>
+        /// The binder information to extra object map.
+        /// </summary>
+        Dictionary<BinderInfo, int> binderInfoToExtraObjectMap = new Dictionary<BinderInfo, int>();
+
+        /// <summary>
         /// Identifier for the skin factory method.
         /// </summary>
         private SimpleIdentifier skinFactoryMethodIdentifier;
@@ -222,7 +232,9 @@ namespace XwmlParser
 
         private void GenerateSkinFactory()
         {
-            this.GetInitializerBlock(this.code);
+            List<Statement> statements = new List<Statement>();
+            this.GetInitializerBlock(statements);
+            this.code.InsertRange(0, statements);
             this.code.Add(this.GetSkinInstanceCtorExpression());
 
             this.skinFactoryMethodIdentifier =
@@ -567,7 +579,41 @@ namespace XwmlParser
                             this.Scope),
                         new NumberLiteralExpression(
                             this.Scope,
-                            2 * this.codeGenerator.GetDataStorageIndex(this) + 1))));
+                            2 * this.codeGenerator.GetDataStorageIndex(this) + 1)),
+                    new NumberLiteralExpression(
+                        this.Scope,
+                        this.binderInfoToIndexMap.Count),
+                    new NumberLiteralExpression(
+                        this.Scope,
+                        this.binderInfoToExtraObjectMap.Count)));
+        }
+
+        internal int GetBinderIndex(BinderInfo binderInfo)
+        {
+            int rv;
+            if (!this.binderInfoToIndexMap.TryGetValue(binderInfo, out rv))
+            {
+                rv = this.binderInfoToIndexMap.Count;
+                this.binderInfoToIndexMap.Add(
+                    binderInfo,
+                    rv);
+            }
+
+            return rv;
+        }
+
+        internal int GetExtraObjectIndex(BinderInfo binderInfo)
+        {
+            int rv;
+            if (!this.binderInfoToExtraObjectMap.TryGetValue(binderInfo, out rv))
+            {
+                rv = this.binderInfoToExtraObjectMap.Count;
+                this.binderInfoToExtraObjectMap.Add(
+                    binderInfo,
+                    rv);
+            }
+
+            return rv;
         }
     }
 }

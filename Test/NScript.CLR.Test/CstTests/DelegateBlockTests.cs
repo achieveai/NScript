@@ -6,8 +6,7 @@
 
 namespace NScript.CLR.Test.CstTests
 {
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for DelegateBlockTests
@@ -25,16 +24,16 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", true,  "StaticReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", false, "StaticReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", true,  "InstanceReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", false, "InstanceReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", true,  "LocalReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", false, "LocalReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", true,  "LocalAndInstanceReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", false, "LocalAndInstanceReferencingDelegate.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", true,  "IntDelegateTaker.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", false, "IntDelegateTaker.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", true,  "StaticReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", false, "StaticReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", true,  "InstanceReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", false, "InstanceReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", true,  "LocalReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", false, "LocalReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", true,  "LocalAndInstanceReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", false, "LocalAndInstanceReferencingDelegate.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", true,  "IntDelegateTaker.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", false, "IntDelegateTaker.xml")]
         public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -46,16 +45,16 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", true,  "StaticReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", false, "StaticReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", true,  "InstanceReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", false, "InstanceReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", true,  "LocalReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", false, "LocalReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", true,  "LocalAndInstanceReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", false, "LocalAndInstanceReferencingDelegateMcs.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", true,  "IntDelegateTaker.xml")]
-        [Row(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", false, "IntDelegateTaker.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", true,  "StaticReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "StaticReferencingDelegate", false, "StaticReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", true,  "InstanceReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "InstanceReferencingDelegate", false, "InstanceReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", true,  "LocalReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalReferencingDelegate", false, "LocalReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", true,  "LocalAndInstanceReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "LocalAndInstanceReferencingDelegate", false, "LocalAndInstanceReferencingDelegateMcs.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", true,  "IntDelegateTaker.xml")]
+        [TestCase(DelegateBlockTests.TestClassNameStr, "IntDelegateTaker", false, "IntDelegateTaker.xml")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(

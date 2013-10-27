@@ -48,7 +48,7 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        public SkinInstance Skin
+        protected SkinInstance Skin
         {
             get
             {

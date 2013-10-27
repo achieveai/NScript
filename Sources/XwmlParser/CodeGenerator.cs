@@ -122,6 +122,15 @@ namespace XwmlParser
             new Dictionary<IList<MemberReference>, IIdentifier>(
                 new ListEqualityComparer<MemberReference>(MemberReferenceComparer.Instance));
 
+        /// <summary>
+        /// Delegate getter map.
+        /// </summary>
+        Dictionary<Tuple<IIdentifier, MethodReference>, IIdentifier> delegateGetterMap =
+            new Dictionary<Tuple<IIdentifier, MethodReference>, IIdentifier>(
+                new TupleEqualityComparer<IIdentifier, MethodReference>(
+                    EqualityComparer<IIdentifier>.Default,
+                    MemberReferenceComparer.Instance));
+
         Dictionary<HtmlParser, IIdentifier> cssInitializerMapping =
             new Dictionary<HtmlParser, IIdentifier>();
 
@@ -580,6 +589,109 @@ namespace XwmlParser
             this.propertySetterMap.Add(property, method.Name);
 
             return method.Name;
+        }
+
+        /// <summary>
+        /// Gets getter for delegate.
+        /// </summary>
+        /// <param name="identifier">      The identifier. </param>
+        /// <param name="methodReference"> The method reference. </param>
+        /// <returns>
+        /// The getter for delegate.
+        /// </returns>
+        internal IIdentifier GetGetterForDelegate(
+            IIdentifier identifier,
+            MethodReference methodReference)
+        {
+            IIdentifier rv;
+            var id = Tuple.Create(identifier, methodReference);
+            if (this.delegateGetterMap.TryGetValue(id, out rv))
+            {
+                return rv;
+            }
+
+            IdentifierScope methodScope = new IdentifierScope(
+                this.scopeManager.Scope,
+                new string[] {
+                    "src"
+                },
+                false);
+
+            IdentifierScope delegateScope = new IdentifierScope(
+                methodScope,
+                methodReference.Parameters.Count);
+
+            Expression expression = new IdentifierExpression(
+                methodScope.ParameterIdentifiers[0],
+                delegateScope);
+
+            if (identifier != null)
+            {
+                expression = new MethodCallExpression(
+                    null,
+                    delegateScope,
+                    new IdentifierExpression(
+                        identifier,
+                        delegateScope),
+                    expression);
+            }
+
+            List<Expression> args = null;
+            if (delegateScope.ParameterIdentifiers.Count > 0)
+            {
+                args = new List<Expression>();
+                for (int iArg = 0; iArg < delegateScope.ParameterIdentifiers.Count; iArg++)
+                {
+                    args.Add(
+                        new IdentifierExpression(
+                            delegateScope.ParameterIdentifiers[iArg], delegateScope));
+                }
+            }
+
+            expression =
+                MethodCallExpressionConverter.CreateMethodCallExpression(
+                    new MethodCallContext(
+                        expression,
+                        methodReference,
+                        methodReference.Resolve().IsVirtual),
+                    args,
+                    this.Resolver,
+                    this.scopeManager);
+
+            var delegateExpression = new FunctionExpression(
+                null,
+                methodScope,
+                delegateScope,
+                delegateScope.ParameterIdentifiers,
+                null);
+
+            delegateExpression.AddStatement(
+                new ReturnStatement(
+                    null,
+                    delegateScope,
+                    expression));
+
+            FunctionExpression methodExpression = new FunctionExpression(
+                null,
+                this.scopeManager.Scope,
+                methodScope,
+                methodScope.ParameterIdentifiers,
+                SimpleIdentifier.CreateScopeIdentifier(methodScope, "delgateGetter", false));
+
+            methodExpression.AddStatement(
+                new ReturnStatement(
+                    null,
+                    methodScope,
+                    delegateExpression));
+
+            this.generatedCode.Add(
+                new ExpressionStatement(
+                    null,
+                    this.scopeManager.Scope,
+                    methodExpression));
+
+            this.delegateGetterMap.Add(id, methodExpression.Name);
+            return methodExpression.Name;
         }
 
         /// <summary>

@@ -90,6 +90,30 @@ namespace XwmlParser
         /// <returns>
         /// The property reference.
         /// </returns>
+        public FieldReference GetFieldReference(TypeReference typeReference, string fieldName)
+        {
+            do
+            {
+                foreach (var field in typeReference.Resolve().Fields)
+                {
+                    if (field.Name == fieldName)
+                    {
+                        return field;
+                    }
+                }
+            } while ((typeReference = typeReference.GetBaseType()) != null);
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a property reference.
+        /// </summary>
+        /// <param name="typeReference"> The type reference. </param>
+        /// <param name="propertyName">  Name of the property. </param>
+        /// <returns>
+        /// The property reference.
+        /// </returns>
         public PropertyReference GetPropertyReference(TypeReference typeReference, string propertyName)
         {
             do
@@ -116,9 +140,33 @@ namespace XwmlParser
         /// <returns>
         /// The method reference.
         /// </returns>
-        public System.Collections.Generic.List<MethodReference> GetMethodReference(TypeReference typeReference, string methodName)
+        public List<MethodReference> GetMethodReference(TypeReference typeReference, string methodName)
         {
-            throw new NotImplementedException();
+            List<MethodReference> rv = new List<MethodReference>();
+            do
+            {
+                foreach (var methodDef in typeReference.Resolve().Methods)
+                {
+                    if (methodDef.Name != methodName)
+                    {
+                        continue;
+                    }
+
+                    var method = methodDef.FixGenericArguments(typeReference);
+                    bool matched = false;
+                    for (int iRv = 0; iRv < rv.Count && !matched; iRv++)
+                    {
+                        matched = this.IsSameMethod(rv[iRv], method);
+                    }
+
+                    if (!matched)
+                    {
+                        rv.Add(method);
+                    }
+                }
+            } while ((typeReference = typeReference.GetBaseType()) != null);
+
+            return rv.Count == 0 ? null : rv;
         }
 
         /// <summary>
@@ -131,7 +179,7 @@ namespace XwmlParser
         /// <returns>
         /// The event references.
         /// </returns>
-        public EventReference GetEventReferences(TypeReference typeReference, string eventName)
+        public EventReference GetEventReference(TypeReference typeReference, string eventName)
         {
             throw new NotImplementedException();
         }
@@ -435,6 +483,29 @@ namespace XwmlParser
         public Expression ResolveMethodSlotName(MethodReference methodReference, bool isVirtualCall, IdentifierScope identifierScope)
         {
             throw new NotImplementedException();
+        }
+
+        private bool IsSameMethod(MethodReference left, MethodReference right)
+        {
+            if (!left.ReturnType.IsSame(right.ReturnType))
+            {
+                return false;
+            }
+
+            if (left.Parameters.Count != right.Parameters.Count)
+            {
+                return false;
+            }
+
+            for (int iParam = 0; iParam < left.Parameters.Count; iParam++)
+            {
+                if (!left.Parameters[iParam].ParameterType.IsSame(right.Parameters[iParam].ParameterType))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

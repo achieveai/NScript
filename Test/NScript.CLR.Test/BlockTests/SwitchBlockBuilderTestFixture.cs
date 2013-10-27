@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Gallio.Framework;
-using MbUnit.Framework;
-using MbUnit.Framework.ContractVerifiers;
-using NScript.CLR.Decompiler.Blocks;
-
+﻿
 namespace NScript.CLR.Test.BlockTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using NScript.CLR.Decompiler.Blocks;
+    using NUnit.Framework;
+
     [TestFixture]
     public class SwitchBlockBuilderTestFixture
     {
@@ -20,8 +19,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true, "SimpleIntSwitchDebug.xml")]
-        [Row(false, "SimpleIntSwitchRelease.xml")]
+        [TestCase(true, "SimpleIntSwitchDebug.xml")]
+        [TestCase(false, "SimpleIntSwitchRelease.xml")]
         public void SimpleIntSwitch(bool isDebug, string fileName)
         {
             TestHelpers.TestILBlocks(
@@ -36,8 +35,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true, "SwitchOnlyFunctionDebug.xml")]
-        [Row(false, "SwitchOnlyFunctionRelease.xml")]
+        [TestCase(true, "SwitchOnlyFunctionDebug.xml")]
+        [TestCase(false, "SwitchOnlyFunctionRelease.xml")]
         public void SwitchOnlyFunction(bool isDebug, string fileName)
         {
             TestHelpers.TestILBlocks(
@@ -48,8 +47,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true,  "SwitchWithReturnsOnlyDebug.xml")]
-        [Row(false, "SwitchWithReturnsOnlyRelease.xml")]
+        [TestCase(true,  "SwitchWithReturnsOnlyDebug.xml")]
+        [TestCase(false, "SwitchWithReturnsOnlyRelease.xml")]
         public void SwitchWithReturnsOnlyRelease(bool isDebug, string fileName)
         {
             TestHelpers.TestILBlocks(
@@ -60,8 +59,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true,  "RegressionContinousSwitchValuesDebug.xml")]
-        [Row(false, "RegressionContinousSwitchValues.xml")]
+        [TestCase(true,  "RegressionContinousSwitchValuesDebug.xml")]
+        [TestCase(false, "RegressionContinousSwitchValues.xml")]
         public void RegressionContinousSwitchValues(bool isDebug, string fileName)
         {
             TestHelpers.TestILBlocks(
@@ -72,8 +71,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true,  "RegressionContinousSwitch2Debug.xml")]
-        [Row(false, "RegressionContinousSwitch2.xml")]
+        [TestCase(true,  "RegressionContinousSwitch2Debug.xml")]
+        [TestCase(false, "RegressionContinousSwitch2.xml")]
         // [Timeout(20000)]
         public void RegressionRegressionContinousSwitch2(bool isDebug, string fileName)
         {

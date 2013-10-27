@@ -17,7 +17,7 @@ namespace XwmlParser.Binding
     {
         public StaticSourceBindingInfo(
             TypeReference staticType,
-            List<PropertyReference> propertyReferences)
+            List<MemberReference> propertyReferences)
             : base(staticType, propertyReferences)
         {
         }

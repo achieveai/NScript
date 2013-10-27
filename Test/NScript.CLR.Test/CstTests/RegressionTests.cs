@@ -6,8 +6,7 @@
 
 namespace NScript.CLR.Test.CstTests
 {
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for RegressionTests
@@ -25,8 +24,8 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(true, "IfElseInForBlock")]
-        [Row(false, "IfElseInForBlockRetail")]
+        [TestCase(true, "IfElseInForBlock")]
+        [TestCase(false, "IfElseInForBlockRetail")]
         [Timeout(8)]
         public void TestIfElseInForBlock(bool isDebug, string fileName)
         {
@@ -39,7 +38,7 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(false, "NestedWhileLoops")]
+        [TestCase(false, "NestedWhileLoops")]
         [Timeout(8)]
         public void TestNestedWhileLoops(bool isDebug, string fileName)
         {
@@ -52,7 +51,7 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(false, "NestedWhileLoops2")]
+        [TestCase(false, "NestedWhileLoops2")]
         [Timeout(8)]
         public void TestNestedWhileLoops2(bool isDebug, string fileName)
         {
@@ -65,7 +64,7 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(false, "TwoConsicutivePreIncrements")]
+        [TestCase(false, "TwoConsicutivePreIncrements")]
         // [Timeout(8)]
         public void TestPrePostIncrement(bool isDebug, string fileName)
         {

@@ -22,6 +22,21 @@ namespace XwmlParser
         NamedPart
     }
 
+    [Flags]
+    public enum BinderType
+    {
+        DataContext = 0x1,
+        Static = 0x2,
+        TemplateParent = 0x3,
+        PropertyBinder = 0x10,
+        AttachedPropertyBinder = 0x20,
+        EventBinder = 0x30,
+        DomEventBinder = 0x40,
+        CssBinder = 0x50,
+        StyleBinder = 0x60,
+        AttributeBinder = 0x70,
+    }
+
     /// <summary>
     /// Definition for BinderInfo
     /// </summary>
@@ -126,6 +141,8 @@ namespace XwmlParser
         {
             List<Expression> args = new List<Expression>();
             List<Expression> tmpExprArray = new List<Expression>();
+            BinderType binderType;
+            int binderIndex = -1;
             foreach (var identifier in sourceInfo.Item2)
             {
                 tmpExprArray.Add(new IdentifierExpression(
@@ -133,11 +150,13 @@ namespace XwmlParser
                     codeGenerator.Scope));
             }
 
+            // Add Getter path.
             args.Add(new InlineNewArrayInitialization(
                 null,
                 codeGenerator.Scope,
                 tmpExprArray));
 
+            // Add PropertyNames if live binding required.
             if (this.Mode != BindingMode.OneTime)
             {
                 tmpExprArray = new List<Expression>();
@@ -152,12 +171,23 @@ namespace XwmlParser
                     null,
                     codeGenerator.Scope,
                     tmpExprArray));
+
+                binderIndex = codeGenerator.GetBinderIndex(this);
             }
 
-            args.Add(new IdentifierExpression(
-                targetInfo.Item2,
-                codeGenerator.Scope));
+            // Target setter.
+            if (targetInfo.Item2 != null)
+            {
+                args.Add(new IdentifierExpression(
+                    targetInfo.Item2,
+                    codeGenerator.Scope));
+            }
+            else
+            {
+                args.Add(new NullLiteralExpression(codeGenerator.Scope));
+            }
 
+            // Target setter argument.
             if (targetInfo.Item4 != null)
             {
                 args.Add(targetInfo.Item4);
@@ -165,25 +195,39 @@ namespace XwmlParser
 
             if (this.Mode == BindingMode.TwoWay)
             {
+                // Target Property Getter.
                 args.Add(
                     new IdentifierExpression(
                         targetInfo.Item3,
                         codeGenerator.Scope));
 
+                // Target Property Name.
                 args.Add(
                     new StringLiteralExpression(
                         codeGenerator.Scope,
                         targetInfo.Item1));
             }
 
-            args.Add(new BooleanLiteralExpression(
+            // BinderType, should use enum value.
+            binderType = this.GetBinderType();
+            args.Add(new NumberLiteralExpression(
                 codeGenerator.Scope,
-                this.SourceType == XwmlParser.SourceType.DataContext));
+                (int)binderType));
 
+            // Object Index.
             args.Add(new NumberLiteralExpression(
                 codeGenerator.Scope,
                 objectIndex));
 
+            if (binderIndex >= 0)
+            {
+                // Binder Index.
+                args.Add(new NumberLiteralExpression(
+                    codeGenerator.Scope,
+                    binderIndex));
+            }
+
+            // Forward converter.
             if (converterInfo != null
                 && converterInfo.Item1 != null)
             {
@@ -196,6 +240,7 @@ namespace XwmlParser
                 args.Add(new NullLiteralExpression(codeGenerator.Scope));
             }
 
+            // Back converter.
             if (this.Mode == BindingMode.TwoWay)
             {
                 if (converterInfo != null
@@ -211,9 +256,75 @@ namespace XwmlParser
                 }
             }
 
+            // Default Value
             args.Add(targetInfo.Item5);
 
+            if ((binderType & BinderType.EventBinder) == BinderType.EventBinder)
+            {
+                int extraObjectIndex = codeGenerator.GetExtraObjectIndex(this);
+                args.Add(new NumberLiteralExpression(
+                    codeGenerator.Scope,
+                    extraObjectIndex));
+            }
+            else if (targetInfo.Item4 != null)
+            {
+                args.Add(new NumberLiteralExpression(
+                    codeGenerator.Scope,
+                    0));
+            }
+
             return args;
+        }
+
+        private BinderType GetBinderType()
+        {
+            BinderType rv = (BinderType)0;
+            switch (this.SourceType)
+            {
+                case SourceType.Static:
+                    rv = BinderType.Static;
+                    break;
+                case SourceType.Parent:
+                    rv = BinderType.TemplateParent;
+                    break;
+                case SourceType.DataContext:
+                    rv = BinderType.DataContext;
+                    break;
+                case SourceType.NamedPart:
+                default:
+                    throw new NotSupportedException();
+            }
+
+            if (this.TargetBindingInfo is PropertyTargetBindingInfo)
+            {
+                rv |= BinderType.PropertyBinder;
+            }
+            else if (this.TargetBindingInfo is CssClassTargetBindingInfo)
+            {
+                rv |= BinderType.CssBinder;
+            }
+            else if (this.TargetBindingInfo is AttributeTargetBindingInfo)
+            {
+                rv |= BinderType.AttributeBinder;
+            }
+            else if (this.TargetBindingInfo is StyleTargetBindingInfo)
+            {
+                rv |= BinderType.StyleBinder;
+            }
+            else if (this.TargetBindingInfo is AttachedPropertyTargetBindingInfo)
+            {
+                rv |= BinderType.AttachedPropertyBinder;
+            }
+            else if (this.TargetBindingInfo is EventTargetBindingInfo)
+            {
+                rv |= BinderType.EventBinder;
+            }
+            else if (this.TargetBindingInfo is DomEventTargetBindingInfo)
+            {
+                rv |= BinderType.DomEventBinder;
+            }
+
+            return rv;
         }
     }
 }

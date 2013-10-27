@@ -7,8 +7,7 @@
 namespace NScript.CLR.Test.CstTests
 {
     using System;
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
 
     /// <summary>
@@ -27,8 +26,8 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void NewGenericObject(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -39,8 +38,8 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void NewGenericObject2(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -51,8 +50,8 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void GenericMethodCall(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -63,8 +62,8 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void GenericMethodCall2(bool isDebug)
         {
             TestHelpers.TestILBlocks(

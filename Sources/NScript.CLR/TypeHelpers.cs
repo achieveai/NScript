@@ -1006,12 +1006,14 @@ namespace NScript.CLR
                 && method.GenericParameters.Count == baseMethod.GenericParameters.Count
                 && method.Parameters.Count == baseMethod.Parameters.Count)
             {
-                TypeReference baseReturnType = baseMethod.ReturnType.FixGenericTypeArguments(baseMethod.DeclaringType);
+                TypeReference baseReturnType = baseMethod.ReturnType; //.FixGenericTypeArguments(baseMethod.DeclaringType);
                 bool declAndBaseSame = baseMethod.DeclaringType.IsSameDefinition(baseType);
+                /*
                 if (!declAndBaseSame)
                 {
                     baseReturnType = baseReturnType.FixGenericTypeArguments(baseType);
                 }
+                */
 
                 if (!method.ReturnType.IsSame(baseReturnType))
                 {
@@ -1041,7 +1043,8 @@ namespace NScript.CLR
                 {
                     if (baseMethod.Parameters[iParam].Attributes == method.Parameters[iParam].Attributes)
                     {
-                        var typeArgument = baseMethod.Parameters[iParam].ParameterType
+                        var typeArgument = baseMethod.Parameters[iParam].ParameterType;
+                        /*
                             .FixGenericTypeArguments(
                                 genericTypeParameters,
                                 genericMethodParameters);
@@ -1050,6 +1053,7 @@ namespace NScript.CLR
                         {
                             typeArgument = typeArgument.FixGenericTypeArguments(baseType);
                         }
+                        */
 
                         matched = method.Parameters[iParam].ParameterType.IsSame(typeArgument);
                     }
@@ -1061,7 +1065,7 @@ namespace NScript.CLR
 
                 if (matched)
                 {
-                    return baseMethod.FixGenericArguments(baseType);
+                    return baseMethod; //.FixGenericArguments(baseType);
                 }
             }
 
@@ -1311,14 +1315,18 @@ namespace NScript.CLR
 
             MethodReference methodReference = new MethodReference(
                 method.Name,
-                method.ReturnType,
+                method.ReturnType.FixGenericTypeArguments(typeReference),
                 declaringType.FixGenericTypeArguments(typeReference));
 
             methodReference.HasThis = method.Resolve().HasThis;
 
             foreach (var parameter in method.Parameters)
             {
-                methodReference.Parameters.Add(parameter);
+                methodReference.Parameters.Add(
+                    new ParameterDefinition(
+                        parameter.Name,
+                        parameter.Attributes,
+                        parameter.ParameterType.FixGenericTypeArguments(typeReference)));
             }
 
             foreach (var genericParam in method.GenericParameters)
@@ -1716,6 +1724,75 @@ namespace NScript.CLR
             }
 
             return null;
+        }
+
+        public static int? ImplementsDelegate(
+            this TypeReference delegateType,
+            MethodReference methodReference,
+            bool missingParamsOk = false)
+        {
+            TypeDefinition delegateTypeDefinition = delegateType.Resolve();
+            if (!delegateTypeDefinition.HasMethods
+                || delegateTypeDefinition.Methods.Count != 2
+                || !delegateTypeDefinition.IsDelegate())
+            {
+                return null;
+            }
+
+            var invokeMethod = delegateTypeDefinition.Methods.FirstOrDefault(m => m.Name == "Invoke");
+            if (invokeMethod == null)
+            {
+                return null;
+            }
+
+            var invokeMethodFixed = invokeMethod.FixGenericArguments(delegateType);
+            int retValue = 0;
+            if (!invokeMethodFixed.ReturnType.IsSame(methodReference.ReturnType))
+            {
+                if (!methodReference.ReturnType.ExtendsType(invokeMethodFixed.ReturnType))
+                {
+                    return null;
+                }
+                else
+                {
+                    retValue += 1;
+                }
+            }
+
+            if (!missingParamsOk
+                && invokeMethod.Parameters.Count != methodReference.Parameters.Count)
+            {
+                return null;
+            }
+
+            if (invokeMethod.Parameters.Count < methodReference.Parameters.Count)
+            {
+                return null;
+            }
+            else
+            {
+                retValue += (invokeMethod.Parameters.Count - methodReference.Parameters.Count) * 1000;
+            }
+
+            var leftParams = invokeMethodFixed.Parameters;
+            var rightParams = methodReference.Parameters;
+            for (int iParam = 0; iParam < rightParams.Count; iParam++)
+            {
+                if (leftParams[iParam].ParameterType.IsSame(rightParams[iParam].ParameterType))
+                {
+                    continue;
+                }
+                else if (leftParams[iParam].ParameterType.ExtendsType(rightParams[iParam].ParameterType))
+                {
+                    retValue += 10;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return retValue;
         }
 
         /// <summary>

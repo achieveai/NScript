@@ -1,8 +1,7 @@
-﻿namespace NScript.CLR.Test.CstTests
+﻿using NUnit.Framework;
+using System.Diagnostics;
+namespace NScript.CLR.Test.CstTests
 {
-    using Gallio.Framework;
-    using MbUnit.Framework;
-
     [TestFixture]
     public class IfBlockAstTests
     {
@@ -16,16 +15,16 @@
         }
 
         [Test]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfBlock", true,   ".IfBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfBlock", false,  ".IfBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfElseBlock", true,   ".IfElseBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfElseBlock", false,  ".IfElseBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", true,   ".NestedIfElseBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", false,  ".NestedIfElseBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", true,   ".IfNestedElseBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", false,  ".IfNestedElseBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", true,   ".IfReturnBlock.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", false,  ".IfReturnBlockRelease.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfBlock", true,   ".IfBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfBlock", false,  ".IfBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfElseBlock", true,   ".IfElseBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfElseBlock", false,  ".IfElseBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", true,   ".NestedIfElseBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", false,  ".NestedIfElseBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", true,   ".IfNestedElseBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", false,  ".IfNestedElseBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", true,   ".IfReturnBlock.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", false,  ".IfReturnBlockRelease.xml")]
         public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -34,16 +33,16 @@
         }
 
         [Test]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfBlock", true,   ".IfBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfBlock", false,  ".IfBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfElseBlock", true,   ".IfElseBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfElseBlock", false,  ".IfElseBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", true,   ".NestedIfElseBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", false,  ".NestedIfElseBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", true,   ".IfNestedElseBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", false,  ".IfNestedElseBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", true,   ".IfReturnBlockMcs.xml")]
-        [Row(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", false,  ".IfReturnBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfBlock", true,   ".IfBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfBlock", false,  ".IfBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfElseBlock", true,   ".IfElseBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfElseBlock", false,  ".IfElseBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", true,   ".NestedIfElseBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "NestedIfElseBlock", false,  ".NestedIfElseBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", true,   ".IfNestedElseBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfNestedElseBlock", false,  ".IfNestedElseBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", true,   ".IfReturnBlockMcs.xml")]
+        [TestCase(IfBlockAstTests.TestClassNameStr, "IfReturnBlock", false,  ".IfReturnBlockMcs.xml")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -62,7 +61,7 @@
                 "NestedIfElseBlock",
                 true).RootBlock;
 
-            TestLog.Write(TestHelpers.Serialize(rootBlock));
+            Debug.Write(TestHelpers.Serialize(rootBlock));
         }
     }
 }

@@ -29,7 +29,8 @@ namespace Sunlight.Framework.UI.Helpers
             for (int i = 0, j = binders.Length; i < j; i++)
             {
                 SkinBinderInfo info = binders[i];
-                if (info.IsDataContextBinder)
+                if ((info.BinderType & BinderType.TemplateParent)
+                    != BinderType.TemplateParent)
                 {
                     SkinBinderHelper.SetPropertyValue(
                         info,
@@ -53,7 +54,7 @@ namespace Sunlight.Framework.UI.Helpers
             for (int i = 0, j = binders.Length; i < j; i++)
             {
                 SkinBinderInfo info = binders[i];
-                if (info.IsDataContextBinder)
+                if ((info.BinderType & BinderType.TemplateParent) == BinderType.TemplateParent)
                 {
                     SkinBinderHelper.SetPropertyValue(
                         info,
@@ -134,16 +135,6 @@ namespace Sunlight.Framework.UI.Helpers
             }
 
             return element;
-        }
-
-        public static void InitializeTemplateDocumentStorage(
-            Document document,
-            string css,
-            int index)
-        {
-            var style = document.CreateElement("style");
-            style.TextContent = css;
-            document.Body.AppendChild(style);
         }
 
         /// <summary>

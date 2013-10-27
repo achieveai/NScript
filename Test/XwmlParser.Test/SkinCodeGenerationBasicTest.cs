@@ -37,6 +37,7 @@ namespace XwmlParser.Test
         [TestCase("TestTemplate1", null)]
         [TestCase("TestTextBinding1", null)]
         [TestCase("TestCssBinding1", null)]
+        [TestCase("TestDomEventBinding1", null)]
         public void TestParser1(string name, string templateId)
         {
             plugin = Helper.CreatePlugin(null);

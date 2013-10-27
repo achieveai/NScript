@@ -8,6 +8,7 @@ namespace Sunlight.Framework.UI.Test
 {
     using Sunlight.Framework.Observables;
     using System;
+    using System.Web.Html;
 
     /// <summary>
     /// Definition for TestViewModels
@@ -28,6 +29,12 @@ namespace Sunlight.Framework.UI.Test
 
         public TestViewModelA TestVMA
         { get; set; }
+
+        public void DomEvent1(Element elem, ElementEvent evt)
+        { }
+
+        public void DomEvent2()
+        { }
     }
 
     public class TestViewModelB : TestViewModelA, TestInterface

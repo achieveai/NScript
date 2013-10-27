@@ -7,7 +7,7 @@
 namespace NScript.CLR.Test.BlockTests
 {
     using NScript.CLR.Decompiler.Blocks;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for InlineInitializaitons
@@ -25,8 +25,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestInlineArrayInitialization(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -47,8 +47,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestVarArgs(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -69,8 +69,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestReturnInlineSettersElement(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -92,8 +92,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestCallMethodWithInlineSettersElement(bool isDebug)
         {
             TestHelpers.TestILBlocks(
@@ -115,8 +115,8 @@ namespace NScript.CLR.Test.BlockTests
         }
 
         [Test]
-        [Row(true)]
-        [Row(false)]
+        [TestCase(true)]
+        [TestCase(false)]
         public void TestInlineConstArrayInitialization(bool isDebug)
         {
             TestHelpers.TestILBlocks(

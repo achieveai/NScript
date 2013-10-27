@@ -7,6 +7,7 @@
 namespace XwmlParser.NodeInfos
 {
     using HtmlAgilityPack;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
 
@@ -23,6 +24,9 @@ namespace XwmlParser.NodeInfos
         /// </value>
         HtmlNode GeneratedNode
         { get; }
+
+        IIdentifier[] ClassNames
+        { get; set; }
 
         /// <summary>
         /// Sets new node and path.

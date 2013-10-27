@@ -95,6 +95,9 @@ namespace XwmlParser
             this.BinderHelper = clrContext.GetTypeDefinition(
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderHelper"));
 
+            this.BinderType = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.BinderType"));
+
             this.SkinBinderInfo = clrContext.GetTypeDefinition(
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderInfo"));
 
@@ -149,6 +152,12 @@ namespace XwmlParser
             var func3 = clrContext.GetTypeDefinition(
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Func`3"));
 
+            var act0 = clrContext.GetTypeDefinition(
+                Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action"));
+
+            var act1 = clrContext.GetTypeDefinition(
+                Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`1"));
+
             var act2 = clrContext.GetTypeDefinition(
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`2"));
 
@@ -180,7 +189,7 @@ namespace XwmlParser
                 this.SkinBinderInfo,
                 nativeArray1Func2,
                 act2ObjObj,
-                clrKnownReferences.Boolean,
+                this.BinderType,
                 clrKnownReferences.Int32,
                 funcObjObj,
                 clrKnownReferences.Object).Resolve();
@@ -192,10 +201,11 @@ namespace XwmlParser
                 nativeArray1Func2,
                 act3ObjObjObj,
                 clrKnownReferences.Object,
-                clrKnownReferences.Boolean,
+                this.BinderType,
                 clrKnownReferences.Int32,
                 funcObjObj,
-                clrKnownReferences.Object).Resolve();
+                clrKnownReferences.Object,
+                clrKnownReferences.Int32).Resolve();
 
             this.SkinBinderCtorOneWay1 = clrContext.GetMethodReference(
                 ".ctor",
@@ -204,7 +214,8 @@ namespace XwmlParser
                 nativeArray1Func2,
                 nativeArray1Str,
                 act2ObjObj,
-                clrKnownReferences.Boolean,
+                this.BinderType,
+                clrKnownReferences.Int32,
                 clrKnownReferences.Int32,
                 funcObjObj,
                 clrKnownReferences.Object).Resolve();
@@ -217,10 +228,12 @@ namespace XwmlParser
                 nativeArray1Str,
                 act3ObjObjObj,
                 clrKnownReferences.Object,
-                clrKnownReferences.Boolean,
+                this.BinderType,
+                clrKnownReferences.Int32,
                 clrKnownReferences.Int32,
                 funcObjObj,
-                clrKnownReferences.Object).Resolve();
+                clrKnownReferences.Object,
+                clrKnownReferences.Int32).Resolve();
 
             this.SkinBinderCtorTwoWay = clrContext.GetMethodReference(
                 ".ctor",
@@ -232,7 +245,8 @@ namespace XwmlParser
                 act2ObjObj,
                 funcObjObj,
                 clrKnownReferences.String,
-                clrKnownReferences.Boolean,
+                this.BinderType,
+                clrKnownReferences.Int32,
                 clrKnownReferences.Int32,
                 funcObjObj,
                 funcObjObj,
@@ -255,7 +269,9 @@ namespace XwmlParser
                 this.ElementRef,
                 nativeArrayUIElement,
                 nativeArrayObject,
-                nativeArraySkinBinderInfo).Resolve();
+                nativeArraySkinBinderInfo,
+                clrKnownReferences.Int32,
+                clrKnownReferences.Int32).Resolve();
 
             var func3SkinDocSI = new GenericInstanceType(func3);
             func3SkinDocSI.GenericArguments.Add(this.Skin);
@@ -279,6 +295,16 @@ namespace XwmlParser
                 nativeArrayInt,
                 nativeArray1Str,
                 clrKnownReferences.Int32);
+
+            this.DomEventType2 = new GenericInstanceType(act2);
+            this.DomEventType2.GenericArguments.Add(this.ElementRef);
+            var elementEvent = clrContext.GetTypeDefinition(Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".ElementEvent"));
+            this.DomEventType2.GenericArguments.Add(elementEvent);
+
+            this.DomEventType1 = new GenericInstanceType(act1);
+            this.DomEventType1.GenericArguments.Add(this.ElementRef);
+
+            this.DomEventType0 = act0;
         }
 
         /// <summary>
@@ -460,5 +486,13 @@ namespace XwmlParser
         public TypeDefinition DocumentRef { get; set; }
 
         public MethodReference CssInitializerMethod { get; set; }
+
+        public TypeDefinition BinderType { get; set; }
+
+        public GenericInstanceType DomEventType2 { get; set; }
+
+        public GenericInstanceType DomEventType1 { get; set; }
+
+        public TypeDefinition DomEventType0 { get; set; }
     }
 }

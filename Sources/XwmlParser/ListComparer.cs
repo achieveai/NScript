@@ -150,4 +150,28 @@ namespace XwmlParser
             return rv;
         }
     }
+
+    public class TupleEqualityComparer<T,U> : IEqualityComparer<Tuple<T,U>>
+    {
+        private IEqualityComparer<U> item2Comparer;
+        private IEqualityComparer<T> item1Comparer;
+        public TupleEqualityComparer(
+            IEqualityComparer<T> item1Comparer,
+            IEqualityComparer<U> item2Comparer)
+        {
+            this.item1Comparer = item1Comparer;
+            this.item2Comparer = item2Comparer;
+        }
+
+        public bool Equals(Tuple<T, U> x, Tuple<T, U> y)
+        {
+            return this.item1Comparer.Equals(x.Item1, y.Item1)
+                && this.item2Comparer.Equals(x.Item2, y.Item2);
+        }
+
+        public int GetHashCode(Tuple<T, U> obj)
+        {
+            return this.item1Comparer.GetHashCode(obj.Item1) ^ this.item2Comparer.GetHashCode(obj.Item2);
+        }
+    }
 }

@@ -9,7 +9,6 @@ namespace XwmlParser.Test
     using System;
     using System.Collections.Generic;
     using NScript.CLR.Test;
-    // using MbUnit.Framework;
     using XwmlParser.Binding;
     using NUnit.Framework;
 
