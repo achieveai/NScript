@@ -23,7 +23,8 @@ namespace XwmlParser.NodeInfos
     /// </summary>
     public class TypeNodeInfo : NodeInfo
     {
-        private Dictionary<MemberReference, StaticValue> staticInitializers = new Dictionary<MemberReference, StaticValue>();
+        private Dictionary<MemberReference, StaticValue> staticInitializers
+            = new Dictionary<MemberReference, StaticValue>();
 
         /// <summary>
         /// Constructor.
@@ -90,6 +91,10 @@ namespace XwmlParser.NodeInfos
                             codeGenerator.Scope,
                             objectIndex)),
                     this.GetCtorExpression(codeGenerator)));
+
+            this.GenerateStaticInitializers(
+                codeGenerator,
+                objectIndex);
 
             this.GenerateBindingCode(
                 objectIndex,
@@ -358,6 +363,57 @@ namespace XwmlParser.NodeInfos
             SkinCodeGenerator codeGenerator,
             List<Expression> args)
         {
+        }
+
+        private void GenerateStaticInitializers(
+            SkinCodeGenerator codeGenerator,
+            int objectIndex)
+        {
+            foreach (var propValue in this.staticInitializers)
+            {
+                PropertyReference prop = propValue.Key as PropertyReference;
+                CodeGenerator globalCodeGenerator = codeGenerator.CodeGenerator;
+                var instanceExpression =
+                        new IndexExpression(
+                            null,
+                            codeGenerator.Scope,
+                            new IdentifierExpression(
+                                codeGenerator.GetObjectStorageIdentifier(),
+                                codeGenerator.Scope),
+                            new NumberLiteralExpression(
+                                codeGenerator.Scope,
+                                objectIndex));
+                var valueExpression =
+                        propValue.Value.GetInitializationExpression(codeGenerator);
+                if (prop != null)
+                {
+                    codeGenerator.AddStatement(
+                        new ExpressionStatement(
+                            null,
+                            codeGenerator.Scope,
+                            CodeGenerator.GetPropertySetterExpression(
+                                globalCodeGenerator.ScopeManager,
+                                codeGenerator.Scope,
+                                prop,
+                                globalCodeGenerator.Resolver,
+                                instanceExpression,
+                                valueExpression)));
+                }
+                else
+                {
+                    codeGenerator.AddStatement(
+                        new ExpressionStatement(
+                            null,
+                            codeGenerator.Scope,
+                            CodeGenerator.GetFieldSetterExpression(
+                                globalCodeGenerator.ScopeManager,
+                                codeGenerator.Scope,
+                                (FieldReference)propValue.Key,
+                                globalCodeGenerator.Resolver,
+                                instanceExpression,
+                                valueExpression)));
+                }
+            }
         }
     }
 }

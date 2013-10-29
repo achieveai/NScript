@@ -237,6 +237,93 @@ namespace XwmlParser
         { get { return this.parserContext.KnownTypes; } }
 
         /// <summary>
+        /// Gets property setter expression.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"> Thrown when the requested operation is invalid. </exception>
+        /// <param name="runtimeScopeManager"> Manager for runtime scope. </param>
+        /// <param name="scope">               The scope. </param>
+        /// <param name="propertyReference">   The property reference. </param>
+        /// <param name="resolver">            The resolver. </param>
+        /// <param name="instanceExpression">  The instance expression. </param>
+        /// <param name="valueExpression">     The value expression. </param>
+        /// <returns>
+        /// The property setter expression.
+        /// </returns>
+        internal static Expression GetPropertySetterExpression(
+            RuntimeScopeManager runtimeScopeManager,
+            IdentifierScope scope,
+            PropertyReference propertyReference,
+            IResolver resolver,
+            Expression instanceExpression,
+            Expression valueExpression)
+        {
+            if (propertyReference == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            MethodReference methodRef = propertyReference.Resolve().SetMethod;
+            if (methodRef == null)
+            {
+                throw new InvalidOperationException();
+            }
+            
+            methodRef = methodRef.FixGenericArguments(
+                propertyReference.DeclaringType);
+
+            return MethodCallExpressionConverter.CreateMethodCallExpression(
+                new MethodCallContext(
+                    instanceExpression,
+                    methodRef,
+                    methodRef.Resolve().IsVirtual),
+                new Expression[] {
+                    valueExpression
+                },
+                resolver,
+                runtimeScopeManager);
+        }
+
+        /// <summary>
+        /// Gets field setter expression.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"> Thrown when the requested operation is invalid. </exception>
+        /// <param name="runtimeScopeManager"> Manager for runtime scope. </param>
+        /// <param name="scope">               The scope. </param>
+        /// <param name="propertyReference">   The property reference. </param>
+        /// <param name="resolver">            The resolver. </param>
+        /// <param name="instanceExpression">  The instance expression. </param>
+        /// <param name="valueExpression">     The value expression. </param>
+        /// <returns>
+        /// The field setter expression.
+        /// </returns>
+        internal static Expression GetFieldSetterExpression(
+            RuntimeScopeManager runtimeScopeManager,
+            IdentifierScope scope,
+            FieldReference propertyReference,
+            IResolver resolver,
+            Expression instanceExpression,
+            Expression valueExpression)
+        {
+            if (propertyReference == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return new BinaryExpression(
+                null,
+                scope,
+                BinaryOperator.Assignment,
+                new IndexExpression(
+                    null,
+                    scope,
+                    instanceExpression,
+                    new IdentifierExpression(
+                        resolver.Resolve(propertyReference),
+                        scope)),
+                valueExpression);
+        }
+
+        /// <summary>
         /// Gets template getter identifier.
         /// </summary>
         /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
@@ -538,34 +625,43 @@ namespace XwmlParser
                 false);
 
             PropertyReference propertyReference = property as PropertyReference;
-            if (propertyReference == null)
+            Expression setterExpression = null;
+            if (propertyReference != null)
             {
-                throw new InvalidOperationException();
-            }
-
-            MethodReference methodRef = propertyReference.Resolve().SetMethod;
-            if (methodRef == null)
-            {
-                throw new InvalidOperationException();
-            }
-            
-            methodRef = methodRef.FixGenericArguments(
-                propertyReference.DeclaringType);
-
-            Expression expr = MethodCallExpressionConverter.CreateMethodCallExpression(
-                new MethodCallContext(
+                setterExpression = CodeGenerator.GetPropertySetterExpression(
+                    this.scopeManager,
+                    methodScope,
+                    property as PropertyReference,
+                    this.Resolver,
                     new IdentifierExpression(
                         methodScope.ParameterIdentifiers[0],
                         methodScope),
-                    methodRef,
-                    methodRef.Resolve().IsVirtual),
-                new Expression[] {
                     new IdentifierExpression(
                         methodScope.ParameterIdentifiers[1],
-                        methodScope)
-                },
-                this.Resolver,
-                this.scopeManager);
+                        methodScope));
+            }
+            else
+            {
+                FieldReference fieldReference = property as FieldReference;
+                if (fieldReference != null)
+                {
+                    setterExpression = CodeGenerator.GetFieldSetterExpression(
+                        this.scopeManager,
+                        methodScope,
+                        fieldReference,
+                        this.Resolver,
+                        new IdentifierExpression(
+                            methodScope.ParameterIdentifiers[0],
+                            methodScope),
+                        new IdentifierExpression(
+                            methodScope.ParameterIdentifiers[1],
+                            methodScope));
+                }
+                else
+                {
+                    throw new InvalidProgramException();
+                }
+            }
 
             FunctionExpression method = new FunctionExpression(
                 null,
@@ -581,7 +677,7 @@ namespace XwmlParser
                 new ExpressionStatement(
                     null,
                     methodScope,
-                    expr));
+                    setterExpression));
 
             this.generatedCode.Add(
                 new ExpressionStatement(

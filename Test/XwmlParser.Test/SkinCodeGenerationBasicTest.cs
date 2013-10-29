@@ -38,6 +38,7 @@ namespace XwmlParser.Test
         [TestCase("TestTextBinding1", null)]
         [TestCase("TestCssBinding1", null)]
         [TestCase("TestDomEventBinding1", null)]
+        [TestCase("TestStaticValues", null)]
         [TestCase("TestUIElement", null)]
         [TestCase("TestUIElementWithTag", null)]
         [TestCase("TestUIElementWithAttr", null)]
