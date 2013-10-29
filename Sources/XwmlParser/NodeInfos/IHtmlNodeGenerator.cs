@@ -29,14 +29,6 @@ namespace XwmlParser.NodeInfos
         { get; set; }
 
         /// <summary>
-        /// Sets new node and path.
-        /// </summary>
-        /// <param name="node">     The node. </param>
-        /// <param name="nodePath"> Full pathname of the node file. </param>
-        void SetNewNodeAndPath(
-            HtmlNode node);
-
-        /// <summary>
         /// Finalize generated node.
         /// </summary>
         /// <param name="codeGenerator"> The code generator. </param>

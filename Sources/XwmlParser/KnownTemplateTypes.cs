@@ -41,6 +41,84 @@ namespace XwmlParser
         /// </summary>
         private const string attributesNamespace = uiFrameworkDll + ".Attributes";
 
+        public readonly TypeReference ContextBindableObject;
+
+        public readonly TypeReference UIElement;
+
+        public readonly TypeReference UISkinableElement;
+
+        public readonly TypeReference UIPanel;
+
+        public readonly TypeReference ExtensibleObject;
+
+        public readonly TypeReference ObservableObject;
+
+        public readonly TypeReference ArrayType;
+
+        public readonly TypeReference IListType;
+
+        public readonly TypeReference SkinAttribute;
+
+        public readonly TypeDefinition ElementRef;
+
+        public readonly MethodReference CloneNodeMethodReference;
+
+        public readonly TypeDefinition ObservableInterface;
+
+        public readonly TypeDefinition BinderHelper;
+
+        public readonly TypeDefinition NodeRef;
+
+        public readonly MethodReference AttributeSetter;
+
+        public readonly MethodReference TextContentSetter;
+
+        public readonly MethodReference CssClassSetter;
+
+        public readonly TypeDefinition SkinBinderInfo;
+
+        public readonly MethodReference SkinBinderCtorOneTime1;
+
+        public readonly MethodReference SkinBinderCtorOneTime2;
+
+        public readonly MethodReference SkinBinderCtorOneWay1;
+
+        public readonly MethodReference SkinBinderCtorOneWay2;
+
+        public readonly MethodReference SkinBinderCtorTwoWay;
+
+        public readonly MethodReference ElementFromPathGetter;
+
+        public readonly TypeDefinition SkinInstance;
+
+        public readonly MethodReference SkinCtor;
+
+        public readonly MethodReference SkinInstanceCtor;
+
+        public readonly TypeDefinition Skin;
+
+        public readonly TypeDefinition DocumentRef;
+
+        public readonly MethodReference CssInitializerMethod;
+
+        public readonly TypeDefinition BinderType;
+
+        public readonly GenericInstanceType DomEventType2;
+
+        public readonly GenericInstanceType DomEventType1;
+
+        public readonly TypeDefinition DomEventType0;
+
+        public readonly TypeDefinition TemplatePartAttribute;
+
+        public readonly TypeDefinition TagNameAttribute;
+
+        public readonly TypeDefinition DomAttributeAttribute;
+
+        public readonly TypeDefinition DefaultDataBindingAttribute;
+
+        public readonly TypeDefinition CssNameAttribute;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -77,11 +155,23 @@ namespace XwmlParser
             this.IListType = clrContext.GetTypeDefinition(
                 Tuple.Create("NScript.MsCorlib", "System.Collections.Generic.IList`1"));
 
-            this.CssClassAttribute = clrContext.GetTypeDefinition(
-                Tuple.Create(uiFrameworkDll, attributesNamespace + ".CssNameAttribute"));
-
             this.SkinAttribute = clrContext.GetTypeDefinition(
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".SkinAttribute"));
+
+            this.CssNameAttribute = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, attributesNamespace + ".CssNameAttribute"));
+
+            this.DefaultDataBindingAttribute = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, attributesNamespace + ".DefaultDataBindingAttribute"));
+
+            this.DomAttributeAttribute = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, attributesNamespace + ".DomAttributeAttribute"));
+
+            this.TagNameAttribute = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, attributesNamespace + ".TagNameAttribute"));
+
+            this.TemplatePartAttribute = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, attributesNamespace + ".TemplatePartAttribute"));
 
             this.DocumentRef = clrContext.GetTypeDefinition(
                 Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Document"));
@@ -306,193 +396,5 @@ namespace XwmlParser
 
             this.DomEventType0 = act0;
         }
-
-        /// <summary>
-        /// Gets or sets the context bindable object.
-        /// </summary>
-        /// <value>
-        /// The context bindable object.
-        /// </value>
-        public TypeReference ContextBindableObject
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the element.
-        /// </summary>
-        /// <value>
-        /// The user interface element.
-        /// </value>
-        public TypeReference UIElement
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the skinable element.
-        /// </summary>
-        /// <value>
-        /// The user interface skinable element.
-        /// </value>
-        public TypeReference UISkinableElement
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the panel.
-        /// </summary>
-        /// <value>
-        /// The user interface panel.
-        /// </value>
-        public TypeReference UIPanel
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the extensible object.
-        /// </summary>
-        /// <value>
-        /// The extensible object.
-        /// </value>
-        public TypeReference ExtensibleObject
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the observable object.
-        /// </summary>
-        /// <value>
-        /// The observable object.
-        /// </value>
-        public TypeReference ObservableObject
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the type of the array.
-        /// </summary>
-        /// <value>
-        /// The type of the array.
-        /// </value>
-        public TypeReference ArrayType
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the type of the list.
-        /// </summary>
-        /// <value>
-        /// The type of the list.
-        /// </value>
-        public TypeReference IListType
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the CSS class attribute.
-        /// </summary>
-        /// <value>
-        /// The CSS class attribute.
-        /// </value>
-        public TypeReference CssClassAttribute
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets the skin attribute.
-        /// </summary>
-        /// <value>
-        /// The skin attribute.
-        /// </value>
-        public TypeReference SkinAttribute
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets the element reference.
-        /// </summary>
-        /// <value>
-        /// The element reference.
-        /// </value>
-        public TypeDefinition ElementRef { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the clone node method reference.
-        /// </summary>
-        /// <value>
-        /// The clone node method reference.
-        /// </value>
-        public MethodReference CloneNodeMethodReference { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the observable interface.
-        /// </summary>
-        /// <value>
-        /// The observable interface.
-        /// </value>
-        public TypeDefinition ObservableInterface { get; private set; }
-
-        public TypeDefinition BinderHelper { get; set; }
-
-        public TypeDefinition NodeRef { get; set; }
-
-        public MethodReference AttributeSetter { get; set; }
-
-        public MethodReference TextContentSetter { get; set; }
-
-        public MethodReference CssClassSetter { get; set; }
-
-        public TypeDefinition SkinBinderInfo { get; set; }
-
-        public MethodReference SkinBinderCtorOneTime1 { get; set; }
-
-        public MethodReference SkinBinderCtorOneTime2 { get; set; }
-
-        public MethodReference SkinBinderCtorOneWay1 { get; set; }
-
-        public MethodReference SkinBinderCtorOneWay2 { get; set; }
-
-        public MethodReference SkinBinderCtorTwoWay { get; set; }
-
-        public MethodReference ElementFromPathGetter { get; set; }
-
-        public TypeDefinition SkinInstance { get; set; }
-
-        public MethodReference SkinCtor { get; set; }
-
-        public MethodReference SkinInstanceCtor { get; set; }
-
-        public TypeDefinition Skin { get; set; }
-
-        public TypeDefinition DocumentRef { get; set; }
-
-        public MethodReference CssInitializerMethod { get; set; }
-
-        public TypeDefinition BinderType { get; set; }
-
-        public GenericInstanceType DomEventType2 { get; set; }
-
-        public GenericInstanceType DomEventType1 { get; set; }
-
-        public TypeDefinition DomEventType0 { get; set; }
     }
 }

@@ -26,7 +26,7 @@ namespace NScript.CLR.Test.CstTests
         [Test]
         [TestCase(true, "IfElseInForBlock")]
         [TestCase(false, "IfElseInForBlockRetail")]
-        [Timeout(8)]
+        [Timeout(80)]
         public void TestIfElseInForBlock(bool isDebug, string fileName)
         {
             TestHelpers.Test(
@@ -39,7 +39,7 @@ namespace NScript.CLR.Test.CstTests
 
         [Test]
         [TestCase(false, "NestedWhileLoops")]
-        [Timeout(8)]
+        [Timeout(80)]
         public void TestNestedWhileLoops(bool isDebug, string fileName)
         {
             TestHelpers.Test(
@@ -52,7 +52,7 @@ namespace NScript.CLR.Test.CstTests
 
         [Test]
         [TestCase(false, "NestedWhileLoops2")]
-        [Timeout(8)]
+        [Timeout(80)]
         public void TestNestedWhileLoops2(bool isDebug, string fileName)
         {
             TestHelpers.Test(

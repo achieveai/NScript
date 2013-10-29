@@ -493,7 +493,10 @@ namespace XwmlParser
                 this.scopeManager.Scope,
                 methodScope,
                 methodScope.ParameterIdentifiers,
-                SimpleIdentifier.CreateScopeIdentifier(methodScope, "getter", false));
+                SimpleIdentifier.CreateScopeIdentifier(
+                    this.scopeManager.Scope,
+                    "getter",
+                    false));
 
             methodExpression.AddStatement(
                 new ExpressionStatement(

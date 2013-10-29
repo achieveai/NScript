@@ -353,40 +353,6 @@ namespace NScript.JST
             return identifier.SuggestedName;
         }
     
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <param name="identifier">The identifier.</param>
-        /// <returns>Name for this identifier.</returns>
-        private string GetName(string name)
-        {
-            IdentifierScope parentScope = this.ParentScope;
-            List<SimpleIdentifier> sameNamedIdentifiers;
-
-            int slotIndex = 0;
-
-            while (parentScope != null)
-            {
-                if (parentScope.identifierNameGroups.TryGetValue(
-                    name,
-                    out sameNamedIdentifiers))
-                {
-                    slotIndex += sameNamedIdentifiers.Count;
-                }
-                else
-                {
-                    parentScope = parentScope.ParentScope;
-                }
-            }
-
-            if (slotIndex > 0)
-            {
-                return this.GetName(name + Utils.GetCompressedInt(slotIndex - 1));
-            }
-
-            return name;
-        }
-
         private void AddIdentifierToTrack(SimpleIdentifier identifier)
         {
             List<SimpleIdentifier> identifierGroup;

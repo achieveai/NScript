@@ -1072,6 +1072,15 @@ namespace NScript.CLR
             return null;
         }
 
+        /// <summary>
+        /// Determines whether the specified method is overridable.
+        /// </summary>
+        /// <param name="method">     The method. </param>
+        /// <param name="baseMethod"> The base method. </param>
+        /// <param name="baseType">   Type of the base. </param>
+        /// <returns>
+        /// MethodRefernce if method overrides baseMethod.
+        /// </returns>
         public static MethodReference IsOverridable(
             this MethodReference method,
             MethodReference baseMethod,
@@ -1266,6 +1275,30 @@ namespace NScript.CLR
                                 typeDefinition));
                     }
                 }
+            }
+
+            return rv;
+        }
+
+        public static List<FieldDefinition> GetEnumValues(this TypeDefinition enumTypeDef)
+        {
+            if (!enumTypeDef.IsEnum)
+            {
+                return null;
+            }
+
+            List<FieldDefinition> rv = new List<FieldDefinition>();
+            var fields = enumTypeDef.Fields;
+            for (int iField = 0, fieldCount = fields.Count; iField < fieldCount; iField++)
+            {
+                var field = fields[iField];
+                if (!field.HasConstant
+                    || !field.FieldType.IsSame(enumTypeDef))
+                {
+                    continue;
+                }
+
+                rv.Add(field);
             }
 
             return rv;

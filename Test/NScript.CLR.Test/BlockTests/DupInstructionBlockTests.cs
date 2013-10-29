@@ -12,7 +12,6 @@ namespace NScript.CLR.Test.BlockTests
     /// Definition for DupInstructionBlockTests
     /// </summary>
     [TestFixture]
-    [Timeout(2)]
     public class DupInstructionBlockTests
     {
         private const string TemplateNamespace = @"NScript.CLR.Test.BlockTests.DupInstructionTemplates.";

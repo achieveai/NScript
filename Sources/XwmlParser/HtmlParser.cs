@@ -85,7 +85,7 @@ namespace XwmlParser
 
             foreach (var node in this.node.ChildNodes)
             {
-                if (node.Name == "html")
+                if (node.OriginalName == "html")
                 {
                     try
                     {

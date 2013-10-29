@@ -60,18 +60,8 @@ namespace NScript.Converter.TypeSystemConverter
                 this.Scope);
 
             // This is Enum so let's initialize enum strings.
-            foreach (var field in this.TypeDefinition.Fields)
+            foreach (var field in this.TypeDefinition.GetEnumValues())
             {
-                if (!field.HasConstant)
-                {
-                    continue;
-                }
-
-                if (!field.FieldType.IsSameDefinition(this.TypeDefinition))
-                {
-                    continue;
-                }
-
                 Expression numberLiteralExpression =
                     TypeConverter.ConvertConstValue(field.Constant);
 

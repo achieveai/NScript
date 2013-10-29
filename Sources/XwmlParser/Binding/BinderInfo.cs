@@ -28,6 +28,7 @@ namespace XwmlParser
         DataContext = 0x1,
         Static = 0x2,
         TemplateParent = 0x3,
+        SourceType = 0xf,
         PropertyBinder = 0x10,
         AttachedPropertyBinder = 0x20,
         EventBinder = 0x30,
@@ -35,6 +36,7 @@ namespace XwmlParser
         CssBinder = 0x50,
         StyleBinder = 0x60,
         AttributeBinder = 0x70,
+        BinderTypeMask = 0xf0
     }
 
     /// <summary>
@@ -259,7 +261,8 @@ namespace XwmlParser
             // Default Value
             args.Add(targetInfo.Item5);
 
-            if ((binderType & BinderType.EventBinder) == BinderType.EventBinder)
+            if ((binderType & BinderType.BinderTypeMask) == BinderType.EventBinder
+                || (binderType & BinderType.BinderTypeMask) == BinderType.DomEventBinder)
             {
                 int extraObjectIndex = codeGenerator.GetExtraObjectIndex(this);
                 args.Add(new NumberLiteralExpression(

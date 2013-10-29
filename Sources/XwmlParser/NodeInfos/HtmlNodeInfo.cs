@@ -70,12 +70,25 @@ namespace XwmlParser.NodeInfos
             set { this.classNames = value; }
         }
 
+        public static bool IsHtmlAttribute(
+            HtmlAttribute attr)
+        {
+            return !attr.OriginalName.Contains(":")
+                && !char.IsUpper(attr.OriginalName, 0);
+        }
+
         public static BinderInfo ParseHtmlAttribute(
             IHtmlNodeGenerator htmlNodeGenerator,
             HtmlAgilityPack.HtmlAttribute attr,
             TemplateParser parser)
         {
-            string loweredAttrName = attr.Name.ToLowerInvariant();
+            if (attr.OriginalName.Contains(":")
+                || char.IsUpper(attr.OriginalName, 0))
+            {
+                return null;
+            }
+
+            string loweredAttrName = attr.OriginalName.ToLowerInvariant();
             string partId = null;
             BinderInfo binderInfo = null;
             if (loweredAttrName == "id")
@@ -149,7 +162,7 @@ namespace XwmlParser.NodeInfos
                     BindingParser.ParseBinding(
                         new StyleTargetBindingInfo(
                             parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
-                            attr.Name.Substring("style.".Length)),
+                            attr.OriginalName.Substring("style.".Length)),
                         attr.Value,
                         parser.DocumentContext,
                         parser.DataContextType,
@@ -158,7 +171,7 @@ namespace XwmlParser.NodeInfos
             else if (loweredAttrName == "style")
             {
                 // Todo: add support for style binding.
-                htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.Name, attr.Value);
+                htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.OriginalName, attr.Value);
             }
             else if (loweredAttrName.StartsWith("event."))
             {
@@ -166,7 +179,7 @@ namespace XwmlParser.NodeInfos
                     BindingParser.ParseBinding(
                         new DomEventTargetBindingInfo(
                             parser.DocumentContext.ParserContext.KnownTypes.DomEventType2,
-                            attr.Name.Substring("style.".Length)),
+                            attr.OriginalName.Substring("style.".Length)),
                         attr.Value,
                         parser.DocumentContext,
                         parser.DataContextType,
@@ -178,7 +191,7 @@ namespace XwmlParser.NodeInfos
                     BindingParser.ParseBinding(
                         new AttributeTargetBindingInfo(
                             parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
-                            attr.Name),
+                            attr.OriginalName),
                         attr.Value,
                         parser.DocumentContext,
                         parser.DataContextType,
@@ -186,21 +199,71 @@ namespace XwmlParser.NodeInfos
             }
             else
             {
-                htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.Name, attr.Value);
+                htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.OriginalName, attr.Value);
             }
 
             return binderInfo;
         }
 
-        /// <summary>
-        /// Sets new node and path.
-        /// </summary>
-        /// <param name="node">     The node. </param>
-        /// <param name="nodePath"> Full pathname of the node file. </param>
-        public void SetNewNodeAndPath(
-            HtmlNode node)
+        public static void FinalizeClassNamesInGeneratedNode(
+            HtmlNode node,
+            IList<IIdentifier> classNames)
         {
-            this.generatedNode = node;
+            if (classNames == null
+                || classNames.Count == 0)
+            {
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (int iClass = 0, classNamesLength = classNames.Count; iClass < classNamesLength; iClass++)
+            {
+                if (iClass > 0)
+                {
+                    sb.Append(' ');
+                }
+
+                sb.Append(classNames[iClass].GetName());
+            }
+
+            node.Attributes.Add(
+                "class",
+                sb.ToString());
+        }
+
+        public static Expression GetDomNodeExpression(
+            SkinCodeGenerator codeGenerator,
+            HtmlNode generatedNode)
+        {
+            IIdentifier domIdentifier = codeGenerator.GetDomRootIdentifier();
+            var path = SkinCodeGenerator.GetNodePath(
+                generatedNode,
+                null);
+
+            List<Expression> intExpressions = new List<Expression>();
+            for (int iPath = 0; iPath < path.Count; iPath++)
+            {
+                intExpressions.Add(new NumberLiteralExpression(
+                    codeGenerator.Scope,
+                    path[iPath]));
+            }
+
+            var newArrayExpr = new InlineNewArrayInitialization(
+                null,
+                codeGenerator.Scope,
+                intExpressions);
+
+            return MethodCallExpressionConverter.CreateMethodCallExpression(
+                new MethodCallContext(
+                    codeGenerator.KnownTypes.ElementFromPathGetter,
+                    null,
+                    codeGenerator.Scope),
+                new Expression[]{
+                    new IdentifierExpression(domIdentifier, codeGenerator.Scope),
+                    newArrayExpr
+                },
+                codeGenerator.CodeGenerator.Resolver,
+                codeGenerator.CodeGenerator.ScopeManager);
         }
 
         /// <summary>
@@ -239,10 +302,10 @@ namespace XwmlParser.NodeInfos
             }
             else if (this.Node.NodeType == HtmlNodeType.Element)
             {
-                this.generatedNode = parser.GeneratedDocument.CreateElement(this.Node.Name);
+                this.generatedNode = parser.GeneratedDocument.CreateElement(this.Node.OriginalName);
                 foreach (var attr in this.Node.Attributes)
                 {
-                    string loweredAttrName = attr.Name;
+                    string loweredAttrName = attr.OriginalName;
                     if (loweredAttrName == "id")
                     {
                         this.PartId = attr.Value;
@@ -309,7 +372,9 @@ namespace XwmlParser.NodeInfos
                             new NumberLiteralExpression(
                                 codeGenerator.Scope,
                                 objectIndex)),
-                        this.GetCtorExpr(codeGenerator)));
+                        HtmlNodeInfo.GetDomNodeExpression(
+                            codeGenerator,
+                            this.generatedNode)));
 
                 this.GenerateBindingCode(objectIndex, codeGenerator);
             }
@@ -321,24 +386,9 @@ namespace XwmlParser.NodeInfos
         /// <param name="codeGenerator"> The code generator. </param>
         public void FinalizeGeneratedNode(SkinCodeGenerator codeGenerator)
         {
-            if (this.classNames != null
-                && this.classNames.Length > 0)
-            {
-                StringBuilder sb = new StringBuilder();
-                for (int iClass = 0; iClass < this.classNames.Length; iClass++)
-                {
-                    if (iClass > 0)
-                    {
-                        sb.Append(' ');
-                    }
-
-                    sb.Append(this.classNames[iClass].GetName());
-                }
-
-                this.generatedNode.Attributes.Add(
-                    "class",
-                    sb.ToString());
-            }
+            HtmlNodeInfo.FinalizeClassNamesInGeneratedNode(
+                this.generatedNode,
+                this.ClassNames);
         }
 
         /// <summary>
@@ -350,35 +400,9 @@ namespace XwmlParser.NodeInfos
         /// </returns>
         private Expression GetCtorExpr(SkinCodeGenerator codeGenerator)
         {
-            IIdentifier domIdentifier = codeGenerator.GetDomRootIdentifier();
-            var path = SkinCodeGenerator.GetNodePath(
-                this.generatedNode,
-                null);
-
-            List<Expression> intExpressions = new List<Expression>();
-            for (int iPath = 0; iPath < path.Count; iPath++)
-            {
-                intExpressions.Add(new NumberLiteralExpression(
-                    codeGenerator.Scope,
-                    path[iPath]));
-            }
-
-            var newArrayExpr = new InlineNewArrayInitialization(
-                null,
-                codeGenerator.Scope,
-                intExpressions);
-
-            return MethodCallExpressionConverter.CreateMethodCallExpression(
-                new MethodCallContext(
-                    codeGenerator.KnownTypes.ElementFromPathGetter,
-                    null,
-                    codeGenerator.Scope),
-                new Expression[]{
-                    new IdentifierExpression(domIdentifier, codeGenerator.Scope),
-                    newArrayExpr
-                },
-                codeGenerator.CodeGenerator.Resolver,
-                codeGenerator.CodeGenerator.ScopeManager);
+            return HtmlNodeInfo.GetDomNodeExpression(
+                codeGenerator,
+                this.generatedNode);
         }
 
         /*

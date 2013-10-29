@@ -12,12 +12,19 @@ namespace XwmlParser.NodeInfos
     using System.Collections.Generic;
     using XwmlParser.Binding;
     using NScript.CLR;
+    using XwmlParser.StaticValues;
+    using System.Linq;
+    using NScript.JST;
+    using NScript.Converter;
+    using NScript.Utils;
 
     /// <summary>
     /// Definition for TypeNodeInfo
     /// </summary>
     public class TypeNodeInfo : NodeInfo
     {
+        private Dictionary<MemberReference, StaticValue> staticInitializers = new Dictionary<MemberReference, StaticValue>();
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -48,19 +55,45 @@ namespace XwmlParser.NodeInfos
         /// <param name="parser"> The parser. </param>
         public override void ParseNode(TemplateParser parser)
         {
+            var parserContext = parser.DocumentContext.ParserContext;
+            var clrResolver = parserContext.ClrResolver;
+            foreach (var attr in this.Node.Attributes)
+            {
+                if (!this.ParseAttribute(attr, parser))
+                {
+                    throw new ApplicationException(
+                        string.Format(
+                            "Can't resolve {0} for type {1} and {0} is not html attribute",
+                            attr.Name,
+                            this.Type));
+                }
+            }
         }
 
         /// <summary>
-        /// Parse attribute.
+        /// Generates a code.
         /// </summary>
-        /// <param name="attribute"> The attribute. </param>
-        /// <param name="resolver">  The resolver. </param>
-        /// <returns>
-        /// true if it succeeds, false if it fails.
-        /// </returns>
-        public virtual bool ParseAttribute(HtmlAttribute attribute, IClrResolver resolver)
+        /// <param name="codeGenerator"> The code generator. </param>
+        public override void GenerateCode(SkinCodeGenerator codeGenerator)
         {
-            return false;
+            int objectIndex = codeGenerator.GetObjectIndexForNode(this);
+
+            codeGenerator.AddStatement(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IndexExpression(
+                        null,
+                        codeGenerator.Scope,
+                        new IdentifierExpression(
+                            codeGenerator.GetObjectStorageIdentifier(),
+                            codeGenerator.Scope),
+                        new NumberLiteralExpression(
+                            codeGenerator.Scope,
+                            objectIndex)),
+                    this.GetCtorExpression(codeGenerator)));
+
+            this.GenerateBindingCode(
+                objectIndex,
+                codeGenerator);
         }
 
         /// <summary>
@@ -115,6 +148,216 @@ namespace XwmlParser.NodeInfos
             }
 
             return null;
+        }
+
+        protected virtual bool ParseAttribute(
+            HtmlAttribute attribute,
+            TemplateParser parser)
+        {
+            var parserContext = parser.DocumentContext.ParserContext;
+            var resolver = parserContext.ClrResolver;
+            var knownTypes = parserContext.KnownTypes;
+            var attrValue = attribute.Value;
+            PropertyReference prop = resolver.GetPropertyReference(
+                this.Type,
+                attribute.OriginalName);
+            if (prop != null)
+            {
+                if (BindingParser.IsBindingText(attrValue))
+                {
+                    this.Bindings.Add(
+                        BindingParser.ParseBinding(
+                            new PropertyTargetBindingInfo(prop),
+                            attrValue,
+                            parser.DocumentContext,
+                            parser.DataContextType,
+                            parser.ControlType));
+
+                    return true;
+                }
+                else if (TypeNodeInfo.IsCssClassType(prop, null, knownTypes))
+                {
+                    this.staticInitializers.Add(
+                        prop,
+                        new CssNameValue(
+                            parser.DocumentContext,
+                            attrValue));
+                }
+                else
+                {
+                    this.staticInitializers.Add(
+                        prop,
+                        TypeNodeInfo.GetValue(
+                            prop.PropertyType,
+                            parserContext,
+                            attrValue));
+                }
+
+                return true;
+            }
+
+            FieldReference field = resolver.GetFieldReference(this.Type, attribute.Name);
+            if (field != null)
+            {
+                if (BindingParser.IsBindingText(attrValue))
+                {
+                    this.Bindings.Add(
+                        BindingParser.ParseBinding(
+                            new FieldTargetBindingInfo(field),
+                            attrValue,
+                            parser.DocumentContext,
+                            parser.DataContextType,
+                            parser.ControlType));
+
+                    return true;
+                }
+                else if (TypeNodeInfo.IsCssClassType(prop, null, knownTypes))
+                {
+                    this.staticInitializers.Add(
+                        field,
+                        new CssNameValue(
+                            parser.DocumentContext,
+                            attrValue));
+                }
+                else
+                {
+                    this.staticInitializers.Add(
+                        field,
+                        TypeNodeInfo.GetValue(
+                            prop.PropertyType,
+                            parserContext,
+                            attrValue));
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        protected static bool IsCssClassType(
+            PropertyReference propertyReference,
+            FieldReference fieldReference,
+            KnownTemplateTypes knownTypes)
+        {
+            var customAttributes = propertyReference != null
+                ? propertyReference.Resolve().CustomAttributes
+                : fieldReference.Resolve().CustomAttributes;
+
+            foreach (var attr in customAttributes)
+            {
+                if (attr.AttributeType.IsSameDefinition(knownTypes.CssNameAttribute))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected static StaticValue GetValue(
+            TypeReference typeReference,
+            ParserContext parserContext,
+            string value)
+        {
+            var knownReferences = parserContext.ConverterContext.ClrKnownReferences;
+            if (typeReference.IsEnum())
+            {
+                return new EnumValue(
+                    typeReference,
+                    parserContext,
+                    value);
+            }
+            else if (typeReference.IsSame(knownReferences.String))
+            {
+                return new StringValue(value);
+            }
+            else if (typeReference.IsSame(knownReferences.Boolean))
+            {
+                return new BoolValue(value);
+            }
+            else if (typeReference.IsIntegerOrEnum() || typeReference.IsDouble())
+            {
+                return new NumberValue(
+                    value,
+                    typeReference.IsIntegerOrEnum());
+            }
+            else
+            {
+                throw new ApplicationException(
+                    string.Format("Don't know how to parse type {0}", typeReference));
+            }
+        }
+
+        protected Expression GetCtorExpression(
+            SkinCodeGenerator codeGenerator)
+        {
+            var ctor = this.GetCtorReference(codeGenerator.CodeGenerator.ParserContext);
+            var args = new List<Expression>();
+            this.GetCtorArgs(codeGenerator, args);
+            return new MethodCallExpression(
+                    null,
+                    codeGenerator.Scope,
+                    IdentifierExpression.Create(
+                        null,
+                        codeGenerator.Scope,
+                        codeGenerator.CodeGenerator.Resolver.ResolveFactory(ctor)),
+                    args);
+        }
+
+        protected virtual MethodReference GetCtorReference(
+            ParserContext parserContext)
+        {
+            MethodReference rv = null;
+            var typeDef = this.Type.Resolve();
+            var methods = typeDef.Methods;
+            for (int iMethod = 0, methodCount = methods.Count; iMethod < methodCount; iMethod++)
+            {
+                var method = methods[iMethod];
+                if (method.IsStatic
+                    || !method.IsConstructor
+                    || !method.IsPublic)
+                {
+                    continue;
+                }
+
+                if (!this.IsConstructorMatch(parserContext, method))
+                {
+                    continue;
+                }
+
+                if (rv != null)
+                {
+                    throw new ApplicationException(
+                        string.Format("Too many ctors found for {0}",
+                            this.Type));
+                }
+
+                rv = method;
+            }
+
+            if (rv == null)
+            {
+                throw new ApplicationException(
+                    string.Format("No Suitable constructor found for {0}",
+                        this.Type));
+            }
+
+            return rv;
+        }
+
+        protected virtual bool IsConstructorMatch(
+            ParserContext parserContext,
+            MethodReference ctor,
+            int startParameterIndex = 0)
+        {
+            return ctor.Parameters.Count <= startParameterIndex;
+        }
+
+        protected virtual void GetCtorArgs(
+            SkinCodeGenerator codeGenerator,
+            List<Expression> args)
+        {
         }
     }
 }

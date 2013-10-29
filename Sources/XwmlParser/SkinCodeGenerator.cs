@@ -68,7 +68,7 @@ namespace XwmlParser
         /// <summary>
         /// The node to storage index map.
         /// </summary>
-        Dictionary<NodeInfo, int> nodeToStorageIndexMap = new Dictionary<NodeInfo, int>();
+        Dictionary<Tuple<NodeInfo, bool>, int> nodeToStorageIndexMap = new Dictionary<Tuple<NodeInfo, bool>, int>();
 
         /// <summary>
         /// The binder information to index map.
@@ -159,16 +159,19 @@ namespace XwmlParser
 
         public IdentifierScope Scope { get; set; }
 
-        internal int GetObjectIndexForNode(NodeInfo htmlNodeInfo)
+        internal int GetObjectIndexForNode(
+            NodeInfo htmlNodeInfo,
+            bool domElementIndex = false)
         {
             int rv;
-            if (this.nodeToStorageIndexMap.TryGetValue(htmlNodeInfo, out rv))
+            var tupl = Tuple.Create(htmlNodeInfo, domElementIndex);
+            if (this.nodeToStorageIndexMap.TryGetValue(tupl, out rv))
             {
                 return rv;
             }
 
             rv = this.nodeToStorageIndexMap.Count;
-            this.nodeToStorageIndexMap[htmlNodeInfo] = rv;
+            this.nodeToStorageIndexMap[tupl] = rv;
 
             return rv;
         }
@@ -526,7 +529,8 @@ namespace XwmlParser
             List<Expression> uiElemArrayExpression = new List<Expression>();
             foreach (var kvPair in this.nodeToStorageIndexMap)
             {
-                if (kvPair.Key is UIElementNodeInfo)
+                if (kvPair.Key.Item1 is UIElementNodeInfo
+                    || kvPair.Key.Item2)
                 {
                     uiElemArrayExpression.Add(
                         new IndexExpression(
@@ -579,7 +583,7 @@ namespace XwmlParser
                             this.Scope),
                         new NumberLiteralExpression(
                             this.Scope,
-                            2 * this.codeGenerator.GetDataStorageIndex(this) + 1)),
+                            this.codeGenerator.GetDataStorageIndex(this))),
                     new NumberLiteralExpression(
                         this.Scope,
                         this.binderInfoToIndexMap.Count),

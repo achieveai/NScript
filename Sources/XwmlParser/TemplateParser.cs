@@ -168,13 +168,15 @@ namespace XwmlParser
 
             if (isSkin)
             {
-                this.rootSkinNodeInfo = new SkinNodeInfo(
+                var skinNodeInfo = new SkinNodeInfo(
                     dataContextType,
                     controlType,
                     this.node);
 
-                this.rootSkinNodeInfo.SetNewNodeAndPath(
+                skinNodeInfo.SetNewNodeAndPath(
                     this.generatedDocument.CreateElement("div"));
+
+                this.rootSkinNodeInfo = skinNodeInfo;
             }
             else
             {
@@ -351,7 +353,7 @@ namespace XwmlParser
                         rv = this.ParseContextBindableObject(node);
                         break;
                     case NodeType.UIElement:
-                        rv = this.ParseElementNode(node);
+                        rv = this.ParseUIElementNode(node);
                         break;
                     case NodeType.SkinableElement:
                         rv = this.ParseSkinableElementNode(node);
@@ -611,7 +613,7 @@ namespace XwmlParser
         /// <returns>
         /// UIElementNodeInfo for given node.
         /// </returns>
-        private UIElementNodeInfo ParseElementNode(HtmlNode node)
+        private UIElementNodeInfo ParseUIElementNode(HtmlNode node)
         {
             var tuple = this.GetTypeReference(node);
             UIElementNodeInfo rv = new UIElementNodeInfo(
@@ -619,7 +621,7 @@ namespace XwmlParser
                 node,
                 tuple.Item2);
 
-            this.ParseElementNode(node, rv);
+            rv.ParseNode(this);
 
             return rv;
         }
@@ -710,7 +712,7 @@ namespace XwmlParser
         /// </returns>
         private Tuple<TypeReference, Tuple<string, string>> GetTypeReference(HtmlNode node)
         {
-            var fullNameTuple = this.context.GetFullName(node.Name);
+            var fullNameTuple = this.context.GetFullName(node.OriginalName);
             var fullName = fullNameTuple.Item1 + "." + fullNameTuple.Item2;
 
             return Tuple.Create(

@@ -189,12 +189,31 @@ namespace XwmlParser.NodeInfos
 
             for (int iBinder = 0; iBinder < this.bindings.Count; iBinder++)
             {
+                int bindingObjectIndex =
+                    this.GetObjectIndexForBinding(
+                        codeGenerator,
+                        this.bindings[iBinder]) ?? objectIndex;
+
                 codeGenerator.AddBinding(
                     this.bindings[iBinder].GenerateCode(
-                        objectIndex,
+                        bindingObjectIndex,
                         codeGenerator,
                         this));
             }
+        }
+
+        /// <summary>
+        /// Gets object index for binding.
+        /// </summary>
+        /// <param name="binding"> The binding. </param>
+        /// <returns>
+        /// The object index for binding.
+        /// </returns>
+        protected virtual int? GetObjectIndexForBinding(
+            SkinCodeGenerator codeGenerator,
+            BinderInfo binding)
+        {
+            return null;
         }
     }
 }

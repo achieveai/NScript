@@ -75,6 +75,7 @@
     <Compile Include="Binding\EnumSourceBindingInfo.cs" />
     <Compile Include="Binding\EventSourceBindingInfo.cs" />
     <Compile Include="Binding\EventTargetBindingInfo.cs" />
+    <Compile Include="Binding\FieldTargetBindingInfocs.cs" />
     <Compile Include="Binding\NumberSourceBindingInfo.cs" />
     <Compile Include="Binding\MethodSourceBindingInfo.cs" />
     <Compile Include="Binding\MethodTargetBindingInfo.cs" />
@@ -111,14 +112,18 @@
     <None Include="packages.config" />
     <None Include="SampleTemplate.cs" />
     <Compile Include="SkinCodeGenerator.cs" />
+    <Compile Include="StaticValues\BoolValue.cs" />
+    <Compile Include="StaticValues\CssNameValue.cs" />
+    <Compile Include="StaticValues\EnumValue.cs" />
+    <Compile Include="StaticValues\NumberValue.cs" />
+    <Compile Include="StaticValues\StaticValue.cs" />
+    <Compile Include="StaticValues\StringValue.cs" />
     <Compile Include="Strings.cs" />
     <Compile Include="TemplateParser.cs" />
     <Compile Include="TypeResolver.cs" />
     <Compile Include="XwmlTemplatingPlugin.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="StaticValues\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\CssParser\CssParser.csproj">
       <Project>{c2534dea-af8c-43f3-81ed-86e6b5932cf6}</Project>
