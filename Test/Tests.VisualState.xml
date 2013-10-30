@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <VisualState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ShowCheckBoxes="false">
   <TopNode>[0-1000]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\Tests.nunit</TopNode>
-  <SelectedNode>[0-1474]NScript.CLR</SelectedNode>
+  <SelectedNode>[0-1022]XwmlParser.Test.SkinCodeGenerationBasicTest.TestParser1("TestStaticValues",null)</SelectedNode>
   <ExcludeCategories>false</ExcludeCategories>
   <Nodes>
     <Node UniqueName="[0-1000]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\Tests.nunit" Expanded="true" />
-    <Node UniqueName="[0-1025]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\NScript.CLR.Test\bin\Debug\XwmlParser.Test.dll" Expanded="true" />
-    <Node UniqueName="[0-1026]XwmlParser" Expanded="true" />
-    <Node UniqueName="[0-1027]XwmlParser.Test" Expanded="true" />
+    <Node UniqueName="[0-1031]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\NScript.CLR.Test\bin\Debug\XwmlParser.Test.dll" Expanded="true" />
+    <Node UniqueName="[0-1032]XwmlParser" Expanded="true" />
+    <Node UniqueName="[0-1033]XwmlParser.Test" Expanded="true" />
+    <Node UniqueName="[0-1016]XwmlParser.Test.SkinCodeGenerationBasicTest" Expanded="true" />
+    <Node UniqueName="[0-1017]XwmlParser.Test.SkinCodeGenerationBasicTest.TestParser1" Expanded="true" />
     <Node UniqueName="[0-1472]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\NScript.CLR.Test\bin\Debug\NScript.CLR.Test.dll" Expanded="true" />
     <Node UniqueName="[0-1473]NScript" Expanded="true" />
     <Node UniqueName="[0-1474]NScript.CLR" Expanded="true" />
     <Node UniqueName="[0-1475]NScript.CLR.Test" Expanded="true" />
     <Node UniqueName="[0-1476]NScript.CLR.Test.BlockTests" Expanded="true" />
+    <Node UniqueName="[0-1007]NScript.CLR.Test.BlockTests.DupInstructionBlockTests" Expanded="true" />
+    <Node UniqueName="[0-1477]NScript.CLR.Test.CstTests" Expanded="true" />
     <Node UniqueName="[0-1354]NScript.CLR.Test.CstTests.InlineInitializationTests" Expanded="true" />
     <Node UniqueName="[0-1355]NScript.CLR.Test.CstTests.InlineInitializationTests.Test" Expanded="true" />
   </Nodes>

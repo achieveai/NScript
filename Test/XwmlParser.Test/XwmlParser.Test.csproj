@@ -208,16 +208,16 @@
     <EmbeddedResource Include="Templates\TestStaticValues.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\Test - Copy %282%29.html" />
+    <EmbeddedResource Include="Templates\TestSkinPartIds.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\Test - Copy %283%29.html" />
+    <EmbeddedResource Include="Templates\TestSkinWithDomPartId.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\Test - Copy %284%29.html" />
+    <EmbeddedResource Include="Templates\TestMissingPartId.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\Test - Copy %285%29.html" />
+    <EmbeddedResource Include="Templates\TestSkinWithUIElementDomId.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\Test - Copy %286%29.html" />
@@ -226,16 +226,16 @@
     <EmbeddedResource Include="TemplateCode\TestStaticValues.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TemplateCode\Test - Copy %282%29.js" />
+    <EmbeddedResource Include="TemplateCode\TestSkinPartIds.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TemplateCode\Test - Copy %283%29.js" />
+    <EmbeddedResource Include="TemplateCode\TestSkinWithDomPartId.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TemplateCode\Test - Copy %284%29.js" />
+    <EmbeddedResource Include="TemplateCode\TestMissingPartId.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TemplateCode\Test - Copy %285%29.js" />
+    <EmbeddedResource Include="TemplateCode\TestSkinWithUIElementDomId.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\Test - Copy %286%29.js" />

@@ -26,7 +26,7 @@ namespace XwmlParser.NodeInfos
         /// <summary>
         /// true if this object has HTML binding.
         /// </summary>
-        private bool hasHtmlBinding = false;
+        private bool needHtmlNodeAccess = false;
 
         /// <summary>
         /// Constructor.
@@ -100,9 +100,7 @@ namespace XwmlParser.NodeInfos
         public override void GenerateCode(SkinCodeGenerator codeGenerator)
         {
             int htmlObjectIndex = -1;
-            if (this.Bindings != null
-                && this.Bindings.Count > 0
-                && this.hasHtmlBinding)
+            if (this.needHtmlNodeAccess)
             {
                 htmlObjectIndex = codeGenerator.GetObjectIndexForNode(this, true);
             }
@@ -139,6 +137,14 @@ namespace XwmlParser.NodeInfos
             HtmlNodeInfo.FinalizeClassNamesInGeneratedNode(
                 this.generatedNode,
                 this.ClassNames);
+        }
+
+        public void MarkAsPart(bool isDomPart)
+        {
+            if (isDomPart)
+            {
+                this.needHtmlNodeAccess = true;
+            }
         }
 
         /// <summary>
@@ -198,7 +204,10 @@ namespace XwmlParser.NodeInfos
                         attribute,
                         parser);
 
-                this.AddBinder(bindingInfo);
+                if (bindingInfo != null)
+                {
+                    this.AddBinder(bindingInfo);
+                }
 
                 return true;
             }
@@ -235,7 +244,7 @@ namespace XwmlParser.NodeInfos
             SkinCodeGenerator codeGenerator,
             BinderInfo binding)
         {
-            if (!this.hasHtmlBinding)
+            if (!this.needHtmlNodeAccess)
             {
                 return null;
             }

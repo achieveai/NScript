@@ -67,6 +67,11 @@ namespace Sunlight.Framework.UI.Helpers
         private NativeArray extraObjects;
 
         /// <summary>
+        /// The part identifier mapping.
+        /// </summary>
+        private StringDictionary<int> partIdMapping;
+
+        /// <summary>
         /// Initializes a new instance of the SkinInstance class.
         /// </summary>
         /// <param name="factory">             The factory. </param>
@@ -80,6 +85,7 @@ namespace Sunlight.Framework.UI.Helpers
             NativeArray<UIElement> childElements,
             NativeArray<object> elementsOfIntrests,
             NativeArray<SkinBinderInfo> binders,
+            Object partIdMapping,
             int liveBinderCount,
             int extraObjectCount)
         {
@@ -96,6 +102,9 @@ namespace Sunlight.Framework.UI.Helpers
 
             if (extraObjectCount > 0)
             { this.extraObjects = new NativeArray(extraObjectCount); }
+
+            if (partIdMapping != null)
+            { this.partIdMapping = new StringDictionary<int>(partIdMapping); }
         }
 
         /// <summary>   Registers the child by identifier. </summary>

@@ -31,11 +31,6 @@ namespace XwmlParser
         CodeGenerator codeGenerator;
 
         /// <summary>
-        /// The function scope.
-        /// </summary>
-        IdentifierScope functionScope;
-
-        /// <summary>
         /// Information describing the skin node.
         /// </summary>
         SkinNodeInfo skinNodeInfo;
@@ -103,6 +98,9 @@ namespace XwmlParser
             this.codeGenerator = codeGenerator;
             this.skinNodeInfo = parser.SkinNodeInfo;
         }
+
+        public TemplateParser Parser
+        { get { return this.parser; } }
 
         public CodeGenerator CodeGenerator
         { get { return this.codeGenerator; } }
@@ -584,6 +582,7 @@ namespace XwmlParser
                         new NumberLiteralExpression(
                             this.Scope,
                             this.codeGenerator.GetDataStorageIndex(this))),
+                    this.skinNodeInfo.GetPartDictionary(this),
                     new NumberLiteralExpression(
                         this.Scope,
                         this.binderInfoToIndexMap.Count),

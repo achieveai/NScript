@@ -27,6 +27,11 @@ namespace XwmlParser.NodeInfos
         HtmlNode generatedNode;
 
         /// <summary>
+        /// true to need dom access.
+        /// </summary>
+        bool needDomAccess = false;
+
+        /// <summary>
         /// List of names of the class.
         /// </summary>
         private IIdentifier[] classNames;
@@ -88,14 +93,18 @@ namespace XwmlParser.NodeInfos
                 return null;
             }
 
-            string loweredAttrName = attr.OriginalName.ToLowerInvariant();
-            string partId = null;
+            string attrName = attr.OriginalName;
             BinderInfo binderInfo = null;
-            if (loweredAttrName == "id")
+            if (attrName == "id")
             {
-                partId = attr.Value;
+                parser.SkinNodeInfo.RegisterPart(
+                    attr.Value,
+                    htmlNodeGenerator);
+
+                return null;
             }
-            else if (loweredAttrName.StartsWith("class."))
+
+            if (attrName.StartsWith("class."))
             {
                 if (BindingParser.IsBindingText(attr.Value))
                 {
@@ -125,7 +134,7 @@ namespace XwmlParser.NodeInfos
                             parser.ControlType);
                 }
             }
-            else if (loweredAttrName == "class")
+            else if (attrName == "class")
             {
                 if (BindingParser.IsBindingText(attr.Value))
                 {
@@ -156,7 +165,7 @@ namespace XwmlParser.NodeInfos
 
                 htmlNodeGenerator.ClassNames = classIdentifiers;
             }
-            else if (loweredAttrName.StartsWith("style."))
+            else if (attrName.StartsWith("style."))
             {
                 binderInfo =
                     BindingParser.ParseBinding(
@@ -168,12 +177,12 @@ namespace XwmlParser.NodeInfos
                         parser.DataContextType,
                         parser.ControlType);
             }
-            else if (loweredAttrName == "style")
+            else if (attrName == "style")
             {
                 // Todo: add support for style binding.
                 htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.OriginalName, attr.Value);
             }
-            else if (loweredAttrName.StartsWith("event."))
+            else if (attrName.StartsWith("event."))
             {
                 binderInfo =
                     BindingParser.ParseBinding(
@@ -279,6 +288,7 @@ namespace XwmlParser.NodeInfos
                 if (BindingParser.IsBindingText(this.Node.InnerText))
                 {
                     this.generatedNode = parser.GeneratedDocument.CreateElement("span");
+                    this.needDomAccess = true;
                     this.AddBinder(
                         BindingParser.ParseBinding(
                             new TextContentTargetBinder(
@@ -305,26 +315,24 @@ namespace XwmlParser.NodeInfos
                 this.generatedNode = parser.GeneratedDocument.CreateElement(this.Node.OriginalName);
                 foreach (var attr in this.Node.Attributes)
                 {
-                    string loweredAttrName = attr.OriginalName;
-                    if (loweredAttrName == "id")
-                    {
-                        this.PartId = attr.Value;
-                    }
-                    else
-                    {
-                        var binderInfo = 
-                            HtmlNodeInfo.ParseHtmlAttribute(
-                                this,
-                                attr,
-                                parser);
+                    var binderInfo = 
+                        HtmlNodeInfo.ParseHtmlAttribute(
+                            this,
+                            attr,
+                            parser);
 
-                        if (binderInfo != null)
-                        {
-                            this.AddBinder(binderInfo);
-                        }
+                    if (binderInfo != null)
+                    {
+                        this.needDomAccess = true;
+                        this.AddBinder(binderInfo);
                     }
                 }
             }
+        }
+
+        public void MarkAsPart(bool isDomPart)
+        {
+            this.needDomAccess = true;
         }
 
         /// <summary>
@@ -353,8 +361,7 @@ namespace XwmlParser.NodeInfos
         public override void GenerateCode(SkinCodeGenerator codeGenerator)
         {
             int objectIndex = -1;
-            if (this.Bindings != null
-                && this.Bindings.Count > 0)
+            if (this.needDomAccess)
             {
                 objectIndex = codeGenerator.GetObjectIndexForNode(this);
             }

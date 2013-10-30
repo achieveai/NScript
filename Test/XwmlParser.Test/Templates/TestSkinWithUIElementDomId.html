@@ -7,7 +7,9 @@
         <title></title>
     </head>
     <body>
-        <skin ControlType="ctrl:UISkinableElement" DataContextType="vm:TestViewModelA">
+        <skin ControlType="vm:TestSkinableWithDomElementPart" DataContextType="vm:TestViewModelA">
+            <vm:TestUIElementWithAttr id="DomPart">Test</vm:TestUIElementWithAttr>
+            <vm:TestUIElement id="Part1">Test</vm:TestUIElement>
         </skin>
     </body>
 </html>

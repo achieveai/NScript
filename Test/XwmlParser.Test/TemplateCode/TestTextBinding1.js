@@ -22,7 +22,7 @@ function TestTextBinding1_factory(skinFactory, doc) {
   htmlRoot = domStore[0].cloneNode(true);
   objStorage = new Array(1);
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1, 0]);
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], 1, 0);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 1, 0);
 };
 function TestTextBinding1() {
   if (!TestTextBinding1_var)

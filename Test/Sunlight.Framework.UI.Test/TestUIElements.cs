@@ -56,7 +56,7 @@ namespace Sunlight.Framework.UI.Test
 
     public class TestSkinableWithDomElementPart : TestSkinableWithTestUIElementPart
     {
-        [TemplatePart(typeof(Element))]
+        [TemplatePart(typeof(Element), true)]
         const string myDomPart = "DomPart";
 
         public TestSkinableWithDomElementPart(Element element)

@@ -8,6 +8,7 @@ namespace XwmlParser
 {
     using HtmlAgilityPack;
     using Mono.Cecil;
+    using NScript.CLR;
     using NScript.Converter;
     using System;
     using System.Collections.Generic;
@@ -173,9 +174,7 @@ namespace XwmlParser
                     controlType,
                     this.node);
 
-                skinNodeInfo.SetNewNodeAndPath(
-                    this.generatedDocument.CreateElement("div"));
-
+                skinNodeInfo.ParseNode(this);
                 this.rootSkinNodeInfo = skinNodeInfo;
             }
             else

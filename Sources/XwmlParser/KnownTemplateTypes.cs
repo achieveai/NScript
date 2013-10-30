@@ -360,6 +360,7 @@ namespace XwmlParser
                 nativeArrayUIElement,
                 nativeArrayObject,
                 nativeArraySkinBinderInfo,
+                clrKnownReferences.Object,
                 clrKnownReferences.Int32,
                 clrKnownReferences.Int32).Resolve();
 

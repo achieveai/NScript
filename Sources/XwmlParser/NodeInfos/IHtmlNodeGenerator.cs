@@ -34,5 +34,7 @@ namespace XwmlParser.NodeInfos
         /// <param name="codeGenerator"> The code generator. </param>
         void FinalizeGeneratedNode(
             SkinCodeGenerator codeGenerator);
+
+        void MarkAsPart(bool isDomPart);
     }
 }

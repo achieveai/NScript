@@ -9,6 +9,7 @@ namespace XwmlParser.NodeInfos
     using HtmlAgilityPack;
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
 
     /// <summary>
     /// Definition for NodeInfo
@@ -35,6 +36,8 @@ namespace XwmlParser.NodeInfos
         /// </summary>
         private List<BinderInfo> bindings = new List<BinderInfo>();
 
+        private ReadOnlyCollection<BinderInfo> publicBindings;
+
         /// <summary>
         /// The child node infos.
         /// </summary>
@@ -54,6 +57,7 @@ namespace XwmlParser.NodeInfos
         {
             this.node = node;
             this.tagInfo = tagInfo;
+            this.publicBindings = new ReadOnlyCollection<BinderInfo>(this.bindings);
         }
 
         /// <summary>
@@ -84,7 +88,7 @@ namespace XwmlParser.NodeInfos
         /// The bindings.
         /// </value>
         public IList<BinderInfo> Bindings
-        { get { return this.bindings; } }
+        { get { return this.publicBindings; } }
 
         /// <summary>
         /// Gets the information describing the tag.
@@ -167,6 +171,11 @@ namespace XwmlParser.NodeInfos
             if (this.bindings == null)
             {
                 this.bindings = new List<BinderInfo>();
+            }
+
+            if (binder == null)
+            {
+                throw new InvalidOperationException();
             }
 
             bindings.Add(binder);

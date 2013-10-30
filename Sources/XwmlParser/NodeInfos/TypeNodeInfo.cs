@@ -170,7 +170,7 @@ namespace XwmlParser.NodeInfos
             {
                 if (BindingParser.IsBindingText(attrValue))
                 {
-                    this.Bindings.Add(
+                    this.AddBinder(
                         BindingParser.ParseBinding(
                             new PropertyTargetBindingInfo(prop),
                             attrValue,

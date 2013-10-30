@@ -18,7 +18,7 @@ function TestCss_factory(skinFactory, doc) {
   }
   htmlRoot = domStore[0].cloneNode(true);
   objStorage = [];
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], 0, 0);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 0, 0);
 };
 function TestCss() {
   if (!TestCss_var)
