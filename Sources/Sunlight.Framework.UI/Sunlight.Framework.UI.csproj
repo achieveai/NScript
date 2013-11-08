@@ -49,6 +49,7 @@
     <Compile Include="EventTypes.cs" />
     <Compile Include="Helpers\AttributeTargetBinder.cs" />
     <Compile Include="Helpers\CssTargetBinder.cs" />
+    <Compile Include="Helpers\LiveBinder.cs" />
     <Compile Include="Helpers\SkinBinderHelper.cs" />
     <Compile Include="Helpers\SkinBinderInfo.cs" />
     <Compile Include="SkinFactory.cs" />

@@ -1,0 +1,397 @@
+﻿//-----------------------------------------------------------------------
+// <copyright file="LiveBinder.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace Sunlight.Framework.UI.Helpers
+{
+    using Sunlight.Framework.Observables;
+    using System;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// Definition for LiveBinder.
+    /// </summary>
+    public class LiveBinder
+    {
+        /// <summary>
+        /// Information describing the binder.
+        /// </summary>
+        private readonly SkinBinderInfo binderInfo;
+
+        /// <summary>
+        /// true if this object is active.
+        /// </summary>
+        private bool isActive;
+
+        /// <summary>
+        /// Source for the.
+        /// </summary>
+        private object source;
+
+        /// <summary>
+        /// Target for the.
+        /// </summary>
+        private object target;
+
+        /// <summary>
+        /// The live objects.
+        /// </summary>
+        private object[] liveObjects;
+
+        /// <summary>
+        /// The path traversed.
+        /// </summary>
+        private int pathTraversed;
+
+        /// <summary>
+        /// true to updating.
+        /// </summary>
+        private bool updating;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="binderInfo"> Information describing the binder. </param>
+        public LiveBinder(SkinBinderInfo binderInfo)
+        {
+            this.binderInfo = binderInfo;
+        }
+
+        /// <summary>
+        /// Gets or sets source for the.
+        /// </summary>
+        /// <value>
+        /// The source.
+        /// </value>
+        public object Source
+        {
+            get
+            {
+                return this.liveObjects != null
+                    ? this.liveObjects[0]
+                    : null;
+            }
+
+            set
+            {
+                if (this.source != value)
+                {
+                    if (this.source != null)
+                    {
+                        ((INotifyPropertyChanged)source).RemovePropertyChangedListener(
+                            this.binderInfo.PropertyNames[0],
+                            this.OnSourcePropertyChanged);
+
+                        this.pathTraversed = 0;
+                        this.CleanRegistrations();
+                    }
+
+                    this.source = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets target for the.
+        /// </summary>
+        /// <value>
+        /// The target.
+        /// </value>
+        public Object Target
+        {
+            get
+            {
+                return this.target;
+            }
+
+            set
+            {
+                if (this.target != value)
+                {
+                    if (this.target != null
+                        && this.binderInfo.Mode == Binders.DataBindingMode.TwoWay)
+                    {
+                        ((INotifyPropertyChanged)this.target).AddPropertyChangedListener(
+                            this.binderInfo.TargetPropertyName,
+                            this.OnTargetPropertyChanged);
+                    }
+
+                    this.target = value;
+                    this.FlowValue();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this object is active.
+        /// </summary>
+        /// <value>
+        /// true if this object is active, false if not.
+        /// </value>
+        public bool IsActive
+        {
+            get
+            {
+                return this.isActive;
+            }
+
+            set
+            {
+                if (this.isActive != value)
+                {
+                    this.isActive = value;
+
+                    if (this.isActive)
+                    {
+                        this.Activate();
+                    }
+                    else
+                    {
+                        this.Deactivate();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Activates this object.
+        /// </summary>
+        private void Activate()
+        {
+            this.FlowValue();
+        }
+
+        /// <summary>
+        /// Deactivates this object.
+        /// </summary>
+        private void Deactivate()
+        {
+            this.isActive = false;
+            TaskScheduler.Instance.EnqueueLowPriTask(
+                this.DeactivateLater,
+                "LiveBinder.DeactivateLater");
+        }
+
+        /// <summary>
+        /// Flow value.
+        /// </summary>
+        private void FlowValue()
+        {
+            if (this.target == null || this.updating || !this.isActive)
+            {
+                return;
+            }
+
+            if (this.liveObjects == null)
+            {
+                this.liveObjects = new object[this.binderInfo.PropertyGetterPath.Length];
+            }
+
+            this.SetTargetProperty(this.GetValue());
+        }
+
+        /// <summary>
+        /// Sets target property.
+        /// </summary>
+        /// <param name="value"> The value. </param>
+        private void SetTargetProperty(object value)
+        {
+            try
+            {
+                this.updating = true;
+
+                var binderInfo = this.binderInfo;
+                var target = this.target;
+                if (binderInfo.TargetPropertySetter != null)
+                {
+                    binderInfo.TargetPropertySetter(
+                        target,
+                        value);
+                }
+                else
+                {
+                    binderInfo.TargetPropertySetterWithArg(
+                        target,
+                        value,
+                        binderInfo.TargetPropertySetterArg);
+                }
+            }
+            finally
+            {
+                this.updating = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <returns>
+        /// The value.
+        /// </returns>
+        private object GetValue()
+        {
+            object rv;
+            try
+            {
+                rv = this.GetValueInternal();
+            }
+            catch
+            {
+                rv = this.binderInfo.DefaultValue;
+            }
+
+            if (this.pathTraversed < this.liveObjects.Length)
+            {
+                this.CleanRegistrations();
+            }
+
+            return rv;
+        }
+
+        /// <summary>
+        /// Gets value internal.
+        /// </summary>
+        /// <returns>
+        /// The value internal.
+        /// </returns>
+        private object GetValueInternal()
+        {
+            var binderInfo = this.binderInfo;
+            var path = binderInfo.PropertyGetterPath;
+            var src = this.source;
+            var liveObjects = this.liveObjects;
+            int iPath = 0, pathLength = binderInfo.PropertyGetterPath.Length;
+            var propertyGetterPath = binderInfo.PropertyGetterPath;
+            var propertyNames = binderInfo.PropertyNames;
+            this.pathTraversed = 0;
+
+            for (; iPath < pathLength; iPath++)
+            {
+                if (src != null
+                    || (iPath == 0 && (binderInfo.BinderType & BinderType.Static) == BinderType.Static))
+                {
+                    src = propertyGetterPath[iPath](src);
+                    if (liveObjects[iPath] != null
+                        && liveObjects[iPath] != src)
+                    {
+                        ((INotifyPropertyChanged)liveObjects[iPath]).RemovePropertyChangedListener(
+                            binderInfo.PropertyNames[iPath],
+                            this.OnSourcePropertyChanged);
+                    }
+
+                    liveObjects[iPath] = src;
+                    ++this.pathTraversed;
+
+                    if (src != null && iPath < pathLength -1)
+                    {
+                        ((INotifyPropertyChanged)src).AddPropertyChangedListener(
+                            binderInfo.PropertyNames[iPath],
+                            this.OnSourcePropertyChanged);
+                    }
+                }
+            }
+
+            if (this.pathTraversed < pathLength)
+            {
+                return binderInfo.DefaultValue;
+            }
+            else if (binderInfo.ForwardConverter != null)
+            {
+                return binderInfo.ForwardConverter(src);
+            }
+            else
+            {
+                return src;
+            }
+        }
+
+        /// <summary>
+        /// Clean registrations.
+        /// </summary>
+        private void CleanRegistrations()
+        {
+            object[] liveObjects = this.liveObjects;
+            if (this.pathTraversed < this.binderInfo.PropertyGetterPath.Length)
+            {
+                liveObjects[liveObjects.Length - 1] = null;
+                for (int iPath = this.binderInfo.PropertyGetterPath.Length - 2, till = this.pathTraversed;
+                    iPath >= till; iPath--)
+                {
+                    ((INotifyPropertyChanged)liveObjects[iPath]).RemovePropertyChangedListener(
+                        this.binderInfo.PropertyNames[iPath],
+                        this.OnSourcePropertyChanged);
+                    liveObjects[iPath] = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deactivate later.
+        /// </summary>
+        private void DeactivateLater()
+        {
+            if (!this.isActive)
+            {
+                this.pathTraversed = 0;
+                this.CleanRegistrations();
+            }
+        }
+
+        /// <summary>
+        /// Executes the source property changed action.
+        /// </summary>
+        /// <param name="obj"> The object. </param>
+        /// <param name="str"> The. </param>
+        private void OnSourcePropertyChanged(
+            INotifyPropertyChanged obj,
+            string str)
+        {
+            this.FlowValue();
+        }
+
+        /// <summary>
+        /// Executes the target property changed action.
+        /// </summary>
+        /// <param name="obj"> The object. </param>
+        /// <param name="str"> The. </param>
+        private void OnTargetPropertyChanged(
+            INotifyPropertyChanged obj,
+            string str)
+        {
+            if (this.updating || !this.isActive)
+            {
+                return;
+            }
+
+            try
+            {
+                var binderInfo = this.binderInfo;
+                var target = this.target;
+                var liveObjects = this.liveObjects;
+                this.updating = true;
+                if (target == obj
+                    && this.source != null
+                    && (liveObjects.Length < 2 || liveObjects[liveObjects.Length - 2] != null))
+                {
+                    object value = binderInfo.TargetPropertyGetter(target);
+                    if (binderInfo.BackwardConverter != null)
+                    {
+                        value = binderInfo.BackwardConverter(value);
+                    }
+
+                    binderInfo.PropertySetter(
+                        this.liveObjects.Length < 2
+                            ? this.source
+                            : this.liveObjects[this.liveObjects.Length - 2],
+                        value);
+                }
+            }
+            finally
+            {
+                this.updating = false;
+            }
+        }
+    }
+}

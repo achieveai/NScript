@@ -807,6 +807,46 @@ namespace NScript.CLR
         }
 
         /// <summary>
+        /// Fixes the generic arguments.
+        /// Note: FixGenericTypeArguments only fixes arguments and types of MethodsGeneric Arguments
+        /// and TypeGeneric arguments. Parameters and ReturnType are kept relative.
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <param name="paramDef">The type reference.</param>
+        /// <returns></returns>
+        public static MethodReference FixGenericTypeArguments(
+            this MethodReference method,
+            TypeReference typeReference)
+        {
+            TypeReference declaringType = method.DeclaringType;
+
+            if (declaringType.IsDefinition)
+            {
+                declaringType = ((TypeDefinition)declaringType).FixGenericParameters();
+            }
+
+            MethodReference methodReference = new MethodReference(
+                method.Name,
+                method.ReturnType,
+                declaringType.FixGenericTypeArguments(typeReference));
+
+            methodReference.HasThis = method.Resolve().HasThis;
+
+            foreach (var parameter in method.Parameters)
+            {
+                methodReference.Parameters.Add(
+                    parameter);
+            }
+
+            foreach (var genericParam in method.GenericParameters)
+            {
+                methodReference.GenericParameters.Add(genericParam);
+            }
+
+            return methodReference;
+        }
+
+        /// <summary>
         /// Fixes the generic type arguments.
         /// </summary>
         /// <param name="paramDef">The type reference.</param>
@@ -816,19 +856,19 @@ namespace NScript.CLR
                 this TypeReference typeReference,
                 MethodReference memberReference)
         {
-            IList<TypeReference> typeArguments;
+            IList<TypeReference> typeArguments = null;
             IList<TypeReference> methodArguments = null;
             if (memberReference.DeclaringType is ArrayType)
             {
                 typeArguments = new List<TypeReference>();
                 typeArguments.Add(((ArrayType)memberReference.DeclaringType).ElementType);
             }
-            else
+            else if (memberReference.DeclaringType.IsGenericInstance)
             {
                 typeArguments = ((GenericInstanceType)memberReference.DeclaringType).GenericArguments;
             }
 
-            if (memberReference is GenericInstanceMethod)
+            if (memberReference.IsGenericInstance)
             {
                 methodArguments = ((GenericInstanceMethod)memberReference).GenericArguments;
             }
@@ -988,36 +1028,40 @@ namespace NScript.CLR
         }
 
         /// <summary>
-        /// Determines whether the specified method is overridable.
+        /// A MethodDefinition extension method that query if 'derivedMethod' is overriding baseMethod on given baseType.
         /// </summary>
-        /// <param name="method">The method.</param>
-        /// <param name="baseMethod">The base method.</param>
-        /// <param name="baseType">Type of the base.</param>
-        /// <returns>MethodRefernce if method overrides baseMethod.</returns>
-        public static MethodReference IsOverridable(
-            this MethodDefinition method,
+        /// <param name="derivedMethod"> The derivedMethod to act on. </param>
+        /// <param name="baseMethod">    The base method. </param>
+        /// <param name="baseType">      Type of the base. </param>
+        /// <returns>
+        /// true if overriding, false if not.
+        /// </returns>
+        public static bool IsOverriding(
+            this MethodDefinition derivedMethod,
             MethodReference baseMethod,
             TypeReference baseType)
         {
             // Note that we have to do FixGenericTypeArgument twice.
             // 1. To get argument types fixed for DeclaringType
             // 2. To get argument types fixed for baseType.
-            if (method.Name == baseMethod.Name
-                && method.GenericParameters.Count == baseMethod.GenericParameters.Count
-                && method.Parameters.Count == baseMethod.Parameters.Count)
+            //
+            // E.g. method: List<T!> Method<U!!>(List<U!!> x);
+            //      type: class Type<T!> : Base<List<T!>>
+            //      baseMethod: T! Method<U!!>(List<U!!> x);
+            if (derivedMethod.Name == baseMethod.Name
+                && derivedMethod.GenericParameters.Count == baseMethod.GenericParameters.Count
+                && derivedMethod.Parameters.Count == baseMethod.Parameters.Count)
             {
-                TypeReference baseReturnType = baseMethod.ReturnType; //.FixGenericTypeArguments(baseMethod.DeclaringType);
-                bool declAndBaseSame = baseMethod.DeclaringType.IsSameDefinition(baseType);
-                /*
-                if (!declAndBaseSame)
-                {
-                    baseReturnType = baseReturnType.FixGenericTypeArguments(baseType);
-                }
-                */
+                // Remember this function is checking for Overridablity, so we only fix TypeGenericArguments.
+                // We should not attempt to fix MethodGenericArguments, because they are part of override check.
+                TypeReference methodReturnType = derivedMethod.ReturnType;
+                TypeReference baseReturnType = baseMethod.ReturnType.FixGenericTypeArguments(baseType);
 
-                if (!method.ReturnType.IsSame(baseReturnType))
+                // Note that we only have to compare baseReturnType's generic parameter with baseType.
+                // This in above case would fix T! on baseMethod to List<T!> on realMethod.
+                if (!methodReturnType.IsSame(baseReturnType))
                 {
-                    return null;
+                    return false;
                 }
 
                 bool matched = true;
@@ -1030,10 +1074,10 @@ namespace NScript.CLR
                     genericTypeParameters = genericInstanceType.GenericArguments;
                 }
 
-                if (method.HasGenericParameters)
+                if (derivedMethod.HasGenericParameters)
                 {
                     genericMethodParameters = new List<TypeReference>();
-                    foreach (var genericParam in method.GenericParameters)
+                    foreach (var genericParam in derivedMethod.GenericParameters)
                     {
                         genericMethodParameters.Add(genericParam);
                     }
@@ -1041,21 +1085,22 @@ namespace NScript.CLR
 
                 for (int iParam = 0; iParam < baseMethod.Parameters.Count && matched; iParam++)
                 {
-                    if (baseMethod.Parameters[iParam].Attributes == method.Parameters[iParam].Attributes)
+                    if (baseMethod.Parameters[iParam].Attributes == derivedMethod.Parameters[iParam].Attributes)
                     {
-                        var typeArgument = baseMethod.Parameters[iParam].ParameterType;
-                        /*
+                        var typeArgument = baseMethod.Parameters[iParam].ParameterType
                             .FixGenericTypeArguments(
                                 genericTypeParameters,
-                                genericMethodParameters);
+                                // I do not think we should be fixing method params ...
+                                null); // genericMethodParameters);
 
+                        /*
                         if (!declAndBaseSame)
                         {
                             typeArgument = typeArgument.FixGenericTypeArguments(baseType);
                         }
                         */
 
-                        matched = method.Parameters[iParam].ParameterType.IsSame(typeArgument);
+                        matched = derivedMethod.Parameters[iParam].ParameterType.IsSame(typeArgument);
                     }
                     else
                     {
@@ -1063,46 +1108,53 @@ namespace NScript.CLR
                     }
                 }
 
-                if (matched)
-                {
-                    return baseMethod; //.FixGenericArguments(baseType);
-                }
+                return matched;
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>
         /// Determines whether the specified method is overridable.
         /// </summary>
+        /// <remarks>
+        /// This method is different than above method in the sense that we may be
+        /// checking if method is overriding other method, mostly interface method.
+        /// E.g.
+        /// A : B, IFoo
+        /// and in above case, it's not the method from A that implements but it's
+        /// method from B that implements IFoo, so we in this case we will be matching
+        /// B's method to method on IFoo
+        ///
+        /// It's assumed that IFoo's generic parameters are already normalized to A's domain and
+        /// same is true with B's generic parameters. So in this case we will have to fix all
+        /// the parameters and with respective type and then compare.
+        /// </remarks>
         /// <param name="method">     The method. </param>
         /// <param name="baseMethod"> The base method. </param>
         /// <param name="baseType">   Type of the base. </param>
         /// <returns>
         /// MethodRefernce if method overrides baseMethod.
         /// </returns>
-        public static MethodReference IsOverridable(
+        public static bool IsOverridable(
             this MethodReference method,
-            MethodReference baseMethod,
-            TypeReference baseType)
+            MethodReference baseMethod)
         {
             // Note that we have to do FixGenericTypeArgument twice.
             // 1. To get argument types fixed for DeclaringType
             // 2. To get argument types fixed for baseType.
+
+            TypeReference baseType = baseMethod.DeclaringType;
             if (method.Name == baseMethod.Name
                 && method.GenericParameters.Count == baseMethod.GenericParameters.Count
                 && method.Parameters.Count == baseMethod.Parameters.Count)
             {
-                TypeReference baseReturnType = baseMethod.ReturnType.FixGenericTypeArguments(baseMethod.DeclaringType);
-                bool declAndBaseSame = baseMethod.DeclaringType.IsSameDefinition(baseType);
-                if (!declAndBaseSame)
-                {
-                    baseReturnType = baseReturnType.FixGenericTypeArguments(baseType);
-                }
+                TypeReference baseReturnType = baseMethod.ReturnType.FixGenericTypeArguments(baseType);
+                TypeReference returnType = method.ReturnType.FixGenericTypeArguments(method.DeclaringType);
 
-                if (!method.ReturnType.IsSame(baseReturnType))
+                if (!returnType.IsSame(baseReturnType))
                 {
-                    return null;
+                    return false;
                 }
 
                 bool matched = true;
@@ -1128,17 +1180,8 @@ namespace NScript.CLR
                 {
                     if (baseMethod.Parameters[iParam].Attributes == method.Parameters[iParam].Attributes)
                     {
-                        var typeArgument = baseMethod.Parameters[iParam].ParameterType
-                            .FixGenericTypeArguments(
-                                genericTypeParameters,
-                                genericMethodParameters);
-
-                        if (!declAndBaseSame)
-                        {
-                            typeArgument = typeArgument.FixGenericTypeArguments(baseType);
-                        }
-
-                        matched = method.Parameters[iParam].ParameterType.IsSame(typeArgument);
+                        matched = method.Parameters[iParam].ParameterType.FixGenericTypeArguments(method.DeclaringType)
+                            .IsSame(baseMethod.Parameters[iParam].ParameterType.FixGenericTypeArguments(baseMethod.DeclaringType));
                     }
                     else
                     {
@@ -1146,13 +1189,10 @@ namespace NScript.CLR
                     }
                 }
 
-                if (matched)
-                {
-                    return baseMethod.FixGenericArguments(baseType);
-                }
+                return matched;
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>
@@ -1179,8 +1219,8 @@ namespace NScript.CLR
                 if (!method.IsVirtual)
                 { continue; }
 
-                rv = method.FixGenericArguments(typeReference);
-                if (rv.IsOverridable(methodReference, methodReference.DeclaringType) != null)
+                rv = method.FixGenericTypeArguments(typeReference);
+                if (rv.IsOverridable(methodReference))
                 {
                     return rv;
                 }
@@ -1242,25 +1282,26 @@ namespace NScript.CLR
 
                 TypeDefinition baseDefinition = baseType.Resolve();
 
-                foreach (var methodDef in clrContext.GetVirtualOverridables(baseDefinition))
+                foreach (var baseMethodDef in clrContext.GetVirtualOverridables(baseDefinition))
                 {
-                    MethodReference method = methodDef;
+                    MethodReference baseMethod = baseMethodDef;
                     bool matched = false;
 
-                    if (method.DeclaringType.HasGenericParameters)
+                    if (baseMethod.DeclaringType.HasGenericParameters)
                     {
-                        method = methodDef.FixGenericArguments(baseType);
+                        baseMethod = baseMethodDef.FixGenericTypeArguments(baseType);
                     }
 
-                    if (rv.ContainsKey(method))
+                    if (rv.ContainsKey(baseMethod))
                     { continue; }
 
                     foreach (var virtualMethod in virtualMethods)
                     {
-                        MethodReference methodReference = virtualMethod.IsOverridable(method, baseType);
-                        if (methodReference != null)
+                        if (virtualMethod.IsOverriding(baseMethod, baseType))
                         {
-                            rv.Add(methodReference, virtualMethod);
+                            rv.Add(
+                                baseMethod.FixGenericTypeArguments(baseType),
+                                virtualMethod);
                             matched = true;
                             break;
                         }
@@ -1271,7 +1312,7 @@ namespace NScript.CLR
                         throw new InvalidProgramException(
                             string.Format(
                                 "Can't map interface method {0} to instance method for type {1}",
-                                method,
+                                baseMethod,
                                 typeDefinition));
                     }
                 }
@@ -1327,47 +1368,6 @@ namespace NScript.CLR
             {
                 return typeDefinition;
             }
-        }
-
-        /// <summary>
-        /// Fixes the generic arguments.
-        /// </summary>
-        /// <param name="method">The method.</param>
-        /// <param name="paramDef">The type reference.</param>
-        /// <returns></returns>
-        public static MethodReference FixGenericArguments(
-            this MethodReference method,
-            TypeReference typeReference)
-        {
-            TypeReference declaringType = method.DeclaringType;
-
-            if (declaringType.IsDefinition)
-            {
-                declaringType = ((TypeDefinition)declaringType).FixGenericParameters();
-            }
-
-            MethodReference methodReference = new MethodReference(
-                method.Name,
-                method.ReturnType.FixGenericTypeArguments(typeReference),
-                declaringType.FixGenericTypeArguments(typeReference));
-
-            methodReference.HasThis = method.Resolve().HasThis;
-
-            foreach (var parameter in method.Parameters)
-            {
-                methodReference.Parameters.Add(
-                    new ParameterDefinition(
-                        parameter.Name,
-                        parameter.Attributes,
-                        parameter.ParameterType.FixGenericTypeArguments(typeReference)));
-            }
-
-            foreach (var genericParam in method.GenericParameters)
-            {
-                methodReference.GenericParameters.Add(genericParam);
-            }
-
-            return methodReference;
         }
 
         /// <summary>
@@ -1778,11 +1778,13 @@ namespace NScript.CLR
                 return null;
             }
 
-            var invokeMethodFixed = invokeMethod.FixGenericArguments(delegateType);
+            var invokeMethodFixed = invokeMethod.FixGenericTypeArguments(delegateType);
             int retValue = 0;
-            if (!invokeMethodFixed.ReturnType.IsSame(methodReference.ReturnType))
+            var rvLeft = invokeMethodFixed.ReturnType.FixGenericTypeArguments(invokeMethodFixed);
+            var rvRight = methodReference.ReturnType.FixGenericTypeArguments(methodReference);
+            if (!rvLeft.IsSame(rvRight))
             {
-                if (!methodReference.ReturnType.ExtendsType(invokeMethodFixed.ReturnType))
+                if (!rvRight.ExtendsType(rvLeft))
                 {
                     return null;
                 }
@@ -1811,11 +1813,13 @@ namespace NScript.CLR
             var rightParams = methodReference.Parameters;
             for (int iParam = 0; iParam < rightParams.Count; iParam++)
             {
-                if (leftParams[iParam].ParameterType.IsSame(rightParams[iParam].ParameterType))
+                var paramLeft = leftParams[iParam].ParameterType.FixGenericTypeArguments(invokeMethodFixed);
+                var paramRight = rightParams[iParam].ParameterType.FixGenericTypeArguments(methodReference);
+                if (paramLeft.IsSame(paramRight))
                 {
                     continue;
                 }
-                else if (leftParams[iParam].ParameterType.ExtendsType(rightParams[iParam].ParameterType))
+                else if (paramLeft.ExtendsType(paramRight))
                 {
                     retValue += 10;
                 }

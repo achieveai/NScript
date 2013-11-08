@@ -23,27 +23,6 @@ namespace Sunlight.Framework.Binders
         /// <summary>   Name of the is active property. </summary>
         public const string IsActivePropertyName = "IsActive";
 
-        /// <summary>   The one time binders. </summary>
-        List<OneTimeDataBinder> oneTimeBinders = new List<OneTimeDataBinder>();
-
-        /// <summary>   The one time parent binders. </summary>
-        List<OneTimeDataBinder> oneTimeParentBinders = new List<OneTimeDataBinder>();
-
-        /// <summary>   The live data binders. </summary>
-        List<DataBinder> liveDataBinders =new List<DataBinder>();
-
-        /// <summary>   The live context parent binder. </summary>
-        List<DataBinder> liveContextParentBinder = new List<DataBinder>();
-
-        /// <summary>   Dictionary of properties. </summary>
-        Dictionary propertyDict = new Dictionary();
-
-        /// <summary>   The data context binder. </summary>
-        DataBinder dataContextBinder;
-
-        /// <summary>   true if this object is context binder. </summary>
-        bool isContextBinder;
-
         /// <summary>   The parent. </summary>
         ContextBindableObject parent;
 
@@ -61,9 +40,6 @@ namespace Sunlight.Framework.Binders
 
         /// <summary>   true if this object is activated. </summary>
         bool isActivated = false;
-
-        /// <summary>   true if activate is pending and was blocked by one of the derived classes. </summary>
-        bool pendingActivate = false;
 
         /// <summary>   true if this object is disposing. </summary>
         bool isDisposing = false;
@@ -98,7 +74,7 @@ namespace Sunlight.Framework.Binders
 
                     this.parent = value;
 
-                    if (!this.dataContextSetterCalled || this.dataContextBinder != null)
+                    if (!this.dataContextSetterCalled)
                     {
                         if (this.parent != null)
                         {
@@ -181,64 +157,6 @@ namespace Sunlight.Framework.Binders
             }
         }
 
-        /// <summary>   Adds a data binder. </summary>
-        /// <param name="binder">   The binder. </param>
-        public void AddDataBinder(DataBinder binder)
-        {
-            if (this.AddDataContextBinder(binder, false))
-            {
-                return;
-            }
-
-            this.liveDataBinders.Add(binder);
-        }
-
-        /// <summary>   Adds an one time binder. </summary>
-        /// <exception cref="Exception">    Thrown when an exception error condition occurs. </exception>
-        /// <param name="binder">   The binder. </param>
-        public void AddOneTimeBinder(OneTimeDataBinder binder)
-        {
-            if (this.propertyDict.ContainsKey(binder.PropertyName))
-            {
-                throw new Exception(binder.PropertyName + " already added.");
-            }
-            else
-            {
-                this.propertyDict[binder.PropertyName] = null;
-            }
-
-            this.oneTimeBinders.Add(binder);
-        }
-
-        /// <summary>   Adds a parent binder. </summary>
-        /// <param name="binder">   The binder. </param>
-        public void AddParentBinder(DataBinder binder)
-        {
-            if (this.AddDataContextBinder(binder, false))
-            {
-                return;
-            }
-
-            this.liveContextParentBinder.Add(binder);
-        }
-
-        /// <summary>   Adds an one time parent binder. </summary>
-        /// <exception cref="Exception">    Thrown when an exception error condition occurs. </exception>
-        /// <param name="binder">   The binder. </param>
-        public void AddOneTimeParentBinder(OneTimeDataBinder binder)
-        {
-            if (this.propertyDict.ContainsKey(binder.PropertyName))
-            {
-                throw new Exception(binder.PropertyName + " already added.");
-            }
-            else
-            {
-                this.propertyDict[binder.PropertyName] = null;
-            }
-
-            this.oneTimeParentBinders.Add(binder);
-        }
-
         /// <summary>   Activates this object. </summary>
         public void Activate()
         {
@@ -315,25 +233,6 @@ namespace Sunlight.Framework.Binders
         {
             if (this.OnDisposed != null)
             {
-                for (int i = 0, j = this.liveDataBinders.Count; i < j; i++)
-                {
-                    var dataBinder = this.liveDataBinders[i];
-                    dataBinder.SetTarget(null);
-                    dataBinder.SetSource(null);
-                }
-
-                for (int i = 0, j = this.liveContextParentBinder.Count; i < j; i++)
-                {
-                    var dataBinder = this.liveContextParentBinder[i];
-                    dataBinder.SetTarget(null);
-                    dataBinder.SetSource(null);
-                }
-
-                this.liveDataBinders.Clear();
-                this.liveContextParentBinder.Clear();
-                this.oneTimeBinders.Clear();
-                this.oneTimeParentBinders.Clear();
-
                 this.Parent = null;
 
                 this.ClearListeners();
@@ -353,37 +252,6 @@ namespace Sunlight.Framework.Binders
         {
         }
 
-        /// <summary>   Adds a data context binder to 'isContextParent'. </summary>
-        /// <exception cref="Exception">    Thrown when an exception error condition occurs. </exception>
-        /// <param name="binder">           The binder. </param>
-        /// <param name="isContextParent">  true if this object is context parent. </param>
-        /// <returns>   true if it succeeds, false if it fails. </returns>
-        private bool AddDataContextBinder(DataBinder binder, bool isContextParent)
-        {
-            if (binder.TargetPropertyName == DataContextPropertyName)
-            {
-                if (this.dataContextBinder != null)
-                {
-                    throw new Exception("DataContext binder already initialized.");
-                }
-
-                this.dataContextBinder = binder;
-                this.isContextBinder = isContextParent;
-
-                return true;
-            }
-            else if (this.propertyDict.ContainsKey(binder.TargetPropertyName))
-            {
-                throw new Exception(binder.TargetPropertyName + " already added.");
-            }
-            else
-            {
-                this.propertyDict[binder.TargetPropertyName] = null;
-            }
-
-            return false;
-        }
-
         /// <summary>   Sets a data context. </summary>
         /// <param name="value">    The value. </param>
         private void SetDataContext(object value)
@@ -395,16 +263,6 @@ namespace Sunlight.Framework.Binders
                 object oldValue = this.dataContext;
                 this.dataContext = value;
 
-                for (int i = 0, j = this.oneTimeBinders.Count; i < j; i++)
-                {
-                    this.oneTimeBinders[i].ApplySource(value, this);
-                }
-
-                for (int i = 0, j = this.liveDataBinders.Count; i < j; i++)
-                {
-                    this.liveDataBinders[i].SetSource(value);
-                }
-
                 this.OnDataContextUpdated(oldValue);
                 this.FirePropertyChanged(DataContextPropertyName);
             }
@@ -415,17 +273,9 @@ namespace Sunlight.Framework.Binders
         /// <param name="propertyName"> Name of the property. </param>
         private void OnParentDataContextUpdated(INotifyPropertyChanged sender, string propertyName)
         {
-            if (this.parent.IsActive
-                && (!this.dataContextSetterCalled || this.dataContextBinder != null))
+            if (this.parent.IsActive && !this.dataContextSetterCalled)
             {
-                if (this.dataContextBinder != null)
-                {
-                    this.dataContextBinder.SetSource(this.parent.dataContext);
-                }
-                else
-                {
-                    this.SetDataContext(this.parent.DataContext);
-                }
+                this.SetDataContext(this.parent.DataContext);
             }
 
             if (propertyName == IsActivePropertyName

@@ -168,7 +168,7 @@ namespace NScript.CLR.Test
             var action1Obj = new GenericInstanceType(action1TypeDef);
             action1Obj.GenericArguments.Add(TestAssemblyLoader.Context.KnownReferences.Object);
 
-            var addMethod = list1TypeDef.Methods.First(m => m.Name == "Add").FixGenericArguments(list1BaseClass);
+            var addMethod = list1TypeDef.Methods.First(m => m.Name == "Add").FixGenericTypeArguments(list1BaseClass);
 
             Assert.AreEqual(0, action1BaseClass.ImplementsDelegate(addMethod), "List<BaseClass>.Add implements Action<BaseClass>");
             Assert.AreEqual((int?)null, action1Obj.ImplementsDelegate(addMethod), "List<BaseClass>.Add does not implements Action<Object>");

@@ -15,26 +15,86 @@ namespace Sunlight.Framework.UI.Test
     /// </summary>
     public class TestViewModelA : ObservableObject
     {
+        private string str1;
+        private bool bool1;
+        private TestViewModelA testVMA;
         public int PropInt1
-        { get; set; }
+        {
+            get
+            {
+                return this.int1;
+            }
+            set
+            {
+                if (this.int1 != value)
+                {
+                    this.int1 = value;
+                    base.FirePropertyChanged("PropInt1");
+                }
+            }
+        }
 
         public string PropStr1
-        { get; set; }
+        {
+            get
+            {
+                return this.str1;
+            }
+            set
+            {
+                if (this.str1 != value)
+                {
+                    this.str1 = value;
+                    base.FirePropertyChanged("PropStr1");
+                }
+            }
+        }
 
         public bool PropBool1
-        { get; set; }
+        {
+            get
+            {
+                return this.bool1;
+            }
+            set
+            {
+                if (this.bool1 != value)
+                {
+                    this.bool1 = value;
+                    base.FirePropertyChanged("PropBool1");
+                }
+            }
+        }
 
         public TestInterface TestIface
-        { get; set; }
+        {
+            get;
+            set;
+        }
 
         public TestViewModelA TestVMA
-        { get; set; }
+        {
+            get
+            {
+                return this.testVMA;
+            }
+            set
+            {
+                if (this.testVMA != value)
+                {
+                    this.testVMA = value;
+                    base.FirePropertyChanged("TestVMA");
+                }
+            }
+        }
 
         public void DomEvent1(Element elem, ElementEvent evt)
         { }
 
         public void DomEvent2()
         { }
+
+        public int int1 { get; set; }
     }
 
     public class TestViewModelB : TestViewModelA, TestInterface

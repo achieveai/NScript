@@ -50,6 +50,7 @@
     <Compile Include="Binders\ITargetDataBinder.cs" />
     <Compile Include="Binders\IValueConverter.cs" />
     <Compile Include="Binders\OneTimeDataBinder.cs" />
+    <Compile Include="Binders\OneWayBinder.cs" />
     <Compile Include="Binders\SourcePropertyBinder.cs" />
     <Compile Include="Binders\TargetBinder.cs" />
     <Compile Include="Binders\ValueConverter.cs" />
@@ -74,6 +75,9 @@
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

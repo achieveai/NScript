@@ -152,7 +152,7 @@ namespace XwmlParser
                         continue;
                     }
 
-                    var method = methodDef.FixGenericArguments(typeReference);
+                    var method = methodDef.FixGenericTypeArguments(typeReference);
                     bool matched = false;
                     for (int iRv = 0; iRv < rv.Count && !matched; iRv++)
                     {

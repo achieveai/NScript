@@ -84,6 +84,30 @@ namespace System.Collections.Generic
         }
 
         /// <summary>
+        /// Gets an array of inners.
+        /// </summary>
+        /// <value>
+        /// An Array of inners.
+        /// </value>
+        internal NativeArray<T> InnerArray
+        {
+            get { return this.nativeArray; }
+        }
+
+        /// <summary>
+        /// NativeArray casting operator.
+        /// </summary>
+        /// <typeparam name="T"> Generic type parameter. </typeparam>
+        /// <param name="n"> The List&lt;T&gt; to process. </param>
+        /// <returns>
+        /// The result of the operation.
+        /// </returns>
+        public static implicit operator NativeArray<T>(List<T> n)
+        {
+            return n.nativeArray;
+        }
+
+        /// <summary>
         /// Index of the given item.
         /// </summary>
         /// <param name="item"> The item. </param>

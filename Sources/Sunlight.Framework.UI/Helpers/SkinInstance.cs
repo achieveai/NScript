@@ -134,7 +134,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <exception cref="Exception"> Thrown when an exception error condition occurs. </exception>
         /// <param name="skinable">          The skinable. </param>
         /// <param name="dataContextParent"> The data context parent. </param>
-        public void Bind(UISkinableElement skinable, ContextBindableObject dataContextParent)
+        public void Bind(UISkinableElement skinable)
         {
             if (this.rootElement == null || this.isDiposed)
             {
@@ -199,6 +199,10 @@ namespace Sunlight.Framework.UI.Helpers
                     this.childElements[i].Dispose();
                 }
             }
+        }
+
+        internal void UpdateDataContext()
+        {
         }
     }
 }

@@ -75,7 +75,7 @@ namespace NScript.Converter.ExpressionsConverter
 
                 MethodCallContext callContext = null;
                 var methodDefinition = (value == null ? propertyDefinition.GetMethod : propertyDefinition.SetMethod);
-                var methodReference = methodDefinition.FixGenericArguments(expression.PropertyReference.DeclaringType);
+                var methodReference = methodDefinition.FixGenericTypeArguments(expression.PropertyReference.DeclaringType);
                 MemberReferenceConverter.FixMethodReference(converter.RuntimeManager.Context, ref methodReference);
 
                 if (expression.LeftExpression == null)
@@ -151,7 +151,7 @@ namespace NScript.Converter.ExpressionsConverter
                 else
                 {
                     MethodReference methodReference =
-                        (propertyDefinition.SetMethod ?? propertyDefinition.GetMethod).FixGenericArguments(expression.PropertyReference.DeclaringType);
+                        (propertyDefinition.SetMethod ?? propertyDefinition.GetMethod).FixGenericTypeArguments(expression.PropertyReference.DeclaringType);
 
                     MemberReferenceConverter.FixMethodReference(converter.RuntimeManager.Context, ref methodReference);
 

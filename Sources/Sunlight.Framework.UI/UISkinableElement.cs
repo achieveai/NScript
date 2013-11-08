@@ -15,65 +15,34 @@ namespace Sunlight.Framework.UI
     /// </summary>
     public class UISkinableElement : UIElement
     {
-        public const string SkinFactoryPropertyName = "SkinFactory";
         public const string SkinPropertyName = "Skin";
+        public const string SkinInstancePropertyName = "SkinInstance";
 
-        private Skin skinFactory;
-        private SkinInstance skin;
+        private Skin skin;
+
+        private SkinInstance skinInstance;
 
         public UISkinableElement(Element element)
             : base(element)
         {
         }
 
-        public Skin SkinFactory
-        {
-            get
-            {
-                return this.skinFactory;
-            }
-
-            set
-            {
-                if (this.skinFactory != value)
-                {
-                    this.skinFactory = value;
-                    if (this.skinFactory != null)
-                    {
-                        this.Skin = this.skinFactory.CreateInstance();
-                    }
-
-                    this.FirePropertyChanged(SkinFactoryPropertyName);
-                }
-            }
-        }
-
-        protected SkinInstance Skin
+        public Skin Skin
         {
             get
             {
                 return this.skin;
             }
 
-            private set
+            set
             {
                 if (this.skin != value)
                 {
-                    if (this.skin != null)
-                    {
-                        this.skin.Dispose();
-                    }
-
                     this.skin = value;
-
-                    if (this.skin != null)
+                    if (this.skin != null
+                        && this.IsActive)
                     {
-                        this.skin.Bind(this, this.Parent);
-
-                        if (this.IsActive)
-                        {
-                            this.skin.Activate();
-                        }
+                        this.SkinInstance = this.skin.CreateInstance();
                     }
 
                     this.FirePropertyChanged(SkinPropertyName);
@@ -81,7 +50,100 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        protected void ApplySkinInternal(SkinInstance skin)
-        { }
+        protected SkinInstance SkinInstance
+        {
+            get
+            {
+                return this.skinInstance;
+            }
+
+            private set
+            {
+                if (this.skinInstance != value)
+                {
+                    if (this.skinInstance != null)
+                    {
+                        this.skinInstance.Dispose();
+                    }
+
+                    this.skinInstance = value;
+
+                    if (this.skinInstance != null)
+                    {
+                        this.skinInstance.Bind(this);
+
+                        if (this.IsActive)
+                        {
+                            this.skinInstance.Activate();
+                        }
+                    }
+
+                    this.FirePropertyChanged(SkinInstancePropertyName);
+                }
+            }
+        }
+
+        protected virtual void ApplySkinInternal(SkinInstance skin)
+        {
+        }
+
+        protected override void OnBeforeFirstActivate()
+        {
+            base.OnBeforeFirstActivate();
+
+            if (this.skin != null
+                && this.skinInstance == null)
+            {
+                this.SkinInstance = this.skin.CreateInstance();
+            }
+        }
+
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+
+            if (this.skin != null
+                && this.skinInstance == null)
+            {
+                this.SkinInstance = this.skin.CreateInstance();
+            }
+
+            if (this.skinInstance != null)
+            {
+                this.skinInstance.Activate();
+            }
+        }
+
+        protected override void OnDeactivate()
+        {
+            if (this.skinInstance != null)
+            {
+                this.skinInstance.Deactivate();
+            }
+
+            base.OnDeactivate();
+        }
+
+        protected override void InternalDispose()
+        {
+            if (this.SkinInstance != null)
+            {
+                this.SkinInstance = null;
+            }
+
+            this.Skin = null;
+
+            base.InternalDispose();
+        }
+
+        protected override void OnDataContextUpdated(object oldValue)
+        {
+            base.OnDataContextUpdated(oldValue);
+
+            if (this.skinInstance != null)
+            {
+                this.skinInstance.UpdateDataContext();
+            }
+        }
     }
 }

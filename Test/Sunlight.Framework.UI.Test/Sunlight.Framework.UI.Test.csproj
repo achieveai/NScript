@@ -75,6 +75,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LiveBinderTests.cs" />
     <Compile Include="NScriptsTemplateTests.cs" />
     <Compile Include="NScriptTemplatesClass.cs" />
     <Compile Include="TestUIElements.cs" />

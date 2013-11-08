@@ -397,7 +397,7 @@ namespace NScript.CLR
                     {
                         var method = virtualMethods[iMethod];
 
-                        if (method.IsOverridable(overridableMethod, typeDefinition.BaseType) != null)
+                        if (method.IsOverriding(overridableMethod, typeDefinition.BaseType))
                         {
                             // if this method is final, then this type is not exposing
                             // overridableMethod anymore.
@@ -412,7 +412,7 @@ namespace NScript.CLR
                     if (!finalized)
                     {
                         overridables.Add(
-                            overridableMethod.FixGenericArguments(typeDefinition.BaseType));
+                            overridableMethod.FixGenericTypeArguments(typeDefinition.BaseType));
                     }
                 }
             }

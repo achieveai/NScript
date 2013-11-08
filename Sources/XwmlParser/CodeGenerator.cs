@@ -268,7 +268,7 @@ namespace XwmlParser
                 throw new InvalidOperationException();
             }
             
-            methodRef = methodRef.FixGenericArguments(
+            methodRef = methodRef.FixGenericTypeArguments(
                 propertyReference.DeclaringType);
 
             return MethodCallExpressionConverter.CreateMethodCallExpression(
@@ -532,7 +532,7 @@ namespace XwmlParser
                 MethodReference methodRef = null;
                 if (propertyReference != null)
                 {
-                    methodRef = propertyReference.Resolve().GetMethod.FixGenericArguments(
+                    methodRef = propertyReference.Resolve().GetMethod.FixGenericTypeArguments(
                         propertyReference.DeclaringType);
 
                     if (propertyReference.Resolve().IsStatic())
