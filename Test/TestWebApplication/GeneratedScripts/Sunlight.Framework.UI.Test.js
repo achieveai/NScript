@@ -133,7 +133,21 @@ function Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderOnActivat
   liveBinder.set_target(target);
   QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+};
+function Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderOnChange() {
+  var src, target, liveBinder;
+  src = Sunlight__Framework__UI__Test__TestViewModelA_factory();
+  target = Sunlight__Framework__UI__Test__TestViewModelA_factory();
+  src.set_propStr1("test");
+  liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder);
+  liveBinder.set_source(src);
+  liveBinder.set_target(target);
+  QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  liveBinder.set_isActive(true);
+  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  src.set_propStr1("testChanged");
+  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
 };
 function Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderMultiOnActivate() {
   var src, target, liveBinder;
@@ -144,9 +158,28 @@ function Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderMultiOnAc
   liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  QUnit.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+};
+function Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderMultiOnChange() {
+  var src, target, liveBinder, stmtTemp1;
+  src = Sunlight__Framework__UI__Test__TestViewModelA_factory();
+  target = Sunlight__Framework__UI__Test__TestViewModelA_factory();
+  src.set_testVMA(Sunlight__Framework__UI__Test__TestViewModelA_factory());
+  src.get_testVMA().set_propStr1("test");
+  liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder);
+  liveBinder.set_source(src);
+  liveBinder.set_target(target);
+  QUnit.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  liveBinder.set_isActive(true);
+  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  src.get_testVMA().set_propStr1("testChanged");
+  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes on lastElement should have flowed.");
+  src.set_testVMA((stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp1.set_propStr1("ChangedTest"), stmtTemp1));
+  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
+  src.set_testVMA(null);
+  QUnit.equal(null, target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
 };
 function Sunlight__Framework__UI__Test__LiveBinderTests____cctor() {
   Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder = Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([function Sunlight__Framework__UI__Test__LiveBinderTests____cctor_del(obj) {
@@ -554,12 +587,8 @@ ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__LiveBinder____ctor(bin
 };
 ptyp_.set_source = function Sunlight__Framework__UI__Helpers__LiveBinder__set_Source(value) {
   if (this.source !== value) {
-    if (this.source !== null) {
-      System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, this.source).V_RemovePropertyChangedListener_b(this.binderInfo.propertyNames[0], System__Delegate__Create("onSourcePropertyChanged", this));
-      this.pathTraversed = 0;
-      this.cleanRegistrations();
-    }
     this.source = value;
+    this.flowValue();
   }
 };
 ptyp_.set_target = function Sunlight__Framework__UI__Helpers__LiveBinder__set_Target(value) {
@@ -590,7 +619,16 @@ ptyp_.flowValue = function Sunlight__Framework__UI__Helpers__LiveBinder__FlowVal
   if (this.target === null || this.updating || !this.isActive)
     return;
   if (this.liveObjects === null)
-    this.liveObjects = System_ArrayG_$Object$_.__ctora(this.binderInfo.propertyGetterPath.length);
+    this.liveObjects = System_ArrayG_$Object$_.__ctora(this.binderInfo.propertyGetterPath.length + 1);
+  if (this.liveObjects.get_item(0) !== this.source) {
+    if (this.liveObjects.get_item(0) !== null) {
+      this.pathTraversed = 0;
+      this.cleanRegistrations();
+    }
+    this.liveObjects.set_item(0, this.source);
+    if (this.liveObjects.get_item(0) !== null)
+      System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, this.liveObjects.get_item(0)).V_AddPropertyChangedListener_b(this.binderInfo.propertyNames[0], System__Delegate__Create("onSourcePropertyChanged", this));
+  }
   this.setTargetProperty(this.getValue());
 };
 ptyp_.setTargetProperty = function Sunlight__Framework__UI__Helpers__LiveBinder__SetTargetProperty(value) {
@@ -619,24 +657,26 @@ ptyp_.getValue = function Sunlight__Framework__UI__Helpers__LiveBinder__GetValue
   return rv;
 };
 ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__GetValueInternal() {
-  var binderInfo, path, src, liveObjects, iPath, pathLength, propertyGetterPath, propertyNames;
+  var binderInfo, path, liveObjects, src, iPath, pathLength, propertyGetterPath, propertyNames;
   binderInfo = this.binderInfo;
   path = binderInfo.propertyGetterPath;
-  src = this.source;
   liveObjects = this.liveObjects;
-  iPath = 0, pathLength = binderInfo.propertyGetterPath.length;
+  src = liveObjects.get_item(0);
+  iPath = 1, pathLength = binderInfo.propertyGetterPath.length + 1;
   propertyGetterPath = binderInfo.propertyGetterPath;
   propertyNames = binderInfo.propertyNames;
-  this.pathTraversed = 0;
+  this.pathTraversed = 1;
   for (; iPath < pathLength; iPath++)
-    if (src !== null || iPath === 0 && (binderInfo.binderType & 2) === 2) {
-      src = propertyGetterPath[iPath](src);
-      if (liveObjects.get_item(iPath) !== null && liveObjects.get_item(iPath) !== src)
-        System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
-      liveObjects.set_item(iPath, src);
+    if (src !== null || iPath === 1 && (binderInfo.binderType & 2) === 2) {
+      src = propertyGetterPath[iPath - 1](src);
+      if (liveObjects.get_item(iPath) !== src) {
+        if (liveObjects.get_item(iPath) !== null && iPath < pathLength - 1)
+          System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
+        liveObjects.set_item(iPath, src);
+        if (src !== null && iPath < pathLength - 1)
+          System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, src).V_AddPropertyChangedListener_b(binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
+      }
       ++this.pathTraversed;
-      if (src !== null && iPath < pathLength - 1)
-        System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, src).V_AddPropertyChangedListener_b(binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
     }
   if (this.pathTraversed < pathLength)
     return binderInfo.defaultValue;
@@ -648,7 +688,7 @@ ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__
 ptyp_.cleanRegistrations = function Sunlight__Framework__UI__Helpers__LiveBinder__CleanRegistrations() {
   var liveObjects, iPath, till;
   liveObjects = this.liveObjects;
-  if (this.pathTraversed < this.binderInfo.propertyGetterPath.length) {
+  if (this.pathTraversed < this.liveObjects.V_get_Length()) {
     liveObjects.set_item(liveObjects.V_get_Length() - 1, null);
     for (
     iPath = this.binderInfo.propertyGetterPath.length - 2, till = this.pathTraversed; iPath >= till; iPath--) {
@@ -1057,7 +1097,9 @@ System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_._tri();
 System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_._tri();
 module("Sunlight.Framework.UI.Test.LiveBinderTests");
 test("TestLiveBinderOnActivate", 0, Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderOnActivate);
+test("TestLiveBinderOnChange", 0, Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderOnChange);
 test("TestLiveBinderMultiOnActivate", 0, Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderMultiOnActivate);
+test("TestLiveBinderMultiOnChange", 0, Sunlight__Framework__UI__Test__LiveBinderTests__TestLiveBinderMultiOnChange);
 module("Sunlight.Framework.UI.Test.NScriptsTemplateTests");
 test("Test", 0, Sunlight__Framework__UI__Test__NScriptsTemplateTests__Test);
 module("Sunlight.Framework.UI.Test.ManualTemplateTests");

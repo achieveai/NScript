@@ -78,17 +78,8 @@ namespace Sunlight.Framework.UI.Helpers
             {
                 if (this.source != value)
                 {
-                    if (this.source != null)
-                    {
-                        ((INotifyPropertyChanged)source).RemovePropertyChangedListener(
-                            this.binderInfo.PropertyNames[0],
-                            this.OnSourcePropertyChanged);
-
-                        this.pathTraversed = 0;
-                        this.CleanRegistrations();
-                    }
-
                     this.source = value;
+                    this.FlowValue();
                 }
             }
         }
@@ -186,7 +177,25 @@ namespace Sunlight.Framework.UI.Helpers
 
             if (this.liveObjects == null)
             {
-                this.liveObjects = new object[this.binderInfo.PropertyGetterPath.Length];
+                this.liveObjects = new object[this.binderInfo.PropertyGetterPath.Length + 1];
+            }
+
+            if (this.liveObjects[0] != this.source)
+            {
+                if (this.liveObjects[0] != null)
+                {
+                    this.pathTraversed = 0;
+                    this.CleanRegistrations();
+                }
+
+                this.liveObjects[0] = this.source;
+
+                if (this.liveObjects[0] != null)
+                {
+                    ((INotifyPropertyChanged)this.liveObjects[0]).AddPropertyChangedListener(
+                        this.binderInfo.PropertyNames[0],
+                        this.OnSourcePropertyChanged);
+                }
             }
 
             this.SetTargetProperty(this.GetValue());
@@ -260,36 +269,40 @@ namespace Sunlight.Framework.UI.Helpers
         {
             var binderInfo = this.binderInfo;
             var path = binderInfo.PropertyGetterPath;
-            var src = this.source;
             var liveObjects = this.liveObjects;
-            int iPath = 0, pathLength = binderInfo.PropertyGetterPath.Length;
+            var src = liveObjects[0];
+            int iPath = 1, pathLength = binderInfo.PropertyGetterPath.Length + 1;
             var propertyGetterPath = binderInfo.PropertyGetterPath;
             var propertyNames = binderInfo.PropertyNames;
-            this.pathTraversed = 0;
+            this.pathTraversed = 1;
 
             for (; iPath < pathLength; iPath++)
             {
                 if (src != null
-                    || (iPath == 0 && (binderInfo.BinderType & BinderType.Static) == BinderType.Static))
+                    || (iPath == 1 && (binderInfo.BinderType & BinderType.Static) == BinderType.Static))
                 {
-                    src = propertyGetterPath[iPath](src);
-                    if (liveObjects[iPath] != null
-                        && liveObjects[iPath] != src)
+                    src = propertyGetterPath[iPath - 1](src);
+                    if (liveObjects[iPath] != src)
                     {
-                        ((INotifyPropertyChanged)liveObjects[iPath]).RemovePropertyChangedListener(
-                            binderInfo.PropertyNames[iPath],
-                            this.OnSourcePropertyChanged);
+                        if (liveObjects[iPath] != null
+                            && iPath < pathLength - 1)
+                        {
+                            ((INotifyPropertyChanged)liveObjects[iPath]).RemovePropertyChangedListener(
+                                binderInfo.PropertyNames[iPath],
+                                this.OnSourcePropertyChanged);
+                        }
+
+                        liveObjects[iPath] = src;
+
+                        if (src != null && iPath < pathLength - 1)
+                        {
+                            ((INotifyPropertyChanged)src).AddPropertyChangedListener(
+                                binderInfo.PropertyNames[iPath],
+                                this.OnSourcePropertyChanged);
+                        }
                     }
 
-                    liveObjects[iPath] = src;
                     ++this.pathTraversed;
-
-                    if (src != null && iPath < pathLength -1)
-                    {
-                        ((INotifyPropertyChanged)src).AddPropertyChangedListener(
-                            binderInfo.PropertyNames[iPath],
-                            this.OnSourcePropertyChanged);
-                    }
                 }
             }
 
@@ -313,7 +326,7 @@ namespace Sunlight.Framework.UI.Helpers
         private void CleanRegistrations()
         {
             object[] liveObjects = this.liveObjects;
-            if (this.pathTraversed < this.binderInfo.PropertyGetterPath.Length)
+            if (this.pathTraversed < this.liveObjects.Length)
             {
                 liveObjects[liveObjects.Length - 1] = null;
                 for (int iPath = this.binderInfo.PropertyGetterPath.Length - 2, till = this.pathTraversed;

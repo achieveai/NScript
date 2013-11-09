@@ -160,7 +160,29 @@ namespace Sunlight.Framework.UI.Test
             Assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+        }
+
+        /// <summary>
+        /// Tests live binder on activate.
+        /// </summary>
+        [Test]
+        public static void TestLiveBinderOnChange()
+        {
+            TestViewModelA src = new TestViewModelA();
+            TestViewModelA target = new TestViewModelA();
+            src.PropStr1 = "test";
+            var liveBinder = new LiveBinder(LiveBinderTests.oneWayBinder);
+            liveBinder.Source = src;
+            liveBinder.Target = target;
+
+            Assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+
+            liveBinder.IsActive = true;
+            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+
+            src.PropStr1 = "testChanged";
+            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
         }
 
         /// <summary>
@@ -177,10 +199,39 @@ namespace Sunlight.Framework.UI.Test
             liveBinder.Source = src;
             liveBinder.Target = target;
 
-            Assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            Assert.NotEqual(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+        }
+
+        /// <summary>
+        /// Tests live binder on activate.
+        /// </summary>
+        [Test]
+        public static void TestLiveBinderMultiOnChange()
+        {
+            TestViewModelA src = new TestViewModelA();
+            TestViewModelA target = new TestViewModelA();
+            src.TestVMA = new TestViewModelA();
+            src.TestVMA.PropStr1 = "test";
+            var liveBinder = new LiveBinder(LiveBinderTests.oneWayMultiBinder);
+            liveBinder.Source = src;
+            liveBinder.Target = target;
+
+            Assert.NotEqual(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+
+            liveBinder.IsActive = true;
+            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+
+            src.TestVMA.PropStr1 = "testChanged";
+            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes on lastElement should have flowed.");
+
+            src.TestVMA = new TestViewModelA() { PropStr1 = "ChangedTest" };
+            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
+
+            src.TestVMA = null;
+            Assert.Equal(null, target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
         }
     }
 }
