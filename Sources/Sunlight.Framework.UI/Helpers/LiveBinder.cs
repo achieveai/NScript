@@ -104,12 +104,21 @@ namespace Sunlight.Framework.UI.Helpers
                     if (this.target != null
                         && this.binderInfo.Mode == Binders.DataBindingMode.TwoWay)
                     {
-                        ((INotifyPropertyChanged)this.target).AddPropertyChangedListener(
+                        ((INotifyPropertyChanged)this.target).RemovePropertyChangedListener(
                             this.binderInfo.TargetPropertyName,
                             this.OnTargetPropertyChanged);
                     }
 
                     this.target = value;
+
+                    if (this.target != null
+                        && this.binderInfo.Mode == Binders.DataBindingMode.TwoWay)
+                    {
+                        ((INotifyPropertyChanged)this.target).AddPropertyChangedListener(
+                            this.binderInfo.TargetPropertyName,
+                            this.OnTargetPropertyChanged);
+                    }
+
                     this.FlowValue();
                 }
             }

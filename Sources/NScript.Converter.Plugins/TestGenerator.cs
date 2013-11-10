@@ -45,6 +45,11 @@ namespace NScript.Converter.Plugins
         private TypeReference testSetupAttribute;
 
         /// <summary>
+        /// The test tear down attribute.
+        /// </summary>
+        private TypeReference testTearDownAttribute;
+
+        /// <summary>
         /// Backing field for TestAttribute
         /// </summary>
         private TypeReference testAttribute;
@@ -53,6 +58,11 @@ namespace NScript.Converter.Plugins
         /// Backing field for TestSetup
         /// </summary>
         private TypeReference testSetup;
+
+        /// <summary>
+        /// Backing field for TestSetup
+        /// </summary>
+        private TypeReference testEnvironment;
 
         /// <summary>
         /// Backing field for Action
@@ -150,13 +160,51 @@ namespace NScript.Converter.Plugins
 
                 var moduleMehtodIdentifier = this.scopeManager.Resolve(this.ModuleMethod);
                 var testMethodIdentifier = this.scopeManager.Resolve(this.TestMethod);
+                IList<IIdentifier> moduleTestSetupIdentifier = null;
+                IList<IIdentifier> moduleTestTeardownIdentifier = null;
+
+                TypeConverter typeConverter = this.scopeManager.GetTypeConverter(typeDefinition);
+                foreach (var method in typeDefinition.Methods)
+                {
+                    if (method.HasGenericParameters || !method.IsStatic)
+                    { continue; }
+
+                    if (method.CustomAttributes.SelectAttribute(this.TestSetupAttribute) != null)
+                    {
+                        moduleTestSetupIdentifier = typeConverter.ResolveStaticMember(method);
+                    }
+                    else if (method.CustomAttributes.SelectAttribute(this.TestTeardownAttribute) != null)
+                    {
+                        moduleTestTeardownIdentifier = typeConverter.ResolveStaticMember(method);
+                    }
+                }
+
+                var testEnvironment = new InlineObjectInitializer(null, this.scopeManager.Scope);
+                if (moduleTestSetupIdentifier != null)
+                {
+                    testEnvironment.AddInitializer(
+                        "setup",
+                        IdentifierExpression.Create(
+                            null,
+                            this.scopeManager.Scope,
+                            moduleTestSetupIdentifier));
+                }
+
+                if (moduleTestTeardownIdentifier != null)
+                {
+                    testEnvironment.AddInitializer(
+                        "teardown",
+                        IdentifierExpression.Create(
+                            null,
+                            this.scopeManager.Scope,
+                            moduleTestTeardownIdentifier));
+                }
 
                 rv.Add(
                     ExpressionStatement.CreateMethodCallExpression(
                         new IdentifierExpression(moduleMehtodIdentifier, this.scopeManager.Scope),
-                        new StringLiteralExpression(this.scopeManager.Scope, typeDefinition.FullName)));
-
-                TypeConverter typeConverter = this.scopeManager.GetTypeConverter(typeDefinition);
+                        new StringLiteralExpression(this.scopeManager.Scope, typeDefinition.FullName),
+                        testEnvironment));
 
                 foreach (var method in typeDefinition.Methods)
                 {
@@ -165,11 +213,6 @@ namespace NScript.Converter.Plugins
 
                     if (method.CustomAttributes.SelectAttribute(this.TestAttribute) != null)
                     {
-                        MethodCallContext callContext = new MethodCallContext(
-                            method,
-                            null,
-                            this.scopeManager.Scope);
-
                         rv.Add(
                             ExpressionStatement.CreateMethodCallExpression(
                                 new IdentifierExpression(testMethodIdentifier, this.scopeManager.Scope),
@@ -270,7 +313,27 @@ namespace NScript.Converter.Plugins
                                 "SunlightUnit.TestSetupAttribute"));
                 }
 
-                return this.testAttribute;
+                return this.testSetupAttribute;
+            }
+        }
+
+        /// <summary>
+        /// Gets the test setup attribute.
+        /// </summary>
+        private TypeReference TestTeardownAttribute
+        {
+            get
+            {
+                if (this.testTearDownAttribute == null)
+                {
+                    this.testTearDownAttribute =
+                        this.clrContext.GetTypeDefinition(
+                            Tuple.Create(
+                                "SunlightUnit",
+                                "SunlightUnit.TestTearDownAttribute"));
+                }
+
+                return this.testTearDownAttribute;
             }
         }
 
@@ -291,6 +354,29 @@ namespace NScript.Converter.Plugins
                 }
 
                 return this.testSetup;
+            }
+        }
+
+        /// <summary>
+        /// Gets the test environment.
+        /// </summary>
+        /// <value>
+        /// The test environment.
+        /// </value>
+        private TypeReference TestEnvironment
+        {
+            get
+            {
+                if (this.testEnvironment == null)
+                {
+                    this.testEnvironment =
+                        this.clrContext.GetTypeDefinition(
+                            Tuple.Create(
+                                "SunlightUnit",
+                                "SunlightUnit.TestEnvironment"));
+                }
+
+                return this.testEnvironment;
             }
         }
 
@@ -331,6 +417,10 @@ namespace NScript.Converter.Plugins
                     this.moduleMethod.Parameters.Add(
                         new ParameterDefinition(
                             this.clrContext.KnownReferences.String));
+
+                    this.moduleMethod.Parameters.Add(
+                        new ParameterDefinition(
+                            this.TestEnvironment));
                 }
 
                 return this.moduleMethod;

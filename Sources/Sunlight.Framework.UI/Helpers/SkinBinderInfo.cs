@@ -159,6 +159,7 @@ namespace Sunlight.Framework.UI.Helpers
         {
             this.PropertyGetterPath = propertyGetterPath;
             this.TargetPropertySetterArg = targetPropertySetterArg;
+            this.TargetPropertySetterWithArg = targetPropertySetterWithArg;
             this.BinderType = binderType;
             this.ObjectIndex = objectIndex;
             this.ForwardConverter = forwardConverter;

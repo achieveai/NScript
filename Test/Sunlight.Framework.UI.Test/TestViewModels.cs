@@ -95,6 +95,46 @@ namespace Sunlight.Framework.UI.Test
         { }
 
         public int int1 { get; set; }
+
+        public static object PropStr1Getter(object obj)
+        {
+            return ((TestViewModelA)obj).PropStr1;
+        }
+
+        public static void PropStr1Setter(object obj, object val)
+        {
+            ((TestViewModelA)obj).PropStr1 = (string)val;
+        }
+
+        public static object PropInt1Getter(object obj)
+        {
+            return ((TestViewModelA)obj).PropInt1;
+        }
+
+        public static void PropInt1Setter(object obj, object val)
+        {
+            ((TestViewModelA)obj).PropInt1 = (int)val;
+        }
+
+        public static object PropBool1Getter(object obj)
+        {
+            return ((TestViewModelA)obj).PropBool1;
+        }
+
+        public static void PropBool1Setter(object obj, object val)
+        {
+            ((TestViewModelA)obj).PropBool1 = (bool)val;
+        }
+
+        public static object TestVMAGetter(object obj)
+        {
+            return ((TestViewModelA)obj).TestVMA;
+        }
+
+        public static void TestVMASetter(object obj, object val)
+        {
+            ((TestViewModelA)obj).TestVMA = (TestViewModelA)val;
+        }
     }
 
     public class TestViewModelB : TestViewModelA, TestInterface

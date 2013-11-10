@@ -9,6 +9,16 @@ namespace SunlightUnit
     using System;
     using System.Runtime.CompilerServices;
 
+    [JsonType]
+    public class TestEnvironment
+    {
+        public extern Action Setup
+        { get; set; }
+
+        public extern Action Teardown
+        { get; set; }
+    }
+
     /// <summary>
     /// Class used to setup test cases and suites
     /// </summary>
@@ -24,7 +34,7 @@ namespace SunlightUnit
         /// Call this method from the static constructor of test classes.
         /// <see link="(http://docs.jquery.com/QUnit/module#namelifecycle)"/>
         /// </remarks>
-        public extern static void Module(string name);
+        public extern static void Module(string name, TestEnvironment testEnvironment);
 
         /// <summary>
         /// Registers an async test case.

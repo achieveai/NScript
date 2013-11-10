@@ -39,4 +39,12 @@ namespace SunlightUnit
     public class TestAttribute : Attribute
     {
     }
+
+    /// <summary>
+    /// Definition for TestSetup Attribute.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class TestTearDownAttribute : Attribute
+    {
+    }
 }

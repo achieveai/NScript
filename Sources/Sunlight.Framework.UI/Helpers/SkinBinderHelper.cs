@@ -159,7 +159,23 @@ namespace Sunlight.Framework.UI.Helpers
                 source = binder.DefaultValue;
             }
 
-            binder.TargetPropertySetter(target, source);
+            try
+            {
+                if (binder.TargetPropertySetter != null)
+                {
+                    binder.TargetPropertySetter(
+                        target,
+                        source);
+                }
+                else
+                {
+                    binder.TargetPropertySetterWithArg(
+                        target,
+                        source,
+                        binder.TargetPropertySetterArg);
+                }
+            }
+            catch { }
         }
 
         /// <summary>
@@ -174,9 +190,10 @@ namespace Sunlight.Framework.UI.Helpers
             SkinBinderInfo binder,
             object source)
         {
-            for (int i = 0, j = binder.PropertyGetterPath.Length; i < j; i++)
+            for (int iGetter = 0, pathLength = binder.PropertyGetterPath.Length;
+                iGetter < pathLength; iGetter++)
             {
-                source = binder.PropertyGetterPath[i](source);
+                source = binder.PropertyGetterPath[iGetter](source);
             }
 
             if (binder.ForwardConverter != null
