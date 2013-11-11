@@ -30,7 +30,7 @@ namespace Sunlight.Framework.UI.Test
                     PropBool1 = true
                 };
             TestViewModelA tar1 = new TestViewModelA();
-            SkinBinderHelper.BindDataContext(
+            SkinBinderHelper.Bind(
                 new SkinBinderInfo[]{
                     new SkinBinderInfo(
                         new Func<object,object>[] {TestViewModelA.PropStr1Getter},
@@ -59,7 +59,7 @@ namespace Sunlight.Framework.UI.Test
                     PropStr1 = "Test",
                 };
             System.Web.Html.Element target = Window.Instance.Document.CreateElement("div");
-            SkinBinderHelper.BindDataContext(
+            SkinBinderHelper.Bind(
                 new SkinBinderInfo[]{
                     new SkinBinderInfo(
                         new Func<object,object>[] {TestViewModelA.PropStr1Getter},
@@ -93,7 +93,7 @@ namespace Sunlight.Framework.UI.Test
                 };
             System.Web.Html.Element target = Window.Instance.Document.CreateElement("div");
             target.ClassName = "t1";
-            SkinBinderHelper.BindDataContext(
+            SkinBinderHelper.Bind(
                 new SkinBinderInfo[]{
                     new SkinBinderInfo(
                         new Func<object,object>[] {TestViewModelA.PropBool1Getter},
@@ -115,7 +115,7 @@ namespace Sunlight.Framework.UI.Test
             Assert.Equal("t1 test", target.ClassName, "After BindDataContext values should be equal");
 
             src.PropBool1 = false;
-            SkinBinderHelper.BindDataContext(
+            SkinBinderHelper.Bind(
                 new SkinBinderInfo[]{
                     new SkinBinderInfo(
                         new Func<object,object>[] {TestViewModelA.PropBool1Getter},
@@ -148,7 +148,7 @@ namespace Sunlight.Framework.UI.Test
                     PropStr1 = "Test",
                 };
             System.Web.Html.Element target = Window.Instance.Document.CreateElement("div");
-            SkinBinderHelper.BindDataContext(
+            SkinBinderHelper.Bind(
                 new SkinBinderInfo[]{
                     new SkinBinderInfo(
                         new Func<object,object>[] {TestViewModelA.PropStr1Getter},

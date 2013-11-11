@@ -9,6 +9,7 @@ namespace Sunlight.Framework.UI.Helpers
     using Sunlight.Framework.Binders;
     using System;
     using System.Runtime.CompilerServices;
+    using System.Web.Html;
 
     [Flags]
     public enum BinderType
@@ -16,6 +17,7 @@ namespace Sunlight.Framework.UI.Helpers
         DataContext = 0x1,
         Static = 0x2,
         TemplateParent = 0x4,
+        TargetTypes = 0x7,
         PropertyBinder = 0x10,
         AttachedPropertyBinder = 0x20,
         EventBinder = 0x30,
@@ -23,6 +25,7 @@ namespace Sunlight.Framework.UI.Helpers
         CssBinder = 0x50,
         StyleBinder = 0x60,
         AttributeBinder = 0x70,
+        PropertyTypes = 0xf0
     }
 
     /// <summary>
@@ -275,6 +278,79 @@ namespace Sunlight.Framework.UI.Helpers
             this.BackwardConverter = backwardConverter;
             this.DefaultValue = defaultValue;
             this.Mode = DataBindingMode.TwoWay;
+        }
+
+        public void SetTargetValue(
+            object target,
+            object value,
+            NativeArray extraObjectArray)
+        {
+                var binderInfo = this;
+                var propertySetterMode = binderInfo.BinderType & BinderType.PropertyTypes;
+                if (propertySetterMode == BinderType.PropertyBinder)
+                {
+                    binderInfo.TargetPropertySetter(
+                        target,
+                        value);
+                }
+                else if (propertySetterMode == BinderType.EventBinder)
+                {
+                    if (extraObjectArray[binderInfo.ExtraObjectIndex] == value)
+                    {
+                        return;
+                    }
+
+                    if (extraObjectArray[binderInfo.ExtraObjectIndex] != null)
+                    {
+                        this.TargetPropertySetterWithArg(
+                            target,
+                            extraObjectArray[binderInfo.ExtraObjectIndex],
+                            (BooleanNative)false);
+                    }
+
+                    extraObjectArray[binderInfo.ExtraObjectIndex] = value;
+
+                    if (value != null)
+                    {
+                        this.TargetPropertySetterWithArg(
+                            target,
+                            value,
+                            (BooleanNative)true);
+                    }
+                }
+                else if (propertySetterMode == BinderType.DomEventBinder)
+                {
+                    Element element = (Element)target;
+                    if (extraObjectArray[binderInfo.ExtraObjectIndex] == value)
+                    {
+                        return;
+                    }
+
+                    if (extraObjectArray[binderInfo.ExtraObjectIndex] != null)
+                    {
+                        element.RemoveEventListener(
+                            (string)binderInfo.TargetPropertySetterArg,
+                            (Action<ElementEvent>)extraObjectArray[binderInfo.ExtraObjectIndex],
+                            false);
+                    }
+
+                    extraObjectArray[binderInfo.ExtraObjectIndex] = value;
+
+                    if (value != null)
+                    {
+                        element.AddEventListener(
+                            (string)binderInfo.TargetPropertySetterArg,
+                            (Action<ElementEvent>)value,
+                            false);
+                    }
+                }
+                else
+                {
+                    binderInfo.TargetPropertySetterWithArg(
+                        target,
+                        value,
+                        binderInfo.TargetPropertySetterArg);
+                }
         }
     }
 }

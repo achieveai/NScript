@@ -9,6 +9,7 @@ namespace Sunlight.Framework.UI.Helpers
     using Sunlight.Framework.Observables;
     using System;
     using System.Collections.Generic;
+    using System.Web.Html;
 
     /// <summary>
     /// Definition for LiveBinder.
@@ -51,13 +52,28 @@ namespace Sunlight.Framework.UI.Helpers
         private bool updating;
 
         /// <summary>
+        /// Array of extra objects.
+        /// </summary>
+        private NativeArray extraObjectArray;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="binderInfo"> Information describing the binder. </param>
-        public LiveBinder(SkinBinderInfo binderInfo)
+        public LiveBinder(SkinBinderInfo binderInfo, NativeArray extraObjectArray = null)
         {
             this.binderInfo = binderInfo;
+            this.extraObjectArray = extraObjectArray;
         }
+
+        /// <summary>
+        /// Gets the information describing the binder.
+        /// </summary>
+        /// <value>
+        /// Information describing the binder.
+        /// </value>
+        public SkinBinderInfo BinderInfo
+        { get { return this.binderInfo; } }
 
         /// <summary>
         /// Gets or sets source for the.
@@ -156,6 +172,18 @@ namespace Sunlight.Framework.UI.Helpers
         }
 
         /// <summary>
+        /// Deactivate later.
+        /// </summary>
+        public void Cleanup()
+        {
+            if (!this.isActive)
+            {
+                this.pathTraversed = 0;
+                this.CleanRegistrations();
+            }
+        }
+
+        /// <summary>
         /// Activates this object.
         /// </summary>
         private void Activate()
@@ -169,9 +197,6 @@ namespace Sunlight.Framework.UI.Helpers
         private void Deactivate()
         {
             this.isActive = false;
-            TaskScheduler.Instance.EnqueueLowPriTask(
-                this.DeactivateLater,
-                "LiveBinder.DeactivateLater");
         }
 
         /// <summary>
@@ -219,22 +244,10 @@ namespace Sunlight.Framework.UI.Helpers
             try
             {
                 this.updating = true;
-
-                var binderInfo = this.binderInfo;
-                var target = this.target;
-                if (binderInfo.TargetPropertySetter != null)
-                {
-                    binderInfo.TargetPropertySetter(
-                        target,
-                        value);
-                }
-                else
-                {
-                    binderInfo.TargetPropertySetterWithArg(
-                        target,
-                        value,
-                        binderInfo.TargetPropertySetterArg);
-                }
+                this.binderInfo.SetTargetValue(
+                    this.target,
+                    value,
+                    this.extraObjectArray);
             }
             finally
             {
@@ -346,18 +359,6 @@ namespace Sunlight.Framework.UI.Helpers
                         this.OnSourcePropertyChanged);
                     liveObjects[iPath] = null;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Deactivate later.
-        /// </summary>
-        private void DeactivateLater()
-        {
-            if (!this.isActive)
-            {
-                this.pathTraversed = 0;
-                this.CleanRegistrations();
             }
         }
 

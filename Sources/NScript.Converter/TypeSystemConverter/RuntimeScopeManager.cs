@@ -260,6 +260,30 @@ namespace NScript.Converter.TypeSystemConverter
             set;
         }
 
+        public Statement GetVariableDeclarations()
+        {
+            List<Expression> varList = new List<Expression>();
+            foreach (var identifier in this.Scope.UsedLocalIdentifiers)
+            {
+                if (identifier.ShouldEnforceSuggestion
+                    || identifier.IsFunctionName)
+                {
+                    continue;
+                }
+
+                varList.Add(new IdentifierExpression(identifier, this.Scope));
+            }
+
+            if (varList.Count > 0)
+            {
+                return new VarInitializerStatement(null, this.Scope, varList);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Converts the specified types.
         /// </summary>

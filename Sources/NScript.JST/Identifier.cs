@@ -37,6 +37,11 @@ namespace NScript.JST
         private readonly IdentifierScope ownerScope;
 
         /// <summary>
+        /// true if this object is function name.
+        /// </summary>
+        private bool isFunctionName;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SimpleIdentifier"/> class.
         /// </summary>
         /// <param name="suggestedName">Name of the suggested.</param>
@@ -111,6 +116,15 @@ namespace NScript.JST
                 return this.enforceSuggestion && this.suggestedName.Length == 0;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this object is function name.
+        /// </summary>
+        /// <value>
+        /// true if this object is function name, false if not.
+        /// </value>
+        public bool IsFunctionName
+        { get { return this.isFunctionName; } }
 
         /// <summary>
         /// Gets the owner scope.
@@ -263,6 +277,11 @@ namespace NScript.JST
             {
                 return this.OwnerScope.GetName(this);
             }
+        }
+
+        public void MarkAsFunctionName()
+        {
+            this.isFunctionName = true;
         }
     }
 }

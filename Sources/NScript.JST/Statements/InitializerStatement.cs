@@ -62,6 +62,18 @@ namespace NScript.JST
             writer.WriteNewLine()
                 .EnterLocation(this.Location);
 
+            this.WriteContent(writer);
+
+            writer.Write(Symbols.SemiColon)
+                .LeaveLocation();
+        }
+
+        /// <summary>
+        /// Writes a content.
+        /// </summary>
+        /// <param name="writer"> The writer. </param>
+        protected void WriteContent(JSWriter writer)
+        {
             for (int iInitializer = 0; iInitializer < this.initializerExpressions.Count; iInitializer++)
             {
                 if (iInitializer > 0)
@@ -71,9 +83,6 @@ namespace NScript.JST
 
                 this.initializerExpressions[iInitializer].Write(writer);
             }
-
-            writer.Write(Symbols.SemiColon)
-                .LeaveLocation();
         }
     }
 }

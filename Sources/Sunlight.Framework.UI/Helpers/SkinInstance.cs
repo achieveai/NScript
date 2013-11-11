@@ -59,7 +59,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <summary>
         /// The live binders.
         /// </summary>
-        private NativeArray liveBinders;
+        private NativeArray<LiveBinder> liveBinders;
 
         /// <summary>
         /// The extra objects.
@@ -70,6 +70,16 @@ namespace Sunlight.Framework.UI.Helpers
         /// The part identifier mapping.
         /// </summary>
         private StringDictionary<int> partIdMapping;
+
+        private UISkinableElement skinableParent;
+
+        private object dataContext;
+
+        private bool firstActivationDone;
+
+        private bool dataContextUpdated;
+
+        private bool templateParentUpdated;
 
         /// <summary>
         /// Initializes a new instance of the SkinInstance class.
@@ -96,9 +106,11 @@ namespace Sunlight.Framework.UI.Helpers
             this.binders = binders;
             this.childElements = childElements;
             this.elementsOfIntrest = elementsOfIntrests;
+            this.dataContextUpdated = true;
+            this.templateParentUpdated = true;
 
             if (liveBinderCount > 0)
-            { this.liveBinders = new NativeArray(liveBinderCount); }
+            { this.liveBinders = new NativeArray<LiveBinder>(liveBinderCount); }
 
             if (extraObjectCount > 0)
             { this.extraObjects = new NativeArray(extraObjectCount); }
@@ -146,12 +158,45 @@ namespace Sunlight.Framework.UI.Helpers
                 throw new Exception("Skin being applied to wrong Skinable");
             }
 
-            if (this.rootElement != skinable.Element)
+            if (this.skinableParent == skinable)
             {
-                SkinBinderHelper.BindTemplateParent(
-                    this.binders,
-                    skinable,
-                    this.elementsOfIntrest);
+                return;
+            }
+
+            this.skinableParent = skinable;
+
+            if (this.isActive && !this.isDiposed)
+            {
+                this.UpdateBinderSource(skinable, BinderType.TemplateParent);
+            }
+            else
+            {
+                this.templateParentUpdated = true;
+            }
+
+            this.UpdateDataContext();
+        }
+
+        public void UpdateDataContext()
+        {
+            if ((this.skinableParent == null) != (this.dataContext == null))
+            {
+                if (this.skinableParent.DataContext != this.dataContext)
+                {
+                    this.dataContext = this.skinableParent.DataContext;
+                    this.dataContextUpdated = true;
+                }
+            }
+            else if (this.dataContext != null)
+            {
+                this.dataContext = null;
+                this.dataContextUpdated = true;
+            }
+
+            if (this.dataContextUpdated && this.isActive && !this.isDiposed)
+            {
+                this.UpdateBinderSource(this.dataContext, BinderType.DataContext);
+                this.dataContextUpdated = false;
             }
         }
 
@@ -163,10 +208,83 @@ namespace Sunlight.Framework.UI.Helpers
             if (!this.isActive && !this.isDiposed)
             {
                 this.isActive = true;
-                for (int i = 0, j = this.childElements.Length; i < j; i++)
+
+                var childElements = this.childElements;
+                var binders = this.binders;
+                var childElementLength = childElements.Length;
+                var binderLength = binders.Length;
+                var skinParent = this.skinableParent;
+                var dataContext = this.dataContext;
+
+                for (int iBinder = 0, iLiveBinder = 0; iBinder < binderLength; iBinder++)
                 {
-                    this.childElements[i].Activate();
+                    var binder = binders[iBinder];
+                    object source = null;
+                    switch (binder.BinderType & BinderType.TargetTypes)
+                    {
+                        case BinderType.DataContext:
+                            if (!this.dataContextUpdated
+                                && binder.Mode != DataBindingMode.OneTime)
+                            { continue; }
+
+                            source = dataContext;
+                            break;
+                        case BinderType.Static:
+                            if (this.firstActivationDone
+                                && binder.Mode != DataBindingMode.OneTime)
+                            { continue; }
+
+                            break;
+                        case BinderType.TemplateParent:
+                            if (!this.templateParentUpdated
+                                && binder.Mode != DataBindingMode.OneTime)
+                            { continue; }
+
+                            source = this.skinableParent;
+                            break;
+                    }
+
+                    if (binder.Mode == DataBindingMode.TwoWay)
+                    {
+                        LiveBinder liveBinder = this.liveBinders[iLiveBinder];
+                        if (liveBinder != null)
+                        {
+                            liveBinder.Source = source;
+                            liveBinder.IsActive = true;
+                        }
+                        else
+                        {
+                            liveBinder = new LiveBinder(binder);
+                            liveBinder.Source = source;
+                            liveBinder.Target = this.elementsOfIntrest[binder.ObjectIndex];
+                            liveBinder.IsActive = true;
+                            this.liveBinders[iLiveBinder] = liveBinder;
+                        }
+                    }
+                    else
+                    {
+                        SkinBinderHelper.SetPropertyValue(
+                            binder,
+                            source,
+                            this.elementsOfIntrest[binder.ObjectIndex],
+                            this.extraObjects);
+                    }
+
+                    if (binder.Mode != DataBindingMode.OneTime)
+                    {
+                        ++iLiveBinder;
+                    }
                 }
+
+                for (int iChild = 0; iChild < childElementLength; iChild++)
+                {
+                    var childElement = childElements[iChild];
+                    childElement.Activate();
+                }
+
+                TaskScheduler.Instance.EnqueueLowPriTask(
+                    this.QueuedActivation,
+                    "SkinInstance.Activate");
             }
         }
 
@@ -178,10 +296,27 @@ namespace Sunlight.Framework.UI.Helpers
             if (this.isActive && !this.isDiposed)
             {
                 this.isActive = false;
-                for (int i = 0, j = this.childElements.Length; i < j; i++)
+                var childElements = this.childElements;
+                var childElementLength = childElements.Length;
+                var liveBinders = this.liveBinders;
+                var liveBinderLength = liveBinders.Length;
+
+                for (int iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++)
                 {
-                    this.childElements[i].Deactivate();
+                    if (liveBinders[iLiveBinder] == null)
+                    { continue; }
+
+                    liveBinders[iLiveBinder].IsActive = false;
                 }
+
+                for (int iChild = 0; iChild < childElementLength; iChild++)
+                {
+                    childElements[iChild].Deactivate();
+                }
+
+                TaskScheduler.Instance.EnqueueLowPriTask(
+                    this.QueuedDeactivation,
+                    "SkinInstance.QueuedDeactivate");
             }
         }
 
@@ -193,16 +328,100 @@ namespace Sunlight.Framework.UI.Helpers
         {
             if (!this.isDiposed)
             {
+                for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
+                {
+                    var liveBinder = this.liveBinders[iLiveBinder];
+                    if (liveBinder == null)
+                    {
+                        continue;
+                    }
+
+                    liveBinder.IsActive = false;
+                    liveBinder.Source = null;
+                    liveBinder.Target = null;
+                    liveBinder.Cleanup();
+                    this.liveBinders[iLiveBinder] = null;
+                }
+
                 this.isDiposed = true;
                 for (int i = 0, j = this.elementsOfIntrest.Length; i < j; i++)
                 {
+                    this.childElements[i].Deactivate();
                     this.childElements[i].Dispose();
                 }
             }
         }
 
-        internal void UpdateDataContext()
+        private void QueuedActivation()
         {
+            var binders = this.binders;
+            var liveBinders = this.liveBinders;
+            var binderLength = binders.Length;
+            var liveBindersLength = liveBinders.Length;
+            for (int iBinderInfo = 0, iLivebinder = 0;
+                iBinderInfo < binderLength && iLivebinder < liveBindersLength;
+                iBinderInfo++)
+            {
+                var binder = binders[iBinderInfo];
+                if (binder.Mode != DataBindingMode.OneTime)
+                {
+                    LiveBinder liveBinder = liveBinders[iLivebinder];
+                    if (liveBinder == null)
+                    {
+                        liveBinders[iLivebinder] = liveBinder = new LiveBinder(binder);
+                        liveBinder.Target = this.elementsOfIntrest[binder.ObjectIndex];
+                    }
+
+                    switch (binder.BinderType & BinderType.TargetTypes)
+                    {
+                        case BinderType.DataContext:
+                            liveBinder.Source = this.skinableParent.DataContext;
+                            break;
+                        case BinderType.TemplateParent:
+                            liveBinder.Source = this.skinableParent;
+                            break;
+                    }
+
+                    liveBinder.IsActive = true;
+
+                    ++iLivebinder;
+                }
+            }
+        }
+
+        private void QueuedDeactivation()
+        {
+            if (this.isActive || this.isDiposed)
+            {
+                return;
+            }
+
+            for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
+            {
+                var liveBinder = this.liveBinders[iLiveBinder];
+                if (liveBinder == null)
+                {
+                    return;
+                }
+
+                liveBinder.IsActive = false;
+                liveBinder.Cleanup();
+            }
+        }
+
+        private void UpdateBinderSource(object source, BinderType sourceType)
+        {
+            var liveBinders = this.liveBinders;
+            var liveBindersLength = this.liveBinders.Length;
+            for (int iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++)
+            {
+                var liveBinder = liveBinders[iLiveBinder];
+                if (liveBinder != null
+                    && (liveBinder.BinderInfo.BinderType & BinderType.TargetTypes) == sourceType)
+                {
+                    liveBinder.Source = source;
+                }
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="binders">        The binders. </param>
         /// <param name="dataContext">    Context for the data. </param>
         /// <param name="targetElements"> Target elements. </param>
-        public static void BindDataContext(
+        public static void Bind(
             NativeArray<SkinBinderInfo> binders,
             Object dataContext,
             NativeArray<object> targetElements)
@@ -29,38 +29,11 @@ namespace Sunlight.Framework.UI.Helpers
             for (int i = 0, j = binders.Length; i < j; i++)
             {
                 SkinBinderInfo info = binders[i];
-                if ((info.BinderType & BinderType.TemplateParent)
-                    != BinderType.TemplateParent)
-                {
-                    SkinBinderHelper.SetPropertyValue(
-                        info,
-                        dataContext,
-                        targetElements[info.ObjectIndex]);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Bind template parent.
-        /// </summary>
-        /// <param name="binders">        The binders. </param>
-        /// <param name="templateParent"> The template parent. </param>
-        /// <param name="targetElements"> Target elements. </param>
-        public static void BindTemplateParent(
-            NativeArray<SkinBinderInfo> binders,
-            UISkinableElement templateParent,
-            NativeArray<object> targetElements)
-        {
-            for (int i = 0, j = binders.Length; i < j; i++)
-            {
-                SkinBinderInfo info = binders[i];
-                if ((info.BinderType & BinderType.TemplateParent) == BinderType.TemplateParent)
-                {
-                    SkinBinderHelper.SetPropertyValue(
-                        info,
-                        templateParent,
-                        targetElements[info.ObjectIndex]);
-                }
+                SkinBinderHelper.SetPropertyValue(
+                    info,
+                    dataContext,
+                    targetElements[info.ObjectIndex],
+                    null);
             }
         }
 
@@ -143,10 +116,11 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="binder"> The binder. </param>
         /// <param name="source"> Source for the. </param>
         /// <param name="target"> Target for the. </param>
-        private static void SetPropertyValue(
+        public static void SetPropertyValue(
             SkinBinderInfo binder,
             object source,
-            object target)
+            object target,
+            NativeArray extraElementArray)
         {
             try
             {
@@ -161,19 +135,10 @@ namespace Sunlight.Framework.UI.Helpers
 
             try
             {
-                if (binder.TargetPropertySetter != null)
-                {
-                    binder.TargetPropertySetter(
-                        target,
-                        source);
-                }
-                else
-                {
-                    binder.TargetPropertySetterWithArg(
-                        target,
-                        source,
-                        binder.TargetPropertySetterArg);
-                }
+                binder.SetTargetValue(
+                    target,
+                    source,
+                    extraElementArray);
             }
             catch { }
         }

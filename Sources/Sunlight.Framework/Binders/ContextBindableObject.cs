@@ -167,6 +167,11 @@ namespace Sunlight.Framework.Binders
         /// <summary>   Deactivates this object. </summary>
         public void Deactivate()
         {
+            if (!this.isActive)
+            {
+                return;
+            }
+
             this.isActive = false;
             this.FixActivation();
         }

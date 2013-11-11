@@ -81,6 +81,7 @@
     <Compile Include="Expressions\ThisExpression.cs" />
     <Compile Include="Statements\SwitchBlockStatement.cs" />
     <Compile Include="Statements\TryCatchFinalyBlock.cs" />
+    <Compile Include="Statements\VarInitializerStatement.cs" />
     <Compile Include="Statements\WhileLoop.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Writer\Enums.cs" />

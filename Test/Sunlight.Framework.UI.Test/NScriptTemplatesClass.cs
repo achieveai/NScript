@@ -15,7 +15,7 @@ namespace Sunlight.Framework.UI.Test
     /// </summary>
     public class NScriptsTemplatesClass
     {
-        // [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplate1.html")]
+        [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplate1.html")]
         public static Skin TestTemplate1
         {
             get

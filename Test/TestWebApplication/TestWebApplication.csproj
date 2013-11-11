@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="GeneratedScripts\Sunlight.Framework.Test.js" />
+    <Content Include="GeneratedScripts\Sunlight.Framework.UI.Test.js" />
     <Content Include="GeneratedScripts\test.js" />
     <Content Include="Scripts\qunit.js" />
     <Content Include="Styles\qunit.css" />

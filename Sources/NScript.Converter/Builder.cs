@@ -162,6 +162,12 @@ namespace NScript.Converter
             }
 
             JSWriter writer = new JSWriter(true, false);
+            var initializerStatement = runtimeManager.GetVariableDeclarations();
+            if (initializerStatement != null)
+            {
+                writer.Write(initializerStatement);
+            }
+
             foreach (var statement in statements)
             {
                 if (statement != null)

@@ -64,6 +64,11 @@ namespace NScript.JST
         {
             this.innerScope = innerScope;
             this.name = name;
+            if (name != null)
+            {
+                name.MarkAsFunctionName();
+            }
+
             this.parameters = new List<IIdentifier>(parameters);
             this.statements = new List<Statement>();
             this.readonlyStatements = new ReadOnlyCollection<Statement>(this.statements);
@@ -195,20 +200,33 @@ namespace NScript.JST
 
             if (this.innerScope.UsedLocalIdentifiers.Count > 0)
             {
-                writer.WriteNewLine()
-                    .Write(Keyword.Var);
-
-                for (int identifierIndex = 0; identifierIndex < this.innerScope.UsedLocalIdentifiers.Count; identifierIndex++)
+                int realIdentifiers = 0;
+                for (int identifierIndex = 0, writtenIdentifiers = 0; identifierIndex < this.innerScope.UsedLocalIdentifiers.Count; identifierIndex++)
                 {
-                    if (identifierIndex > 0)
-                    {
-                        writer.Write(Symbols.Comma);
-                    }
-
-                    writer.Write(this.innerScope.UsedLocalIdentifiers[identifierIndex]);
+                    if (!this.innerScope.UsedLocalIdentifiers[identifierIndex].IsFunctionName)
+                    { realIdentifiers++; }
                 }
 
-                writer.Write(Symbols.SemiColon);
+                if (realIdentifiers > 0)
+                {
+                    writer.WriteNewLine()
+                        .Write(Keyword.Var);
+
+                    for (int identifierIndex = 0, writtenIdentifiers = 0; identifierIndex < this.innerScope.UsedLocalIdentifiers.Count; identifierIndex++)
+                    {
+                        if (this.innerScope.UsedLocalIdentifiers[identifierIndex].IsFunctionName)
+                        { continue; }
+
+                        if (writtenIdentifiers++ > 0)
+                        {
+                            writer.Write(Symbols.Comma);
+                        }
+
+                        writer.Write(this.innerScope.UsedLocalIdentifiers[identifierIndex]);
+                    }
+
+                    writer.Write(Symbols.SemiColon);
+                }
             }
 
             foreach (Statement statement in this.Statements)

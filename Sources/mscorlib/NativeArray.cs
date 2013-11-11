@@ -24,6 +24,9 @@ namespace System
             set;
         }
 
+        public extern object this[int i]
+        { get; set; }
+
         public T[] GetArray<T>()
         {
             return (T[])(object)new ArrayG<T>(this.ToSpecific<T>());

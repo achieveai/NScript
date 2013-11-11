@@ -892,7 +892,7 @@ namespace System.Web.Html
         /// <param name="eventName">  The name of the event such as 'load'. </param>
         /// <param name="listener">   The listener to be invoked in response to the event. </param>
         /// <param name="useCapture"> Whether the listener wants to initiate capturing the event. </param>
-        internal extern void AddEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
+        public extern void AddEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
 
         /// <summary>
         /// Removes a listener for the specified event.
@@ -900,6 +900,6 @@ namespace System.Web.Html
         /// <param name="eventName">  The name of the event such as 'load'. </param>
         /// <param name="listener">   The listener to be invoked in response to the event. </param>
         /// <param name="useCapture"> Whether the listener wants to initiate capturing the event. </param>
-        internal extern void RemoveEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
+        public extern void RemoveEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
     }
 }

@@ -38,19 +38,32 @@ namespace NScript.JSParser.Test
 
             if (scope.UsedLocalIdentifiers.Count > 0)
             {
-                writer.Write(Keyword.Var);
-
-                for (int identifierIndex = 0; identifierIndex < scope.UsedLocalIdentifiers.Count; identifierIndex++)
+                int realIdentifiers = 0;
+                for (int identifierIndex = 0, writtenIdentifiers = 0; identifierIndex < scope.UsedLocalIdentifiers.Count; identifierIndex++)
                 {
-                    if (identifierIndex > 0)
-                    {
-                        writer.Write(Symbols.Comma);
-                    }
-
-                    writer.Write(scope.UsedLocalIdentifiers[identifierIndex]);
+                    if (!scope.UsedLocalIdentifiers[identifierIndex].IsFunctionName)
+                    { realIdentifiers++; }
                 }
 
-                writer.Write(Symbols.SemiColon);
+                if (realIdentifiers > 0)
+                {
+                    writer.Write(Keyword.Var);
+
+                    for (int identifierIndex = 0, writtenIdentifiers = 0; identifierIndex < scope.UsedLocalIdentifiers.Count; identifierIndex++)
+                    {
+                        if (scope.UsedLocalIdentifiers[identifierIndex].IsFunctionName)
+                        { continue; }
+
+                        if (writtenIdentifiers++ > 0)
+                        {
+                            writer.Write(Symbols.Comma);
+                        }
+
+                        writer.Write(scope.UsedLocalIdentifiers[identifierIndex]);
+                    }
+
+                    writer.Write(Symbols.SemiColon);
+                }
             }
 
             foreach (var statement in block.Statements)

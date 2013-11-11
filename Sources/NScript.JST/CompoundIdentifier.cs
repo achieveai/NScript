@@ -139,5 +139,10 @@ namespace NScript.JST
                 identifiers[iIdentifier].AddUsage(scope);
             }
         }
+
+        public void MarkAsFunctionName()
+        {
+            throw new InvalidOperationException();
+        }
     }
 }
