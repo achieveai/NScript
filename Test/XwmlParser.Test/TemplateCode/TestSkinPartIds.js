@@ -23,6 +23,7 @@ function TestSkinPartIds_factory(skinFactory, doc) {
     "Part1": 0
   }, 0, 0);
 };
+TestSkinPartIds_var = null;
 function TestSkinPartIds() {
   if (!TestSkinPartIds_var)
     TestSkinPartIds_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_Test_TestSkinableWithTestUIElementPart, Sunlight_Framework_UI_Test_TestViewModelA, TestSkinPartIds_factory, "0");

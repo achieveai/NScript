@@ -25,6 +25,7 @@ function TestSkinWithDomPartId_factory(skinFactory, doc) {
     "Part1": 1
   }, 0, 0);
 };
+TestSkinWithDomPartId_var = null;
 function TestSkinWithDomPartId() {
   if (!TestSkinWithDomPartId_var)
     TestSkinWithDomPartId_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_Test_TestSkinableWithDomElementPart, Sunlight_Framework_UI_Test_TestViewModelA, TestSkinWithDomPartId_factory, "0");

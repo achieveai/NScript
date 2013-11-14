@@ -434,12 +434,12 @@ namespace XwmlParser
                         templateParser,
                         this);
 
-                    skinCodeGenerator.GenerateCodePass1();
-
-                    this.skinCodeGenerators.Add(templateParser, skinCodeGenerator);
                     this.skinCodeGeneratorStorageIndexs.Add(
                         skinCodeGenerator,
                         this.skinCodeGeneratorStorageIndexs.Count);
+                    this.skinCodeGenerators.Add(templateParser, skinCodeGenerator);
+
+                    skinCodeGenerator.GenerateCodePass1();
                 }
             }
         }

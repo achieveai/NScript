@@ -39,7 +39,7 @@ namespace NScript.JSParser.Test
             if (scope.UsedLocalIdentifiers.Count > 0)
             {
                 int realIdentifiers = 0;
-                for (int identifierIndex = 0, writtenIdentifiers = 0; identifierIndex < scope.UsedLocalIdentifiers.Count; identifierIndex++)
+                for (int identifierIndex = 0; identifierIndex < scope.UsedLocalIdentifiers.Count; identifierIndex++)
                 {
                     if (!scope.UsedLocalIdentifiers[identifierIndex].IsFunctionName)
                     { realIdentifiers++; }

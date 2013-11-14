@@ -117,7 +117,9 @@ namespace XwmlParser
                     "doc"
                 },
                 false);
+
             this.IterateChildNodes(this.skinNodeInfo);
+            this.GenerateCodeFinalPass();
         }
 
         public void GenerateCodeFinalPass()
@@ -267,6 +269,11 @@ namespace XwmlParser
                     codeGenerator.ScopeManager.Scope,
                     this.parser.GetUniqueTemplateId() + "_var",
                     false);
+
+            this.codeGenerator.AddStatement(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IdentifierExpression(this.skinStorageVariable, codeGenerator.ScopeManager.Scope),
+                    new NullLiteralExpression(codeGenerator.ScopeManager.Scope)));
 
             IdentifierScope methodScope = new IdentifierScope(
                 this.codeGenerator.ScopeManager.Scope,

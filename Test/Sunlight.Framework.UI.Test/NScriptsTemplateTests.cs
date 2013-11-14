@@ -8,6 +8,7 @@ namespace Sunlight.Framework.UI.Test
 {
     using System;
     using SunlightUnit;
+    using System.Web.Html;
 
     /// <summary>
     /// Definition for NScriptsTemplateTests
@@ -31,6 +32,20 @@ namespace Sunlight.Framework.UI.Test
         {
             Assert.NotEqual(null, NScriptsTemplatesClass.TestTemplate1, "Template should not be null");
             Assert.IsTrue(true, "true should be true");
+        }
+
+        [Test]
+        public static void TestApplySkin()
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            UISkinableElement control = new UISkinableElement(element);
+
+            control.DataContext = new TestViewModelA();
+            control.Skin = NScriptsTemplatesClass.TestTemplate1;
+
+            control.Activate();
+
+            Assert.NotEqual(null, element.QuerySelector("[test]"), "After applying skin, skin element should be loaded");
         }
     }
 }

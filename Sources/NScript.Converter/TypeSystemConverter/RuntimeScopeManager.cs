@@ -541,7 +541,8 @@ namespace NScript.Converter.TypeSystemConverter
                 {
                     if (typeReferencesRegistered.Contains(typeReference)
                         || !this.typesDefinitionsUsed.ContainsKey(typeReference.Resolve())
-                        || typeReference.GetGenericTypeScope().HasValue)
+                        || typeReference.GetGenericTypeScope().HasValue
+                        || this.context.IsImportedType(typeReference.Resolve()))
                     {
                         continue;
                     }

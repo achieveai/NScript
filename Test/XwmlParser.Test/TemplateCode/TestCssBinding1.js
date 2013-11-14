@@ -24,6 +24,7 @@ function TestCssBinding1_factory(skinFactory, doc) {
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 0, 0);
 };
+TestCssBinding1_var = null;
 function TestCssBinding1() {
   if (!TestCssBinding1_var)
     TestCssBinding1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, TestCssBinding1_factory, "0");

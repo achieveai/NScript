@@ -20,6 +20,7 @@ function TestSkinWithId_test_factory(skinFactory, doc) {
   objStorage = [];
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 0, 0);
 };
+TestSkinWithId_test_var = null;
 function TestSkinWithId_test() {
   if (!TestSkinWithId_test_var)
     TestSkinWithId_test_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, TestSkinWithId_test_factory, "0");

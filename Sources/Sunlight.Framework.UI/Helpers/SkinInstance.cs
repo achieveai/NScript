@@ -119,22 +119,15 @@ namespace Sunlight.Framework.UI.Helpers
             { this.partIdMapping = new StringDictionary<int>(partIdMapping); }
         }
 
-        /// <summary>   Registers the child by identifier. </summary>
-        /// <param name="id">           The identifier. </param>
-        /// <param name="childIndex">   Zero-based index of the child. </param>
-        public void RegisterChildById(string id, int childIndex)
-        {
-            this.childIdMappings.Add(id, (UIElement)this.elementsOfIntrest[childIndex]);
-        }
-
         /// <summary>   Gets a child by identifier. </summary>
         /// <param name="id">   The identifier. </param>
         /// <returns>   The child by identifier. </returns>
-        public UIElement GetChildById(string id)
+        public object GetChildById(string id)
         {
-            if (this.childIdMappings.ContainsKey(id))
+            if (this.partIdMapping != null
+                && this.partIdMapping.ContainsKey(id))
             {
-                return this.childIdMappings[id];
+                return this.elementsOfIntrest[this.partIdMapping[id]];
             }
 
             return null;
@@ -163,7 +156,26 @@ namespace Sunlight.Framework.UI.Helpers
                 return;
             }
 
+            if (this.skinableParent != null)
+            {
+                var childNodes = this.skinableParent.Element.ChildNodes;
+                while(childNodes.Length > 0)
+                {
+                    this.rootElement.AppendChild(childNodes[0]);
+                }
+            }
+
             this.skinableParent = skinable;
+
+            if (this.skinableParent != null)
+            {
+                var childNodes = this.rootElement.ChildNodes;
+                var skinableElement = skinable.Element;
+                while(childNodes.Length > 0)
+                {
+                    skinableElement.AppendChild(childNodes[0]);
+                }
+            }
 
             if (this.isActive && !this.isDiposed)
             {
@@ -282,6 +294,7 @@ namespace Sunlight.Framework.UI.Helpers
                     childElement.Activate();
                 }
 
+                this.firstActivationDone = true;
                 TaskScheduler.Instance.EnqueueLowPriTask(
                     this.QueuedActivation,
                     "SkinInstance.Activate");

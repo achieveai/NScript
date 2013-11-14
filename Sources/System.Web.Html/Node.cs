@@ -145,7 +145,7 @@ namespace System.Web.Html
         /// <value>
         /// The attributes.
         /// </value>
-        public extern NodeAttribute[] Attributes
+        public extern NativeArray<NodeAttribute> Attributes
         { get; }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace System.Web.Html
         /// <value>
         /// The child nodes.
         /// </value>
-        public extern Node[] ChildNodes
+        public extern NativeArray<Node> ChildNodes
         { get; }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace System.Web.Html
         /// <value>
         /// The children.
         /// </value>
-        public extern Node[] Children
+        public extern NativeArray<Node> Children
         { get; }
 
         /// <summary>

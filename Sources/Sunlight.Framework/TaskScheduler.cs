@@ -72,7 +72,7 @@ namespace Sunlight.Framework
         {
             get
             {
-                if (TaskScheduler.instance != null)
+                if (TaskScheduler.instance == null)
                 {
                     TaskScheduler.instance = new TaskScheduler(16, 25);
                 }

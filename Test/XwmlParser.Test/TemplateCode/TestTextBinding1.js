@@ -24,6 +24,7 @@ function TestTextBinding1_factory(skinFactory, doc) {
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1, 0]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 1, 0);
 };
+TestTextBinding1_var = null;
 function TestTextBinding1() {
   if (!TestTextBinding1_var)
     TestTextBinding1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, TestTextBinding1_factory, "0");

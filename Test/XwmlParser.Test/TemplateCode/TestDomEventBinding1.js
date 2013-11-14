@@ -26,6 +26,7 @@ function TestDomEventBinding1_factory(skinFactory, doc) {
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 0, 1);
 };
+TestDomEventBinding1_var = null;
 function TestDomEventBinding1() {
   if (!TestDomEventBinding1_var)
     TestDomEventBinding1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, TestDomEventBinding1_factory, "0");
