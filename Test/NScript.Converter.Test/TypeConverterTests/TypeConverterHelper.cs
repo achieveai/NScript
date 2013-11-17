@@ -10,9 +10,8 @@ namespace NScript.Converter.Test.TypeConverterTests
     using System.Text;
     using NScript.CLR.Test;
     using NScript.Converter.TypeSystemConverter;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using System.Collections.Generic;
-    using Gallio.Framework;
     using System;
     using Mono.Cecil;
 

@@ -27,13 +27,13 @@ function RealScript__PsudoUsage__M1(t) {
 };
 function RealScript__PsudoUsage__TestImportedGeneric(tmp) {
   if (tmp() === null) {
-    tmp.set_Something(RealScript.ImportedGeneric.get_theArray(tmp).get_item(0));
+    tmp.set_Something(RealScript__ImportedGeneric$1__get_TheArray(tmp).get_item(0));
     return tmp(tmp.get_Something());
   }
   else if (tmp().length === 10) {
     tmp.set_Something(RealScript.ImportedGeneric.hasSomething());
     tmp(tmp.get_Something());
-    RealScript.ImportedGeneric.get_theArray(tmp).set_item(0, tmp());
+    RealScript__ImportedGeneric$1__get_TheArray(tmp).set_item(0, tmp());
   }
   return tmp();
 };

@@ -8,7 +8,7 @@ namespace NScript.Converter.Test.MethodConverterTests
 {
     using System;
     using System.Collections.Generic;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using NScript.CLR.Test;
 
     /// <summary>
@@ -26,7 +26,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "Div", "IntDivide.js", TestType.All)]
+        [TestCase(TestClassNameStr, "Div", "IntDivide.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -37,7 +37,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "Div", "IntDivide.js", TestType.All)]
+        [TestCase(TestClassNameStr, "Div", "IntDivide.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

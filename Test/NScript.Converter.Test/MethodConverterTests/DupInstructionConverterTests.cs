@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for DupInstructionConverterTests
@@ -25,19 +25,19 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "PostfixOperation", "PostfixOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixPropertyOperation", "PostfixPropertyOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixSecondOrderPropertyOperation", "PostfixSecondOrderPropertyOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixPropertyInConditionOperation", "PostfixPropertyInConditionOperationDebug.js", TestType.Debug)]
-        [Row(TestClassNameStr, "PostfixPropertyInConditionOperation", "PostfixPropertyInConditionOperation.js", TestType.Retail)]
-        [Row(TestClassNameStr, "FunctionCallWithInlineAssignment", "FunctionCallWithInlineAssignment.js", TestType.All)]
-        [Row(TestClassNameStr, "PropertyInlineEquals", "PropertyInlineEquals.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixPropertyOnPropertyOperation", "PostfixPropertyOnPropertyOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "LocalOpAssignmentOperation", "LocalOpAssignmentOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PropertyOpAssignmentOperation", "PropertyOpAssignmentOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PropertyOnPropertyOpAssignmentOperation", "PropertyOnPropertyOpAssignmentOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "NullCheckAssignment", "NullCheckAssignment.js", TestType.All)]
-        [Row(TestClassNameStr, "InlineOpAssignment", "InlineOpAssignment.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixOperation", "PostfixOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixPropertyOperation", "PostfixPropertyOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixSecondOrderPropertyOperation", "PostfixSecondOrderPropertyOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixPropertyInConditionOperation", "PostfixPropertyInConditionOperationDebug.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "PostfixPropertyInConditionOperation", "PostfixPropertyInConditionOperation.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "FunctionCallWithInlineAssignment", "FunctionCallWithInlineAssignment.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PropertyInlineEquals", "PropertyInlineEquals.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixPropertyOnPropertyOperation", "PostfixPropertyOnPropertyOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalOpAssignmentOperation", "LocalOpAssignmentOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PropertyOpAssignmentOperation", "PropertyOpAssignmentOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PropertyOnPropertyOpAssignmentOperation", "PropertyOnPropertyOpAssignmentOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "NullCheckAssignment", "NullCheckAssignment.js", TestType.All)]
+        [TestCase(TestClassNameStr, "InlineOpAssignment", "InlineOpAssignment.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -48,18 +48,18 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "PostfixOperation", "PostfixOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixPropertyOperation", "PostfixPropertyOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixSecondOrderPropertyOperation", "PostfixSecondOrderPropertyOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixPropertyInConditionOperation", "PostfixPropertyInConditionOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "FunctionCallWithInlineAssignment", "FunctionCallWithInlineAssignment.js", TestType.All)]
-        [Row(TestClassNameStr, "PropertyInlineEquals", "PropertyInlineEquals.js", TestType.All)]
-        [Row(TestClassNameStr, "PostfixPropertyOnPropertyOperation", "PostfixPropertyOnPropertyOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "LocalOpAssignmentOperation", "LocalOpAssignmentOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PropertyOpAssignmentOperation", "PropertyOpAssignmentOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "PropertyOnPropertyOpAssignmentOperation", "PropertyOnPropertyOpAssignmentOperation.js", TestType.All)]
-        [Row(TestClassNameStr, "NullCheckAssignment", "NullCheckAssignment.js", TestType.All)]
-        [Row(TestClassNameStr, "InlineOpAssignment", "InlineOpAssignment.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixOperation", "PostfixOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixPropertyOperation", "PostfixPropertyOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixSecondOrderPropertyOperation", "PostfixSecondOrderPropertyOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixPropertyInConditionOperation", "PostfixPropertyInConditionOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "FunctionCallWithInlineAssignment", "FunctionCallWithInlineAssignment.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PropertyInlineEquals", "PropertyInlineEquals.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PostfixPropertyOnPropertyOperation", "PostfixPropertyOnPropertyOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalOpAssignmentOperation", "LocalOpAssignmentOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PropertyOpAssignmentOperation", "PropertyOpAssignmentOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "PropertyOnPropertyOpAssignmentOperation", "PropertyOnPropertyOpAssignmentOperation.js", TestType.All)]
+        [TestCase(TestClassNameStr, "NullCheckAssignment", "NullCheckAssignment.js", TestType.All)]
+        [TestCase(TestClassNameStr, "InlineOpAssignment", "InlineOpAssignment.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

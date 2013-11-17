@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for InlineInitializationTests
@@ -25,11 +25,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "ReturnInlineObjectArray", "ReturnInlineObjectArray.js", TestType.All)]
-        [Row(TestClassNameStr, "TestVarArgs", "VarArgs.js", TestType.All)]
-        [Row(TestClassNameStr, "ReturnInlineSettersElement", "ReturnInlineSettersElement.js", TestType.All)]
-        [Row(TestClassNameStr, "CallMethodWithInlineSettersElement", "CallMethodWithInlineSettersElement.js", TestType.All)]
-        [Row(TestClassNameStr, "ReturnInlineConstIntArray", "ReturnInlineConstIntArray.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ReturnInlineObjectArray", "ReturnInlineObjectArray.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TestVarArgs", "VarArgs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ReturnInlineSettersElement", "ReturnInlineSettersElement.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CallMethodWithInlineSettersElement", "CallMethodWithInlineSettersElement.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ReturnInlineConstIntArray", "ReturnInlineConstIntArray.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -40,11 +40,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "ReturnInlineObjectArray", "ReturnInlineObjectArray.js", TestType.All)]
-        [Row(TestClassNameStr, "TestVarArgs", "VarArgs.js", TestType.All)]
-        [Row(TestClassNameStr, "ReturnInlineSettersElement", "ReturnInlineSettersElement.js", TestType.All)]
-        [Row(TestClassNameStr, "CallMethodWithInlineSettersElement", "CallMethodWithInlineSettersElement.js", TestType.All)]
-        [Row(TestClassNameStr, "ReturnInlineConstIntArray", "ReturnInlineConstIntArray.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ReturnInlineObjectArray", "ReturnInlineObjectArray.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TestVarArgs", "VarArgs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ReturnInlineSettersElement", "ReturnInlineSettersElement.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CallMethodWithInlineSettersElement", "CallMethodWithInlineSettersElement.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ReturnInlineConstIntArray", "ReturnInlineConstIntArray.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

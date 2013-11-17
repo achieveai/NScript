@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for SwitchBlockConverters
@@ -25,17 +25,17 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
-        [Row(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
-        [Row(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunctionRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
-        [Row(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnly.js", TestType.Debug)]
-        [Row(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnlyRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForDebug.js", TestType.Debug)]
-        [Row(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValues.js", TestType.Debug)]
-        [Row(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValuesRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
+        [TestCase(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunctionRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnly.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnlyRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForDebug.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValues.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValuesRetail.js", TestType.Retail)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -46,13 +46,13 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
-        [Row(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
-        [Row(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
-        [Row(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnlyRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForDebug.js", TestType.Debug)]
-        [Row(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValues.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
+        [TestCase(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnlyRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForDebug.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValues.js", TestType.Debug)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

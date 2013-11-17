@@ -1,15 +1,4 @@
-﻿tmplStore = new Array(1);
-function DocStorageGetter(doc) {
-  var style;
-  if (!doc.stateStore) {
-    doc.stateStore = new Array(1);
-    style = doc.createElement("style");
-    style.textContent = "";
-    doc.body.appendChild(style);
-  }
-  return doc.stateStore;
-};
-function TestSkinWithDomPartId_factory(skinFactory, doc) {
+﻿function TestSkinWithDomPartId_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
@@ -30,4 +19,15 @@ function TestSkinWithDomPartId() {
   if (!TestSkinWithDomPartId_var)
     TestSkinWithDomPartId_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_Test_TestSkinableWithDomElementPart, Sunlight_Framework_UI_Test_TestViewModelA, TestSkinWithDomPartId_factory, "0");
   return TestSkinWithDomPartId_var;
+};
+tmplStore = new Array(1);
+function DocStorageGetter(doc) {
+  var style;
+  if (!doc.stateStore) {
+    doc.stateStore = new Array(1);
+    style = doc.createElement("style");
+    style.textContent = "";
+    doc.body.appendChild(style);
+  }
+  return doc.stateStore;
 };

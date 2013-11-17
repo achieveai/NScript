@@ -80,6 +80,15 @@ function System__NativeArray$1__RemoveAt(this_, index) {
     this_[i] = this_[i + 1];
   this_.pop();
 };
+function System__NativeArray$1__op_Implicit(n) {
+  return n.get_innerArray();
+};
+function System__NativeArray$1__op_Implicita(n) {
+  return ArrayG$1_$T$_.__ctor(n);
+};
+function System__NativeArray$1__op_Implicita(n) {
+  return List$1_$T$_.__ctor(n);
+};
 function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   var ListEnumerator$1_$T$_, List$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_Collections_Generic_List[T.typeId])
@@ -93,6 +102,9 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
+  List$1_$T$_.op_Implicit = function System__Collections__Generic__List$1__op_Implicit(n) {
+    return n.nativeArray;
+  };
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory() {
     var this_;
     this_ = new List$1_$T$_();
@@ -146,6 +158,9 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
     if (index < 0 || index >= arr.length)
       throw "index " + index + " out of range";
     return arr[index] = value;
+  };
+  ptyp_.get_innerArray = function System__Collections__Generic__List$1__get_InnerArray() {
+    return this.nativeArray;
   };
   ptyp_.indexOf = function System__Collections__Generic__List$1__IndexOf(item) {
     return System__NativeArray$1__IndexOf(this.nativeArray, item, 0);

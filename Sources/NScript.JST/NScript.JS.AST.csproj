@@ -54,6 +54,7 @@
     <Compile Include="Expressions\NewObjectExpression.cs" />
     <Compile Include="Expressions\ScriptLiteralExpression.cs" />
     <Compile Include="IIdentifier.cs" />
+    <Compile Include="ReadableIdentifierNamer.cs" />
     <Compile Include="Statements\CatchHandler.cs" />
     <Compile Include="Statements\ForInLoop.cs" />
     <Compile Include="Statements\InitializerStatement.cs" />

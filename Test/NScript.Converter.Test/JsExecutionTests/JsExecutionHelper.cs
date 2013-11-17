@@ -12,8 +12,7 @@ namespace NScript.Converter.Test.JsExecutionTests
     using NScript.CLR.Test;
     using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using Mono.Cecil;
     using Noesis.Javascript;
 
@@ -82,8 +81,8 @@ namespace NScript.Converter.Test.JsExecutionTests
                     isDebug,
                     isMcs,
                     entryPoint);
-                TestLog.WriteLine("==================== Script generated ====================");
-                TestLog.WriteLine(script);
+                System.Diagnostics.Debug.WriteLine("==================== Script generated ====================");
+                System.Diagnostics.Debug.WriteLine(script);
                 // engine.SetDebugMode(true);
                 engine.SetParameter("console", jsConsole);
                 engine.Run(script);
@@ -98,8 +97,8 @@ namespace NScript.Converter.Test.JsExecutionTests
             }
 
             string consoleString = JsExecutionHelper.GetConsoleString(jsConsole);
-            TestLog.WriteLine("==================== Script Console ====================");
-            TestLog.WriteLine(consoleString);
+            System.Diagnostics.Debug.WriteLine("==================== Script Console ====================");
+            System.Diagnostics.Debug.WriteLine(consoleString);
 
             Assert.AreEqual(
                 output,

@@ -6,8 +6,7 @@
 
 namespace NScript.Converter.Test.MethodConverterTests
 {
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using NScript.CLR.Test;
 
     /// <summary>
@@ -26,13 +25,13 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "TryFinallySimple", "TryFinallySimple.js", TestType.All)]
-        [Row(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturn.js", TestType.Debug)]
-        [Row(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturnRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "TryCatchSimple", "TryCatchSimple.js", TestType.All)]
-        [Row(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturn.js", TestType.Debug)]
-        [Row(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturnRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "TryCatchFinallySimple", "TryCatchFinallySimple.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryFinallySimple", "TryFinallySimple.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturn.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturnRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "TryCatchSimple", "TryCatchSimple.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturn.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturnRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "TryCatchFinallySimple", "TryCatchFinallySimple.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -43,11 +42,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "TryFinallySimple", "TryFinallySimple.js", TestType.All)]
-        [Row(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturnMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "TryCatchSimple", "TryCatchSimple.js", TestType.All)]
-        [Row(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturnMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "TryCatchFinallySimple", "TryCatchFinallySimple.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryFinallySimple", "TryFinallySimple.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturnMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryCatchSimple", "TryCatchSimple.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturnMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TryCatchFinallySimple", "TryCatchFinallySimple.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

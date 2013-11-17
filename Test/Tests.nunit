@@ -3,5 +3,6 @@
   <Config name="Default" binpathtype="Auto">
     <assembly path="NScript.CLR.Test\bin\Debug\XwmlParser.Test.dll" />
     <assembly path="NScript.CLR.Test\bin\Debug\NScript.CLR.Test.dll" />
+    <assembly path="NScript.CLR.Test\bin\Debug\NScript.Converter.Test.dll" />
   </Config>
 </NUnitProject>

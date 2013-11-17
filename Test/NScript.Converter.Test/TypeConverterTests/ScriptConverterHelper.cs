@@ -11,8 +11,7 @@ namespace NScript.Converter.Test.TypeConverterTests
     using System.Text;
     using NScript.CLR.Test;
     using NScript.Converter.TypeSystemConverter;
-    using MbUnit.Framework;
-    using Gallio.Framework;
+    using NUnit.Framework;
     using System;
     using Mono.Cecil;
 

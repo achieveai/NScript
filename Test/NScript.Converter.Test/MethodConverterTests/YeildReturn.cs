@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for YeildReturn
@@ -24,7 +24,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         //// [Test]
-        //// [Row(TestType.Retail, "")]
+        //// [TestCase(TestType.Retail, "")]
         public void NestedForYieldReturn(TestType testType, string fileName)
         {
             ConverterTestHelpers.RunTest(

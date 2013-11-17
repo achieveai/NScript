@@ -8,7 +8,7 @@ namespace NScript.Converter.Test.JsExecutionTests
 {
     using System;
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for SimpleClassGenerationTests
@@ -26,14 +26,14 @@ namespace NScript.Converter.Test.JsExecutionTests
         }
 
         // [Test]
-        // [Row(TestType.All, "FactorialCalculator", "Main")]
-        // [Row(TestType.All, "GetMin", "RunTest")]
-        // [Row(TestType.All, "QuickSort", "RunTest")]
-        // [Row(TestType.All, "TestArithmetics", "Main")]
-        // [Row(TestType.Retail, "TestControlFlow", "Main")]
-        // [Row(TestType.All, "TestInitializer", "Main")]
-        // [Row(TestType.All, "TestDelegates", "Main")]
-        // [Row(TestType.Retail, "TestGenerics", "Main")]
+        // [TestCase(TestType.All, "FactorialCalculator", "Main")]
+        // [TestCase(TestType.All, "GetMin", "RunTest")]
+        // [TestCase(TestType.All, "QuickSort", "RunTest")]
+        // [TestCase(TestType.All, "TestArithmetics", "Main")]
+        // [TestCase(TestType.Retail, "TestControlFlow", "Main")]
+        // [TestCase(TestType.All, "TestInitializer", "Main")]
+        // [TestCase(TestType.All, "TestDelegates", "Main")]
+        // [TestCase(TestType.Retail, "TestGenerics", "Main")]
         public void Test(
                 TestType testType,
                 string className,
@@ -57,15 +57,15 @@ namespace NScript.Converter.Test.JsExecutionTests
         }
 
         [Test]
-        [Row(TestType.All, "FactorialCalculator", "Main")]
-        [Row(TestType.All, "GetMin", "RunTest")]
-        [Row(TestType.All, "QuickSort", "RunTest")]
-        [Row(TestType.All, "TestArithmetics", "Main")]
-        [Row(TestType.All, "TestControlFlow", "Main")]
-        [Row(TestType.All, "TestInitializer", "Main")]
-        [Row(TestType.All, "TestDelegates", "Main")]
-        [Row(TestType.All, "TestGenerics", "Main")]
-        [Row(TestType.All, "NullableTests", "Main")]
+        // [TestCase(TestType.All, "FactorialCalculator", "Main")]
+        // [TestCase(TestType.All, "GetMin", "RunTest")]
+        // [TestCase(TestType.All, "QuickSort", "RunTest")]
+        // [TestCase(TestType.All, "TestArithmetics", "Main")]
+        // [TestCase(TestType.All, "TestControlFlow", "Main")]
+        // [TestCase(TestType.All, "TestInitializer", "Main")]
+        // [TestCase(TestType.All, "TestDelegates", "Main")]
+        [TestCase(TestType.All, "TestGenerics", "Main")]
+        // [TestCase(TestType.All, "NullableTests", "Main")]
         public void TestMcs(
                 TestType testType,
                 string className,

@@ -1,5 +1,5 @@
 ﻿using NScript.CLR.Test;
-using MbUnit.Framework;
+using NUnit.Framework;
 
 namespace NScript.Converter.Test.MethodConverterTests
 {
@@ -16,11 +16,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "get_IntProperty", "GetAutoProperty.js", TestType.All)]
-        [Row(TestClassNameStr, "set_IntProperty", "SetAutoProperty.js", TestType.All)]
-        [Row(TestClassNameStr, "add_testEvent", "AddTestEvent.js", TestType.All)]
-        [Row(TestClassNameStr, "remove_testEvent", "RemoveTestEvent.js", TestType.All)]
-        [Row(TestClassNameStr, "TestEventCheck", "TestEventAddRemove.js", TestType.All)]
+        [TestCase(TestClassNameStr, "get_IntProperty", "GetAutoProperty.js", TestType.All)]
+        [TestCase(TestClassNameStr, "set_IntProperty", "SetAutoProperty.js", TestType.All)]
+        [TestCase(TestClassNameStr, "add_testEvent", "AddTestEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "remove_testEvent", "RemoveTestEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TestEventCheck", "TestEventAddRemove.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

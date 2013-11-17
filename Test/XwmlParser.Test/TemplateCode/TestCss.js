@@ -1,15 +1,4 @@
-﻿tmplStore = new Array(1);
-function DocStorageGetter(doc) {
-  var style;
-  if (!doc.stateStore) {
-    doc.stateStore = new Array(1);
-    style = doc.createElement("style");
-    style.textContent = ".testClass{height:10px;}";
-    doc.body.appendChild(style);
-  }
-  return doc.stateStore;
-};
-function TestCss_factory(skinFactory, doc) {
+﻿function TestCss_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
@@ -25,4 +14,15 @@ function TestCss() {
   if (!TestCss_var)
     TestCss_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, TestCss_factory, "0");
   return TestCss_var;
+};
+tmplStore = new Array(1);
+function DocStorageGetter(doc) {
+  var style;
+  if (!doc.stateStore) {
+    doc.stateStore = new Array(1);
+    style = doc.createElement("style");
+    style.textContent = ".testClass{height:10px;}";
+    doc.body.appendChild(style);
+  }
+  return doc.stateStore;
 };

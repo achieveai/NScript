@@ -8,7 +8,7 @@ namespace NScript.Converter.Test.TypeConverterTests
 {
     using System;
     using System.Collections.Generic;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using NScript.CLR.Test;
 
     /// <summary>
@@ -32,20 +32,20 @@ namespace NScript.Converter.Test.TypeConverterTests
         }
 
         [Test]
-        [Row("SimpleStaticType.js", TestType.All, new []{"SimpleStaticType"})]
-        [Row("SimpleInstanceType.js", TestType.All, new []{"SimpleInstanceType"})]
-        [Row("SimpleEnumType.js", TestType.All, new []{"SimpleEnumType"})]
-        [Row("MultipleConstructorsType.js", TestType.All, new []{"MultipleConstructorsType"})]
-        [Row("SameNameInstanceAndStaticMethod.js", TestType.All, new []{"SameNameInstanceAndStaticMethod"})]
-        [Row("VirtualOverride.js", TestType.All, new []{"VirtualOverride"})]
-        [Row("VirtualBase.js", TestType.All, new []{"VirtualBase"})]
-        [Row("SimpleFullVirtual.js", TestType.All, new []{"VirtualBase", "VirtualOverride"})]
-        [Row("InheritInterface.js", TestType.All, new []{"InheritInterface"})]
-        [Row("InheritDerivedInterface.js", TestType.All, new []{"InheritDerivedInterface"})]
-        [Row("SecondOrderInterfaceInherit.js", TestType.All, new []{"SecondOrderInterfaceInherit"})]
-        [Row("FullInheritDerivedInterface.js", TestType.All, new []{"SimpleInterface", "SimpleInheritedInterface", "InheritDerivedInterface"})]
-        [Row("EnumUsingClass.js", TestType.All, new []{"EnumUsingClass"})]
-        [Row("StructClassType.js", TestType.Retail, new []{"StructClass", "StructClass2"})]
+        [TestCase("SimpleStaticType.js", TestType.All, new []{"SimpleStaticType"})]
+        [TestCase("SimpleInstanceType.js", TestType.All, new []{"SimpleInstanceType"})]
+        [TestCase("SimpleEnumType.js", TestType.All, new []{"SimpleEnumType"})]
+        [TestCase("MultipleConstructorsType.js", TestType.All, new []{"MultipleConstructorsType"})]
+        [TestCase("SameNameInstanceAndStaticMethod.js", TestType.All, new []{"SameNameInstanceAndStaticMethod"})]
+        [TestCase("VirtualOverride.js", TestType.All, new []{"VirtualOverride"})]
+        [TestCase("VirtualBase.js", TestType.All, new []{"VirtualBase"})]
+        [TestCase("SimpleFullVirtual.js", TestType.All, new []{"VirtualBase", "VirtualOverride"})]
+        [TestCase("InheritInterface.js", TestType.All, new []{"InheritInterface"})]
+        [TestCase("InheritDerivedInterface.js", TestType.All, new []{"InheritDerivedInterface"})]
+        [TestCase("SecondOrderInterfaceInherit.js", TestType.All, new []{"SecondOrderInterfaceInherit"})]
+        [TestCase("FullInheritDerivedInterface.js", TestType.All, new []{"SimpleInterface", "SimpleInheritedInterface", "InheritDerivedInterface"})]
+        [TestCase("EnumUsingClass.js", TestType.All, new []{"EnumUsingClass"})]
+        [TestCase("StructClassType.js", TestType.Retail, new []{"StructClass", "StructClass2"})]
         public void Test(string resourceName, TestType testType, params string[] classNames)
         {
             TypeConverterHelper.RunTest(
@@ -56,20 +56,20 @@ namespace NScript.Converter.Test.TypeConverterTests
         }
 
         [Test]
-        [Row("SimpleStaticType.js", TestType.All, new []{"SimpleStaticType"})]
-        [Row("SimpleInstanceType.js", TestType.All, new []{"SimpleInstanceType"})]
-        [Row("SimpleEnumType.js", TestType.All, new []{"SimpleEnumType"})]
-        [Row("MultipleConstructorsType.js", TestType.All, new []{"MultipleConstructorsType"})]
-        [Row("SameNameInstanceAndStaticMethod.js", TestType.All, new []{"SameNameInstanceAndStaticMethod"})]
-        [Row("VirtualOverride.js", TestType.All, new []{"VirtualOverride"})]
-        [Row("VirtualBase.js", TestType.All, new []{"VirtualBase"})]
-        [Row("SimpleFullVirtual.js", TestType.All, new []{"VirtualBase", "VirtualOverride"})]
-        [Row("InheritInterface.js", TestType.All, new []{"InheritInterface"})]
-        [Row("InheritDerivedInterface.js", TestType.All, new []{"InheritDerivedInterface"})]
-        [Row("SecondOrderInterfaceInherit.js", TestType.All, new []{"SecondOrderInterfaceInherit"})]
-        [Row("FullInheritDerivedInterface.js", TestType.All, new []{"SimpleInterface", "SimpleInheritedInterface", "InheritDerivedInterface"})]
-        [Row("EnumUsingClass.js", TestType.All, new []{"EnumUsingClass"})]
-        [Row("StructClassTypeMcs.js", TestType.Retail, new []{"StructClass", "StructClass2"})]
+        [TestCase("SimpleStaticType.js", TestType.All, new []{"SimpleStaticType"})]
+        [TestCase("SimpleInstanceType.js", TestType.All, new []{"SimpleInstanceType"})]
+        [TestCase("SimpleEnumType.js", TestType.All, new []{"SimpleEnumType"})]
+        [TestCase("MultipleConstructorsType.js", TestType.All, new []{"MultipleConstructorsType"})]
+        [TestCase("SameNameInstanceAndStaticMethod.js", TestType.All, new []{"SameNameInstanceAndStaticMethod"})]
+        [TestCase("VirtualOverride.js", TestType.All, new []{"VirtualOverride"})]
+        [TestCase("VirtualBase.js", TestType.All, new []{"VirtualBase"})]
+        [TestCase("SimpleFullVirtual.js", TestType.All, new []{"VirtualBase", "VirtualOverride"})]
+        [TestCase("InheritInterface.js", TestType.All, new []{"InheritInterface"})]
+        [TestCase("InheritDerivedInterface.js", TestType.All, new []{"InheritDerivedInterface"})]
+        [TestCase("SecondOrderInterfaceInherit.js", TestType.All, new []{"SecondOrderInterfaceInherit"})]
+        [TestCase("FullInheritDerivedInterface.js", TestType.All, new []{"SimpleInterface", "SimpleInheritedInterface", "InheritDerivedInterface"})]
+        [TestCase("EnumUsingClass.js", TestType.All, new []{"EnumUsingClass"})]
+        [TestCase("StructClassTypeMcs.js", TestType.Retail, new []{"StructClass", "StructClass2"})]
         public void TestMcs(string resourceName, TestType testType, params string[] classNames)
         {
             TypeConverterHelper.RunTest(

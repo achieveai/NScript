@@ -1,17 +1,6 @@
 ﻿function getter(src) {
   src.get_propStr1();
 };
-tmplStore = new Array(1);
-function DocStorageGetter(doc) {
-  var style;
-  if (!doc.stateStore) {
-    doc.stateStore = new Array(1);
-    style = doc.createElement("style");
-    style.textContent = "";
-    doc.body.appendChild(style);
-  }
-  return doc.stateStore;
-};
 function TestAttributeBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
@@ -29,4 +18,15 @@ function TestAttributeBinding() {
   if (!TestAttributeBinding_var)
     TestAttributeBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, TestAttributeBinding_factory, "0");
   return TestAttributeBinding_var;
+};
+tmplStore = new Array(1);
+function DocStorageGetter(doc) {
+  var style;
+  if (!doc.stateStore) {
+    doc.stateStore = new Array(1);
+    style = doc.createElement("style");
+    style.textContent = "";
+    doc.body.appendChild(style);
+  }
+  return doc.stateStore;
 };

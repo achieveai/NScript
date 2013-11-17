@@ -12,7 +12,7 @@ namespace NScript.JST
     /// <summary>
     /// Scopes for variables.
     /// </summary>
-    public class IdentifierScope
+    public partial class IdentifierScope
     {
         /// <summary>
         /// Backing field if IsExecutionScope
@@ -43,6 +43,12 @@ namespace NScript.JST
             new List<SimpleIdentifier>();
 
         /// <summary>
+        /// The conflicting scopes.
+        /// </summary>
+        private readonly List<IdentifierScope> conflictingScopes =
+            new List<IdentifierScope>();
+
+        /// <summary>
         /// backing list for ChildScopes.
         /// </summary>
         private readonly List<IdentifierScope> childScopes =
@@ -61,6 +67,11 @@ namespace NScript.JST
             new List<SimpleIdentifier>();
 
         /// <summary>
+        /// List of names of the assigneds.
+        /// </summary>
+        private Dictionary<SimpleIdentifier, string> assignedNames;
+
+        /// <summary>
         /// Backing field for ParameterIdentifiers.
         /// </summary>
         private readonly ReadOnlyCollection<SimpleIdentifier> readonlyParameterIdentifiers;
@@ -74,6 +85,11 @@ namespace NScript.JST
         /// Backing field for UsedIdentifiers.
         /// </summary>
         private readonly ReadOnlyCollection<SimpleIdentifier> readonlyUsedIdentifiers;
+
+        /// <summary>
+        /// The readonly conflicting scopes.
+        /// </summary>
+        private readonly ReadOnlyCollection<IdentifierScope> readonlyConflictingScopes;
 
         /// <summary>
         /// Backing field for ChildScopes.
@@ -258,6 +274,26 @@ namespace NScript.JST
         }
 
         /// <summary>
+        /// Gets the conflicting scopes.
+        /// </summary>
+        /// <value>
+        /// The conflicting scopes.
+        /// </value>
+        public IList<IdentifierScope> ConflictingScopes
+        {
+            get { return this.readonlyConflictingScopes; }
+        }
+
+        internal void AddConflictingScope(IdentifierScope scope)
+        {
+            if (!this.conflictingScopes.Contains(scope))
+            {
+                scope.conflictingScopes.Add(this);
+                this.conflictingScopes.Add(scope);
+            }
+        }
+
+        /// <summary>
         /// Adds the identifier.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
@@ -316,6 +352,11 @@ namespace NScript.JST
         internal string GetName(SimpleIdentifier identifier)
         {
             SimpleIdentifier knownIdentifier;
+
+            if (this.assignedNames != null)
+            {
+                return this.assignedNames[identifier];
+            }
 
             if (this.knownNameMap.TryGetValue(identifier.SuggestedName, out knownIdentifier)
                 && knownIdentifier == identifier)

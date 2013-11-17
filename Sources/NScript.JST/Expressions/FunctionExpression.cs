@@ -201,7 +201,7 @@ namespace NScript.JST
             if (this.innerScope.UsedLocalIdentifiers.Count > 0)
             {
                 int realIdentifiers = 0;
-                for (int identifierIndex = 0, writtenIdentifiers = 0; identifierIndex < this.innerScope.UsedLocalIdentifiers.Count; identifierIndex++)
+                for (int identifierIndex = 0; identifierIndex < this.innerScope.UsedLocalIdentifiers.Count; identifierIndex++)
                 {
                     if (!this.innerScope.UsedLocalIdentifiers[identifierIndex].IsFunctionName)
                     { realIdentifiers++; }

@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for StructClassMethodsTests
@@ -26,16 +26,16 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All)]
-        [Row(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All)]
-        [Row(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All)]
-        [Row(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All)]
-        [Row(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All)]
-        [Row(TestClassNameStr2, "GetFooValue", "StructPropertyInvoke.js", TestType.Debug)]
-        [Row(TestClassNameStr, ".ctor", "Constructor.js", TestType.All)]
-        [Row(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All)]
-        [Row(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All)]
-        [Row("EnumUsingClass", "GetStr", "EnumToString.js", TestType.All)]
+        [TestCase(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All)]
+        [TestCase(TestClassNameStr2, "GetFooValue", "StructPropertyInvoke.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, ".ctor", "Constructor.js", TestType.All)]
+        [TestCase(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All)]
+        [TestCase("EnumUsingClass", "GetStr", "EnumToString.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -46,16 +46,16 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All)]
-        [Row(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All)]
-        [Row(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All)]
-        [Row(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All)]
-        [Row(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All)]
-        [Row(TestClassNameStr2, "GetFooValue", "StructPropertyInvokeMcs.js", TestType.Debug)]
-        [Row(TestClassNameStr, ".ctor", "Constructor.js", TestType.All)]
-        [Row(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All)]
-        [Row(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All)]
-        [Row("EnumUsingClass", "GetStr", "EnumToString.js", TestType.All)]
+        [TestCase(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All)]
+        [TestCase(TestClassNameStr2, "GetFooValue", "StructPropertyInvokeMcs.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, ".ctor", "Constructor.js", TestType.All)]
+        [TestCase(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All)]
+        [TestCase("EnumUsingClass", "GetStr", "EnumToString.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

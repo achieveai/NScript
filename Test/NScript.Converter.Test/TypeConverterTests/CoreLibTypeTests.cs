@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.TypeConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for CoreLibTypeTests
@@ -30,19 +30,19 @@ namespace NScript.Converter.Test.TypeConverterTests
         }
 
         [Test]
-        [Row("ObjectType.js",
+        [TestCase("ObjectType.js",
              TestType.All,
              new[] { "System.Object" })]
-        [Row("TypeType.js",
+        [TestCase("TypeType.js",
              TestType.All,
              new[] { "System.Type" })]
-        [Row("StringType.js",
+        [TestCase("StringType.js",
              TestType.All,
              new[] { "System.String" })]
-        [Row("IntType.js",
+        [TestCase("IntType.js",
              TestType.All,
              new[] { "System.Int32" })]
-        [Row("ArrayType.js",
+        [TestCase("ArrayType.js",
              TestType.All,
              new[]{
                  "System.Array",
@@ -64,25 +64,25 @@ namespace NScript.Converter.Test.TypeConverterTests
         /// <param name="testType">     Type of the test. </param>
         /// <param name="classNames">   List of names of the class. </param>
         [Test]
-        [Row("ObjectType.js",
+        [TestCase("ObjectType.js",
              TestType.All,
              new[] { "System.Object" })]
-        [Row("TypeType.js",
+        [TestCase("TypeType.js",
              TestType.All,
              new[] { "System.Type" })]
-        [Row("StringType.js",
+        [TestCase("StringType.js",
              TestType.All,
              new[] { "System.String" })]
-        [Row("IntType.js",
+        [TestCase("IntType.js",
              TestType.All,
              new[] { "System.Int32" })]
-        [Row("ListType.js",
+        [TestCase("ListType.js",
              TestType.All,
              new[]{
                  "System.Array",
                  "System.NativeArray`1",
                  "System.Collections.Generic.List`1"})]
-        [Row("ArrayTypeMcs.js",
+        [TestCase("ArrayTypeMcs.js",
              TestType.All,
              new[]{
                  "System.Array",

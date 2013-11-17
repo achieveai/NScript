@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for GenericTests
@@ -25,14 +25,14 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        // [Row(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
-        // [Row(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
-        [Row(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
-        // [Row(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
-        // [Row(TestClassNameStr, "GenericMethodCall3", "GenericMethodCall3.js", TestType.All)]
-        // [Row("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
-        // [Row("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCall.js", TestType.Debug)]
-        // [Row("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallRetail.js", TestType.Retail)]
+        // [TestCase(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
+        // [TestCase(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
+        // [TestCase(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
+        // [TestCase(TestClassNameStr, "GenericMethodCall3", "GenericMethodCall3.js", TestType.All)]
+        // [TestCase("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
+        // [TestCase("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCall.js", TestType.Debug)]
+        // [TestCase("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallRetail.js", TestType.Retail)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -43,13 +43,13 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        // [Row(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
-        // [Row(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
-        // [Row(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
-        // [Row(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
-        // [Row("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
-        // [Row("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All)]
-        [Row("GenericRegressions", "TestGenericMethodCalls", "GenericMethodCalls.js", TestType.All)]
+        // [TestCase(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
+        // [TestCase(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
+        // [TestCase(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
+        // [TestCase(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
+        // [TestCase("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
+        // [TestCase("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All)]
+        [TestCase("GenericRegressions", "TestGenericMethodCalls", "GenericMethodCalls.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

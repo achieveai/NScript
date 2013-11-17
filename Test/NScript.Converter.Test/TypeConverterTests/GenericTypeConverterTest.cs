@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.TypeConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for GenericTypeConverterTest

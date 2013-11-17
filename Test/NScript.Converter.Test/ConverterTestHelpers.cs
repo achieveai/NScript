@@ -13,9 +13,9 @@ namespace NScript.Converter.Test
     using NScript.CLR.Test;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
-    using Gallio.Framework;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using Mono.Cecil;
+    using FluentAssertions;
 
     [Flags]
     public enum TestType
@@ -144,21 +144,25 @@ namespace NScript.Converter.Test
             actualValue = actualValue.Trim();
             if (string.IsNullOrWhiteSpace(expectedValue))
             {
-                TestLog.Write(actualValue);
+                Console.WriteLine(actualValue);
                 Assert.IsNotNull(expectedValue);
             }
             else
             {
                 if (expectedValue != actualValue)
                 {
-                    TestLog.WriteLine("====== Expected ================================> ");
-                    TestLog.WriteLine(expectedValue.Replace("<", "&lt").Replace(">", "&gt"));
-                    TestLog.WriteLine("====== Actual ==================================> ");
-                    TestLog.WriteLine(actualValue.Replace("<", "&lt").Replace(">", "&gt"));
+                    Console.WriteLine("====== Expected ================================> ");
+                    Console.WriteLine("====== Expected ================================> ");
+                    Console.WriteLine(expectedValue);
+                    Console.WriteLine("====== Actual ==================================> ");
+                    Console.WriteLine("====== Actual ==================================> ");
+                    Console.WriteLine(actualValue);
                 }
             }
 
-            Assert.AreEqual(expectedValue, actualValue);
+            Assert.AreEqual(
+                expectedValue,
+                actualValue);
         }
 
         /// <summary>

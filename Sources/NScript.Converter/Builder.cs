@@ -161,6 +161,10 @@ namespace NScript.Converter
                         new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
             }
 
+            IdentifierScope.ReadableIdentifierNamer nameInitializer = new IdentifierScope.ReadableIdentifierNamer(
+                runtimeManager.Scope,
+                runtimeManager.JSBaseObjectScopeManager.InstanceScope);
+
             JSWriter writer = new JSWriter(true, false);
             var initializerStatement = runtimeManager.GetVariableDeclarations();
             if (initializerStatement != null)

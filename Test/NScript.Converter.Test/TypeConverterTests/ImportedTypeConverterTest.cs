@@ -9,7 +9,7 @@ namespace NScript.Converter.Test.TypeConverterTests
     using System;
     using System.Collections.Generic;
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for ImportedTypeConverterTest
@@ -35,16 +35,16 @@ namespace NScript.Converter.Test.TypeConverterTests
         /// Tests the type of the simple static.
         /// </summary>
         [Test]
-        [Row("TestJsonType.js",
+        [TestCase("TestJsonType.js",
              TestType.All,
              new[]{"TestJsonType"})]
-        [Row("TestImportedType.js",
+        [TestCase("TestImportedType.js",
              TestType.All,
              new[]{"TestImportedType"})]
-        [Row("TestImportedGeneric.js",
+        [TestCase("TestImportedGeneric.js",
              TestType.All,
              new[]{"ImportedGeneric`1"})]
-        [Row("PsudoTypeSimple.js",
+        [TestCase("PsudoTypeSimple.js",
              TestType.All,
              new[]{"PsudoUsage"})]
         public void TestImportedTypes(string resourceName, TestType testType, params string[] classNames)

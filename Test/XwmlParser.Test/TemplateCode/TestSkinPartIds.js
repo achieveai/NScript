@@ -1,15 +1,4 @@
-﻿tmplStore = new Array(1);
-function DocStorageGetter(doc) {
-  var style;
-  if (!doc.stateStore) {
-    doc.stateStore = new Array(1);
-    style = doc.createElement("style");
-    style.textContent = "";
-    doc.body.appendChild(style);
-  }
-  return doc.stateStore;
-};
-function TestSkinPartIds_factory(skinFactory, doc) {
+﻿function TestSkinPartIds_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
@@ -28,4 +17,15 @@ function TestSkinPartIds() {
   if (!TestSkinPartIds_var)
     TestSkinPartIds_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_Test_TestSkinableWithTestUIElementPart, Sunlight_Framework_UI_Test_TestViewModelA, TestSkinPartIds_factory, "0");
   return TestSkinPartIds_var;
+};
+tmplStore = new Array(1);
+function DocStorageGetter(doc) {
+  var style;
+  if (!doc.stateStore) {
+    doc.stateStore = new Array(1);
+    style = doc.createElement("style");
+    style.textContent = "";
+    doc.body.appendChild(style);
+  }
+  return doc.stateStore;
 };

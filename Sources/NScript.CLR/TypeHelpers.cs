@@ -172,12 +172,13 @@ namespace NScript.CLR
         private static bool IsSame(
             ParameterDefinition left,
             ParameterDefinition right,
-            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack)
+            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack,
+            bool ignoreGenericParameterOwner = false)
         {
             if (left.IsOut != right.IsOut)
             { return false; }
 
-            if (!TypeHelpers.IsSame(left.ParameterType, right.ParameterType, stack))
+            if (!TypeHelpers.IsSame(left.ParameterType, right.ParameterType, stack, ignoreGenericParameterOwner))
             { return false; }
 
             return true;
@@ -207,7 +208,8 @@ namespace NScript.CLR
         private static bool IsSame(
             MethodReference left,
             MethodReference right,
-            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack)
+            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack,
+            bool ignoreGenericParameterOwner = false)
         {
             if (left == right)
             { return true; }
@@ -225,7 +227,8 @@ namespace NScript.CLR
                 && TypeHelpers.IsSame(
                     left.DeclaringType,
                     right.DeclaringType,
-                    stack))
+                    stack,
+                    ignoreGenericParameterOwner))
             {
                 if (left.IsGenericInstance)
                 {
@@ -243,7 +246,8 @@ namespace NScript.CLR
                         if (!TypeHelpers.IsSame(
                             leftGeneric.GenericArguments[iGeneric],
                             rightGeneric.GenericArguments[iGeneric],
-                            stack))
+                            stack,
+                            ignoreGenericParameterOwner))
                         {
                             stack.RemoveAt(stack.Count - 1);
                             return false;
@@ -282,9 +286,12 @@ namespace NScript.CLR
         /// <returns>
         /// true if both the typeReferences are same.
         /// </returns>
-        public static bool IsSame(this TypeReference left, TypeReference right)
+        public static bool IsSame(this TypeReference left, TypeReference right, bool ignoreGenericParamOwner = false)
         {
-            return TypeHelpers.IsSame(left, right, new List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>>());
+            return TypeHelpers.IsSame(
+                left,
+                right,
+                new List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>>(), ignoreGenericParamOwner);
         }
 
         /// <summary>
@@ -298,7 +305,8 @@ namespace NScript.CLR
         private static bool IsSame(
             TypeReference left,
             TypeReference right,
-            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack)
+            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack,
+            bool ignoreOwner = false)
         {
             if (left == right)
             { return true; }
@@ -328,7 +336,8 @@ namespace NScript.CLR
                     && TypeHelpers.IsSame(
                         leftAsArray.ElementType,
                         rightAsArray.ElementType,
-                        stack);
+                        stack,
+                        ignoreOwner);
                 stack.RemoveAt(stack.Count - 1);
 
                 return rv;
@@ -346,7 +355,8 @@ namespace NScript.CLR
                     if (!TypeHelpers.IsSame(
                         leftGeneric.GenericArguments[genericIndex],
                         rightGeneric.GenericArguments[genericIndex],
-                        stack))
+                        stack,
+                        ignoreOwner))
                     {
                         stack.RemoveAt(stack.Count - 1);
                         return false;
@@ -363,7 +373,7 @@ namespace NScript.CLR
 
                 if (leftGenericParameter.Position == rightGenericParameter.Position)
                 {
-                    if (leftGenericParameter.Owner == null || rightGenericParameter.Owner == null)
+                    if (leftGenericParameter.Owner == null || rightGenericParameter.Owner == null || ignoreOwner)
                     {
                         return true;
                     }
@@ -383,14 +393,16 @@ namespace NScript.CLR
                             rv = TypeHelpers.IsSame(
                                 (MethodReference)leftGenericParameter.Owner,
                                 (MethodReference)rightGenericParameter.Owner,
-                                stack);
+                                stack,
+                                ignoreOwner);
                         }
                         else
                         {
                             rv = TypeHelpers.IsSame(
                                 (TypeReference)leftGenericParameter.Owner,
                                 (TypeReference)rightGenericParameter.Owner,
-                                stack);
+                                stack,
+                                ignoreOwner);
                         }
                     }
                 }
@@ -406,7 +418,8 @@ namespace NScript.CLR
                 rv = TypeHelpers.IsSame(
                     left.GetElementType(),
                     right.GetElementType(),
-                    stack);
+                    stack,
+                    ignoreOwner);
 
                 stack.RemoveAt(stack.Count - 1);
                 return rv;
@@ -610,7 +623,8 @@ namespace NScript.CLR
         private static bool IsSameDefinition(
             MethodReference left,
             MethodReference right,
-            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack)
+            List<KeyValuePair<IGenericParameterProvider, IGenericParameterProvider>> stack,
+            bool ignoreGenericParameterOwner = false)
         {
             if (left == right)
             { return true; }
@@ -638,7 +652,8 @@ namespace NScript.CLR
                 if (!TypeHelpers.IsSame(
                     leftDef.Parameters[iParam],
                     rightDef.Parameters[iParam],
-                    stack))
+                    stack,
+                    ignoreGenericParameterOwner))
                 {
                     stack.RemoveAt(stack.Count - 1);
                     return false;
@@ -1100,7 +1115,7 @@ namespace NScript.CLR
                         }
                         */
 
-                        matched = derivedMethod.Parameters[iParam].ParameterType.IsSame(typeArgument);
+                        matched = derivedMethod.Parameters[iParam].ParameterType.IsSame(typeArgument, true);
                     }
                     else
                     {

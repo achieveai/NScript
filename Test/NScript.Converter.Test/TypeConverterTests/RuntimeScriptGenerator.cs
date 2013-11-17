@@ -9,8 +9,9 @@ namespace NScript.Converter.Test.TypeConverterTests
     using System.Collections.Generic;
     using NScript.CLR.Test;
     using NScript.Converter.DependencyBuilder;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using Mono.Cecil;
+    using FluentAssertions;
 
     /// <summary>
     /// Definition for RuntimeScriptGenerator
@@ -33,7 +34,7 @@ namespace NScript.Converter.Test.TypeConverterTests
         }
 
         [Test]
-        [Row(true)]
+        [TestCase(true)]
         public void TestDependencies(bool isDebug)
         {
             TypeDefinition[] typeDefinitions =
@@ -54,28 +55,25 @@ namespace NScript.Converter.Test.TypeConverterTests
                 InheritanceDependencyBuilder.GetTypesByInheritanceOrder(
                     typeDefinitions);
 
-            Assert.LessThan(
-                result.IndexOf(typeDefinitions[1]),
+            result.IndexOf(typeDefinitions[1]).Should().BeLessThan(
                 result.IndexOf(typeDefinitions[0]));
-
-            Assert.LessThan(
-                result.IndexOf(typeDefinitions[2]),
+            result.IndexOf(typeDefinitions[2]).Should().BeLessThan(
                 result.IndexOf(typeDefinitions[1]));
         }
 
         [Test]
-        [Row("SimpleFullScript.js",
+        [TestCase("SimpleFullScript.js",
              TestType.All,
              new[]{
                  "SecondOrderInterfaceInherit",
                  "InheritInterface",
                  "SimpleInterface"})]
-        [Row("EnumUsingClassScript.js",
+        [TestCase("EnumUsingClassScript.js",
              TestType.All,
              new[]{
                  "SimpleEnumType",
                  "EnumUsingClass"})]
-        [Row("FullSpectrumScript.js",
+        [TestCase("FullSpectrumScript.js",
              TestType.All,
              new[]{
                  "InheritDerivedInterface",
@@ -92,14 +90,14 @@ namespace NScript.Converter.Test.TypeConverterTests
                  "StaticConstructorType",
                  "SimpleEnumType",
                  "EnumUsingClass"})]
-        [Row("GenericTypeConversionFull.js",
+        [TestCase("GenericTypeConversionFull.js",
              TestType.Retail,
              new[]{
                  "List`1",
                  "GenericSamplesList",
                  "GenericSamples",
                  "TestGeneric"})]
-        [Row("GenericTypeConversionFullDebug.js",
+        [TestCase("GenericTypeConversionFullDebug.js",
              TestType.Debug,
              new[]{
                  "List`1",
@@ -116,18 +114,18 @@ namespace NScript.Converter.Test.TypeConverterTests
         }
 
         [Test]
-        [Row("SimpleFullScript.js",
+        [TestCase("SimpleFullScript.js",
              TestType.All,
              new[]{
                  "SecondOrderInterfaceInherit",
                  "InheritInterface",
                  "SimpleInterface"})]
-        [Row("EnumUsingClassScript.js",
+        [TestCase("EnumUsingClassScript.js",
              TestType.All,
              new[]{
                  "SimpleEnumType",
                  "EnumUsingClass"})]
-        [Row("FullSpectrumScript.js",
+        [TestCase("FullSpectrumScript.js",
              TestType.All,
              new[]{
                  "InheritDerivedInterface",
@@ -144,7 +142,7 @@ namespace NScript.Converter.Test.TypeConverterTests
                  "StaticConstructorType",
                  "SimpleEnumType",
                  "EnumUsingClass"})]
-        [Row("GenericTypeConversionFullMcs.js",
+        [TestCase("GenericTypeConversionFullMcs.js",
              TestType.All,
              new[]{
                  "List`1",

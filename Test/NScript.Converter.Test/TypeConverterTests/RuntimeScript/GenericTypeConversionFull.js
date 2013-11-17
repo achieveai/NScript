@@ -15,17 +15,17 @@ function RealScript__GenericSamples_factory() {
 RealScript_GenericSamples.defaultConstructor = RealScript__GenericSamples_factory;
 ptyp_ = RealScript_GenericSamples.prototype;
 ptyp_.genericMethodCall = function RealScript__GenericSamples__GenericMethodCall(bar, foo) {
-  return RealScript_TestGeneric_TestSubClass_$Int32$_.foo(Boolean, foo, foo);
+  return RealScript_TestGeneric_TestSubClass_$Int32$_.foo(System_Boolean, foo, foo);
 };
 ptyp_.genericMethodCall2 = function RealScript__GenericSamples__GenericMethodCall2(T, U, bar, foo) {
   var TestSubClass_$T$_;
   TestSubClass_$T$_ = RealScript_TestGeneric_TestSubClass(T, true);
-  return TestSubClass_$T$_.foo(Boolean, foo, foo);
+  return TestSubClass_$T$_.foo(System_Boolean, foo, foo);
 };
 ptyp_.genericMethodCall3 = function RealScript__GenericSamples__GenericMethodCall3(T, U, bar, foo) {
   var TestSubClass2_$U_x_U$_;
   TestSubClass2_$U_x_U$_ = RealScript_TestGeneric_TestSubClass2(U, T, true);
-  return TestSubClass2_$U_x_U$_.foo(Boolean, bar, foo, 1);
+  return TestSubClass2_$U_x_U$_.foo(System_Boolean, bar, foo, 1);
 };
 ptyp_.getDefaultValue = function RealScript__GenericSamples__GetDefaultValue(T) {
   return System__Type__GetDefaultValueStatic(T);
@@ -134,7 +134,7 @@ ptyp_.fooa = function RealScript__TestGeneric__Fooa(Too, Uoo, bar, var2) {
 ptyp_.foob = function RealScript__TestGeneric__Foob(T, U, bar, foo) {
   var TestSubClass_$T$_;
   TestSubClass_$T$_ = RealScript_TestGeneric_TestSubClass(T, true);
-  return TestSubClass_$T$_.foo(Boolean, foo, foo);
+  return TestSubClass_$T$_.foo(System_Boolean, foo, foo);
 };
 ptyp_.__ctor = function RealScript__TestGeneric____ctor() {
 };

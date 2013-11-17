@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for DelegateConverterTests
@@ -25,11 +25,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegate.js", TestType.All)]
-        [Row(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegate.js", TestType.All)]
-        [Row(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegate.js", TestType.All)]
-        [Row(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegate.js", TestType.All)]
-        [Row(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
+        [TestCase(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegate.js", TestType.All)]
+        [TestCase(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegate.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegate.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegate.js", TestType.All)]
+        [TestCase(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -40,11 +40,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegateMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegateMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegateMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegateMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
+        [TestCase(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

@@ -8,7 +8,7 @@ namespace NScript.Converter.Test.TypeConverterTests
 {
     using System;
     using System.Collections.Generic;
-    using MbUnit.Framework;
+    using NUnit.Framework;
     using NScript.CLR.Test;
 
     /// <summary>

@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for RegressionTests
@@ -24,10 +24,10 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.Debug)]
-        [Row(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlockRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoops.js", TestType.Retail)]
-        [Row(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All)]
+        [TestCase(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlockRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoops.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -38,14 +38,14 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.All)]
-        [Row(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoopsMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All)]
-        [Row(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All)]
-        [Row("JsScriptImport", "GetAndSetIndexerProperty", "GetAndSetIndexerPropertyMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "CollapsingForInIfRegression", "CollapsingForInIfRegression.js", TestType.All)]
-        [Row(TestClassNameStr, "RegressionWithLastIndexOfString", "RegressionWithLastIndexOfString.js", TestType.All)]
-        [Row(TestClassNameStr, "OddNativeArrayPushBehavior", "OddNativeArrayPushBehavior.js", TestType.All)]
+        [TestCase(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.All)]
+        [TestCase(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoopsMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All)]
+        [TestCase(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All)]
+        [TestCase("JsScriptImport", "GetAndSetIndexerProperty", "GetAndSetIndexerPropertyMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CollapsingForInIfRegression", "CollapsingForInIfRegression.js", TestType.All)]
+        [TestCase(TestClassNameStr, "RegressionWithLastIndexOfString", "RegressionWithLastIndexOfString.js", TestType.All)]
+        [TestCase(TestClassNameStr, "OddNativeArrayPushBehavior", "OddNativeArrayPushBehavior.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

@@ -80,6 +80,15 @@ function System__NativeArray$1__RemoveAt(this_, index) {
     this_[i] = this_[i + 1];
   this_.pop();
 };
+function System__NativeArray$1__op_Implicit(n) {
+  return n.get_innerArray();
+};
+function System__NativeArray$1__op_Implicita(n) {
+  return ArrayG$1_$T$_.__ctor(n);
+};
+function System__NativeArray$1__op_Implicita(n) {
+  return List$1_$T$_.__ctor(n);
+};
 function System_ArrayG(T, $5fcallStatiConstructor) {
   var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_ArrayG[T.typeId])

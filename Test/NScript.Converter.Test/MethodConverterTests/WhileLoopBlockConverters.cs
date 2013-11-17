@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for WhileLoopBlockConverters
@@ -25,13 +25,13 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "DoWhileLoop", "DoWhileLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "WhileLoop", "WhileLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "DoWhilePaddedLoop", "DoWhilePaddedLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "WhilePaddedLoop", "WhilePaddedLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "WhileLoopWithBreak", "WhileLoopWithBreak.js", TestType.All)]
-        [Row(TestClassNameStr, "WhileLoopWithContinue", "WhileLoopWithContinue.js", TestType.Debug)]
-        [Row(TestClassNameStr, "WhileLoopWithContinue", "WhileLoopWithContinueRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "DoWhileLoop", "DoWhileLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhileLoop", "WhileLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "DoWhilePaddedLoop", "DoWhilePaddedLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhilePaddedLoop", "WhilePaddedLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhileLoopWithBreak", "WhileLoopWithBreak.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhileLoopWithContinue", "WhileLoopWithContinue.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "WhileLoopWithContinue", "WhileLoopWithContinueRetail.js", TestType.Retail)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -42,12 +42,12 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "DoWhileLoop", "DoWhileLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "WhileLoop", "WhileLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "DoWhilePaddedLoop", "DoWhilePaddedLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "WhilePaddedLoop", "WhilePaddedLoop.js", TestType.All)]
-        [Row(TestClassNameStr, "WhileLoopWithBreak", "WhileLoopWithBreak.js", TestType.All)]
-        [Row(TestClassNameStr, "WhileLoopWithContinue", "WhileLoopWithContinue.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "DoWhileLoop", "DoWhileLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhileLoop", "WhileLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "DoWhilePaddedLoop", "DoWhilePaddedLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhilePaddedLoop", "WhilePaddedLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhileLoopWithBreak", "WhileLoopWithBreak.js", TestType.All)]
+        [TestCase(TestClassNameStr, "WhileLoopWithContinue", "WhileLoopWithContinue.js", TestType.Debug)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

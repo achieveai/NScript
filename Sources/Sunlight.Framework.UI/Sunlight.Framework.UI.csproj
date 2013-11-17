@@ -52,6 +52,8 @@
     <Compile Include="Helpers\LiveBinder.cs" />
     <Compile Include="Helpers\SkinBinderHelper.cs" />
     <Compile Include="Helpers\SkinBinderInfo.cs" />
+    <Compile Include="ListView.cs" />
+    <Compile Include="ListViewItem.cs" />
     <Compile Include="SkinFactory.cs" />
     <Compile Include="Helpers\SkinInstance.cs" />
     <Compile Include="Helpers\TemplateManager.cs" />

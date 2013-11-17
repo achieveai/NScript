@@ -1,23 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <VisualState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ShowCheckBoxes="false">
   <TopNode>[0-1000]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\Tests.nunit</TopNode>
-  <SelectedNode>[0-1018]XwmlParser.Test.SkinCodeGenerationBasicTest.TestParser1("TestTextBinding1",null)</SelectedNode>
+  <SelectedNode>[0-1001]NScript.Converter.Test.JsExecutionTests.SimpleClassGenerationTests.TestMcs</SelectedNode>
   <ExcludeCategories>false</ExcludeCategories>
   <Nodes>
     <Node UniqueName="[0-1000]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\Tests.nunit" Expanded="true" />
     <Node UniqueName="[0-1034]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\NScript.CLR.Test\bin\Debug\XwmlParser.Test.dll" Expanded="true" />
-    <Node UniqueName="[0-1035]XwmlParser" Expanded="true" />
     <Node UniqueName="[0-1036]XwmlParser.Test" Expanded="true" />
+    <Node UniqueName="[0-1000]XwmlParser.Test.BindingParserTests" Expanded="true" />
+    <Node UniqueName="[0-1001]XwmlParser.Test.BindingParserTests.TestParser1" Expanded="true" />
+    <Node UniqueName="[0-1006]XwmlParser.Test.BindingParserTests.TestParser2" Expanded="true" />
+    <Node UniqueName="[0-1011]XwmlParser.Test.BindingParserTests.TestParserCast" Expanded="true" />
     <Node UniqueName="[0-1016]XwmlParser.Test.SkinCodeGenerationBasicTest" Expanded="true" />
     <Node UniqueName="[0-1017]XwmlParser.Test.SkinCodeGenerationBasicTest.TestParser1" Expanded="true" />
     <Node UniqueName="[0-1472]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\NScript.CLR.Test\bin\Debug\NScript.CLR.Test.dll" Expanded="true" />
-    <Node UniqueName="[0-1473]NScript" Expanded="true" />
     <Node UniqueName="[0-1474]NScript.CLR" Expanded="true" />
     <Node UniqueName="[0-1475]NScript.CLR.Test" Expanded="true" />
     <Node UniqueName="[0-1476]NScript.CLR.Test.BlockTests" Expanded="true" />
-    <Node UniqueName="[0-1007]NScript.CLR.Test.BlockTests.DupInstructionBlockTests" Expanded="true" />
     <Node UniqueName="[0-1477]NScript.CLR.Test.CstTests" Expanded="true" />
-    <Node UniqueName="[0-1354]NScript.CLR.Test.CstTests.InlineInitializationTests" Expanded="true" />
-    <Node UniqueName="[0-1355]NScript.CLR.Test.CstTests.InlineInitializationTests.Test" Expanded="true" />
+    <Node UniqueName="[0-1327]C:\Users\Gautam\Documents\Visual Studio 2012\Projects\Cs2JsC\Test\NScript.CLR.Test\bin\Debug\NScript.Converter.Test.dll" Expanded="true" />
+    <Node UniqueName="[0-1328]NScript" Expanded="true" />
+    <Node UniqueName="[0-1329]NScript.Converter" Expanded="true" />
+    <Node UniqueName="[0-1330]NScript.Converter.Test" Expanded="true" />
+    <Node UniqueName="[0-1331]NScript.Converter.Test.JsExecutionTests" Expanded="true" />
+    <Node UniqueName="[0-1000]NScript.Converter.Test.JsExecutionTests.SimpleClassGenerationTests" Expanded="true" />
+    <Node UniqueName="[0-1001]NScript.Converter.Test.JsExecutionTests.SimpleClassGenerationTests.TestMcs" Expanded="true" />
+    <Node UniqueName="[0-1332]NScript.Converter.Test.MethodConverterTests" Expanded="true" />
+    <Node UniqueName="[0-1333]NScript.Converter.Test.TypeConverterTests" Expanded="true" />
+    <Node UniqueName="[0-1255]NScript.Converter.Test.TypeConverterTests.CoreLibTypeTests.Test" Expanded="true" />
+    <Node UniqueName="[0-1261]NScript.Converter.Test.TypeConverterTests.CoreLibTypeTests.TestMcs" Expanded="true" />
+    <Node UniqueName="[0-1277]NScript.Converter.Test.TypeConverterTests.ImportedTypeConverterTest.TestImportedTypes" Expanded="true" />
+    <Node UniqueName="[0-1282]NScript.Converter.Test.TypeConverterTests.RuntimeScriptGenerator" Expanded="true" />
+    <Node UniqueName="[0-1285]NScript.Converter.Test.TypeConverterTests.RuntimeScriptGenerator.Test" Expanded="true" />
+    <Node UniqueName="[0-1291]NScript.Converter.Test.TypeConverterTests.RuntimeScriptGenerator.TestMcs" Expanded="true" />
   </Nodes>
 </VisualState>

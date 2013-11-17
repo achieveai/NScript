@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for ForLoopConverterTests
@@ -25,12 +25,12 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "ForLoopBasic", "ForLoopBasic.js", TestType.All)]
-        [Row(TestClassNameStr, "ForLoopPadded", "ForLoopPadded.js", TestType.All)]
-        [Row(TestClassNameStr, "ForLoopWithContinue", "ForLoopWithContinue.js", TestType.All)]
-        [Row(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreak.js", TestType.Debug)]
-        [Row(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreakRetail.js", TestType.Retail)]
-        [Row(TestClassNameStr, "ForEachLoop", "ForEachLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopBasic", "ForLoopBasic.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopPadded", "ForLoopPadded.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopWithContinue", "ForLoopWithContinue.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreak.js", TestType.Debug)]
+        [TestCase(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreakRetail.js", TestType.Retail)]
+        [TestCase(TestClassNameStr, "ForEachLoop", "ForEachLoop.js", TestType.All)]
         public void Test(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -41,11 +41,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [Row(TestClassNameStr, "ForLoopBasic", "ForLoopBasic.js", TestType.All)]
-        [Row(TestClassNameStr, "ForLoopPadded", "ForLoopPadded.js", TestType.All)]
-        [Row(TestClassNameStr, "ForLoopWithContinue", "ForLoopWithContinueMcs.js", TestType.All)]
-        [Row(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreak.js", TestType.All)]
-        [Row(TestClassNameStr, "ForEachLoop", "ForEachLoop.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopBasic", "ForLoopBasic.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopPadded", "ForLoopPadded.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopWithContinue", "ForLoopWithContinueMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreak.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ForEachLoop", "ForEachLoop.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
