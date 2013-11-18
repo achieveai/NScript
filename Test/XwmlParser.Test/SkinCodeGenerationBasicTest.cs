@@ -9,6 +9,7 @@ namespace XwmlParser.Test
     using NUnit.Framework;
     using System;
     using System.Collections.Generic;
+    using FluentAssertions;
 
     /// <summary>
     /// Definition for SkinCodeGenerationBasicTest
@@ -61,6 +62,48 @@ namespace XwmlParser.Test
             plugin.CodeGenerator.IterateParsing();
             var code = plugin.CodeGenerator.GetAllTemplateStatements();
             Helper.CheckCode(name + ".js", code);
+        }
+
+        [Test]
+        public void SampleTestA()
+        {
+            EnumerableAB ab = new EnumerableAB();
+            ab.Invoking(o => o.GetEnumerator())
+                .ShouldThrow<NotImplementedException>()
+                .WithMessage("TestA");
+            ab.Invoking(o => ((IEnumerable<TestA>)o).GetEnumerator())
+                .ShouldThrow<NotImplementedException>()
+                .WithMessage("TestB");
+            ab.Invoking(o => ((IEnumerable<TestA>)(IEnumerable<TestB>)o).GetEnumerator())
+                .ShouldThrow<NotImplementedException>()
+                .WithMessage("TestB");
+
+            System.Collections.IList
+        }
+    }
+
+    public class TestA
+    {
+    }
+
+    public class TestB : TestA { }
+
+
+    public class EnumerableAB : IEnumerable<TestA>, IEnumerable<TestB>
+    {
+        public IEnumerator<TestA> GetEnumerator()
+        {
+            throw new NotImplementedException("TestA");
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator<TestB> IEnumerable<TestB>.GetEnumerator()
+        {
+            throw new NotImplementedException("TestB");
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿(function(){
-var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelA$_, System__Type__typeMapping, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_Collections_Generic_StringDictionary_$Delegate$_, ptyp_, tmplStore, TestTemplate1_var, System_Func_$Object_x_Object$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
+var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_Collections_Generic_StringDictionary_$Delegate$_, ptyp_, tmplStore, TestTemplate1_var, System_Func_$Object_x_Object$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
 Function.typeId = "k";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
@@ -365,7 +365,7 @@ function Sunlight__Framework__UI__Test__TestListView__Test() {
   document = window.document;
   listView = Sunlight__Framework__UI__ListView_factory(document.createElement("div"));
   listView.set_itemSkin(Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplate1());
-  vmAs = System_ArrayG_$TestViewModelA$_.__ctor([stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp1.set_propStr1("Str"), stmtTemp1, stmtTemp10 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp10.set_propInt1(10), stmtTemp10, stmtTemp11 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp11.set_propBool1(true), stmtTemp11]);
+  vmAs = System_ArrayG_$TestViewModelB$_.__ctor([stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp1.set_propStr1("Str"), stmtTemp1, stmtTemp10 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp10.set_propInt1(10), stmtTemp10, stmtTemp11 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp11.set_propBool1(true), stmtTemp11]);
   listView.set_fixedList(vmAs);
   listView.set_inactiveIfNullContext(false);
   listView.activate();
@@ -1472,9 +1472,25 @@ ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose1;
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_ListView, "Sunlight.Framework.UI.ListView", Sunlight_Framework_UI_UIElement, []);
+function Sunlight_Framework_UI_Test_TestViewModelB() {
+};
+Sunlight_Framework_UI_Test_TestViewModelB.typeId = "bi";
+function Sunlight__Framework__UI__Test__TestViewModelB_factory() {
+  var this_;
+  this_ = new Sunlight_Framework_UI_Test_TestViewModelB();
+  this_.__ctor1();
+  return this_;
+};
+Sunlight_Framework_UI_Test_TestViewModelB.defaultConstructor = Sunlight__Framework__UI__Test__TestViewModelB_factory;
+ptyp_ = new Sunlight_Framework_UI_Test_TestViewModelA();
+Sunlight_Framework_UI_Test_TestViewModelB.prototype = ptyp_;
+ptyp_.__ctor1 = function Sunlight__Framework__UI__Test__TestViewModelB____ctor() {
+  this.__ctor0();
+};
+System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_TestViewModelB, "Sunlight.Framework.UI.Test.TestViewModelB", Sunlight_Framework_UI_Test_TestViewModelA, []);
 function Sunlight_Framework_UI_Skin() {
 };
-Sunlight_Framework_UI_Skin.typeId = "bi";
+Sunlight_Framework_UI_Skin.typeId = "bj";
 function Sunlight__Framework__UI__Skin_factory(skinableType, dataContextType, factoryMethod, id) {
   var this_;
   this_ = new Sunlight_Framework_UI_Skin();
@@ -1501,7 +1517,7 @@ ptyp_.createInstance = function Sunlight__Framework__UI__Skin__CreateInstance() 
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Skin, "Sunlight.Framework.UI.Skin", Object, []);
 function Sunlight_Framework_UI_ListViewItem() {
 };
-Sunlight_Framework_UI_ListViewItem.typeId = "bj";
+Sunlight_Framework_UI_ListViewItem.typeId = "bk";
 function Sunlight__Framework__UI__ListViewItem_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_ListViewItem();
@@ -1514,15 +1530,15 @@ ptyp_.__ctor4 = function Sunlight__Framework__UI__ListViewItem____ctor(element) 
   this.__ctor3(element);
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_ListViewItem, "Sunlight.Framework.UI.ListViewItem", Sunlight_Framework_UI_UISkinableElement, []);
-Error.typeId = "bk";
+Error.typeId = "bl";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function Sunlight_Framework_UI_UIEvent() {
 };
-Sunlight_Framework_UI_UIEvent.typeId = "bl";
+Sunlight_Framework_UI_UIEvent.typeId = "bm";
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UIEvent, "Sunlight.Framework.UI.UIEvent", Object, []);
 function Sunlight_Framework_UI_Helpers_SkinInstance() {
 };
-Sunlight_Framework_UI_Helpers_SkinInstance.typeId = "bm";
+Sunlight_Framework_UI_Helpers_SkinInstance.typeId = "bn";
 function Sunlight__Framework__UI__Helpers__SkinInstance_factory(factory, rootElement, childElements, elementsOfIntrests, binders, partIdMapping, liveBinderCount, extraObjectCount) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinInstance();
@@ -1758,7 +1774,7 @@ ptyp_.updateBinderSource = function Sunlight__Framework__UI__Helpers__SkinInstan
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Helpers_SkinInstance, "Sunlight.Framework.UI.Helpers.SkinInstance", Object, []);
 function System_Enum() {
 };
-System_Enum.typeId = "bn";
+System_Enum.typeId = "bo";
 ptyp_ = new System_ValueType();
 System_Enum.prototype = ptyp_;
 ptyp_.toString0 = function System__Enum__ToString() {
@@ -1773,7 +1789,7 @@ System__Type__RegisterReferenceType(System_Enum, "System.Enum", System_ValueType
 function Sunlight_Framework_UI_Helpers_BinderType(boxedValue) {
   this.boxedValue = boxedValue;
 };
-Sunlight_Framework_UI_Helpers_BinderType.typeId = "bo";
+Sunlight_Framework_UI_Helpers_BinderType.typeId = "bp";
 Sunlight_Framework_UI_Helpers_BinderType.enumStrToValueMap = {
   "DataContext": 1,
   "Static": 2,
@@ -1795,7 +1811,7 @@ Sunlight_Framework_UI_Helpers_BinderType.prototype = new System_Enum();
 System__Type__RegisterEnum(Sunlight_Framework_UI_Helpers_BinderType, "Sunlight.Framework.UI.Helpers.BinderType", true);
 function Sunlight_Framework_TaskScheduler() {
 };
-Sunlight_Framework_TaskScheduler.typeId = "bp";
+Sunlight_Framework_TaskScheduler.typeId = "bq";
 Sunlight__Framework__TaskScheduler__instance = null;
 function Sunlight__Framework__TaskScheduler__get_Instance() {
   if (Sunlight__Framework__TaskScheduler__instance === null)
@@ -1817,7 +1833,7 @@ ptyp_.enqueueLowPriTask = function Sunlight__Framework__TaskScheduler__EnqueueLo
 System__Type__RegisterReferenceType(Sunlight_Framework_TaskScheduler, "Sunlight.Framework.TaskScheduler", Object, []);
 function Boolean0() {
 };
-Boolean0.typeId = "bq";
+Boolean0.typeId = "br";
 function System__BooleanNative__op_Implicit(b) {
   return b;
 };
@@ -1832,7 +1848,7 @@ System_Collections_IEnumerator.typeId = "d";
 System__Type__RegisterInterface(System_Collections_IEnumerator, "System.Collections.IEnumerator");
 function System_EventBinder() {
 };
-System_EventBinder.typeId = "br";
+System_EventBinder.typeId = "bs";
 function System__EventBinder__GetBinder(importedElement) {
   if (System__Object__IsNullOrUndefined(importedElement.importedExtension))
     importedElement.importedExtension = {
@@ -1912,7 +1928,7 @@ function Sunlight_Framework_UI_Test_ValueIfTrue(T, $5fcallStatiConstructor) {
   ValueIfTrue$1_$T$_ = Sunlight_Framework_UI_Test_ValueIfTrue[T.typeId];
   ValueIfTrue$1_$T$_.genericParameters = [T];
   ValueIfTrue$1_$T$_.genericClosure = Sunlight_Framework_UI_Test_ValueIfTrue;
-  ValueIfTrue$1_$T$_.typeId = "bs$" + T.typeId + "$";
+  ValueIfTrue$1_$T$_.typeId = "bt$" + T.typeId + "$";
   ValueIfTrue$1_$T$_.__ctor = function Sunlight_Framework_UI_Test_ValueIfTrue$1_factory0(value) {
     var this_;
     this_ = new ValueIfTrue$1_$T$_();
@@ -1947,7 +1963,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_ = System_ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = System_ArrayG;
-  ArrayG$1_$T$_.typeId = "bt$" + T.typeId + "$";
+  ArrayG$1_$T$_.typeId = "bu$" + T.typeId + "$";
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
@@ -2064,7 +2080,7 @@ function System_Func(T1, TRes, $5fcallStatiConstructor) {
   Func$2_$T1_x_T1$_ = System_Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_T1$_.genericParameters = [T1, TRes];
   Func$2_$T1_x_T1$_.genericClosure = System_Func;
-  Func$2_$T1_x_T1$_.typeId = "bu$" + T1.typeId + "_" + TRes.typeId + "$";
+  Func$2_$T1_x_T1$_.typeId = "bv$" + T1.typeId + "_" + TRes.typeId + "$";
   Func$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Func$2_$T1_x_T1$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", System_MulticastDelegate, []);
   Func$2_$T1_x_T1$_._tri = function() {
@@ -2228,7 +2244,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   List$1_$T$_ = System_Collections_Generic_List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = System_Collections_Generic_List;
-  List$1_$T$_.typeId = "bv$" + T.typeId + "$";
+  List$1_$T$_.typeId = "bw$" + T.typeId + "$";
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
@@ -2305,7 +2321,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "bw$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "bx$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   ICollection$1_$KeyValuePair$2_$String_x_String$_$_ = System_Collections_Generic_ICollection(System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
@@ -2426,7 +2442,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_ = System_Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = System_Action;
-  Action$1_$T1$_.typeId = "bx$" + T1.typeId + "$";
+  Action$1_$T1$_.typeId = "by$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", System_MulticastDelegate, []);
   Action$1_$T1$_._tri = function() {
@@ -2451,7 +2467,7 @@ function System_Action0(T1, T2, $5fcallStatiConstructor) {
   Action$2_$T1_x_T1$_ = System_Action0[T1.typeId][T2.typeId];
   Action$2_$T1_x_T1$_.genericParameters = [T1, T2];
   Action$2_$T1_x_T1$_.genericClosure = System_Action0;
-  Action$2_$T1_x_T1$_.typeId = "by$" + T1.typeId + "_" + T2.typeId + "$";
+  Action$2_$T1_x_T1$_.typeId = "bz$" + T1.typeId + "_" + T2.typeId + "$";
   Action$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$2_$T1_x_T1$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", System_MulticastDelegate, []);
   Action$2_$T1_x_T1$_._tri = function() {
@@ -2478,7 +2494,7 @@ function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) 
   KeyValuePair$2_$K_x_K$_ = System_Collections_Generic_KeyValuePair[K.typeId][V.typeId];
   KeyValuePair$2_$K_x_K$_.genericParameters = [K, V];
   KeyValuePair$2_$K_x_K$_.genericClosure = System_Collections_Generic_KeyValuePair;
-  KeyValuePair$2_$K_x_K$_.typeId = "bz$" + K.typeId + "_" + V.typeId + "$";
+  KeyValuePair$2_$K_x_K$_.typeId = "ca$" + K.typeId + "_" + V.typeId + "$";
   KeyValuePair$2_$K_x_K$_.getDefaultValue = function() {
     return {
       key: System__Type__GetDefaultValueStatic(K),
@@ -2568,7 +2584,7 @@ function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
   ListEnumerator$1_$T$_ = System_Collections_Generic_ListEnumerator[T.typeId];
   ListEnumerator$1_$T$_.genericParameters = [T];
   ListEnumerator$1_$T$_.genericClosure = System_Collections_Generic_ListEnumerator;
-  ListEnumerator$1_$T$_.typeId = "ca$" + T.typeId + "$";
+  ListEnumerator$1_$T$_.typeId = "cb$" + T.typeId + "$";
   IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor);
   ListEnumerator$1_$T$_.__ctor = function System_Collections_Generic_ListEnumerator$1_factory0(list) {
     var this_;
@@ -2618,7 +2634,7 @@ function System_Collections_Generic_StringDictionary_Enumerator(TValue, $5fcallS
   Enumerator_$TValue$_ = System_Collections_Generic_StringDictionary_Enumerator[TValue.typeId];
   Enumerator_$TValue$_.genericParameters = [TValue];
   Enumerator_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary_Enumerator;
-  Enumerator_$TValue$_.typeId = "cb$" + TValue.typeId + "$";
+  Enumerator_$TValue$_.typeId = "cc$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   IEnumerator$1_$KeyValuePair$2_$String_x_String$_$_ = System_Collections_Generic_IEnumerator(System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
   Enumerator_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1$2fEnumerator_factory0(dict) {
@@ -2689,7 +2705,7 @@ function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
   Enumerator_$T$_ = System_ArrayG_Enumerator[T.typeId];
   Enumerator_$T$_.genericParameters = [T];
   Enumerator_$T$_.genericClosure = System_ArrayG_Enumerator;
-  Enumerator_$T$_.typeId = "cc$" + T.typeId + "$";
+  Enumerator_$T$_.typeId = "cd$" + T.typeId + "$";
   IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor);
   Enumerator_$T$_.__ctor = function System_ArrayG$1$2fEnumerator_factory0(array) {
     var this_;
@@ -2756,7 +2772,7 @@ System_ArrayG_$Func_$Object_x_Object$_$_ = System_ArrayG(System_Func_$Object_x_O
 System_ArrayG_$String$_ = System_ArrayG(String);
 System_ArrayG_$SkinBinderInfo$_ = System_ArrayG(Sunlight_Framework_UI_Helpers_SkinBinderInfo);
 System_ArrayG_$Object$_ = System_ArrayG(Object);
-System_ArrayG_$TestViewModelA$_ = System_ArrayG(Sunlight_Framework_UI_Test_TestViewModelA);
+System_ArrayG_$TestViewModelB$_ = System_ArrayG(Sunlight_Framework_UI_Test_TestViewModelB);
 System_Collections_Generic_List_$ListViewItem$_ = System_Collections_Generic_List(Sunlight_Framework_UI_ListViewItem);
 System_Action_$UIEvent$_ = System_Action(Sunlight_Framework_UI_UIEvent);
 System_Collections_Generic_KeyValuePair_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, System_Action_$UIEvent$_);
@@ -2778,7 +2794,7 @@ System_ArrayG_$Func_$Object_x_Object$_$_._tri();
 System_ArrayG_$String$_._tri();
 System_ArrayG_$SkinBinderInfo$_._tri();
 System_ArrayG_$Object$_._tri();
-System_ArrayG_$TestViewModelA$_._tri();
+System_ArrayG_$TestViewModelB$_._tri();
 System_Collections_Generic_List_$ListViewItem$_._tri();
 System_Action_$UIEvent$_._tri();
 System_Collections_Generic_KeyValuePair_$String_x_String$_._tri();

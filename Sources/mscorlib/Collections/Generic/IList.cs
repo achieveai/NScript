@@ -12,7 +12,7 @@ namespace System.Collections.Generic
     /// <summary>Represents a collection of objects that can be individually accessed by index.</summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>
     /// <filterpriority>1</filterpriority>
-    public interface IList<T> : ICollection<T>, IEnumerable<T>, IEnumerable
+    public interface IList<T> : ICollection<T>
     {
         /// <summary>Gets or sets the element at the specified index.</summary>
         /// <returns>The element at the specified index.</returns>

@@ -9,6 +9,7 @@ namespace Sunlight.Framework.UI.Test
     using System;
     using SunlightUnit;
     using System.Web.Html;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for TestListView
@@ -26,11 +27,11 @@ namespace Sunlight.Framework.UI.Test
             ListView listView = new ListView(document.CreateElement("div"));
             listView.ItemSkin = NScriptsTemplatesClass.TestTemplate1;
 
-            TestViewModelA[] vmAs = new TestViewModelA[]
+            TestViewModelB[] vmAs = new TestViewModelB[]
             {
-                new TestViewModelA() { PropStr1 = "Str"},
-                new TestViewModelA() { PropInt1 = 10},
-                new TestViewModelA() { PropBool1 = true}
+                new TestViewModelB() { PropStr1 = "Str"},
+                new TestViewModelB() { PropInt1 = 10},
+                new TestViewModelB() { PropBool1 = true}
             };
 
             listView.FixedList = vmAs;

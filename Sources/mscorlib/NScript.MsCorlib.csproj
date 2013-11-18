@@ -159,12 +159,14 @@
     <Compile Include="Collections\Generic\Queue.cs" />
     <Compile Include="Collections\Generic\Stack.cs" />
     <Compile Include="Collections\Generic\StringDictionary.cs" />
+    <Compile Include="Collections\ICollection.cs" />
     <Compile Include="Collections\IEnumerable.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Collections\IEnumerator.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Collections\IList.cs" />
     <Compile Include="Collections\Queue.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -545,6 +547,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="mscorlibKey.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>
