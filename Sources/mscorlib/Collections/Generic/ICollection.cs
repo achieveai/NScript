@@ -9,14 +9,8 @@ namespace System.Collections.Generic
     /// <summary>
     /// Definition for ICollection
     /// </summary>
-    public interface ICollection<T> : IEnumerable<T>
+    public interface ICollection<T> : ICollection, IEnumerable<T>
     {
-        /// <summary>
-        /// Gets the count.
-        /// </summary>
-        int Count
-        { get; }
-
         /// <summary>
         /// Gets a value indicating whether this instance is read only.
         /// </summary>

@@ -120,6 +120,24 @@ namespace System.Collections.Generic
         }
 
         /// <summary>
+        /// Index of the given item.
+        /// </summary>
+        /// <param name="value"> The value. </param>
+        /// <returns>
+        /// index of value, -1 if not found.
+        /// </returns>
+        int System.Collections.IList.IndexOf(object value)
+        {
+            if (value == null
+                && value is T)
+            {
+                return this.nativeArray.IndexOf((T)value, 0);
+            }
+
+            return -1;
+        }
+
+        /// <summary>
         /// Inserts.
         /// </summary>
         /// <param name="index"> Zero-based index of the. </param>
@@ -127,6 +145,16 @@ namespace System.Collections.Generic
         public void Insert(int index, T item)
         {
             this.nativeArray.InsertAt(index, item);
+        }
+
+        /// <summary>
+        /// Inserts.
+        /// </summary>
+        /// <param name="index"> Zero-based index of the. </param>
+        /// <param name="value"> The value. </param>
+        void IList.Insert(int index, object value)
+        {
+            this.Insert(index, (T)value);
         }
 
         /// <summary>
@@ -188,7 +216,12 @@ namespace System.Collections.Generic
         /// <value>
         /// true if this object is read only, false if not.
         /// </value>
-        public bool IsReadOnly
+        bool ICollection<T>.IsReadOnly
+        {
+            get { return false; }
+        }
+
+        bool IList.IsReadOnly
         {
             get { return false; }
         }
@@ -200,6 +233,11 @@ namespace System.Collections.Generic
         public void Add(T item)
         {
             this.nativeArray.Push(item);
+        }
+
+        void System.Collections.IList.Add(object value)
+        {
+            this.Add((T)value);
         }
 
         /// <summary>
@@ -261,9 +299,21 @@ namespace System.Collections.Generic
         /// <param name="index"> Zero-based index of the. </param>
         public void CopyTo(T[] arr, int index)
         {
-            for (int i = 0; i < this.nativeArray.Length; i++)
+            var nativeArray = this.nativeArray;
+            var length = nativeArray.Length;
+            for (int i = 0; i < length; i++)
             {
-                arr[i + index] = this[i];
+                arr[i + index] = nativeArray[i];
+            }
+        }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            var nativeArray = this.nativeArray;
+            var length = nativeArray.Length;
+            for (int i = 0; i < length; i++)
+            {
+                array.SetValue(i + index, nativeArray[i]);
             }
         }
 
@@ -296,6 +346,15 @@ namespace System.Collections.Generic
             return index >= 0;
         }
 
+        void IList.Remove(object value)
+        {
+            if (value == null
+                && value is T)
+            {
+                this.Remove((T)value);
+            }
+        }
+
         /// <summary>
         /// Sorts the given sort function.
         /// </summary>
@@ -325,6 +384,49 @@ namespace System.Collections.Generic
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this object is fixed size.
+        /// </summary>
+        /// <value>
+        /// true if this object is fixed size, false if not.
+        /// </value>
+        bool IList.IsFixedSize
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Indexer to get or set items within this collection using array index syntax.
+        /// </summary>
+        /// <param name="index"> Zero-based index of the entry to access. </param>
+        /// <returns>
+        /// The indexed item.
+        /// </returns>
+        object IList.this[int index]
+        {
+            get
+            {
+                return this[index];
+            }
+
+            set
+            {
+                this[index] = (T)value;
+            }
+        }
+
+        /// <summary>
+        /// Query if this object contains the given item.
+        /// </summary>
+        /// <param name="value"> The value. </param>
+        /// <returns>
+        /// true if the object is in this collection, false if not.
+        /// </returns>
+        bool IList.Contains(object value)
+        {
+            return ((IList)this).IndexOf(value) >= 0;
         }
     }
 

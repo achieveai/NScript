@@ -8,6 +8,7 @@ namespace Sunlight.Framework.UI
 {
     using Sunlight.Framework.Observables;
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Web.Html;
 
@@ -21,15 +22,15 @@ namespace Sunlight.Framework.UI
             ItemSkinPropName = "ItemSkin";
 
         List<ListViewItem> items = new List<ListViewItem>();
-        ObservableCollection<object> observableList;
-        IList<object> fixedList;
+        IObservableCollection observableList;
+        IList fixedList;
         Skin itemSkin;
 
         public ListView(Element element)
             : base(element)
         { }
 
-        public IList<object> FixedList
+        public IList FixedList
         {
             get
             {
@@ -51,7 +52,7 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        public ObservableCollection<object> ObservableList
+        public IObservableCollection ObservableList
         {
             get
             {

@@ -94,6 +94,11 @@ namespace System.Collections.Generic
             throw new NotImplementedException();
         }
 
+        public void CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool Remove(KeyValuePair<K, V> item)
         {
             throw new NotImplementedException();
@@ -118,5 +123,6 @@ namespace System.Collections.Generic
         }
 
         #endregion IEnumerable Members
+
     }
 }

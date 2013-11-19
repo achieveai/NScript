@@ -47,6 +47,7 @@ namespace NScript.Converter.Test.TypeConverterTests
              new[]{
                  "System.Array",
                  "System.NativeArray`1",
+                 "System.ArrayImpl",
                  "System.ArrayG`1"})]
         public void Test(string resourceName, TestType testType, params string[] classNames)
         {
@@ -86,6 +87,7 @@ namespace NScript.Converter.Test.TypeConverterTests
              TestType.All,
              new[]{
                  "System.Array",
+                 "System.ArrayImpl",
                  "System.NativeArray`1",
                  "System.ArrayG`1"})]
         public void TestMcs(string resourceName, TestType testType, params string[] classNames)

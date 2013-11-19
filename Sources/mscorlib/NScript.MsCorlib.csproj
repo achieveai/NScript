@@ -179,37 +179,10 @@
     <Compile Include="ComponentModel\BrowsableAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ComponentModel\CancelEventArgs.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\CancelEventHandler.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\CollectionChangedAction.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\CollectionChangedEventArgs.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\CollectionChangedEventHandler.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ComponentModel\EditorBrowsableAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ComponentModel\EditorBrowsableState.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\INotifyCollectionChanged.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\INotifyPropertyChanged.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\PropertyChangedEventArgs.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComponentModel\PropertyChangedEventHandler.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ContextualCallback.cs">
@@ -547,9 +520,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="mscorlibKey.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>

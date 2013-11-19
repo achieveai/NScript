@@ -7,12 +7,11 @@
 namespace System.Collections
 {
     using System;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for ICollection
     /// </summary>
-    public class ICollection : IEnumerable
+    public interface ICollection : IEnumerable
     {
         // Summary:
         //     Gets the number of elements contained in the System.Collections.ICollection.

@@ -94,11 +94,6 @@ namespace System.Web.Html
             get { return this.array.Length; }
         }
 
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
-
         public bool Remove(T item)
         {
             throw new NotImplementedException();
@@ -123,5 +118,67 @@ namespace System.Web.Html
         }
 
         #endregion IEnumerable Members
+
+        bool Collections.IList.IsFixedSize
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        bool Collections.IList.IsReadOnly
+        {
+            get { return true; }
+        }
+
+        object Collections.IList.this[int index]
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        void Collections.IList.Add(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool Collections.IList.Contains(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        int Collections.IList.IndexOf(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        void Collections.IList.Insert(int index, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        void Collections.IList.Remove(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        void Collections.IList.RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        void Collections.ICollection.CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ICollection<T>.IsReadOnly
+        {
+            get { return true; }
+        }
     }
 }

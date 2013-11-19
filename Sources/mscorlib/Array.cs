@@ -4,7 +4,7 @@
     using System.Runtime.CompilerServices;
 
     [Extended, IgnoreNamespace]
-    public abstract class Array : IEnumerable
+    public abstract class Array : IList, IEnumerable
     {
         public extern int Length
         { get; }
@@ -31,9 +31,40 @@
         public extern object GetValue(int index);
 
         public extern void SetValue(int index, object value);
+
+        extern bool IList.IsFixedSize
+        {
+            get;
+        }
+
+        extern bool IList.IsReadOnly
+        {
+            get;
+        }
+
+        extern object IList.this[int index]
+        {
+            get;
+            set;
+        }
+
+        extern void IList.Add(object value);
+
+        extern void IList.Clear();
+
+        extern void IList.Insert(int index, object value);
+
+        extern void IList.Remove(object value);
+
+        extern void IList.RemoveAt(int index);
+
+        extern int ICollection.Count
+        { get; }
+
+        public extern void CopyTo(Array array, int index);
     }
 
-    public abstract class ArrayImpl : IEnumerable
+    public abstract class ArrayImpl : IList, IEnumerable
     {
         public abstract int Length
         {
@@ -62,5 +93,59 @@
         public abstract object GetValue(int index);
 
         public abstract void SetValue(int index, object value);
+
+        public abstract void CopyTo(Array array, int index);
+
+        bool IList.IsFixedSize
+        {
+            get { return true; }
+        }
+
+        bool IList.IsReadOnly
+        {
+            get { return false; }
+        }
+
+        object IList.this[int index]
+        {
+            get
+            {
+                return this.GetValue(index);
+            }
+            set
+            {
+                this.SetValue(index, value);
+            }
+        }
+
+        void IList.Add(object value)
+        {
+            throw new NotSupportedException();
+        }
+
+        void IList.Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        void IList.Insert(int index, object value)
+        {
+            throw new NotSupportedException();
+        }
+
+        void IList.Remove(object value)
+        {
+            throw new NotSupportedException();
+        }
+
+        void IList.RemoveAt(int index)
+        {
+            throw new NotSupportedException();
+        }
+
+        int ICollection.Count
+        {
+            get { return this.Length; }
+        }
     }
 }

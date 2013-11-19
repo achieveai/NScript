@@ -55,12 +55,7 @@ namespace System
             set;
         }
 
-        public int Count
-        {
-            get { return this.innerArray.Length; }
-        }
-
-        public bool IsReadOnly
+        bool ICollection<T>.IsReadOnly
         {
             get { return false; }
         }
@@ -70,18 +65,18 @@ namespace System
             get { return this.innerArray; }
         }
 
-        public override ArrayImpl Clone()
+        public override sealed ArrayImpl Clone()
         {
             return new ArrayG<T>(
                 this.innerArray.Slice(0, this.innerArray.Length));
         }
 
-        public override bool Contains(object item)
+        public override sealed bool Contains(object item)
         {
             return this.IndexOf(item) >= 0;
         }
 
-        public override int IndexOf(object item)
+        public override sealed int IndexOf(object item)
         {
             if (!(item is T))
             {
@@ -91,7 +86,7 @@ namespace System
             return this.innerArray.IndexOf((T)item, 0);
         }
 
-        public override int IndexOf(object item, int startIndex)
+        public override sealed int IndexOf(object item, int startIndex)
         {
             if (!(item is T))
             {
@@ -101,7 +96,7 @@ namespace System
             return this.innerArray.IndexOf((T)item, startIndex);
         }
 
-        public override void Reverse()
+        public override sealed void Reverse()
         {
             this.innerArray.Reverse();
         }
@@ -111,12 +106,12 @@ namespace System
             ")]
         public extern void Sort(Func<T, int> compareCallback);
 
-        public override object GetValue(int index)
+        public override sealed object GetValue(int index)
         {
             return this[index];
         }
 
-        public override void SetValue(int index, object value)
+        public override sealed void SetValue(int index, object value)
         {
             this[index] = (T)value;
         }
@@ -126,22 +121,17 @@ namespace System
             return this.innerArray.IndexOf((T)item, 0);
         }
 
-        public void Insert(int index, T item)
+        void IList<T>.Insert(int index, T item)
         {
             throw new Exception("Not Implemented.");
         }
 
-        public void RemoveAt(int index)
+        void ICollection<T>.Add(T item)
         {
             throw new Exception("Not Implemented.");
         }
 
-        public void Add(T item)
-        {
-            throw new Exception("Not Implemented.");
-        }
-
-        public void Clear()
+        void ICollection<T>.Clear()
         {
             throw new Exception("Not Implemented.");
         }
@@ -153,18 +143,30 @@ namespace System
 
         public void CopyTo(T[] arr, int index)
         {
-            for (int i = 0; i < this.innerArray.Length; i++)
+            var nativeArray = this.innerArray;
+            var length = nativeArray.Length;
+            for (int i = 0; i < length; i++)
             {
-                arr[index + i] = this[i];
+                arr[i + index] = nativeArray[i];
             }
         }
 
-        public bool Remove(T item)
+        public override sealed void CopyTo(Array array, int index)
+        {
+            var nativeArray = this.innerArray;
+            var length = nativeArray.Length;
+            for (int i = 0; i < length; i++)
+            {
+                array.SetValue(i + index, nativeArray[i]);
+            }
+        }
+
+        bool ICollection<T>.Remove(T item)
         {
             return this.innerArray.IndexOf(item, 0) != -1;
         }
 
-        public override IEnumerator GetEnumerator()
+        public override sealed IEnumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
@@ -211,5 +213,6 @@ namespace System
             public void Dispose()
             { }
         }
+
     }
 }

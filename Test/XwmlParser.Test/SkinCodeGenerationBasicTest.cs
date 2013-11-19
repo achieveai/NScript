@@ -77,8 +77,6 @@ namespace XwmlParser.Test
             ab.Invoking(o => ((IEnumerable<TestA>)(IEnumerable<TestB>)o).GetEnumerator())
                 .ShouldThrow<NotImplementedException>()
                 .WithMessage("TestB");
-
-            System.Collections.IList
         }
     }
 

@@ -8,6 +8,14 @@ namespace Sunlight.Framework.Observables
 {
     using System;
 
+    public interface INotifyCollectionChanged
+    {
+        /// <summary>
+        /// Event for collection change
+        /// </summary>
+        event Action<INotifyCollectionChanged, CollectionChangedEventArgs> CollectionChanged;
+    }
+
     /// <summary>
     /// Definition for INotifyCollectionChanged
     /// </summary>

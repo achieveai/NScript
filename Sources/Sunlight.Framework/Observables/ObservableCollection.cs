@@ -7,13 +7,67 @@
 namespace Sunlight.Framework.Observables
 {
     using System;
-    using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Generic;
+
+    public interface IObservableCollection : INotifyCollectionChanged
+    {
+        // Summary:
+        //     Gets the number of elements contained in the System.Collections.ICollection.
+        //
+        // Returns:
+        //     The number of elements contained in the System.Collections.ICollection.
+        int Count { get; }
+
+        // Summary:
+        //     Gets or sets the element at the specified index.
+        //
+        // Parameters:
+        //   index:
+        //     The zero-based index of the element to get or set.
+        //
+        // Returns:
+        //     The element at the specified index.
+        //
+        // Exceptions:
+        //   System.ArgumentOutOfRangeException:
+        //     index is not a valid index in the System.Collections.IList.
+        //
+        //   System.NotSupportedException:
+        //     The property is set and the System.Collections.IList is read-only.
+        object this[int index] { get; }
+
+        //
+        // Summary:
+        //     Determines whether the System.Collections.IList contains a specific value.
+        //
+        // Parameters:
+        //   value:
+        //     The object to locate in the System.Collections.IList.
+        //
+        // Returns:
+        //     true if the System.Object is found in the System.Collections.IList; otherwise,
+        //     false.
+        bool Contains(object value);
+
+        //
+        // Summary:
+        //     Determines the index of a specific item in the System.Collections.IList.
+        //
+        // Parameters:
+        //   value:
+        //     The object to locate in the System.Collections.IList.
+        //
+        // Returns:
+        //     The index of value if found in the list; otherwise, -1.
+        int IndexOf(object value);
+    }
 
     /// <summary>
     /// Represents a dynamic data collection that provides notifications
     /// when items get added, removed, or when the entire list is refreshed.
     /// </summary>
-    public class ObservableCollection<T> : ObservableObject, INotifyCollectionChanged<T>
+    public class ObservableCollection<T> : ObservableObject, IObservableCollection, INotifyCollectionChanged<T>
     {
         /// <summary>
         /// Key for the event handler
@@ -333,18 +387,74 @@ namespace Sunlight.Framework.Observables
                 this.busy = true;
                 try
                 {
-                    this.CollectionChanged(
-                        this,
+                    var collectionChangedArgs = 
                         new CollectionChangedEventArgs<T>(
                             action,
                             index,
                             newItems,
-                            oldItems));
+                            oldItems);
+
+                    this.CollectionChanged(this, collectionChangedArgs);
                 }
                 finally
                 {
                     this.busy = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Indexer to get items within this collection using array index syntax.
+        /// </summary>
+        /// <param name="index"> Zero-based index of the entry to access. </param>
+        /// <returns>
+        /// The indexed item.
+        /// </returns>
+        object IObservableCollection.this[int index]
+        {
+            get
+            {
+                return this[index];
+            }
+        }
+
+        /// <summary>
+        /// Query if this object contains the given item.
+        /// </summary>
+        /// <param name="value"> The value. </param>
+        /// <returns>
+        /// true if the object is in this collection, false if not.
+        /// </returns>
+        bool IObservableCollection.Contains(object value)
+        {
+            return ((IList)this.items).IndexOf(value) >= 0;
+        }
+
+        /// <summary>
+        /// Index of the given value.
+        /// </summary>
+        /// <param name="value"> The value. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        int IObservableCollection.IndexOf(object value)
+        {
+            return ((IList)this.items).IndexOf(value);
+        }
+
+        /// <summary>
+        /// Event queue for all listeners interested in NotifyCollectionChanged.CollectionChanged events.
+        /// </summary>
+        event Action<INotifyCollectionChanged, CollectionChangedEventArgs> INotifyCollectionChanged.CollectionChanged
+        {
+            add
+            {
+                this.CollectionChanged += (Action<INotifyCollectionChanged<T>, CollectionChangedEventArgs<T>>)value;
+            }
+
+            remove
+            {
+                this.CollectionChanged -= (Action<INotifyCollectionChanged<T>, CollectionChangedEventArgs<T>>)value;
             }
         }
     }

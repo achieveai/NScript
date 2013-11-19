@@ -117,6 +117,15 @@ namespace System.Collections.Generic
             }
         }
 
+        public void CopyTo(Array array, int index)
+        {
+            ArrayG<string> keys = (ArrayG<string>)this.Keys;
+            for (int i = 0; i < keys.Length; i++)
+            {
+                array.SetValue(i + index, new KeyValuePair<string, TValue>(keys[i], this[keys[i]]));
+            }
+        }
+
         public bool Remove(KeyValuePair<string, TValue> item)
         {
             if (this.Contains(item))

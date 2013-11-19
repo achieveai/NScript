@@ -12,7 +12,7 @@
     /// </summary>
     /// <typeparam name="T1">The type of the 1.</typeparam>
     /// <param name="obj1">The obj1.</param>
-    public delegate void Action<T1>(T1 obj1);
+    public delegate void Action<in T1>(T1 obj1);
 
     /// <summary>
     /// Two parameter Action delegate
@@ -21,7 +21,7 @@
     /// <typeparam name="T2">The type of the 2.</typeparam>
     /// <param name="obj1">The obj1.</param>
     /// <param name="obj2">The obj2.</param>
-    public delegate void Action<T1, T2>(T1 obj1, T2 obj2);
+    public delegate void Action<in T1, in T2>(T1 obj1, T2 obj2);
 
     /// <summary>
     /// Three parameter Action delegate
@@ -32,7 +32,7 @@
     /// <param name="obj1">The obj1.</param>
     /// <param name="obj2">The obj2.</param>
     /// <param name="obj3">The obj3.</param>
-    public delegate void Action<T1, T2, T3>(T1 obj1, T2 obj2, T3 obj3);
+    public delegate void Action<in T1, in T2, in T3>(T1 obj1, T2 obj2, T3 obj3);
 
     /// <summary>
     /// Four parameter Action delegate
@@ -45,7 +45,7 @@
     /// <param name="obj2">The obj2.</param>
     /// <param name="obj3">The obj3.</param>
     /// <param name="obj4">The obj4.</param>
-    public delegate void Action<T1, T2, T3, T4>(T1 obj1, T2 obj2, T3 obj3, T4 obj4);
+    public delegate void Action<in T1, in T2, in T3, in T4>(T1 obj1, T2 obj2, T3 obj3, T4 obj4);
 
     /// <summary>
     /// Five parameter Action delegate
@@ -60,7 +60,7 @@
     /// <param name="obj3">The obj3.</param>
     /// <param name="obj4">The obj4.</param>
     /// <param name="obj5">The obj5.</param>
-    public delegate void Action<T1, T2, T3, T4, T5>(T1 obj1, T2 obj2, T3 obj3, T4 obj4, T5 obj5);
+    public delegate void Action<in T1, in T2, in T3, in T4, in T5>(T1 obj1, T2 obj2, T3 obj3, T4 obj4, T5 obj5);
 
     /// <summary>
     /// Six parameter Action delegate
@@ -77,6 +77,6 @@
     /// <param name="obj4">The obj4.</param>
     /// <param name="obj5">The obj5.</param>
     /// <param name="obj6">The obj6.</param>
-    public delegate void Action<T1, T2, T3, T4, T5, T6>(T1 obj1, T2 obj2, T3 obj3, T4 obj4, T5 obj5, T6 obj6);
+    public delegate void Action<in T1, in T2, in T3, in T4, in T5, in T6>(T1 obj1, T2 obj2, T3 obj3, T4 obj4, T5 obj5, T6 obj6);
 }
 

@@ -7,12 +7,11 @@
 namespace System.Collections
 {
     using System;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for IList
     /// </summary>
-    public class IList
+    public interface IList : ICollection
     {
         // Summary:
         //     Gets a value indicating whether the System.Collections.IList has a fixed
@@ -63,7 +62,7 @@ namespace System.Collections
         //   System.NotSupportedException:
         //     The System.Collections.IList is read-only.-or- The System.Collections.IList
         //     has a fixed size.
-        int Add(object value);
+        void Add(object value);
 
         //
         // Summary:
@@ -120,8 +119,8 @@ namespace System.Collections
         //
         //   System.NullReferenceException:
         //     value is null reference in the System.Collections.IList.
-
         void Insert(int index, object value);
+
         //
         // Summary:
         //     Removes the first occurrence of a specific object from the System.Collections.IList.

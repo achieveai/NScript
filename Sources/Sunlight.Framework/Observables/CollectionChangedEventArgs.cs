@@ -7,17 +7,44 @@
 namespace Sunlight.Framework.Observables
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+
+    public interface CollectionChangedEventArgs
+    {
+        /// <summary>
+        /// Gets item after the change
+        /// </summary>
+        /// <value>The new items.</value>
+        IList NewItems
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets item before the change
+        /// </summary>
+        /// <value>The old items.</value>
+        IList OldItems
+        {
+            get;
+        }
+    }
 
     /// <summary>
     /// Definition for CollectionChangedEventArgs
     /// </summary>
-    public class CollectionChangedEventArgs<T>
+    public class CollectionChangedEventArgs<T> : CollectionChangedEventArgs
     {
         /// <summary>
         /// private storage for action
         /// </summary>
         private CollectionChangedAction action;
+        
+        /// <summary>
+        /// private storage for item index
+        /// </summary>
+        private int changeIndex;
 
         /// <summary>
         /// Backing store for newItems.
@@ -28,11 +55,6 @@ namespace Sunlight.Framework.Observables
         /// Backing store for oldItems.
         /// </summary>
         private IList<T> oldItems;
-        
-        /// <summary>
-        /// private storage for item index
-        /// </summary>
-        private int changeIndex;
 
         /// <summary>
         /// Initializes a new instance of the CollectionChangedEventArgs class.
@@ -69,6 +91,14 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
+        /// Returns index of the item being changed
+        /// </summary>
+        public int ChangeIndex
+        {
+            get { return this.changeIndex; }
+        }
+
+        /// <summary>
         /// Get's the change action of this notification
         /// </summary>
         public CollectionChangedAction Action
@@ -80,7 +110,7 @@ namespace Sunlight.Framework.Observables
         /// Gets item after the change
         /// </summary>
         /// <value>The new items.</value>
-        public IList<T> NewItems
+        public new IList<T> NewItems
         {
             get { return this.newItems; }
         }
@@ -89,17 +119,19 @@ namespace Sunlight.Framework.Observables
         /// Gets item before the change
         /// </summary>
         /// <value>The old items.</value>
-        public IList<T> OldItems
+        public new IList<T> OldItems
         {
             get { return this.oldItems; }
         }
 
-        /// <summary>
-        /// Returns index of the item being changed
-        /// </summary>
-        public int ChangeIndex
+        IList CollectionChangedEventArgs.NewItems
         {
-            get { return this.changeIndex; }
+            get { return this.NewItems; }
+        }
+
+        IList CollectionChangedEventArgs.OldItems
+        {
+            get { return this.OldItems; }
         }
     }
 }
