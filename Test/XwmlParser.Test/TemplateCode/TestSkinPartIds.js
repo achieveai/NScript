@@ -2,7 +2,7 @@
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = "<div> <div>Test</div> </div>";
+    domStore[0].innerHTML = " <div>Test</div> ";
     tmplStore[0] = tmplStore[0] ? tmplStore[0] : [];
   }
   htmlRoot = domStore[0].cloneNode(true);

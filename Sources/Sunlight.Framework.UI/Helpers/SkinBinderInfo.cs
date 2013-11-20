@@ -344,6 +344,12 @@ namespace Sunlight.Framework.UI.Helpers
                             false);
                     }
                 }
+                else if (binderInfo.TargetPropertySetter != null)
+                {
+                    binderInfo.TargetPropertySetter(
+                        target,
+                        value);
+                }
                 else
                 {
                     binderInfo.TargetPropertySetterWithArg(

@@ -98,7 +98,16 @@ namespace NScript.JST
                     writer.Write(Symbols.Comma);
                 }
 
-                writer.Write(this.Values[valueIndex]);
+                if (this.values[valueIndex].Precedence <= JST.Precedence.Comma)
+                {
+                    writer.Write(Symbols.BracketOpenRound);
+                    writer.Write(this.Values[valueIndex]);
+                    writer.Write(Symbols.BracketCloseRound);
+                }
+                else
+                {
+                    writer.Write(this.Values[valueIndex]);
+                }
             }
 
             writer.Write(Symbols.BracketCloseSquare);

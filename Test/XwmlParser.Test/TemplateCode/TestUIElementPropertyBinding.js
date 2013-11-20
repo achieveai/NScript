@@ -1,5 +1,5 @@
 ﻿function getter(src) {
-  src.get_propInt1();
+  return src.get_propInt1();
 };
 function setter(tar, val) {
   tar.set_oneWayLooseBinding(val);
@@ -8,7 +8,7 @@ function TestUIElementPropertyBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = "<div> <div>This is a test.</div> </div>";
+    domStore[0].innerHTML = " <div>This is a test.</div> ";
     tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], setter, 17, 0, null, 0)];
   }
   htmlRoot = domStore[0].cloneNode(true);

@@ -474,7 +474,7 @@ namespace XwmlParser
                             "innerHTML")),
                     new StringLiteralExpression(
                         this.Scope,
-                        this.skinNodeInfo.GeneratedNode.WriteTo())));
+                        this.skinNodeInfo.GeneratedNode.InnerHtml)));
 
             scopeStatements.Add(
                 ExpressionStatement.CreateAssignmentExpression(

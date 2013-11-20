@@ -181,6 +181,7 @@ namespace Sunlight.Framework.UI
                     {
                         listViewItem = new ListViewItem(
                             this.Element.OwnerDocument.CreateElement("div"));
+                        this.Element.AppendChild(listViewItem.Element);
                         listViewItem.Skin = this.itemSkin;
                         items.Add(listViewItem);
                     }

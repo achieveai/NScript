@@ -7,7 +7,7 @@ function TestDomEventBinding1_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = "<div> <button>Test Click</button> </div>";
+    domStore[0].innerHTML = " <button>Test Click</button> ";
     tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([delgateGetter], null, "click", 65, 0, null, null, 0)];
   }
   htmlRoot = domStore[0].cloneNode(true);

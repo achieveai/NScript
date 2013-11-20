@@ -344,54 +344,6 @@ namespace System.Web.Html
         public extern void Writeln(string text);
 
         /// <summary>
-        /// Gets the elements by class name.
-        /// </summary>
-        /// <param name="className"> Name of the class. </param>
-        /// <returns>
-        /// The elements by class name.
-        /// </returns>
-        public DomList<Node> GetElementsByClassName(string className)
-        {
-            return new DomList<Node>(this.GetElementsByClassNameInternal(className));
-        }
-
-        /// <summary>
-        /// Gets the elements by name.
-        /// </summary>
-        /// <param name="name"> The name. </param>
-        /// <returns>
-        /// The elements by name.
-        /// </returns>
-        public DomList<Node> GetElementsByName(string name)
-        {
-            return new DomList<Node>(this.GetElementsByNameInternal(name));
-        }
-
-        /// <summary>
-        /// Gets the elements by tag name.
-        /// </summary>
-        /// <param name="tagName"> Name of the tag. </param>
-        /// <returns>
-        /// The elements by tag name.
-        /// </returns>
-        public DomList<Node> GetElementsByTagName(string tagName)
-        {
-            return new DomList<Node>(this.GetElementsByTagNameInternal(tagName));
-        }
-
-        /// <summary>
-        /// Queries a selector all.
-        /// </summary>
-        /// <param name="selector"> The selector. </param>
-        /// <returns>
-        /// The selector all.
-        /// </returns>
-        public DomList<Node> QuerySelectorAll(string selector)
-        {
-            return new DomList<Node>(this.QuerySelectorAllInternal(selector));
-        }
-
-        /// <summary>
         /// Gets the elements by class name internal.
         /// </summary>
         /// <param name="className"> Name of the class. </param>
@@ -399,7 +351,7 @@ namespace System.Web.Html
         /// The elements by class name internal.
         /// </returns>
         [ScriptName("getElementsByClassName")]
-        internal extern NativeArray GetElementsByClassNameInternal(string className);
+        internal extern NativeArray<Element> GetElementsByClassName(string className);
 
         /// <summary>
         /// Gets the elements by name internal.
@@ -409,7 +361,7 @@ namespace System.Web.Html
         /// The elements by name internal.
         /// </returns>
         [ScriptName("getElementsByName")]
-        internal extern NativeArray GetElementsByNameInternal(string name);
+        public extern NativeArray<Element> GetElementsByName(string name);
 
         /// <summary>
         /// Gets the elements by tag name internal.
@@ -419,7 +371,7 @@ namespace System.Web.Html
         /// The elements by tag name internal.
         /// </returns>
         [ScriptName("getElementsByTagName")]
-        internal extern NativeArray GetElementsByTagNameInternal(string tagName);
+        public extern NativeArray<Element> GetElementsByTagName(string tagName);
 
         /// <summary>
         /// Queries a selector all internal.
@@ -429,6 +381,6 @@ namespace System.Web.Html
         /// The selector all internal.
         /// </returns>
         [ScriptName("querySelectorAll")]
-        internal extern NativeArray QuerySelectorAllInternal(string selector);
+        internal extern NativeArray<Element> QuerySelectorAll(string selector);
     }
 }

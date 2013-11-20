@@ -497,6 +497,7 @@
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\SelfMethodCallTest.js" />
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\ExternGenericCallTest.js" />
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\CallStaticScriptMethodOnImportedClass.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnInlineObjectArrayWithPropInit.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

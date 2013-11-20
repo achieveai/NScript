@@ -191,7 +191,7 @@ namespace Sunlight.Framework.UI.Helpers
 
         public void UpdateDataContext()
         {
-            if ((this.skinableParent == null) != (this.dataContext == null))
+            if (this.skinableParent != null)
             {
                 if (this.skinableParent.DataContext != this.dataContext)
                 {
@@ -365,6 +365,9 @@ namespace Sunlight.Framework.UI.Helpers
             }
         }
 
+        /// <summary>
+        /// Queued activation.
+        /// </summary>
         private void QueuedActivation()
         {
             var binders = this.binders;
@@ -402,6 +405,8 @@ namespace Sunlight.Framework.UI.Helpers
             }
         }
 
+        /// <summary>
+        /// Queued deactivation.  /// </summary>
         private void QueuedDeactivation()
         {
             if (this.isActive || this.isDiposed)
@@ -422,6 +427,11 @@ namespace Sunlight.Framework.UI.Helpers
             }
         }
 
+        /// <summary>
+        /// Updates the binder source.
+        /// </summary>
+        /// <param name="source">     Source for the. </param>
+        /// <param name="sourceType"> Type of the source. </param>
         private void UpdateBinderSource(object source, BinderType sourceType)
         {
             var liveBinders = this.liveBinders;

@@ -93,6 +93,17 @@ namespace RealScript
                };
         }
 
+        public InlineComplexStatements[] ReturnInlineObjectArrayWithPropInit()
+        {
+            return new InlineComplexStatements[]
+               {
+                   new InlineComplexStatements(){IntProperty = 10},
+                   null,
+                   new InlineComplexStatements() { StringProperty = "test"}, 
+                   new InlineComplexStatements(10.1) { TestReference = null}, 
+               };
+        }
+
         public void Take2Arrays(string foo, string[] strA, InlineComplexStatements[] iCS)
         {
         }

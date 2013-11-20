@@ -586,7 +586,7 @@ namespace XwmlParser
                     false));
 
             methodExpression.AddStatement(
-                new ExpressionStatement(
+                new ReturnStatement(
                     null,
                     methodScope,
                     expression));

@@ -21,5 +21,12 @@ namespace Sunlight.Framework.UI.Test
             get
             { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplateVMB1.html")]
+        public static Skin TestTemplateVMB1
+        {
+            get
+            { return null; }
+        }
     }
 }

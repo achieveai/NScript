@@ -64,6 +64,7 @@ namespace XwmlParser.Test
             Helper.CheckCode(name + ".js", code);
         }
 
+        /*
         [Test]
         public void SampleTestA()
         {
@@ -78,6 +79,7 @@ namespace XwmlParser.Test
                 .ShouldThrow<NotImplementedException>()
                 .WithMessage("TestB");
         }
+        */
     }
 
     public class TestA
