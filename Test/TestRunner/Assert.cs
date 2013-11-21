@@ -43,7 +43,7 @@ namespace SunlightUnit
         /// <param name="message">message to be logged</param>
         [ScriptAlias("QUnit.notEqual")]
         [IgnoreGenericArguments]
-        public extern static void NotEqual<T>(T expected, T actual, string message);
+        public extern static void NotEqual<T>(T actual, T expected, string message);
 
         /// <summary>
         /// Will Check for Equality
@@ -53,7 +53,7 @@ namespace SunlightUnit
         /// <param name="message">message to be logged</param>
         [ScriptAlias("QUnit.equal")]
         [IgnoreGenericArguments]
-        public extern static void Equal<T>(T expected, T actual, string message);
+        public extern static void Equal<T>(T actual, T expected, string message);
 
         /// <summary>
         /// Checks that the first two arguments are strictly equal (===).
@@ -66,7 +66,7 @@ namespace SunlightUnit
         /// </remarks>
         [ScriptAlias("QUnit.strictEqual")]
         [IgnoreGenericArguments]
-        public extern static void StrictEqual<T>(T expected, T actual, string message);
+        public extern static void StrictEqual<T>(T actual, T expected, string message);
 
         /// <summary>
         /// Checks that the first two arguments are not strictly equal (!==).
@@ -79,7 +79,7 @@ namespace SunlightUnit
         /// </remarks>
         [ScriptAlias("QUnit.notStrictEqual")]
         [IgnoreGenericArguments]
-        public extern static void NotStrictEqual<T>(T expected, T actual, string message);
+        public extern static void NotStrictEqual<T>(T actual, T expected, string message);
 
         /// <summary>
         /// Checks that the given function raises an exception.

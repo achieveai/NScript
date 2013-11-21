@@ -372,6 +372,9 @@ namespace Sunlight.Framework.UI.Helpers
         {
             var binders = this.binders;
             var liveBinders = this.liveBinders;
+            if (liveBinders == null)
+            { return; }
+
             var binderLength = binders.Length;
             var liveBindersLength = liveBinders.Length;
             for (int iBinderInfo = 0, iLivebinder = 0;
@@ -382,7 +385,7 @@ namespace Sunlight.Framework.UI.Helpers
                 if (binder.Mode != DataBindingMode.OneTime)
                 {
                     LiveBinder liveBinder = liveBinders[iLivebinder];
-                    if (liveBinder == null)
+                    if (object.IsNullOrUndefined(liveBinder))
                     {
                         liveBinders[iLivebinder] = liveBinder = new LiveBinder(binder);
                         liveBinder.Target = this.elementsOfIntrest[binder.ObjectIndex];
@@ -409,7 +412,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// Queued deactivation.  /// </summary>
         private void QueuedDeactivation()
         {
-            if (this.isActive || this.isDiposed)
+            if (this.isActive || this.isDiposed || this.liveBinders == null)
             {
                 return;
             }
@@ -417,7 +420,7 @@ namespace Sunlight.Framework.UI.Helpers
             for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
             {
                 var liveBinder = this.liveBinders[iLiveBinder];
-                if (liveBinder == null)
+                if (object.IsNullOrUndefined(liveBinder))
                 {
                     return;
                 }
@@ -435,11 +438,14 @@ namespace Sunlight.Framework.UI.Helpers
         private void UpdateBinderSource(object source, BinderType sourceType)
         {
             var liveBinders = this.liveBinders;
+            if (liveBinders == null)
+            { return; }
+
             var liveBindersLength = this.liveBinders.Length;
             for (int iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++)
             {
                 var liveBinder = liveBinders[iLiveBinder];
-                if (liveBinder != null
+                if (Script.IsNullOrUndefined(liveBinder)
                     && (liveBinder.BinderInfo.BinderType & BinderType.TargetTypes) == sourceType)
                 {
                     liveBinder.Source = source;

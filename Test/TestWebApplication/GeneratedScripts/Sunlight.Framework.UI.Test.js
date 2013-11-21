@@ -1,6 +1,6 @@
 ﻿(function(){
-var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_Collections_Generic_StringDictionary_$Delegate$_, ptyp_, tmplStore, TestTemplate1_var, TestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
-Function.typeId = "j";
+var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_Collections_Generic_StringDictionary_$Delegate$_, System_ArrayG_$Number$_, ptyp_, tmplStore, TestTemplate1_var, TestTemplateVMB_CssBinding_var, TestTemplateVMB_StyleBinding_var, TestTemplateVMB_AttrBinding_var, TestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Number$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
+Function.typeId = "l";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
   if (this_.isInstanceOfType(instance) || instance === null || typeof instance === "undefined") {
@@ -142,7 +142,7 @@ ptyp_.toString = function() {
   return System__Type__ToString(this);
 };
 System__Type__RegisterReferenceType(Function, "System.Type", Object, []);
-Object.typeId = "k";
+Object.typeId = "m";
 function System__Object__IsNullOrUndefined(obj) {
   return obj === null || typeof obj == "undefined";
 };
@@ -157,7 +157,7 @@ function System__Object__NoReturn() {
 System__Type__RegisterReferenceType(Object, "System.Object", null, []);
 function Sunlight_Framework_UI_Test_LiveBinderTests() {
 };
-Sunlight_Framework_UI_Test_LiveBinderTests.typeId = "l";
+Sunlight_Framework_UI_Test_LiveBinderTests.typeId = "n";
 Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder = null;
 Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder = null;
 Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder = null;
@@ -296,8 +296,9 @@ function Sunlight__Framework__UI__Test__LiveBinderTests__TestTwoWayLiveBinderMul
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_LiveBinderTests, "Sunlight.Framework.UI.Test.LiveBinderTests", Object, []);
 function Sunlight_Framework_UI_Test_NScriptsTemplateTests() {
 };
-Sunlight_Framework_UI_Test_NScriptsTemplateTests.typeId = "m";
+Sunlight_Framework_UI_Test_NScriptsTemplateTests.typeId = "o";
 function Sunlight__Framework__UI__Test__NScriptsTemplateTests__Setup() {
+  Sunlight__Framework__TaskScheduler__set_Instance(Sunlight__Framework__TaskScheduler_factory(Sunlight__Framework__TestWindowTimer_factory(), 10, 10));
 };
 function Sunlight__Framework__UI__Test__NScriptsTemplateTests__Test() {
   QUnit.notEqual(null, Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplate1(), "Template should not be null");
@@ -312,10 +313,52 @@ function Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestApplySkin() {
   control.activate();
   QUnit.notEqual(null, element.querySelector("[test]"), "After applying skin, skin element should be loaded");
 };
+function Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestCssBinder() {
+  var element, control, vm, elem;
+  element = window.document.createElement("div");
+  control = Sunlight__Framework__UI__UISkinableElement_factory(element);
+  vm = Sunlight__Framework__UI__Test__TestViewModelB_factory();
+  control.set_dataContext(vm);
+  control.set_skin(Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_CssBinding());
+  control.activate();
+  elem = element.querySelector("[test]");
+  QUnit.notEqual(null, elem, "After applying skin, skin element should be loaded");
+  QUnit.equal("", elem.className, "Class should not be set if PropBool1 is not set.");
+  vm.set_propBool1(true);
+  QUnit.notEqual("", elem.className, "Class should be set if PropBool1 is set.");
+};
+function Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestStyleBinder() {
+  var element, control, vm, elem;
+  element = window.document.createElement("div");
+  control = Sunlight__Framework__UI__UISkinableElement_factory(element);
+  vm = Sunlight__Framework__UI__Test__TestViewModelB_factory();
+  control.set_dataContext(vm);
+  control.set_skin(Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_StyleBinding());
+  control.activate();
+  elem = element.querySelector("[test]");
+  QUnit.notEqual(null, elem, "After applying skin, skin element should be loaded");
+  QUnit.equal("", elem.style.height, "Style should not be set if PropStr1 is not set.");
+  vm.set_propStr1("10px");
+  QUnit.equal("10px", elem.style.height, "Style should be set if PropStr1 is set.");
+};
+function Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestAttrBinder() {
+  var element, control, vm, elem;
+  element = window.document.createElement("div");
+  control = Sunlight__Framework__UI__UISkinableElement_factory(element);
+  vm = Sunlight__Framework__UI__Test__TestViewModelB_factory();
+  control.set_dataContext(vm);
+  control.set_skin(Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_AttrBinding());
+  control.activate();
+  elem = element.querySelector("[test]");
+  QUnit.notEqual(elem, null, "After applying skin, skin element should be loaded");
+  QUnit.equal(elem.getAttribute("test1"), null, "Attribute 'test' should not be set if PropStr1 is not set.");
+  vm.set_propStr1("TTTest");
+  QUnit.equal("TTTest", elem.getAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
+};
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_NScriptsTemplateTests, "Sunlight.Framework.UI.Test.NScriptsTemplateTests", Object, []);
 function Sunlight_Framework_UI_Test_SkinBinderHelperTests() {
 };
-Sunlight_Framework_UI_Test_SkinBinderHelperTests.typeId = "n";
+Sunlight_Framework_UI_Test_SkinBinderHelperTests.typeId = "p";
 function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestSimpleBinder() {
   var src, stmtTemp1, tar1;
   src = (stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1.set_propInt1(1), stmtTemp1.set_propBool1(true), stmtTemp1);
@@ -359,18 +402,9 @@ function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestTextContentBi
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_SkinBinderHelperTests, "Sunlight.Framework.UI.Test.SkinBinderHelperTests", Object, []);
 function Sunlight_Framework_UI_Test_TestListView() {
 };
-Sunlight_Framework_UI_Test_TestListView.typeId = "o";
-function Sunlight__Framework__UI__Test__TestListView__Test() {
-  var document, listView, vmAs, stmtTemp1, stmtTemp10, stmtTemp11;
-  document = window.document;
-  listView = Sunlight__Framework__UI__ListView_factory(document.createElement("div"));
-  listView.set_itemSkin(Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplate1());
-  vmAs = System_ArrayG_$TestViewModelB$_.__ctor([(stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp1.set_propStr1("Str"), stmtTemp1), (stmtTemp10 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp10.set_propInt1(10), stmtTemp10), (stmtTemp11 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp11.set_propBool1(true), stmtTemp11)]);
-  listView.set_fixedList(vmAs);
-  listView.set_inactiveIfNullContext(false);
-  QUnit.equal(0, listView.get_element().children.length, "number of children should be 0");
-  listView.activate();
-  QUnit.equal(3, listView.get_element().children.length, "number of children should be 3");
+Sunlight_Framework_UI_Test_TestListView.typeId = "q";
+function Sunlight__Framework__UI__Test__TestListView__Setup() {
+  Sunlight__Framework__TaskScheduler__set_Instance(Sunlight__Framework__TaskScheduler_factory(Sunlight__Framework__TestWindowTimer_factory(), 10, 10));
 };
 function Sunlight__Framework__UI__Test__TestListView__TestChildSkin() {
   var document, listView, vmAs, stmtTemp1, stmtTemp10, stmtTemp11, elems, i;
@@ -389,7 +423,7 @@ function Sunlight__Framework__UI__Test__TestListView__TestChildSkin() {
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_TestListView, "Sunlight.Framework.UI.Test.TestListView", Object, []);
 function Sunlight_Framework_UI_Test_ManualTemplateTests() {
 };
-Sunlight_Framework_UI_Test_ManualTemplateTests.typeId = "p";
+Sunlight_Framework_UI_Test_ManualTemplateTests.typeId = "r";
 Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue = null;
 function Sunlight__Framework__UI__Test__ManualTemplateTests__Setup() {
 };
@@ -402,7 +436,7 @@ function Sunlight__Framework__UI__Test__ManualTemplateTests____cctor() {
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_ManualTemplateTests, "Sunlight.Framework.UI.Test.ManualTemplateTests", Object, []);
 function Sunlight_Framework_UI_Test_UIElementTests() {
 };
-Sunlight_Framework_UI_Test_UIElementTests.typeId = "q";
+Sunlight_Framework_UI_Test_UIElementTests.typeId = "s";
 function Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement() {
   var doc, element;
   doc = window.document;
@@ -411,7 +445,7 @@ function Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement() {
   QUnit.equal(element.get_element().tagName, "DIV", "element.Element.TagName == 'DIV'");
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_UIElementTests, "Sunlight.Framework.UI.Test.UIElementTests", Object, []);
-String.typeId = "h";
+String.typeId = "j";
 System__String__formatHelperRegex = null;
 System__String__trimStartHelperRegex = null;
 System__String__trimEndHelperRegex = null;
@@ -439,11 +473,11 @@ System__String__TrimStart = function System__String__TrimStart(this_) {
   return this_.trimRight ? this_.trimRight() : this_.replace(System__String__trimStartHelperRegex, "");
 };
 System__Type__RegisterReferenceType(String, "System.String", Object, []);
-RegExp.typeId = "r";
+RegExp.typeId = "t";
 System__Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
 function Sunlight_Framework_UI_Helpers_SkinBinderInfo() {
 };
-Sunlight_Framework_UI_Helpers_SkinBinderInfo.typeId = "s";
+Sunlight_Framework_UI_Helpers_SkinBinderInfo.typeId = "u";
 function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
@@ -460,6 +494,12 @@ function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory(propertyGetter
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
   this_.__ctor1(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue);
+  return this_;
+};
+function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
+  var this_;
+  this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
+  this_.__ctor3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex);
   return this_;
 };
 function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
@@ -521,6 +561,20 @@ ptyp_.__ctor1 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____cto
   this.defaultValue = defaultValue;
   this.mode = 1;
 };
+ptyp_.__ctor3 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
+  this.binderIndex = -1;
+  this.extraObjectIndex = -1;
+  this.propertyGetterPath = propertyGetterPath;
+  this.propertyNames = propertyNames;
+  this.targetPropertySetterWithArg = targetPropertySetter;
+  this.targetPropertySetterArg = targetPropertySetterArg;
+  this.binderType = binderType;
+  this.binderIndex = binderIndex;
+  this.objectIndex = objectIndex;
+  this.forwardConverter = forwardConverter;
+  this.defaultValue = defaultValue;
+  this.mode = 1;
+};
 ptyp_.__ctor2 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
@@ -575,7 +629,7 @@ Sunlight_Framework_Observables_INotifyPropertyChanged.typeId = "b";
 System__Type__RegisterInterface(Sunlight_Framework_Observables_INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
 function Sunlight_Framework_Observables_ObservableObject() {
 };
-Sunlight_Framework_Observables_ObservableObject.typeId = "t";
+Sunlight_Framework_Observables_ObservableObject.typeId = "v";
 ptyp_ = Sunlight_Framework_Observables_ObservableObject.prototype;
 ptyp_.eventHandlers = null;
 ptyp_.addPropertyChangedListener = function Sunlight__Framework__Observables__ObservableObject__AddPropertyChangedListener(propertyName, callback) {
@@ -638,7 +692,7 @@ ptyp_.V_RemovePropertyChangedListener_b = ptyp_.removePropertyChangedListener;
 System__Type__RegisterReferenceType(Sunlight_Framework_Observables_ObservableObject, "Sunlight.Framework.Observables.ObservableObject", Object, [Sunlight_Framework_Observables_INotifyPropertyChanged]);
 function Sunlight_Framework_UI_Test_TestViewModelA() {
 };
-Sunlight_Framework_UI_Test_TestViewModelA.typeId = "u";
+Sunlight_Framework_UI_Test_TestViewModelA.typeId = "w";
 function Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Getter(obj) {
   return System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, obj).get_propStr1();
 };
@@ -708,14 +762,14 @@ ptyp_.__ctor0 = function Sunlight__Framework__UI__Test__TestViewModelA____ctor()
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_TestViewModelA, "Sunlight.Framework.UI.Test.TestViewModelA", Sunlight_Framework_Observables_ObservableObject, []);
 function System_ValueType() {
 };
-System_ValueType.typeId = "v";
+System_ValueType.typeId = "x";
 ptyp_ = System_ValueType.prototype;
 ptyp_.boxedValue = null;
 System__Type__RegisterReferenceType(System_ValueType, "System.ValueType", Object, []);
 function System_Int32(boxedValue) {
   this.boxedValue = boxedValue;
 };
-System_Int32.typeId = "w";
+System_Int32.typeId = "y";
 System_Int32.getDefaultValue = function() {
   return 0;
 };
@@ -736,19 +790,19 @@ ptyp_.toString = function() {
 System__Type__RegisterStructType(System_Int32, "System.Int32", []);
 function System_Collections_IEnumerable() {
 };
-System_Collections_IEnumerable.typeId = "c";
+System_Collections_IEnumerable.typeId = "d";
 System__Type__RegisterInterface(System_Collections_IEnumerable, "System.Collections.IEnumerable");
 function System_Collections_ICollection() {
 };
-System_Collections_ICollection.typeId = "e";
+System_Collections_ICollection.typeId = "f";
 System__Type__RegisterInterface(System_Collections_ICollection, "System.Collections.ICollection");
 function System_Collections_IList() {
 };
-System_Collections_IList.typeId = "f";
+System_Collections_IList.typeId = "g";
 System__Type__RegisterInterface(System_Collections_IList, "System.Collections.IList");
 function System_ArrayImpl() {
 };
-System_ArrayImpl.typeId = "x";
+System_ArrayImpl.typeId = "z";
 ptyp_ = System_ArrayImpl.prototype;
 ptyp_.system__Collections__IList__get_Item = function System__ArrayImpl__System__Collections__IList__get_Item(index) {
   return this.V_GetValue(index);
@@ -764,26 +818,26 @@ ptyp_.system__Collections__ICollection__get_Count = function System__ArrayImpl__
 };
 ptyp_.__ctor = function System__ArrayImpl____ctor() {
 };
-ptyp_.V_get_Item_f = ptyp_.system__Collections__IList__get_Item;
-ptyp_.V_Clear_f = ptyp_.system__Collections__IList__Clear;
-ptyp_.V_RemoveAt_f = ptyp_.system__Collections__IList__RemoveAt;
-ptyp_.V_get_Count_e = ptyp_.system__Collections__ICollection__get_Count;
-ptyp_.V_Contains_f = function(arg0) {
+ptyp_.V_get_Item_g = ptyp_.system__Collections__IList__get_Item;
+ptyp_.V_Clear_g = ptyp_.system__Collections__IList__Clear;
+ptyp_.V_RemoveAt_g = ptyp_.system__Collections__IList__RemoveAt;
+ptyp_.V_get_Count_f = ptyp_.system__Collections__ICollection__get_Count;
+ptyp_.V_Contains_g = function(arg0) {
   return this.V_Contains(arg0);
 };
-ptyp_.V_IndexOf_f = function(arg0) {
+ptyp_.V_IndexOf_g = function(arg0) {
   return this.V_IndexOf(arg0);
 };
-ptyp_.V_GetEnumerator_c = function() {
+ptyp_.V_GetEnumerator_d = function() {
   return this.V_GetEnumerator();
 };
-ptyp_.V_CopyTo_e = function(arg0, arg1) {
+ptyp_.V_CopyTo_f = function(arg0, arg1) {
   return this.V_CopyTo(arg0, arg1);
 };
 System__Type__RegisterReferenceType(System_ArrayImpl, "System.ArrayImpl", Object, [System_Collections_IList, System_Collections_IEnumerable, System_Collections_ICollection]);
 function System_Delegate() {
 };
-System_Delegate.typeId = "y";
+System_Delegate.typeId = "A";
 function System__Delegate__Combine(a, b) {
   var funcs, rv;
   funcs = [];
@@ -869,12 +923,12 @@ function System__Delegate__CreateJoinedArray(array) {
 System__Type__RegisterReferenceType(System_Delegate, "System.Delegate", Object, []);
 function System_MulticastDelegate() {
 };
-System_MulticastDelegate.typeId = "z";
+System_MulticastDelegate.typeId = "bb";
 System_MulticastDelegate.prototype = new System_Delegate();
 System__Type__RegisterReferenceType(System_MulticastDelegate, "System.MulticastDelegate", System_Delegate, []);
 function Sunlight_Framework_UI_Helpers_LiveBinder() {
 };
-Sunlight_Framework_UI_Helpers_LiveBinder.typeId = "A";
+Sunlight_Framework_UI_Helpers_LiveBinder.typeId = "bc";
 function Sunlight__Framework__UI__Helpers__LiveBinder_factory(binderInfo, extraObjectArray) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_LiveBinder();
@@ -1033,19 +1087,155 @@ ptyp_.onTargetPropertyChanged = function Sunlight__Framework__UI__Helpers__LiveB
   }
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Helpers_LiveBinder, "Sunlight.Framework.UI.Helpers.LiveBinder", Object, []);
+function Sunlight_Framework_TaskScheduler() {
+};
+Sunlight_Framework_TaskScheduler.typeId = "bd";
+Sunlight__Framework__TaskScheduler__instance = null;
+function Sunlight__Framework__TaskScheduler__get_Instance() {
+  if (Sunlight__Framework__TaskScheduler__instance === null)
+    Sunlight__Framework__TaskScheduler__instance = Sunlight__Framework__TaskScheduler_factory(Sunlight__Framework__WindowTimer_factory(), 16, 25);
+  return Sunlight__Framework__TaskScheduler__instance;
+};
+function Sunlight__Framework__TaskScheduler__set_Instance(value) {
+  Sunlight__Framework__TaskScheduler__instance = value;
+};
+function Sunlight__Framework__TaskScheduler_factory(windowTimer, workQuanta, idleTimeout) {
+  var this_;
+  this_ = new Sunlight_Framework_TaskScheduler();
+  this_.__ctor(windowTimer, workQuanta, idleTimeout);
+  return this_;
+};
+ptyp_ = Sunlight_Framework_TaskScheduler.prototype;
+ptyp_.currentTask = null;
+ptyp_.workQuanta = 0;
+ptyp_.idleTimeout = 0;
+ptyp_.nextTimerId = 0;
+ptyp_.windowTimer = null;
+ptyp_.hiPriTasks = null;
+ptyp_.lowPriTasks = null;
+ptyp_.idleTasks = null;
+ptyp_.tasks = null;
+ptyp_.timerId = 0;
+ptyp_.highPriSetup = false;
+ptyp_.__ctor = function Sunlight__Framework__TaskScheduler____ctor(windowTimer, workQuanta, idleTimeout) {
+  this.timerId = -1;
+  this.tasks = System_Collections_Generic_NumberDictionary_$Task$_.defaultConstructor();
+  this.windowTimer = windowTimer;
+  this.workQuanta = workQuanta;
+  this.idleTimeout = idleTimeout;
+  this.hiPriTasks = System_Collections_Generic_Queue_$Task$_.defaultConstructor();
+  this.lowPriTasks = System_Collections_Generic_Queue_$Task$_.defaultConstructor();
+  this.idleTasks = System_Collections_Generic_Queue_$Task$_.defaultConstructor();
+};
+ptyp_.enqueueLowPriTask = function Sunlight__Framework__TaskScheduler__EnqueueLowPriTask(work, traceId) {
+  var task;
+  task = Sunlight__Framework__Task_factory(this.nextTimerId++, work);
+  this.idleTasks.enqueue(task);
+  this.tasks.add(task.taskId, task);
+  this.scheduleQuanta(false);
+  return Sunlight__Framework__TaskHandle_factory(task.taskId);
+};
+ptyp_.runQuanta = function Sunlight__Framework__TaskScheduler__RunQuanta() {
+  if (this.hiPriTasks.get_count() > 0)
+    this.flushQueue(this.hiPriTasks, System__DateTime__op_Addition(System__DateTime__get_Now(), this.workQuanta));
+  else if (this.idleTasks.get_count() > 0)
+    this.flushQueue(this.idleTasks, System__DateTime__op_Addition(System__DateTime__get_Now(), this.workQuanta / 2 | 0));
+  else if (this.lowPriTasks.get_count() > 0)
+    this.flushQueue(this.lowPriTasks, System__DateTime__op_Addition(System__DateTime__get_Now(), this.workQuanta / 2 | 0));
+  this.timerId = -1;
+  this.scheduleQuanta(true);
+};
+ptyp_.flushQueue = function Sunlight__Framework__TaskScheduler__FlushQueue(taskQueue, endBy) {
+  var task, now;
+  while (taskQueue.get_count() > 0) {
+    task = taskQueue.dequeue();
+    this.executeTask(task);
+    now = System__DateTime__get_Now();
+    if (endBy < now)
+      return;
+  }
+};
+ptyp_.executeTask = function Sunlight__Framework__TaskScheduler__ExecuteTask(task) {
+  var stmtTemp1;
+  if (task.state === 0) {
+    try {
+      this.currentTask = task;
+      task.state = 3;
+      task.work();
+    } catch (stmtTemp1) {
+    }
+    this.currentTask = null;
+  }
+  task.state = 2;
+  this.tasks.remove(task.taskId);
+};
+ptyp_.scheduleQuanta = function Sunlight__Framework__TaskScheduler__ScheduleQuanta(force) {
+  if (force || !this.highPriSetup && this.hiPriTasks.get_count() > 0) {
+    this.windowTimer.V_ClearTimeout_c(this.timerId);
+    this.timerId = -1;
+  }
+  if (this.timerId !== -1)
+    return;
+  if (this.hiPriTasks.get_count() > 0) {
+    this.highPriSetup = true;
+    this.timerId = this.windowTimer.V_SetImmediate_c(System__Delegate__Create("runQuanta", this));
+  }
+  else if (this.idleTasks.get_count() + this.lowPriTasks.get_count() > 0) {
+    this.highPriSetup = false;
+    this.timerId = this.windowTimer.V_SetTimeout_c(System__Delegate__Create("runQuanta", this), this.idleTimeout);
+  }
+};
+System__Type__RegisterReferenceType(Sunlight_Framework_TaskScheduler, "Sunlight.Framework.TaskScheduler", Object, []);
+function Sunlight_Framework_IWindowTimer() {
+};
+Sunlight_Framework_IWindowTimer.typeId = "c";
+System__Type__RegisterInterface(Sunlight_Framework_IWindowTimer, "Sunlight.Framework.IWindowTimer");
+function Sunlight_Framework_TestWindowTimer() {
+};
+Sunlight_Framework_TestWindowTimer.typeId = "be";
+function Sunlight__Framework__TestWindowTimer_factory() {
+  return new Sunlight_Framework_TestWindowTimer();
+};
+Sunlight_Framework_TestWindowTimer.defaultConstructor = Sunlight__Framework__TestWindowTimer_factory;
+ptyp_ = Sunlight_Framework_TestWindowTimer.prototype;
+ptyp_.setImmediate = function Sunlight__Framework__TestWindowTimer__SetImmediate(action) {
+  action();
+  return 0;
+};
+ptyp_.setTimeout = function Sunlight__Framework__TestWindowTimer__SetTimeout(action, timoutTime) {
+  action();
+  return 0;
+};
+ptyp_.clearTimeout = function Sunlight__Framework__TestWindowTimer__ClearTimeout(timeoutHandle) {
+};
+ptyp_.__ctor = function Sunlight__Framework__TestWindowTimer____ctor() {
+};
+ptyp_.V_SetImmediate_c = ptyp_.setImmediate;
+ptyp_.V_SetTimeout_c = ptyp_.setTimeout;
+ptyp_.V_ClearTimeout_c = ptyp_.clearTimeout;
+System__Type__RegisterReferenceType(Sunlight_Framework_TestWindowTimer, "Sunlight.Framework.TestWindowTimer", Object, [Sunlight_Framework_IWindowTimer]);
 function Sunlight_Framework_UI_Test_NScriptsTemplatesClass() {
 };
-Sunlight_Framework_UI_Test_NScriptsTemplatesClass.typeId = "bb";
+Sunlight_Framework_UI_Test_NScriptsTemplatesClass.typeId = "bf";
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplate1() {
   return TestTemplate1();
 };
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB1() {
   return TestTemplateVMB1();
 };
+function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_AttrBinding() {
+  return TestTemplateVMB_AttrBinding();
+};
+function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_CssBinding() {
+  return TestTemplateVMB_CssBinding();
+};
+function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_StyleBinding() {
+  return TestTemplateVMB_StyleBinding();
+};
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_NScriptsTemplatesClass, "Sunlight.Framework.UI.Test.NScriptsTemplatesClass", Object, []);
 function Sunlight_Framework_Observables_ExtensibleObservableObject() {
 };
-Sunlight_Framework_Observables_ExtensibleObservableObject.typeId = "bc";
+Sunlight_Framework_Observables_ExtensibleObservableObject.typeId = "bg";
 function Sunlight__Framework__Observables__ExtensibleObservableObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Observables_ExtensibleObservableObject();
@@ -1064,7 +1254,7 @@ ptyp_.__ctor0 = function Sunlight__Framework__Observables__ExtensibleObservableO
 System__Type__RegisterReferenceType(Sunlight_Framework_Observables_ExtensibleObservableObject, "Sunlight.Framework.Observables.ExtensibleObservableObject", Sunlight_Framework_Observables_ObservableObject, []);
 function Sunlight_Framework_Binders_ContextBindableObject() {
 };
-Sunlight_Framework_Binders_ContextBindableObject.typeId = "bd";
+Sunlight_Framework_Binders_ContextBindableObject.typeId = "bh";
 function Sunlight__Framework__Binders__ContextBindableObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Binders_ContextBindableObject();
@@ -1109,7 +1299,7 @@ ptyp_.set_dataContext = function Sunlight__Framework__Binders__ContextBindableOb
   this.setDataContext(value);
 };
 ptyp_.get_isActive = function Sunlight__Framework__Binders__ContextBindableObject__get_IsActive() {
-  return this.isActive && !this.V_get_ActivationBlocked();
+  return this.isActivated && !this.V_get_ActivationBlocked();
 };
 ptyp_.set_inactiveIfNullContext = function Sunlight__Framework__Binders__ContextBindableObject__set_InactiveIfNullContext(value) {
   this.isInactiveIfNullContext = value;
@@ -1200,7 +1390,7 @@ ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated;
 System__Type__RegisterReferenceType(Sunlight_Framework_Binders_ContextBindableObject, "Sunlight.Framework.Binders.ContextBindableObject", Sunlight_Framework_Observables_ExtensibleObservableObject, []);
 function Sunlight_Framework_UI_UIElement() {
 };
-Sunlight_Framework_UI_UIElement.typeId = "be";
+Sunlight_Framework_UI_UIElement.typeId = "bi";
 function Sunlight__Framework__UI__UIElement_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_UIElement();
@@ -1221,8 +1411,8 @@ ptyp_.get_element = function Sunlight__Framework__UI__UIElement__get_Element() {
 };
 ptyp_.internalDispose0 = function Sunlight__Framework__UI__UIElement__InternalDispose() {
   var stmtTemp1, kvPair;
-  for (stmtTemp1 = this.eventRegistrationDict.V_GetEnumerator_c(); stmtTemp1.V_MoveNext_d(); ) {
-    kvPair = System__Type__UnBoxTypeInstance(System_Collections_Generic_KeyValuePair_$String_x_String$_, stmtTemp1.V_get_Current_d());
+  for (stmtTemp1 = this.eventRegistrationDict.V_GetEnumerator_d(); stmtTemp1.V_MoveNext_e(); ) {
+    kvPair = System__Type__UnBoxTypeInstance(System_Collections_Generic_KeyValuePair_$String_x_String$_, stmtTemp1.V_get_Current_e());
     System__Web__Html__Element__UnBind(this.element, System_Collections_Generic_KeyValuePair_$String_x_String$_.get_key(kvPair));
   }
   this.eventRegistrationDict.clear();
@@ -1232,7 +1422,7 @@ ptyp_.V_InternalDispose = ptyp_.internalDispose0;
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UIElement, "Sunlight.Framework.UI.UIElement", Sunlight_Framework_Binders_ContextBindableObject, []);
 function Sunlight_Framework_UI_UISkinableElement() {
 };
-Sunlight_Framework_UI_UISkinableElement.typeId = "bf";
+Sunlight_Framework_UI_UISkinableElement.typeId = "bj";
 function Sunlight__Framework__UI__UISkinableElement_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_UISkinableElement();
@@ -1355,6 +1545,22 @@ function System__Web__Html__Element__UnBind(this_, eventName) {
   System__EventBinder__RemoveEvent(this_, eventName, true);
   System__EventBinder__RemoveEvent(this_, eventName, false);
 };
+function Sunlight_Framework_UI_Test_TestViewModelB() {
+};
+Sunlight_Framework_UI_Test_TestViewModelB.typeId = "bk";
+function Sunlight__Framework__UI__Test__TestViewModelB_factory() {
+  var this_;
+  this_ = new Sunlight_Framework_UI_Test_TestViewModelB();
+  this_.__ctor1();
+  return this_;
+};
+Sunlight_Framework_UI_Test_TestViewModelB.defaultConstructor = Sunlight__Framework__UI__Test__TestViewModelB_factory;
+ptyp_ = new Sunlight_Framework_UI_Test_TestViewModelA();
+Sunlight_Framework_UI_Test_TestViewModelB.prototype = ptyp_;
+ptyp_.__ctor1 = function Sunlight__Framework__UI__Test__TestViewModelB____ctor() {
+  this.__ctor0();
+};
+System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_TestViewModelB, "Sunlight.Framework.UI.Test.TestViewModelB", Sunlight_Framework_UI_Test_TestViewModelA, []);
 function Sunlight_Framework_UI_Helpers_SkinBinderHelper() {
 };
 function Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(binders, dataContext, targetElements) {
@@ -1413,7 +1619,7 @@ function Sunlight__Framework__UI__Helpers__SkinBinderHelper__TraversePropertyPat
 function System_Boolean(boxedValue) {
   this.boxedValue = boxedValue;
 };
-System_Boolean.typeId = "bg";
+System_Boolean.typeId = "bl";
 System_Boolean.getDefaultValue = function() {
   return false;
 };
@@ -1428,7 +1634,7 @@ ptyp_.toString = function() {
 System__Type__RegisterStructType(System_Boolean, "System.Boolean", []);
 function Sunlight_Framework_UI_ListView() {
 };
-Sunlight_Framework_UI_ListView.typeId = "bh";
+Sunlight_Framework_UI_ListView.typeId = "bm";
 function Sunlight__Framework__UI__ListView_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_ListView();
@@ -1506,7 +1712,7 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
   }
   if (this.get_isActive()) {
     fixedList = this.fixedList;
-    fixedListCount = fixedList.V_get_Count_e();
+    fixedListCount = fixedList.V_get_Count_f();
     for (iObject = 0; iObject < fixedListCount; iObject++) {
       if (iObject < itemsCount)
         listViewItem = items.get_item(iObject);
@@ -1516,7 +1722,7 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
         listViewItem.set_skin(this.itemSkin);
         items.add(listViewItem);
       }
-      listViewItem.set_dataContext(fixedList.V_get_Item_f(iObject));
+      listViewItem.set_dataContext(fixedList.V_get_Item_g(iObject));
       listViewItem.activate();
     }
     for (iItem = itemsCount; iItem >= fixedListCount; iItem--) {
@@ -1532,25 +1738,27 @@ ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose1;
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_ListView, "Sunlight.Framework.UI.ListView", Sunlight_Framework_UI_UIElement, []);
-function Sunlight_Framework_UI_Test_TestViewModelB() {
+function Sunlight_Framework_Task() {
 };
-Sunlight_Framework_UI_Test_TestViewModelB.typeId = "bi";
-function Sunlight__Framework__UI__Test__TestViewModelB_factory() {
+Sunlight_Framework_Task.typeId = "bn";
+function Sunlight__Framework__Task_factory(taskId, work) {
   var this_;
-  this_ = new Sunlight_Framework_UI_Test_TestViewModelB();
-  this_.__ctor1();
+  this_ = new Sunlight_Framework_Task();
+  this_.__ctor(taskId, work);
   return this_;
 };
-Sunlight_Framework_UI_Test_TestViewModelB.defaultConstructor = Sunlight__Framework__UI__Test__TestViewModelB_factory;
-ptyp_ = new Sunlight_Framework_UI_Test_TestViewModelA();
-Sunlight_Framework_UI_Test_TestViewModelB.prototype = ptyp_;
-ptyp_.__ctor1 = function Sunlight__Framework__UI__Test__TestViewModelB____ctor() {
-  this.__ctor0();
+ptyp_ = Sunlight_Framework_Task.prototype;
+ptyp_.state = 0;
+ptyp_.work = null;
+ptyp_.taskId = null;
+ptyp_.__ctor = function Sunlight__Framework__Task____ctor(taskId, work) {
+  this.taskId = taskId;
+  this.work = work;
 };
-System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_TestViewModelB, "Sunlight.Framework.UI.Test.TestViewModelB", Sunlight_Framework_UI_Test_TestViewModelA, []);
+System__Type__RegisterReferenceType(Sunlight_Framework_Task, "Sunlight.Framework.Task", Object, []);
 function Sunlight_Framework_UI_Skin() {
 };
-Sunlight_Framework_UI_Skin.typeId = "bj";
+Sunlight_Framework_UI_Skin.typeId = "bo";
 function Sunlight__Framework__UI__Skin_factory(skinableType, dataContextType, factoryMethod, id) {
   var this_;
   this_ = new Sunlight_Framework_UI_Skin();
@@ -1577,7 +1785,7 @@ ptyp_.createInstance = function Sunlight__Framework__UI__Skin__CreateInstance() 
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Skin, "Sunlight.Framework.UI.Skin", Object, []);
 function Sunlight_Framework_UI_ListViewItem() {
 };
-Sunlight_Framework_UI_ListViewItem.typeId = "bk";
+Sunlight_Framework_UI_ListViewItem.typeId = "bp";
 function Sunlight__Framework__UI__ListViewItem_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_ListViewItem();
@@ -1590,15 +1798,15 @@ ptyp_.__ctor4 = function Sunlight__Framework__UI__ListViewItem____ctor(element) 
   this.__ctor3(element);
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_ListViewItem, "Sunlight.Framework.UI.ListViewItem", Sunlight_Framework_UI_UISkinableElement, []);
-Error.typeId = "bl";
+Error.typeId = "bq";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function Sunlight_Framework_UI_UIEvent() {
 };
-Sunlight_Framework_UI_UIEvent.typeId = "bm";
+Sunlight_Framework_UI_UIEvent.typeId = "br";
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UIEvent, "Sunlight.Framework.UI.UIEvent", Object, []);
 function Sunlight_Framework_UI_Helpers_SkinInstance() {
 };
-Sunlight_Framework_UI_Helpers_SkinInstance.typeId = "bn";
+Sunlight_Framework_UI_Helpers_SkinInstance.typeId = "bs";
 function Sunlight__Framework__UI__Helpers__SkinInstance_factory(factory, rootElement, childElements, elementsOfIntrests, binders, partIdMapping, liveBinderCount, extraObjectCount) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinInstance();
@@ -1783,6 +1991,8 @@ ptyp_.queuedActivation = function Sunlight__Framework__UI__Helpers__SkinInstance
   var binders, liveBinders, binderLength, liveBindersLength, iBinderInfo, iLivebinder, binder, liveBinder;
   binders = this.binders;
   liveBinders = this.liveBinders;
+  if (liveBinders === null)
+    return;
   binderLength = binders.length;
   liveBindersLength = liveBinders.length;
   for (
@@ -1790,7 +2000,7 @@ ptyp_.queuedActivation = function Sunlight__Framework__UI__Helpers__SkinInstance
     binder = binders[iBinderInfo];
     if (binder.mode !== 0) {
       liveBinder = liveBinders[iLivebinder];
-      if (liveBinder === null) {
+      if (System__Object__IsNullOrUndefined(liveBinder)) {
         liveBinders[iLivebinder] = liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, null);
         liveBinder.set_target(this.elementsOfIntrest[binder.objectIndex]);
       }
@@ -1811,11 +2021,11 @@ ptyp_.queuedActivation = function Sunlight__Framework__UI__Helpers__SkinInstance
 };
 ptyp_.queuedDeactivation = function Sunlight__Framework__UI__Helpers__SkinInstance__QueuedDeactivation() {
   var iLiveBinder, liveBinder;
-  if (this.isActive || this.isDiposed)
+  if (this.isActive || this.isDiposed || this.liveBinders === null)
     return;
   for (iLiveBinder = 0; iLiveBinder < this.liveBinders.length; iLiveBinder++) {
     liveBinder = this.liveBinders[iLiveBinder];
-    if (liveBinder === null)
+    if (System__Object__IsNullOrUndefined(liveBinder))
       return;
     liveBinder.set_isActive(false);
     liveBinder.cleanup();
@@ -1824,17 +2034,19 @@ ptyp_.queuedDeactivation = function Sunlight__Framework__UI__Helpers__SkinInstan
 ptyp_.updateBinderSource = function Sunlight__Framework__UI__Helpers__SkinInstance__UpdateBinderSource(source, sourceType) {
   var liveBinders, liveBindersLength, iLiveBinder, liveBinder;
   liveBinders = this.liveBinders;
+  if (liveBinders === null)
+    return;
   liveBindersLength = this.liveBinders.length;
   for (iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++) {
     liveBinder = liveBinders[iLiveBinder];
-    if (liveBinder !== null && (liveBinder.get_binderInfo().binderType & 7) === sourceType)
+    if (System__Object__IsNullOrUndefined(liveBinder) && (liveBinder.get_binderInfo().binderType & 7) === sourceType)
       liveBinder.set_source(source);
   }
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Helpers_SkinInstance, "Sunlight.Framework.UI.Helpers.SkinInstance", Object, []);
 function System_Enum() {
 };
-System_Enum.typeId = "bo";
+System_Enum.typeId = "bt";
 ptyp_ = new System_ValueType();
 System_Enum.prototype = ptyp_;
 ptyp_.toString0 = function System__Enum__ToString() {
@@ -1849,7 +2061,7 @@ System__Type__RegisterReferenceType(System_Enum, "System.Enum", System_ValueType
 function Sunlight_Framework_UI_Helpers_BinderType(boxedValue) {
   this.boxedValue = boxedValue;
 };
-Sunlight_Framework_UI_Helpers_BinderType.typeId = "bp";
+Sunlight_Framework_UI_Helpers_BinderType.typeId = "bu";
 Sunlight_Framework_UI_Helpers_BinderType.enumStrToValueMap = {
   "DataContext": 1,
   "Static": 2,
@@ -1869,31 +2081,9 @@ Sunlight_Framework_UI_Helpers_BinderType.getDefaultValue = function() {
 };
 Sunlight_Framework_UI_Helpers_BinderType.prototype = new System_Enum();
 System__Type__RegisterEnum(Sunlight_Framework_UI_Helpers_BinderType, "Sunlight.Framework.UI.Helpers.BinderType", true);
-function Sunlight_Framework_TaskScheduler() {
-};
-Sunlight_Framework_TaskScheduler.typeId = "bq";
-Sunlight__Framework__TaskScheduler__instance = null;
-function Sunlight__Framework__TaskScheduler__get_Instance() {
-  if (Sunlight__Framework__TaskScheduler__instance === null)
-    Sunlight__Framework__TaskScheduler__instance = Sunlight__Framework__TaskScheduler_factory(16, 25);
-  return Sunlight__Framework__TaskScheduler__instance;
-};
-function Sunlight__Framework__TaskScheduler_factory(workQuanta, idleTimeOut) {
-  var this_;
-  this_ = new Sunlight_Framework_TaskScheduler();
-  this_.__ctor(workQuanta, idleTimeOut);
-  return this_;
-};
-ptyp_ = Sunlight_Framework_TaskScheduler.prototype;
-ptyp_.__ctor = function Sunlight__Framework__TaskScheduler____ctor(workQuanta, idleTimeOut) {
-};
-ptyp_.enqueueLowPriTask = function Sunlight__Framework__TaskScheduler__EnqueueLowPriTask(work, traceId) {
-  return null;
-};
-System__Type__RegisterReferenceType(Sunlight_Framework_TaskScheduler, "Sunlight.Framework.TaskScheduler", Object, []);
 function Boolean0() {
 };
-Boolean0.typeId = "br";
+Boolean0.typeId = "bv";
 function System__BooleanNative__op_Implicit(b) {
   return b;
 };
@@ -1902,13 +2092,68 @@ Function.getDefaultValue = function() {
   return {
   };
 };
+function Sunlight_Framework_WindowTimer() {
+};
+Sunlight_Framework_WindowTimer.typeId = "bw";
+function Sunlight__Framework__WindowTimer_factory() {
+  return new Sunlight_Framework_WindowTimer();
+};
+Sunlight_Framework_WindowTimer.defaultConstructor = Sunlight__Framework__WindowTimer_factory;
+ptyp_ = Sunlight_Framework_WindowTimer.prototype;
+ptyp_.setImmediate = function Sunlight__Framework__WindowTimer__SetImmediate(action) {
+  if (typeof setImmediate != "undefined")
+    return setImmediate(action);
+  return setTimeout(action, 0);
+};
+ptyp_.setTimeout = function Sunlight__Framework__WindowTimer__SetTimeout(action, timeoutHandle) {
+  if (timeoutHandle === 0)
+    return this.setImmediate(action);
+  return setTimeout(action, timeoutHandle);
+};
+ptyp_.clearTimeout = function Sunlight__Framework__WindowTimer__ClearTimeout(timeoutHandle) {
+  if (typeof clearImmediate != "undefined")
+    clearImmediate(timeoutHandle);
+  clearTimeout(timeoutHandle);
+};
+ptyp_.__ctor = function Sunlight__Framework__WindowTimer____ctor() {
+};
+ptyp_.V_SetImmediate_c = ptyp_.setImmediate;
+ptyp_.V_SetTimeout_c = ptyp_.setTimeout;
+ptyp_.V_ClearTimeout_c = ptyp_.clearTimeout;
+System__Type__RegisterReferenceType(Sunlight_Framework_WindowTimer, "Sunlight.Framework.WindowTimer", Object, [Sunlight_Framework_IWindowTimer]);
+function Sunlight_Framework_TaskHandle() {
+};
+Sunlight_Framework_TaskHandle.typeId = "bx";
+function Sunlight__Framework__TaskHandle_factory(taskId) {
+  var this_;
+  this_ = new Sunlight_Framework_TaskHandle();
+  this_.__ctor(taskId);
+  return this_;
+};
+ptyp_ = Sunlight_Framework_TaskHandle.prototype;
+ptyp_.taskId = 0;
+ptyp_.__ctor = function Sunlight__Framework__TaskHandle____ctor(taskId) {
+  this.taskId = taskId;
+};
+System__Type__RegisterReferenceType(Sunlight_Framework_TaskHandle, "Sunlight.Framework.TaskHandle", Object, []);
+Date.typeId = "by";
+function System__DateTime__op_Addition(a, n) {
+  return new Date(a.valueOf() + n);
+};
+function System__DateTime__get_Now() {
+  return new Date();
+};
+function System__DateTime____cctor() {
+  Date.empty = new Date(0);
+};
+System__Type__RegisterReferenceType(Date, "System.DateTime", Object, []);
 function System_Collections_IEnumerator() {
 };
-System_Collections_IEnumerator.typeId = "d";
+System_Collections_IEnumerator.typeId = "e";
 System__Type__RegisterInterface(System_Collections_IEnumerator, "System.Collections.IEnumerator");
 function System_EventBinder() {
 };
-System_EventBinder.typeId = "bs";
+System_EventBinder.typeId = "bz";
 function System__EventBinder__GetBinder(importedElement) {
   if (System__Object__IsNullOrUndefined(importedElement.importedExtension))
     importedElement.importedExtension = {
@@ -1979,9 +2224,11 @@ ptyp_.eventHandlerBubble = function System__EventBinder__EventHandlerBubble(evt)
   this.bubblePhaseEvents.get_item(System__EventBinder__GetEventType(evt))(this.target, evt);
 };
 System__Type__RegisterReferenceType(System_EventBinder, "System.EventBinder", Object, []);
+Number.typeId = "i";
+System__Type__RegisterReferenceType(Number, "System.Number", Object, []);
 function System_NotSupportedException() {
 };
-System_NotSupportedException.typeId = "cf";
+System_NotSupportedException.typeId = "bg";
 function System__NotSupportedException_factory() {
   var this_;
   this_ = new System_NotSupportedException();
@@ -1994,7 +2241,7 @@ System_NotSupportedException.prototype = ptyp_;
 ptyp_.__ctor = function System__NotSupportedException____ctor() {
 };
 System__Type__RegisterReferenceType(System_NotSupportedException, "System.NotSupportedException", Error, []);
-Array.typeId = "cg";
+Array.typeId = "bh";
 System__Type__RegisterReferenceType(Array, "System.Array", Object, [System_Collections_IList, System_Collections_IEnumerable, System_Collections_ICollection]);
 function Sunlight_Framework_UI_Test_ValueIfTrue(T, $5fcallStatiConstructor) {
   var ValueIfTrue$1_$T$_, $5f_initTracker;
@@ -2005,7 +2252,7 @@ function Sunlight_Framework_UI_Test_ValueIfTrue(T, $5fcallStatiConstructor) {
   ValueIfTrue$1_$T$_ = Sunlight_Framework_UI_Test_ValueIfTrue[T.typeId];
   ValueIfTrue$1_$T$_.genericParameters = [T];
   ValueIfTrue$1_$T$_.genericClosure = Sunlight_Framework_UI_Test_ValueIfTrue;
-  ValueIfTrue$1_$T$_.typeId = "bt$" + T.typeId + "$";
+  ValueIfTrue$1_$T$_.typeId = "ca$" + T.typeId + "$";
   ValueIfTrue$1_$T$_.__ctor = function Sunlight_Framework_UI_Test_ValueIfTrue$1_factory0(value) {
     var this_;
     this_ = new ValueIfTrue$1_$T$_();
@@ -2040,7 +2287,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_ = System_ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = System_ArrayG;
-  ArrayG$1_$T$_.typeId = "bu$" + T.typeId + "$";
+  ArrayG$1_$T$_.typeId = "cb$" + T.typeId + "$";
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
   ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory1(size) {
@@ -2136,6 +2383,9 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     ArrayG$1_$T$_._tri();
   return ArrayG$1_$T$_;
 };
+function System__NativeArray$1__Pop(this_) {
+  return this_.pop();
+};
 function System__NativeArray$1__Push(this_, value) {
   return this_.push(value);
 };
@@ -2146,6 +2396,14 @@ function System__NativeArray$1__IndexOf(this_, value, startIndex) {
     if (this_[i] === value)
       return i;
   return -1;
+};
+function System__NativeArray$1__InsertAt(this_, index, value) {
+  var i;
+  if (index < 0 || index > this_.length)
+    throw new Error("Index out of range");
+  for (i = this_.length - 1; i >= index; index--)
+    this_[i + 1] = this_[i];
+  this_[index] = value;
 };
 function System__NativeArray$1__RemoveAt(this_, index) {
   var len, i;
@@ -2170,7 +2428,7 @@ function System_Func(T1, TRes, $5fcallStatiConstructor) {
   Func$2_$T1_x_T1$_ = System_Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_T1$_.genericParameters = [T1, TRes];
   Func$2_$T1_x_T1$_.genericClosure = System_Func;
-  Func$2_$T1_x_T1$_.typeId = "bv$" + T1.typeId + "_" + TRes.typeId + "$";
+  Func$2_$T1_x_T1$_.typeId = "cc$" + T1.typeId + "_" + TRes.typeId + "$";
   Func$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Func$2_$T1_x_T1$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", System_MulticastDelegate, []);
   Func$2_$T1_x_T1$_._tri = function() {
@@ -2187,7 +2445,7 @@ function System_Func(T1, TRes, $5fcallStatiConstructor) {
 };
 function Sunlight_Framework_Binders_ContextBindableObject() {
 };
-Sunlight_Framework_Binders_ContextBindableObject.typeId = "bd";
+Sunlight_Framework_Binders_ContextBindableObject.typeId = "bh";
 function Sunlight__Framework__Binders__ContextBindableObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Binders_ContextBindableObject();
@@ -2232,7 +2490,7 @@ ptyp_.set_dataContext = function Sunlight__Framework__Binders__ContextBindableOb
   this.setDataContext(value);
 };
 ptyp_.get_isActive = function Sunlight__Framework__Binders__ContextBindableObject__get_IsActive() {
-  return this.isActive && !this.V_get_ActivationBlocked();
+  return this.isActivated && !this.V_get_ActivationBlocked();
 };
 ptyp_.set_inactiveIfNullContext = function Sunlight__Framework__Binders__ContextBindableObject__set_InactiveIfNullContext(value) {
   this.isInactiveIfNullContext = value;
@@ -2325,6 +2583,152 @@ function Sunlight_Framework_Observables_INotifyPropertyChanged() {
 };
 Sunlight_Framework_Observables_INotifyPropertyChanged.typeId = "b";
 System__Type__RegisterInterface(Sunlight_Framework_Observables_INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
+function System_Collections_Generic_NumberDictionary(TValue, $5fcallStatiConstructor) {
+  var Enumerator_$TValue$_, NumberDictionary$1_$TValue$_, KeyValuePair$2_$Number_x_Number$_, IEnumerable$1_$KeyValuePair$2_$Number_x_Number$_$_, $5f_initTracker, $5f_initTracker0;
+  if (System_Collections_Generic_NumberDictionary[TValue.typeId])
+    return System_Collections_Generic_NumberDictionary[TValue.typeId];
+  System_Collections_Generic_NumberDictionary[TValue.typeId] = function System__Collections__Generic__NumberDictionary$10() {
+  };
+  NumberDictionary$1_$TValue$_ = System_Collections_Generic_NumberDictionary[TValue.typeId];
+  NumberDictionary$1_$TValue$_.genericParameters = [TValue];
+  NumberDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_NumberDictionary;
+  NumberDictionary$1_$TValue$_.typeId = "cd$" + TValue.typeId + "$";
+  KeyValuePair$2_$Number_x_Number$_ = System_Collections_Generic_KeyValuePair(Number, TValue, $5fcallStatiConstructor);
+  KeyValuePair$2_$Number_x_Number$_ = System_Collections_Generic_KeyValuePair(Number, TValue, $5fcallStatiConstructor);
+  IEnumerable$1_$KeyValuePair$2_$Number_x_Number$_$_ = System_Collections_Generic_IEnumerable(System_Collections_Generic_KeyValuePair(Number, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
+  NumberDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_NumberDictionary$1_factory0() {
+    var this_;
+    this_ = new NumberDictionary$1_$TValue$_();
+    this_.__ctor();
+    return this_;
+  };
+  ptyp_ = NumberDictionary$1_$TValue$_.prototype;
+  ptyp_.innerDict = null;
+  ptyp_.count = 0;
+  ptyp_.system__Collections__IEnumerable__GetEnumerator = function System__Collections__Generic__NumberDictionary$1__System__Collections__IEnumerable__GetEnumerator() {
+    return this.getEnumerator();
+  };
+  ptyp_.__ctor = function System__Collections__Generic__NumberDictionary$1____ctor() {
+    this.innerDict = {
+    };
+  };
+  ptyp_.get_item = function System__Collections__Generic__NumberDictionary$1__get_Item(index) {
+    if (!(index in this.innerDict))
+      throw new Error("Key not found");
+    return this.innerDict[index];
+  };
+  ptyp_.set_item = function System__Collections__Generic__NumberDictionary$1__set_Item(index, value) {
+    this.innerDict[index] = value;
+  };
+  ptyp_.get_keys = function System__Collections__Generic__NumberDictionary$1__get_Keys() {
+    return System_ArrayG_$Number$_.__ctor(this.getKeys());
+  };
+  ptyp_.get_count = function System__Collections__Generic__NumberDictionary$1__get_Count() {
+    return this.count;
+  };
+  ptyp_.add = function System__Collections__Generic__NumberDictionary$1__Add(key, value) {
+    if (this.containsKey(key))
+      throw new Error("Key already exists");
+    this.count++;
+    this.set_item(key, value);
+  };
+  ptyp_.containsKey = function System__Collections__Generic__NumberDictionary$1__ContainsKey(key) {
+    return key in this.innerDict;
+  };
+  ptyp_.remove = function System__Collections__Generic__NumberDictionary$1__Remove(key) {
+    var rv;
+    rv = delete this.innerDict[key];
+    if (rv)
+      this.count--;
+    return rv;
+  };
+  ptyp_.copyTo = function System__Collections__Generic__NumberDictionary$1__CopyTo(array, index) {
+    var keys, i;
+    keys = this.get_keys();
+    for (i = 0; i < keys.V_get_Length(); i++)
+      array.setValue(i + index, System__Type__BoxTypeInstance(KeyValuePair$2_$Number_x_Number$_, KeyValuePair$2_$Number_x_Number$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
+  };
+  ptyp_.getEnumerator = function System__Collections__Generic__NumberDictionary$1__GetEnumerator() {
+    return Enumerator_$TValue$_.__ctor(this);
+  };
+  ptyp_.getKeys = function System__Collections__Generic__NumberDictionary$1__GetKeys() {
+    var rv, key;
+    rv = [];
+    for (key in this.innerDict)
+      rv.push(key);
+    return rv;
+  };
+  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_get_Count_f = ptyp_.get_count;
+  ptyp_.V_CopyTo_f = ptyp_.copyTo;
+  ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$Number_x_Number$_$_.typeId] = ptyp_.getEnumerator;
+  System__Type__RegisterReferenceType(NumberDictionary$1_$TValue$_, "System.Collections.Generic.NumberDictionary`1<" + TValue.fullName + ">", Object, [System_Collections_ICollection, IEnumerable$1_$KeyValuePair$2_$Number_x_Number$_$_, System_Collections_IEnumerable]);
+  NumberDictionary$1_$TValue$_._tri = function() {
+    if ($5f_initTracker0)
+      return;
+    $5f_initTracker0 = true;
+    Enumerator_$TValue$_ = System_Collections_Generic_NumberDictionary_Enumerator(TValue, true);
+    TValue = TValue;
+    NumberDictionary$1_$TValue$_ = System_Collections_Generic_NumberDictionary(TValue, true);
+  };
+  if ($5fcallStatiConstructor)
+    NumberDictionary$1_$TValue$_._tri();
+  return NumberDictionary$1_$TValue$_;
+};
+function System_Collections_Generic_Queue(T, $5fcallStatiConstructor) {
+  var QueueEnumerator_$T$_, Queue$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker, $5f_initTracker0;
+  if (System_Collections_Generic_Queue[T.typeId])
+    return System_Collections_Generic_Queue[T.typeId];
+  System_Collections_Generic_Queue[T.typeId] = function System__Collections__Generic__Queue$10() {
+  };
+  Queue$1_$T$_ = System_Collections_Generic_Queue[T.typeId];
+  Queue$1_$T$_.genericParameters = [T];
+  Queue$1_$T$_.genericClosure = System_Collections_Generic_Queue;
+  Queue$1_$T$_.typeId = "ce$" + T.typeId + "$";
+  IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
+  Queue$1_$T$_.defaultConstructor = function System_Collections_Generic_Queue$1_factory0() {
+    var this_;
+    this_ = new Queue$1_$T$_();
+    this_.__ctor();
+    return this_;
+  };
+  ptyp_ = Queue$1_$T$_.prototype;
+  ptyp_.nativeArray = null;
+  ptyp_.system__Collections__IEnumerable__GetEnumerator = function System__Collections__Generic__Queue$1__System__Collections__IEnumerable__GetEnumerator() {
+    return this.getEnumerator();
+  };
+  ptyp_.dequeue = function System__Collections__Generic__Queue$1__Dequeue() {
+    if (this.get_count() > 0)
+      return System__NativeArray$1__Pop(this.nativeArray);
+    throw new Error("No elements in stack");
+  };
+  ptyp_.enqueue = function System__Collections__Generic__Queue$1__Enqueue(item) {
+    System__NativeArray$1__InsertAt(this.nativeArray, this.nativeArray.length, item);
+  };
+  ptyp_.get_count = function System__Collections__Generic__Queue$1__get_Count() {
+    return this.nativeArray.length;
+  };
+  ptyp_.getEnumerator = function System__Collections__Generic__Queue$1__GetEnumerator() {
+    return QueueEnumerator_$T$_.__ctor(this);
+  };
+  ptyp_.__ctor = function System__Collections__Generic__Queue$1____ctor() {
+    this.nativeArray = new Array(0);
+  };
+  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
+  System__Type__RegisterReferenceType(Queue$1_$T$_, "System.Collections.Generic.Queue`1<" + T.fullName + ">", Object, [IEnumerable$1_$T$_, System_Collections_IEnumerable]);
+  Queue$1_$T$_._tri = function() {
+    if ($5f_initTracker0)
+      return;
+    $5f_initTracker0 = true;
+    QueueEnumerator_$T$_ = System_Collections_Generic_Queue_QueueEnumerator(T, true);
+    T = T;
+    Queue$1_$T$_ = System_Collections_Generic_Queue(T, true);
+  };
+  if ($5fcallStatiConstructor)
+    Queue$1_$T$_._tri();
+  return Queue$1_$T$_;
+};
 function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   var ListEnumerator$1_$T$_, List$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker, $5f_initTracker0;
   if (System_Collections_Generic_List[T.typeId])
@@ -2334,7 +2738,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   List$1_$T$_ = System_Collections_Generic_List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = System_Collections_Generic_List;
-  List$1_$T$_.typeId = "bw$" + T.typeId + "$";
+  List$1_$T$_.typeId = "cf$" + T.typeId + "$";
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory0() {
@@ -2364,7 +2768,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
     return System__Type__BoxTypeInstance(T, this.get_item(index));
   };
   ptyp_.system__Collections__IList__Contains = function System__Collections__Generic__List$1__System__Collections__IList__Contains(value) {
-    return System__Type__CastType(System_Collections_IList, this).V_IndexOf_f(value) >= 0;
+    return System__Type__CastType(System_Collections_IList, this).V_IndexOf_g(value) >= 0;
   };
   ptyp_.__ctor = function System__Collections__Generic__List$1____ctor() {
     this.nativeArray = new Array(0);
@@ -2398,16 +2802,16 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   ptyp_.getEnumerator = function System__Collections__Generic__List$1__GetEnumerator() {
     return ListEnumerator$1_$T$_.__ctor(this);
   };
-  ptyp_.V_IndexOf_f = ptyp_.system__Collections__IList__IndexOf;
-  ptyp_.V_CopyTo_e = ptyp_.system__Collections__ICollection__CopyTo;
-  ptyp_.V_GetEnumerator_c = ptyp_.system__Collections__IEnumerable__GetEnumerator;
-  ptyp_.V_get_Item_f = ptyp_.system__Collections__IList__get_Item;
-  ptyp_.V_Contains_f = ptyp_.system__Collections__IList__Contains;
+  ptyp_.V_IndexOf_g = ptyp_.system__Collections__IList__IndexOf;
+  ptyp_.V_CopyTo_f = ptyp_.system__Collections__ICollection__CopyTo;
+  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_get_Item_g = ptyp_.system__Collections__IList__get_Item;
+  ptyp_.V_Contains_g = ptyp_.system__Collections__IList__Contains;
   ptyp_["V_get_Item_" + IList$1_$T$_.typeId] = ptyp_.get_item;
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
-  ptyp_.V_Clear_f = ptyp_.clear;
-  ptyp_.V_RemoveAt_f = ptyp_.removeAt;
-  ptyp_.V_get_Count_e = ptyp_.get_count;
+  ptyp_.V_Clear_g = ptyp_.clear;
+  ptyp_.V_RemoveAt_g = ptyp_.removeAt;
+  ptyp_.V_get_Count_f = ptyp_.get_count;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [IList$1_$T$_, System_Collections_IList, System_Collections_ICollection, System_Collections_IEnumerable, IEnumerable$1_$T$_]);
   List$1_$T$_._tri = function() {
@@ -2431,7 +2835,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "bx$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "cg$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   IEnumerable$1_$KeyValuePair$2_$String_x_String$_$_ = System_Collections_Generic_IEnumerable(System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
@@ -2521,9 +2925,9 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
       rv++;
     return rv;
   };
-  ptyp_.V_GetEnumerator_c = ptyp_.system__Collections__IEnumerable__GetEnumerator;
-  ptyp_.V_get_Count_e = ptyp_.get_count;
-  ptyp_.V_CopyTo_e = ptyp_.copyTo;
+  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_get_Count_f = ptyp_.get_count;
+  ptyp_.V_CopyTo_f = ptyp_.copyTo;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [System_Collections_ICollection, IEnumerable$1_$KeyValuePair$2_$String_x_String$_$_, System_Collections_IEnumerable]);
   StringDictionary$1_$TValue$_._tri = function() {
@@ -2547,7 +2951,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_ = System_Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = System_Action;
-  Action$1_$T1$_.typeId = "by$" + T1.typeId + "$";
+  Action$1_$T1$_.typeId = "ch$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", System_MulticastDelegate, []);
   Action$1_$T1$_._tri = function() {
@@ -2572,7 +2976,7 @@ function System_Action0(T1, T2, $5fcallStatiConstructor) {
   Action$2_$T1_x_T1$_ = System_Action0[T1.typeId][T2.typeId];
   Action$2_$T1_x_T1$_.genericParameters = [T1, T2];
   Action$2_$T1_x_T1$_.genericClosure = System_Action0;
-  Action$2_$T1_x_T1$_.typeId = "bz$" + T1.typeId + "_" + T2.typeId + "$";
+  Action$2_$T1_x_T1$_.typeId = "ci$" + T1.typeId + "_" + T2.typeId + "$";
   Action$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$2_$T1_x_T1$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", System_MulticastDelegate, []);
   Action$2_$T1_x_T1$_._tri = function() {
@@ -2599,7 +3003,7 @@ function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) 
   KeyValuePair$2_$K_x_K$_ = System_Collections_Generic_KeyValuePair[K.typeId][V.typeId];
   KeyValuePair$2_$K_x_K$_.genericParameters = [K, V];
   KeyValuePair$2_$K_x_K$_.genericClosure = System_Collections_Generic_KeyValuePair;
-  KeyValuePair$2_$K_x_K$_.typeId = "ca$" + K.typeId + "_" + V.typeId + "$";
+  KeyValuePair$2_$K_x_K$_.typeId = "cj$" + K.typeId + "_" + V.typeId + "$";
   KeyValuePair$2_$K_x_K$_.getDefaultValue = function() {
     return {
       key: System__Type__GetDefaultValueStatic(K),
@@ -2630,6 +3034,106 @@ function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) 
     KeyValuePair$2_$K_x_K$_._tri();
   return KeyValuePair$2_$K_x_K$_;
 };
+function System_Collections_Generic_NumberDictionary_Enumerator(TValue, $5fcallStatiConstructor) {
+  var KeyValuePair$2_$Number_x_Number$_, Enumerator_$TValue$_, IEnumerator$1_$KeyValuePair$2_$Number_x_Number$_$_, $5f_initTracker;
+  if (System_Collections_Generic_NumberDictionary_Enumerator[TValue.typeId])
+    return System_Collections_Generic_NumberDictionary_Enumerator[TValue.typeId];
+  System_Collections_Generic_NumberDictionary_Enumerator[TValue.typeId] = function System__Collections__Generic__NumberDictionary$1$2fEnumerator0() {
+  };
+  Enumerator_$TValue$_ = System_Collections_Generic_NumberDictionary_Enumerator[TValue.typeId];
+  Enumerator_$TValue$_.genericParameters = [TValue];
+  Enumerator_$TValue$_.genericClosure = System_Collections_Generic_NumberDictionary_Enumerator;
+  Enumerator_$TValue$_.typeId = "ck$" + TValue.typeId + "$";
+  KeyValuePair$2_$Number_x_Number$_ = System_Collections_Generic_KeyValuePair(Number, TValue, $5fcallStatiConstructor);
+  IEnumerator$1_$KeyValuePair$2_$Number_x_Number$_$_ = System_Collections_Generic_IEnumerator(System_Collections_Generic_KeyValuePair(Number, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
+  Enumerator_$TValue$_.__ctor = function System_Collections_Generic_NumberDictionary$1$2fEnumerator_factory0(dict) {
+    var this_;
+    this_ = new Enumerator_$TValue$_();
+    this_.__ctor(dict);
+    return this_;
+  };
+  ptyp_ = Enumerator_$TValue$_.prototype;
+  ptyp_.dict = null;
+  ptyp_.keys = null;
+  ptyp_.system__Collections__IEnumerator__get_Current = function System__Collections__Generic__NumberDictionary$1$2fEnumerator__System__Collections__IEnumerator__get_Current() {
+    return System__Type__BoxTypeInstance(KeyValuePair$2_$Number_x_Number$_, this.get_current());
+  };
+  ptyp_.__ctor = function System__Collections__Generic__NumberDictionary$1$2fEnumerator____ctor(dict) {
+    this.dict = dict;
+    this.keys = this.dict.get_keys().V_GetEnumerator_h$i$();
+  };
+  ptyp_.get_current = function System__Collections__Generic__NumberDictionary$1$2fEnumerator__get_Current() {
+    return KeyValuePair$2_$Number_x_Number$_.__ctor(this.keys.V_get_Current_k$i$(), this.dict.get_item(this.keys.V_get_Current_k$i$()));
+  };
+  ptyp_.moveNext = function System__Collections__Generic__NumberDictionary$1$2fEnumerator__MoveNext() {
+    return this.keys.V_MoveNext_e();
+  };
+  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$Number_x_Number$_$_.typeId] = ptyp_.get_current;
+  ptyp_.V_MoveNext_e = ptyp_.moveNext;
+  System__Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.NumberDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$Number_x_Number$_$_, System_Collections_IEnumerator]);
+  Enumerator_$TValue$_._tri = function() {
+    if ($5f_initTracker)
+      return;
+    $5f_initTracker = true;
+    TValue = TValue;
+    Enumerator_$TValue$_ = System_Collections_Generic_NumberDictionary_Enumerator(TValue, true);
+  };
+  if ($5fcallStatiConstructor)
+    Enumerator_$TValue$_._tri();
+  return Enumerator_$TValue$_;
+};
+function System_Collections_Generic_Queue_QueueEnumerator(T, $5fcallStatiConstructor) {
+  var QueueEnumerator_$T$_, IEnumerator$1_$T$_, $5f_initTracker;
+  if (System_Collections_Generic_Queue_QueueEnumerator[T.typeId])
+    return System_Collections_Generic_Queue_QueueEnumerator[T.typeId];
+  System_Collections_Generic_Queue_QueueEnumerator[T.typeId] = function System__Collections__Generic__Queue$1$2fQueueEnumerator0() {
+  };
+  QueueEnumerator_$T$_ = System_Collections_Generic_Queue_QueueEnumerator[T.typeId];
+  QueueEnumerator_$T$_.genericParameters = [T];
+  QueueEnumerator_$T$_.genericClosure = System_Collections_Generic_Queue_QueueEnumerator;
+  QueueEnumerator_$T$_.typeId = "bb$" + T.typeId + "$";
+  IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor);
+  QueueEnumerator_$T$_.__ctor = function System_Collections_Generic_Queue$1$2fQueueEnumerator_factory0(queue) {
+    var this_;
+    this_ = new QueueEnumerator_$T$_();
+    this_.__ctor(queue);
+    return this_;
+  };
+  ptyp_ = QueueEnumerator_$T$_.prototype;
+  ptyp_.queue = null;
+  ptyp_.currentIndex = 0;
+  ptyp_.system__Collections__IEnumerator__get_Current = function System__Collections__Generic__Queue$1$2fQueueEnumerator__System__Collections__IEnumerator__get_Current() {
+    return System__Type__BoxTypeInstance(T, this.get_current());
+  };
+  ptyp_.__ctor = function System__Collections__Generic__Queue$1$2fQueueEnumerator____ctor(queue) {
+    this.queue = queue;
+    this.currentIndex = -1;
+  };
+  ptyp_.get_current = function System__Collections__Generic__Queue$1$2fQueueEnumerator__get_Current() {
+    if (this.currentIndex < 0 || this.currentIndex >= this.queue.nativeArray.length)
+      throw new Error("Out of range");
+    return this.queue.nativeArray[this.currentIndex];
+  };
+  ptyp_.moveNext = function System__Collections__Generic__Queue$1$2fQueueEnumerator__MoveNext() {
+    this.currentIndex++;
+    return this.currentIndex < this.queue.nativeArray.length;
+  };
+  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
+  ptyp_.V_MoveNext_e = ptyp_.moveNext;
+  System__Type__RegisterReferenceType(QueueEnumerator_$T$_, "System.Collections.Generic.Queue`1/QueueEnumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
+  QueueEnumerator_$T$_._tri = function() {
+    if ($5f_initTracker)
+      return;
+    $5f_initTracker = true;
+    T = T;
+    QueueEnumerator_$T$_ = System_Collections_Generic_Queue_QueueEnumerator(T, true);
+  };
+  if ($5fcallStatiConstructor)
+    QueueEnumerator_$T$_._tri();
+  return QueueEnumerator_$T$_;
+};
 function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
   var IList$1_$T$_, ListEnumerator$1_$T$_, IEnumerator$1_$T$_, $5f_initTracker, $5f_initTracker0;
   if (System_Collections_Generic_ListEnumerator[T.typeId])
@@ -2639,7 +3143,7 @@ function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
   ListEnumerator$1_$T$_ = System_Collections_Generic_ListEnumerator[T.typeId];
   ListEnumerator$1_$T$_.genericParameters = [T];
   ListEnumerator$1_$T$_.genericClosure = System_Collections_Generic_ListEnumerator;
-  ListEnumerator$1_$T$_.typeId = "cb$" + T.typeId + "$";
+  ListEnumerator$1_$T$_.typeId = "bc$" + T.typeId + "$";
   IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor);
   ListEnumerator$1_$T$_.__ctor = function System_Collections_Generic_ListEnumerator$1_factory0(list) {
     var this_;
@@ -2661,11 +3165,11 @@ function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
     return this.innerList["V_get_Item_" + IList$1_$T$_.typeId](this.index);
   };
   ptyp_.moveNext = function System__Collections__Generic__ListEnumerator$1__MoveNext() {
-    return ++this.index < this.innerList.V_get_Count_e();
+    return ++this.index < this.innerList.V_get_Count_f();
   };
-  ptyp_.V_get_Current_d = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_d = ptyp_.moveNext;
+  ptyp_.V_MoveNext_e = ptyp_.moveNext;
   System__Type__RegisterReferenceType(ListEnumerator$1_$T$_, "System.Collections.Generic.ListEnumerator`1<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
   ListEnumerator$1_$T$_._tri = function() {
     if ($5f_initTracker0)
@@ -2688,7 +3192,7 @@ function System_Collections_Generic_StringDictionary_Enumerator(TValue, $5fcallS
   Enumerator_$TValue$_ = System_Collections_Generic_StringDictionary_Enumerator[TValue.typeId];
   Enumerator_$TValue$_.genericParameters = [TValue];
   Enumerator_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary_Enumerator;
-  Enumerator_$TValue$_.typeId = "cc$" + TValue.typeId + "$";
+  Enumerator_$TValue$_.typeId = "bd$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   IEnumerator$1_$KeyValuePair$2_$String_x_String$_$_ = System_Collections_Generic_IEnumerator(System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
   Enumerator_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1$2fEnumerator_factory0(dict) {
@@ -2705,17 +3209,17 @@ function System_Collections_Generic_StringDictionary_Enumerator(TValue, $5fcallS
   };
   ptyp_.__ctor = function System__Collections__Generic__StringDictionary$1$2fEnumerator____ctor(dict) {
     this.dict = dict;
-    this.keys = this.dict.get_keys().V_GetEnumerator_g$h$();
+    this.keys = this.dict.get_keys().V_GetEnumerator_h$j$();
   };
   ptyp_.get_current = function System__Collections__Generic__StringDictionary$1$2fEnumerator__get_Current() {
-    return KeyValuePair$2_$String_x_String$_.__ctor(this.keys.V_get_Current_i$h$(), this.dict.get_item(this.keys.V_get_Current_i$h$()));
+    return KeyValuePair$2_$String_x_String$_.__ctor(this.keys.V_get_Current_k$j$(), this.dict.get_item(this.keys.V_get_Current_k$j$()));
   };
   ptyp_.moveNext = function System__Collections__Generic__StringDictionary$1$2fEnumerator__MoveNext() {
-    return this.keys.V_MoveNext_d();
+    return this.keys.V_MoveNext_e();
   };
-  ptyp_.V_get_Current_d = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_d = ptyp_.moveNext;
+  ptyp_.V_MoveNext_e = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.StringDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$String_x_String$_$_, System_Collections_IEnumerator]);
   Enumerator_$TValue$_._tri = function() {
     if ($5f_initTracker)
@@ -2737,7 +3241,7 @@ function System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor) {
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable[T.typeId];
   IEnumerable$1_$T$_.genericParameters = [T];
   IEnumerable$1_$T$_.genericClosure = System_Collections_Generic_IEnumerable;
-  IEnumerable$1_$T$_.typeId = "g$" + T.typeId + "$";
+  IEnumerable$1_$T$_.typeId = "h$" + T.typeId + "$";
   System__Type__RegisterInterface(IEnumerable$1_$T$_, "System.Collections.Generic.IEnumerable`1<" + T.fullName + ">");
   IEnumerable$1_$T$_._tri = function() {
     if ($5f_initTracker)
@@ -2759,7 +3263,7 @@ function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
   Enumerator_$T$_ = System_ArrayG_Enumerator[T.typeId];
   Enumerator_$T$_.genericParameters = [T];
   Enumerator_$T$_.genericClosure = System_ArrayG_Enumerator;
-  Enumerator_$T$_.typeId = "cd$" + T.typeId + "$";
+  Enumerator_$T$_.typeId = "be$" + T.typeId + "$";
   IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor);
   Enumerator_$T$_.__ctor = function System_ArrayG$1$2fEnumerator_factory0(array) {
     var this_;
@@ -2783,9 +3287,9 @@ function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
   ptyp_.get_current = function System__ArrayG$1$2fEnumerator__get_Current() {
     return this.array.get_item(this.currentIndex);
   };
-  ptyp_.V_get_Current_d = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_d = ptyp_.moveNext;
+  ptyp_.V_MoveNext_e = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$T$_, "System.ArrayG`1/Enumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
   Enumerator_$T$_._tri = function() {
     if ($5f_initTracker)
@@ -2798,6 +3302,28 @@ function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
     Enumerator_$T$_._tri();
   return Enumerator_$T$_;
 };
+function System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor) {
+  var IEnumerator$1_$T$_, $5f_initTracker;
+  if (System_Collections_Generic_IEnumerator[T.typeId])
+    return System_Collections_Generic_IEnumerator[T.typeId];
+  System_Collections_Generic_IEnumerator[T.typeId] = function System__Collections__Generic__IEnumerator$10() {
+  };
+  IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator[T.typeId];
+  IEnumerator$1_$T$_.genericParameters = [T];
+  IEnumerator$1_$T$_.genericClosure = System_Collections_Generic_IEnumerator;
+  IEnumerator$1_$T$_.typeId = "k$" + T.typeId + "$";
+  System__Type__RegisterInterface(IEnumerator$1_$T$_, "System.Collections.Generic.IEnumerator`1<" + T.fullName + ">");
+  IEnumerator$1_$T$_._tri = function() {
+    if ($5f_initTracker)
+      return;
+    $5f_initTracker = true;
+    T = T;
+    IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, true);
+  };
+  if ($5fcallStatiConstructor)
+    IEnumerator$1_$T$_._tri();
+  return IEnumerator$1_$T$_;
+};
 function System_Collections_Generic_IList(T, $5fcallStatiConstructor) {
   var IList$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_Collections_Generic_IList[T.typeId])
@@ -2807,7 +3333,7 @@ function System_Collections_Generic_IList(T, $5fcallStatiConstructor) {
   IList$1_$T$_ = System_Collections_Generic_IList[T.typeId];
   IList$1_$T$_.genericParameters = [T];
   IList$1_$T$_.genericClosure = System_Collections_Generic_IList;
-  IList$1_$T$_.typeId = "ce$" + T.typeId + "$";
+  IList$1_$T$_.typeId = "bf$" + T.typeId + "$";
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
   System__Type__RegisterInterface(IList$1_$T$_, "System.Collections.Generic.IList`1<" + T.fullName + ">");
   IList$1_$T$_._tri = function() {
@@ -2821,28 +3347,6 @@ function System_Collections_Generic_IList(T, $5fcallStatiConstructor) {
     IList$1_$T$_._tri();
   return IList$1_$T$_;
 };
-function System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor) {
-  var IEnumerator$1_$T$_, $5f_initTracker;
-  if (System_Collections_Generic_IEnumerator[T.typeId])
-    return System_Collections_Generic_IEnumerator[T.typeId];
-  System_Collections_Generic_IEnumerator[T.typeId] = function System__Collections__Generic__IEnumerator$10() {
-  };
-  IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator[T.typeId];
-  IEnumerator$1_$T$_.genericParameters = [T];
-  IEnumerator$1_$T$_.genericClosure = System_Collections_Generic_IEnumerator;
-  IEnumerator$1_$T$_.typeId = "i$" + T.typeId + "$";
-  System__Type__RegisterInterface(IEnumerator$1_$T$_, "System.Collections.Generic.IEnumerator`1<" + T.fullName + ">");
-  IEnumerator$1_$T$_._tri = function() {
-    if ($5f_initTracker)
-      return;
-    $5f_initTracker = true;
-    T = T;
-    IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, true);
-  };
-  if ($5fcallStatiConstructor)
-    IEnumerator$1_$T$_._tri();
-  return IEnumerator$1_$T$_;
-};
 Sunlight_Framework_UI_Test_ValueIfTrue_$String$_ = Sunlight_Framework_UI_Test_ValueIfTrue(String);
 System_Func_$Object_x_Object$_ = System_Func(Object, Object);
 System_ArrayG_$Func_$Object_x_Object$_$_ = System_ArrayG(System_Func_$Object_x_Object$_);
@@ -2850,6 +3354,9 @@ System_ArrayG_$String$_ = System_ArrayG(String);
 System_ArrayG_$SkinBinderInfo$_ = System_ArrayG(Sunlight_Framework_UI_Helpers_SkinBinderInfo);
 System_ArrayG_$Object$_ = System_ArrayG(Object);
 System_ArrayG_$TestViewModelB$_ = System_ArrayG(Sunlight_Framework_UI_Test_TestViewModelB);
+System_Collections_Generic_KeyValuePair_$Number_x_Number$_ = System_Collections_Generic_KeyValuePair(Number, Sunlight_Framework_Task);
+System_Collections_Generic_NumberDictionary_$Task$_ = System_Collections_Generic_NumberDictionary(Sunlight_Framework_Task);
+System_Collections_Generic_Queue_$Task$_ = System_Collections_Generic_Queue(Sunlight_Framework_Task);
 System_Collections_Generic_List_$ListViewItem$_ = System_Collections_Generic_List(Sunlight_Framework_UI_ListViewItem);
 System_Action_$UIEvent$_ = System_Action(Sunlight_Framework_UI_UIEvent);
 System_Collections_Generic_KeyValuePair_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, System_Action_$UIEvent$_);
@@ -2859,12 +3366,14 @@ System_Collections_Generic_KeyValuePair_$String_x_String$_0 = System_Collections
 System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_ = System_Collections_Generic_StringDictionary(System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_);
 System_Collections_Generic_KeyValuePair_$String_x_String$_1 = System_Collections_Generic_KeyValuePair(String, System_Delegate);
 System_Collections_Generic_StringDictionary_$Delegate$_ = System_Collections_Generic_StringDictionary(System_Delegate);
+System_ArrayG_$Number$_ = System_ArrayG(Number);
 System_Collections_Generic_KeyValuePair_$String_x_String$_2 = System_Collections_Generic_KeyValuePair(String, Sunlight_Framework_UI_UIElement);
 System_Collections_Generic_StringDictionary_$UIElement$_ = System_Collections_Generic_StringDictionary(Sunlight_Framework_UI_UIElement);
 System_Collections_Generic_KeyValuePair_$String_x_String$_3 = System_Collections_Generic_KeyValuePair(String, System_Int32);
 System_Collections_Generic_StringDictionary_$Int32$_ = System_Collections_Generic_StringDictionary(System_Int32);
 Sunlight__Framework__UI__Test__ManualTemplateTests____cctor();
 System__String____cctor();
+System__DateTime____cctor();
 Sunlight_Framework_UI_Test_ValueIfTrue_$String$_._tri();
 System_Func_$Object_x_Object$_._tri();
 System_ArrayG_$Func_$Object_x_Object$_$_._tri();
@@ -2872,6 +3381,9 @@ System_ArrayG_$String$_._tri();
 System_ArrayG_$SkinBinderInfo$_._tri();
 System_ArrayG_$Object$_._tri();
 System_ArrayG_$TestViewModelB$_._tri();
+System_Collections_Generic_KeyValuePair_$Number_x_Number$_._tri();
+System_Collections_Generic_NumberDictionary_$Task$_._tri();
+System_Collections_Generic_Queue_$Task$_._tri();
 System_Collections_Generic_List_$ListViewItem$_._tri();
 System_Action_$UIEvent$_._tri();
 System_Collections_Generic_KeyValuePair_$String_x_String$_._tri();
@@ -2881,6 +3393,7 @@ System_Collections_Generic_KeyValuePair_$String_x_String$_0._tri();
 System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_._tri();
 System_Collections_Generic_KeyValuePair_$String_x_String$_1._tri();
 System_Collections_Generic_StringDictionary_$Delegate$_._tri();
+System_ArrayG_$Number$_._tri();
 System_Collections_Generic_KeyValuePair_$String_x_String$_2._tri();
 System_Collections_Generic_StringDictionary_$UIElement$_._tri();
 System_Collections_Generic_KeyValuePair_$String_x_String$_3._tri();
@@ -2899,6 +3412,9 @@ module("Sunlight.Framework.UI.Test.NScriptsTemplateTests", {
 });
 test("Test", 0, Sunlight__Framework__UI__Test__NScriptsTemplateTests__Test);
 test("TestApplySkin", 0, Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestApplySkin);
+test("TestCssBinder", 0, Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestCssBinder);
+test("TestStyleBinder", 0, Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestStyleBinder);
+test("TestAttrBinder", 0, Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestAttrBinder);
 module("Sunlight.Framework.UI.Test.SkinBinderHelperTests", {
 });
 test("TestSimpleBinder", 0, Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestSimpleBinder);
@@ -2906,8 +3422,8 @@ test("TestAttrBinding", 0, Sunlight__Framework__UI__Test__SkinBinderHelperTests_
 test("TestStyleBinding", 0, Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestStyleBinding);
 test("TestTextContentBinding", 0, Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestTextContentBinding);
 module("Sunlight.Framework.UI.Test.TestListView", {
+  "setup": Sunlight__Framework__UI__Test__TestListView__Setup
 });
-test("Test", 0, Sunlight__Framework__UI__Test__TestListView__Test);
 test("TestChildSkin", 0, Sunlight__Framework__UI__Test__TestListView__TestChildSkin);
 module("Sunlight.Framework.UI.Test.ManualTemplateTests", {
   "setup": Sunlight__Framework__UI__Test__ManualTemplateTests__Setup
@@ -2934,33 +3450,94 @@ function TestTemplate1() {
   return TestTemplate1_var;
 };
 function getter(src) {
+  return src.get_propBool1();
+};
+function getter0(src) {
   return src.get_propStr1();
 };
-function TestTemplateVMB1_factory(skinFactory, doc) {
+function TestTemplateVMB_CssBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[1]) {
     domStore[1] = doc.createElement("div");
-    domStore[1].innerHTML = " <div test=\"test me\"><span></span></div> ";
-    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 1, 0, null, "")];
+    domStore[1].innerHTML = " <div test=\"id\"><span></span></div> ";
+    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter], ["PropBool1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 1, 1, null, "")];
   }
   htmlRoot = domStore[1].cloneNode(true);
+  objStorage = new Array(2);
+  objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  objStorage[1] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1, 0]);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[1], null, 1, 0);
+};
+TestTemplateVMB_CssBinding_var = null;
+function TestTemplateVMB_CssBinding() {
+  if (!TestTemplateVMB_CssBinding_var)
+    TestTemplateVMB_CssBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB_CssBinding_factory, "1");
+  return TestTemplateVMB_CssBinding_var;
+};
+function styleSetter(dom, val) {
+  dom.style.height = val;
+};
+function TestTemplateVMB_StyleBinding_factory(skinFactory, doc) {
+  var objStorage, htmlRoot, domStore;
+  if (!(domStore = DocStorageGetter(doc))[2]) {
+    domStore[2] = doc.createElement("div");
+    domStore[2].innerHTML = " <div test=\"test me\">T1</div> ";
+    tmplStore[2] = tmplStore[2] ? tmplStore[2] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter0], ["PropStr1"], styleSetter, 97, 0, 0, null, null)];
+  }
+  htmlRoot = domStore[2].cloneNode(true);
+  objStorage = new Array(1);
+  objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[2], null, 1, 0);
+};
+TestTemplateVMB_StyleBinding_var = null;
+function TestTemplateVMB_StyleBinding() {
+  if (!TestTemplateVMB_StyleBinding_var)
+    TestTemplateVMB_StyleBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB_StyleBinding_factory, "2");
+  return TestTemplateVMB_StyleBinding_var;
+};
+function TestTemplateVMB_AttrBinding_factory(skinFactory, doc) {
+  var objStorage, htmlRoot, domStore;
+  if (!(domStore = DocStorageGetter(doc))[3]) {
+    domStore[3] = doc.createElement("div");
+    domStore[3].innerHTML = " <div test=\"foo\">Test Me</div> ";
+    tmplStore[3] = tmplStore[3] ? tmplStore[3] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter0], ["PropStr1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute, "test1", 113, 0, 0, null, null, 0)];
+  }
+  htmlRoot = domStore[3].cloneNode(true);
+  objStorage = new Array(1);
+  objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[3], null, 1, 0);
+};
+TestTemplateVMB_AttrBinding_var = null;
+function TestTemplateVMB_AttrBinding() {
+  if (!TestTemplateVMB_AttrBinding_var)
+    TestTemplateVMB_AttrBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB_AttrBinding_factory, "3");
+  return TestTemplateVMB_AttrBinding_var;
+};
+function TestTemplateVMB1_factory(skinFactory, doc) {
+  var objStorage, htmlRoot, domStore;
+  if (!(domStore = DocStorageGetter(doc))[4]) {
+    domStore[4] = doc.createElement("div");
+    domStore[4].innerHTML = " <div test=\"test me\"><span></span></div> ";
+    tmplStore[4] = tmplStore[4] ? tmplStore[4] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 1, 0, null, "")];
+  }
+  htmlRoot = domStore[4].cloneNode(true);
   objStorage = new Array(1);
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1, 0]);
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[1], null, 0, 0);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[4], null, 0, 0);
 };
 TestTemplateVMB1_var = null;
 function TestTemplateVMB1() {
   if (!TestTemplateVMB1_var)
-    TestTemplateVMB1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB1_factory, "1");
+    TestTemplateVMB1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB1_factory, "4");
   return TestTemplateVMB1_var;
 };
-tmplStore = new Array(2);
+tmplStore = new Array(5);
 function DocStorageGetter(doc) {
   var style;
   if (!doc.stateStore) {
-    doc.stateStore = new Array(2);
+    doc.stateStore = new Array(5);
     style = doc.createElement("style");
-    style.textContent = "";
+    style.textContent = ".black{background-color:black;color:white;}";
     doc.body.appendChild(style);
   }
   return doc.stateStore;

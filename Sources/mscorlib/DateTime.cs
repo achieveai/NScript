@@ -86,6 +86,9 @@
         [Script(@"return a - b;")]
         public extern static long operator -(DateTime a, DateTime b);
 
+        [Script(@"return new Date(a.valueOf() + n);")]
+        public extern static DateTime operator +(DateTime a, Number n);
+
         [ScriptAlias("Date.parseDate")]
         public extern static DateTime Parse(string value);
 

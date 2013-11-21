@@ -114,7 +114,7 @@ namespace Sunlight.Framework.Binders
         {
             get
             {
-                return this.isActive && !this.ActivationBlocked;
+                return this.isActivated && !this.ActivationBlocked;
             }
         }
 

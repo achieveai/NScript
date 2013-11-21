@@ -75,7 +75,7 @@ namespace System.Collections.Generic
         public extern bool ContainsKey(Number key);
 
         [Script(@"
-            var rv = delete this.@{[mscorlib]System.Collections.Generic.NumberDictionary`1::innerDict};
+            var rv = delete this.@{[mscorlib]System.Collections.Generic.NumberDictionary`1::innerDict}[key];
             if (rv) this.@{[mscorlib]System.Collections.Generic.NumberDictionary`1::count}--;
             return rv;")]
         public extern bool Remove(Number key);

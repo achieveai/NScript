@@ -21,8 +21,14 @@ namespace System.Web
         [ScriptAlias("decodeURIComponent")]
         public extern static string DecodeURIComponent(string str);
 
+        [ScriptAlias("clearImmediate")]
+        public extern static void ClearImmediate(int timeoutHandle);
+
         [ScriptAlias("clearTimeout")]
         public extern static void ClearTimeout(int timeoutHandle);
+
+        [ScriptAlias("setImmediate")]
+        public extern static void SetImmediate(Action callback);
 
         [ScriptAlias("setTimeout")]
         public extern static int SetTimeout(Action callback, int interval);

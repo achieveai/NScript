@@ -52,6 +52,19 @@ namespace Sunlight.Framework.UI.Test
         public TestSkinableWithTestUIElementPart(Element element)
             : base(element)
         { }
+
+        public TestUIElement Part
+        {
+            get
+            {
+                if (base.SkinInstance != null)
+                {
+                    return (TestUIElement)base.SkinInstance.GetChildById(myPart);
+                }
+
+                return null;
+            }
+        }
     }
 
     public class TestSkinableWithDomElementPart : TestSkinableWithTestUIElementPart
@@ -62,6 +75,19 @@ namespace Sunlight.Framework.UI.Test
         public TestSkinableWithDomElementPart(Element element)
             : base(element)
         { }
+
+        public Element Part
+        {
+            get
+            {
+                if (base.SkinInstance != null)
+                {
+                    return (Element)base.SkinInstance.GetChildById(myDomPart);
+                }
+
+                return null;
+            }
+        }
     }
 }
 

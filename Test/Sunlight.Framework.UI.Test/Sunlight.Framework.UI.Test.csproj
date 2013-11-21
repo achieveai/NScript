@@ -91,6 +91,15 @@
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestTemplateVMB1.html" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestTemplateVMB_AttrBinding.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestTemplateVMB_CssBinding.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestTemplateVMB_StyleBinding.html" />
+  </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy *.js ..\..\..\TestWebApplication\GeneratedScripts

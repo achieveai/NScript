@@ -17,29 +17,16 @@ namespace Sunlight.Framework.UI.Test
     [TestFixture]
     public class TestListView
     {
-        [Test]
         /// <summary>
-        /// Test case to test a unit of functionality.
+        /// Sets up the data/environment to run all the test cases.
         /// </summary>
-        public static void Test()
+        [TestSetup]
+        public static void Setup()
         {
-            Document document = Window.Instance.Document;
-            ListView listView = new ListView(document.CreateElement("div"));
-            listView.ItemSkin = NScriptsTemplatesClass.TestTemplate1;
-
-            TestViewModelB[] vmAs = new TestViewModelB[]
-            {
-                new TestViewModelB() { PropStr1 = "Str"},
-                new TestViewModelB() { PropInt1 = 10},
-                new TestViewModelB() { PropBool1 = true}
-            };
-
-            listView.FixedList = vmAs;
-            listView.InactiveIfNullContext = false;
-            Assert.Equal(0, listView.Element.Children.Length, "number of children should be 0");
-
-            listView.Activate();
-            Assert.Equal(3, listView.Element.Children.Length, "number of children should be 3");
+            TaskScheduler.Instance = new TaskScheduler(
+                new TestWindowTimer(),
+                10,
+                10);
         }
 
         [Test]
