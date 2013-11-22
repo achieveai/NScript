@@ -128,9 +128,13 @@ namespace XwmlParser
                     ? codeGenerator.CodeGenerator.KnownTypes.SkinBinderCtorOneWay2
                     : codeGenerator.CodeGenerator.KnownTypes.SkinBinderCtorOneWay1;
             }
-            else
+            else if (this.Mode == BindingMode.TwoWay)
             {
                 return codeGenerator.CodeGenerator.KnownTypes.SkinBinderCtorTwoWay;
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
         }
 
@@ -157,6 +161,14 @@ namespace XwmlParser
                 null,
                 codeGenerator.Scope,
                 tmpExprArray));
+
+            if (this.Mode == BindingMode.TwoWay)
+            {
+                args.Add(
+                    new IdentifierExpression(
+                        sourceInfo.Item3,
+                        codeGenerator.Scope));
+            }
 
             // Add PropertyNames if live binding required.
             if (this.Mode != BindingMode.OneTime)

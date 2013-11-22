@@ -31,14 +31,64 @@ namespace XwmlParser.Test
         }
 
         [Test]
-        [TestCase("{PropStr1}")]
-        [TestCase("{PropStr1, Mode=OneTime}")]
-        [TestCase("{PropStr1, Mode=OneTime, Source=DataContext}")]
-        [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
+        // [TestCase("{PropStr1}")]
+        [TestCase("{ PropStr1}")]
+        // [TestCase("{PropStr1 }")]
+        // [TestCase("{PropStr1, Mode=OneTime}")]
+        // [TestCase("{ PropStr1, Mode=OneTime }")]
+        // [TestCase("{PropStr1, Mode=OneTime, Source=DataContext}")]
+        // [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
         public void TestParser1(string bindingStr)
         {
             var dataContextType = 
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
+            var controlType =
+                resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
+            var propertyBinding = Binding.BindingParser.ParseBinding(
+                null,
+                bindingStr,
+                new MockDocumentContext(null, resolver),
+                dataContextType,
+                controlType);
+
+            Assert.AreEqual(
+                BindingMode.OneTime,
+                propertyBinding.Mode);
+
+            Assert.AreEqual(
+                SourceType.DataContext,
+                propertyBinding.SourceType);
+
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+
+            Assert.AreEqual(
+                null,
+                propertyBinding.ConverterInfo);
+
+            Assert.AreEqual(
+                dataContextType,
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).SourceType);
+
+            Assert.AreEqual(
+                1,
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath.Count);
+
+            Assert.AreEqual(
+                resolver.GetPropertyReference(
+                    dataContextType,
+                    "PropStr1"),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[0]);
+        }
+
+        [Test]
+        [TestCase("{PropStr1}")]
+        [TestCase("{PropStr1, Mode=OneTime}")]
+        [TestCase("{PropStr1, Mode=OneTime, Source=DataContext}")]
+        [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
+        public void TestParserWithInheritance(string bindingStr)
+        {
+            var dataContextType = 
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");
             var controlType =
                 resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
             var propertyBinding = Binding.BindingParser.ParseBinding(
@@ -192,6 +242,5 @@ namespace XwmlParser.Test
                     "PropStrB"),
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[1]);
         }
-
     }
 }

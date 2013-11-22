@@ -123,6 +123,30 @@ namespace Sunlight.Framework.UI.Test
             vm.PropStr1 = "TTTest";
             Assert.Equal("TTTest", elem.GetAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
         }
+
+        [Test]
+        public static void TestPropertyBinder()
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            TestSkinableWithTestUIElementPart control = new TestSkinableWithTestUIElementPart(element);
+
+            var vm = new TestViewModelB();
+            control.DataContext = vm;
+            control.Skin = NScriptsTemplatesClass.TestTemplateB_PropertyBinding;
+
+            control.Activate();
+
+            Assert.IsTrue(control.Part != null, "templatePart should not be null.");
+            Assert.Equal(control.Part.OneWayStrictBinding, vm.PropStr1, "vmPropStr1 should be equal to OnewayStrictBinding.");
+            vm.PropStr1 = "T1";
+            Assert.Equal(control.Part.OneWayStrictBinding, vm.PropStr1, "vmPropStr1 should be equal to OnewayStrictBinding.");
+
+            Assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+            vm.PropInt1 = 11;
+            Assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+            control.Part.TwoWayLooseBinding = 101;
+            Assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+        }
     }
 }
 

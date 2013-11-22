@@ -14,6 +14,7 @@ namespace Sunlight.Framework.UI.Test
 
     public class TestUIElement : UIElement
     {
+        private int twoWayLooseBinding;
         public TestUIElement(Element element)
             : base(element)
         { }
@@ -26,6 +27,24 @@ namespace Sunlight.Framework.UI.Test
 
         [DefaultDataBinding(DefaultValue=10, Mode=DataBindingMode.OneWay, IsStrict=false)]
         public int OneWayLooseBinding { get; set; }
+
+        [DefaultDataBinding(DefaultValue=11, Mode=DataBindingMode.TwoWay, IsStrict=false)]
+        public int TwoWayLooseBinding
+        {
+            get
+            {
+                return this.twoWayLooseBinding;
+            }
+
+            set
+            {
+                if (this.twoWayLooseBinding != value)
+                {
+                    this.twoWayLooseBinding = value;
+                    this.FirePropertyChanged("TwoWayLooseBinding");
+                }
+            }
+        }
     }
 
     [TagName("abcd")]

@@ -119,6 +119,8 @@ namespace XwmlParser
 
         public readonly TypeDefinition CssNameAttribute;
 
+        public readonly ClrKnownReferences ClrKnownReference;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -126,6 +128,8 @@ namespace XwmlParser
         public KnownTemplateTypes(ClrKnownReferences clrKnownReferences)
         {
             ClrContext clrContext = clrKnownReferences.ClrContext;
+
+            this.ClrKnownReference = clrKnownReferences;
 
             var nativeArray1 = clrContext.GetTypeDefinition(
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.NativeArray`1"));

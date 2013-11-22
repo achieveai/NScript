@@ -259,18 +259,18 @@ namespace Sunlight.Framework.UI.Helpers
                     if (binder.Mode == DataBindingMode.TwoWay)
                     {
                         LiveBinder liveBinder = this.liveBinders[iLiveBinder];
-                        if (liveBinder != null)
-                        {
-                            liveBinder.Source = source;
-                            liveBinder.IsActive = true;
-                        }
-                        else
+                        if (object.IsNullOrUndefined(liveBinder))
                         {
                             liveBinder = new LiveBinder(binder);
                             liveBinder.Source = source;
                             liveBinder.Target = this.elementsOfIntrest[binder.ObjectIndex];
                             liveBinder.IsActive = true;
                             this.liveBinders[iLiveBinder] = liveBinder;
+                        }
+                        else
+                        {
+                            liveBinder.Source = source;
+                            liveBinder.IsActive = true;
                         }
                     }
                     else
@@ -316,7 +316,7 @@ namespace Sunlight.Framework.UI.Helpers
 
                 for (int iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++)
                 {
-                    if (liveBinders[iLiveBinder] == null)
+                    if (object.IsNullOrUndefined(liveBinders[iLiveBinder]))
                     { continue; }
 
                     liveBinders[iLiveBinder].IsActive = false;
@@ -344,7 +344,7 @@ namespace Sunlight.Framework.UI.Helpers
                 for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
                 {
                     var liveBinder = this.liveBinders[iLiveBinder];
-                    if (liveBinder == null)
+                    if (object.IsNullOrUndefined(liveBinder))
                     {
                         continue;
                     }
@@ -372,7 +372,7 @@ namespace Sunlight.Framework.UI.Helpers
         {
             var binders = this.binders;
             var liveBinders = this.liveBinders;
-            if (liveBinders == null)
+            if (object.IsNullOrUndefined(liveBinders))
             { return; }
 
             var binderLength = binders.Length;
@@ -412,7 +412,7 @@ namespace Sunlight.Framework.UI.Helpers
         /// Queued deactivation.  /// </summary>
         private void QueuedDeactivation()
         {
-            if (this.isActive || this.isDiposed || this.liveBinders == null)
+            if (this.isActive || this.isDiposed || object.IsNullOrUndefined(this.liveBinders))
             {
                 return;
             }
@@ -438,7 +438,7 @@ namespace Sunlight.Framework.UI.Helpers
         private void UpdateBinderSource(object source, BinderType sourceType)
         {
             var liveBinders = this.liveBinders;
-            if (liveBinders == null)
+            if (object.IsNullOrUndefined(liveBinders))
             { return; }
 
             var liveBindersLength = this.liveBinders.Length;

@@ -1,0 +1,16 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:vm="Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test"
+    xmlns:ctrl="Sunlight.Framework.UI!Sunlight.Framework.UI">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+    </head>
+    <body>
+        <skin ControlType="vm:TestSkinableWithTestUIElementPart" DataContextType="vm:TestViewModelB">
+            <vm:TestUIElement id="Part1" TwoWayLooseBinding="{PropInt1, Mode=TwoWay}" OneWayStrictBinding="{PropStr1, Mode=OneWay}">
+                This is a test.
+            </vm:TestUIElement>
+        </skin>
+    </body>
+</html>

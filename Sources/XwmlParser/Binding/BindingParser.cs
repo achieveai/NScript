@@ -15,6 +15,7 @@ namespace XwmlParser.Binding
 
     public enum BindingMode
     {
+        Default,
         OneTime,
         OneWay,
         TwoWay
@@ -146,9 +147,11 @@ namespace XwmlParser.Binding
                     dict,
                     bindingValue,
                     documentContext),
-                BindingParser.GetBindingMode(
-                    dict,
-                    bindingValue),
+                targetBinding.GetBindingMode(
+                    BindingParser.GetBindingMode(
+                        dict,
+                        bindingValue),
+                    documentContext.ParserContext.KnownTypes),
                 sourceInfo.Item2,
                 null);
         }
@@ -189,7 +192,7 @@ namespace XwmlParser.Binding
             Tuple<int, int> stringPart;
             if (!dict.TryGetValue(BindingPart.Mode, out stringPart))
             {
-                return BindingMode.OneTime;
+                return BindingMode.Default;
             }
 
             string sourceStr = bindingStr.Substring(stringPart.Item1, stringPart.Item2 - stringPart.Item1).Trim();
@@ -763,7 +766,7 @@ namespace XwmlParser.Binding
                         rv.Add(
                             Tuple.Create(
                             (string)null,
-                            path.Substring(trackerStart, trackerEnd - trackerStart)));
+                            path.Substring(trackerStart, trackerEnd - trackerStart).Trim()));
                         trackerStart = trackerEnd + 1;
                         break;
                     default:
@@ -776,7 +779,7 @@ namespace XwmlParser.Binding
                 rv.Add(
                     Tuple.Create(
                     castType,
-                    path.Substring(trackerStart, trackerEnd - trackerStart)));
+                    path.Substring(trackerStart, trackerEnd - trackerStart).Trim()));
             }
             else if (castType != null)
             {

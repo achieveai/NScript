@@ -49,5 +49,12 @@ namespace Sunlight.Framework.UI.Test
             get
             { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplateB_PropertyBinding.html")]
+        public static Skin TestTemplateB_PropertyBinding
+        {
+            get
+            { return null; }
+        }
     }
 }
