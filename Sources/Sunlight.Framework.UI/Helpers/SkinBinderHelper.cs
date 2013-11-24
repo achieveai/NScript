@@ -78,6 +78,21 @@ namespace Sunlight.Framework.UI.Helpers
         }
 
         /// <summary>
+        /// Sets data context.
+        /// Note: Instead of XwmlParser generating wrapper for this,
+        /// we use this method as our setter, so that we can atleast check
+        /// if DataContext has already been set on UIElements or not.
+        /// </summary>
+        /// <param name="element"> The element. </param>
+        /// <param name="value">   The value. </param>
+        public static void SetDataContext(
+            UIElement element,
+            object value)
+        {
+            element.DataContext = value;
+        }
+
+        /// <summary>
         /// Sets CSS class.
         /// </summary>
         /// <param name="element">   The element. </param>

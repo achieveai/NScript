@@ -10,7 +10,7 @@
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   objStorage[1] = Sunlight__Framework__UI__Test__TestUIElementWithAttr_factory(Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]));
   objStorage[2] = Sunlight__Framework__UI__Test__TestUIElement_factory(Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [3]));
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [objStorage[0], objStorage[1], objStorage[2]], objStorage, tmplStore[0], {
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [0, 1, 2], objStorage, tmplStore[0], {
     "DomPart": 0,
     "Part1": 2
   }, 0, 0);

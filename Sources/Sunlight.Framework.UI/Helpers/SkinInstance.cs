@@ -24,12 +24,12 @@ namespace Sunlight.Framework.UI.Helpers
         /// <summary>
         /// The child elements.
         /// </summary>
-        private NativeArray<object> elementsOfIntrest;
+        private NativeArray elementsOfIntrest;
 
         /// <summary>
         /// The child elements.
         /// </summary>
-        private NativeArray<UIElement> childElements;
+        private NativeArray<int> childElements;
 
         /// <summary>
         /// The root element.
@@ -60,6 +60,8 @@ namespace Sunlight.Framework.UI.Helpers
         /// The live binders.
         /// </summary>
         private NativeArray<LiveBinder> liveBinders;
+
+        private NativeArray<bool> hasDataContextBinding;
 
         /// <summary>
         /// The extra objects.
@@ -92,8 +94,8 @@ namespace Sunlight.Framework.UI.Helpers
         public SkinInstance(
             Skin factory,
             Element rootElement,
-            NativeArray<UIElement> childElements,
-            NativeArray<object> elementsOfIntrests,
+            NativeArray<int> childElements,
+            NativeArray elementsOfIntrests,
             NativeArray<SkinBinderInfo> binders,
             Object partIdMapping,
             int liveBinderCount,
@@ -108,6 +110,7 @@ namespace Sunlight.Framework.UI.Helpers
             this.elementsOfIntrest = elementsOfIntrests;
             this.dataContextUpdated = true;
             this.templateParentUpdated = true;
+            this.hasDataContextBinding = new NativeArray<bool>(this.elementsOfIntrest.Length);
 
             if (liveBinderCount > 0)
             { this.liveBinders = new NativeArray<LiveBinder>(liveBinderCount); }
@@ -224,9 +227,11 @@ namespace Sunlight.Framework.UI.Helpers
                 var childElements = this.childElements;
                 var binders = this.binders;
                 var childElementLength = childElements.Length;
+                var elementsOfIntrest = this.elementsOfIntrest;
                 var binderLength = binders.Length;
                 var skinParent = this.skinableParent;
                 var dataContext = this.dataContext;
+                Action<UIElement, object> dataContextSetter = SkinBinderHelper.SetDataContext;
 
                 for (int iBinder = 0, iLiveBinder = 0; iBinder < binderLength; iBinder++)
                 {
@@ -280,6 +285,11 @@ namespace Sunlight.Framework.UI.Helpers
                             source,
                             this.elementsOfIntrest[binder.ObjectIndex],
                             this.extraObjects);
+
+                        if ((object)binder.TargetPropertySetter == (object)dataContextSetter)
+                        {
+                            this.hasDataContextBinding[binder.ObjectIndex] = true;
+                        }
                     }
 
                     if (binder.Mode != DataBindingMode.OneTime)
@@ -290,7 +300,13 @@ namespace Sunlight.Framework.UI.Helpers
 
                 for (int iChild = 0; iChild < childElementLength; iChild++)
                 {
-                    var childElement = childElements[iChild];
+                    var objectIndex = childElements[iChild];
+                    var childElement = this.elementsOfIntrest.GetFrom<UIElement>(childElements[iChild]);
+                    if (!this.hasDataContextBinding[objectIndex])
+                    {
+                        childElement.DataContext = dataContext;
+                    }
+
                     childElement.Activate();
                 }
 
@@ -324,7 +340,7 @@ namespace Sunlight.Framework.UI.Helpers
 
                 for (int iChild = 0; iChild < childElementLength; iChild++)
                 {
-                    childElements[iChild].Deactivate();
+                    this.elementsOfIntrest.GetFrom<UIElement>(childElements[iChild]).Deactivate();
                 }
 
                 TaskScheduler.Instance.EnqueueLowPriTask(
@@ -359,8 +375,9 @@ namespace Sunlight.Framework.UI.Helpers
                 this.isDiposed = true;
                 for (int i = 0, j = this.elementsOfIntrest.Length; i < j; i++)
                 {
-                    this.childElements[i].Deactivate();
-                    this.childElements[i].Dispose();
+                    var childElement = this.elementsOfIntrest.GetFrom<UIElement>(this.childElements[i]);
+                    childElement.Deactivate();
+                    childElement.Dispose();
                 }
             }
         }

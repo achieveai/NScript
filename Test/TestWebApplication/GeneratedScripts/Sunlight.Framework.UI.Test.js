@@ -1655,6 +1655,9 @@ function Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent(elem
   else
     element.textContent = "";
 };
+function Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetDataContext(element, value) {
+  element.set_dataContext(value);
+};
 function Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass(element, add, className) {
   if (add)
     System__Web__Html__Element__AddClassName(element, className);
@@ -1874,6 +1877,7 @@ ptyp_.isActive = false;
 ptyp_.isDiposed = false;
 ptyp_.binders = null;
 ptyp_.liveBinders = null;
+ptyp_.hasDataContextBinding = null;
 ptyp_.extraObjects = null;
 ptyp_.partIdMapping = null;
 ptyp_.skinableParent = null;
@@ -1891,6 +1895,7 @@ ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__SkinInstance____ctor(f
   this.elementsOfIntrest = elementsOfIntrests;
   this.dataContextUpdated = true;
   this.templateParentUpdated = true;
+  this.hasDataContextBinding = new Array(this.elementsOfIntrest.length);
   if (liveBinderCount > 0)
     this.liveBinders = new Array(liveBinderCount);
   if (extraObjectCount > 0)
@@ -1945,15 +1950,17 @@ ptyp_.updateDataContext = function Sunlight__Framework__UI__Helpers__SkinInstanc
   }
 };
 ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activate() {
-  var childElements, binders, childElementLength, binderLength, skinParent, dataContext, iBinder, iLiveBinder, binder, source, liveBinder, iChild, childElement;
+  var childElements, binders, childElementLength, elementsOfIntrest, binderLength, skinParent, dataContext, dataContextSetter, iBinder, iLiveBinder, binder, source, liveBinder, iChild, objectIndex, childElement;
   if (!this.isActive && !this.isDiposed) {
     this.isActive = true;
     childElements = this.childElements;
     binders = this.binders;
     childElementLength = childElements.length;
+    elementsOfIntrest = this.elementsOfIntrest;
     binderLength = binders.length;
     skinParent = this.skinableParent;
     dataContext = this.dataContext;
+    dataContextSetter = Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetDataContext;
     for (
     iBinder = 0, iLiveBinder = 0; iBinder < binderLength; iBinder++) {
       binder = binders[iBinder];
@@ -1991,13 +1998,19 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
           liveBinder.set_isActive(true);
         }
       }
-      else
+      else {
         Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetPropertyValue(binder, source, this.elementsOfIntrest[binder.objectIndex], this.extraObjects);
+        if (binder.targetPropertySetter === dataContextSetter)
+          this.hasDataContextBinding[binder.objectIndex] = true;
+      }
       if (binder.mode !== 0)
         ++iLiveBinder;
     }
     for (iChild = 0; iChild < childElementLength; iChild++) {
-      childElement = childElements[iChild];
+      objectIndex = childElements[iChild];
+      childElement = System__NativeArray__GetFrom(this.elementsOfIntrest, childElements[iChild]);
+      if (!this.hasDataContextBinding[objectIndex])
+        childElement.set_dataContext(dataContext);
       childElement.activate();
     }
     this.firstActivationDone = true;
@@ -2018,12 +2031,12 @@ ptyp_.deactivate = function Sunlight__Framework__UI__Helpers__SkinInstance__Deac
       liveBinders[iLiveBinder].set_isActive(false);
     }
     for (iChild = 0; iChild < childElementLength; iChild++)
-      childElements[iChild].deactivate();
+      System__NativeArray__GetFrom(this.elementsOfIntrest, childElements[iChild]).deactivate();
     Sunlight__Framework__TaskScheduler__get_Instance().enqueueLowPriTask(System__Delegate__Create("queuedDeactivation", this), "SkinInstance.QueuedDeactivate");
   }
 };
 ptyp_.dispose = function Sunlight__Framework__UI__Helpers__SkinInstance__Dispose() {
-  var iLiveBinder, liveBinder, i, j;
+  var iLiveBinder, liveBinder, i, j, childElement;
   if (!this.isDiposed) {
     for (iLiveBinder = 0; iLiveBinder < this.liveBinders.length; iLiveBinder++) {
       liveBinder = this.liveBinders[iLiveBinder];
@@ -2038,8 +2051,9 @@ ptyp_.dispose = function Sunlight__Framework__UI__Helpers__SkinInstance__Dispose
     this.isDiposed = true;
     for (
     i = 0, j = this.elementsOfIntrest.length; i < j; i++) {
-      this.childElements[i].deactivate();
-      this.childElements[i].dispose();
+      childElement = System__NativeArray__GetFrom(this.elementsOfIntrest, this.childElements[i]);
+      childElement.deactivate();
+      childElement.dispose();
     }
   }
 };
@@ -2121,6 +2135,9 @@ function Sunlight_Framework_UI_UIEvent() {
 };
 Sunlight_Framework_UI_UIEvent.typeId = "bu";
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UIEvent, "Sunlight.Framework.UI.UIEvent", Object, []);
+function System__NativeArray__GetFrom(this_, index) {
+  return this_[index];
+};
 function System_Enum() {
 };
 System_Enum.typeId = "bv";
@@ -3616,7 +3633,7 @@ function TestTemplateB_PropertyBinding_factory(skinFactory, doc) {
   htmlRoot = domStore[4].cloneNode(true);
   objStorage = new Array(1);
   objStorage[0] = Sunlight__Framework__UI__Test__TestUIElement_factory(Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]));
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [objStorage[0]], objStorage, tmplStore[4], {
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [0], objStorage, tmplStore[4], {
     "Part1": 0
   }, 2, 0);
 };

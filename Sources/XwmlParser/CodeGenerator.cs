@@ -496,6 +496,20 @@ namespace XwmlParser
                 methodScope.ParameterIdentifiers[0],
                 methodScope);
 
+            var clrContext = this.scopeManager.Context.ClrContext;
+            var argVariable = new NScript.CLR.AST.ParameterVariable(
+                new ParameterDefinition("src", ParameterAttributes.None, path[0].DeclaringType),
+                null);
+            var argExpression = new NScript.CLR.AST.VariableReference(
+                clrContext,
+                null,
+                argVariable);
+
+            NScript.CLR.AST.Expression expr = 
+                path[0].IsStatic()
+                    ? (NScript.CLR.AST.Expression)null
+                    : (NScript.CLR.AST.Expression)argExpression;
+
             for (int iPath = 0; iPath < path.Count; iPath++)
             {
                 MemberReference memberRef = path[iPath];
@@ -503,80 +517,54 @@ namespace XwmlParser
 
                 if (fieldReference != null)
                 {
-                    if (fieldReference.Resolve().IsStatic)
+                    if (expr == null)
                     {
-                        if (iPath == 0)
-                        {
-                            expression = IdentifierExpression.Create(
-                                null,
-                                methodScope,
-                                this.Resolver.ResolveStaticMember(fieldReference),
-                                -1);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-                    else
-                    {
-                        expression = new IndexExpression(
+                        expr = new NScript.CLR.AST.FieldReferenceExpression(
+                            this.scopeManager.Context.ClrContext,
                             null,
-                            methodScope,
-                            expression,
-                            new IdentifierExpression(
-                                this.Resolver.Resolve(fieldReference),
-                                methodScope));
-                    }
-                    continue;
-                }
-
-                PropertyReference propertyReference = memberRef as PropertyReference;
-                MethodReference methodRef = null;
-                if (propertyReference != null)
-                {
-                    methodRef = propertyReference.Resolve().GetMethod.FixGenericTypeArguments(
-                        propertyReference.DeclaringType);
-
-                    if (propertyReference.Resolve().IsStatic())
-                    {
-                        if (iPath == 0)
-                        {
-                            expression =
-                                MethodCallExpressionConverter.CreateMethodCallExpression(
-                                    new MethodCallContext(
-                                        methodRef,
-                                        null,
-                                        methodScope),
-                                    null,
-                                    this.Resolver,
-                                    this.scopeManager);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
+                            fieldReference);
                     }
                     else
                     {
-                        expression =
-                            MethodCallExpressionConverter.CreateMethodCallExpression(
-                                new MethodCallContext(
-                                    expression,
-                                    methodRef,
-                                    methodRef.Resolve().IsVirtual),
-                                null,
-                                this.Resolver,
-                                this.scopeManager);
+                        expr = new NScript.CLR.AST.FieldReferenceExpression(
+                            this.scopeManager.Context.ClrContext,
+                            null,
+                            fieldReference,
+                            expr);
                     }
-
-                    continue;
                 }
                 else
                 {
-                    throw new NotSupportedException();
+                    PropertyReference propertyReference = memberRef as PropertyReference;
+                    if (propertyReference != null)
+                    {
+                        if (expr == null)
+                        {
+                            expr = new NScript.CLR.AST.PropertyReferenceExpression(
+                                this.scopeManager.Context.ClrContext,
+                                null,
+                                propertyReference);
+                        }
+                        else
+                        {
+                            expr = new NScript.CLR.AST.PropertyReferenceExpression(
+                                this.scopeManager.Context.ClrContext,
+                                null,
+                                propertyReference,
+                                expr);
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException();
+                    }
                 }
             }
+
+            var returnStatement = new NScript.CLR.AST.ReturnStatement(
+                clrContext,
+                null,
+                expr);
 
             FunctionExpression methodExpression = new FunctionExpression(
                 null,
@@ -589,15 +577,18 @@ namespace XwmlParser
                     false));
 
             methodExpression.AddStatement(
-                new ReturnStatement(
-                    null,
-                    methodScope,
-                    expression));
+                NScript.Converter.StatementsConverter.StatementConverterBase.Convert(
+                    new MethodScopeConverter(
+                        this.scopeManager,
+                        this.Resolver,
+                        methodScope),
+                    returnStatement));
 
-            this.generatedCode.Add(new ExpressionStatement(
-                null,
-                this.scopeManager.Scope,
-                methodExpression));
+            this.generatedCode.Add(
+                new ExpressionStatement(
+                    null,
+                    this.scopeManager.Scope,
+                    methodExpression));
 
             this.propertyPathGetterMap.Add(path, methodExpression.Name);
             return methodExpression.Name;
@@ -619,6 +610,29 @@ namespace XwmlParser
                 return rv;
             }
 
+            PropertyReference propertyReference = property as PropertyReference;
+
+            // We do special stuff for DataContext just so that we can check if a binding
+            // is setting DataContext. If so we do not set DataContext for the object.
+            // To check this we need pointer to DataContext setter method.
+            if (propertyReference != null
+                && propertyReference.Name == "DataContext"
+                && propertyReference.DeclaringType.IsSameDefinition(KnownTypes.ContextBindableObject))
+            {
+                var identifiers = Resolver.ResolveStaticMember(KnownTypes.DataContextSetter);
+                if (identifiers.Count > 1)
+                {
+                    rv = new CompoundIdentifier(identifiers);
+                }
+                else
+                {
+                    rv = identifiers[0];
+                }
+
+                this.propertySetterMap.Add(property, rv);
+                return rv;
+            }
+
             IdentifierScope methodScope = new IdentifierScope(
                 this.scopeManager.Scope,
                 new string[]{
@@ -627,7 +641,6 @@ namespace XwmlParser
                 },
                 false);
 
-            PropertyReference propertyReference = property as PropertyReference;
             Expression setterExpression = null;
             if (propertyReference != null)
             {

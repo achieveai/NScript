@@ -267,6 +267,12 @@
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\TestUIElementPropertyBinding_TwoWay.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestUIElementDataContextBinding.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TemplateCode\TestUIElementDataContextBinding.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /y "$(ProjectDir)..\sunlight.framework.ui.test\bin\$(ConfigurationName)\*.dll" "$(ProjectDir)$(OutDir)"</PostBuildEvent>

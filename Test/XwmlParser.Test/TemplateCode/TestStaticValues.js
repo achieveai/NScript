@@ -10,7 +10,7 @@
   objStorage[0] = Sunlight__Framework__UI__Test__TestUIElement_factory(Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]));
   objStorage[0].set_oneWayLooseBinding(101);
   objStorage[0].set_oneWayStrictBinding("Test234");
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [objStorage[0]], objStorage, tmplStore[0], null, 0, 0);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [0], objStorage, tmplStore[0], null, 0, 0);
 };
 TestStaticValues_var = null;
 function TestStaticValues() {

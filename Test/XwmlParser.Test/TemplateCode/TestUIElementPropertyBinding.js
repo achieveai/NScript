@@ -14,7 +14,7 @@ function TestUIElementPropertyBinding_factory(skinFactory, doc) {
   htmlRoot = domStore[0].cloneNode(true);
   objStorage = new Array(1);
   objStorage[0] = Sunlight__Framework__UI__Test__TestUIElement_factory(Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]));
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [objStorage[0]], objStorage, tmplStore[0], null, 1, 0);
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [0], objStorage, tmplStore[0], null, 1, 0);
 };
 TestUIElementPropertyBinding_var = null;
 function TestUIElementPropertyBinding() {

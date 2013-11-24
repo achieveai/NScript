@@ -71,6 +71,8 @@ namespace XwmlParser
 
         public readonly MethodReference AttributeSetter;
 
+        public readonly MethodReference DataContextSetter;
+
         public readonly MethodReference TextContentSetter;
 
         public readonly MethodReference CssClassSetter;
@@ -130,6 +132,9 @@ namespace XwmlParser
             ClrContext clrContext = clrKnownReferences.ClrContext;
 
             this.ClrKnownReference = clrKnownReferences;
+
+            var nativeArray = clrContext.GetTypeDefinition(
+                Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.NativeArray"));
 
             var nativeArray1 = clrContext.GetTypeDefinition(
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.NativeArray`1"));
@@ -207,14 +212,21 @@ namespace XwmlParser
                 this.BinderHelper,
                 this.NodeRef,
                 clrKnownReferences.String,
-                clrKnownReferences.String);
+                clrKnownReferences.String).Resolve();
 
             this.TextContentSetter = clrContext.GetMethodReference(
                 "SetTextContent",
                 clrKnownReferences.Void,
                 this.BinderHelper,
                 this.ElementRef,
-                clrKnownReferences.String);
+                clrKnownReferences.String).Resolve();
+
+            this.DataContextSetter = clrContext.GetMethodReference(
+                "SetDataContext",
+                clrKnownReferences.Void,
+                this.BinderHelper,
+                this.UIElement,
+                clrKnownReferences.Object).Resolve();
 
             this.CssClassSetter = clrContext.GetMethodReference(
                 "SetCssClass",
@@ -346,8 +358,8 @@ namespace XwmlParser
                 funcObjObj,
                 clrKnownReferences.Object).Resolve();
 
-            var nativeArrayUIElement = new GenericInstanceType(nativeArray1);
-            nativeArrayUIElement.GenericArguments.Add(this.UIElement);
+            var nativeArrayInt32 = new GenericInstanceType(nativeArray1);
+            nativeArrayInt32.GenericArguments.Add(clrKnownReferences.Int32);
 
             var nativeArrayObject = new GenericInstanceType(nativeArray1);
             nativeArrayObject.GenericArguments.Add(clrKnownReferences.Object);
@@ -361,8 +373,8 @@ namespace XwmlParser
                 this.SkinInstance,
                 this.Skin,
                 this.ElementRef,
-                nativeArrayUIElement,
-                nativeArrayObject,
+                nativeArrayInt32,
+                nativeArray,
                 nativeArraySkinBinderInfo,
                 clrKnownReferences.Object,
                 clrKnownReferences.Int32,

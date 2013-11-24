@@ -92,6 +92,7 @@
     <Compile Include="IResolver.cs" />
     <Compile Include="KnownTemplateTypes.cs" />
     <Compile Include="ListComparer.cs" />
+    <Compile Include="MethodScopeConverter.cs" />
     <Compile Include="NodeInfos\CollectionNodeInfo.cs" />
     <Compile Include="NodeInfos\ContextBindableNodeInfo.cs" />
     <Compile Include="NodeInfos\IDocumentContext.cs" />

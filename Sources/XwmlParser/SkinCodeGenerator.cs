@@ -538,15 +538,9 @@ namespace XwmlParser
                     || kvPair.Key.Item2)
                 {
                     uiElemArrayExpression.Add(
-                        new IndexExpression(
-                            null,
+                        new NumberLiteralExpression(
                             this.Scope,
-                            new IdentifierExpression(
-                                this.objectStorageIdentifier,
-                                this.Scope),
-                            new NumberLiteralExpression(
-                                this.Scope,
-                                kvPair.Value)));
+                            kvPair.Value));
                 }
             }
 
