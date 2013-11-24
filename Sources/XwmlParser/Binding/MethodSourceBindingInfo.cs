@@ -8,6 +8,7 @@ namespace XwmlParser.Binding
 {
     using Mono.Cecil;
     using NScript.JST;
+    using NScript.CLR;
     using System;
     using System.Collections.Generic;
 
@@ -22,6 +23,16 @@ namespace XwmlParser.Binding
         {
             this.MethodReference = methodReference;
             this.PropertySourceBinding = propertySourceBinding;
+        }
+
+        internal override bool IsStatic
+        {
+            get
+            {
+                return this.PropertySourceBinding != null
+                    ? this.PropertySourceBinding.IsStatic
+                    : this.MethodReference.IsStatic();
+            }
         }
 
         public PropertySourceBindingInfo PropertySourceBinding

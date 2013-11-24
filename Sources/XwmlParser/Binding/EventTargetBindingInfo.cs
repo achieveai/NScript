@@ -28,6 +28,8 @@ namespace XwmlParser.Binding
             Tuple<string, IIdentifier, IIdentifier, Expression, Expression>
             GenerateGetterSetter(SkinCodeGenerator codeGenerator, bool isTwoWay)
         {
+            throw new NotImplementedException();
+            /*
             return new Tuple<string, IIdentifier, IIdentifier, Expression, Expression>(
                 null,
                 null,
@@ -36,6 +38,7 @@ namespace XwmlParser.Binding
                     codeGenerator.CodeGenerator.ScopeManager.Scope,
                     this.Event.Name),
                 new NullLiteralExpression(codeGenerator.Scope));
+            */
         }
     }
 }

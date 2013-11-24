@@ -1385,14 +1385,18 @@ namespace NScript.Converter
             {
                 if (this.listNativeArrayCtor == null)
                 {
+                    var argType = new GenericInstanceType(this.NativeArrayGeneric.Resolve());
+                    argType.GenericArguments.Add(
+                        new GenericParameter(0, GenericParameterType.Type, this.ListGeneric.Module));
+
                     this.listNativeArrayCtor = this.GetMethodReference(
                         ".ctor",
                         this.ClrReferences.Void,
                         this.ListGeneric,
-                        this.NativeArray);
+                        argType);
                 }
 
-                return this.arrayImplNativeArrayCtor;
+                return this.listNativeArrayCtor;
             }
         }
 

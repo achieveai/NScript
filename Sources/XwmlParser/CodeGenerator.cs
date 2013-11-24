@@ -179,7 +179,10 @@ namespace XwmlParser
                 {
                     EmbeddedResource embeddedResource = resource as EmbeddedResource;
                     if (embeddedResource != null
-                        && (resource.Name.EndsWith(".html") || resource.Name.EndsWith(".htm")))
+                        && (resource.Name.EndsWith(".html")
+                            || resource.Name.EndsWith(".htm")
+                            || resource.Name.EndsWith(".xhtml")
+                            || resource.Name.EndsWith(".xml")))
                     {
                         resourceMap.Add(resource.Name, embeddedResource);
                     }
@@ -542,9 +545,9 @@ namespace XwmlParser
                             expression =
                                 MethodCallExpressionConverter.CreateMethodCallExpression(
                                     new MethodCallContext(
-                                        null,
                                         methodRef,
-                                        false),
+                                        null,
+                                        methodScope),
                                     null,
                                     this.Resolver,
                                     this.scopeManager);

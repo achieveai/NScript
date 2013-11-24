@@ -8,6 +8,7 @@ namespace XwmlParser.Binding
 {
     using Mono.Cecil;
     using NScript.JST;
+    using NScript.CLR;
     using System;
     using System.Collections.Generic;
 
@@ -22,7 +23,14 @@ namespace XwmlParser.Binding
         {
             this.SourceType = sourceType;
             this.PropertyReferencePath = new List<MemberReference>(propertyReferences);
+            if (propertyReferences[0].IsStatic())
+            {
+                this.SourceType = null;
+            }
         }
+
+        internal override bool IsStatic
+        { get { return this.SourceType == null; } }
 
         public TypeReference SourceType { get; private set; }
 

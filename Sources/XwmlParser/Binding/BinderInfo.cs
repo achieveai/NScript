@@ -55,7 +55,9 @@ namespace XwmlParser
             this.TargetBindingInfo = targetBindingInfo;
             this.SourceBindingInfo = sourceBindingInfo;
             this.ConverterInfo = converterInfo;
-            this.SourceType = sourceType;
+            this.SourceType = sourceBindingInfo.IsStatic
+                ? SourceType.Static
+                : sourceType;
             this.NamedPartName = namedPartName;
             this.Mode = mode;
         }
@@ -337,6 +339,10 @@ namespace XwmlParser
             else if (this.TargetBindingInfo is DomEventTargetBindingInfo)
             {
                 rv |= BinderType.DomEventBinder;
+            }
+            else if (this.TargetBindingInfo is TextContentTargetBinder)
+            {
+                rv |= BinderType.PropertyBinder;
             }
 
             return rv;

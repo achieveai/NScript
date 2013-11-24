@@ -102,6 +102,11 @@
         <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
         <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.dll" />
         <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.dll" />
+        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.xml" />
+        <File Source="$(var.ToolsetDir)\bin\CssParser.dll" />
+        <File Source="$(var.ToolsetDir)\bin\CssParser.pdb" />
         <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll" />
         <File Source="$(var.ToolsetDir)\bin\XwmlParser.pdb" />
       </Component>

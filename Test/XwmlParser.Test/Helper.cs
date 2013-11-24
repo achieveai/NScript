@@ -66,6 +66,36 @@ namespace XwmlParser.Test
                 Helper.context);
         }
 
+        internal static ParserContext GetParserContext()
+        {
+            ConverterContext converterContext =
+                new ConverterContext(
+                    context,
+                    null,
+                    null);
+            var runtimeScopeManager = new RuntimeScopeManager(converterContext);
+
+            resolver = new TypeResolver(
+                runtimeScopeManager,
+                context);
+
+            KnownTemplateTypes knownTemplateTypes = new KnownTemplateTypes(
+                context.KnownReferences);
+            return new ParserContext(
+                knownTemplateTypes,
+                new CodeGenerator(
+                    runtimeScopeManager,
+                    knownTemplateTypes),
+                resolver,
+                resolver,
+                new List<string>());
+        }
+
+        internal static ClrContext GetClrContext()
+        {
+            return Helper.context;
+        }
+
         internal static XwmlParser.XwmlTemplatingPlugin CreatePlugin(
             List<Tuple<string,string>> args)
         {

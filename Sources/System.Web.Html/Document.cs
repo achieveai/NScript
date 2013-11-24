@@ -351,7 +351,7 @@ namespace System.Web.Html
         /// The elements by class name internal.
         /// </returns>
         [ScriptName("getElementsByClassName")]
-        internal extern NativeArray<Element> GetElementsByClassName(string className);
+        public extern NativeArray<Element> GetElementsByClassName(string className);
 
         /// <summary>
         /// Gets the elements by name internal.
@@ -381,6 +381,6 @@ namespace System.Web.Html
         /// The selector all internal.
         /// </returns>
         [ScriptName("querySelectorAll")]
-        internal extern NativeArray<Element> QuerySelectorAll(string selector);
+        public extern NativeArray<Element> QuerySelectorAll(string selector);
     }
 }

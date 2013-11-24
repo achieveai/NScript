@@ -323,7 +323,6 @@
                 @"Runtime\InteropServices\OutAttribute.cs",
                 @"Runtime\Versioning\TargetFrameworkAttribute.cs",
                 @"SByte.cs",
-                @"Script.cs",
                 @"Serialization\Json.cs",
                 @"Serialization\JsonParseCallback.cs",
                 @"Serialization\JsonStringifyCallback.cs",

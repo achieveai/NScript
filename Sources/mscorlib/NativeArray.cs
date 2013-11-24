@@ -300,16 +300,6 @@ namespace System
             return ((ArrayG<T>)(object)n).InnerArray;
         }
 
-        public static implicit operator T[](NativeArray<T> n)
-        {
-            return (T[])(object)new ArrayG<T>(n);
-        }
-
-        public static implicit operator List<T>(NativeArray<T> n)
-        {
-            return new List<T>(n);
-        }
-
         [ScriptName("shift")]
         private extern void ShiftImpl();
 

@@ -318,8 +318,22 @@ namespace XwmlParser.Binding
 
             var resolver = documentContext.Resolver;
             TypeReference currentType = sourceType;
+            bool staticBinding = false;
+            if (pathInfo.Count > 1
+                && pathInfo[0].Item2.IndexOf(':') > 0)
+            {
+                var typeRef = resolver.GetTypeReference(
+                    documentContext.GetFullName(pathInfo[0].Item2));
+
+                if (typeRef != null)
+                {
+                    currentType = typeRef;
+                    staticBinding = true;
+                }
+            }
+
             List<MemberReference> propertyReferences = new List<MemberReference>();
-            for (int iPath = 0; iPath < pathInfo.Count; iPath++)
+            for (int iPath = staticBinding ? 1 : 0; iPath < pathInfo.Count; iPath++)
             {
                 var memberName = pathInfo[iPath].Item2;
                 var memberInfo = BindingParser.GetFieldOrPropertyReference(

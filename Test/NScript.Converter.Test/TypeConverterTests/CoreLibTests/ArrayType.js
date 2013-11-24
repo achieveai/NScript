@@ -83,12 +83,6 @@ function System__NativeArray$1__RemoveAt(this_, index) {
 function System__NativeArray$1__op_Implicit(n) {
   return n.get_innerArray();
 };
-function System__NativeArray$1__op_Implicita(n) {
-  return ArrayG$1_$T$_.__ctor(n);
-};
-function System__NativeArray$1__op_Implicita(n) {
-  return List$1_$T$_.__ctor(n);
-};
 function System_ArrayImpl() {
 };
 System_ArrayImpl.typeId = "c";

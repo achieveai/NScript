@@ -181,7 +181,22 @@ namespace XwmlParser
         /// </returns>
         public EventReference GetEventReference(TypeReference typeReference, string eventName)
         {
-            throw new NotImplementedException();
+            do
+            {
+                var typeDef = typeReference.Resolve();
+                if (typeDef.HasEvents)
+                {
+                    foreach (var evt in typeDef.Events)
+                    {
+                        if (evt.Name == eventName)
+                        {
+                            return evt;
+                        }
+                    }
+                }
+            } while ((typeReference = typeReference.GetBaseType()) != null);
+
+            return null;
         }
 
         /// <summary>

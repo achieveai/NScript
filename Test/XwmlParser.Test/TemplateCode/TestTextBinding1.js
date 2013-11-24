@@ -6,7 +6,7 @@ function TestTextBinding1_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
     domStore[0].innerHTML = " <div><span></span></div> ";
-    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropStr1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 1, 0, 0, null, "")];
+    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropStr1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, 0, null, "")];
   }
   htmlRoot = domStore[0].cloneNode(true);
   objStorage = new Array(1);

@@ -421,9 +421,6 @@
     <Compile Include="SByte.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Script.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Serialization\Json.cs">
       <SubType>Code</SubType>
     </Compile>

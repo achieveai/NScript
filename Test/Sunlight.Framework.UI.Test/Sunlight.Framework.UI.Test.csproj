@@ -70,9 +70,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PluginConfig.xml">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="PluginConfig.xml"/>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LiveBinderTests.cs" />

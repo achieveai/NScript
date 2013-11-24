@@ -139,6 +139,12 @@ namespace Sunlight.Framework.UI.Test
 
     public class TestViewModelB : TestViewModelA, TestInterface
     {
+        public static TestViewModelB StaticProp
+        { get; set; }
+
+        public static string StaticStrProp
+        { get; set; }
+
         public int PropInt2
         { get; set; }
 

@@ -241,7 +241,7 @@
     <EmbeddedResource Include="Templates\TestSkinWithUIElementDomId.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\Test - Copy %286%29.html" />
+    <EmbeddedResource Include="Templates\TestStaticBinding.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\TestStaticValues.js" />
@@ -259,7 +259,7 @@
     <EmbeddedResource Include="TemplateCode\TestSkinWithUIElementDomId.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TemplateCode\Test - Copy %286%29.js" />
+    <EmbeddedResource Include="TemplateCode\TestStaticBinding.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestUIElementPropertyBinding_TwoWay.html" />

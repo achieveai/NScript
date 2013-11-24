@@ -11,6 +11,8 @@ namespace XwmlParser.Test
     using NScript.CLR.Test;
     using XwmlParser.Binding;
     using NUnit.Framework;
+    using NScript.CLR;
+    using Mono.Cecil;
 
     /// <summary>
     /// Definition for BindingParserTests
@@ -18,7 +20,9 @@ namespace XwmlParser.Test
     [TestFixture]
     public class BindingParserTests
     {
+        ClrKnownReferences clrKnownReferences;
         TypeResolver resolver;
+        ParserContext parserContext;
 
         /// <summary>
         /// Setups this instance.
@@ -27,17 +31,19 @@ namespace XwmlParser.Test
         public void Setup()
         {
             Helper.Initialize();
-            resolver = Helper.CreateResolver();
+            parserContext = Helper.GetParserContext();
+            clrKnownReferences = parserContext.KnownTypes.ClrKnownReference;
+            resolver = (TypeResolver)parserContext.ClrResolver;
         }
 
         [Test]
-        // [TestCase("{PropStr1}")]
+        [TestCase("{PropStr1}")]
         [TestCase("{ PropStr1}")]
-        // [TestCase("{PropStr1 }")]
-        // [TestCase("{PropStr1, Mode=OneTime}")]
-        // [TestCase("{ PropStr1, Mode=OneTime }")]
-        // [TestCase("{PropStr1, Mode=OneTime, Source=DataContext}")]
-        // [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
+        [TestCase("{PropStr1 }")]
+        [TestCase("{PropStr1, Mode=OneTime}")]
+        [TestCase("{ PropStr1, Mode=OneTime }")]
+        [TestCase("{PropStr1, Mode=OneTime, Source=DataContext}")]
+        [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
         public void TestParser1(string bindingStr)
         {
             var dataContextType = 
@@ -45,9 +51,9 @@ namespace XwmlParser.Test
             var controlType =
                 resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
             var propertyBinding = Binding.BindingParser.ParseBinding(
-                null,
+                new TempTargetBinding(clrKnownReferences.String),
                 bindingStr,
-                new MockDocumentContext(null, resolver),
+                new MockDocumentContext(parserContext, resolver),
                 dataContextType,
                 controlType);
 
@@ -92,9 +98,11 @@ namespace XwmlParser.Test
             var controlType =
                 resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
             var propertyBinding = Binding.BindingParser.ParseBinding(
-                null,
+                new TempTargetBinding(clrKnownReferences.String),
                 bindingStr,
-                new MockDocumentContext(null, resolver),
+                new MockDocumentContext(
+                    parserContext,
+                    resolver),
                 dataContextType,
                 controlType);
 
@@ -141,9 +149,11 @@ namespace XwmlParser.Test
             var controlType =
                 resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
             var propertyBinding = Binding.BindingParser.ParseBinding(
-                null,
+                new TempTargetBinding(clrKnownReferences.String),
                 bindingStr,
-                new MockDocumentContext(null, resolver),
+                new MockDocumentContext(
+                    parserContext,
+                    resolver),
                 dataContextType,
                 controlType);
 
@@ -197,10 +207,12 @@ namespace XwmlParser.Test
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");
             var controlType =
                 resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
-            var documentContext = new MockDocumentContext(null, resolver);
+            var documentContext = new MockDocumentContext(
+                parserContext,
+                resolver);
             documentContext.AddNsMapping("testVM", "Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test");
             var propertyBinding = Binding.BindingParser.ParseBinding(
-                null,
+                new TempTargetBinding(clrKnownReferences.String),
                 bindingStr,
                 documentContext,
                 dataContextType,
@@ -241,6 +253,75 @@ namespace XwmlParser.Test
                     testVMB,
                     "PropStrB"),
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[1]);
+        }
+
+        [Test]
+        [TestCase("{testVM:TestViewModelB.StaticProp.PropStrB}", BindingMode.OneTime)]
+        [TestCase("{testVM:TestViewModelB.StaticProp.PropStrB, Mode=OneWay}", BindingMode.OneWay)]
+        [TestCase("{testVM:TestViewModelB.StaticProp.PropStrB, Mode=OneWay, Source=DataContext}", BindingMode.OneWay)]
+        [TestCase("{Mode=OneTime, Source=DataContext, Path=testVM:TestViewModelB.StaticProp.PropStrB}", BindingMode.OneTime)]
+        public void TestParserStatic(string bindingStr, BindingMode mode)
+        {
+            var dataContextType = 
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
+            var testVMB =
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");
+            var controlType =
+                resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
+            var documentContext = new MockDocumentContext(
+                parserContext,
+                resolver);
+            documentContext.AddNsMapping("testVM", "Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test");
+            var propertyBinding = Binding.BindingParser.ParseBinding(
+                new TempTargetBinding(clrKnownReferences.String),
+                bindingStr,
+                documentContext,
+                dataContextType,
+                controlType);
+
+            Assert.AreEqual(
+                mode,
+                propertyBinding.Mode);
+
+            Assert.AreEqual(
+                SourceType.Static,
+                propertyBinding.SourceType);
+
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+
+            Assert.AreEqual(
+                null,
+                propertyBinding.ConverterInfo);
+
+            Assert.IsInstanceOf<PropertySourceBindingInfo>(propertyBinding.SourceBindingInfo);
+
+            Assert.AreEqual(
+                null,
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).SourceType);
+
+            Assert.AreEqual(
+                2,
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath.Count);
+
+            Assert.AreEqual(
+                resolver.GetPropertyReference(
+                    testVMB,
+                    "StaticProp"),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[0]);
+
+            Assert.AreEqual(
+                resolver.GetPropertyReference(
+                    testVMB,
+                    "PropStrB"),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[1]);
+        }
+    }
+
+    public class TempTargetBinding : TargetBindingInfo
+    {
+        public TempTargetBinding(TypeReference stringType)
+            : base(stringType)
+        {
         }
     }
 }

@@ -47,6 +47,15 @@ namespace RealScript
         { get; set; }
 
         /// <summary>
+        /// Gets or sets a list of thes.
+        /// </summary>
+        /// <value>
+        /// A List of thes.
+        /// </value>
+        public extern System.Collections.Generic.List<int> TheList
+        { get; set; }
+
+        /// <summary>
         /// Gets or sets the. 
         /// </summary>
         /// <value>

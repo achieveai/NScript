@@ -3538,7 +3538,7 @@ function TestTemplateVMB_CssBinding_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[1]) {
     domStore[1] = doc.createElement("div");
     domStore[1].innerHTML = " <div test=\"id\"><span></span></div> ";
-    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter], ["PropBool1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 1, 1, null, "")];
+    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter], ["PropBool1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 1, null, "")];
   }
   htmlRoot = domStore[1].cloneNode(true);
   objStorage = new Array(2);
@@ -3631,7 +3631,7 @@ function TestTemplateVMB1_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[5]) {
     domStore[5] = doc.createElement("div");
     domStore[5].innerHTML = " <div test=\"test me\"><span></span></div> ";
-    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 1, 0, null, "")];
+    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, "")];
   }
   htmlRoot = domStore[5].cloneNode(true);
   objStorage = new Array(1);

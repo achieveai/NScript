@@ -15,6 +15,9 @@ namespace XwmlParser.Binding
     /// </summary>
     public abstract class SourceBindingInfo
     {
+        internal virtual bool IsStatic
+        { get { return true; } }
+
         internal virtual Tuple<IList<string>, IList<IIdentifier>, IIdentifier>
             GenerateGetterSetterInfo(
                 SkinCodeGenerator codeGenerator,

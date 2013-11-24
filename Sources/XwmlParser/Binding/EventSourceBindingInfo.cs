@@ -13,7 +13,10 @@ namespace XwmlParser.Binding
     /// <summary>
     /// Definition for EventSourceBindingInfo
     /// </summary>
-    public class EventSourceBindingInfo : SourceBindingInfo
+    public class EventSourceBindingInfo : PropertySourceBindingInfo
     {
+        public EventSourceBindingInfo()
+            : base(null, null)
+        { }
     }
 }

@@ -1,0 +1,14 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:vm="Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test"
+    xmlns:ctrl="Sunlight.Framework.UI!Sunlight.Framework.UI">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+    </head>
+    <body>
+        <skin ControlType="ctrl:UISkinableElement" DataContextType="vm:TestViewModelA">
+            <div>{vm:TestViewModelB.StaticProp.PropStr1, Mode=OneWay}</div>
+        </skin>
+    </body>
+</html>

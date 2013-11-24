@@ -63,10 +63,15 @@ namespace CssParser
 
         private void ParseCss(ITree tree)
         {
-            this.rules = new List<CssRule>();
+            if (this.rules == null)
+            {
+                this.rules = new List<CssRule>();
+            }
+
             switch (tree.Text)
             {
                 case "ruleset":
+                case null:
                     for (int i = 0; i < tree.ChildCount; i++)
                     {
                         var child = tree.GetChild(i);

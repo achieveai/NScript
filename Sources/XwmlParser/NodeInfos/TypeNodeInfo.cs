@@ -166,13 +166,20 @@ namespace XwmlParser.NodeInfos
             PropertyReference prop = resolver.GetPropertyReference(
                 this.Type,
                 attribute.OriginalName);
-            if (prop != null)
+            FieldReference field = prop != null
+                ? null
+                : resolver.GetFieldReference(this.Type, attribute.Name);
+            MemberReference member = ((MemberReference)prop) ?? field;
+            if (prop != null
+                || field != null)
             {
                 if (BindingParser.IsBindingText(attrValue))
                 {
                     this.AddBinder(
                         BindingParser.ParseBinding(
-                            new PropertyTargetBindingInfo(prop),
+                            prop != null
+                                ?  (TargetBindingInfo)new PropertyTargetBindingInfo(prop)
+                                : new FieldTargetBindingInfo(field),
                             attrValue,
                             parser.DocumentContext,
                             parser.DataContextType,
@@ -180,10 +187,10 @@ namespace XwmlParser.NodeInfos
 
                     return true;
                 }
-                else if (TypeNodeInfo.IsCssClassType(prop, null, knownTypes))
+                else if (TypeNodeInfo.IsCssClassType(prop, field, knownTypes))
                 {
                     this.staticInitializers.Add(
-                        prop,
+                        ((MemberReference)prop) ?? field,
                         new CssNameValue(
                             parser.DocumentContext,
                             attrValue));
@@ -191,7 +198,7 @@ namespace XwmlParser.NodeInfos
                 else
                 {
                     this.staticInitializers.Add(
-                        prop,
+                        member,
                         TypeNodeInfo.GetValue(
                             prop.PropertyType,
                             parserContext,
@@ -201,14 +208,14 @@ namespace XwmlParser.NodeInfos
                 return true;
             }
 
-            FieldReference field = resolver.GetFieldReference(this.Type, attribute.Name);
-            if (field != null)
+            EventReference evt = resolver.GetEventReference(this.Type, attribute.Name);
+            if (evt != null)
             {
                 if (BindingParser.IsBindingText(attrValue))
                 {
-                    this.Bindings.Add(
+                    this.AddBinder(
                         BindingParser.ParseBinding(
-                            new FieldTargetBindingInfo(field),
+                            new EventTargetBindingInfo(evt),
                             attrValue,
                             parser.DocumentContext,
                             parser.DataContextType,
@@ -216,25 +223,6 @@ namespace XwmlParser.NodeInfos
 
                     return true;
                 }
-                else if (TypeNodeInfo.IsCssClassType(prop, null, knownTypes))
-                {
-                    this.staticInitializers.Add(
-                        field,
-                        new CssNameValue(
-                            parser.DocumentContext,
-                            attrValue));
-                }
-                else
-                {
-                    this.staticInitializers.Add(
-                        field,
-                        TypeNodeInfo.GetValue(
-                            prop.PropertyType,
-                            parserContext,
-                            attrValue));
-                }
-
-                return true;
             }
 
             return false;

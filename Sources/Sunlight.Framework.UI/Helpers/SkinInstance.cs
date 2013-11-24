@@ -445,7 +445,7 @@ namespace Sunlight.Framework.UI.Helpers
             for (int iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++)
             {
                 var liveBinder = liveBinders[iLiveBinder];
-                if (Script.IsNullOrUndefined(liveBinder)
+                if (object.IsNullOrUndefined(liveBinder)
                     && (liveBinder.BinderInfo.BinderType & BinderType.TargetTypes) == sourceType)
                 {
                     liveBinder.Source = source;

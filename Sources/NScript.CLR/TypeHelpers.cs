@@ -1704,6 +1704,42 @@ namespace NScript.CLR
         }
 
         /// <summary>
+        /// Determines whether the specified type def is static.
+        /// </summary>
+        /// <param name="memberRef"> The memberRef to act on. </param>
+        /// <returns>
+        /// <c>true</c> if the specified type def is static; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsStatic(this MemberReference memberReference)
+        {
+            MethodReference methodRef = memberReference as MethodReference;
+            if (methodRef != null)
+            {
+                return methodRef.Resolve().IsStatic;
+            }
+
+            PropertyReference propRef = memberReference as PropertyReference;
+            if (propRef != null)
+            {
+                return propRef.Resolve().IsStatic();
+            }
+
+            FieldReference fieldRef = memberReference as FieldReference;
+            if (fieldRef != null)
+            {
+                return fieldRef.Resolve().IsStatic;
+            }
+
+            EventReference evtRef = memberReference as EventReference;
+            if (evtRef != null)
+            {
+                return evtRef.Resolve().AddMethod.IsStatic;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets the parent definition.
         /// </summary>
         /// <param name="method">The method.</param>

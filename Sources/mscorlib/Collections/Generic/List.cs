@@ -108,6 +108,16 @@ namespace System.Collections.Generic
         }
 
         /// <summary>
+        /// List casting operator.
+        /// </summary>
+        /// <typeparam name="T"> Generic type parameter. </typeparam>
+        /// <param name="n"> The List&lt;T&gt; to process. </param>
+        public static implicit operator List<T>(NativeArray<T> n)
+        {
+            return new List<T>(n);
+        }
+
+        /// <summary>
         /// Index of the given item.
         /// </summary>
         /// <param name="item"> The item. </param>
