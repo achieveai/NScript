@@ -137,6 +137,15 @@ namespace XwmlParser.NodeInfos
             HtmlNodeInfo.FinalizeClassNamesInGeneratedNode(
                 this.generatedNode,
                 this.ClassNames);
+
+            foreach (var item in this.ChildNodes)
+            {
+                IHtmlNodeGenerator nodeGenertaor = item as IHtmlNodeGenerator;
+                if (nodeGenertaor != null)
+                {
+                    nodeGenertaor.FinalizeGeneratedNode(codeGenerator);
+                }
+            }
         }
 
         public void MarkAsPart(bool isDomPart)
