@@ -161,7 +161,18 @@ using System.Text;
         }
 
         public override bool Visit(PseudoSelector obj)
-        { return true; }
+        {
+            this.stringBuilder.Append(':');
+            this.stringBuilder.Append(obj.Name);
+            if (obj.Arg != null)
+            {
+                this.stringBuilder.Append('(');
+                this.stringBuilder.Append(obj.Arg);
+                this.stringBuilder.Append(')');
+            }
+
+            return false;
+        }
 
         public override bool Visit(CssProperty obj)
         { return true; }

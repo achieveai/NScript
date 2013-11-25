@@ -47,6 +47,7 @@ tokens {
 	HASVALUE;
 	BEGINSWITH;
 	PSEUDO;
+	PSEUDO_FUNC;
 	FUNCTION;
 	TAG;
 	ID;
@@ -224,25 +225,6 @@ attrib
     : LBRACKET IDENT attribVal?  RBRACKET
 		-> ^(ATTRIB IDENT attribVal?)
 	;
-// attrib
-//     : LBRACKET
-//     
-//         IDENT
-//         
-//             (
-//                 (
-//                       OPEQ
-//                     | INCLUDES
-//                     | DASHMATCH
-//                 )
-//                 (
-//                       IDENT
-//                     | STRING
-//                 )       
-//             )?
-//     
-//       RBRACKET
-// ;
 
 attribVal
 	: attribOp attribValue
@@ -264,9 +246,17 @@ attribOp
 	;
 
 pseudo
-    : COLON IDENT LPAREN IDENT? RPAREN
+    : COLON IDENT LPAREN pseudoFuncArgs? RPAREN
+		-> ^(PSEUDO_FUNC IDENT pseudoFuncArgs?)
 	| COLON IDENT
+		-> ^(PSEUDO IDENT)
     ;
+
+pseudoFuncArgs
+	: IDENT
+	| MULTIPLIER (unaryOperator NUMBER)?
+	| NUMBER
+	;
 
 declaration
     : property COLON expr prio?
@@ -282,10 +272,6 @@ expr
 		-> ^(EXPR term+)
     ;
 
-exprPost
-	:	op term
-	;
-    
 term
     : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
     | STRING -> ^(STRING_VAL STRING)
@@ -694,6 +680,7 @@ fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
 fragment    DIMENSION   :;  // nnn'Somethingnotyetinvented'
 fragment    PERCENTAGE  :;  // '%'
+fragment	MULTIPLIER	:;  // 'n' used for nth construct
 
 NUMBER
     :   ( ('0'..'9'+ ('.' '0'..'9'+)?)  | ('.' '0'..'9'+) )
@@ -734,6 +721,7 @@ NUMBER
             | (K? H Z)=>
                 K? H    Z   { $type = FREQ;         }
             
+            | 'n'           { $type = MULTIPLIER;   }
             | IDENT         { $type = DIMENSION;    }
             
             | '%'           { $type = PERCENTAGE;   }
@@ -745,7 +733,7 @@ NUMBER
 // ------------
 // url and uri.
 //
-URI :   U R L '(' ((WS)=>WS)? val=(URL|STRING) WS?  ')'
+URI :   U R L '(' ((WS)=>WS)? (URL|STRING) WS?  ')'
     ;
 
 // -------------

@@ -218,6 +218,9 @@ namespace CssParser
                     case "PSEUDO":
                         selectors.Add(this.ParsePseudo(child));
                         break;
+                    case "PSEUDO_FUNC":
+                        selectors.Add(this.ParsePseudoFunc(child));
+                        break;
                     default:
                         break;
                 }
@@ -231,9 +234,34 @@ namespace CssParser
             return new AndCssSelector(selectors);
         }
 
-        private AttributeSelector ParsePseudo(ITree child)
+        private PseudoSelector ParsePseudo(ITree child)
         {
-            throw new NotImplementedException();
+            return new PseudoSelector(child.GetChild(0).Text);
+        }
+
+        private PseudoSelector ParsePseudoFunc(ITree tree)
+        {
+            var name = tree.GetChild(0).Text.Trim();
+            if (tree.ChildCount == 1)
+            {
+                return new PseudoSelector(name, string.Empty);
+            }
+            else
+            {
+                var argChild = tree.GetChild(1);
+                if (tree.ChildCount == 2)
+                {
+                    return new PseudoSelector(name, argChild.Text);
+                }
+                else
+                {
+                    return new PseudoSelector(
+                        name,
+                        argChild.Text
+                        + tree.GetChild(2).Text
+                        + tree.GetChild(3).Text);
+                }
+            }
         }
 
         private AttributeSelector ParseAttrib(ITree tree)

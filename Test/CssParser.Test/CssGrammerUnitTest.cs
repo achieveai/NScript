@@ -80,6 +80,96 @@
         }
 
         [Test]
+        public void TestPseudoSelector()
+        {
+            CssGrammer grammer = new CssGrammer("a:hover { }");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
+            Assert.AreEqual(2, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+
+            PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
+            Assert.AreEqual("hover", attrSel.Name);
+            Assert.IsNull(attrSel.Arg);
+        }
+
+        [Test]
+        public void TestPseudoFuncSelector()
+        {
+            CssGrammer grammer = new CssGrammer("a:first-child() { }");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
+            Assert.AreEqual(2, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+
+            PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
+            Assert.AreEqual("first-child", attrSel.Name);
+            Assert.AreEqual("", attrSel.Arg);
+        }
+
+        [Test]
+        public void TestPseudoFuncNumSelector()
+        {
+            CssGrammer grammer = new CssGrammer("a:nth-child(2) { }");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
+            Assert.AreEqual(2, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+
+            PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
+            Assert.AreEqual("nth-child", attrSel.Name);
+            Assert.AreEqual("2", attrSel.Arg);
+        }
+
+        [Test]
+        public void TestPseudoFuncArgIdentSelector()
+        {
+            CssGrammer grammer = new CssGrammer("a:nth-child(odd) { }");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
+            Assert.AreEqual(2, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+
+            PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
+            Assert.AreEqual("nth-child", attrSel.Name);
+            Assert.AreEqual("odd", attrSel.Arg);
+        }
+
+        [Test]
+        public void TestPseudoFuncArgMultSelector()
+        {
+            CssGrammer grammer = new CssGrammer("a:nth-child(2n + 10) { }");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
+            Assert.AreEqual(2, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+
+            PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
+            Assert.AreEqual("nth-child", attrSel.Name);
+            Assert.AreEqual("2n+10", attrSel.Arg);
+        }
+
+        [Test]
         public void PropertyOnlyTest()
         {
             CssGrammer grammer = new CssGrammer("border: #ddeeff thin 1px solid;", true);

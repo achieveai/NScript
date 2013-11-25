@@ -21,7 +21,7 @@ function DocStorageGetter(doc) {
   if (!doc.stateStore) {
     doc.stateStore = new Array(1);
     style = doc.createElement("style");
-    style.textContent = ".testClass[t=ten]>div>#i{height:10px;}";
+    style.textContent = ".testClass[t=ten]>div:hover>#i:nth-child(odd) a:nth-child(2n+1){height:10px;}";
     doc.body.appendChild(style);
   }
   return doc.stateStore;
