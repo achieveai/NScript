@@ -236,9 +236,42 @@ namespace CssParser
             throw new NotImplementedException();
         }
 
-        private PseudoSelector ParseAttrib(ITree child)
+        private AttributeSelector ParseAttrib(ITree tree)
         {
-            throw new NotImplementedException();
+            AttributeCondition condition = AttributeCondition.None;
+            string attribName = tree.GetChild(0).Text;
+            string value = null;
+            if (tree.ChildCount == 2)
+            {
+                tree = tree.GetChild(1);
+                switch (tree.GetChild(0).Text)
+                {
+                    case "ATTRIB_EQUALS":
+                        condition = AttributeCondition.Equal;
+                        break;
+                    case "ATTRIB_CONTAINS":
+                        condition = AttributeCondition.Contains;
+                        break;
+                    case "ATTRIB_CONTAINS_WORD":
+                        condition = AttributeCondition.ContainsWord;
+                        break;
+                    case "ATTRIB_STARTS_WITH":
+                        condition = AttributeCondition.StartsWith;
+                        break;
+                    case "ATTRIB_STARTS_WITH_WORD":
+                        condition = AttributeCondition.StartsWithWord;
+                        break;
+                    case "ATTRIB_ENDS_WITH":
+                        condition = AttributeCondition.StartsWith;
+                        break;
+                    default:
+                        break;
+                }
+
+                value = tree.GetChild(1).Text;
+            }
+
+            return new AttributeSelector(attribName, value, condition);
         }
 
         private CssClassName ParseClass(ITree tree)

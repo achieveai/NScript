@@ -1,4 +1,22 @@
-﻿grammar CssGrammer;
+﻿// A complete lexer and grammar for CSS 2.1 as defined by the
+// W3 specification.
+//
+// This grammar is free to use providing you retain everyhting in this header comment
+// section.
+//
+// Author      : Jim Idle, Temporal Wave LLC.
+// Contact     : jimi@temporal-wave.com
+// Website     : http://www.temporal-wave.com
+// License     : ANTLR Free BSD License
+//
+// Please visit our Web site at http://www.temporal-wave.com and try our commercial
+// parsers for SQL, C#, VB.Net and more.
+//
+// This grammar is free to use providing you retain everything in this header comment
+// section.
+//
+// grammar css21;
+grammar CssGrammer;
 
 options {
 	language=CSharp3;
@@ -15,7 +33,13 @@ tokens {
 	NEST;
 	RULE;
 	ATTRIB;
-	ATTRIB_OP;
+	ATTRIB_VALUE;
+	ATTRIB_EQUALS;
+	ATTRIB_CONTAINS;
+	ATTRIB_CONTAINS_WORD;
+	ATTRIB_STARTS_WITH;
+	ATTRIB_STARTS_WITH_WORD;
+	ATTRIB_ENDS_WITH;
 	PARENTOF;
 	PRECEDEDS;
 	FOLLOWS;
@@ -50,25 +74,6 @@ protected bool assertIsKeyword = true;
 
 @lexer::namespace{CssParser}
 @parser::namespace{CssParser}
-
-// A complete lexer and grammar for CSS 2.1 as defined by the
-// W3 specification.
-//
-// This grammar is free to use providing you retain everyhting in this header comment
-// section.
-//
-// Author      : Jim Idle, Temporal Wave LLC.
-// Contact     : jimi@temporal-wave.com
-// Website     : http://www.temporal-wave.com
-// License     : ANTLR Free BSD License
-//
-// Please visit our Web site at http://www.temporal-wave.com and try our commercial
-// parsers for SQL, C#, VB.Net and more.
-//
-// This grammar is free to use providing you retain everything in this header comment
-// section.
-//
-// grammar css21;
 
 // -------------
 // Main rule.   This is the main entry rule for the parser, the top level
@@ -178,9 +183,8 @@ declarationSet
 	;
     
 selector
-    : simpleSelector -> ^(SELECTOR simpleSelector)
-	| simpleSelector moreSelectors+
-		-> ^(SELECTOR simpleSelector moreSelectors+)
+    :simpleSelector moreSelectors*
+		-> ^(SELECTOR simpleSelector moreSelectors*)
     ;
 
 moreSelectors
@@ -217,17 +221,46 @@ elementName
     ;
     
 attrib
-    : LBRACKET IDENT (ao=attribOp val=( IDENT | STRING ))?  RBRACKET
-		-> ^(ATTRIB IDENT $ao? $val?)
+    : LBRACKET IDENT attribVal?  RBRACKET
+		-> ^(ATTRIB IDENT attribVal?)
+	;
+// attrib
+//     : LBRACKET
+//     
+//         IDENT
+//         
+//             (
+//                 (
+//                       OPEQ
+//                     | INCLUDES
+//                     | DASHMATCH
+//                 )
+//                 (
+//                       IDENT
+//                     | STRING
+//                 )       
+//             )?
+//     
+//       RBRACKET
+// ;
+
+attribVal
+	: attribOp attribValue
+		-> ^(ATTRIB_VALUE attribOp attribValue)
+	;
+
+attribValue
+	: IDENT
+	| STRING
 	;
 
 attribOp
-	: OPEQ -> ^(ATTRIB_OP OPEQ)
-	| INCLUDES_WORD -> ^(ATTRIB_OP INCLUDES_WORD)
-	| STARTS_WITH_WORD -> ^(ATTRIB_OP STARTS_WITH_WORD)
-	| INCLUDES -> ^(ATTRIB_OP INCLUDES)
-	| STARTS_WITH -> ^(ATTRIB_OP STARTS_WITH)
-	| ENDS_WITH -> ^(ATTRIB_OP ENDS_WITH)
+	: OPEQ -> ^(ATTRIB_EQUALS)
+	| INCLUDES_WORD -> ^(ATTRIB_CONTAINS_WORD)
+	| STARTS_WITH_WORD -> ^(ATTRIB_STARTS_WITH_WORD)
+	| INCLUDES -> ^(ATTRIB_CONTAINS)
+	| STARTS_WITH -> ^(ATTRIB_STARTS_WITH)
+	| ENDS_WITH -> ^(ATTRIB_ENDS_WITH)
 	;
 
 pseudo

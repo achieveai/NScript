@@ -56,6 +56,30 @@
         }
 
         [Test]
+        public void TestAttributeSelector()
+        {
+            CssGrammer grammer = new CssGrammer("a[t=m] > div { color: red; }");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
+            Assert.AreEqual(2, ruleSelector.Selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(ruleSelector.Selectors[0]);
+            Assert.IsInstanceOf<CssTagName>(ruleSelector.Selectors[1]);
+
+            AndCssSelector andCssSelector = (AndCssSelector)ruleSelector.Selectors[0];
+            Assert.AreEqual(2, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<AttributeSelector>(andCssSelector.Selectors[1]);
+
+            AttributeSelector attrSel = (AttributeSelector)andCssSelector.Selectors[1];
+            Assert.AreEqual("t", attrSel.Attribute);
+            Assert.AreEqual("m", attrSel.Value);
+            Assert.AreEqual(attrSel.Condition, AttributeCondition.Equal);
+        }
+
+        [Test]
         public void PropertyOnlyTest()
         {
             CssGrammer grammer = new CssGrammer("border: #ddeeff thin 1px solid;", true);
