@@ -198,7 +198,9 @@ namespace XwmlParser.NodeInfos
         /// <returns>
         /// true if it succeeds, false if it fails.
         /// </returns>
-        protected override bool ParseAttribute(HtmlAttribute attribute, TemplateParser parser)
+        protected override bool ParseAttribute(
+            HtmlAttribute attribute,
+            TemplateParser parser)
         {
             if (base.ParseAttribute(attribute, parser))
             {
@@ -215,6 +217,7 @@ namespace XwmlParser.NodeInfos
 
                 if (bindingInfo != null)
                 {
+                    this.needHtmlNodeAccess = true;
                     this.AddBinder(bindingInfo);
                 }
 

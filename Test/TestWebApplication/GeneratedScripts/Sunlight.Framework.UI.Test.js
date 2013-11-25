@@ -1,5 +1,5 @@
 ﻿(function(){
-var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_Collections_Generic_StringDictionary_$Delegate$_, System_ArrayG_$Number$_, ptyp_, tmplStore, TestTemplate1_var, TestTemplateVMB_CssBinding_var, TestTemplateVMB_StyleBinding_var, TestTemplateVMB_AttrBinding_var, TestTemplateB_PropertyBinding_var, TestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Number$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
+var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_StringDictionary_$Delegate$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_ArrayG_$Number$_, ptyp_, tmplStore, TestTemplate1_var, TestTemplateVMB_CssBinding_var, TestTemplateVMB_StyleBinding_var, TestTemplateVMB_AttrBinding_var, TestTemplateB_PropertyBinding_var, TestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Number$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
 Function.typeId = "l";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
@@ -629,11 +629,11 @@ ptyp_.setTargetValue = function Sunlight__Framework__UI__Helpers__SkinBinderInfo
     element = target;
     if (extraObjectArray[binderInfo.extraObjectIndex] === value)
       return;
-    if (extraObjectArray[binderInfo.extraObjectIndex] !== null)
-      element.removeEventListener(System__Type__CastType(String, binderInfo.targetPropertySetterArg), extraObjectArray[binderInfo.extraObjectIndex], false);
+    if (!System__Object__IsNullOrUndefined(extraObjectArray[binderInfo.extraObjectIndex]))
+      System__Web__Html__Element__UnBind(element, System__Type__CastType(String, binderInfo.targetPropertySetterArg), extraObjectArray[binderInfo.extraObjectIndex], false);
     extraObjectArray[binderInfo.extraObjectIndex] = value;
-    if (value !== null)
-      element.addEventListener(System__Type__CastType(String, binderInfo.targetPropertySetterArg), value, false);
+    if (!System__Object__IsNullOrUndefined(value))
+      System__Web__Html__Element__Bind(element, System__Type__CastType(String, binderInfo.targetPropertySetterArg), value, false);
   }
   else if (binderInfo.targetPropertySetter !== null)
     binderInfo.targetPropertySetter(target, value);
@@ -1434,7 +1434,7 @@ ptyp_.internalDispose0 = function Sunlight__Framework__UI__UIElement__InternalDi
   var stmtTemp1, kvPair;
   for (stmtTemp1 = this.eventRegistrationDict.V_GetEnumerator_d(); stmtTemp1.V_MoveNext_e(); ) {
     kvPair = System__Type__UnBoxTypeInstance(System_Collections_Generic_KeyValuePair_$String_x_String$_, stmtTemp1.V_get_Current_e());
-    System__Web__Html__Element__UnBind(this.element, System_Collections_Generic_KeyValuePair_$String_x_String$_.get_key(kvPair));
+    System__Web__Html__Element__UnBind0(this.element, System_Collections_Generic_KeyValuePair_$String_x_String$_.get_key(kvPair));
   }
   this.eventRegistrationDict.clear();
   this.internalDispose();
@@ -1561,10 +1561,18 @@ function System__Web__Html__Element__RemoveClassName(this_, className) {
   }
   return;
 };
-function System__Web__Html__Element__UnBind(this_, eventName) {
+function System__Web__Html__Element__Bind(this_, eventName, handler, capture) {
   this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
-  System__EventBinder__RemoveEvent(this_, eventName, true);
-  System__EventBinder__RemoveEvent(this_, eventName, false);
+  System__EventBinder__AddEvent(this_, eventName, handler, capture);
+};
+function System__Web__Html__Element__UnBind(this_, eventName, handler, capture) {
+  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
+  System__EventBinder__RemoveEvent(this_, eventName, handler, capture);
+};
+function System__Web__Html__Element__UnBind0(this_, eventName) {
+  this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
+  System__EventBinder__RemoveEvent1(this_, eventName, true);
+  System__EventBinder__RemoveEvent1(this_, eventName, false);
 };
 function Sunlight_Framework_UI_Test_TestViewModelB() {
 };
@@ -2230,24 +2238,9 @@ ptyp_.__ctor = function Sunlight__Framework__TaskHandle____ctor(taskId) {
   this.taskId = taskId;
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_TaskHandle, "Sunlight.Framework.TaskHandle", Object, []);
-Date.typeId = "ca";
-function System__DateTime__op_Addition(a, n) {
-  return new Date(a.valueOf() + n);
-};
-function System__DateTime__get_Now() {
-  return new Date();
-};
-function System__DateTime____cctor() {
-  Date.empty = new Date(0);
-};
-System__Type__RegisterReferenceType(Date, "System.DateTime", Object, []);
-function System_Collections_IEnumerator() {
-};
-System_Collections_IEnumerator.typeId = "e";
-System__Type__RegisterInterface(System_Collections_IEnumerator, "System.Collections.IEnumerator");
 function System_EventBinder() {
 };
-System_EventBinder.typeId = "cb";
+System_EventBinder.typeId = "ca";
 function System__EventBinder__GetBinder(importedElement) {
   if (System__Object__IsNullOrUndefined(importedElement.importedExtension))
     importedElement.importedExtension = {
@@ -2256,12 +2249,24 @@ function System__EventBinder__GetBinder(importedElement) {
     importedElement.importedExtension.importedExtension = System__EventBinder_factory(importedElement);
   return System__Type__CastType(System_EventBinder, importedElement.importedExtension.importedExtension);
 };
-function System__EventBinder__RemoveEvent(importedElement, name, onCapture) {
+function System__EventBinder__AddEvent(importedElement, name, action, onCapture) {
+  var binder;
+  binder = System__EventBinder__GetBinder(importedElement);
+  binder.addEvent(name, action, onCapture);
+};
+function System__EventBinder__RemoveEvent(importedElement, name, action, onCapture) {
   var binder;
   if (importedElement.importedExtension === null || importedElement.importedExtension.importedExtension === null)
     return;
   binder = System__EventBinder__GetBinder(importedElement);
-  binder.removeEvent(name, onCapture);
+  binder.removeEvent(name, action, onCapture);
+};
+function System__EventBinder__RemoveEvent1(importedElement, name, onCapture) {
+  var binder;
+  if (importedElement.importedExtension === null || importedElement.importedExtension.importedExtension === null)
+    return;
+  binder = System__EventBinder__GetBinder(importedElement);
+  binder.removeEvent0(name, onCapture);
 };
 function System__EventBinder__IsW3wc(element) {
   return !!element.addEventListener;
@@ -2285,7 +2290,59 @@ ptyp_.__ctor = function System__EventBinder____ctor(element) {
   this.bubblePhaseEvents = System_Collections_Generic_StringDictionary_$Delegate$_.defaultConstructor();
   this.target = element;
 };
-ptyp_.removeEvent = function System__EventBinder__RemoveEvent0(name, onCapture) {
+ptyp_.addEvent = function System__EventBinder__AddEvent0(name, action, onCapture) {
+  var isW3wc, evts, elementEvent;
+  isW3wc = System__EventBinder__IsW3wc(this.target);
+  onCapture = onCapture && isW3wc;
+  evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
+  if (!evts.tryGetValue(name, {
+    read: function() {
+      return elementEvent;
+    },
+    write: function(arg0) {
+      return elementEvent = arg0;
+    }
+  })) {
+    elementEvent = action;
+    if (onCapture && System__EventBinder__IsW3wc(this.target))
+      this.addEventListener(name, System__Delegate__Create("eventHandlerCapture", this), true);
+    else if (isW3wc)
+      this.addEventListener(name, System__Delegate__Create("eventHandlerBubble", this), false);
+    else
+      this.attachEvent(name, System__Delegate__Create("eventHandlerIE", this));
+  }
+  else
+    elementEvent = System__Delegate__Combine(elementEvent, action);
+  evts.set_item(name, elementEvent);
+};
+ptyp_.removeEvent = function System__EventBinder__RemoveEvent0(name, handler, onCapture) {
+  var isW3wc, evts, elementEvent;
+  isW3wc = System__EventBinder__IsW3wc(this.target);
+  onCapture = onCapture && isW3wc;
+  evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
+  if (evts.tryGetValue(name, {
+    read: function() {
+      return elementEvent;
+    },
+    write: function(arg0) {
+      return elementEvent = arg0;
+    }
+  })) {
+    elementEvent = System__Delegate__Remove(elementEvent, handler);
+    if (elementEvent === null) {
+      evts.remove(name);
+      if (onCapture)
+        this.removeEventListener(name, System__Delegate__Create("eventHandlerCapture", this), true);
+      else if (isW3wc)
+        this.removeEventListener(name, System__Delegate__Create("eventHandlerBubble", this), false);
+      else
+        this.detachEvent(name, System__Delegate__Create("eventHandlerIE", this));
+    }
+    else
+      evts.set_item(name, elementEvent);
+  }
+};
+ptyp_.removeEvent0 = function System__EventBinder__RemoveEvent2(name, onCapture) {
   var isW3wc, evts;
   isW3wc = System__EventBinder__IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
@@ -2297,6 +2354,12 @@ ptyp_.removeEvent = function System__EventBinder__RemoveEvent0(name, onCapture) 
       this.removeEventListener(name, System__Delegate__Create("eventHandlerBubble", this), true);
     else
       this.detachEvent(name, System__Delegate__Create("eventHandlerIE", this));
+};
+ptyp_.addEventListener = function System__EventBinder__AddEventListener(evtName, cb, isCapture) {
+  this.target.addEventListener(evtName, cb, isCapture);
+};
+ptyp_.attachEvent = function System__EventBinder__AttachEvent(evtName, cb) {
+  this.target.atachEvent("on" + evtName, cb);
 };
 ptyp_.removeEventListener = function System__EventBinder__RemoveEventListener(evtName, cb, isCapture) {
   this.target.removeEventListener(evtName, cb, isCapture);
@@ -2318,6 +2381,21 @@ ptyp_.eventHandlerBubble = function System__EventBinder__EventHandlerBubble(evt)
   this.bubblePhaseEvents.get_item(System__EventBinder__GetEventType(evt))(this.target, evt);
 };
 System__Type__RegisterReferenceType(System_EventBinder, "System.EventBinder", Object, []);
+Date.typeId = "cb";
+function System__DateTime__op_Addition(a, n) {
+  return new Date(a.valueOf() + n);
+};
+function System__DateTime__get_Now() {
+  return new Date();
+};
+function System__DateTime____cctor() {
+  Date.empty = new Date(0);
+};
+System__Type__RegisterReferenceType(Date, "System.DateTime", Object, []);
+function System_Collections_IEnumerator() {
+};
+System_Collections_IEnumerator.typeId = "e";
+System__Type__RegisterInterface(System_Collections_IEnumerator, "System.Collections.IEnumerator");
 Number.typeId = "i";
 System__Type__RegisterReferenceType(Number, "System.Number", Object, []);
 function System_NotSupportedException() {

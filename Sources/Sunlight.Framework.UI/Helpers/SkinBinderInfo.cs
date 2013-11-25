@@ -326,21 +326,21 @@ namespace Sunlight.Framework.UI.Helpers
                         return;
                     }
 
-                    if (extraObjectArray[binderInfo.ExtraObjectIndex] != null)
+                    if (!object.IsNullOrUndefined(extraObjectArray[binderInfo.ExtraObjectIndex]))
                     {
-                        element.RemoveEventListener(
+                        element.UnBind(
                             (string)binderInfo.TargetPropertySetterArg,
-                            (Action<ElementEvent>)extraObjectArray[binderInfo.ExtraObjectIndex],
+                            (Action<Element, ElementEvent>)extraObjectArray[binderInfo.ExtraObjectIndex],
                             false);
                     }
 
                     extraObjectArray[binderInfo.ExtraObjectIndex] = value;
 
-                    if (value != null)
+                    if (!object.IsNullOrUndefined(value))
                     {
-                        element.AddEventListener(
+                        element.Bind(
                             (string)binderInfo.TargetPropertySetterArg,
-                            (Action<ElementEvent>)value,
+                            (Action<Element, ElementEvent>)value,
                             false);
                     }
                 }

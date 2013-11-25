@@ -535,7 +535,7 @@ namespace XwmlParser
             foreach (var kvPair in this.nodeToStorageIndexMap)
             {
                 if (kvPair.Key.Item1 is UIElementNodeInfo
-                    || kvPair.Key.Item2)
+                    && !kvPair.Key.Item2)
                 {
                     uiElemArrayExpression.Add(
                         new NumberLiteralExpression(
