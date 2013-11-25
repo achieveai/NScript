@@ -44,6 +44,8 @@ namespace CssParser
         { return true; }
         public virtual bool Visit(CssRule obj)
         { return true; }
+        public virtual bool Visit(CssFunctionPropertyValue obj)
+        { return true; }
     }
 
     public sealed class CssVisitorHelper
@@ -98,6 +100,16 @@ namespace CssParser
         { }
         public void Visit(CssIdentifierPropertyValue obj)
         { }
+        public void Visit(CssFunctionPropertyValue obj)
+        {
+            foreach (var item in obj.Args)
+            {
+                this.Visit(item);
+            }
+	{
+		 
+	}
+        }
         public void Visit(CssRule obj)
         {
             foreach (var item in obj.Selectors)
@@ -178,6 +190,10 @@ namespace CssParser
                 case "AllSelector":
                     if (this.innerVisitor.Visit((AllSelector)obj))
                         this.Visit((AllSelector)obj);
+                    break;
+                case "CssFunctionPropertyValue":
+                    if (this.innerVisitor.Visit((CssFunctionPropertyValue)obj))
+                        this.Visit((CssFunctionPropertyValue)obj);
                     break;
                 default:
                     throw new InvalidOperationException();

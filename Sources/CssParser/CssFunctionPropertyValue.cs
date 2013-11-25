@@ -12,7 +12,7 @@ namespace CssParser
     /// <summary>
     /// Definition for CssFunctionPropertyValue
     /// </summary>
-    public class CssFunctionPropertyValue
+    public class CssFunctionPropertyValue : CssPropertyValue
     {
         public CssFunctionPropertyValue(
             string functionName,

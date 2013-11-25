@@ -322,69 +322,6 @@ namespace CssParser
             return new AllSelector();
         }
 
-/*
-        private CssSelector ParseSelector(ITree tree)
-        {
-            List<CssSelector> selectors = new List<CssSelector>();
-            List<SelectorOp> operators = new List<SelectorOp>();
-
-            for (int i = 0; i < tree.ChildCount; i+=2)
-            {
-                var subTree = tree.GetChild(i);
-                CssSelector subSelector = null;
-
-                switch (subTree.Text)
-                {
-                    case "CLASS":
-                        subSelector = this.ParseClass(subTree);
-                        break;
-                    case "TAG":
-                        subSelector = this.ParseTag(subTree);
-                        break;
-                    case "ID":
-                        subSelector = this.ParseId(subTree);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-
-                selectors.Add(subSelector);
-
-                if (i + 1 < tree.ChildCount)
-                {
-                    SelectorOp op = SelectorOp.ParentOf;
-                    switch (tree.GetChild(i + 1).GetChild(0).Text)
-                    {
-                        case "PARENTOF":
-                            op = SelectorOp.ParentOf;
-                            break;
-                        case "PRECEDEDS":
-                            op = SelectorOp.Neighbor;
-                            break;
-                        case "FOLLOWS":
-                            op = SelectorOp.Follows;
-                            break;
-                        case "UNDER":
-                            op = SelectorOp.Under;
-                            break;
-                        default:
-                            throw new NotSupportedException();
-                    }
-
-                    operators.Add(op);
-                }
-            }
-
-            if (selectors.Count == 1)
-            {
-                return selectors[0];
-            }
-
-            return new CssRuleSelector(
-                selectors,
-                operators);
-        }
-*/
         private CssProperty ParseProperty(ITree tree)
         {
             return new CssProperty(
@@ -410,10 +347,50 @@ namespace CssParser
                         rv.Add(new CssStringPropertyValue(child.GetChild(0).Text));
                         break;
                     case "FUNCTION":
+                        rv.Add(this.ParseFunction(child));
+                        break;
                     case "URL_VAL":
                         throw new NotImplementedException();
                     case "COLOR":
                         rv.Add(new CssColorPropertyValue(child.GetChild(0).Text));
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return rv;
+        }
+
+        private CssPropertyValue ParseFunction(ITree tree)
+        {
+            string name = tree.GetChild(0).Text;
+            List<CssPropertyValue> args = new List<CssPropertyValue>();
+            CssFunctionPropertyValue rv = new CssFunctionPropertyValue(
+                name,
+                args);
+
+            for (int iChild = 1; iChild < tree.ChildCount; iChild+=2)
+            {
+                var child = tree.GetChild(iChild);
+                switch (child.Text)
+                {
+                    case "UNIT_VAL":
+                        args.Add(this.ParseUnitValue(child));
+                        break;
+                    case "IDENTIFIER":
+                        args.Add(new CssIdentifierPropertyValue(child.GetChild(0).Text));
+                        break;
+                    case "STRING_VAL":
+                        args.Add(new CssStringPropertyValue(child.GetChild(0).Text));
+                        break;
+                    case "FUNCTION":
+                        args.Add(this.ParseFunction(child));
+                        break;
+                    case "URL_VAL":
+                        throw new NotImplementedException();
+                    case "COLOR":
+                        args.Add(new CssColorPropertyValue(child.GetChild(0).Text));
                         break;
                     default:
                         break;

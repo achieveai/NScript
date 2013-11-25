@@ -21,7 +21,7 @@ function DocStorageGetter(doc) {
   if (!doc.stateStore) {
     doc.stateStore = new Array(1);
     style = doc.createElement("style");
-    style.textContent = ".testClass[t=ten]>div:hover>#i:nth-child(odd) a:nth-child(2n+1){height:10px;}";
+    style.textContent = ".testClass[t=ten]>div:hover>#i:nth-child(odd) a:nth-child(2n+1){height:10px;color:rgba(10,20,30,0.4);transform:translate3d(10px,40px,10%);}";
     doc.body.appendChild(style);
   }
   return doc.stateStore;

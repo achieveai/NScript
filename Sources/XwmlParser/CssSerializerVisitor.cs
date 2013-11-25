@@ -175,22 +175,55 @@ using System.Text;
         }
 
         public override bool Visit(CssProperty obj)
-        { return true; }
+        {
+            return true;
+        }
 
         public override bool Visit(CssStringPropertyValue obj)
-        { return true; }
+        {
+            this.stringBuilder.Append(obj.Value);
+            return false;
+        }
 
         public override bool Visit(CssNumberPropertyValue obj)
-        { return true; }
+        {
+            this.stringBuilder.Append(obj.Value);
+            return false;
+        }
 
         public override bool Visit(CssUnitPropertyValue obj)
-        { return true; }
+        {
+            this.stringBuilder.Append(obj.ToString());
+            return false;
+        }
 
         public override bool Visit(CssColorPropertyValue obj)
-        { return true; }
+        {
+            this.stringBuilder.Append(obj.HexValue);
+            return true;
+        }
+
+        public override bool Visit(CssFunctionPropertyValue obj)
+        {
+            this.stringBuilder.Append(obj.FunctionName);
+            this.stringBuilder.Append('(');
+            for (int iArg = 0; iArg < obj.Args.Count; iArg++)
+            {
+                if (iArg > 0)
+                { this.stringBuilder.Append(','); }
+
+                this.helper.Visit(obj.Args[iArg]);
+            }
+            this.stringBuilder.Append(')');
+
+            return false;
+        }
 
         public override bool Visit(CssIdentifierPropertyValue obj)
-        { return true; }
+        {
+            this.stringBuilder.Append(obj.Identifier);
+            return false;
+        }
 
         public override bool Visit(CssRule obj)
         {
@@ -212,7 +245,7 @@ using System.Text;
                 {
                     if (iValue > 0)
                     { this.stringBuilder.Append(' '); }
-                    this.stringBuilder.Append(prop.PropertyArgs[iValue].ToString());
+                    this.helper.Visit(prop.PropertyArgs[iValue]);
                 }
 
                 this.stringBuilder.Append(';');

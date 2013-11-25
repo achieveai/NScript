@@ -19,53 +19,53 @@
 grammar CssGrammer;
 
 options {
-	language=CSharp3;
-	TokenLabelType=CommonToken;
-	ASTLabelType=CommonTree;
-	backtrack=true;
-	memoize=true;
-	output=AST;
-	}
+    language=CSharp3;
+    TokenLabelType=CommonToken;
+    ASTLabelType=CommonTree;
+    backtrack=true;
+    memoize=true;
+    output=AST;
+    }
 
 tokens {
-	IMPORT;
-	NESTED;
-	NEST;
-	RULE;
-	ATTRIB;
-	ATTRIB_VALUE;
-	ATTRIB_EQUALS;
-	ATTRIB_CONTAINS;
-	ATTRIB_CONTAINS_WORD;
-	ATTRIB_STARTS_WITH;
-	ATTRIB_STARTS_WITH_WORD;
-	ATTRIB_ENDS_WITH;
-	PARENTOF;
-	PRECEDEDS;
-	FOLLOWS;
-	UNDER;
-	HASVALUE;
-	BEGINSWITH;
-	PSEUDO;
-	PSEUDO_FUNC;
-	FUNCTION;
-	TAG;
-	ID;
-	CLASS;
-	ALL;
-	NUMARG;
-	SELECTORS;
-	SELECTOR;
-	SELECTOR_OP;
-	SIMPLE_SEL;
-	SEL_OP;
-	PROPERTY;
-	EXPR;
-	COLOR;
-	UNIT_VAL;
-	STRING_VAL;
-	URL_VAL;
-	IDENTIFIER;
+    IMPORT;
+    NESTED;
+    NEST;
+    RULE;
+    ATTRIB;
+    ATTRIB_VALUE;
+    ATTRIB_EQUALS;
+    ATTRIB_CONTAINS;
+    ATTRIB_CONTAINS_WORD;
+    ATTRIB_STARTS_WITH;
+    ATTRIB_STARTS_WITH_WORD;
+    ATTRIB_ENDS_WITH;
+    PARENTOF;
+    PRECEDEDS;
+    FOLLOWS;
+    UNDER;
+    HASVALUE;
+    BEGINSWITH;
+    PSEUDO;
+    PSEUDO_FUNC;
+    FUNCTION;
+    TAG;
+    ID;
+    CLASS;
+    ALL;
+    NUMARG;
+    SELECTORS;
+    SELECTOR;
+    SELECTOR_OP;
+    SIMPLE_SEL;
+    SEL_OP;
+    PROPERTY;
+    EXPR;
+    COLOR;
+    UNIT_VAL;
+    STRING_VAL;
+    URL_VAL;
+    IDENTIFIER;
 }
 
 @lexer::members {
@@ -155,7 +155,7 @@ op
 combinator
     : PLUS -> ^(PRECEDEDS)
     | GREATER -> ^(PARENTOF)
-	| '~' -> ^(FOLLOWS)
+    | '~' -> ^(FOLLOWS)
     | -> ^(UNDER)
     ;
     
@@ -170,34 +170,34 @@ property
     
 ruleSet
     : sel=selectors LBRACE (decls=declarationSet)? RBRACE
-		-> ^(RULE $sel $decls?)
+        -> ^(RULE $sel $decls?)
     ;
 
 selectors
-	: selector (COMMA selector)*
-		-> ^(SELECTORS selector+)
-	;
+    : selector (COMMA selector)*
+        -> ^(SELECTORS selector+)
+    ;
 
 public
 declarationSet
-	: declaration SEMI (declaration SEMI)* -> declaration+
-	;
+    : declaration SEMI (declaration SEMI)* -> declaration+
+    ;
     
 selector
     :simpleSelector moreSelectors*
-		-> ^(SELECTOR simpleSelector moreSelectors*)
+        -> ^(SELECTOR simpleSelector moreSelectors*)
     ;
 
 moreSelectors
-	: combinator simpleSelector
-		-> ^(SELECTOR_OP combinator simpleSelector)
-	;
+    : combinator simpleSelector
+        -> ^(SELECTOR_OP combinator simpleSelector)
+    ;
 
 simpleSelector
     : elementName ((esPred)=>elementSubsequent)*
-		-> ^(SIMPLE_SEL elementName elementSubsequent*)
+        -> ^(SIMPLE_SEL elementName elementSubsequent*)
     | ((esPred)=>elementSubsequent)+
-		-> ^(SIMPLE_SEL elementSubsequent+)
+        -> ^(SIMPLE_SEL elementSubsequent+)
     ;
     
 esPred
@@ -213,7 +213,7 @@ elementSubsequent
     
 cssClass
     : DOT IDENT
-		-> ^(CLASS IDENT)
+        -> ^(CLASS IDENT)
     ;
     
 elementName
@@ -223,44 +223,44 @@ elementName
     
 attrib
     : LBRACKET IDENT attribVal?  RBRACKET
-		-> ^(ATTRIB IDENT attribVal?)
-	;
+        -> ^(ATTRIB IDENT attribVal?)
+    ;
 
 attribVal
-	: attribOp attribValue
-		-> ^(ATTRIB_VALUE attribOp attribValue)
-	;
+    : attribOp attribValue
+        -> ^(ATTRIB_VALUE attribOp attribValue)
+    ;
 
 attribValue
-	: IDENT
-	| STRING
-	;
+    : IDENT
+    | STRING
+    ;
 
 attribOp
-	: OPEQ -> ^(ATTRIB_EQUALS)
-	| INCLUDES_WORD -> ^(ATTRIB_CONTAINS_WORD)
-	| STARTS_WITH_WORD -> ^(ATTRIB_STARTS_WITH_WORD)
-	| INCLUDES -> ^(ATTRIB_CONTAINS)
-	| STARTS_WITH -> ^(ATTRIB_STARTS_WITH)
-	| ENDS_WITH -> ^(ATTRIB_ENDS_WITH)
-	;
+    : OPEQ -> ^(ATTRIB_EQUALS)
+    | INCLUDES_WORD -> ^(ATTRIB_CONTAINS_WORD)
+    | STARTS_WITH_WORD -> ^(ATTRIB_STARTS_WITH_WORD)
+    | INCLUDES -> ^(ATTRIB_CONTAINS)
+    | STARTS_WITH -> ^(ATTRIB_STARTS_WITH)
+    | ENDS_WITH -> ^(ATTRIB_ENDS_WITH)
+    ;
 
 pseudo
     : COLON IDENT LPAREN pseudoFuncArgs? RPAREN
-		-> ^(PSEUDO_FUNC IDENT pseudoFuncArgs?)
-	| COLON IDENT
-		-> ^(PSEUDO IDENT)
+        -> ^(PSEUDO_FUNC IDENT pseudoFuncArgs?)
+    | COLON IDENT
+        -> ^(PSEUDO IDENT)
     ;
 
 pseudoFuncArgs
-	: IDENT
-	| MULTIPLIER (unaryOperator NUMBER)?
-	| NUMBER
-	;
+    : IDENT
+    | MULTIPLIER (unaryOperator NUMBER)?
+    | NUMBER
+    ;
 
 declaration
     : property COLON expr prio?
-		-> ^(PROPERTY property expr prio?)
+        -> ^(PROPERTY property expr prio?)
     ;
     
 prio
@@ -269,28 +269,39 @@ prio
     
 expr
     : term+
-		-> ^(EXPR term+)
+        -> ^(EXPR term+)
     ;
 
 term
     : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
     | STRING -> ^(STRING_VAL STRING)
     | IDENT -> ^(IDENTIFIER IDENT)
-	| IDENT LPAREN expr RPAREN
-		-> ^(FUNCTION IDENT expr)
+    | IDENT LPAREN funcArgs RPAREN
+        -> ^(FUNCTION IDENT funcArgs)
     | URI -> ^(URL_VAL URI)
     | hexColor -> ^(COLOR hexColor)
     ;
 
+funcArg
+    : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
+    | STRING -> ^(STRING_VAL STRING)
+    | IDENT -> ^(IDENTIFIER IDENT)
+    | hexColor -> ^(COLOR hexColor)
+    ;
+
+funcArgs
+    : funcArg (COMMA funcArg)*
+	;
+
 unitTerm
-	: PERCENTAGE
-	| LENGTH
-	| EMS
-	| EXS
-	| ANGLE
-	| TIME
-	| FREQ
-	| NUMBER;
+    : PERCENTAGE
+    | LENGTH
+    | EMS
+    | EXS
+    | ANGLE
+    | TIME
+    | FREQ
+    | NUMBER;
     
 hexColor
     : HASH
@@ -607,9 +618,9 @@ CDC             : '-->'
                 
 INCLUDES_WORD   : '~='      ;
 STARTS_WITH_WORD: '|='      ;
-INCLUDES		: '*='		;
-STARTS_WITH		: '^='		;
-ENDS_WITH		: '$='		;
+INCLUDES        : '*='      ;
+STARTS_WITH     : '^='      ;
+ENDS_WITH       : '$='      ;
 
 GREATER         : '>'       ;
 LBRACE          : '{'       ;
@@ -680,7 +691,7 @@ fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
 fragment    DIMENSION   :;  // nnn'Somethingnotyetinvented'
 fragment    PERCENTAGE  :;  // '%'
-fragment	MULTIPLIER	:;  // 'n' used for nth construct
+fragment    MULTIPLIER  :;  // 'n' used for nth construct
 
 NUMBER
     :   ( ('0'..'9'+ ('.' '0'..'9'+)?)  | ('.' '0'..'9'+) )

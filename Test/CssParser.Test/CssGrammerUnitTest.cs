@@ -209,5 +209,23 @@
                 Assert.AreEqual(propertyArgs[i], grammer.Properties[1].PropertyArgs[i]);
             }
         }
+
+        [Test]
+        public void FunctionPropertyValueTest()
+        {
+            CssGrammer grammer = new CssGrammer("color: rgba(10,20,40,.5);", true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(1, grammer.Properties.Count);
+
+            var property = grammer.Properties[0];
+            Assert.AreEqual("color", property.PropertyName);
+            Assert.AreEqual(1, property.PropertyArgs.Count);
+            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0]);
+
+            var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0];
+            Assert.AreEqual("rgba", propertyArg.FunctionName);
+            Assert.AreEqual(4, propertyArg.Args.Count);
+        }
     }
 }
