@@ -57,49 +57,6 @@ namespace CssParser
     }
 
     /// <summary>
-    /// CSS selector.
-    /// </summary>
-    public abstract class CssSelector
-    {
-    }
-
-    /// <summary>
-    /// CSS class.
-    /// </summary>
-    public class CssClass : CssSelector
-    {
-        /// <summary>
-        /// Name of the class.
-        /// </summary>
-        private string className;
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="className">    Name of the class. </param>
-        public CssClass(string className)
-        {
-            this.className = className;
-        }
-
-        /// <summary>
-        /// Gets the name of the class.
-        /// </summary>
-        /// <value>
-        /// The name of the class.
-        /// </value>
-        public string ClassName
-        { get { return this.className; } }
-    }
-
-    /// <summary>
-    /// CSS tag name.
-    /// </summary>
-    public class CssTagName : CssSelector
-    {
-    }
-
-    /// <summary>
     /// CSS property.
     /// </summary>
     public class CssProperty
@@ -112,14 +69,14 @@ namespace CssParser
         /// <summary>
         /// The property arguments.
         /// </summary>
-        private IList<string> propertyArgs;
+        private IList<CssPropertyValue> propertyArgs;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="propertyName"> Name of the property. </param>
         /// <param name="propertyArgs"> The property arguments. </param>
-        public CssProperty(string propertyName, IList<string> propertyArgs)
+        public CssProperty(string propertyName, IList<CssPropertyValue> propertyArgs)
         {
             this.propertyName = propertyName;
             this.propertyArgs = propertyArgs;
@@ -140,7 +97,7 @@ namespace CssParser
         /// <value>
         /// The property arguments.
         /// </value>
-        public IList<string> PropertyArgs
+        public IList<CssPropertyValue> PropertyArgs
         { get { return this.propertyArgs; } }
     }
 }

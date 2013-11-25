@@ -74,24 +74,23 @@ namespace XwmlParser
 
             for (int iRule = 0; iRule < rules.Count; iRule++)
             {
-                var selectors = rules[iRule].Selectors;
-                for (int iSelector = 0; iSelector < selectors.Count; iSelector++)
-                {
-                    var selector = selectors[iSelector];
-                    CssParser.CssClass classSelector = selector as CssParser.CssClass;
-                    if (classSelector == null)
+                CssClassNameFinderVisitor.Instance.Process(
+                    rules[iRule],
+                    (cn) =>
                     {
-                        throw new ApplicationException(
-                            "Can't use any other selector than Class name selector in Css");
-                    }
-                    if (!this.classNames.ContainsKey(classSelector.ClassName))
-                    {
-                        this.classNames[classSelector.ClassName] =
-                            parserContext.RegisterCssClassName(classSelector.ClassName);
-                    }
+                        if (cn == null)
+                        {
+                            throw new ApplicationException(
+                                "Can't use any other selector than Class name selector in Css");
+                        }
+                        if (!this.classNames.ContainsKey(cn.ClassName))
+                        {
+                            this.classNames[cn.ClassName] =
+                                parserContext.RegisterCssClassName(cn.ClassName);
+                        }
 
-                    this.classNames[classSelector.ClassName].AddUsage(null);
-                }
+                        this.classNames[cn.ClassName].AddUsage(null);
+                    });
             }
         }
 
@@ -178,41 +177,19 @@ namespace XwmlParser
             StringBuilder sb = new StringBuilder();
             foreach (var cssRule in this.cssRules)
             {
-                bool first = true;
-                foreach (var selector in cssRule.Selectors)
-                {
-                    if (!first)
+                CssSerializerVisitor.Instance.Process(
+                    sb,
+                    cssRule,
+                    (cn) =>
                     {
-                        sb.Append(',');
-                    }
-
-                    CssParser.CssClass classSelector = (CssParser.CssClass)selector;
-                    sb.Append('.');
-                    IIdentifier identifier;
-                    this.TryGetCssClassIdentifier(classSelector.ClassName, out identifier);
-                    sb.Append(identifier.GetName());
-                    first = false;
-                }
-
-                sb.Append('{');
-                foreach (var prop in cssRule.Properties)
-                {
-                    sb.Append(prop.PropertyName);
-                    sb.Append(':');
-                    for (int iPropArg = 0; iPropArg < prop.PropertyArgs.Count; iPropArg++)
+                        IIdentifier identifier;
+                        this.TryGetCssClassIdentifier(cn.ClassName, out identifier);
+                        return identifier.GetName();
+                    },
+                    (idN) =>
                     {
-                        if (iPropArg > 0)
-                        {
-                            sb.Append(' ');
-                        }
-
-                        sb.Append(prop.PropertyArgs[iPropArg]);
-                    }
-
-                    sb.Append(';');
-                }
-
-                sb.Append('}');
+                        return idN.Id;
+                    });
             }
 
             return sb.ToString();

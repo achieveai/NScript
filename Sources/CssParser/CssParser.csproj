@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\NScriptToolSet\bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ANTLR_TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -44,12 +44,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CssColorPropertyValue.cs" />
+    <Compile Include="CssFunctionPropertyValue.cs" />
     <Compile Include="CssGrammer.cs">
       <DependentUpon>CssGrammer.g3</DependentUpon>
     </Compile>
+    <Compile Include="CssIdentifierPropertyValue.cs" />
+    <Compile Include="CssNumberPropertyValue.cs" />
+    <Compile Include="CssPropertyValue.cs" />
+    <Compile Include="CssSelector.cs" />
+    <Compile Include="CssStringPropertyValue.cs" />
+    <Compile Include="CssUnitPropertyValue.cs" />
+    <Compile Include="CssVisitor.cs" />
+    <Compile Include="obj\Release\CssGrammerParser.cs" Condition=" '$(Configuration)' == 'Release' ">
+      <Link>CssGrammerParser.cs</Link>
+    </Compile>
+    <Compile Include="obj\Release\CssGrammerLexer.cs" Condition=" '$(Configuration)' == 'Release' ">
+      <Link>CssGrammerLexer.cs</Link>
+    </Compile>
+    <Compile Include="obj\Debug\CssGrammerParser.cs">
+      <Link>CssGrammerParser.cs</Link>
+    </Compile>
+    <Compile Include="obj\Debug\CssGrammerLexer.cs">
+      <Link>CssGrammerLexer.cs</Link>
+    </Compile>
     <Compile Include="CssParts.cs" />
-    <Compile Include="obj\$(Configuration)\CssGrammerLexer.cs" />
-    <Compile Include="obj\$(Configuration)\CssGrammerParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +78,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(AntlrPath)\Antlr3.targets" />
+  <!--
+  -->
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

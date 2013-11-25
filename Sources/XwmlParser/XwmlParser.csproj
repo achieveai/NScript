@@ -88,6 +88,8 @@
     <Compile Include="Binding\TargetBindingInfo.cs" />
     <Compile Include="Binding\TextContentTargetBinder.cs" />
     <Compile Include="CodeGenerator.cs" />
+    <Compile Include="CssClassNameFinderVisitor.cs" />
+    <Compile Include="CssSerializerVisitor.cs" />
     <Compile Include="DocumentContext.cs" />
     <Compile Include="IResolver.cs" />
     <Compile Include="KnownTemplateTypes.cs" />
