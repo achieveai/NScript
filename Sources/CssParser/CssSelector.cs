@@ -100,7 +100,6 @@ namespace CssParser
         StartsWith,
         StartsWithWord,
         EndsWith,
-        EndsWithWord,
     }
 
     public class AttributeSelector : UnitSimpleCssSelector

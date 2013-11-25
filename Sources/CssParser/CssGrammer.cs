@@ -286,7 +286,7 @@ namespace CssParser
 
         private CssId ParseId(ITree tree)
         {
-            return new CssId(tree.GetChild(0).Text);
+            return new CssId(tree.GetChild(0).Text.Substring(1));
         }
 
         private AllSelector ParseAll(ITree tree)

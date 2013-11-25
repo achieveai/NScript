@@ -122,7 +122,43 @@ using System.Text;
         }
 
         public override bool Visit(AttributeSelector obj)
-        { return true; }
+        {
+            this.stringBuilder.Append('[');
+            this.stringBuilder.Append(obj.Attribute);
+            if (obj.Condition != AttributeCondition.None)
+            {
+                string op = "";
+                switch (obj.Condition)
+                {
+                    case AttributeCondition.Equal:
+                        op = "=";
+                        break;
+                    case AttributeCondition.Contains:
+                        op = "*=";
+                        break;
+                    case AttributeCondition.ContainsWord:
+                        op = "~=";
+                        break;
+                    case AttributeCondition.StartsWith:
+                        op = "^=";
+                        break;
+                    case AttributeCondition.StartsWithWord:
+                        op = "|=";
+                        break;
+                    case AttributeCondition.EndsWith:
+                        op = "$=";
+                        break;
+                    default:
+                        break;
+                }
+
+                this.stringBuilder.Append(op);
+                this.stringBuilder.Append(obj.Value);
+            }
+
+            this.stringBuilder.Append(']');
+            return false;
+        }
 
         public override bool Visit(PseudoSelector obj)
         { return true; }
