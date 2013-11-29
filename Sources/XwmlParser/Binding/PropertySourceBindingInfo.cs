@@ -73,8 +73,12 @@ namespace XwmlParser.Binding
             for (int iProp = 0; iProp < this.PropertyReferencePath.Count - 1; iProp++)
             {
                 observablePaths[observablePaths.Count-1].Add(this.PropertyReferencePath[iProp]);
+                TypeReference returnType = 
+                    this.PropertyReferencePath[iProp] is PropertyReference
+                        ? ((PropertyReference)this.PropertyReferencePath[iProp]).PropertyType
+                        : ((FieldReference)this.PropertyReferencePath[iProp]).FieldType;
                 if (codeGenerator.CodeGenerator.ParserContext.ClrResolver.TypeImplements(
-                    this.PropertyReferencePath[iProp].DeclaringType,
+                    returnType,
                     codeGenerator.CodeGenerator.KnownTypes.ObservableInterface))
                 {
                     observablePaths.Add(new List<MemberReference>());

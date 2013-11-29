@@ -808,15 +808,15 @@ ptyp_.toString = function() {
 System__Type__RegisterStructType(System_Int32, "System.Int32", []);
 function System_Collections_IEnumerable() {
 };
-System_Collections_IEnumerable.typeId = "d";
+System_Collections_IEnumerable.typeId = "f";
 System__Type__RegisterInterface(System_Collections_IEnumerable, "System.Collections.IEnumerable");
 function System_Collections_ICollection() {
 };
-System_Collections_ICollection.typeId = "f";
+System_Collections_ICollection.typeId = "c";
 System__Type__RegisterInterface(System_Collections_ICollection, "System.Collections.ICollection");
 function System_Collections_IList() {
 };
-System_Collections_IList.typeId = "g";
+System_Collections_IList.typeId = "d";
 System__Type__RegisterInterface(System_Collections_IList, "System.Collections.IList");
 function System_ArrayImpl() {
 };
@@ -836,20 +836,20 @@ ptyp_.system__Collections__ICollection__get_Count = function System__ArrayImpl__
 };
 ptyp_.__ctor = function System__ArrayImpl____ctor() {
 };
-ptyp_.V_get_Item_g = ptyp_.system__Collections__IList__get_Item;
-ptyp_.V_Clear_g = ptyp_.system__Collections__IList__Clear;
-ptyp_.V_RemoveAt_g = ptyp_.system__Collections__IList__RemoveAt;
-ptyp_.V_get_Count_f = ptyp_.system__Collections__ICollection__get_Count;
-ptyp_.V_Contains_g = function(arg0) {
+ptyp_.V_get_Item_d = ptyp_.system__Collections__IList__get_Item;
+ptyp_.V_Clear_d = ptyp_.system__Collections__IList__Clear;
+ptyp_.V_RemoveAt_d = ptyp_.system__Collections__IList__RemoveAt;
+ptyp_.V_get_Count_c = ptyp_.system__Collections__ICollection__get_Count;
+ptyp_.V_Contains_d = function(arg0) {
   return this.V_Contains(arg0);
 };
-ptyp_.V_IndexOf_g = function(arg0) {
+ptyp_.V_IndexOf_d = function(arg0) {
   return this.V_IndexOf(arg0);
 };
-ptyp_.V_GetEnumerator_d = function() {
+ptyp_.V_GetEnumerator_f = function() {
   return this.V_GetEnumerator();
 };
-ptyp_.V_CopyTo_f = function(arg0, arg1) {
+ptyp_.V_CopyTo_c = function(arg0, arg1) {
   return this.V_CopyTo(arg0, arg1);
 };
 System__Type__RegisterReferenceType(System_ArrayImpl, "System.ArrayImpl", Object, [System_Collections_IList, System_Collections_IEnumerable, System_Collections_ICollection]);
@@ -1042,13 +1042,12 @@ ptyp_.getValue = function Sunlight__Framework__UI__Helpers__LiveBinder__GetValue
   return rv;
 };
 ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__GetValueInternal() {
-  var binderInfo, path, liveObjects, src, iPath, pathLength, propertyGetterPath, propertyNames;
+  var binderInfo, liveObjects, src, propertyGetterPath, iPath, pathLength, propertyNames;
   binderInfo = this.binderInfo;
-  path = binderInfo.propertyGetterPath;
   liveObjects = this.liveObjects;
   src = liveObjects.get_item(0);
-  iPath = 1, pathLength = binderInfo.propertyGetterPath.length + 1;
   propertyGetterPath = binderInfo.propertyGetterPath;
+  iPath = 1, pathLength = propertyGetterPath.length + 1;
   propertyNames = binderInfo.propertyNames;
   this.pathTraversed = 1;
   for (; iPath < pathLength; iPath++)
@@ -1056,7 +1055,7 @@ ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__
       src = propertyGetterPath[iPath - 1](src);
       if (liveObjects.get_item(iPath) !== src) {
         if (liveObjects.get_item(iPath) !== null && iPath < pathLength - 1)
-          System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
+          System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
         liveObjects.set_item(iPath, src);
         if (src !== null && iPath < pathLength - 1)
           System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, src).V_AddPropertyChangedListener_b(binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
@@ -1189,24 +1188,24 @@ ptyp_.executeTask = function Sunlight__Framework__TaskScheduler__ExecuteTask(tas
 };
 ptyp_.scheduleQuanta = function Sunlight__Framework__TaskScheduler__ScheduleQuanta(force) {
   if (force || !this.highPriSetup && this.hiPriTasks.get_count() > 0) {
-    this.windowTimer.V_ClearTimeout_c(this.timerId);
+    this.windowTimer.V_ClearTimeout_e(this.timerId);
     this.timerId = -1;
   }
   if (this.timerId !== -1)
     return;
   if (this.hiPriTasks.get_count() > 0) {
     this.highPriSetup = true;
-    this.timerId = this.windowTimer.V_SetImmediate_c(System__Delegate__Create("runQuanta", this));
+    this.timerId = this.windowTimer.V_SetImmediate_e(System__Delegate__Create("runQuanta", this));
   }
   else if (this.idleTasks.get_count() + this.lowPriTasks.get_count() > 0) {
     this.highPriSetup = false;
-    this.timerId = this.windowTimer.V_SetTimeout_c(System__Delegate__Create("runQuanta", this), this.idleTimeout);
+    this.timerId = this.windowTimer.V_SetTimeout_e(System__Delegate__Create("runQuanta", this), this.idleTimeout);
   }
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_TaskScheduler, "Sunlight.Framework.TaskScheduler", Object, []);
 function Sunlight_Framework_IWindowTimer() {
 };
-Sunlight_Framework_IWindowTimer.typeId = "c";
+Sunlight_Framework_IWindowTimer.typeId = "e";
 System__Type__RegisterInterface(Sunlight_Framework_IWindowTimer, "Sunlight.Framework.IWindowTimer");
 function Sunlight_Framework_TestWindowTimer() {
 };
@@ -1228,9 +1227,9 @@ ptyp_.clearTimeout = function Sunlight__Framework__TestWindowTimer__ClearTimeout
 };
 ptyp_.__ctor = function Sunlight__Framework__TestWindowTimer____ctor() {
 };
-ptyp_.V_SetImmediate_c = ptyp_.setImmediate;
-ptyp_.V_SetTimeout_c = ptyp_.setTimeout;
-ptyp_.V_ClearTimeout_c = ptyp_.clearTimeout;
+ptyp_.V_SetImmediate_e = ptyp_.setImmediate;
+ptyp_.V_SetTimeout_e = ptyp_.setTimeout;
+ptyp_.V_ClearTimeout_e = ptyp_.clearTimeout;
 System__Type__RegisterReferenceType(Sunlight_Framework_TestWindowTimer, "Sunlight.Framework.TestWindowTimer", Object, [Sunlight_Framework_IWindowTimer]);
 function Sunlight_Framework_UI_Test_NScriptsTemplatesClass() {
 };
@@ -1432,8 +1431,8 @@ ptyp_.get_element = function Sunlight__Framework__UI__UIElement__get_Element() {
 };
 ptyp_.internalDispose0 = function Sunlight__Framework__UI__UIElement__InternalDispose() {
   var stmtTemp1, kvPair;
-  for (stmtTemp1 = this.eventRegistrationDict.V_GetEnumerator_d(); stmtTemp1.V_MoveNext_e(); ) {
-    kvPair = System__Type__UnBoxTypeInstance(System_Collections_Generic_KeyValuePair_$String_x_String$_, stmtTemp1.V_get_Current_e());
+  for (stmtTemp1 = this.eventRegistrationDict.V_GetEnumerator_f(); stmtTemp1.V_MoveNext_g(); ) {
+    kvPair = System__Type__UnBoxTypeInstance(System_Collections_Generic_KeyValuePair_$String_x_String$_, stmtTemp1.V_get_Current_g());
     System__Web__Html__Element__UnBind0(this.element, System_Collections_Generic_KeyValuePair_$String_x_String$_.get_key(kvPair));
   }
   this.eventRegistrationDict.clear();
@@ -1519,6 +1518,9 @@ function System__Web__Html__Node__ClearChildren(this_) {
   var tmp;
   while (tmp = this_.firstChild)
     this_.removeChild(tmp);
+};
+function System__Web__Html__Node__Remove(this_) {
+  return this_.parentNode ? this_.parentNode.removeChild(this_) : this_;
 };
 function System__Web__Html__Element__AddClassName(this_, className) {
   var index;
@@ -1740,6 +1742,7 @@ ptyp_.set_fixedList = function Sunlight__Framework__UI__ListView__set_FixedList(
   if (this.fixedList !== value) {
     this.fixedList = value;
     this.firePropertyChanged("FixedList");
+    this.applyFixedList();
   }
 };
 ptyp_.set_itemSkin = function Sunlight__Framework__UI__ListView__set_ItemSkin(value) {
@@ -1783,7 +1786,7 @@ ptyp_.internalDispose1 = function Sunlight__Framework__UI__ListView__InternalDis
   this.internalDispose0();
 };
 ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedList() {
-  var items, itemsCount, iItem, fixedList, fixedListCount, iObject, listViewItem;
+  var items, itemsCount, iItem, fixedList, fixedListCount, iObject, listViewItem, item;
   items = this.items;
   itemsCount = items.get_count();
   if (this.fixedList === null) {
@@ -1795,7 +1798,7 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
   }
   if (this.get_isActive()) {
     fixedList = this.fixedList;
-    fixedListCount = fixedList.V_get_Count_f();
+    fixedListCount = fixedList.V_get_Count_c();
     for (iObject = 0; iObject < fixedListCount; iObject++) {
       if (iObject < itemsCount)
         listViewItem = items.get_item(iObject);
@@ -1805,10 +1808,12 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
         listViewItem.set_skin(this.itemSkin);
         items.add(listViewItem);
       }
-      listViewItem.set_dataContext(fixedList.V_get_Item_g(iObject));
+      listViewItem.set_dataContext(fixedList.V_get_Item_d(iObject));
       listViewItem.activate();
     }
-    for (iItem = itemsCount; iItem >= fixedListCount; iItem--) {
+    for (iItem = itemsCount - 1; iItem >= fixedListCount; iItem--) {
+      item = items.get_item(iItem);
+      System__Web__Html__Node__Remove(item.get_element());
       items.get_item(iItem).dispose();
       items.removeAt(iItem);
     }
@@ -2032,11 +2037,13 @@ ptyp_.deactivate = function Sunlight__Framework__UI__Helpers__SkinInstance__Deac
     childElements = this.childElements;
     childElementLength = childElements.length;
     liveBinders = this.liveBinders;
-    liveBinderLength = liveBinders.length;
-    for (iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++) {
-      if (System__Object__IsNullOrUndefined(liveBinders[iLiveBinder]))
-        continue;
-      liveBinders[iLiveBinder].set_isActive(false);
+    if (!System__Object__IsNullOrUndefined(liveBinders)) {
+      liveBinderLength = liveBinders.length;
+      for (iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++) {
+        if (System__Object__IsNullOrUndefined(liveBinders[iLiveBinder]))
+          continue;
+        liveBinders[iLiveBinder].set_isActive(false);
+      }
     }
     for (iChild = 0; iChild < childElementLength; iChild++)
       System__NativeArray__GetFrom(this.elementsOfIntrest, childElements[iChild]).deactivate();
@@ -2044,21 +2051,27 @@ ptyp_.deactivate = function Sunlight__Framework__UI__Helpers__SkinInstance__Deac
   }
 };
 ptyp_.dispose = function Sunlight__Framework__UI__Helpers__SkinInstance__Dispose() {
-  var iLiveBinder, liveBinder, i, j, childElement;
+  var childNodes, iLiveBinder, liveBinder, i, j, childElement;
   if (!this.isDiposed) {
-    for (iLiveBinder = 0; iLiveBinder < this.liveBinders.length; iLiveBinder++) {
-      liveBinder = this.liveBinders[iLiveBinder];
-      if (System__Object__IsNullOrUndefined(liveBinder))
-        continue;
-      liveBinder.set_isActive(false);
-      liveBinder.set_source(null);
-      liveBinder.set_target(null);
-      liveBinder.cleanup();
-      this.liveBinders[iLiveBinder] = null;
+    if (this.skinableParent !== null) {
+      childNodes = this.skinableParent.get_element().childNodes;
+      while (childNodes.length > 0)
+        this.rootElement.appendChild(childNodes[0]);
     }
+    if (!System__Object__IsNullOrUndefined(this.liveBinders))
+      for (iLiveBinder = 0; iLiveBinder < this.liveBinders.length; iLiveBinder++) {
+        liveBinder = this.liveBinders[iLiveBinder];
+        if (System__Object__IsNullOrUndefined(liveBinder))
+          continue;
+        liveBinder.set_isActive(false);
+        liveBinder.set_source(null);
+        liveBinder.set_target(null);
+        liveBinder.cleanup();
+        this.liveBinders[iLiveBinder] = null;
+      }
     this.isDiposed = true;
     for (
-    i = 0, j = this.elementsOfIntrest.length; i < j; i++) {
+    i = 0, j = this.childElements.length; i < j; i++) {
       childElement = System__NativeArray__GetFrom(this.elementsOfIntrest, this.childElements[i]);
       childElement.deactivate();
       childElement.dispose();
@@ -2117,7 +2130,7 @@ ptyp_.updateBinderSource = function Sunlight__Framework__UI__Helpers__SkinInstan
   liveBindersLength = this.liveBinders.length;
   for (iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++) {
     liveBinder = liveBinders[iLiveBinder];
-    if (System__Object__IsNullOrUndefined(liveBinder) && (liveBinder.get_binderInfo().binderType & 7) === sourceType)
+    if (!System__Object__IsNullOrUndefined(liveBinder) && (liveBinder.get_binderInfo().binderType & 7) === sourceType)
       liveBinder.set_source(source);
   }
 };
@@ -2219,9 +2232,9 @@ ptyp_.clearTimeout = function Sunlight__Framework__WindowTimer__ClearTimeout(tim
 };
 ptyp_.__ctor = function Sunlight__Framework__WindowTimer____ctor() {
 };
-ptyp_.V_SetImmediate_c = ptyp_.setImmediate;
-ptyp_.V_SetTimeout_c = ptyp_.setTimeout;
-ptyp_.V_ClearTimeout_c = ptyp_.clearTimeout;
+ptyp_.V_SetImmediate_e = ptyp_.setImmediate;
+ptyp_.V_SetTimeout_e = ptyp_.setTimeout;
+ptyp_.V_ClearTimeout_e = ptyp_.clearTimeout;
 System__Type__RegisterReferenceType(Sunlight_Framework_WindowTimer, "Sunlight.Framework.WindowTimer", Object, [Sunlight_Framework_IWindowTimer]);
 function Sunlight_Framework_TaskHandle() {
 };
@@ -2394,7 +2407,7 @@ function System__DateTime____cctor() {
 System__Type__RegisterReferenceType(Date, "System.DateTime", Object, []);
 function System_Collections_IEnumerator() {
 };
-System_Collections_IEnumerator.typeId = "e";
+System_Collections_IEnumerator.typeId = "g";
 System__Type__RegisterInterface(System_Collections_IEnumerator, "System.Collections.IEnumerator");
 Number.typeId = "i";
 System__Type__RegisterReferenceType(Number, "System.Number", Object, []);
@@ -2830,9 +2843,9 @@ function System_Collections_Generic_NumberDictionary(TValue, $5fcallStatiConstru
       rv.push(key);
     return rv;
   };
-  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
-  ptyp_.V_get_Count_f = ptyp_.get_count;
-  ptyp_.V_CopyTo_f = ptyp_.copyTo;
+  ptyp_.V_GetEnumerator_f = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_get_Count_c = ptyp_.get_count;
+  ptyp_.V_CopyTo_c = ptyp_.copyTo;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$Number_x_Number$_$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(NumberDictionary$1_$TValue$_, "System.Collections.Generic.NumberDictionary`1<" + TValue.fullName + ">", Object, [System_Collections_ICollection, IEnumerable$1_$KeyValuePair$2_$Number_x_Number$_$_, System_Collections_IEnumerable]);
   NumberDictionary$1_$TValue$_._tri = function() {
@@ -2886,7 +2899,7 @@ function System_Collections_Generic_Queue(T, $5fcallStatiConstructor) {
   ptyp_.__ctor = function System__Collections__Generic__Queue$1____ctor() {
     this.nativeArray = new Array(0);
   };
-  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_GetEnumerator_f = ptyp_.system__Collections__IEnumerable__GetEnumerator;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(Queue$1_$T$_, "System.Collections.Generic.Queue`1<" + T.fullName + ">", Object, [IEnumerable$1_$T$_, System_Collections_IEnumerable]);
   Queue$1_$T$_._tri = function() {
@@ -2940,7 +2953,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
     return System__Type__BoxTypeInstance(T, this.get_item(index));
   };
   ptyp_.system__Collections__IList__Contains = function System__Collections__Generic__List$1__System__Collections__IList__Contains(value) {
-    return System__Type__CastType(System_Collections_IList, this).V_IndexOf_g(value) >= 0;
+    return System__Type__CastType(System_Collections_IList, this).V_IndexOf_d(value) >= 0;
   };
   ptyp_.__ctor = function System__Collections__Generic__List$1____ctor() {
     this.nativeArray = new Array(0);
@@ -2974,16 +2987,16 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   ptyp_.getEnumerator = function System__Collections__Generic__List$1__GetEnumerator() {
     return ListEnumerator$1_$T$_.__ctor(this);
   };
-  ptyp_.V_IndexOf_g = ptyp_.system__Collections__IList__IndexOf;
-  ptyp_.V_CopyTo_f = ptyp_.system__Collections__ICollection__CopyTo;
-  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
-  ptyp_.V_get_Item_g = ptyp_.system__Collections__IList__get_Item;
-  ptyp_.V_Contains_g = ptyp_.system__Collections__IList__Contains;
+  ptyp_.V_IndexOf_d = ptyp_.system__Collections__IList__IndexOf;
+  ptyp_.V_CopyTo_c = ptyp_.system__Collections__ICollection__CopyTo;
+  ptyp_.V_GetEnumerator_f = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_get_Item_d = ptyp_.system__Collections__IList__get_Item;
+  ptyp_.V_Contains_d = ptyp_.system__Collections__IList__Contains;
   ptyp_["V_get_Item_" + IList$1_$T$_.typeId] = ptyp_.get_item;
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
-  ptyp_.V_Clear_g = ptyp_.clear;
-  ptyp_.V_RemoveAt_g = ptyp_.removeAt;
-  ptyp_.V_get_Count_f = ptyp_.get_count;
+  ptyp_.V_Clear_d = ptyp_.clear;
+  ptyp_.V_RemoveAt_d = ptyp_.removeAt;
+  ptyp_.V_get_Count_c = ptyp_.get_count;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [IList$1_$T$_, System_Collections_IList, System_Collections_ICollection, System_Collections_IEnumerable, IEnumerable$1_$T$_]);
   List$1_$T$_._tri = function() {
@@ -3097,9 +3110,9 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
       rv++;
     return rv;
   };
-  ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
-  ptyp_.V_get_Count_f = ptyp_.get_count;
-  ptyp_.V_CopyTo_f = ptyp_.copyTo;
+  ptyp_.V_GetEnumerator_f = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_get_Count_c = ptyp_.get_count;
+  ptyp_.V_CopyTo_c = ptyp_.copyTo;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [System_Collections_ICollection, IEnumerable$1_$KeyValuePair$2_$String_x_String$_$_, System_Collections_IEnumerable]);
   StringDictionary$1_$TValue$_._tri = function() {
@@ -3238,11 +3251,11 @@ function System_Collections_Generic_NumberDictionary_Enumerator(TValue, $5fcallS
     return KeyValuePair$2_$Number_x_Number$_.__ctor(this.keys.V_get_Current_k$i$(), this.dict.get_item(this.keys.V_get_Current_k$i$()));
   };
   ptyp_.moveNext = function System__Collections__Generic__NumberDictionary$1$2fEnumerator__MoveNext() {
-    return this.keys.V_MoveNext_e();
+    return this.keys.V_MoveNext_g();
   };
-  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_g = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$Number_x_Number$_$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_e = ptyp_.moveNext;
+  ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.NumberDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$Number_x_Number$_$_, System_Collections_IEnumerator]);
   Enumerator_$TValue$_._tri = function() {
     if ($5f_initTracker)
@@ -3291,9 +3304,9 @@ function System_Collections_Generic_Queue_QueueEnumerator(T, $5fcallStatiConstru
     this.currentIndex++;
     return this.currentIndex < this.queue.nativeArray.length;
   };
-  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_g = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_e = ptyp_.moveNext;
+  ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(QueueEnumerator_$T$_, "System.Collections.Generic.Queue`1/QueueEnumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
   QueueEnumerator_$T$_._tri = function() {
     if ($5f_initTracker)
@@ -3337,11 +3350,11 @@ function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
     return this.innerList["V_get_Item_" + IList$1_$T$_.typeId](this.index);
   };
   ptyp_.moveNext = function System__Collections__Generic__ListEnumerator$1__MoveNext() {
-    return ++this.index < this.innerList.V_get_Count_f();
+    return ++this.index < this.innerList.V_get_Count_c();
   };
-  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_g = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_e = ptyp_.moveNext;
+  ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(ListEnumerator$1_$T$_, "System.Collections.Generic.ListEnumerator`1<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
   ListEnumerator$1_$T$_._tri = function() {
     if ($5f_initTracker0)
@@ -3387,11 +3400,11 @@ function System_Collections_Generic_StringDictionary_Enumerator(TValue, $5fcallS
     return KeyValuePair$2_$String_x_String$_.__ctor(this.keys.V_get_Current_k$j$(), this.dict.get_item(this.keys.V_get_Current_k$j$()));
   };
   ptyp_.moveNext = function System__Collections__Generic__StringDictionary$1$2fEnumerator__MoveNext() {
-    return this.keys.V_MoveNext_e();
+    return this.keys.V_MoveNext_g();
   };
-  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_g = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$String_x_String$_$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_e = ptyp_.moveNext;
+  ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.StringDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$String_x_String$_$_, System_Collections_IEnumerator]);
   Enumerator_$TValue$_._tri = function() {
     if ($5f_initTracker)
@@ -3459,9 +3472,9 @@ function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
   ptyp_.get_current = function System__ArrayG$1$2fEnumerator__get_Current() {
     return this.array.get_item(this.currentIndex);
   };
-  ptyp_.V_get_Current_e = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_g = ptyp_.system__Collections__IEnumerator__get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
-  ptyp_.V_MoveNext_e = ptyp_.moveNext;
+  ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$T$_, "System.ArrayG`1/Enumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
   Enumerator_$T$_._tri = function() {
     if ($5f_initTracker)

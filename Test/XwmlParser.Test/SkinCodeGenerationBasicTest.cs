@@ -34,6 +34,7 @@ namespace XwmlParser.Test
         [Test]
         [TestCase("TestCss", null)]
         [TestCase("TestAttributeBinding", null)]
+        [TestCase("TestAttributeBindingNonObservable", null)]
         [TestCase("TestSkinWithId", "test")]
         [TestCase("TestTemplate1", null)]
         [TestCase("TestTextBinding1", null)]

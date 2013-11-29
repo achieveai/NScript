@@ -48,6 +48,7 @@ namespace Sunlight.Framework.UI
                 {
                     this.fixedList = value;
                     this.FirePropertyChanged(ListView.FixedListPropName);
+                    this.ApplyFixedList();
                 }
             }
         }
@@ -190,8 +191,10 @@ namespace Sunlight.Framework.UI
                     listViewItem.Activate();
                 }
 
-                for (int iItem = itemsCount; iItem >= fixedListCount; iItem--)
+                for (int iItem = itemsCount - 1; iItem >= fixedListCount; iItem--)
                 {
+                    var item = items[iItem];
+                    item.Element.Remove();
                     items[iItem].Dispose();
                     items.RemoveAt(iItem);
                 }

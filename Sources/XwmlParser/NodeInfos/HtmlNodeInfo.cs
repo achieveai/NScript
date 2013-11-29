@@ -108,7 +108,7 @@ namespace XwmlParser.NodeInfos
             {
                 if (BindingParser.IsBindingText(attr.Value))
                 {
-                    string className = attr.Name.Substring("class.".Length);
+                    string className = attr.OriginalName.Substring("class.".Length);
                     IIdentifier classIdentifier;
                     if (!parser.DocumentContext.TryGetCssClassIdentifier(
                         className,

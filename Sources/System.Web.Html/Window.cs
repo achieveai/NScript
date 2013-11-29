@@ -170,6 +170,51 @@ namespace System.Web.Html
         public extern event Action<Window> OnLoad;
 
         /// <summary>
+        /// Event queue for all listeners interested in OnHashChanged events.
+        /// </summary>
+        public extern event Action<Window> OnHashChange;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnContextMenu events.
+        /// </summary>
+        public extern event Action<Window> OnContextMenu;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnDeviceMotion events.
+        /// </summary>
+        public extern event Action<Window, ElementEvent> OnDeviceMotion;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnBeforeUnload events.
+        /// </summary>
+        public extern event Action<Window> OnBeforeUnload;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnBeforePrint events.
+        /// </summary>
+        public extern event Action<Window> OnBeforePrint;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnAfterPrint events.
+        /// </summary>
+        public extern event Action<Window> OnAfterPrint;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnUnload events.
+        /// </summary>
+        public extern event Action<Window> OnUnload;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnOnline events.
+        /// </summary>
+        public extern event Action<Window> OnOnline;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnOffline events.
+        /// </summary>
+        public extern event Action<Window> OnOffline;
+
+        /// <summary>
         /// The opener.
         /// </summary>
         /// <value>

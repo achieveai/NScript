@@ -66,6 +66,9 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        public NonObservableObject NonObservable
+        { get; set; }
+
         public TestInterface TestIface
         {
             get;
@@ -161,6 +164,12 @@ namespace Sunlight.Framework.UI.Test
         { get; set; }
 
         public string PropStr3
+        { get; set; }
+    }
+
+    public class NonObservableObject
+    {
+        public string PropStr
         { get; set; }
     }
 

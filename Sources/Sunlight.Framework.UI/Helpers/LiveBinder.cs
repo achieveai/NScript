@@ -290,11 +290,10 @@ namespace Sunlight.Framework.UI.Helpers
         private object GetValueInternal()
         {
             var binderInfo = this.binderInfo;
-            var path = binderInfo.PropertyGetterPath;
             var liveObjects = this.liveObjects;
             var src = liveObjects[0];
-            int iPath = 1, pathLength = binderInfo.PropertyGetterPath.Length + 1;
             var propertyGetterPath = binderInfo.PropertyGetterPath;
+            int iPath = 1, pathLength = propertyGetterPath.Length + 1;
             var propertyNames = binderInfo.PropertyNames;
             this.pathTraversed = 1;
 
@@ -310,7 +309,7 @@ namespace Sunlight.Framework.UI.Helpers
                             && iPath < pathLength - 1)
                         {
                             ((INotifyPropertyChanged)liveObjects[iPath]).RemovePropertyChangedListener(
-                                binderInfo.PropertyNames[iPath],
+                                propertyNames[iPath],
                                 this.OnSourcePropertyChanged);
                         }
 

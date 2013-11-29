@@ -328,14 +328,18 @@ namespace Sunlight.Framework.UI.Helpers
                 var childElements = this.childElements;
                 var childElementLength = childElements.Length;
                 var liveBinders = this.liveBinders;
-                var liveBinderLength = liveBinders.Length;
 
-                for (int iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++)
+                if (!object.IsNullOrUndefined(liveBinders))
                 {
-                    if (object.IsNullOrUndefined(liveBinders[iLiveBinder]))
-                    { continue; }
+                    var liveBinderLength = liveBinders.Length;
 
-                    liveBinders[iLiveBinder].IsActive = false;
+                    for (int iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++)
+                    {
+                        if (object.IsNullOrUndefined(liveBinders[iLiveBinder]))
+                        { continue; }
+
+                        liveBinders[iLiveBinder].IsActive = false;
+                    }
                 }
 
                 for (int iChild = 0; iChild < childElementLength; iChild++)
@@ -357,23 +361,35 @@ namespace Sunlight.Framework.UI.Helpers
         {
             if (!this.isDiposed)
             {
-                for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
+                if (this.skinableParent != null)
                 {
-                    var liveBinder = this.liveBinders[iLiveBinder];
-                    if (object.IsNullOrUndefined(liveBinder))
+                    var childNodes = this.skinableParent.Element.ChildNodes;
+                    while(childNodes.Length > 0)
                     {
-                        continue;
+                        this.rootElement.AppendChild(childNodes[0]);
                     }
+                }
 
-                    liveBinder.IsActive = false;
-                    liveBinder.Source = null;
-                    liveBinder.Target = null;
-                    liveBinder.Cleanup();
-                    this.liveBinders[iLiveBinder] = null;
+                if (!object.IsNullOrUndefined(this.liveBinders))
+                {
+                    for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
+                    {
+                        var liveBinder = this.liveBinders[iLiveBinder];
+                        if (object.IsNullOrUndefined(liveBinder))
+                        {
+                            continue;
+                        }
+
+                        liveBinder.IsActive = false;
+                        liveBinder.Source = null;
+                        liveBinder.Target = null;
+                        liveBinder.Cleanup();
+                        this.liveBinders[iLiveBinder] = null;
+                    }
                 }
 
                 this.isDiposed = true;
-                for (int i = 0, j = this.elementsOfIntrest.Length; i < j; i++)
+                for (int i = 0, j = this.childElements.Length; i < j; i++)
                 {
                     var childElement = this.elementsOfIntrest.GetFrom<UIElement>(this.childElements[i]);
                     childElement.Deactivate();
@@ -462,7 +478,7 @@ namespace Sunlight.Framework.UI.Helpers
             for (int iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++)
             {
                 var liveBinder = liveBinders[iLiveBinder];
-                if (object.IsNullOrUndefined(liveBinder)
+                if (!object.IsNullOrUndefined(liveBinder)
                     && (liveBinder.BinderInfo.BinderType & BinderType.TargetTypes) == sourceType)
                 {
                     liveBinder.Source = source;
