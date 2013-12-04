@@ -496,6 +496,15 @@ namespace XwmlParser
                                 nodeName));
                     }
                 }
+                catch(ConverterLocationException ex)
+                {
+                    ParserContext.ConverterContext.AddError(
+                        ex.Location,
+                        ex.Message,
+                        false);
+
+                    this.documentContext.PopNode();
+                }
                 finally
                 {
                     this.documentContext.PopNode();

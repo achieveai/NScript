@@ -92,7 +92,7 @@ namespace NScript.Converter.ExpressionsConverter
                             converter,
                             expression.LeftExpression),
                         methodReference,
-                        methodDefinition.IsVirtual);
+                        methodDefinition.IsVirtual && !(expression.LeftExpression is BaseVariableReference));
                 }
 
                 return MethodCallExpressionConverter.CreateMethodCallExpression(

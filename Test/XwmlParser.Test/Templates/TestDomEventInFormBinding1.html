@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:vm="Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test"
+    xmlns:ctrl="Sunlight.Framework.UI!Sunlight.Framework.UI">
+    <head>
+        <style>
+            .uploadArea {
+            }
+            .problemManagerHeading {
+            }
+        </style>
+    </head>
+    <body>
+        <skin ControlType="ctrl:UISkinableElement" DataContextType="vm:TestViewModelA">
+            <div class="problemManagerHeading">
+                <h2>A1</h2>
+                <h3>H3</h3>
+                <h4>H4</h4>
+            </div>
+            <div class="uploadArea">
+                <div>Batch Upload</div>
+                <div style="height: 100px; border: 1px solid black;">
+                    Work in Progress
+                    <form enctype="multipart/form-data" method="post">
+                        <label for="ftu">Select file to load.</label>
+                        <input
+                               name="ftu"
+                               type="file"
+                               accept="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                               event.change="{DomEvent1}" />
+                    </form>
+                </div>
+            </div>
+        </skin>
+    </body>
+</html>

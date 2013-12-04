@@ -282,6 +282,12 @@
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\TestAttributeBindingNonObservable.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestDomEventInFormBinding1.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TemplateCode\TestDomEventInFormBinding1.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /y "$(ProjectDir)..\sunlight.framework.ui.test\bin\$(ConfigurationName)\*.dll" "$(ProjectDir)$(OutDir)"</PostBuildEvent>

@@ -108,79 +108,107 @@ namespace NScript.Converter
                     ? this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly))
                     : null;
 
-            if (entryPoint != null)
+            try
             {
-                methodDefinitionsToEmit.Add(entryPoint);
-            }
-
-            // Let's go through first pass and collect all the method references
-            // to emit.
-            if (this.plugins != null)
-            {
-                foreach (var plugin in this.plugins)
+                if (entryPoint != null)
                 {
-                    plugin.Initialize(clrContext, runtimeManager);
+                    methodDefinitionsToEmit.Add(entryPoint);
+                }
 
-                    var methodsToEmit = plugin.GetMethodsToEmitPass1();
-
-                    // Let's resolve references for all the methods that we may be emitting. This will
-                    // cause runtimeManager to traverse these methods as well during analysis.
-                    if (methodsToEmit != null)
+                // Let's go through first pass and collect all the method references
+                // to emit.
+                if (this.plugins != null)
+                {
+                    foreach (var plugin in this.plugins)
                     {
-                        for (int methodIndex = 0; methodIndex < methodsToEmit.Count; methodIndex++)
+                        plugin.Initialize(clrContext, runtimeManager);
+
+                        var methodsToEmit = plugin.GetMethodsToEmitPass1();
+
+                        // Let's resolve references for all the methods that we may be emitting. This will
+                        // cause runtimeManager to traverse these methods as well during analysis.
+                        if (methodsToEmit != null)
                         {
-                            runtimeManager.Resolve(methodsToEmit[methodIndex]);
-                            methodDefinitionsToEmit.Add(methodsToEmit[methodIndex].Resolve());
+                            for (int methodIndex = 0; methodIndex < methodsToEmit.Count; methodIndex++)
+                            {
+                                runtimeManager.Resolve(methodsToEmit[methodIndex]);
+                                methodDefinitionsToEmit.Add(methodsToEmit[methodIndex].Resolve());
+                            }
                         }
                     }
                 }
-            }
 
-            // Let's convert all the code to JS.
-            var statements = runtimeManager.Convert(methodDefinitionsToEmit, plugins);
+                // Let's convert all the code to JS.
+                var statements = runtimeManager.Convert(methodDefinitionsToEmit, plugins);
 
-            if (this.plugins != null)
-            {
-                foreach (var plugin in this.plugins)
+                if (this.plugins != null)
                 {
-                    var pluginJsStatements = plugin.GetPreJavascript();
-                    if (pluginJsStatements != null)
-                    { statements.InsertRange(0, pluginJsStatements); }
+                    foreach (var plugin in this.plugins)
+                    {
+                        var pluginJsStatements = plugin.GetPreJavascript();
+                        if (pluginJsStatements != null)
+                        { statements.InsertRange(0, pluginJsStatements); }
 
-                    pluginJsStatements = plugin.GetPostJavascript();
-                    if (pluginJsStatements != null)
-                    { statements.AddRange(pluginJsStatements); }
+                        pluginJsStatements = plugin.GetPostJavascript();
+                        if (pluginJsStatements != null)
+                        { statements.AddRange(pluginJsStatements); }
+                    }
                 }
-            }
 
-            if (entryPoint != null)
-            {
-                // Not at the end, let's insert call to entryPoint.
-                statements.Add(
-                    JST.ExpressionStatement.CreateMethodCallExpression(
-                        new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
-            }
-
-            IdentifierScope.ReadableIdentifierNamer nameInitializer = new IdentifierScope.ReadableIdentifierNamer(
-                runtimeManager.Scope,
-                runtimeManager.JSBaseObjectScopeManager.InstanceScope);
-
-            JSWriter writer = new JSWriter(true, false);
-            var initializerStatement = runtimeManager.GetVariableDeclarations();
-            if (initializerStatement != null)
-            {
-                writer.Write(initializerStatement);
-            }
-
-            foreach (var statement in statements)
-            {
-                if (statement != null)
+                if (entryPoint != null)
                 {
-                    writer.Write(statement);
+                    // Not at the end, let's insert call to entryPoint.
+                    statements.Add(
+                        JST.ExpressionStatement.CreateMethodCallExpression(
+                            new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
                 }
+
+                IdentifierScope.ReadableIdentifierNamer nameInitializer = new IdentifierScope.ReadableIdentifierNamer(
+                    runtimeManager.Scope,
+                    runtimeManager.JSBaseObjectScopeManager.InstanceScope);
+
+                JSWriter writer = new JSWriter(true, false);
+                var initializerStatement = runtimeManager.GetVariableDeclarations();
+                if (initializerStatement != null)
+                {
+                    writer.Write(initializerStatement);
+                }
+
+                foreach (var statement in statements)
+                {
+                    if (statement != null)
+                    {
+                        writer.Write(statement);
+                    }
+                }
+
+                writer.Write(this.jsScript, string.Format("SrcMapper.ashx?js={0}&fname=", Path.GetFileName(this.jsScript)));
+            }
+            catch(System.Exception ex)
+            {
+                System.Console.Error.WriteLine("NScript.Exe(0,0): error UNK0001: {0}", ex.Message);
+                System.Console.Error.WriteLine(ex.StackTrace);
             }
 
-            writer.Write(this.jsScript, string.Format("SrcMapper.ashx?js={0}&fname=", Path.GetFileName(this.jsScript)));
+            foreach (var warning in converterContext.Warnings)
+            {
+                System.Console.Error.WriteLine(
+                    string.Format("{0}({1},{2}): warning WRN0123: {3}",
+                        warning.Item1.FileName,
+                        warning.Item1.StartLine,
+                        warning.Item1.StartColumn,
+                        warning.Item2));
+            }
+
+            foreach (var warning in converterContext.Errors)
+            {
+                System.Console.Error.WriteLine(
+                    string.Format("{0}({1},{2}): error WRN0123: {3}",
+                        warning.Item1.FileName,
+                        warning.Item1.StartLine,
+                        warning.Item1.StartColumn,
+                        warning.Item2));
+            }
 
             return true;
         }

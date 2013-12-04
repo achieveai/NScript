@@ -791,7 +791,7 @@ namespace XwmlParser
                 this.scopeManager.Scope,
                 methodScope,
                 methodScope.ParameterIdentifiers,
-                SimpleIdentifier.CreateScopeIdentifier(methodScope, "delgateGetter", false));
+                SimpleIdentifier.CreateScopeIdentifier(this.scopeManager.Scope, "delgateGetter", false));
 
             methodExpression.AddStatement(
                 new ReturnStatement(

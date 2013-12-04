@@ -114,7 +114,7 @@ namespace System.Collections.Generic
         /// <param name="n"> The List&lt;T&gt; to process. </param>
         public static implicit operator List<T>(NativeArray<T> n)
         {
-            return new List<T>(n);
+            return n == null ? (List<T>)null : new List<T>(n);
         }
 
         /// <summary>

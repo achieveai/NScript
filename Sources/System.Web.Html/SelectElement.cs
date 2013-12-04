@@ -22,7 +22,7 @@ namespace System.Web.Html
         /// <summary>
         /// Options
         /// </summary>
-        public extern Node[] Options { get; }
+        public extern NativeArray<OptionElement> Options { get; }
 
         /// <summary>
         /// Can select multiple options.

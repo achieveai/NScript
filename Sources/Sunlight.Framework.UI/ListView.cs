@@ -10,6 +10,7 @@ namespace Sunlight.Framework.UI
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Web.Html;
 
     /// <summary>
@@ -23,6 +24,7 @@ namespace Sunlight.Framework.UI
 
         List<ListViewItem> items = new List<ListViewItem>();
         IObservableCollection observableList;
+        IObservableCollection attachedObservableList;
         IList fixedList;
         Skin itemSkin;
 
@@ -69,8 +71,17 @@ namespace Sunlight.Framework.UI
 
                 if (this.observableList != value)
                 {
+                    if (this.attachedObservableList != value
+                        && this.attachedObservableList != null)
+                    {
+                        this.attachedObservableList.CollectionChanged += ObservableListCollectionChanged;
+                        this.attachedObservableList = null;
+                    }
+
                     this.observableList = value;
+
                     this.FirePropertyChanged(ListView.ObservableListPropName);
+                    this.ApplyObservableList();
                 }
             }
         }
@@ -191,19 +202,140 @@ namespace Sunlight.Framework.UI
                     listViewItem.Activate();
                 }
 
-                for (int iItem = itemsCount - 1; iItem >= fixedListCount; iItem--)
-                {
-                    var item = items[iItem];
-                    item.Element.Remove();
-                    items[iItem].Dispose();
-                    items.RemoveAt(iItem);
-                }
+                this.RemoveChildren(fixedListCount, itemsCount - fixedListCount);
             }
         }
 
         private void ApplyObservableList()
         {
-            throw new Exception("Not Implemented");
+            var items = this.items;
+            int itemsCount = items.Count;
+            if (this.observableList == null)
+            {
+                for (int iItem = 0; iItem < itemsCount; iItem++)
+                {
+                    items[iItem].Dispose();
+                }
+
+                this.Element.ClearChildren();
+                items.Clear();
+                return;
+            }
+
+            if (this.IsActive
+                && this.observableList != null
+                && this.observableList != this.attachedObservableList)
+            {
+                this.attachedObservableList = this.observableList;
+                this.attachedObservableList.CollectionChanged += this.ObservableListCollectionChanged;
+                this.ResetObservableItems();
+            }
+        }
+
+        void ObservableListCollectionChanged(
+            INotifyCollectionChanged collection,
+            CollectionChangedEventArgs args)
+        {
+            Debug.Assert(collection == this.attachedObservableList);
+            var items = this.items;
+            var changeIndex = args.ChangeIndex;
+            switch (args.Action)
+            {
+                case CollectionChangedAction.Add:
+                    {
+                        var list = args.NewItems;
+                        var listCount = list.Count;
+                        Element insertBeforeElem = null;
+                        if (changeIndex < items.Count)
+                        {
+                            insertBeforeElem = items[changeIndex].Element;
+                        }
+
+                        for (int iObject = 0; iObject < listCount; iObject++)
+                        {
+                            ListViewItem listViewItem = new ListViewItem(
+                                    this.Element.OwnerDocument.CreateElement("div"));
+                            listViewItem.Skin = this.itemSkin;
+
+                            if (insertBeforeElem == null)
+                            {
+                                this.Element.AppendChild(listViewItem.Element);
+                                items.Add(listViewItem);
+                            }
+                            else
+                            {
+                                this.Element.InsertBefore(listViewItem.Element, insertBeforeElem);
+                                items.Insert(changeIndex + iObject, listViewItem);
+                            }
+
+                            listViewItem.DataContext = list[iObject];
+                            listViewItem.Activate();
+                        }
+
+                        break;
+                    }
+                case CollectionChangedAction.Remove:
+                    {
+                        this.RemoveChildren(changeIndex, args.OldItems.Count);
+                        break;
+                    }
+                case CollectionChangedAction.Replace:
+                    {
+                        var list = args.NewItems;
+                        var listCount = list.Count;
+
+                        for (int iObject = 0; iObject < listCount; iObject++)
+                        {
+                            items[changeIndex + iObject].DataContext = list[iObject];
+                        }
+
+                        break;
+                    }
+                case CollectionChangedAction.Reset:
+                    this.ResetObservableItems();
+                    break;
+                default:
+                    throw new Exception("Invalid operation");
+            }
+        }
+
+        private void ResetObservableItems()
+        {
+            var observableList = this.observableList;
+            var itemsCount = this.items.Count;
+            int listCount = observableList.Count;
+            for (int iObject = 0; iObject < listCount; iObject++)
+            {
+                ListViewItem listViewItem;
+                if (iObject < itemsCount)
+                {
+                    listViewItem = items[iObject];
+                }
+                else
+                {
+                    listViewItem = new ListViewItem(
+                        this.Element.OwnerDocument.CreateElement("div"));
+                    this.Element.AppendChild(listViewItem.Element);
+                    listViewItem.Skin = this.itemSkin;
+                    items.Add(listViewItem);
+                }
+
+                listViewItem.DataContext = observableList[iObject];
+                listViewItem.Activate();
+            }
+
+            this.RemoveChildren(listCount, itemsCount - listCount);
+        }
+
+        private void RemoveChildren(int changeIndex, int delCount)
+        {
+            for (int iObject = delCount + changeIndex - 1; iObject >= changeIndex; iObject--)
+            {
+                var item = items[iObject];
+                items.RemoveAt(iObject);
+                item.Element.Remove();
+                item.Dispose();
+            }
         }
     }
 }

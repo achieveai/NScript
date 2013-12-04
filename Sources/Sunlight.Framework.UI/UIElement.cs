@@ -19,6 +19,7 @@ namespace Sunlight.Framework.UI
     public class UIElement : ContextBindableObject
     {
         Element element;
+        bool isHidden = false;
 
         StringDictionary<Action<UIEvent>> eventRegistrationDict = new StringDictionary<Action<UIEvent>>();
 
@@ -89,6 +90,33 @@ namespace Sunlight.Framework.UI
             }
             set
             {
+            }
+        }
+
+        public bool IsHidden
+        {
+            get
+            {
+                return this.isHidden;
+            }
+
+            set
+            {
+                if (this.isHidden != value)
+                {
+                    this.isHidden = value;
+                    this.FirePropertyChanged("IsHidden");
+
+                    this.FixActivation();
+                }
+            }
+        }
+
+        protected override bool ActivationBlocked
+        {
+            get
+            {
+                return base.ActivationBlocked || this.isHidden;
             }
         }
 

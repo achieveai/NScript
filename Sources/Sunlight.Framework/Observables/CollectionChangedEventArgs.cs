@@ -29,6 +29,22 @@ namespace Sunlight.Framework.Observables
         {
             get;
         }
+
+        /// <summary>
+        /// Returns index of the item being changed
+        /// </summary>
+        int ChangeIndex
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Get's the change action of this notification
+        /// </summary>
+        CollectionChangedAction Action
+        {
+            get;
+        }
     }
 
     /// <summary>

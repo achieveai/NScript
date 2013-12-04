@@ -192,6 +192,37 @@ using System.Collections.Generic;
         }
 
         /// <summary>
+        /// Inserts the range at.
+        /// </summary>
+        /// <param name="insertIndex">Index of the insert.</param>
+        /// <param name="itemsToAdd">The items to add.</param>
+        public void InsertRangeAt(int insertIndex, List<T> itemsToAdd)
+        {
+            ExceptionHelpers.ThrowOnArgumentNull(itemsToAdd, "itemsToAdd");
+            ExceptionHelpers.ThrowOnOutOfRange(insertIndex, 0, this.Count, "insertIndex");
+
+            if (insertIndex == 0)
+            {
+                this.AddRange(itemsToAdd);
+                return;
+            }
+
+            this.CheckReentrancy();
+
+            this.items.InsertRange(
+                insertIndex,
+                itemsToAdd);
+
+            this.OnCollectionChanged(
+                CollectionChangedAction.Add,
+                insertIndex,
+                itemsToAdd,
+                null);
+
+            this.FirePropertyChanged("Count");
+        }
+
+        /// <summary>
         /// Checks if a certain object exists in the Observable Collection.
         /// </summary>
         /// <param name="item">Item to search for.</param>
@@ -238,6 +269,22 @@ using System.Collections.Generic;
             this.OnCollectionChanged(
                 CollectionChangedAction.Add,
                 this.Count - objArray.Length,
+                objArray,
+                null);
+            this.FirePropertyChanged("Count");
+        }
+
+        /// <summary>
+        /// Adds the range.
+        /// </summary>
+        /// <param name="objArray">The obj array.</param>
+        public void AddRange(List<T> objArray)
+        {
+            this.CheckReentrancy();
+            this.items.AddRange(objArray);
+            this.OnCollectionChanged(
+                CollectionChangedAction.Add,
+                this.Count - objArray.Count,
                 objArray,
                 null);
             this.FirePropertyChanged("Count");

@@ -43,7 +43,10 @@ namespace NScript
                 parseOptions.ReferenceDlls.ToArray(),
                 plugins.ToArray());
 
-            builder.Execute();
+            if (builder.Execute())
+            {
+                System.Environment.ExitCode = 0;
+            }
         }
     }
 }

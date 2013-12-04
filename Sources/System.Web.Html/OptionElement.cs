@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// Definition for OptionElement.
     /// </summary>
     [IgnoreNamespace]
-    public class OptionElement
+    public class OptionElement : Node
     {
         /// <summary>
         /// Gets the option element.

@@ -62,10 +62,14 @@ namespace XwmlParser.NodeInfos
             {
                 if (!this.ParseAttribute(attr, parser))
                 {
-                    throw new ApplicationException(
+                    throw new ConverterLocationException(
+                        new Location(
+                            parser.HtmlParser.ResourceName,
+                            attr.Line,
+                            attr.LinePosition),
                         string.Format(
                             "Can't resolve {0} for type {1} and {0} is not html attribute",
-                            attr.Name,
+                            attr.OriginalName,
                             this.Type));
                 }
             }
@@ -159,70 +163,90 @@ namespace XwmlParser.NodeInfos
             HtmlAttribute attribute,
             TemplateParser parser)
         {
-            var parserContext = parser.DocumentContext.ParserContext;
-            var resolver = parserContext.ClrResolver;
-            var knownTypes = parserContext.KnownTypes;
-            var attrValue = attribute.Value;
-            PropertyReference prop = resolver.GetPropertyReference(
-                this.Type,
-                attribute.OriginalName);
-            FieldReference field = prop != null
-                ? null
-                : resolver.GetFieldReference(this.Type, attribute.Name);
-            MemberReference member = ((MemberReference)prop) ?? field;
-            if (prop != null
-                || field != null)
+            try
             {
-                if (BindingParser.IsBindingText(attrValue))
+                var parserContext = parser.DocumentContext.ParserContext;
+                var resolver = parserContext.ClrResolver;
+                var knownTypes = parserContext.KnownTypes;
+                var attrValue = attribute.Value;
+                PropertyReference prop = resolver.GetPropertyReference(
+                    this.Type,
+                    attribute.OriginalName);
+                FieldReference field = prop != null
+                    ? null
+                    : resolver.GetFieldReference(this.Type, attribute.Name);
+                MemberReference member = ((MemberReference)prop) ?? field;
+                if (prop != null
+                    || field != null)
                 {
-                    this.AddBinder(
-                        BindingParser.ParseBinding(
-                            prop != null
-                                ?  (TargetBindingInfo)new PropertyTargetBindingInfo(prop)
-                                : new FieldTargetBindingInfo(field),
-                            attrValue,
-                            parser.DocumentContext,
-                            parser.DataContextType,
-                            parser.ControlType));
+                    if (BindingParser.IsBindingText(attrValue))
+                    {
+                        this.AddBinder(
+                            BindingParser.ParseBinding(
+                                prop != null
+                                    ? (TargetBindingInfo)new PropertyTargetBindingInfo(prop)
+                                    : new FieldTargetBindingInfo(field),
+                                attrValue,
+                                parser.DocumentContext,
+                                parser.DataContextType,
+                                parser.ControlType));
+
+                        return true;
+                    }
+                    else if (TypeNodeInfo.IsCssClassType(prop, field, knownTypes))
+                    {
+                        this.staticInitializers.Add(
+                            ((MemberReference)prop) ?? field,
+                            new CssNameValue(
+                                parser.DocumentContext,
+                                attrValue));
+                    }
+                    else
+                    {
+                        this.staticInitializers.Add(
+                            member,
+                            TypeNodeInfo.GetValue(
+                                prop.PropertyType,
+                                parserContext,
+                                attrValue));
+                    }
 
                     return true;
                 }
-                else if (TypeNodeInfo.IsCssClassType(prop, field, knownTypes))
-                {
-                    this.staticInitializers.Add(
-                        ((MemberReference)prop) ?? field,
-                        new CssNameValue(
-                            parser.DocumentContext,
-                            attrValue));
-                }
-                else
-                {
-                    this.staticInitializers.Add(
-                        member,
-                        TypeNodeInfo.GetValue(
-                            prop.PropertyType,
-                            parserContext,
-                            attrValue));
-                }
 
-                return true;
+                EventReference evt = resolver.GetEventReference(this.Type, attribute.Name);
+                if (evt != null)
+                {
+                    if (BindingParser.IsBindingText(attrValue))
+                    {
+                        this.AddBinder(
+                            BindingParser.ParseBinding(
+                                new EventTargetBindingInfo(evt),
+                                attrValue,
+                                parser.DocumentContext,
+                                parser.DataContextType,
+                                parser.ControlType));
+
+                        return true;
+                    }
+                }
             }
-
-            EventReference evt = resolver.GetEventReference(this.Type, attribute.Name);
-            if (evt != null)
+            catch(ConverterLocationException ex)
             {
-                if (BindingParser.IsBindingText(attrValue))
-                {
-                    this.AddBinder(
-                        BindingParser.ParseBinding(
-                            new EventTargetBindingInfo(evt),
-                            attrValue,
-                            parser.DocumentContext,
-                            parser.DataContextType,
-                            parser.ControlType));
-
-                    return true;
-                }
+                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                    ex.Location,
+                    ex.Message,
+                    false);
+            }
+            catch(ApplicationException ex)
+            {
+                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                    new Location(
+                        parser.HtmlParser.ResourceName,
+                        attribute.Line,
+                        attribute.LinePosition),
+                    ex.Message,
+                    false);
             }
 
             return false;

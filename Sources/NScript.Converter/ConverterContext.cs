@@ -212,6 +212,24 @@ namespace NScript.Converter
         { get { return this.converterKnownReferences; } }
 
         /// <summary>
+        /// Gets the errors.
+        /// </summary>
+        /// <value>
+        /// The errors.
+        /// </value>
+        public IList<Tuple<Location, string>> Errors
+        { get { return this.errors; } }
+
+        /// <summary>
+        /// Gets the warnings.
+        /// </summary>
+        /// <value>
+        /// The warnings.
+        /// </value>
+        public IList<Tuple<Location, string>> Warnings
+        { get { return this.warnings; } }
+
+        /// <summary>
         /// Gets the method converter plugins.
         /// </summary>
         /// <value>

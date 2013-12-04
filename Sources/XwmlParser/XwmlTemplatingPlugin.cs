@@ -84,6 +84,7 @@
 
         public void Initialize(NScript.CLR.ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
         {
+            HtmlAgilityPack.HtmlNode.ElementsFlags.Remove("form");
             this.knownTemplateTypes = new KnownTemplateTypes(runtimeScopeManager.Context.ClrKnownReferences);
             this.typeResolver = new TypeResolver(
                 runtimeScopeManager,

@@ -93,125 +93,164 @@ namespace XwmlParser.NodeInfos
                 return null;
             }
 
-            string attrName = attr.OriginalName;
-            BinderInfo binderInfo = null;
-            if (attrName == "id")
+            try
             {
-                parser.SkinNodeInfo.RegisterPart(
-                    attr.Value,
-                    htmlNodeGenerator);
-
-                return null;
-            }
-
-            if (attrName.StartsWith("class."))
-            {
-                if (BindingParser.IsBindingText(attr.Value))
+                string attrName = attr.OriginalName;
+                BinderInfo binderInfo = null;
+                if (attrName == "id")
                 {
-                    string className = attr.OriginalName.Substring("class.".Length);
-                    IIdentifier classIdentifier;
-                    if (!parser.DocumentContext.TryGetCssClassIdentifier(
-                        className,
-                        out classIdentifier))
+                    parser.SkinNodeInfo.RegisterPart(
+                        attr.Value,
+                        htmlNodeGenerator);
+
+                    return null;
+                }
+
+                if (attrName.StartsWith("class."))
+                {
+                    if (BindingParser.IsBindingText(attr.Value))
+                    {
+                        string className = attr.OriginalName.Substring("class.".Length);
+                        IIdentifier classIdentifier;
+                        if (!parser.DocumentContext.TryGetCssClassIdentifier(
+                            className,
+                            out classIdentifier))
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    parser.HtmlParser.ResourceName,
+                                    attr.Line,
+                                    attr.LinePosition),
+                                string.Format("Css Class Name: {0} not found",
+                                    className));
+                        }
+
+                        binderInfo =
+                            BindingParser.ParseBinding(
+                                new CssClassTargetBindingInfo(
+                                    parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
+                                    classIdentifier),
+                                attr.Value,
+                                parser.DocumentContext,
+                                parser.DataContextType,
+                                parser.ControlType);
+                    }
+                }
+                else if (attrName == "class")
+                {
+                    if (BindingParser.IsBindingText(attr.Value))
                     {
                         throw new ConverterLocationException(
                             new Location(
                                 parser.HtmlParser.ResourceName,
                                 attr.Line,
                                 attr.LinePosition),
-                            string.Format("Css Class Name: {0} not found",
-                                className));
+                            "class attribute does not support binding. Use class.className (css class binding).");
                     }
 
+                    var classNames = attr.Value.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    var classIdentifiers = new IIdentifier[classNames.Length];
+                    for (int iClass = 0; iClass < classNames.Length; iClass++)
+                    {
+                        IIdentifier identifier;
+                        if (!parser.DocumentContext.TryGetCssClassIdentifier(
+                            classNames[iClass], out identifier))
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    parser.HtmlParser.ResourceName,
+                                    attr.Line,
+                                    attr.LinePosition),
+                                string.Format("Css Class Name: {0} not found",
+                                    classNames[iClass]));
+                        }
+
+                        classIdentifiers[iClass] = identifier;
+                        identifier.AddUsage(null);
+                    }
+
+                    htmlNodeGenerator.ClassNames = classIdentifiers;
+                }
+                else if (attrName.StartsWith("style."))
+                {
                     binderInfo =
                         BindingParser.ParseBinding(
-                            new CssClassTargetBindingInfo(
+                            new StyleTargetBindingInfo(
                                 parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
-                                classIdentifier),
+                                attr.OriginalName.Substring("style.".Length)),
                             attr.Value,
                             parser.DocumentContext,
                             parser.DataContextType,
                             parser.ControlType);
                 }
-            }
-            else if (attrName == "class")
-            {
-                if (BindingParser.IsBindingText(attr.Value))
+                else if (attrName == "style")
                 {
-                    throw new ApplicationException(
-                        "class attribute does not support binding. Use class.className (css class binding).");
+                    // Todo: add support for style binding.
+                    htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.OriginalName, attr.Value);
+                }
+                else if (attrName.StartsWith("event."))
+                {
+                    binderInfo =
+                        BindingParser.ParseBinding(
+                            new DomEventTargetBindingInfo(
+                                parser.DocumentContext.ParserContext.KnownTypes.DomEventType2,
+                                attr.OriginalName.Substring("style.".Length)),
+                            attr.Value,
+                            parser.DocumentContext,
+                            parser.DataContextType,
+                            parser.ControlType);
+                }
+                else if (BindingParser.IsBindingText(attr.Value))
+                {
+                    binderInfo =
+                        BindingParser.ParseBinding(
+                            new AttributeTargetBindingInfo(
+                                parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
+                                attr.OriginalName),
+                            attr.Value,
+                            parser.DocumentContext,
+                            parser.DataContextType,
+                            parser.ControlType);
+                }
+                else
+                {
+                    htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.OriginalName, attr.Value);
                 }
 
-                var classNames = attr.Value.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                var classIdentifiers = new IIdentifier[classNames.Length];
-                for (int iClass = 0; iClass < classNames.Length; iClass++)
-                {
-                    IIdentifier identifier;
-                    if (!parser.DocumentContext.TryGetCssClassIdentifier(
-                        classNames[iClass], out identifier))
-                    {
-                        throw new ConverterLocationException(
-                            new Location(
-                                parser.HtmlParser.ResourceName,
-                                attr.Line,
-                                attr.LinePosition),
-                            string.Format("Css Class Name: {0} not found",
-                                classNames[iClass]));
-                    }
-
-                    classIdentifiers[iClass] = identifier;
-                    identifier.AddUsage(null);
-                }
-
-                htmlNodeGenerator.ClassNames = classIdentifiers;
+                return binderInfo;
             }
-            else if (attrName.StartsWith("style."))
+            catch (ConverterLocationException ex)
             {
-                binderInfo =
-                    BindingParser.ParseBinding(
-                        new StyleTargetBindingInfo(
-                            parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
-                            attr.OriginalName.Substring("style.".Length)),
+                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                    ex.Location,
+                    ex.Message,
+                    false);
+            }
+            catch(ApplicationException ex)
+            {
+                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                    new Location(
+                        parser.HtmlParser.ResourceName,
+                        attr.Line,
+                        attr.LinePosition),
+                    ex.Message,
+                    true);
+            }
+            catch(Exception ex)
+            {
+                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                    new Location(
+                        parser.HtmlParser.ResourceName,
+                        attr.Line,
+                        attr.LinePosition),
+                    string.Format("Error processing attributeName: {0}, Value: {1} Ex: {2}",
+                        attr.OriginalName,
                         attr.Value,
-                        parser.DocumentContext,
-                        parser.DataContextType,
-                        parser.ControlType);
-            }
-            else if (attrName == "style")
-            {
-                // Todo: add support for style binding.
-                htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.OriginalName, attr.Value);
-            }
-            else if (attrName.StartsWith("event."))
-            {
-                binderInfo =
-                    BindingParser.ParseBinding(
-                        new DomEventTargetBindingInfo(
-                            parser.DocumentContext.ParserContext.KnownTypes.DomEventType2,
-                            attr.OriginalName.Substring("style.".Length)),
-                        attr.Value,
-                        parser.DocumentContext,
-                        parser.DataContextType,
-                        parser.ControlType);
-            }
-            else if (BindingParser.IsBindingText(attr.Value))
-            {
-                binderInfo =
-                    BindingParser.ParseBinding(
-                        new AttributeTargetBindingInfo(
-                            parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
-                            attr.OriginalName),
-                        attr.Value,
-                        parser.DocumentContext,
-                        parser.DataContextType,
-                        parser.ControlType);
-            }
-            else
-            {
-                htmlNodeGenerator.GeneratedNode.SetAttributeValue(attr.OriginalName, attr.Value);
+                        ex.Message),
+                    true);
             }
 
-            return binderInfo;
+            return null;
         }
 
         public static void FinalizeClassNamesInGeneratedNode(
