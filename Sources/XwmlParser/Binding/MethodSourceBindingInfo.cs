@@ -17,12 +17,16 @@ namespace XwmlParser.Binding
     /// </summary>
     public class MethodSourceBindingInfo : SourceBindingInfo
     {
+        private TypeReference multicastDelegate;
+
         public MethodSourceBindingInfo(
             PropertySourceBindingInfo propertySourceBinding,
-            MethodReference methodReference)
+            MethodReference methodReference,
+            TypeReference multicastDelegate)
         {
             this.MethodReference = methodReference;
             this.PropertySourceBinding = propertySourceBinding;
+            this.multicastDelegate = multicastDelegate;
         }
 
         internal override bool IsStatic
@@ -40,6 +44,11 @@ namespace XwmlParser.Binding
 
         public MethodReference MethodReference
         { get; private set; }
+
+        internal override TypeReference ValueType
+        {
+            get { return this.multicastDelegate; }
+        }
 
         internal override Tuple<IList<string>, IList<IIdentifier>, IIdentifier>
             GenerateGetterSetterInfo(

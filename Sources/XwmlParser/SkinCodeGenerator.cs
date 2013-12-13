@@ -148,6 +148,7 @@ namespace XwmlParser
                     if (node == parent.ChildNodes[iChild])
                     {
                         rv.Insert(0, iChild);
+                        break;
                     }
                 }
 

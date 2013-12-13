@@ -14,6 +14,7 @@ namespace XwmlParser
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using XwmlParser.Binding;
     using XwmlParser.NodeInfos;
 
     /// <summary>
@@ -131,9 +132,21 @@ namespace XwmlParser
                     EqualityComparer<IIdentifier>.Default,
                     MemberReferenceComparer.Instance));
 
+        /// <summary>
+        /// The converter to method.
+        /// </summary>
+        Dictionary<ConverterInfo, IIdentifier> converterToMethod =
+            new Dictionary<ConverterInfo, IIdentifier>(new ConverterInfoComparer());
+
+        /// <summary>
+        /// The CSS initializer mapping.
+        /// </summary>
         Dictionary<HtmlParser, IIdentifier> cssInitializerMapping =
             new Dictionary<HtmlParser, IIdentifier>();
 
+        /// <summary>
+        /// The CSS initializer code generated.
+        /// </summary>
         Dictionary<HtmlParser, bool> cssInitializerCodeGenerated =
             new Dictionary<HtmlParser, bool>();
 
@@ -375,7 +388,15 @@ namespace XwmlParser
             }
 
             TemplateParser templateParser = htmlParser.GetTemplateParser(templateNameSplits.Length == 2 ? templateNameSplits[1] : null);
-            this.templatesToParse.Enqueue(templateParser);
+            if (templateParser == null)
+            {
+                throw new ApplicationException(
+                    string.Format("Can't find template:'{0}'", templateParserResourceId));
+            }
+            else
+            {
+                this.templatesToParse.Enqueue(templateParser);
+            }
 
             return templateParser;
         }
@@ -492,77 +513,10 @@ namespace XwmlParser
                 },
                 false);
 
-            Expression expression = new IdentifierExpression(
-                methodScope.ParameterIdentifiers[0],
-                methodScope);
-
-            var clrContext = this.scopeManager.Context.ClrContext;
-            var argVariable = new NScript.CLR.AST.ParameterVariable(
-                new ParameterDefinition("src", ParameterAttributes.None, path[0].DeclaringType),
-                null);
-            var argExpression = new NScript.CLR.AST.VariableReference(
-                clrContext,
-                null,
-                argVariable);
-
-            NScript.CLR.AST.Expression expr = 
-                path[0].IsStatic()
-                    ? (NScript.CLR.AST.Expression)null
-                    : (NScript.CLR.AST.Expression)argExpression;
-
-            for (int iPath = 0; iPath < path.Count; iPath++)
-            {
-                MemberReference memberRef = path[iPath];
-                FieldReference fieldReference = memberRef as FieldReference;
-
-                if (fieldReference != null)
-                {
-                    if (expr == null)
-                    {
-                        expr = new NScript.CLR.AST.FieldReferenceExpression(
-                            this.scopeManager.Context.ClrContext,
-                            null,
-                            fieldReference);
-                    }
-                    else
-                    {
-                        expr = new NScript.CLR.AST.FieldReferenceExpression(
-                            this.scopeManager.Context.ClrContext,
-                            null,
-                            fieldReference,
-                            expr);
-                    }
-                }
-                else
-                {
-                    PropertyReference propertyReference = memberRef as PropertyReference;
-                    if (propertyReference != null)
-                    {
-                        if (expr == null)
-                        {
-                            expr = new NScript.CLR.AST.PropertyReferenceExpression(
-                                this.scopeManager.Context.ClrContext,
-                                null,
-                                propertyReference);
-                        }
-                        else
-                        {
-                            expr = new NScript.CLR.AST.PropertyReferenceExpression(
-                                this.scopeManager.Context.ClrContext,
-                                null,
-                                propertyReference,
-                                expr);
-                        }
-                    }
-                    else
-                    {
-                        throw new NotSupportedException();
-                    }
-                }
-            }
+            var expr = this.GetCsAst("src", path);
 
             var returnStatement = new NScript.CLR.AST.ReturnStatement(
-                clrContext,
+                this.scopeManager.Context.ClrContext,
                 null,
                 expr);
 
@@ -809,6 +763,102 @@ namespace XwmlParser
             return methodExpression.Name;
         }
 
+        internal IIdentifier GetToConverterIdentifier(ConverterInfo converterInfo)
+        {
+            IIdentifier rv = null;
+            if (this.converterToMethod.TryGetValue(converterInfo, out rv))
+            {
+                return rv;
+            }
+
+            DelegateConverterInfo delegateConverterInfo = converterInfo as DelegateConverterInfo;
+            if (delegateConverterInfo == null)
+            {
+                throw new NotSupportedException();
+            }
+
+            IdentifierScope methodScope = new IdentifierScope(
+                this.scopeManager.Scope,
+                new string[] {
+                    "from"
+                },
+                false);
+
+            List<Expression> args = new List<Expression>();
+            args.Add(new IdentifierExpression(methodScope.ParameterIdentifiers[0], methodScope));
+
+            if (converterInfo.Arguments != null)
+            foreach (var arg in converterInfo.Arguments)
+            {
+                switch (arg.Item1)
+                {
+                    case ConverterArgType.Boolean:
+                        args.Add(new BooleanLiteralExpression(methodScope, (bool)arg.Item2));
+                        break;
+                    case ConverterArgType.Enum:
+                    case ConverterArgType.Integer:
+                        args.Add(new NumberLiteralExpression(methodScope, (int)arg.Item2));
+                        break;
+                    case ConverterArgType.Float:
+                        args.Add(new DoubleLiteralExpression(methodScope, (double)arg.Item2));
+                        break;
+                    case ConverterArgType.String:
+                        args.Add(new StringLiteralExpression(methodScope, (string)arg.Item2));
+                        break;
+                    case ConverterArgType.StaticPropInfo:
+                        {
+                            var expr = this.GetCsAst("tmp", (List<MemberReference>)arg.Item2);
+                            args.Add(
+                                NScript.Converter.ExpressionsConverter.ExpressionConverterBase.Convert(
+                                    new MethodScopeConverter(
+                                        this.scopeManager,
+                                        this.Resolver,
+                                        methodScope),
+                                    expr));
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
+            var returnExpression = new ReturnStatement(
+                null,
+                methodScope,
+                MethodCallExpressionConverter.CreateMethodCallExpression(
+                    new MethodCallContext(
+                        delegateConverterInfo.MethodReference,
+                        null,
+                        methodScope),
+                    args,
+                    this.Resolver,
+                    this.scopeManager));
+
+            rv = SimpleIdentifier.CreateScopeIdentifier(
+                    methodScope,
+                    "converter",
+                    false);
+
+            var functionExpression = new FunctionExpression(
+                null,
+                this.scopeManager.Scope,
+                methodScope,
+                methodScope.ParameterIdentifiers,
+                rv);
+
+            functionExpression.AddStatement(returnExpression);
+
+            this.converterToMethod.Add(converterInfo, rv);
+            this.generatedCode.Add(
+                new ExpressionStatement(
+                    null,
+                    this.scopeManager.Scope,
+                    functionExpression));
+
+            return rv;
+        }
+
         /// <summary>
         /// Gets style setter.
         /// </summary>
@@ -997,6 +1047,85 @@ namespace XwmlParser
         internal void AddStatement(ExpressionStatement expressionStatement)
         {
             this.generatedCode.Add(expressionStatement);
+        }
+
+        /// <summary>
+        /// Gets create structure ast.
+        /// </summary>
+        /// <exception cref="NotSupportedException"> Thrown when the requested operation is not supported. </exception>
+        /// <param name="srcArgName"> Name of the source argument. </param>
+        /// <param name="path">       Full pathname of the file. </param>
+        /// <returns>
+        /// The create structure ast.
+        /// </returns>
+        private NScript.CLR.AST.Expression GetCsAst(string srcArgName, IList<MemberReference> path)
+        {
+            var clrContext = this.scopeManager.Context.ClrContext;
+            var argVariable = new NScript.CLR.AST.ParameterVariable(
+                new ParameterDefinition(srcArgName, ParameterAttributes.None, path[0].DeclaringType),
+                null);
+            var argExpression = new NScript.CLR.AST.VariableReference(
+                clrContext,
+                null,
+                argVariable);
+
+            NScript.CLR.AST.Expression expr = 
+                path[0].IsStatic()
+                    ? (NScript.CLR.AST.Expression)null
+                    : (NScript.CLR.AST.Expression)argExpression;
+
+            for (int iPath = 0; iPath < path.Count; iPath++)
+            {
+                MemberReference memberRef = path[iPath];
+                FieldReference fieldReference = memberRef as FieldReference;
+
+                if (fieldReference != null)
+                {
+                    if (expr == null)
+                    {
+                        expr = new NScript.CLR.AST.FieldReferenceExpression(
+                            this.scopeManager.Context.ClrContext,
+                            null,
+                            fieldReference);
+                    }
+                    else
+                    {
+                        expr = new NScript.CLR.AST.FieldReferenceExpression(
+                            this.scopeManager.Context.ClrContext,
+                            null,
+                            fieldReference,
+                            expr);
+                    }
+                }
+                else
+                {
+                    PropertyReference propertyReference = memberRef as PropertyReference;
+                    if (propertyReference != null)
+                    {
+                        if (expr == null)
+                        {
+                            expr = new NScript.CLR.AST.PropertyReferenceExpression(
+                                this.scopeManager.Context.ClrContext,
+                                null,
+                                propertyReference);
+                        }
+                        else
+                        {
+                            expr = new NScript.CLR.AST.PropertyReferenceExpression(
+                                this.scopeManager.Context.ClrContext,
+                                null,
+                                propertyReference,
+                                expr);
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException();
+                    }
+                }
+            }
+
+            return expr;
         }
 
         private void GenerateCode()

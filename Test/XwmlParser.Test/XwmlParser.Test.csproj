@@ -146,6 +146,12 @@
     <None Include="TemplateCode\TestTemplate1.min.js.map">
       <DependentUpon>TestTemplate1.js</DependentUpon>
     </None>
+    <None Include="TemplateCode\TestTextBinding1 - Copy %282%29.min.js.map">
+      <DependentUpon>TestTextBindingWithConverter.js</DependentUpon>
+    </None>
+    <None Include="TemplateCode\TestTextBinding1 - Copy.min.js.map">
+      <DependentUpon>TestTextBinding2.js</DependentUpon>
+    </None>
     <None Include="TemplateCode\TestTextBinding1.min.js.map">
       <DependentUpon>TestTextBinding1.js</DependentUpon>
     </None>
@@ -287,6 +293,18 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\TestDomEventInFormBinding1.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestTextBinding2.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TemplateCode\TestTextBinding2.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestTextBindingWithConverter.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TemplateCode\TestTextBindingWithConverter.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

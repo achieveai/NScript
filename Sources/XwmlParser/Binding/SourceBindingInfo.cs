@@ -6,6 +6,7 @@
 
 namespace XwmlParser.Binding
 {
+    using Mono.Cecil;
     using NScript.JST;
     using System;
     using System.Collections.Generic;
@@ -17,6 +18,11 @@ namespace XwmlParser.Binding
     {
         internal virtual bool IsStatic
         { get { return true; } }
+
+        internal abstract TypeReference ValueType
+        {
+            get;
+        }
 
         internal virtual Tuple<IList<string>, IList<IIdentifier>, IIdentifier>
             GenerateGetterSetterInfo(

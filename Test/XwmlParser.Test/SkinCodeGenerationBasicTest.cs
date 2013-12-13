@@ -52,7 +52,9 @@ namespace XwmlParser.Test
         // [TestCase("TestUIElementPropertyBinding_TwoWay", null)]
         // [TestCase("TestUIElementPropertyAttrBinding", null)]
         // [TestCase("TestStaticBinding", null)]
-        [TestCase("TestDomEventInFormBinding1", null)]
+        // [TestCase("TestDomEventInFormBinding1", null)]
+        // [TestCase("TestTextBinding2", null)]
+        [TestCase("TestTextBindingWithConverter", null)]
         public void TestParser1(string name, string templateId)
         {
             plugin = Helper.CreatePlugin(null);

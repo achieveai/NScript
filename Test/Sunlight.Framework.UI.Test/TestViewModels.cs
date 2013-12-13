@@ -10,6 +10,72 @@ namespace Sunlight.Framework.UI.Test
     using System;
     using System.Web.Html;
 
+    public static class ConverterCollection
+    {
+        public static string ZeroToNullOrToString(int i)
+        {
+            if (i == 0)
+            {
+                return null;
+            }
+
+            return i.ToString();
+        }
+
+        public static string TrueToNull(bool b)
+        {
+            return b ? null : "false";
+        }
+
+        public static int ParseStuff(string str)
+        {
+            return str != null ? 1 : 0;
+        }
+
+        public static string ParseWithIntArg(TestViewModelA a, int arg)
+        {
+            return null;
+        }
+
+        public static string ParseWithBoolArg(TestViewModelA a, bool arg)
+        {
+            return null;
+        }
+
+        public static string ParseWithStringArg(TestViewModelA a, string arg)
+        {
+            return null;
+        }
+
+        public static string ParseWithEnumArg(TestViewModelA a, TempEnum arg)
+        {
+            return null;
+        }
+
+        public static string ParseWithSomeStuff(TestViewModelA a, TestViewModelB b)
+        {
+            return null;
+        }
+
+        public static string ParseWith2Args(TestViewModelA a, TestViewModelB b, int i)
+        {
+            return null;
+        }
+
+        public static string ParseWith3Args(TestViewModelA a, TempEnum arg, TestViewModelB b, int i)
+        {
+            return null;
+        }
+    }
+
+    public enum TempEnum
+    {
+        E1,
+        E2,
+        E3,
+        E4
+    }
+
     /// <summary>
     /// Definition for TestViewModels
     /// </summary>

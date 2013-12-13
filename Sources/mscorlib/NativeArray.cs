@@ -111,7 +111,7 @@ namespace System
             var i;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            for(i = this.length-1; i >= index; index--)
+            for(i = this.length-1; i >= index; i--)
                 this[i+1] = this[i];
             this[index] = value;
             ")]
@@ -259,7 +259,7 @@ namespace System
             var i;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            for(i = this.length-1; i >= index; index--)
+            for(i = this.length-1; i >= index; i--)
                 this[i+1] = this[i];
             this[index] = value;
             ")]

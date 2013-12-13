@@ -315,6 +315,34 @@ namespace XwmlParser.Test
                     "PropStrB"),
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[1]);
         }
+
+        [Test]
+        [TestCase("{testVM:TestViewModelB.StaticProp.PropStrB, Converter=testVM:ConverterCollection.ParseStuff}")]
+        public void TestParseConverter(string bindingStr)
+        {
+            var dataContextType = 
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
+            var testVMB =
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");
+            var controlType =
+                resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
+            var documentContext = new MockDocumentContext(
+                parserContext,
+                resolver);
+            documentContext.AddNsMapping("testVM", "Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test");
+            var propertyBinding = Binding.BindingParser.ParseBinding(
+                new TempTargetBinding(clrKnownReferences.Int32),
+                bindingStr,
+                documentContext,
+                dataContextType,
+                controlType);
+
+            Assert.NotNull(propertyBinding.ConverterInfo);
+            Assert.IsInstanceOf<DelegateConverterInfo>(propertyBinding.ConverterInfo);
+
+            DelegateConverterInfo converterInfo = propertyBinding.ConverterInfo as DelegateConverterInfo;
+            Assert.AreEqual(converterInfo.MethodReference.Name, "ParseStuff");
+        }
     }
 
     public class TempTargetBinding : TargetBindingInfo

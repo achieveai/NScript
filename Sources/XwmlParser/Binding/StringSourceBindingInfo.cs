@@ -14,5 +14,9 @@ namespace XwmlParser.Binding
     /// </summary>
     public class StringSourceBindingInfo : SourceBindingInfo
     {
+        internal override Mono.Cecil.TypeReference ValueType
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

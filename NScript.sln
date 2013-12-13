@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sources", "Sources", "{BC2DF808-D5CB-4C06-8AC2-D772407CDD23}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{00C42FFB-D661-40EB-A872-448DD7EA18C8}"
@@ -182,9 +184,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{24FDD8
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = NScript1.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -682,6 +681,12 @@ Global
 		{142D8B13-3EED-43A9-96BD-353FFA72E536} = {F7FBA37A-2304-49E1-B499-D030FA58074E}
 		{28A76871-90D6-499A-9E3A-317541FDB7D9} = {CA40C954-A18B-40F8-963B-E094B18A7050}
 		{BD6B70AE-CA40-4A9D-810F-3EDDBD0B6817} = {CA40C954-A18B-40F8-963B-E094B18A7050}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = NScript1.vsmdi
 	EndGlobalSection
 	GlobalSection(SubversionScc) = preSolution
 		Manager = AnkhSVN - Subversion Support for Visual Studio

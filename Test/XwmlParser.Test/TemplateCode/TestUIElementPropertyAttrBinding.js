@@ -12,12 +12,13 @@ function TestUIElementPropertyAttrBinding_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
     domStore[0].innerHTML = " <div>This is a test.</div> ";
-    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropInt1"], setter, 17, 0, 0, null, 10), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factorya([gettera], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute, "testAttr", 113, 0, null, null, 0)];
+    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropInt1"], setter, 17, 1, 0, null, 10), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factorya([gettera], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute, "testAttr", 113, 0, null, null, 0)];
   }
   htmlRoot = domStore[0].cloneNode(true);
-  objStorage = new Array(1);
-  objStorage[0] = Sunlight__Framework__UI__Test__TestUIElement_factory(Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]));
-  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [0], objStorage, tmplStore[0], null, 1, 0);
+  objStorage = new Array(2);
+  objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  objStorage[1] = Sunlight__Framework__UI__Test__TestUIElement_factory(Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]));
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [1], objStorage, tmplStore[0], null, 1, 0);
 };
 TestUIElementPropertyAttrBinding_var = null;
 function TestUIElementPropertyAttrBinding() {

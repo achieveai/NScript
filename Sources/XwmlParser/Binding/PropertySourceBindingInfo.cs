@@ -29,6 +29,22 @@ namespace XwmlParser.Binding
             }
         }
 
+        internal override TypeReference ValueType
+        {
+            get
+            {
+                var lastPart = this.PropertyReferencePath[this.PropertyReferencePath.Count - 1];
+                if (lastPart is PropertyReference)
+                {
+                    return ((PropertyReference)lastPart).PropertyType;
+                }
+                else
+                {
+                    return ((FieldReference)lastPart).FieldType;
+                }
+            }
+        }
+
         internal override bool IsStatic
         { get { return this.SourceType == null; } }
 

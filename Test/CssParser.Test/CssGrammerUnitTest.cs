@@ -18,11 +18,35 @@
             Assert.AreEqual(1, grammer.Rules[0].Properties.Count);
             Assert.AreEqual("border", grammer.Rules[0].Properties[0].PropertyName);
             var propertyArgs = new string[] { "#ddeeff", "thin", "123px", "solid" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs[0].Values.Count);
             for (int i = 0; i < propertyArgs.Length; i++)
             {
-                Assert.AreEqual(propertyArgs[i], grammer.Rules[0].Properties[0].PropertyArgs[i].ToString());
+                Assert.AreEqual(propertyArgs[i], grammer.Rules[0].Properties[0].PropertyArgs[0].Values[i].ToString());
             }
+        }
+
+        [Test]
+        public void TestBasicKeyFrames()
+        {
+            CssGrammer grammer = new CssGrammer("@keyframes test { from { border: 1px;} to , 50% { border: 10px;} 10% {border: 20px; } }");
+            Assert.AreEqual(0, grammer.Rules.Count);
+            Assert.AreEqual(1, grammer.KeyFrames.Count);
+            var keyFrames = grammer.KeyFrames[0];
+            Assert.AreEqual("test", keyFrames.Name);
+            Assert.AreEqual(3, keyFrames.Frames.Count);
+
+            var frame = keyFrames.Frames[0];
+            Assert.AreEqual(1, frame.Selectors.Count);
+            Assert.AreEqual("from", frame.Selectors[0]);
+
+            frame = keyFrames.Frames[1];
+            Assert.AreEqual(2, frame.Selectors.Count);
+            Assert.AreEqual("to", frame.Selectors[0]);
+            Assert.AreEqual("50%", frame.Selectors[1]);
+
+            frame = keyFrames.Frames[2];
+            Assert.AreEqual(1, frame.Selectors.Count);
+            Assert.AreEqual("10%", frame.Selectors[0]);
         }
 
         [Test]
@@ -180,10 +204,10 @@
             Assert.AreEqual("border", grammer.Properties[0].PropertyName);
 
             var propertyArgs = new string[] { "#ddeeff", "thin", "1px", "solid" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs[0].Values.Count);
             for (int i = 0; i < propertyArgs.Length; i++)
             {
-                Assert.AreEqual(propertyArgs[i], grammer.Rules[0].Properties[0].PropertyArgs[i]);
+                Assert.AreEqual(propertyArgs[i], grammer.Rules[0].Properties[0].PropertyArgs[0].Values[i]);
             }
         }
 
@@ -196,17 +220,33 @@
             Assert.AreEqual(2, grammer.Properties.Count);
 
             var propertyArgs = new string[] { "#ddeeff", "thin", "1px", "solid" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs[0].Values.Count);
             for (int i = 0; i < propertyArgs.Length; i++)
             {
-                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[i]);
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[0].Values[i]);
             }
 
             propertyArgs = new string[] { "#ffeedd" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs.Count);
+            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs[0].Values.Count);
             for (int i = 0; i < propertyArgs.Length; i++)
             {
-                Assert.AreEqual(propertyArgs[i], grammer.Properties[1].PropertyArgs[i]);
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[1].PropertyArgs[0].Values[i]);
+            }
+        }
+
+        [Test]
+        public void MultiplePropertyValuesTest()
+        {
+            CssGrammer grammer = new CssGrammer("font: courier, 'New Courier', rockwell;", true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(1, grammer.Properties.Count);
+
+            var propertyArgs = new string[] { "courier", "'New Courier'", "rockwell" };
+            Assert.AreEqual(propertyArgs.Length, grammer.Properties[0].PropertyArgs.Count);
+            for (int i = 0; i < propertyArgs.Length; i++)
+            {
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[i].Values[0].ToString());
             }
         }
 
@@ -220,10 +260,10 @@
 
             var property = grammer.Properties[0];
             Assert.AreEqual("color", property.PropertyName);
-            Assert.AreEqual(1, property.PropertyArgs.Count);
-            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0]);
+            Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
+            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0].Values[0]);
 
-            var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0];
+            var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
             Assert.AreEqual("rgba", propertyArg.FunctionName);
             Assert.AreEqual(4, propertyArg.Args.Count);
         }

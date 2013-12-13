@@ -61,11 +61,15 @@ tokens {
     SEL_OP;
     PROPERTY;
     EXPR;
+	EXPRS;
     COLOR;
     UNIT_VAL;
     STRING_VAL;
     URL_VAL;
     IDENTIFIER;
+	KEYFRAMES;
+	KEYFRAME;
+	KEYFRAMESELECTORS;
 }
 
 @lexer::members {
@@ -133,8 +137,30 @@ bodyset
     : ruleSet
     | media
     | page
+	| keyframesRule
     ;   
     
+keyframesRule
+    : KEYFRAMES_SYM IDENT LBRACE keyframesBlock* RBRACE
+		-> ^(KEYFRAMES IDENT keyframesBlock*)
+    ;
+
+keyframesBlock
+    : keyframeSelectors LBRACE (decls=declarationSet)? RBRACE
+        -> ^(KEYFRAME keyframeSelectors $decls?)
+    ;
+
+keyframeSelectors
+    : keyframeSelector (COMMA keyframeSelector)*
+		-> ^(KEYFRAMESELECTORS keyframeSelector+)
+    ;
+
+keyframeSelector
+    : FROM_SYM
+    | TO_SYM
+    | PERCENTAGE
+    ;
+
 page
     : PAGE_SYM pseudoPage?
         LBRACE
@@ -259,12 +285,17 @@ pseudoFuncArgs
     ;
 
 declaration
-    : property COLON expr prio?
-        -> ^(PROPERTY property expr prio?)
+    : property COLON expressions prio?
+		-> ^(PROPERTY property expressions prio?)
     ;
     
 prio
     : IMPORTANT_SYM
+    ;
+
+expressions
+    : expr (COMMA expr)*
+        -> ^(EXPRS expr+)
     ;
     
 expr
@@ -670,6 +701,9 @@ IMPORT_SYM      : '@' I M P O R T       ;
 PAGE_SYM        : '@' P A G E           ;
 MEDIA_SYM       : '@' M E D I A         ;
 CHARSET_SYM     : '@charset '           ;
+KEYFRAMES_SYM   : '@' K E Y F R A M E S ;
+FROM_SYM        : F R O M               ;
+TO_SYM          : T O                   ;
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
 

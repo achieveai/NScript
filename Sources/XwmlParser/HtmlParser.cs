@@ -249,13 +249,21 @@ namespace XwmlParser
 
                 if (typeReference == null)
                 {
-                    throw new ApplicationException(
+                    throw new ConverterLocationException(
+                        new Location(
+                            this.ResourceName,
+                            node.Line,
+                            node.LinePosition),
                         string.Format("Can't resolve type {0}.{1}", nodeName.Item1, nameParts[0]));
                 }
 
                 if (nameParts.Length > 2)
                 {
-                    throw new ApplicationException(
+                    throw new ConverterLocationException(
+                        new Location(
+                            this.ResourceName,
+                            node.Line,
+                            node.LinePosition),
                         string.Format(
                             "Only Html tags, types or Attached Properties names are supported as tags, unsupported tag: {0}.{1}",
                             nodeName.Item1,
@@ -426,6 +434,7 @@ namespace XwmlParser
                         // Parse Css.
                         var grammer = new CssParser.CssGrammer(childNode.InnerText);
                         this.documentContext.AddCssRules(grammer.Rules);
+                        this.documentContext.AddKeyFrames(grammer.KeyFrames);
                     }
                     else if (nodeType == NodeType.Template || nodeType == NodeType.Skin)
                     {

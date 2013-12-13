@@ -363,7 +363,7 @@ function Sunlight__Framework__UI__Test__NScriptsTemplateTests__TestPropertyBinde
   control.set_dataContext(vm);
   control.set_skin(Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateB_PropertyBinding());
   control.activate();
-  QUnit.ok(control.get_part() !== null, "templatePart should not be null.");
+  QUnit.ok(control.get_part(), "templatePart should not be null.");
   QUnit.equal(control.get_part().get_oneWayStrictBinding(), vm.get_propStr1(), "vmPropStr1 should be equal to OnewayStrictBinding.");
   vm.set_propStr1("T1");
   QUnit.equal(control.get_part().get_oneWayStrictBinding(), vm.get_propStr1(), "vmPropStr1 should be equal to OnewayStrictBinding.");
@@ -614,9 +614,9 @@ ptyp_.setTargetValue = function Sunlight__Framework__UI__Helpers__SkinBinderInfo
   var binderInfo, propertySetterMode, element;
   binderInfo = this;
   propertySetterMode = binderInfo.binderType & 240;
-  if (propertySetterMode === 16)
+  if (propertySetterMode == 16)
     binderInfo.targetPropertySetter(target, value);
-  else if (propertySetterMode === 48) {
+  else if (propertySetterMode == 48) {
     if (extraObjectArray[binderInfo.extraObjectIndex] === value)
       return;
     if (extraObjectArray[binderInfo.extraObjectIndex] !== null)
@@ -625,7 +625,7 @@ ptyp_.setTargetValue = function Sunlight__Framework__UI__Helpers__SkinBinderInfo
     if (value !== null)
       this.targetPropertySetterWithArg(target, value, System__BooleanNative__op_Implicit(true));
   }
-  else if (propertySetterMode === 64) {
+  else if (propertySetterMode == 64) {
     element = target;
     if (extraObjectArray[binderInfo.extraObjectIndex] === value)
       return;
@@ -635,7 +635,7 @@ ptyp_.setTargetValue = function Sunlight__Framework__UI__Helpers__SkinBinderInfo
     if (!System__Object__IsNullOrUndefined(value))
       System__Web__Html__Element__Bind(element, System__Type__CastType(String, binderInfo.targetPropertySetterArg), value, false);
   }
-  else if (binderInfo.targetPropertySetter !== null)
+  else if (binderInfo.targetPropertySetter)
     binderInfo.targetPropertySetter(target, value);
   else
     binderInfo.targetPropertySetterWithArg(target, value, binderInfo.targetPropertySetterArg);
@@ -652,7 +652,7 @@ ptyp_ = Sunlight_Framework_Observables_ObservableObject.prototype;
 ptyp_.eventHandlers = null;
 ptyp_.addPropertyChangedListener = function Sunlight__Framework__Observables__ObservableObject__AddPropertyChangedListener(propertyName, callback) {
   var cb;
-  if (this.eventHandlers === null)
+  if (!this.eventHandlers)
     this.eventHandlers = System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_.defaultConstructor();
   if (!this.eventHandlers.tryGetValue(propertyName, {
     read: function() {
@@ -669,7 +669,7 @@ ptyp_.addPropertyChangedListener = function Sunlight__Framework__Observables__Ob
 };
 ptyp_.removePropertyChangedListener = function Sunlight__Framework__Observables__ObservableObject__RemovePropertyChangedListener(propertyName, callback) {
   var cb;
-  if (this.eventHandlers === null)
+  if (!this.eventHandlers)
     return;
   if (this.eventHandlers.tryGetValue(propertyName, {
     read: function() {
@@ -680,7 +680,7 @@ ptyp_.removePropertyChangedListener = function Sunlight__Framework__Observables_
     }
   })) {
     cb = System__Delegate__Remove(cb, callback);
-    if (cb !== null)
+    if (cb)
       this.eventHandlers.set_item(propertyName, cb);
     else
       this.eventHandlers.remove(propertyName);
@@ -691,7 +691,7 @@ ptyp_.clearListeners = function Sunlight__Framework__Observables__ObservableObje
 };
 ptyp_.firePropertyChanged = function Sunlight__Framework__Observables__ObservableObject__FirePropertyChanged(propertyName) {
   var cb;
-  if (this.eventHandlers !== null) {
+  if (this.eventHandlers) {
     if (this.eventHandlers.tryGetValue(propertyName, {
       read: function() {
         return cb;
@@ -736,7 +736,7 @@ ptyp_.get_propInt1 = function Sunlight__Framework__UI__Test__TestViewModelA__get
   return this.get_int1();
 };
 ptyp_.set_propInt1 = function Sunlight__Framework__UI__Test__TestViewModelA__set_PropInt1(value) {
-  if (this.get_int1() !== value) {
+  if (this.get_int1() != value) {
     this.set_int1(value);
     this.firePropertyChanged("PropInt1");
   }
@@ -754,7 +754,7 @@ ptyp_.get_propBool1 = function Sunlight__Framework__UI__Test__TestViewModelA__ge
   return this.bool1;
 };
 ptyp_.set_propBool1 = function Sunlight__Framework__UI__Test__TestViewModelA__set_PropBool1(value) {
-  if (this.bool1 !== value) {
+  if (this.bool1 != value) {
     this.bool1 = value;
     this.firePropertyChanged("PropBool1");
   }
@@ -763,7 +763,7 @@ ptyp_.get_testVMA = function Sunlight__Framework__UI__Test__TestViewModelA__get_
   return this.testVMA;
 };
 ptyp_.set_testVMA = function Sunlight__Framework__UI__Test__TestViewModelA__set_TestVMA(value) {
-  if (this.testVMA !== value) {
+  if (this.testVMA != value) {
     this.testVMA = value;
     this.firePropertyChanged("TestVMA");
   }
@@ -977,16 +977,16 @@ ptyp_.set_source = function Sunlight__Framework__UI__Helpers__LiveBinder__set_So
 };
 ptyp_.set_target = function Sunlight__Framework__UI__Helpers__LiveBinder__set_Target(value) {
   if (this.target !== value) {
-    if (this.target !== null && this.binderInfo.mode === 2)
+    if (this.target !== null && this.binderInfo.mode == 2)
       System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, this.target).V_RemovePropertyChangedListener_b(this.binderInfo.targetPropertyName, System__Delegate__Create("onTargetPropertyChanged", this));
     this.target = value;
-    if (this.target !== null && this.binderInfo.mode === 2)
+    if (this.target !== null && this.binderInfo.mode == 2)
       System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, this.target).V_AddPropertyChangedListener_b(this.binderInfo.targetPropertyName, System__Delegate__Create("onTargetPropertyChanged", this));
     this.flowValue();
   }
 };
 ptyp_.set_isActive = function Sunlight__Framework__UI__Helpers__LiveBinder__set_IsActive(value) {
-  if (this.isActive !== value) {
+  if (this.isActive != value) {
     this.isActive = value;
     if (this.isActive)
       this.activate();
@@ -1051,7 +1051,7 @@ ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__
   propertyNames = binderInfo.propertyNames;
   this.pathTraversed = 1;
   for (; iPath < pathLength; iPath++)
-    if (src !== null || iPath === 1 && (binderInfo.binderType & 2) === 2) {
+    if (src !== null || iPath == 1 && (binderInfo.binderType & 2) == 2) {
       src = propertyGetterPath[iPath - 1](src);
       if (liveObjects.get_item(iPath) !== src) {
         if (liveObjects.get_item(iPath) !== null && iPath < pathLength - 1)
@@ -1064,7 +1064,7 @@ ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__
     }
   if (this.pathTraversed < pathLength)
     return binderInfo.defaultValue;
-  else if (binderInfo.forwardConverter !== null)
+  else if (binderInfo.forwardConverter)
     return binderInfo.forwardConverter(src);
   else
     return src;
@@ -1093,9 +1093,9 @@ ptyp_.onTargetPropertyChanged = function Sunlight__Framework__UI__Helpers__LiveB
     target = this.target;
     liveObjects = this.liveObjects;
     this.updating = true;
-    if (target === obj && this.source !== null && (liveObjects.V_get_Length() < 2 || liveObjects.get_item(liveObjects.V_get_Length() - 2) !== null)) {
+    if (target == obj && this.source !== null && (liveObjects.V_get_Length() < 2 || liveObjects.get_item(liveObjects.V_get_Length() - 2) !== null)) {
       value = binderInfo.targetPropertyGetter(target);
-      if (binderInfo.backwardConverter !== null)
+      if (binderInfo.backwardConverter)
         value = binderInfo.backwardConverter(value);
       binderInfo.propertySetter(this.liveObjects.V_get_Length() < 2 ? this.source : this.liveObjects.get_item(this.liveObjects.V_get_Length() - 2), value);
     }
@@ -1109,7 +1109,7 @@ function Sunlight_Framework_TaskScheduler() {
 Sunlight_Framework_TaskScheduler.typeId = "bg";
 Sunlight__Framework__TaskScheduler__instance = null;
 function Sunlight__Framework__TaskScheduler__get_Instance() {
-  if (Sunlight__Framework__TaskScheduler__instance === null)
+  if (!Sunlight__Framework__TaskScheduler__instance)
     Sunlight__Framework__TaskScheduler__instance = Sunlight__Framework__TaskScheduler_factory(Sunlight__Framework__WindowTimer_factory(), 16, 25);
   return Sunlight__Framework__TaskScheduler__instance;
 };
@@ -1174,7 +1174,7 @@ ptyp_.flushQueue = function Sunlight__Framework__TaskScheduler__FlushQueue(taskQ
 };
 ptyp_.executeTask = function Sunlight__Framework__TaskScheduler__ExecuteTask(task) {
   var stmtTemp1;
-  if (task.state === 0) {
+  if (task.state == 0) {
     try {
       this.currentTask = task;
       task.state = 3;
@@ -1191,7 +1191,7 @@ ptyp_.scheduleQuanta = function Sunlight__Framework__TaskScheduler__ScheduleQuan
     this.windowTimer.V_ClearTimeout_e(this.timerId);
     this.timerId = -1;
   }
-  if (this.timerId !== -1)
+  if (this.timerId != -1)
     return;
   if (this.hiPriTasks.get_count() > 0) {
     this.highPriSetup = true;
@@ -1295,14 +1295,14 @@ ptyp_.isDisposed = false;
 ptyp_.onDisposed = null;
 ptyp_.isInactiveIfNullContext = false;
 ptyp_.set_parent = function Sunlight__Framework__Binders__ContextBindableObject__set_Parent(value) {
-  if (this.parent !== value) {
-    if (this.parent !== null) {
+  if (this.parent != value) {
+    if (this.parent) {
       this.parent.removePropertyChangedListener("DataContext", System__Delegate__Create("onParentDataContextUpdated", this));
       this.parent.removePropertyChangedListener("IsActive", System__Delegate__Create("onParentDataContextUpdated", this));
     }
     this.parent = value;
     if (!this.dataContextSetterCalled)
-      if (this.parent !== null) {
+      if (this.parent) {
         this.parent.addPropertyChangedListener("DataContext", System__Delegate__Create("onParentDataContextUpdated", this));
         this.parent.addPropertyChangedListener("IsActive", System__Delegate__Create("onParentDataContextUpdated", this));
         this.onParentDataContextUpdated(null, null);
@@ -1367,7 +1367,7 @@ ptyp_.fixActivation = function Sunlight__Framework__Binders__ContextBindableObje
   }
 };
 ptyp_.internalDispose = function Sunlight__Framework__Binders__ContextBindableObject__InternalDispose() {
-  if (this.onDisposed !== null) {
+  if (this.onDisposed) {
     this.set_parent(null);
     this.clearListeners();
     this.onDisposed();
@@ -1462,9 +1462,9 @@ ptyp_.__ctor3 = function Sunlight__Framework__UI__UISkinableElement____ctor(elem
   this.__ctor2(element);
 };
 ptyp_.set_skin = function Sunlight__Framework__UI__UISkinableElement__set_Skin(value) {
-  if (this.skin !== value) {
+  if (this.skin != value) {
     this.skin = value;
-    if (this.skin !== null && this.get_isActive())
+    if (this.skin && this.get_isActive())
       this.set_skinInstance(this.skin.createInstance());
     this.firePropertyChanged("Skin");
   }
@@ -1473,11 +1473,11 @@ ptyp_.get_skinInstance = function Sunlight__Framework__UI__UISkinableElement__ge
   return this.skinInstance;
 };
 ptyp_.set_skinInstance = function Sunlight__Framework__UI__UISkinableElement__set_SkinInstance(value) {
-  if (this.skinInstance !== value) {
-    if (this.skinInstance !== null)
+  if (this.skinInstance != value) {
+    if (this.skinInstance)
       this.skinInstance.dispose();
     this.skinInstance = value;
-    if (this.skinInstance !== null) {
+    if (this.skinInstance) {
       this.skinInstance.bind(this);
       if (this.get_isActive())
         this.skinInstance.activate();
@@ -1487,30 +1487,30 @@ ptyp_.set_skinInstance = function Sunlight__Framework__UI__UISkinableElement__se
 };
 ptyp_.onBeforeFirstActivate0 = function Sunlight__Framework__UI__UISkinableElement__OnBeforeFirstActivate() {
   this.onBeforeFirstActivate();
-  if (this.skin !== null && this.skinInstance === null)
+  if (this.skin && !this.skinInstance)
     this.set_skinInstance(this.skin.createInstance());
 };
 ptyp_.onActivate0 = function Sunlight__Framework__UI__UISkinableElement__OnActivate() {
   this.onActivate();
-  if (this.skin !== null && this.skinInstance === null)
+  if (this.skin && !this.skinInstance)
     this.set_skinInstance(this.skin.createInstance());
-  if (this.skinInstance !== null)
+  if (this.skinInstance)
     this.skinInstance.activate();
 };
 ptyp_.onDeactivate0 = function Sunlight__Framework__UI__UISkinableElement__OnDeactivate() {
-  if (this.skinInstance !== null)
+  if (this.skinInstance)
     this.skinInstance.deactivate();
   this.onDeactivate();
 };
 ptyp_.internalDispose1 = function Sunlight__Framework__UI__UISkinableElement__InternalDispose() {
-  if (this.get_skinInstance() !== null)
+  if (this.get_skinInstance())
     this.set_skinInstance(null);
   this.set_skin(null);
   this.internalDispose0();
 };
 ptyp_.onDataContextUpdated0 = function Sunlight__Framework__UI__UISkinableElement__OnDataContextUpdated(oldValue) {
   this.onDataContextUpdated(oldValue);
-  if (this.skinInstance !== null)
+  if (this.skinInstance)
     this.skinInstance.updateDataContext();
 };
 ptyp_.V_OnBeforeFirstActivate = ptyp_.onBeforeFirstActivate0;
@@ -1534,15 +1534,15 @@ function System__Web__Html__Element__AddClassName(this_, className) {
     this_.classList.add(className);
     return;
   }
-  if (className === null || (className = System__String__Trim(className)).length === 0)
+  if (className === null || (className = System__String__Trim(className)).length == 0)
     return;
-  if (this_.className === null || this_.className.length === 0) {
+  if (this_.className === null || this_.className.length == 0) {
     this_.className = className;
     return;
   }
   index = 0;
-  while ((index = this_.className.indexOf(className, index)) !== -1) {
-    if ((index === 0 || System__String__get_Item(this_.className, index - 1) === 32) && (index === this_.className.length - className.length || System__String__get_Item(this_.className, index + className.length) === 32))
+  while ((index = this_.className.indexOf(className, index)) != -1) {
+    if ((index == 0 || System__String__get_Item(this_.className, index - 1) == 32) && (index == this_.className.length - className.length || System__String__get_Item(this_.className, index + className.length) == 32))
       return;
     index++;
   }
@@ -1556,11 +1556,11 @@ function System__Web__Html__Element__RemoveClassName(this_, className) {
     this_.classList.remove(className);
     return;
   }
-  if (className === null || (className = System__String__Trim(className)).length === 0 || this_.className === null || this_.className.length === 0)
+  if (className === null || (className = System__String__Trim(className)).length == 0 || this_.className === null || this_.className.length == 0)
     return;
   index = 0;
-  while ((index = this_.className.indexOf(className, index)) !== -1) {
-    if ((index === 0 || System__String__get_Item(this_.className, index - 1) === 32) && (index === this_.className.length - className.length || System__String__get_Item(this_.className, index + className.length) === 32)) {
+  while ((index = this_.className.indexOf(className, index)) != -1) {
+    if ((index == 0 || System__String__get_Item(this_.className, index - 1) == 32) && (index == this_.className.length - className.length || System__String__get_Item(this_.className, index + className.length) == 32)) {
       this_.className = this_.className.substr(0, index > 0 ? index - 1 : 0) + this_.className.substring(index + className.length);
       return;
     }
@@ -1612,7 +1612,7 @@ ptyp_.__ctor4 = function Sunlight__Framework__UI__Test__TestSkinableWithTestUIEl
   this.__ctor3(element);
 };
 ptyp_.get_part = function Sunlight__Framework__UI__Test__TestSkinableWithTestUIElementPart__get_Part() {
-  if (this.get_skinInstance() !== null)
+  if (this.get_skinInstance())
     return System__Type__CastType(Sunlight_Framework_UI_Test_TestUIElement, this.get_skinInstance().getChildById("Part1"));
   return null;
 };
@@ -1642,7 +1642,7 @@ ptyp_.get_twoWayLooseBinding = function Sunlight__Framework__UI__Test__TestUIEle
   return this.twoWayLooseBinding;
 };
 ptyp_.set_twoWayLooseBinding = function Sunlight__Framework__UI__Test__TestUIElement__set_TwoWayLooseBinding(value) {
-  if (this.twoWayLooseBinding !== value) {
+  if (this.twoWayLooseBinding != value) {
     this.twoWayLooseBinding = value;
     this.firePropertyChanged("TwoWayLooseBinding");
   }
@@ -1702,7 +1702,7 @@ function Sunlight__Framework__UI__Helpers__SkinBinderHelper__TraversePropertyPat
   for (
   iGetter = 0, pathLength = binder.propertyGetterPath.length; iGetter < pathLength; iGetter++)
     source = binder.propertyGetterPath[iGetter](source);
-  if (binder.forwardConverter !== null && source !== null)
+  if (binder.forwardConverter && source !== null)
     source = binder.forwardConverter(source);
   return source;
 };
@@ -1743,9 +1743,9 @@ ptyp_.__ctor3 = function Sunlight__Framework__UI__ListView____ctor(element) {
   this.items = System_Collections_Generic_List_$ListViewItem$_.defaultConstructor();
 };
 ptyp_.set_fixedList = function Sunlight__Framework__UI__ListView__set_FixedList(value) {
-  if (value !== null && this.observableList !== null)
+  if (value && this.observableList)
     throw new Error("Can't set FixedList and ObservableList at the same time");
-  if (this.fixedList !== value) {
+  if (this.fixedList != value) {
     this.fixedList = value;
     this.firePropertyChanged("FixedList");
     this.applyFixedList();
@@ -1753,7 +1753,7 @@ ptyp_.set_fixedList = function Sunlight__Framework__UI__ListView__set_FixedList(
 };
 ptyp_.set_itemSkin = function Sunlight__Framework__UI__ListView__set_ItemSkin(value) {
   var items, itemCount, iItem;
-  if (this.itemSkin !== value) {
+  if (this.itemSkin != value) {
     this.itemSkin = value;
     this.firePropertyChanged("ItemSkin");
     if (this.get_isActive()) {
@@ -1766,9 +1766,9 @@ ptyp_.set_itemSkin = function Sunlight__Framework__UI__ListView__set_ItemSkin(va
 };
 ptyp_.onActivate0 = function Sunlight__Framework__UI__ListView__OnActivate() {
   this.onActivate();
-  if (this.fixedList !== null)
+  if (this.fixedList)
     this.applyFixedList();
-  else if (this.observableList !== null)
+  else if (this.observableList)
     this.applyObservableList();
 };
 ptyp_.onDeactivate0 = function Sunlight__Framework__UI__ListView__OnDeactivate() {
@@ -1795,7 +1795,7 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
   var items, itemsCount, iItem, fixedList, fixedListCount, iObject, listViewItem;
   items = this.items;
   itemsCount = items.get_count();
-  if (this.fixedList === null) {
+  if (!this.fixedList) {
     for (iItem = 0; iItem < itemsCount; iItem++)
       items.get_item(iItem).dispose();
     System__Web__Html__Node__ClearChildren(this.get_element());
@@ -1824,14 +1824,14 @@ ptyp_.applyObservableList = function Sunlight__Framework__UI__ListView__ApplyObs
   var items, itemsCount, iItem;
   items = this.items;
   itemsCount = items.get_count();
-  if (this.observableList === null) {
+  if (!this.observableList) {
     for (iItem = 0; iItem < itemsCount; iItem++)
       items.get_item(iItem).dispose();
     System__Web__Html__Node__ClearChildren(this.get_element());
     items.clear();
     return;
   }
-  if (this.get_isActive() && this.observableList !== null && this.observableList !== this.attachedObservableList) {
+  if (this.get_isActive() && this.observableList && this.observableList != this.attachedObservableList) {
     this.attachedObservableList = this.observableList;
     this.attachedObservableList.V_add_CollectionChanged_h(System__Delegate__Create("observableListCollectionChanged", this));
     this.resetObservableItems();
@@ -1839,7 +1839,7 @@ ptyp_.applyObservableList = function Sunlight__Framework__UI__ListView__ApplyObs
 };
 ptyp_.observableListCollectionChanged = function Sunlight__Framework__UI__ListView__ObservableListCollectionChanged(collection, args) {
   var items, changeIndex, list, listCount, insertBeforeElem, iObject, listViewItem;
-  System__Diagnostics__Debug__Assert(collection === this.attachedObservableList);
+  System__Diagnostics__Debug__Assert(collection == this.attachedObservableList);
   items = this.items;
   changeIndex = args.V_get_ChangeIndex_i();
   switch(args.V_get_Action_i()) {
@@ -1852,7 +1852,7 @@ ptyp_.observableListCollectionChanged = function Sunlight__Framework__UI__ListVi
       for (iObject = 0; iObject < listCount; iObject++) {
         listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("div"));
         listViewItem.set_skin(this.itemSkin);
-        if (insertBeforeElem === null) {
+        if (!insertBeforeElem) {
           this.get_element().appendChild(listViewItem.get_element());
           items.add(listViewItem);
         }
@@ -2007,25 +2007,25 @@ ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__SkinInstance____ctor(f
     this.partIdMapping = System_Collections_Generic_StringDictionary_$Int32$_.__ctor(partIdMapping);
 };
 ptyp_.getChildById = function Sunlight__Framework__UI__Helpers__SkinInstance__GetChildById(id) {
-  if (this.partIdMapping !== null && this.partIdMapping.containsKey(id))
+  if (this.partIdMapping && this.partIdMapping.containsKey(id))
     return this.elementsOfIntrest[this.partIdMapping.get_item(id)];
   return null;
 };
 ptyp_.bind = function Sunlight__Framework__UI__Helpers__SkinInstance__Bind(skinable) {
   var childNodes, skinableElement;
-  if (this.rootElement === null || this.isDiposed)
+  if (!this.rootElement || this.isDiposed)
     throw new Error("InvalidOperation, Skin already applied");
   if (!this.parentFactory.get_skinableType().isInstanceOfType(skinable))
     throw new Error("Skin being applied to wrong Skinable");
-  if (this.skinableParent === skinable)
+  if (this.skinableParent == skinable)
     return;
-  if (this.skinableParent !== null) {
+  if (this.skinableParent) {
     childNodes = this.skinableParent.get_element().childNodes;
     while (childNodes.length > 0)
       this.rootElement.appendChild(childNodes[0]);
   }
   this.skinableParent = skinable;
-  if (this.skinableParent !== null) {
+  if (this.skinableParent) {
     childNodes = this.rootElement.childNodes;
     skinableElement = skinable.get_element();
     while (childNodes.length > 0)
@@ -2038,7 +2038,7 @@ ptyp_.bind = function Sunlight__Framework__UI__Helpers__SkinInstance__Bind(skina
   this.updateDataContext();
 };
 ptyp_.updateDataContext = function Sunlight__Framework__UI__Helpers__SkinInstance__UpdateDataContext() {
-  if (this.skinableParent !== null)
+  if (this.skinableParent)
     if (this.skinableParent.get_dataContext() !== this.dataContext) {
       this.dataContext = this.skinableParent.get_dataContext();
       this.dataContextUpdated = true;
@@ -2070,24 +2070,24 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
       source = null;
       switch(binder.binderType & 7) {
         case 1: {
-          if (!this.dataContextUpdated && binder.mode !== 0)
+          if (!this.dataContextUpdated && binder.mode != 0)
             continue;
           source = dataContext;
           break;
         }
         case 2: {
-          if (this.firstActivationDone && binder.mode !== 0)
+          if (this.firstActivationDone && binder.mode != 0)
             continue;
           break;
         }
         case 4: {
-          if (!this.templateParentUpdated && binder.mode !== 0)
+          if (!this.templateParentUpdated && binder.mode != 0)
             continue;
           source = this.skinableParent;
           break;
         }
       }
-      if (binder.mode === 2) {
+      if (binder.mode == 2) {
         liveBinder = this.liveBinders[iLiveBinder];
         if (System__Object__IsNullOrUndefined(liveBinder)) {
           liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, null);
@@ -2106,7 +2106,7 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
         if (binder.targetPropertySetter === dataContextSetter)
           this.hasDataContextBinding[binder.objectIndex] = true;
       }
-      if (binder.mode !== 0)
+      if (binder.mode != 0)
         ++iLiveBinder;
     }
     for (iChild = 0; iChild < childElementLength; iChild++) {
@@ -2143,7 +2143,7 @@ ptyp_.deactivate = function Sunlight__Framework__UI__Helpers__SkinInstance__Deac
 ptyp_.dispose = function Sunlight__Framework__UI__Helpers__SkinInstance__Dispose() {
   var childNodes, iLiveBinder, liveBinder, i, j, childElement;
   if (!this.isDiposed) {
-    if (this.skinableParent !== null) {
+    if (this.skinableParent) {
       childNodes = this.skinableParent.get_element().childNodes;
       while (childNodes.length > 0)
         this.rootElement.appendChild(childNodes[0]);
@@ -2179,7 +2179,7 @@ ptyp_.queuedActivation = function Sunlight__Framework__UI__Helpers__SkinInstance
   for (
   iBinderInfo = 0, iLivebinder = 0; iBinderInfo < binderLength && iLivebinder < liveBindersLength; iBinderInfo++) {
     binder = binders[iBinderInfo];
-    if (binder.mode !== 0) {
+    if (binder.mode != 0) {
       liveBinder = liveBinders[iLivebinder];
       if (System__Object__IsNullOrUndefined(liveBinder)) {
         liveBinders[iLivebinder] = liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, null);
@@ -2220,7 +2220,7 @@ ptyp_.updateBinderSource = function Sunlight__Framework__UI__Helpers__SkinInstan
   liveBindersLength = this.liveBinders.length;
   for (iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++) {
     liveBinder = liveBinders[iLiveBinder];
-    if (!System__Object__IsNullOrUndefined(liveBinder) && (liveBinder.get_binderInfo().binderType & 7) === sourceType)
+    if (!System__Object__IsNullOrUndefined(liveBinder) && (liveBinder.get_binderInfo().binderType & 7) == sourceType)
       liveBinder.set_source(source);
   }
 };
@@ -2311,7 +2311,7 @@ ptyp_.setImmediate = function Sunlight__Framework__WindowTimer__SetImmediate(act
   return setTimeout(action, 0);
 };
 ptyp_.setTimeout = function Sunlight__Framework__WindowTimer__SetTimeout(action, timeoutHandle) {
-  if (timeoutHandle === 0)
+  if (timeoutHandle == 0)
     return this.setImmediate(action);
   return setTimeout(action, timeoutHandle);
 };
@@ -2432,7 +2432,7 @@ ptyp_.removeEvent = function System__EventBinder__RemoveEvent0(name, handler, on
     }
   })) {
     elementEvent = System__Delegate__Remove(elementEvent, handler);
-    if (elementEvent === null) {
+    if (!elementEvent) {
       evts.remove(name);
       if (onCapture)
         this.removeEventListener(name, System__Delegate__Create("eventHandlerCapture", this), true);
@@ -2694,7 +2694,7 @@ function System__NativeArray$1__InsertAt(this_, index, value) {
   var i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  for (i = this_.length - 1; i >= index; index--)
+  for (i = this_.length - 1; i >= index; i--)
     this_[i + 1] = this_[i];
   this_[index] = value;
 };
@@ -2759,14 +2759,14 @@ ptyp_.isDisposed = false;
 ptyp_.onDisposed = null;
 ptyp_.isInactiveIfNullContext = false;
 ptyp_.set_parent = function Sunlight__Framework__Binders__ContextBindableObject__set_Parent(value) {
-  if (this.parent !== value) {
-    if (this.parent !== null) {
+  if (this.parent != value) {
+    if (this.parent) {
       this.parent.removePropertyChangedListener("DataContext", System__Delegate__Create("onParentDataContextUpdated", this));
       this.parent.removePropertyChangedListener("IsActive", System__Delegate__Create("onParentDataContextUpdated", this));
     }
     this.parent = value;
     if (!this.dataContextSetterCalled)
-      if (this.parent !== null) {
+      if (this.parent) {
         this.parent.addPropertyChangedListener("DataContext", System__Delegate__Create("onParentDataContextUpdated", this));
         this.parent.addPropertyChangedListener("IsActive", System__Delegate__Create("onParentDataContextUpdated", this));
         this.onParentDataContextUpdated(null, null);
@@ -2831,7 +2831,7 @@ ptyp_.fixActivation = function Sunlight__Framework__Binders__ContextBindableObje
   }
 };
 ptyp_.internalDispose = function Sunlight__Framework__Binders__ContextBindableObject__InternalDispose() {
-  if (this.onDisposed !== null) {
+  if (this.onDisposed) {
     this.set_parent(null);
     this.clearListeners();
     this.onDisposed();
@@ -3748,22 +3748,21 @@ function TestTemplate1() {
   return TestTemplate1_var;
 };
 function getter(src) {
-  return src.get_propBool1();
+  return src.get_propStr1();
 };
 function getter0(src) {
-  return src.get_propStr1();
+  return src.get_propBool1();
 };
 function TestTemplateVMB_CssBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[1]) {
     domStore[1] = doc.createElement("div");
-    domStore[1].innerHTML = " <div test=\"id\"><span></span></div> ";
-    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter], ["PropBool1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 1, null, "")];
+    domStore[1].innerHTML = " <div test=\"id\"></div> ";
+    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, ""), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter0], ["PropBool1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0)];
   }
   htmlRoot = domStore[1].cloneNode(true);
-  objStorage = new Array(2);
+  objStorage = new Array(1);
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
-  objStorage[1] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1, 0]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[1], null, 1, 0);
 };
 TestTemplateVMB_CssBinding_var = null;
@@ -3780,7 +3779,7 @@ function TestTemplateVMB_StyleBinding_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[2]) {
     domStore[2] = doc.createElement("div");
     domStore[2].innerHTML = " <div test=\"test me\">T1</div> ";
-    tmplStore[2] = tmplStore[2] ? tmplStore[2] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter0], ["PropStr1"], styleSetter, 97, 0, 0, null, null)];
+    tmplStore[2] = tmplStore[2] ? tmplStore[2] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropStr1"], styleSetter, 97, 0, 0, null, null)];
   }
   htmlRoot = domStore[2].cloneNode(true);
   objStorage = new Array(1);
@@ -3798,7 +3797,7 @@ function TestTemplateVMB_AttrBinding_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[3]) {
     domStore[3] = doc.createElement("div");
     domStore[3].innerHTML = " <div test=\"foo\">Test Me</div> ";
-    tmplStore[3] = tmplStore[3] ? tmplStore[3] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter0], ["PropStr1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute, "test1", 113, 0, 0, null, null, 0)];
+    tmplStore[3] = tmplStore[3] ? tmplStore[3] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter], ["PropStr1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute, "test1", 113, 0, 0, null, null, 0)];
   }
   htmlRoot = domStore[3].cloneNode(true);
   objStorage = new Array(1);
@@ -3830,8 +3829,8 @@ function TestTemplateB_PropertyBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[4]) {
     domStore[4] = doc.createElement("div");
-    domStore[4].innerHTML = " <div>This is a test.</div> ";
-    tmplStore[4] = tmplStore[4] ? tmplStore[4] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter1], setter, ["PropInt1"], setter0, getter2, "TwoWayLooseBinding", 17, 0, 0, null, null, 11), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter0], ["PropStr1"], setter1, 17, 0, 1, null, "test")];
+    domStore[4].innerHTML = " <div> This is a test. </div> ";
+    tmplStore[4] = tmplStore[4] ? tmplStore[4] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter1], setter, ["PropInt1"], setter0, getter2, "TwoWayLooseBinding", 17, 0, 0, null, null, 11), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropStr1"], setter1, 17, 0, 1, null, "test")];
   }
   htmlRoot = domStore[4].cloneNode(true);
   objStorage = new Array(1);
@@ -3850,12 +3849,12 @@ function TestTemplateVMB1_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[5]) {
     domStore[5] = doc.createElement("div");
-    domStore[5].innerHTML = " <div test=\"test me\"><span></span></div> ";
-    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter0], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, "")];
+    domStore[5].innerHTML = " <div test=\"test me\"></div> ";
+    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, "")];
   }
   htmlRoot = domStore[5].cloneNode(true);
   objStorage = new Array(1);
-  objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1, 0]);
+  objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[5], null, 0, 0);
 };
 TestTemplateVMB1_var = null;

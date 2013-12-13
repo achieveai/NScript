@@ -135,18 +135,24 @@ namespace XwmlParser.Binding
                     dataContextType,
                     controlType);
 
-            return new BinderInfo(
-                targetBinding,
-                BindingParser.GetSourceBindingInfo(
+            var sourceBindingInfo = BindingParser.GetSourceBindingInfo(
                     dict,
                     bindingValue,
                     sourceInfo.Item1,
                     documentContext,
-                    targetBinding),
-                BindingParser.GetConverterInfo(
+                    targetBinding);
+
+            var converterInfo = BindingParser.GetConverterInfo(
                     dict,
                     bindingValue,
-                    documentContext),
+                    documentContext,
+                    sourceBindingInfo,
+                    targetBinding);
+
+            return new BinderInfo(
+                targetBinding,
+                sourceBindingInfo,
+                converterInfo,
                 targetBinding.GetBindingMode(
                     BindingParser.GetBindingMode(
                         dict,
@@ -226,15 +232,176 @@ namespace XwmlParser.Binding
         private static ConverterInfo GetConverterInfo(
             Dictionary<BindingPart, Tuple<int, int>> dict,
             string bindingStr,
-            IDocumentContext documentContext)
+            IDocumentContext documentContext,
+            SourceBindingInfo sourceBindingInfo,
+            TargetBindingInfo targetBindingInfo)
         {
+            if (targetBindingInfo.BindingType.IsDelegate())
+            {
+                throw new ApplicationException("Converters are not supported for delegates.");
+            }
+
             Tuple<int, int> stringPart;
             if (!dict.TryGetValue(BindingPart.Converter, out stringPart))
             {
                 return null;
             }
 
-            throw new NotImplementedException();
+            int argStartIndex = bindingStr.IndexOf('(', stringPart.Item1);
+            if (argStartIndex < 0
+                || argStartIndex > stringPart.Item2)
+            {
+                argStartIndex = stringPart.Item2;
+            }
+
+            int colonIndex = bindingStr.IndexOf(':', stringPart.Item1);
+            if (colonIndex < 0
+                || colonIndex > argStartIndex)
+            {
+                throw new ApplicationException(
+                    string.Format("Invalid format for converter: '{0}'",
+                    bindingStr.Substring(stringPart.Item1, stringPart.Item2 - stringPart.Item1)));
+            }
+
+            string nameSpace = bindingStr.Substring(stringPart.Item1, colonIndex - stringPart.Item1);
+            int lastIndex = colonIndex;
+            List<string> dotParts = new List<string>();
+            while(true)
+            {
+                int dotIndex = bindingStr.IndexOf('.', lastIndex + 1);
+                if (dotIndex < 0
+                    || dotIndex > argStartIndex)
+                {
+                    if (lastIndex != argStartIndex - 1)
+                    {
+                        dotParts.Add(
+                            bindingStr.Substring(
+                                lastIndex + 1, argStartIndex - lastIndex - 1));
+                    }
+
+                    break;
+                }
+
+                dotParts.Add(bindingStr.Substring(lastIndex + 1, dotIndex - lastIndex - 1));
+                lastIndex = dotIndex;
+            }
+
+            if (dotParts.Count == 0)
+            {
+                throw new ApplicationException(
+                    string.Format("Invalid format for converter: '{0}'",
+                    bindingStr.Substring(stringPart.Item1, stringPart.Item2 - stringPart.Item1)));
+            }
+
+            var resolver = documentContext.Resolver;
+            var typeReference = resolver.GetTypeReference(
+                documentContext.GetFullName(nameSpace + ":" + dotParts[0]));
+
+            if (typeReference == null)
+            {
+                throw new ApplicationException(
+                    string.Format("Can't resolve type '{0}'",
+                        nameSpace + ":" + dotParts[0]));
+            }
+
+            List<MethodReference> methodReferences = null;
+            for (int i = 1; i < dotParts.Count; i++)
+            {
+                bool typeFound = false;
+                foreach (var item in typeReference.Resolve().NestedTypes)
+                {
+                    if (item.Name == dotParts[i]
+                        && item.IsPublic)
+                    {
+                        typeReference = item;
+                        typeFound = true;
+                        break;
+                    }
+                }
+
+                if (!typeFound && i < dotParts.Count-1)
+                {
+                    throw new ApplicationException(
+                        string.Format("Can't resolve type '{0}'",
+                            typeReference.FullName + "." + dotParts[0]));
+                }
+                else if (!typeFound)
+                {
+                    methodReferences = BindingParser.GetProbableMethods(
+                        resolver,
+                        typeReference,
+                        dotParts[dotParts.Count - 1],
+                        sourceBindingInfo.ValueType,
+                        targetBindingInfo.BindingType);
+                }
+            }
+
+            if (methodReferences == null)
+            {
+                throw new ApplicationException(
+                    string.Format("Two Way converter not yet supported, or the converter method '{0}' was not found",
+                        dotParts[dotParts.Count-1]));
+            }
+
+            if (methodReferences.Count == 1)
+            {
+                return new DelegateConverterInfo(
+                    methodReferences[0],
+                    null);
+            }
+            else
+            {
+                throw new ApplicationException(
+                    "Arguments not yet supported, or there were multiple methods matching criteria");
+            }
+        }
+
+        public static List<MethodReference> GetProbableMethods(
+            IClrResolver resolver,
+            TypeReference typeReference,
+            string methodName,
+            TypeReference fromType,
+            TypeReference toType)
+        {
+            var probableMethodReferences = resolver.GetMethodReference(
+                typeReference,
+                methodName);
+
+            List<MethodReference> rv = new List<MethodReference>();
+            foreach (var methodReference in probableMethodReferences)
+            {
+                if (!methodReference.IsStatic()
+                    || !methodReference.HasParameters
+                    || methodReference.HasGenericParameters
+                    || methodReference.Parameters[0].Attributes == ParameterAttributes.Out)
+                {
+                    continue;
+                }
+
+                if (!methodReference.ReturnType.ExtendsType(toType)
+                    && !methodReference.ReturnType.ImplementsInterface(toType))
+                {
+                    continue;
+                }
+
+                if (!fromType.ExtendsType(methodReference.Parameters[0].ParameterType)
+                    && !fromType.ExtendsType(methodReference.Parameters[0].ParameterType))
+                {
+                    continue;
+                }
+
+                rv.Add(methodReference);
+            }
+
+            return rv;
+        }
+
+        public bool IsMethodReferenceMatch(
+            TypeReference resolver,
+            MethodReference methodReference,
+            List<string> arguments)
+        {
+            return true;
         }
 
         /// <summary>
@@ -344,6 +511,7 @@ namespace XwmlParser.Binding
                 if (memberInfo == null)
                 {
                     if (iPath == pathInfo.Count - 1
+                        && targetBindingInfo != null
                         && targetBindingInfo.BindingType.IsDelegate())
                     {
                         MethodReference method = BindingParser.GetMethodReferenceWithMatch(
@@ -361,7 +529,8 @@ namespace XwmlParser.Binding
                                         sourceType,
                                         propertyReferences)
                                     : null,
-                                method);
+                                method,
+                                documentContext.ParserContext.ConverterContext.ClrKnownReferences.MulticastDelegate);
                         }
                     }
 

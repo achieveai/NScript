@@ -322,36 +322,87 @@ namespace XwmlParser.NodeInfos
         public override void ParseNode(
             TemplateParser parser)
         {
-            if (this.Node.NodeType == HtmlNodeType.Text)
+            if (this.Node.NodeType == HtmlNodeType.Text
+                || (this.Node.NodeType == HtmlNodeType.Element
+                    && this.Node.ChildNodes.Count == 1
+                    && this.Node.ChildNodes[0].NodeType == HtmlNodeType.Text))
             {
                 if (BindingParser.IsBindingText(this.Node.InnerText))
                 {
-                    this.generatedNode = parser.GeneratedDocument.CreateElement("span");
-                    this.needDomAccess = true;
-                    this.AddBinder(
-                        BindingParser.ParseBinding(
-                            new TextContentTargetBinder(
-                                parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.String),
-                            ((HtmlTextNode)this.Node).Text,
-                            parser.DocumentContext,
-                            parser.DataContextType,
-                            parser.ControlType));
+                    try
+                    {
+                        this.generatedNode = parser.GeneratedDocument.CreateElement(
+                            this.Node.NodeType == HtmlNodeType.Text
+                                ?  "span"
+                                : this.Node.OriginalName);
+                        this.needDomAccess = true;
+                        this.AddBinder(
+                            BindingParser.ParseBinding(
+                                new TextContentTargetBinder(
+                                    parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.String),
+                                this.Node.InnerText,
+                                parser.DocumentContext,
+                                parser.DataContextType,
+                                parser.ControlType));
+                    }
+                    catch(ApplicationException ex)
+                    {
+                        parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                            new Location(
+                                parser.HtmlParser.ResourceName,
+                                this.Node.Line,
+                                this.Node.LinePosition),
+                            ex.Message,
+                            false);
+                    }
+
+                    if (this.Node.NodeType == HtmlNodeType.Element)
+                    {
+                        this.Node.ChildNodes[0].Remove();
+                    }
                 }
-                else
+                else if (this.Node.NodeType != HtmlNodeType.Element)
                 {
-                    string text = ((HtmlTextNode)this.Node).Text;
+                    string text = this.Node.InnerText;
+
+                    bool hasSpaceBefore = false;
+                    bool hasSpaceAfter = false;
+                    if (text.Length > 0)
+                    {
+                        if (char.IsWhiteSpace(text[0]))
+                        {
+                            hasSpaceBefore = true;
+                        }
+                        if (char.IsWhiteSpace(text[text.Length-1]))
+                        {
+                            hasSpaceAfter = true;
+                        }
+                    }
+
                     text = text.Trim();
                     if (text.Length == 0)
                     {
                         text = " ";
                     }
+                    else
+                    {
+                        if (hasSpaceBefore)
+                        {
+                            text = " " + text;
+                        }
+                        if (hasSpaceAfter)
+                        {
+                            text = text + " ";
+                        }
+                    }
 
                     this.generatedNode = parser.GeneratedDocument.CreateTextNode(text);
                 }
             }
-            else if (this.Node.NodeType == HtmlNodeType.Element)
+
+            if (this.Node.NodeType == HtmlNodeType.Element)
             {
-                this.generatedNode = parser.GeneratedDocument.CreateElement(this.Node.OriginalName);
+                this.generatedNode = this.generatedNode ?? parser.GeneratedDocument.CreateElement(this.Node.OriginalName);
                 foreach (var attr in this.Node.Attributes)
                 {
                     var binderInfo = 

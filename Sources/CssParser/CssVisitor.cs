@@ -32,6 +32,8 @@ namespace CssParser
         { return true; }
         public virtual bool Visit(CssProperty obj)
         { return true; }
+        public virtual bool Visit(CssPropertyValueSet obj)
+        { return true; }
         public virtual bool Visit(CssStringPropertyValue obj)
         { return true; }
         public virtual bool Visit(CssNumberPropertyValue obj)
@@ -46,6 +48,10 @@ namespace CssParser
         { return true; }
         public virtual bool Visit(CssFunctionPropertyValue obj)
         { return true; }
+        public virtual bool Visit(CssKeyframes obj)
+        { return true; }
+        public virtual bool Visit(CssKeyframe obj)
+        { return true; }
     }
 
     public sealed class CssVisitorHelper
@@ -56,7 +62,6 @@ namespace CssParser
         {
             this.innerVisitor = visitor;
         }
-
         public void Visit(AllSelector obj)
         { }
         public void Visit(CssClassName obj)
@@ -90,6 +95,13 @@ namespace CssParser
                 this.Visit(item);
             }
         }
+        public void Visit(CssPropertyValueSet obj)
+        {
+            foreach (var item in obj.Values)
+            {
+                this.Visit(item);
+            }
+        }
         public void Visit(CssStringPropertyValue obj)
         { }
         public void Visit(CssNumberPropertyValue obj)
@@ -106,9 +118,6 @@ namespace CssParser
             {
                 this.Visit(item);
             }
-	{
-		 
-	}
         }
         public void Visit(CssRule obj)
         {
@@ -117,6 +126,20 @@ namespace CssParser
                 this.Visit(item);
             }
 
+            foreach (var item in obj.Properties)
+            {
+                this.Visit(item);
+            }
+        }
+        public void Visit(CssKeyframes obj)
+        {
+            foreach (var item in obj.Frames)
+            {
+                this.Visit(item);
+            }
+        }
+        public void Visit(CssKeyframe obj)
+        {
             foreach (var item in obj.Properties)
             {
                 this.Visit(item);

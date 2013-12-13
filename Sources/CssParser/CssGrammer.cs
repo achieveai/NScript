@@ -18,6 +18,7 @@ namespace CssParser
     {
         private List<CssRule> rules;
         private List<CssProperty> properties;
+        private List<CssKeyframes> keyFrames;
         public CssGrammer(string css, bool parseProperties = false)
         {
             ANTLRStringStream input = new ANTLRStringStream(css);
@@ -40,6 +41,9 @@ namespace CssParser
 
         public List<CssRule> Rules
         { get { return this.rules; } }
+
+        public List<CssKeyframes> KeyFrames
+        { get { return this.keyFrames; } }
 
         public List<CssProperty> Properties
         { get { return this.properties; } }
@@ -68,6 +72,11 @@ namespace CssParser
                 this.rules = new List<CssRule>();
             }
 
+            if (this.keyFrames == null)
+            {
+                this.keyFrames = new List<CssKeyframes>();
+            }
+
             switch (tree.Text)
             {
                 case "ruleset":
@@ -82,9 +91,59 @@ namespace CssParser
                 case "RULE":
                     this.rules.Add(this.ParseRule(tree));
                     break;
+                case "KEYFRAMES":
+                    this.keyFrames.Add(this.ParseKeyframes(tree));
+                    break;
                 default:
                     break;
             }
+        }
+
+        private CssKeyframes ParseKeyframes(ITree tree)
+        {
+            string name = tree.GetChild(0).Text;
+            List<CssKeyframe> frames = new List<CssKeyframe>();
+            for (int iChild = 1; iChild < tree.ChildCount; iChild++)
+            {
+                frames.Add(this.ParseKeyframe(tree.GetChild(iChild)));
+            }
+
+            return new CssKeyframes(name, frames);
+        }
+
+        private CssKeyframe ParseKeyframe(ITree tree)
+        {
+            List<CssProperty> properties = new List<CssProperty>();
+            List<string> selectors = new List<string>();
+
+            for (int i = 0; i < tree.ChildCount; i++)
+            {
+                var child = tree.GetChild(i);
+                switch (child.Text)
+                {
+                    case "PROPERTY":
+                        properties.Add(this.ParseProperty(child));
+                        break;
+                    case "KEYFRAMESELECTORS":
+                        selectors = this.GetKeyframeSelectors(child);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return new CssKeyframe(selectors, properties);
+        }
+
+        private List<string> GetKeyframeSelectors(ITree tree)
+        {
+            List<string> selectors = new List<string>();
+            for (int iChild = 0; iChild < tree.ChildCount; iChild++)
+            {
+                selectors.Add(tree.GetChild(iChild).Text.Trim());
+            }
+
+            return selectors;
         }
 
         private CssRule ParseRule(ITree tree)
@@ -326,7 +385,20 @@ namespace CssParser
         {
             return new CssProperty(
                 tree.GetChild(0).Text,
-                this.ParsePropertyValue(tree.GetChild(1)));
+                this.ParsePropertyValueSet(tree.GetChild(1)));
+        }
+
+        private List<CssPropertyValueSet> ParsePropertyValueSet(ITree tree)
+        {
+            List<CssPropertyValueSet> rv = new List<CssPropertyValueSet>();
+            for (int iChild = 0; iChild < tree.ChildCount; iChild++)
+            {
+                rv.Add(
+                    new CssPropertyValueSet(
+                        this.ParsePropertyValue(tree.GetChild(iChild))));
+            }
+
+            return rv;
         }
 
         private List<CssPropertyValue> ParsePropertyValue(ITree tree)

@@ -32,6 +32,8 @@ namespace XwmlParser
         /// </summary>
         List<CssParser.CssRule> cssRules = new List<CssParser.CssRule>();
 
+        List<CssParser.CssKeyframes> keyFrames = new List<CssParser.CssKeyframes>();
+
         /// <summary>
         /// Stack of namespaces.
         /// </summary>
@@ -192,6 +194,13 @@ namespace XwmlParser
                     });
             }
 
+            foreach (var keyframes in this.keyFrames)
+            {
+                CssSerializerVisitor.Instance.Process(
+                    sb,
+                    keyframes);
+            }
+
             return sb.ToString();
         }
 
@@ -216,6 +225,11 @@ namespace XwmlParser
             }
 
             this.namespaceStack.Add(mapping);
+        }
+
+        internal void AddKeyFrames(List<CssParser.CssKeyframes> list)
+        {
+            this.keyFrames.AddRange(list);
         }
     }
 }

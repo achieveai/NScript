@@ -1477,6 +1477,18 @@ namespace NScript.CLR
         }
 
         /// <summary>
+        /// Determines whether the specified type is boolean.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>
+        /// <c>true</c> if the specified type is boolean; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsString(this TypeReference type)
+        {
+            return type != null && type.MetadataType == MetadataType.String;
+        }
+
+        /// <summary>
         /// Determines whether the specified type is EnumOrInteger.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -1810,6 +1822,36 @@ namespace NScript.CLR
             return null;
         }
 
+        /// <summary>
+        /// A TypeReference extension method that implements interface.
+        /// </summary>
+        /// <param name="type">  The type. </param>
+        /// <param name="iface"> The interface. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public static bool ImplementsInterface(this TypeReference type, TypeReference iface)
+        {
+            foreach (var item in type.GetAllImplementedInterfaces())
+            {
+                if (item.IsSame(iface))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// A TypeReference extension method that implements delegate.
+        /// </summary>
+        /// <param name="delegateType">    The delegateType to act on. </param>
+        /// <param name="methodReference"> The method reference. </param>
+        /// <param name="missingParamsOk"> (optional) the missing parameters ok. </param>
+        /// <returns>
+        /// .
+        /// </returns>
         public static int? ImplementsDelegate(
             this TypeReference delegateType,
             MethodReference methodReference,

@@ -466,6 +466,66 @@ namespace NScript.Converter.ExpressionsConverter
                     rightExpression);
             }
 
+            if (jstOperator == JST.BinaryOperator.StrictNotEquals
+                || jstOperator == JST.BinaryOperator.StrictEquals)
+            {
+                if (leftJstExpression is JST.NullLiteralExpression
+                    || rightJstExpression is JST.NullLiteralExpression)
+                {
+                    var expression = leftJstExpression is JST.NullLiteralExpression
+                        ? rightExpression
+                        : leftExpression;
+
+                    var isIgnorable = BinaryExpressionConverter. GetNullCompareResult(
+                        converter,
+                        expression.ResultType,
+                        op);
+
+                    if (isIgnorable.HasValue)
+                    {
+                        return new JST.BooleanLiteralExpression(converter.Scope, isIgnorable.Value);
+                    }
+
+                    if (BinaryExpressionConverter.IsEqualsIgnorable(expression.ResultType))
+                    {
+                        var rvExp = leftJstExpression is JST.NullLiteralExpression
+                            ? rightJstExpression
+                            : leftJstExpression;
+
+                        if (jstOperator == JST.BinaryOperator.StrictEquals)
+                        {
+                            rvExp = new JST.UnaryExpression(
+                                rvExp.Location,
+                                rvExp.Scope,
+                                JST.UnaryOperator.LogicalNot,
+                                rvExp);
+                        }
+
+                        return rvExp;
+                    }
+                }
+                else if (BinaryExpressionConverter.IsEqualsIgnorable(rightExpression.ResultType)
+                        || BinaryExpressionConverter.IsEqualsIgnorable(leftExpression.ResultType)
+                    || (BinaryExpressionConverter.GetNullCompareResult(
+                            converter,
+                            leftExpression.ResultType,
+                            op).HasValue
+                        && BinaryExpressionConverter.GetNullCompareResult(
+                            converter,
+                            leftExpression.ResultType,
+                            op).HasValue))
+                {
+                    if (jstOperator == JST.BinaryOperator.StrictEquals)
+                    {
+                        jstOperator = JST.BinaryOperator.Equals;
+                    }
+                    else if (jstOperator == JST.BinaryOperator.StrictNotEquals)
+                    {
+                        jstOperator = JST.BinaryOperator.NotEquals;
+                    }
+                }
+            }
+
             JST.Expression rv = null;
             // When ever we divide an int by another int, it becomes double in JS.
             // So we need to convert this double back to int and that is done by BitwiseOr of the
@@ -637,6 +697,44 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             return true;
+        }
+
+        private static bool IsEqualsIgnorable(TypeReference typeReference)
+        {
+            if (typeReference is GenericParameter)
+            {
+                return false;
+            }
+
+            if (typeReference.Resolve().IsValueType)
+            {
+                return false;
+            }
+
+            if (typeReference.IsString()
+                || (typeReference.Resolve().Name == "Object"
+                    && typeReference.Resolve().Namespace == "System"))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool? GetNullCompareResult(
+            IMethodScopeConverter converter,
+            TypeReference typeReference,
+            BinaryOperator binaryOperator)
+        {
+            if (typeReference.IsValueType
+                && !typeReference.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType))
+            {
+                return binaryOperator == BinaryOperator.Equals
+                    ? false
+                    : true;
+            }
+
+            return null;
         }
     }
 }

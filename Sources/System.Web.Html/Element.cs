@@ -81,6 +81,11 @@ namespace System.Web.Html
         public const string OnScrollEvtName = "scroll";
 
         /// <summary>
+        /// Name of the on paste event.
+        /// </summary>
+        public const string OnPasteEvtName = "paste";
+
+        /// <summary>
         /// Name of the on touch start event.
         /// </summary>
         public const string OnTouchStartEvtName = "touchstart";
@@ -443,6 +448,11 @@ namespace System.Web.Html
         /// The on scroll event handler.
         /// </value>
         public extern event Action<Element, ElementEvent> OnScroll;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnPaste events.
+        /// </summary>
+        public extern event Action<Element, ElementEvent> OnPaste;
 
         /// <summary>
         /// Gets the on animation start event handler.

@@ -5,6 +5,7 @@
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
+    using NScript.Utils;
     using System;
     using System.Collections.Generic;
 
@@ -68,7 +69,9 @@
 
             var templateName = attr.ConstructorArguments[0].Value as string;
 
-            return new List<Statement>()
+            try
+            {
+                return new List<Statement>()
                 {
                     new ReturnStatement(
                         null,
@@ -80,6 +83,23 @@
                                 this.codeGenerator.GetTemplateGetterIdentifier(templateName),
                                 methodConverter.Scope)))
                 };
+            }
+            catch (ConverterLocationException ex)
+            {
+                this.codeGenerator.ParserContext.ConverterContext.AddError(
+                    ex.Location,
+                    ex.Message,
+                    false);
+            }
+            catch(ApplicationException ex)
+            {
+                this.codeGenerator.ParserContext.ConverterContext.AddError(
+                    null,
+                    ex.Message,
+                    false);
+            }
+
+            return null;
         }
 
         public void Initialize(NScript.CLR.ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
