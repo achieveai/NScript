@@ -7,7 +7,7 @@ function TestDomEventInFormBinding1_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = " <div class=\"problemManagerHeading\"> <h2>A1</h2> <h3>H3</h3> <h4>H4</h4> </div> <div class=\"uploadArea\"> <div>Batch Upload</div> <div style=\"height: 100px; border: 1px solid black;\">Work in Progress<form enctype=\"multipart/form-data\" method=\"post\"> <label for=\"ftu\">Select file to load.</label> <input name=\"ftu\" type=\"file\" accept=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"> </form> </div> </div> ";
+    domStore[0].innerHTML = " <div class=\"problemManagerHeading\"> <h2>A1</h2> <h3>H3</h3> <h4>H4</h4> </div> <div class=\"uploadArea\"> <div>Batch Upload</div> <div style=\"height: 100px; border: 1px solid black;\"> Work in Progress <form enctype=\"multipart/form-data\" method=\"post\"> <label for=\"ftu\">Select file to load.</label> <input name=\"ftu\" type=\"file\" accept=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"> </form> </div> </div> ";
     tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([delgateGetter], null, "change", 65, 0, null, null, 0)];
   }
   htmlRoot = domStore[0].cloneNode(true);

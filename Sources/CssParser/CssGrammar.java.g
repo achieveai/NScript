@@ -70,6 +70,10 @@ tokens {
 	KEYFRAMES;
 	KEYFRAME;
 	KEYFRAMESELECTORS;
+	MEDIA;
+	MEDIA_QUERY;
+	MEDIA_TYPE;
+	MEDIA_FEATURE;
 }
 
 // @lexer::members {
@@ -115,10 +119,50 @@ imports
 //          it belongs to the signified medium.
 //
 media
-    : MEDIA_SYM medium (COMMA medium)*
+    : MEDIA_SYM mediaQuery (COMMA mediaQuery)*
         LBRACE
             ruleSet
         RBRACE
+		-> ^(MEDIA mediaQuery* ruleSet)
+    ;
+mediaQuery
+	: (op1='not')? mediaFeature ( 'and' mediaFeature)*
+		-> ^(MEDIA_QUERY $op1? mediaFeature*)
+	| (op1='not')? medium ('and' mediaFeature)*
+		-> ^(MEDIA_QUERY $op1? medium mediaFeature*)
+	;
+
+
+
+mediaFeature
+	: LPAREN property COLON term RPAREN
+		-> ^(MEDIA_FEATURE property term)
+	| LPAREN property RPAREN
+		-> ^(MEDIA_FEATURE property)
+	| rangeForm
+	;
+rangeForm
+	: LPAREN property comparisionOp term RPAREN
+		-> ^(MEDIA_FEATURE property term comparisionOp)
+	| LPAREN t1=term r1=rightDirectionOp property r2=rightDirectionOp t2=term RPAREN
+		-> ^(MEDIA_FEATURE property $t1 $r1 $t2 $r2)
+	| LPAREN t1=term l1=leftDirectionOp property l2=leftDirectionOp t2=term RPAREN
+		-> ^(MEDIA_FEATURE property $t1 $l1 $t2 $l2)
+	;
+
+comparisionOp
+	: leftDirectionOp
+	| rightDirectionOp
+	;
+
+leftDirectionOp
+	: '<='
+	| '<'
+	;
+
+rightDirectionOp
+	: '>='
+	| GREATER
     ;
 
 // ---------    
@@ -793,5 +837,3 @@ NL      : ('\r' '\n'? | '\n')   { $channel = HIDDEN;    }   ;
 // -------------
 //  Illegal.    Any other character shoudl not be allowed.
 //
-
-

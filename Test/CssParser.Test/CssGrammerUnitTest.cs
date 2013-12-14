@@ -267,5 +267,34 @@
             Assert.AreEqual("rgba", propertyArg.FunctionName);
             Assert.AreEqual(4, propertyArg.Args.Count);
         }
+
+        [Test]
+        public void MediaQueryTest()
+        {
+            var css = @"@media all and (max-width: 699px) and (width >= 200px) { #sidebar { } }";
+            CssGrammer grammer = new CssGrammer(css, false);
+            Assert.IsNotNull(grammer.MediaRules);
+            Assert.AreEqual(1, grammer.MediaRules.Count);
+            Assert.AreEqual(1, grammer.MediaRules[0].MediaQueires.Count);
+            Assert.AreEqual(3, grammer.MediaRules[0].MediaQueires[0].MediaRules.Count);
+
+            Assert.AreEqual(1, grammer.MediaRules[0].RuleSet.Count);
+
+            var mediaQuery = grammer.MediaRules[0].MediaQueires[0];
+            Assert.IsInstanceOf<MediaTypeRule>(mediaQuery.MediaRules[0]);
+            Assert.IsInstanceOf<PropertyEqualityRule>(mediaQuery.MediaRules[1]);
+            Assert.IsInstanceOf<PropertyRangeRule>(mediaQuery.MediaRules[2]);
+
+            Assert.AreEqual("all", ((MediaTypeRule)mediaQuery.MediaRules[0]).MediaType);
+            Assert.AreEqual("max-width", ((PropertyRule)mediaQuery.MediaRules[1]).PropertyName);
+            Assert.AreEqual("699px", ((PropertyEqualityRule)mediaQuery.MediaRules[1]).Value.ToString());
+
+            Assert.AreEqual("width", ((PropertyRule)mediaQuery.MediaRules[2]).PropertyName);
+            Assert.AreEqual("200px", ((PropertyRangeRule)mediaQuery.MediaRules[2]).RightValue.ToString());
+            Assert.AreEqual(">=", ((PropertyRangeRule)mediaQuery.MediaRules[2]).RightOp);
+
+            Assert.IsNull(((PropertyRangeRule)mediaQuery.MediaRules[2]).LeftValue);
+            Assert.IsNull(((PropertyRangeRule)mediaQuery.MediaRules[2]).LeftOp);
+        }
     }
 }

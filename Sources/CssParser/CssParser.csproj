@@ -59,6 +59,9 @@
     <Compile Include="CssStringPropertyValue.cs" />
     <Compile Include="CssUnitPropertyValue.cs" />
     <Compile Include="CssVisitor.cs" />
+    <Compile Include="Media.cs" />
+    <Compile Include="MediaQuery.cs" />
+    <Compile Include="MediaRule.cs" />
     <Compile Include="obj\Release\CssGrammerParser.cs" Condition=" '$(Configuration)' == 'Release' ">
       <Link>CssGrammerParser.cs</Link>
     </Compile>

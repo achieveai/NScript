@@ -435,6 +435,7 @@ namespace XwmlParser
                         var grammer = new CssParser.CssGrammer(childNode.InnerText);
                         this.documentContext.AddCssRules(grammer.Rules);
                         this.documentContext.AddKeyFrames(grammer.KeyFrames);
+                        this.documentContext.AddMediaRules(grammer.MediaRules);
                     }
                     else if (nodeType == NodeType.Template || nodeType == NodeType.Skin)
                     {

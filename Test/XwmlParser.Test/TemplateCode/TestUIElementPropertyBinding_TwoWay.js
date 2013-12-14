@@ -14,7 +14,7 @@ function TestUIElementPropertyBinding_TwoWay_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = " <div>This is a test.</div> ";
+    domStore[0].innerHTML = " <div> This is a test.</div> ";
     tmplStore[0] = tmplStore[0] ? tmplStore[0] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], setter, ["PropInt1"], settera, gettera, "TwoWayLooseBinding", 17, 0, 0, null, null, 11)];
   }
   htmlRoot = domStore[0].cloneNode(true);

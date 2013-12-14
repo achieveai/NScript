@@ -966,9 +966,6 @@ ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__LiveBinder____ctor(bin
   this.binderInfo = binderInfo;
   this.extraObjectArray = extraObjectArray;
 };
-ptyp_.get_binderInfo = function Sunlight__Framework__UI__Helpers__LiveBinder__get_BinderInfo() {
-  return this.binderInfo;
-};
 ptyp_.set_source = function Sunlight__Framework__UI__Helpers__LiveBinder__set_Source(value) {
   if (this.source !== value) {
     this.source = value;
@@ -2213,15 +2210,33 @@ ptyp_.queuedDeactivation = function Sunlight__Framework__UI__Helpers__SkinInstan
   }
 };
 ptyp_.updateBinderSource = function Sunlight__Framework__UI__Helpers__SkinInstance__UpdateBinderSource(source, sourceType) {
-  var liveBinders, liveBindersLength, iLiveBinder, liveBinder;
+  var liveBinders, binders, bindersLength, liveBindersLength, dataContextSetter, iBinder, iLiveBinder, binder, childElements, childElementLength, iChild, objectIndex, childElement;
   liveBinders = this.liveBinders;
-  if (System__Object__IsNullOrUndefined(liveBinders))
-    return;
-  liveBindersLength = this.liveBinders.length;
-  for (iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++) {
-    liveBinder = liveBinders[iLiveBinder];
-    if (!System__Object__IsNullOrUndefined(liveBinder) && (liveBinder.get_binderInfo().binderType & 7) == sourceType)
-      liveBinder.set_source(source);
+  binders = this.binders;
+  bindersLength = binders.length;
+  liveBindersLength = System__Object__IsNullOrUndefined(liveBinders) ? 0 : liveBinders.length;
+  dataContextSetter = Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetDataContext;
+  for (
+  iBinder = 0, iLiveBinder = 0; iBinder < bindersLength; iBinder++) {
+    binder = binders[iBinder];
+    if (binder.mode != 0 && iLiveBinder < liveBindersLength && !System__Object__IsNullOrUndefined(liveBinders[iLiveBinder])) {
+      if (sourceType == (binder.binderType & 7))
+        liveBinders[iLiveBinder].set_source(source);
+      iLiveBinder++;
+    }
+    else if (sourceType == (binder.binderType & 7))
+      Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetPropertyValue(binder, source, this.elementsOfIntrest[binder.objectIndex], this.extraObjects);
+  }
+  if (sourceType == 1) {
+    childElements = this.childElements;
+    childElementLength = childElements.length;
+    for (iChild = 0; iChild < childElementLength; iChild++) {
+      objectIndex = childElements[iChild];
+      childElement = System__NativeArray__GetFrom(this.elementsOfIntrest, childElements[iChild]);
+      if (!this.hasDataContextBinding[objectIndex])
+        childElement.set_dataContext(this.dataContext);
+      childElement.activate();
+    }
   }
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Helpers_SkinInstance, "Sunlight.Framework.UI.Helpers.SkinInstance", Object, []);

@@ -236,15 +236,15 @@ namespace XwmlParser.Binding
             SourceBindingInfo sourceBindingInfo,
             TargetBindingInfo targetBindingInfo)
         {
-            if (targetBindingInfo.BindingType.IsDelegate())
-            {
-                throw new ApplicationException("Converters are not supported for delegates.");
-            }
-
             Tuple<int, int> stringPart;
             if (!dict.TryGetValue(BindingPart.Converter, out stringPart))
             {
                 return null;
+            }
+
+            if (targetBindingInfo.BindingType.IsDelegate())
+            {
+                throw new ApplicationException("Converters are not supported for delegates.");
             }
 
             int argStartIndex = bindingStr.IndexOf('(', stringPart.Item1);
@@ -385,7 +385,7 @@ namespace XwmlParser.Binding
                 }
 
                 if (!fromType.ExtendsType(methodReference.Parameters[0].ParameterType)
-                    && !fromType.ExtendsType(methodReference.Parameters[0].ParameterType))
+                    && !fromType.ImplementsInterface(methodReference.Parameters[0].ParameterType))
                 {
                     continue;
                 }

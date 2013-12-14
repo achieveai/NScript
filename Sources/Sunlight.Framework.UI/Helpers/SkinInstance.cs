@@ -61,6 +61,9 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         private NativeArray<LiveBinder> liveBinders;
 
+        /// <summary>
+        /// The has data context binding.
+        /// </summary>
         private NativeArray<bool> hasDataContextBinding;
 
         /// <summary>
@@ -73,14 +76,29 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         private StringDictionary<int> partIdMapping;
 
+        /// <summary>
+        /// The skinable parent.
+        /// </summary>
         private UISkinableElement skinableParent;
 
+        /// <summary>
+        /// Context for the data.
+        /// </summary>
         private object dataContext;
 
+        /// <summary>
+        /// true to first activation done.
+        /// </summary>
         private bool firstActivationDone;
 
+        /// <summary>
+        /// true if data context updated.
+        /// </summary>
         private bool dataContextUpdated;
 
+        /// <summary>
+        /// true if template parent updated.
+        /// </summary>
         private bool templateParentUpdated;
 
         /// <summary>
@@ -471,17 +489,49 @@ namespace Sunlight.Framework.UI.Helpers
         private void UpdateBinderSource(object source, BinderType sourceType)
         {
             var liveBinders = this.liveBinders;
-            if (object.IsNullOrUndefined(liveBinders))
-            { return; }
+            var binders = this.binders;
+            var bindersLength = binders.Length;
+            var liveBindersLength = object.IsNullOrUndefined(liveBinders) ? 0 : liveBinders.Length;
+            Action<UIElement, object> dataContextSetter = SkinBinderHelper.SetDataContext;
 
-            var liveBindersLength = this.liveBinders.Length;
-            for (int iLiveBinder = 0; iLiveBinder < liveBindersLength; iLiveBinder++)
+            for (int iBinder = 0, iLiveBinder = 0; iBinder < bindersLength; iBinder++)
             {
-                var liveBinder = liveBinders[iLiveBinder];
-                if (!object.IsNullOrUndefined(liveBinder)
-                    && (liveBinder.BinderInfo.BinderType & BinderType.TargetTypes) == sourceType)
+                var binder = binders[iBinder];
+                if (binder.Mode != DataBindingMode.OneTime
+                    && iLiveBinder < liveBindersLength
+                    && !object.IsNullOrUndefined(liveBinders[iLiveBinder]))
                 {
-                    liveBinder.Source = source;
+                    if (sourceType == (binder.BinderType & BinderType.TargetTypes))
+                    {
+                        liveBinders[iLiveBinder].Source = source;
+                    }
+
+                    iLiveBinder++;
+                }
+                else if (sourceType == (binder.BinderType & BinderType.TargetTypes))
+                {
+                    SkinBinderHelper.SetPropertyValue(
+                        binder,
+                        source,
+                        this.elementsOfIntrest[binder.ObjectIndex],
+                        this.extraObjects);
+                }
+            }
+
+            if (sourceType == BinderType.DataContext)
+            {
+                var childElements = this.childElements;
+                var childElementLength = childElements.Length;
+                for (int iChild = 0; iChild < childElementLength; iChild++)
+                {
+                    var objectIndex = childElements[iChild];
+                    var childElement = this.elementsOfIntrest.GetFrom<UIElement>(childElements[iChild]);
+                    if (!this.hasDataContextBinding[objectIndex])
+                    {
+                        childElement.DataContext = dataContext;
+                    }
+
+                    childElement.Activate();
                 }
             }
         }

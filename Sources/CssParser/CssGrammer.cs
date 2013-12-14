@@ -19,6 +19,7 @@ namespace CssParser
         private List<CssRule> rules;
         private List<CssProperty> properties;
         private List<CssKeyframes> keyFrames;
+        private List<Media> mediaRules;
         public CssGrammer(string css, bool parseProperties = false)
         {
             ANTLRStringStream input = new ANTLRStringStream(css);
@@ -44,6 +45,11 @@ namespace CssParser
 
         public List<CssKeyframes> KeyFrames
         { get { return this.keyFrames; } }
+
+        public List<Media> MediaRules
+        {
+            get { return this.mediaRules; }
+        }
 
         public List<CssProperty> Properties
         { get { return this.properties; } }
@@ -94,9 +100,113 @@ namespace CssParser
                 case "KEYFRAMES":
                     this.keyFrames.Add(this.ParseKeyframes(tree));
                     break;
+                case "MEDIA":
+                    if (this.mediaRules == null)
+                    {
+                        this.mediaRules = new List<Media>();
+                    }
+
+                    this.mediaRules.Add(this.ParseMediaElement(tree));
+                    break;
                 default:
                     break;
             }
+        }
+
+        private Media ParseMediaElement(ITree tree)
+        {
+            var backKeyFrames = this.keyFrames;
+            var backRules = this.rules;
+
+            this.keyFrames = new List<CssKeyframes>();
+            this.rules = new List<CssRule>();
+            List<MediaQuery> mediaQueries = new List<MediaQuery>();
+            try
+            {
+                for (int iChild = 0; iChild < tree.ChildCount; iChild++)
+                {
+                    var child = tree.GetChild(iChild);
+                    switch (child.Text)
+                    {
+                        case "MEDIA_QUERY":
+                            mediaQueries.Add(this.ParseMediaQuery(child));
+                            break;
+                        case "RULE":
+                            this.rules.Add(this.ParseRule(child));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                return new Media(
+                    mediaQueries,
+                    rules,
+                    this.keyFrames);
+            }
+            finally
+            {
+                this.keyFrames = backKeyFrames;
+                this.rules = backRules;
+            }
+        }
+
+        private MediaQuery ParseMediaQuery(ITree tree)
+        {
+            bool hasNotOp = false;
+            List<MediaRule> mediaRules = new List<MediaRule>();
+
+            for (int iChild = 0; iChild < tree.ChildCount; iChild++)
+            {
+                var child = tree.GetChild(iChild);
+                switch (child.Text)
+                {
+                    case "MEDIA_FEATURE":
+                        mediaRules.Add(this.ParseMediaFeature(child));
+                        break;
+                    case "not":
+                        hasNotOp = true;
+                        break;
+                    default:
+                        mediaRules.Add(new MediaTypeRule(child.Text));
+                        break;
+                }
+            }
+
+            return new MediaQuery(mediaRules, hasNotOp);
+        }
+
+        private PropertyRule ParseMediaFeature(ITree child)
+        {
+            string propertyName = child.GetChild(0).Text;
+
+            if (child.ChildCount == 1)
+            {
+                return new PropertyRule(propertyName);
+            }
+
+            CssPropertyValue value1 = this.ParsePropertyValue(child.GetChild(1));
+            if (child.ChildCount == 2)
+            {
+                return new PropertyEqualityRule(propertyName, value1);
+            }
+
+            string op = child.GetChild(2).Text;
+
+            if (child.ChildCount == 3)
+            {
+                return new PropertyRangeRule(
+                    propertyName,
+                    op,
+                    value1);
+            }
+
+            return new PropertyRangeRule(
+                value1,
+                op,
+                propertyName,
+                child.GetChild(4).Text,
+                this.ParsePropertyValue(child.GetChild(3)));
         }
 
         private CssKeyframes ParseKeyframes(ITree tree)
@@ -395,43 +505,47 @@ namespace CssParser
             {
                 rv.Add(
                     new CssPropertyValueSet(
-                        this.ParsePropertyValue(tree.GetChild(iChild))));
+                        this.ParsePropertyValues(tree.GetChild(iChild))));
             }
 
             return rv;
         }
 
-        private List<CssPropertyValue> ParsePropertyValue(ITree tree)
+        private List<CssPropertyValue> ParsePropertyValues(ITree tree)
         {
             List<CssPropertyValue> rv = new List<CssPropertyValue>();
             for (int iChild = 0; iChild < tree.ChildCount; iChild++)
             {
                 var child = tree.GetChild(iChild);
-                switch (child.Text)
+                var propValue = this.ParsePropertyValue(child);
+                if (propValue != null)
                 {
-                    case "UNIT_VAL":
-                        rv.Add(this.ParseUnitValue(child));
-                        break;
-                    case "IDENTIFIER":
-                        rv.Add(new CssIdentifierPropertyValue(child.GetChild(0).Text));
-                        break;
-                    case "STRING_VAL":
-                        rv.Add(new CssStringPropertyValue(child.GetChild(0).Text));
-                        break;
-                    case "FUNCTION":
-                        rv.Add(this.ParseFunction(child));
-                        break;
-                    case "URL_VAL":
-                        throw new NotImplementedException();
-                    case "COLOR":
-                        rv.Add(new CssColorPropertyValue(child.GetChild(0).Text));
-                        break;
-                    default:
-                        break;
+                    rv.Add(propValue);
                 }
             }
 
             return rv;
+        }
+
+        public CssPropertyValue ParsePropertyValue(ITree child)
+        {
+            switch (child.Text)
+            {
+                case "UNIT_VAL":
+                    return this.ParseUnitValue(child);
+                case "IDENTIFIER":
+                    return new CssIdentifierPropertyValue(child.GetChild(0).Text);
+                case "STRING_VAL":
+                    return new CssStringPropertyValue(child.GetChild(0).Text);
+                case "FUNCTION":
+                    return this.ParseFunction(child);
+                case "URL_VAL":
+                    throw new NotImplementedException();
+                case "COLOR":
+                    return new CssColorPropertyValue(child.GetChild(0).Text);
+                default:
+                    return null;
+            }
         }
 
         private CssPropertyValue ParseFunction(ITree tree)

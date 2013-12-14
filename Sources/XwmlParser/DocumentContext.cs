@@ -34,6 +34,8 @@ namespace XwmlParser
 
         List<CssParser.CssKeyframes> keyFrames = new List<CssParser.CssKeyframes>();
 
+        List<CssParser.Media> mediaRules = new List<CssParser.Media>();
+
         /// <summary>
         /// Stack of namespaces.
         /// </summary>
@@ -201,6 +203,23 @@ namespace XwmlParser
                     keyframes);
             }
 
+            foreach (var media in this.mediaRules)
+            {
+                CssSerializerVisitor.Instance.Process(
+                    sb,
+                    media,
+                    (cn) =>
+                    {
+                        IIdentifier identifier;
+                        this.TryGetCssClassIdentifier(cn.ClassName, out identifier);
+                        return identifier.GetName();
+                    },
+                    (idN) =>
+                    {
+                        return idN.Id;
+                    });
+            }
+
             return sb.ToString();
         }
 
@@ -230,6 +249,15 @@ namespace XwmlParser
         internal void AddKeyFrames(List<CssParser.CssKeyframes> list)
         {
             this.keyFrames.AddRange(list);
+        }
+
+        internal void AddMediaRules(List<CssParser.Media> mediaRules)
+        {
+            if (mediaRules != null
+                && mediaRules.Count > 0)
+            {
+                this.mediaRules.AddRange(mediaRules);
+            }
         }
     }
 }

@@ -10,6 +10,31 @@
                 color: rgba(10,20,30,.4);
                 transform: translate3d(10px, 40px, 10%);
             }
+
+            @media tv and (height >= 200px),
+                (height: 400px) and (300px <= width < 500px) {
+                .testClass {
+                    text-align: center;
+                }
+            }
+
+            .testClass {
+                animation: newAnim .5s ease;
+            }
+
+            @keyframes newAnim {
+                from {
+                    height: 50px;
+                }
+
+                85% {
+                    height: 95px;
+                }
+
+                to {
+                    height: 100px;
+                }
+            }
         </style>
     </head>
     <body>

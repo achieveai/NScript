@@ -54,8 +54,8 @@ using System.Text;
             "writing-mode",
             "word-wrap",
             "zoom"
-
         };
+
         private static CssSerializerVisitor instance;
         private CssParser.CssVisitorHelper helper;
         private  Func<CssClassName,string> onClassNameFound;
@@ -84,6 +84,27 @@ using System.Text;
         public void Process(
             StringBuilder sb,
             CssParser.CssRule rule,
+            Func<CssParser.CssClassName, string> onClassNameFound,
+            Func<CssParser.CssId, string> onIdFound)
+        {
+            try
+            {
+                this.stringBuilder = sb;
+                this.onClassNameFound = onClassNameFound;
+                this.onIdFound = onIdFound;
+                this.Visit(rule);
+            }
+            finally
+            {
+                this.stringBuilder = null;
+                this.onClassNameFound = null;
+                this.onIdFound = null;
+            }
+        }
+
+        public void Process(
+            StringBuilder sb,
+            CssParser.Media rule,
             Func<CssParser.CssClassName, string> onClassNameFound,
             Func<CssParser.CssId, string> onIdFound)
         {
@@ -309,6 +330,29 @@ using System.Text;
             this.stringBuilder.Append("{");
             this.WriteProperties(obj.Properties);
             this.stringBuilder.Append("}");
+            return false;
+        }
+
+        public override bool Visit(Media media)
+        {
+            this.stringBuilder.Append("@media ");
+            for (int iQuery = 0; iQuery < media.MediaQueires.Count; iQuery++)
+            {
+                if (iQuery > 0)
+                {
+                    this.stringBuilder.Append(", ");
+                }
+
+                this.stringBuilder.Append(media.MediaQueires[iQuery]);
+            }
+
+            this.stringBuilder.Append('{');
+            for (int iRule = 0; iRule < media.RuleSet.Count; iRule++)
+            {
+                this.Visit(media.RuleSet[iRule]);
+            }
+
+            this.stringBuilder.Append('}');
             return false;
         }
 

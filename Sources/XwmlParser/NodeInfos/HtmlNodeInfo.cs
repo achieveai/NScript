@@ -234,7 +234,7 @@ namespace XwmlParser.NodeInfos
                         attr.Line,
                         attr.LinePosition),
                     ex.Message,
-                    true);
+                    false);
             }
             catch(Exception ex)
             {

@@ -52,6 +52,36 @@ namespace CssParser
         { return true; }
         public virtual bool Visit(CssKeyframe obj)
         { return true; }
+
+        public virtual bool Visit(Media media)
+        {
+            return true;
+        }
+
+        public virtual bool Visit(MediaQuery mediaQuery)
+        {
+            return true;
+        }
+
+        public virtual bool Visit(MediaTypeRule mediaTypeRule)
+        {
+            return true;
+        }
+
+        public virtual bool Visit(PropertyRule propertyRule)
+        {
+            return true;
+        }
+
+        public virtual bool Visit(PropertyEqualityRule propertyEqualityRule)
+        {
+            return true;
+        }
+
+        public virtual bool Visit(PropertyRangeRule propertyRangeRule)
+        {
+            return true;
+        }
     }
 
     public sealed class CssVisitorHelper
@@ -145,6 +175,44 @@ namespace CssParser
                 this.Visit(item);
             }
         }
+        public void Visit(Media media)
+        {
+            foreach (var query in media.MediaQueires)
+            {
+                this.Visit(query);
+            }
+
+            foreach (var rule in media.RuleSet)
+            {
+                this.Visit(rule);
+            }
+        }
+        public void Visit(MediaQuery mediaQuery)
+        {
+            foreach (var rule in mediaQuery.MediaRules)
+            {
+                this.Visit(rule);
+            }
+        }
+        public void Visit(MediaTypeRule mediaTypeRule)
+        {
+        }
+        public void Visit(PropertyRule propertyRule)
+        {
+        }
+        public void Visit(PropertyEqualityRule propertyEqualityRule)
+        {
+            this.Visit(propertyEqualityRule.Value);
+        }
+        public void Visit(PropertyRangeRule propertyRangeRule)
+        {
+            if (propertyRangeRule.LeftValue != null)
+            {
+                this.Visit(propertyRangeRule.LeftValue);
+            }
+
+            this.Visit(propertyRangeRule.RightValue);
+        }
         public void Visit(object obj)
         {
             if (obj == null)
@@ -209,6 +277,26 @@ namespace CssParser
                 case "CssClassName":
                     if (this.innerVisitor.Visit((CssClassName)obj))
                         this.Visit((CssClassName)obj);
+                    break;
+                case "Media":
+                    if (this.innerVisitor.Visit((Media)obj))
+                        this.Visit((Media)obj);
+                    break;
+                case "MediaQuery":
+                    if (this.innerVisitor.Visit((MediaQuery)obj))
+                        this.Visit((MediaQuery)obj);
+                    break;
+                case "PropertyRule":
+                    if (this.innerVisitor.Visit((PropertyRule)obj))
+                        this.Visit((PropertyRule)obj);
+                    break;
+                case "PropertyEqualityRule":
+                    if (this.innerVisitor.Visit((PropertyEqualityRule)obj))
+                        this.Visit((PropertyEqualityRule)obj);
+                    break;
+                case "PropertyRangeRule":
+                    if (this.innerVisitor.Visit((PropertyRangeRule)obj))
+                        this.Visit((PropertyRangeRule)obj);
                     break;
                 case "AllSelector":
                     if (this.innerVisitor.Visit((AllSelector)obj))
