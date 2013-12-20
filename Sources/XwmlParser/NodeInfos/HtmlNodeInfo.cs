@@ -205,7 +205,7 @@ namespace XwmlParser.NodeInfos
                     binderInfo =
                         BindingParser.ParseBinding(
                             new AttributeTargetBindingInfo(
-                                parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
+                                parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.String,
                                 attr.OriginalName),
                             attr.Value,
                             parser.DocumentContext,

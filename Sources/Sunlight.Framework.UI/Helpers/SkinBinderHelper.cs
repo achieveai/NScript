@@ -176,8 +176,7 @@ namespace Sunlight.Framework.UI.Helpers
                 source = binder.PropertyGetterPath[iGetter](source);
             }
 
-            if (binder.ForwardConverter != null
-                && source != null)
+            if (binder.ForwardConverter != null)
             {
                 source = binder.ForwardConverter(source);
             }

@@ -763,6 +763,14 @@ namespace XwmlParser
             return methodExpression.Name;
         }
 
+        /// <summary>
+        /// Gets to converter identifier.
+        /// </summary>
+        /// <exception cref="NotSupportedException"> Thrown when the requested operation is not supported. </exception>
+        /// <param name="converterInfo"> Information describing the converter. </param>
+        /// <returns>
+        /// to converter identifier.
+        /// </returns>
         internal IIdentifier GetToConverterIdentifier(ConverterInfo converterInfo)
         {
             IIdentifier rv = null;
@@ -836,7 +844,7 @@ namespace XwmlParser
                     this.scopeManager));
 
             rv = SimpleIdentifier.CreateScopeIdentifier(
-                    methodScope,
+                    this.scopeManager.Scope,
                     "converter",
                     false);
 

@@ -1699,7 +1699,7 @@ function Sunlight__Framework__UI__Helpers__SkinBinderHelper__TraversePropertyPat
   for (
   iGetter = 0, pathLength = binder.propertyGetterPath.length; iGetter < pathLength; iGetter++)
     source = binder.propertyGetterPath[iGetter](source);
-  if (binder.forwardConverter && source !== null)
+  if (binder.forwardConverter)
     source = binder.forwardConverter(source);
   return source;
 };

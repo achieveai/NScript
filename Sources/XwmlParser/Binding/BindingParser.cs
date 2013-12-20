@@ -368,29 +368,32 @@ namespace XwmlParser.Binding
                 methodName);
 
             List<MethodReference> rv = new List<MethodReference>();
-            foreach (var methodReference in probableMethodReferences)
+            if (probableMethodReferences != null)
             {
-                if (!methodReference.IsStatic()
-                    || !methodReference.HasParameters
-                    || methodReference.HasGenericParameters
-                    || methodReference.Parameters[0].Attributes == ParameterAttributes.Out)
+                foreach (var methodReference in probableMethodReferences)
                 {
-                    continue;
-                }
+                    if (!methodReference.IsStatic()
+                        || !methodReference.HasParameters
+                        || methodReference.HasGenericParameters
+                        || methodReference.Parameters[0].Attributes == ParameterAttributes.Out)
+                    {
+                        continue;
+                    }
 
-                if (!methodReference.ReturnType.ExtendsType(toType)
-                    && !methodReference.ReturnType.ImplementsInterface(toType))
-                {
-                    continue;
-                }
+                    if (!methodReference.ReturnType.ExtendsType(toType)
+                        && !methodReference.ReturnType.ImplementsInterface(toType))
+                    {
+                        continue;
+                    }
 
-                if (!fromType.ExtendsType(methodReference.Parameters[0].ParameterType)
-                    && !fromType.ImplementsInterface(methodReference.Parameters[0].ParameterType))
-                {
-                    continue;
-                }
+                    if (!fromType.ExtendsType(methodReference.Parameters[0].ParameterType)
+                        && !fromType.ImplementsInterface(methodReference.Parameters[0].ParameterType))
+                    {
+                        continue;
+                    }
 
-                rv.Add(methodReference);
+                    rv.Add(methodReference);
+                }
             }
 
             return rv;
