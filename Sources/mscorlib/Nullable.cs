@@ -95,7 +95,7 @@ namespace System
             }
         }
 
-        public bool Equals(object other)
+        public override bool Equals(object other)
         {
             if (other == null)
                 return !this.HasValue;
@@ -103,6 +103,11 @@ namespace System
                 return false;
 
             return Equals((Nullable<T>)other);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public bool Equals(Nullable<T> other)

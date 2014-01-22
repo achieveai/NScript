@@ -1517,7 +1517,22 @@ namespace JsCsc.Lib
 
         public JObject Visit(NewAnonymousType expression)
         {
-            throw new NotImplementedException();
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.NewAnonymousType;
+            rv[NameTokens.Loc] = expression.GetStrLoc();
+
+            JArray jArray = new JArray();
+            foreach (var parameter in expression.Parameters)
+            {
+                JObject jo = new JObject();
+                jo[NameTokens.Name] = parameter.Name;
+                jo[NameTokens.Value] = this.Dispatch(parameter.Expr);
+
+                jArray.Add(jo);
+            }
+
+            rv[NameTokens.Setter] = jArray;
+            return rv;
         }
 
         public JObject Visit(AnonymousTypeParameter expression)
@@ -1597,6 +1612,59 @@ namespace JsCsc.Lib
 
         public JObject Visit(ExpressionStatement expression)
         { throw new NotImplementedException(); }
+
+        public JObject Visit(DynamicExpressionStatement expression)
+        {
+            return this.Dispatch(expression.Binder);
+        }
+
+        public JObject Visit(DynamicEventCompoundAssign expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JObject Visit(DynamicConversion expression)
+        {
+            return this.Dispatch(expression.BinderExpression);
+        }
+
+        public JObject Visit(DynamicConstructorBinder expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JObject Visit(DynamicIndexBinder expression)
+        {
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.DynamicIndexBinder;
+            rv[NameTokens.Loc] = expression.GetStrLoc();
+            rv[NameTokens.Instance] = this.Dispatch(expression.Arguments[0].Expr);
+            rv[NameTokens.Index] = this.Dispatch(expression.Arguments[1].Expr);
+
+            return rv;
+        }
+
+        public JObject Visit(DynamicInvocation expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JObject Visit(DynamicMemberBinder expression)
+        {
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.DynamicMemberBinder;
+            rv[NameTokens.Loc] = expression.GetStrLoc();
+            rv[NameTokens.Name] = expression.Name;
+            rv[NameTokens.Instance] = this.Dispatch(expression.Arguments[0].Expr);
+            rv[NameTokens.Value] = this.Dispatch(expression.Setter);
+
+            return rv;
+        }
+
+        public JObject Visit(DynamicUnaryConversion expression)
+        {
+            throw new NotImplementedException();
+        }
 
         public JObject Visit(AsyncInitializer expression)
         { throw new NotImplementedException(); }

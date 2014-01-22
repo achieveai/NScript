@@ -143,6 +143,14 @@ namespace JsCsc.Lib
             map.Add(typeof(OrderByDescending), (visitor, expr) => visitor.Visit((OrderByDescending)expr));
             map.Add(typeof(ThenByDescending), (visitor, expr) => visitor.Visit((ThenByDescending)expr));
             map.Add(typeof(DynamicResultCast), (visitor, expr) => visitor.Visit((DynamicResultCast)expr));
+            map.Add(typeof(DynamicMemberAssignable), (visitor, expr) => visitor.Visit((DynamicMemberAssignable)expr));
+            map.Add(typeof(DynamicEventCompoundAssign), (visitor, expr) => visitor.Visit((DynamicEventCompoundAssign)expr));
+            map.Add(typeof(DynamicIndexBinder), (visitor, expr) => visitor.Visit((DynamicIndexBinder)expr));
+            map.Add(typeof(DynamicMemberBinder), (visitor, expr) => visitor.Visit((DynamicMemberBinder)expr));
+            map.Add(typeof(DynamicInvocation), (visitor, expr) => visitor.Visit((DynamicInvocation)expr));
+            map.Add(typeof(DynamicUnaryConversion), (visitor, expr) => visitor.Visit((DynamicUnaryConversion)expr));
+            map.Add(typeof(DynamicConversion), (visitor, expr) => visitor.Visit((DynamicConversion)expr));
+            map.Add(typeof(DynamicExpressionStatement), (visitor, expr) => visitor.Visit((DynamicExpressionStatement)expr));
             map.Add(typeof(Unary), (visitor, expr) => visitor.Visit((Unary)expr));
             map.Add(typeof(BooleanExpressionFalse), (visitor, expr) => visitor.Visit((BooleanExpressionFalse)expr));
             map.Add(typeof(LiftedUnaryOperator), (visitor, expr) => visitor.Visit((LiftedUnaryOperator)expr));

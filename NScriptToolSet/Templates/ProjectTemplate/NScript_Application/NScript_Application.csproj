@@ -46,6 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(NScriptToolSetPath)\lib\mscorlib.dll"/>
+    <Reference Include="$(NScriptToolSetPath)\lib\System.Core.dll"/>
+    <Reference Include="$(NScriptToolSetPath)\lib\Microsoft.CSharp.dll"/>
     <Reference Include="$(NScriptToolSetPath)\lib\System.Web.dll"/>
     <Reference Include="$(NScriptToolSetPath)\lib\System.Web.Html.dll"/>
   </ItemGroup>

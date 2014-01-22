@@ -183,7 +183,6 @@
         private static void LoadMcsCorlibAssemblies()
         {
             string[] mscorlibFileNames = new string[]
-
             #region fileNames
 
             {
@@ -213,12 +212,16 @@
                 @"Collections\ArrayList.cs",
                 @"Collections\ArrayMapCallback.cs",
                 @"Collections\Dictionary.cs",
+                @"Collections\EqualityComparer.cs",
                 @"Collections\DictionaryEntry.cs",
                 @"Collections\Generic\ICollection.cs",
                 @"Collections\Generic\IDictionary.cs",
                 @"Collections\Generic\IEnumerable.cs",
+                @"Collections\Generic\IEqualityComparer.cs",
                 @"Collections\Generic\IList.cs",
                 @"Collections\Generic\INumberDictionary.cs",
+                @"Collections\Generic\IReadOnlyCollection.cs",
+                @"Collections\Generic\IReadOnlyList.cs",
                 @"Collections\Generic\IStringDictionary.cs",
                 @"Collections\Generic\KeyValuePair.cs",
                 @"Collections\Generic\List.cs",
@@ -227,7 +230,9 @@
                 @"Collections\IEnumerable.cs",
                 @"Collections\IEnumerator.cs",
                 @"Collections\ICollection.cs",
+                @"Collections\IEqualityComparer.cs",
                 @"Collections\IList.cs",
+                @"Collections\ObjectModel\ReadOnlyCollection.cs",
                 @"Collections\Queue.cs",
                 @"Collections\Stack.cs",
                 @"CompareCallback.cs",
@@ -271,21 +276,64 @@
                 @"ObsoleteAttribute.cs",
                 @"ParamArrayAttribute.cs",
                 @"Record.cs",
+                @"Reflection\Assembly.cs",
                 @"Reflection\AssemblyCompanyAttribute.cs",
                 @"Reflection\AssemblyConfigurationAttribute.cs",
+                @"Reflection\AssemblyContentType.cs",
                 @"Reflection\AssemblyCopyrightAttribute.cs",
                 @"Reflection\AssemblyCultureAttribute.cs",
                 @"Reflection\AssemblyDelaySignAttribute.cs",
                 @"Reflection\AssemblyDescriptionAttribute.cs",
                 @"Reflection\AssemblyFileVersionAttribute.cs",
+                @"Reflection\AssemblyHashAlgorithm.cs",
                 @"Reflection\AssemblyInformationalVersionAttribute.cs",
                 @"Reflection\AssemblyKeyFileAttribute.cs",
+                @"Reflection\AssemblyName.cs",
+                @"Reflection\AssemblyNameFlags.cs",
                 @"Reflection\AssemblyProductAttribute.cs",
                 @"Reflection\AssemblyTitleAttribute.cs",
                 @"Reflection\AssemblyTrademarkAttribute.cs",
                 @"Reflection\AssemblyVersionAttribute.cs",
                 @"Reflection\DefaultMemberAttribute.cs",
                 @"RegularExpression.cs",
+                @"Reflection\AssemblyVersionCompatibility.cs",
+    			@"Reflection\Binder.cs",
+    			@"Reflection\BindingFlags.cs",
+    			@"Reflection\CallingConventions.cs",
+    			@"Reflection\ConstructorInfo.cs",
+    			@"Reflection\CustomAttributeData.cs",
+    			@"Reflection\CustomAttributeNameArgument.cs",
+    			@"Reflection\CustomAttributeTypedArgument.cs",
+    			@"Reflection\DefaultMemberAttribute.cs",
+    			@"Reflection\EventAttributes.cs",
+    			@"Reflection\EventInfo.cs",
+    			@"Reflection\ExceptionHandlingClause.cs",
+    			@"Reflection\FieldAttribute.cs",
+    			@"Reflection\FieldInfo.cs",
+    			@"Reflection\ICustomAttributeProvider.cs",
+    			@"Reflection\IReflectableType.cs",
+    			@"Reflection\LocalVariableInfo.cs",
+    			@"Reflection\MemberInfo.cs",
+    			@"Reflection\MemberTypes.cs",
+    			@"Reflection\MethodAttributes.cs",
+    			@"Reflection\MethodBase.cs",
+    			@"Reflection\MethodBody.cs",
+    			@"Reflection\MethodImplAttributes.cs",
+    			@"Reflection\MethodInfo.cs",
+    			@"Reflection\Module.cs",
+    			@"Reflection\ModuleHandle.cs",
+    			@"Reflection\ParameterAttributes.cs",
+    			@"Reflection\ParameterInfo.cs",
+    			@"Reflection\ParameterModifier.cs",
+    			@"Reflection\ProcessorArchitecture.cs",
+    			@"Reflection\PropertyAttributes.cs",
+    			@"Reflection\PropertyInfo.cs",
+    			@"Reflection\RuntimeMethodHandle.cs",
+    			@"Reflection\RuntimeModule.cs",
+    			@"Reflection\StrongNameKeyPair.cs",
+    			@"Reflection\TypedReference.cs",
+    			@"Reflection\TypeInfo.cs",
+    			@"Reflection\Version.cs",
                 @"RuntimeFieldHandle.cs",
                 @"RuntimeTypeHandle.cs",
                 @"Runtime\CompilerServices\AlternateSignatureAttribute.cs",
@@ -300,6 +348,7 @@
                 @"Runtime\CompilerServices\IgnoreNamespaceAttribute.cs",
                 @"Runtime\CompilerServices\ExtendedAttribute.cs",
                 @"Runtime\CompilerServices\IntrinsicPropertyAttribute.cs",
+                @"Runtime\CompilerServices\IsVolatile.cs",
                 @"Runtime\CompilerServices\KeepInstanceUsage.cs",
                 @"Runtime\CompilerServices\MakeStaticUsage.cs",
                 @"Runtime\CompilerServices\MixinAttribute.cs",
@@ -319,7 +368,11 @@
                 @"Runtime\CompilerServices\ScriptNamespaceAttribute.cs",
                 @"Runtime\CompilerServices\ScriptQualifierAttribute.cs",
                 @"Runtime\CompilerServices\ScriptSkipAttribute.cs",
+                @"Runtime\CompilerServices\Serializable.cs",
                 @"Runtime\CompilerServices\UsedAttribure.cs",
+                @"Runtime\CompilerServices\ClassInterfaceAttribute.cs",
+                @"Runtime\CompilerServices\ComDefaultInterfaceAttribute.cs",
+                @"Runtime\CompilerServices\ComVisible.cs",
                 @"Runtime\InteropServices\OutAttribute.cs",
                 @"Runtime\Versioning\TargetFrameworkAttribute.cs",
                 @"SByte.cs",
@@ -361,12 +414,123 @@
                 false,
                 "mscorlibKey.snk");
         }
+        private static void LoadSystemCoreAssembly()
+        {
+            string[] mscorlibFileNames = new string[]
+            #region fileNames
+
+            {
+                @"Dynamic\BinaryOperationBinder.cs",
+                @"Dynamic\BindingRestrictions.cs",
+                @"Dynamic\CallInfo.cs",
+                @"Dynamic\ConvertBinder.cs",
+                @"Dynamic\CreateInstanceBinder.cs",
+                @"Dynamic\DeleteIndexBinder.cs",
+                @"Dynamic\DeleteMemberBinder.cs",
+                @"Dynamic\DynamicMetaObject.cs",
+                @"Dynamic\DynamicMetaObjectBinder.cs",
+                @"Dynamic\DynamicObject.cs",
+                @"Dynamic\ExpandoObject.cs",
+                @"Dynamic\GetIndexBinder.cs",
+                @"Dynamic\GetmemberBinder.cs",
+                @"Dynamic\IDynamicMetaObjectProvider.cs",
+                @"Dynamic\IInvokeOnGetBinder.cs",
+                @"Dynamic\InvokeBinder.cs",
+                @"Dynamic\InvokeMemberBinder.cs",
+                @"Dynamic\SetIndexBinder.cs",
+                @"Dynamic\SetMemberBinder.cs",
+                @"Dynamic\UnaryOperationBinder.cs",
+                @"Linq\Expressions\BinaryExpression.cs",
+                @"Linq\Expressions\BlockExpression.cs",
+                @"Linq\Expressions\CatchBlock.cs",
+                @"Linq\Expressions\ConditionalExpression.cs",
+                @"Linq\Expressions\ConstantExpression.cs",
+                @"Linq\Expressions\DebugInfoExpression.cs",
+                @"Linq\Expressions\DefaultExpression.cs",
+                @"Linq\Expressions\DynamicExpression.cs",
+                @"Linq\Expressions\DynamicExpressionVisitor.cs",
+                @"Linq\Expressions\ElementInit.cs",
+                @"Linq\Expressions\Expression.cs",
+                @"Linq\Expressions\ExpressionType.cs",
+                @"Linq\Expressions\ExpressionVisitor.cs",
+                @"Linq\Expressions\GotoExpression.cs",
+                @"Linq\Expressions\GotoExpressionKind.cs",
+                @"Linq\Expressions\IndexExpression.cs",
+                @"Linq\Expressions\InvocationExpression.cs",
+                @"Linq\Expressions\LabelExpression.cs",
+                @"Linq\Expressions\LabelTarget.cs",
+                @"Linq\Expressions\LambdaExpression.cs",
+                @"Linq\Expressions\ListInitExpression.cs",
+                @"Linq\Expressions\LoopExpression.cs",
+                @"Linq\Expressions\MemberAssignment.cs",
+                @"Linq\Expressions\MemberBinding.cs",
+                @"Linq\Expressions\MemberBindingType.cs",
+                @"Linq\Expressions\MemberExpression.cs",
+                @"Linq\Expressions\MemberInitExpression.cs",
+                @"Linq\Expressions\MemberListBinding.cs",
+                @"Linq\Expressions\MemberMemberBinding.cs",
+                @"Linq\Expressions\MethodCallExpression.cs",
+                @"Linq\Expressions\NewArrayExpression.cs",
+                @"Linq\Expressions\NewExpression.cs",
+                @"Linq\Expressions\ParameterExpression.cs",
+                @"Linq\Expressions\RuntimeVairablesExpression.cs",
+                @"Linq\Expressions\SwitchCase.cs",
+                @"Linq\Expressions\SwitchExpression.cs",
+                @"Linq\Expressions\SymbolDocumentInfo.cs",
+                @"Linq\Expressions\TryExpression.cs",
+                @"Linq\Expressions\TypeBinaryExpression.cs",
+                @"Linq\Expressions\UnaryExpression.cs",
+                @"Runtime\CompilerServices\CallSite.cs",
+                @"Runtime\CompilerServices\DynamicAttribute.cs"
+            };
+
+            #endregion fileNames
+
+            TestAssemblyLoader.DllBuilder.Build(
+                "sytem.core.dll",
+                Path.GetFullPath(@"..\..\..\..\Sources\mscorlib"),
+                mscorlibFileNames,
+                new string[]
+                {
+                    @"mscorlib.dll"
+                },
+                false,
+                "mscorlibKey.snk");
+        }
+
+        private static void LoadMicrosoftCSharpAssembly()
+        {
+            string[] mscorlibFileNames = new string[]
+            #region fileNames
+
+            {
+                @"RuntimeBinder\Binder.cs",
+                @"RuntimeBinder\CSharpArgumentInfo.cs",
+                @"RuntimeBinder\CSharpBinderFlags.cs",
+            };
+
+            #endregion fileNames
+
+            TestAssemblyLoader.DllBuilder.Build(
+                "microsoft.csharp.dll",
+                Path.GetFullPath(@"..\..\..\..\Sources\mscorlib"),
+                mscorlibFileNames,
+                new string[]
+                {
+                    @"mscorlib.dll",
+                    @"system.core.dll"
+                },
+                false,
+                "mscorlibKey.snk");
+        }
 
         private static void LoadMcsAssemblies()
         {
             string[] references = new string[]
             {
-                @"mscorlib.dll"
+                @"mscorlib.dll",
+                @"system.core.dll",
+                @"microsoft.csharp.dll"
             };
 
             string[] fileNames = new string[]

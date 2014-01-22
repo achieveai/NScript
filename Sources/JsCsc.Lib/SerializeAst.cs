@@ -1439,6 +1439,30 @@ namespace JsCsc.Lib
         public object Visit(ExpressionStatement expression)
         { throw new NotImplementedException(); }
 
+        public object Visit(DynamicExpressionStatement expression)
+        { throw new NotImplementedException(); }
+
+        public object Visit(DynamicEventCompoundAssign expression)
+        { throw new NotImplementedException(); }
+
+        public object Visit(DynamicConversion expression)
+        { throw new NotImplementedException(); }
+
+        public object Visit(DynamicConstructorBinder expression)
+        { throw new NotImplementedException(); }
+
+        public object Visit(DynamicIndexBinder expression)
+        { throw new NotImplementedException(); }
+
+        public object Visit(DynamicInvocation expression)
+        { throw new NotImplementedException(); }
+
+        public object Visit(DynamicMemberBinder expression)
+        { throw new NotImplementedException(); }
+
+        public object Visit(DynamicUnaryConversion expression)
+        { throw new NotImplementedException(); }
+
         public object Visit(AsyncInitializer expression)
         { throw new NotImplementedException(); }
 
@@ -1755,5 +1779,6 @@ namespace JsCsc.Lib
         {
             return this.dispatcher.Dispatch(statement);
         }
+
     }
 }

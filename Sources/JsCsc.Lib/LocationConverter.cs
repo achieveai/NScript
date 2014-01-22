@@ -885,6 +885,30 @@ namespace JsCsc.Lib
         public Location Visit(ExpressionStatement expression)
         { throw new NotImplementedException(); }
 
+        public Location Visit(DynamicExpressionStatement expression)
+        { throw new NotImplementedException(); }
+
+        public Location Visit(DynamicEventCompoundAssign expression)
+        { throw new NotImplementedException(); }
+
+        public Location Visit(DynamicConversion expression)
+        { throw new NotImplementedException(); }
+
+        public Location Visit(DynamicConstructorBinder expression)
+        { throw new NotImplementedException(); }
+
+        public Location Visit(DynamicIndexBinder expression)
+        { throw new NotImplementedException(); }
+
+        public Location Visit(DynamicInvocation expression)
+        { throw new NotImplementedException(); }
+
+        public Location Visit(DynamicMemberBinder expression)
+        { throw new NotImplementedException(); }
+
+        public Location Visit(DynamicUnaryConversion expression)
+        { throw new NotImplementedException(); }
+
         public Location Visit(DelegateInvocation expression)
         {
             if (expression.Arguments != null)

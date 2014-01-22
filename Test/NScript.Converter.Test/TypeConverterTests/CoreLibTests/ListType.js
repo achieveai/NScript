@@ -49,7 +49,7 @@ function System__NativeArray$1__IndexOf(this_, value, startIndex) {
   var i;
   startIndex = startIndex < 0 ? 0 : startIndex;
   for (i = this_.length; i >= startIndex && i >= 0; --i)
-    if (this_[i] === value)
+    if (this_[i] == value)
       return i;
   return -1;
 };
@@ -120,7 +120,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   ptyp_ = List$1_$T$_.prototype;
   ptyp_.nativeArray = null;
   ptyp_.system__Collections__IList__IndexOf = function System__Collections__Generic__List$1__System__Collections__IList__IndexOf(value) {
-    if (value === null && T.isInstanceOfType(value))
+    if (value == null && T.isInstanceOfType(value))
       return System__NativeArray$1__IndexOf(this.nativeArray, System__Type__UnBoxTypeInstance(T, value), 0);
     return -1;
   };
@@ -144,7 +144,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
       array.setValue(i + index, System__Type__BoxTypeInstance(T, nativeArray[i]));
   };
   ptyp_.system__Collections__IList__Remove = function System__Collections__Generic__List$1__System__Collections__IList__Remove(value) {
-    if (value === null && T.isInstanceOfType(value))
+    if (value == null && T.isInstanceOfType(value))
       this.remove(System__Type__UnBoxTypeInstance(T, value));
   };
   ptyp_.system__Collections__IEnumerable__GetEnumerator = function System__Collections__Generic__List$1__System__Collections__IEnumerable__GetEnumerator() {

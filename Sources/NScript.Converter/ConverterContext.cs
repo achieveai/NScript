@@ -360,7 +360,7 @@ namespace NScript.Converter
                 if (attribute.AttributeType.IsSame(
                     this.KnownReferences.GlobalMethodsAttribute))
                 {
-                    return null;
+                    return string.Empty;
                 }
 
                 if (attribute.AttributeType.IsSame(

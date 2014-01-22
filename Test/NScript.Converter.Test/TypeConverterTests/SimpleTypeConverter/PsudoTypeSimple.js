@@ -13,24 +13,24 @@ function RealScript__PsudoUsage__C1(t, i, a) {
 function RealScript__PsudoUsage__C1a(t, i, a) {
   var stmtTemp1;
   return stmtTemp1 = {
-    tempI: i === null ? null : i + t.tempJ
+    tempI: i == null ? null : i + t.tempJ
   }, RealScript__TestJsonType__set_TheArray(stmtTemp1, a), stmtTemp1;
 };
 function RealScript__PsudoUsage__C2(t, i, j, k) {
   var stmtTemp1;
   return stmtTemp1 = {
-    tempI: i === null ? null : i + t.tempJ
+    tempI: i == null ? null : i + t.tempJ
   }, RealScript__TestJsonType__set_TheArray(stmtTemp1, System_ArrayG_$Int32$_.__ctor([j, k])), stmtTemp1;
 };
 function RealScript__PsudoUsage__M1(t) {
   return RealScript__TestImportedType__ProcessData(t, System_Collections_Generic_List_$Int32$_.__ctor(RealScript__TestImportedType__get_TheArray(t)));
 };
 function RealScript__PsudoUsage__TestImportedGeneric(tmp) {
-  if (tmp() === null) {
+  if (tmp() == null) {
     tmp.set_Something(RealScript__ImportedGeneric$1__get_TheArray(tmp).get_item(0));
     return tmp(tmp.get_Something());
   }
-  else if (tmp().length === 10) {
+  else if (tmp().length == 10) {
     tmp.set_Something(RealScript.ImportedGeneric.hasSomething());
     tmp(tmp.get_Something());
     RealScript__ImportedGeneric$1__get_TheArray(tmp).set_item(0, tmp());

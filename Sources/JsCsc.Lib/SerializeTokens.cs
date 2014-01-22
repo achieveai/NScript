@@ -99,6 +99,9 @@ namespace JsCsc.Lib
         public const string AnonymousMethod = "anonymousMethod";
         public const string WrapToNullable = "wrap";
         public const string UnwrapFromNullable = "unwrap";
+        public const string DynamicMemberBinder = "dynamicMB";
+        public const string DynamicIndexBinder = "dynamicIB";
+        public const string NewAnonymousType = "nat";
     }
 
     public static class NameTokens
@@ -124,6 +127,7 @@ namespace JsCsc.Lib
         public const string RightExpr = "rightExpr";
         public const string Method = "method";
         public const string Instance = "instance";
+        public const string Index = "index";
         public const string Arguments = "arguments";
         public const string Operator = "operator";
         public const string Expr = "expr";

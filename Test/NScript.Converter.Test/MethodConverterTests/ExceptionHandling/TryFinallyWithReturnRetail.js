@@ -1,7 +1,7 @@
 ﻿function RealScript__ExceptionHandlerSamples__TryFinallyWithReturn(arg) {
   var tmp_;
   try {
-    if (arg === 0) {
+    if (arg == 0) {
       tmp_ = RealScript__Class1__GetMoreStatic(arg);
       return tmp_;
     }

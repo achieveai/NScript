@@ -385,6 +385,22 @@ namespace JsCsc.Lib
 
         T Visit(ExpressionStatement expression);
 
+        T Visit(DynamicExpressionStatement expression);
+
+        T Visit(DynamicEventCompoundAssign expression);
+
+        T Visit(DynamicConversion expression);
+
+        T Visit(DynamicConstructorBinder expression);
+
+        T Visit(DynamicIndexBinder expression);
+
+        T Visit(DynamicInvocation expression);
+
+        T Visit(DynamicMemberBinder expression);
+
+        T Visit(DynamicUnaryConversion expression);
+
         T Visit(AsyncInitializer expression);
 
         T Visit(ConstructorInitializer expression);

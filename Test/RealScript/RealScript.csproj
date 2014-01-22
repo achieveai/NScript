@@ -43,6 +43,7 @@
     <Compile Include="ConstructorTests.cs" />
     <Compile Include="DelegateBlocks.cs" />
     <Compile Include="DupInstructionBlocks.cs" />
+    <Compile Include="DynamicTest.cs" />
     <Compile Include="ExceptionHandlerSamples.cs" />
     <Compile Include="ForLoopBlocks.cs" />
     <Compile Include="FuncRegressions.cs" />
@@ -82,9 +83,17 @@
     <EmbeddedResource Include="RealScript.il" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Sources\Microsoft.CSharp\Microsoft.CSharp.csproj">
+      <Project>{30070734-422b-4c24-be3f-906e2ae03a12}</Project>
+      <Name>Microsoft.CSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Sources\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
       <Name>NScript.MsCorlib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sources\System.Core\System.Core.csproj">
+      <Project>{30070734-422b-4c24-be3f-906e2ae03a10}</Project>
+      <Name>System.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <!--

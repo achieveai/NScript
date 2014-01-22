@@ -634,7 +634,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             if (string.IsNullOrEmpty(name))
             {
-                return null;
+                return Tuple.Create<string, string>(string.Empty, string.Empty);
             }
 
             int dotIndex = name.LastIndexOf('.');
@@ -686,6 +686,13 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 IIdentifier resolvedIdentifier;
                 var typeName = this.GetTypeName(typeReference);
+
+                if (typeName == null)
+                {
+                    // This could be true if typeName is type with GlobalMethods attribute.
+                    return null;
+                }
+
                 NamespaceManager nameSpace = this.globalNamespaceManager;
                 bool isExtended = this.context.IsExtended(typeReference)
                     || this.context.IsPsudoType(typeDefinition);

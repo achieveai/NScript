@@ -114,6 +114,10 @@
       <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">
         <File Source="$(var.ToolsetDir)\lib\mscorlib.dll" />
         <File Source="$(var.ToolsetDir)\lib\mscorlib.pdb" />
+        <File Source="$(var.ToolsetDir)\lib\System.Core.dll" />
+        <File Source="$(var.ToolsetDir)\lib\System.Core.pdb" />
+        <File Source="$(var.ToolsetDir)\lib\Microsoft.CSharp.dll" />
+        <File Source="$(var.ToolsetDir)\lib\Microsoft.CSharp.pdb" />
         <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.dll" />
         <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.pdb" />
         <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.dll" />

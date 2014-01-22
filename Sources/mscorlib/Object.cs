@@ -1,6 +1,7 @@
 ﻿namespace System
 {
     using System.Collections;
+    using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
     [IgnoreNamespace]
@@ -35,6 +36,19 @@
         [Script("return obj1 === obj2;")]
         [IgnoreGenericArguments]
         public extern static bool Equals<T>(T obj1, T obj2);
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Script("return this === obj2;")]
+        public extern virtual bool Equals(object obj2);
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public virtual int GetHashCode()
+        {
+            return 0;
+        }
+
+        [Script("return this === obj2;")]
+        public extern static bool ReferenceEquals(object obj1, object obj2);
 
         [Script("return obj === null || typeof obj == \"undefined\";")]
         [IgnoreGenericArguments]

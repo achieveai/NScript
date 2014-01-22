@@ -116,9 +116,17 @@
     <Compile Include="Window.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CSharp\Microsoft.CSharp.csproj">
+      <Project>{30070734-422b-4c24-be3f-906e2ae03a12}</Project>
+      <Name>Microsoft.CSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
       <Name>NScript.MsCorlib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Core\System.Core.csproj">
+      <Project>{30070734-422b-4c24-be3f-906e2ae03a10}</Project>
+      <Name>System.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\System.Web\System.Web.csproj">
       <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>

@@ -1280,6 +1280,46 @@ namespace JsCsc.Lib
             throw new NotImplementedException();
         }
 
+        public JAst.Expression Visit(DynamicExpressionStatement expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JAst.Expression Visit(DynamicEventCompoundAssign expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JAst.Expression Visit(DynamicConversion expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JAst.Expression Visit(DynamicConstructorBinder expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JAst.Expression Visit(DynamicIndexBinder expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JAst.Expression Visit(DynamicInvocation expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JAst.Expression Visit(DynamicMemberBinder expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public JAst.Expression Visit(DynamicUnaryConversion expression)
+        {
+            throw new NotImplementedException();
+        }
+
         public JAst.Expression Visit(DelegateInvocation expression)
         {
             this.PrintInfo("Delegate invocation");
@@ -1603,5 +1643,6 @@ namespace JsCsc.Lib
         }
 
         #endregion IMonoAstVisitor<Expression> Members
+
     }
 }

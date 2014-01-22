@@ -44,6 +44,7 @@
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
     <CscToolPath>$(NScriptToolSetPath)\bin</CscToolPath>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -147,11 +148,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Collections\Generic\Dictionary.cs" />
+    <Compile Include="Collections\Generic\EqualityComparer.cs" />
     <Compile Include="Collections\Generic\ICollection.cs" />
     <Compile Include="Collections\Generic\IDictionary.cs" />
     <Compile Include="Collections\Generic\IEnumerable.cs" />
+    <Compile Include="Collections\Generic\IEqualityComparer.cs" />
     <Compile Include="Collections\Generic\IList.cs" />
     <Compile Include="Collections\Generic\INumberDictionary.cs" />
+    <Compile Include="Collections\Generic\IReadOnlyCollection.cs" />
+    <Compile Include="Collections\Generic\IReadOnlyList.cs" />
     <Compile Include="Collections\Generic\IStringDictionary.cs" />
     <Compile Include="Collections\Generic\KeyValuePair.cs" />
     <Compile Include="Collections\Generic\List.cs" />
@@ -166,7 +171,9 @@
     <Compile Include="Collections\IEnumerator.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Collections\IEqualityComparer.cs" />
     <Compile Include="Collections\IList.cs" />
+    <Compile Include="Collections\ObjectModel\ReadOnlyCollection.cs" />
     <Compile Include="Collections\Queue.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -284,12 +291,14 @@
     <Compile Include="Record.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reflection\Assembly.cs" />
     <Compile Include="Reflection\AssemblyCompanyAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Reflection\AssemblyConfigurationAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reflection\AssemblyContentType.cs" />
     <Compile Include="Reflection\AssemblyCopyrightAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -305,12 +314,15 @@
     <Compile Include="Reflection\AssemblyFileVersionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reflection\AssemblyHashAlgorithm.cs" />
     <Compile Include="Reflection\AssemblyInformationalVersionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Reflection\AssemblyKeyFileAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reflection\AssemblyName.cs" />
+    <Compile Include="Reflection\AssemblyNameFlags.cs" />
     <Compile Include="Reflection\AssemblyProductAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -323,9 +335,44 @@
     <Compile Include="Reflection\AssemblyVersionAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Reflection\DefaultMemberAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Reflection\AssemblyVersionCompatibility.cs" />
+    <Compile Include="Reflection\Binder.cs" />
+    <Compile Include="Reflection\BindingFlags.cs" />
+    <Compile Include="Reflection\CallingConventions.cs" />
+    <Compile Include="Reflection\ConstructorInfo.cs" />
+    <Compile Include="Reflection\CustomAttributeData.cs" />
+    <Compile Include="Reflection\CustomAttributeNameArgument.cs" />
+    <Compile Include="Reflection\CustomAttributeTypedArgument.cs" />
+    <Compile Include="Reflection\DefaultMemberAttribute.cs" />
+    <Compile Include="Reflection\EventAttributes.cs" />
+    <Compile Include="Reflection\EventInfo.cs" />
+    <Compile Include="Reflection\ExceptionHandlingClause.cs" />
+    <Compile Include="Reflection\FieldAttribute.cs" />
+    <Compile Include="Reflection\FieldInfo.cs" />
+    <Compile Include="Reflection\ICustomAttributeProvider.cs" />
+    <Compile Include="Reflection\IReflectableType.cs" />
+    <Compile Include="Reflection\LocalVariableInfo.cs" />
+    <Compile Include="Reflection\MemberInfo.cs" />
+    <Compile Include="Reflection\MemberTypes.cs" />
+    <Compile Include="Reflection\MethodAttributes.cs" />
+    <Compile Include="Reflection\MethodBase.cs" />
+    <Compile Include="Reflection\MethodBody.cs" />
+    <Compile Include="Reflection\MethodImplAttributes.cs" />
+    <Compile Include="Reflection\MethodInfo.cs" />
+    <Compile Include="Reflection\Module.cs" />
+    <Compile Include="Reflection\ModuleHandle.cs" />
+    <Compile Include="Reflection\ParameterAttributes.cs" />
+    <Compile Include="Reflection\ParameterInfo.cs" />
+    <Compile Include="Reflection\ParameterModifier.cs" />
+    <Compile Include="Reflection\ProcessorArchitecture.cs" />
+    <Compile Include="Reflection\PropertyAttributes.cs" />
+    <Compile Include="Reflection\PropertyInfo.cs" />
+    <Compile Include="Reflection\RuntimeMethodHandle.cs" />
+    <Compile Include="Reflection\RuntimeModule.cs" />
+    <Compile Include="Reflection\StrongNameKeyPair.cs" />
+    <Compile Include="Reflection\TypedReference.cs" />
+    <Compile Include="Reflection\TypeInfo.cs" />
+    <Compile Include="Reflection\Version.cs" />
     <Compile Include="RegularExpression.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -361,6 +408,7 @@
     <Compile Include="Runtime\CompilerServices\IntrinsicPropertyAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Runtime\CompilerServices\IsVolatile.cs" />
     <Compile Include="Runtime\CompilerServices\KeepInstanceUsage.cs" />
     <Compile Include="Runtime\CompilerServices\MakeStaticUsage.cs" />
     <Compile Include="Runtime\CompilerServices\MixinAttribute.cs">
@@ -410,7 +458,11 @@
     <Compile Include="Runtime\CompilerServices\ScriptSkipAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Runtime\CompilerServices\Serializable.cs" />
     <Compile Include="Runtime\CompilerServices\UsedAttribure.cs" />
+    <Compile Include="Runtime\InteropServices\ClassInterfaceAttribute.cs" />
+    <Compile Include="Runtime\InteropServices\ComDefaultInterfaceAttribute.cs" />
+    <Compile Include="Runtime\InteropServices\ComVisible.cs" />
     <Compile Include="Runtime\InteropServices\InAttribute.cs" />
     <Compile Include="Runtime\InteropServices\OutAttribute.cs">
       <SubType>Code</SubType>

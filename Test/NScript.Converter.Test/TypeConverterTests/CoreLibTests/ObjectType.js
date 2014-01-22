@@ -3,10 +3,10 @@ function System__Object__GetType(this_) {
   return this_.constructor;
 };
 function System__Object__Equals(obj1, obj2) {
-  return obj1 === obj2;
+  return obj1 == obj2;
 };
 function System__Object__IsNullOrUndefined(obj) {
-  return obj === null || typeof obj == "undefined";
+  return obj == null || typeof obj == "undefined";
 };
 function System__Object__GetNewImportedExtension() {
   return {

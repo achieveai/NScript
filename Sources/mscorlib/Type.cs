@@ -6,7 +6,7 @@
 
     [Extended]
     [ScriptName("Function")]
-    public sealed class Type
+    public class Type
     {
         /// <summary>
         /// Backing field for typeMapping.

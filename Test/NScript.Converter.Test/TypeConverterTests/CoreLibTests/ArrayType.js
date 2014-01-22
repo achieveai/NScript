@@ -49,7 +49,7 @@ function System__NativeArray$1__IndexOf(this_, value, startIndex) {
   var i;
   startIndex = startIndex < 0 ? 0 : startIndex;
   for (i = this_.length; i >= startIndex && i >= 0; --i)
-    if (this_[i] === value)
+    if (this_[i] == value)
       return i;
   return -1;
 };

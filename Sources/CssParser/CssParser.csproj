@@ -68,10 +68,10 @@
     <Compile Include="obj\Release\CssGrammerLexer.cs" Condition=" '$(Configuration)' == 'Release' ">
       <Link>CssGrammerLexer.cs</Link>
     </Compile>
-    <Compile Include="obj\Debug\CssGrammerParser.cs">
+    <Compile Include="obj\Debug\CssGrammerParser.cs" Condition=" '$(Configuration)' == 'Debug' ">
       <Link>CssGrammerParser.cs</Link>
     </Compile>
-    <Compile Include="obj\Debug\CssGrammerLexer.cs">
+    <Compile Include="obj\Debug\CssGrammerLexer.cs" Condition=" '$(Configuration)' == 'Debug' ">
       <Link>CssGrammerLexer.cs</Link>
     </Compile>
     <Compile Include="CssParts.cs" />
