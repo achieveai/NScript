@@ -117,6 +117,12 @@ namespace NScript.Converter
             = new Dictionary<TypeDefinition, TypeKind>(MemberReferenceComparer.Instance);
 
         /// <summary>
+        /// The resource name mapping.
+        /// </summary>
+        private readonly Dictionary<ModuleDefinition, Dictionary<string, string>> resourceNameMapping
+            = new Dictionary<ModuleDefinition, Dictionary<string, string>>();
+
+        /// <summary>
         /// The errors.
         /// </summary>
         private readonly List<Tuple<Location, string>> errors = new List<Tuple<Location, string>>();
@@ -154,6 +160,7 @@ namespace NScript.Converter
             foreach (var module in clrContext.Modules)
             {
                 JArray jsonAstArray = null;
+                JObject resourceFileNameMap = null;
                 foreach (var resource in module.Resources)
                 {
                     if (resource.Name == "$$AstInfo$$")
@@ -166,8 +173,23 @@ namespace NScript.Converter
                             JsonTextReader reader = new JsonTextReader(new StreamReader(unzipStream));
                             jsonAstArray = JArray.Load(reader);
                         }
+                    }
+                    else if (resource.Name == "$$ResInfo$$")
+                    {
+                        EmbeddedResource embededResource = (EmbeddedResource)resource;
 
-                        break;
+                        using (var stream = embededResource.GetResourceStream())
+                        {
+                            if (stream.Length > 0)
+                            {
+                                StreamReader streamReader = new StreamReader(stream);
+                                string tmp = streamReader.ReadToEnd();
+                                stream.Position = 0;
+
+                                JsonTextReader reader = new JsonTextReader(streamReader);
+                                resourceFileNameMap = (JObject)JObject.ReadFrom(reader);
+                            }
+                        }
                     }
                 }
 
@@ -181,6 +203,21 @@ namespace NScript.Converter
                         this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
                     }
                 }
+
+                Dictionary<string, string> resourceNameMap = new Dictionary<string, string>();
+                if (resourceFileNameMap != null)
+                {
+                    foreach (var item in resourceFileNameMap.Properties())
+                    {
+                        resourceNameMap.Add(
+                            item.Name,
+                            (string)item.Value);
+                    }
+                }
+
+                this.resourceNameMapping.Add(
+                    module,
+                    resourceNameMap);
             }
         }
 
@@ -246,6 +283,31 @@ namespace NScript.Converter
         /// </value>
         public IList<ITypeConverterPlugin> TypeConverterPlugins
         { get { return this.typeConverterPlugins; } }
+
+        /// <summary>
+        /// Gets resource file name.
+        /// </summary>
+        /// <param name="module">       The module. </param>
+        /// <param name="resourceName"> Name of the resource. </param>
+        /// <returns>
+        /// The resource file name.
+        /// </returns>
+        public string GetResourceFileName(ModuleDefinition module, string resourceName)
+        {
+            Dictionary<string, string> dict = null;
+            if (!this.resourceNameMapping.TryGetValue(module, out dict))
+            {
+                return null;
+            }
+
+            string rv;
+            if (dict.TryGetValue(resourceName, out rv))
+            {
+                return rv;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Adds an error.

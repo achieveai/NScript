@@ -30,6 +30,8 @@ namespace CssParser
         { return true; }
         public virtual bool Visit(PseudoSelector obj)
         { return true; }
+        public virtual bool Visit(PseudoNestedSelector obj)
+        { return true; }
         public virtual bool Visit(CssProperty obj)
         { return true; }
         public virtual bool Visit(CssPropertyValueSet obj)
@@ -118,6 +120,10 @@ namespace CssParser
         { }
         public void Visit(PseudoSelector obj)
         { }
+        public void Visit(PseudoNestedSelector obj)
+        {
+            this.Visit(obj.NestedSelector);
+        }
         public void Visit(CssProperty obj)
         {
             foreach (var item in obj.PropertyArgs)

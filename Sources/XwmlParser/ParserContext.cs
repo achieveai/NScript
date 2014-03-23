@@ -39,6 +39,11 @@ namespace XwmlParser
         Dictionary<string, HtmlParser> htmlParsers = new Dictionary<string, HtmlParser>();
 
         /// <summary>
+        /// Groups the CSS belongs to.
+        /// </summary>
+        Dictionary<string, CssStyleSheet> cssGroups = new Dictionary<string, CssStyleSheet>();
+
+        /// <summary>
         /// List of identifiers for the known CSS class.
         /// </summary>
         Dictionary<string, IIdentifier> knownCssClassIdentifiers = new Dictionary<string, IIdentifier>();
@@ -140,10 +145,19 @@ namespace XwmlParser
         /// </returns>
         public IIdentifier RegisterCssClassName(string cssClassName)
         {
+            if (this.knownCssClassIdentifiers.ContainsKey(cssClassName))
+            {
+                throw new Exception(
+                    string.Format(
+                        "Can't overwrite well known CssName {0}",
+                        cssClassName));
+            }
+
             return SimpleIdentifier.CreateScopeIdentifier(
                 this.cssNamesScope,
                 cssClassName,
-                false);
+                false,
+                true);
         }
 
         /// <summary>
@@ -157,6 +171,11 @@ namespace XwmlParser
         public bool TryGetCssClassIdentifier(string cssClassName, out IIdentifier identifier)
         {
             return this.knownCssClassIdentifiers.TryGetValue(cssClassName, out identifier);
+        }
+
+        internal CssStyleSheet GetStyleSheet(string cssResourceName)
+        {
+            return this.codeGenerator.GetStyleSheet(cssResourceName);
         }
 
         /// <summary>

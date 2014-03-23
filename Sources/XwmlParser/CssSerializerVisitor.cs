@@ -239,7 +239,7 @@ using System.Text;
 
         public override bool Visit(PseudoSelector obj)
         {
-            this.stringBuilder.Append(':');
+            this.stringBuilder.Append( obj.IsDouble ? "::" : ":");
             this.stringBuilder.Append(obj.Name);
             if (obj.Arg != null)
             {
@@ -247,6 +247,17 @@ using System.Text;
                 this.stringBuilder.Append(obj.Arg);
                 this.stringBuilder.Append(')');
             }
+
+            return false;
+        }
+
+        public override bool Visit(PseudoNestedSelector obj)
+        {
+            this.stringBuilder.Append( obj.IsDouble ? "::" : ":");
+            this.stringBuilder.Append(obj.Name);
+            this.stringBuilder.Append('(');
+            this.helper.Visit(obj.NestedSelector);
+            this.stringBuilder.Append(')');
 
             return false;
         }

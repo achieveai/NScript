@@ -717,9 +717,6 @@ Global
 		{28A76871-90D6-499A-9E3A-317541FDB7D9} = {CA40C954-A18B-40F8-963B-E094B18A7050}
 		{BD6B70AE-CA40-4A9D-810F-3EDDBD0B6817} = {CA40C954-A18B-40F8-963B-E094B18A7050}
 	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = NScript1.vsmdi
 	EndGlobalSection

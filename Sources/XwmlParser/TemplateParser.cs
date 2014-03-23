@@ -101,88 +101,105 @@ namespace XwmlParser
             bool isSkin,
             NodeInfo parentNodeInfo)
         {
-            this.parentParser = htmlParser;
-            this.context = htmlParser.DocumentContext;
-            this.node = htmlNode;
-            this.resolver = this.context.ParserContext.ClrResolver;
-            this.generatedDocument = this.context.ParserContext.Document;
-            this.generatedNode = this.generatedDocument.CreateElement("div");
+            try
+            {
+                this.parentParser = htmlParser;
+                this.context = htmlParser.DocumentContext;
+                this.node = htmlNode;
+                this.resolver = this.context.ParserContext.ClrResolver;
+                this.generatedDocument = this.context.ParserContext.Document;
+                this.generatedNode = this.generatedDocument.CreateElement("div");
 
-            if (parentNodeInfo != null)
-            {
-                this.subTemplate = true;
-            }
-            else
-            {
-                this.templateName = htmlNode.GetAttributeValue("Id", (string)null);
-            }
+                if (parentNodeInfo != null)
+                {
+                    this.subTemplate = true;
+                }
+                else
+                {
+                    this.templateName = htmlNode.GetAttributeValue("Id", (string)null);
+                }
 
-            var attr = htmlNode.Attributes["ControlType"];
-            if (attr == null)
-            {
-                throw new ConverterLocationException(
-                    new NScript.Utils.Location(
-                        this.HtmlParser.ResourceName,
-                        htmlNode.Line,
-                        htmlNode.LinePosition),
-                    "Template/Skin does not have ControlType attribute");
-            }
+                var attr = htmlNode.Attributes["ControlType"];
+                if (attr == null)
+                {
+                    throw new ConverterLocationException(
+                        new NScript.Utils.Location(
+                            this.HtmlParser.ResourceName,
+                            htmlNode.Line,
+                            htmlNode.LinePosition),
+                        "Template/Skin does not have ControlType attribute");
+                }
 
-            this.controlType = this.resolver.GetTypeReference(
-                this.DocumentContext.GetFullName(attr.Value));
-            if (this.controlType == null)
-            {
-                throw new ConverterLocationException(
-                    new NScript.Utils.Location(
-                        this.HtmlParser.ResourceName,
-                        attr.Line,
-                        attr.LinePosition),
+                this.controlType = this.resolver.GetTypeReference(
+                    this.DocumentContext.GetFullName(attr.Value));
+                if (this.controlType == null)
+                {
+                    throw new ConverterLocationException(
+                        new NScript.Utils.Location(
+                            this.HtmlParser.ResourceName,
+                            attr.Line,
+                            attr.LinePosition),
+                            string.Format(
+                                "Can't resolve ControlType:{0}.",
+                                attr.Value));
+                }
+
+                attr = htmlNode.Attributes["DataContextType"];
+                if (attr == null)
+                {
+                    throw new ConverterLocationException(
+                        new NScript.Utils.Location(
+                            this.HtmlParser.ResourceName,
+                            htmlNode.Line,
+                            htmlNode.LinePosition),
+                        "Template/Skin does not have DataContextType attribute");
+                }
+
+                this.dataContextType = this.resolver.GetTypeReference(
+                    this.DocumentContext.GetFullName(attr.Value));
+                if (this.dataContextType == null)
+                {
+                    throw new ConverterLocationException(
+                        new NScript.Utils.Location(
+                            this.HtmlParser.ResourceName,
+                            attr.Line,
+                            attr.LinePosition),
                         string.Format(
-                            "Can't resolve ControlType:{0}.",
+                            "Can't resolve DataContextType:{0}.",
                             attr.Value));
-            }
+                }
 
-            attr = htmlNode.Attributes["DataContextType"];
-            if (attr == null)
+                if (isSkin)
+                {
+                    var skinNodeInfo = new SkinNodeInfo(
+                        dataContextType,
+                        controlType,
+                        this.node);
+
+                    skinNodeInfo.ParseNode(this);
+                    this.rootSkinNodeInfo = skinNodeInfo;
+                }
+                else
+                {
+                    this.rootTemplateNodeInfo = new TemplateNodeInfo(
+                        controlType,
+                        dataContextType,
+                        this.node);
+                }
+            }
+            catch(ConverterLocationException)
+            {
+                throw;
+            }
+            catch(ApplicationException ex)
             {
                 throw new ConverterLocationException(
                     new NScript.Utils.Location(
                         this.HtmlParser.ResourceName,
                         htmlNode.Line,
                         htmlNode.LinePosition),
-                    "Template/Skin does not have DataContextType attribute");
-            }
-
-            this.dataContextType = this.resolver.GetTypeReference(
-                this.DocumentContext.GetFullName(attr.Value));
-            if (this.dataContextType == null)
-            {
-                throw new ConverterLocationException(
-                    new NScript.Utils.Location(
-                        this.HtmlParser.ResourceName,
-                        attr.Line,
-                        attr.LinePosition),
-                    string.Format(
-                        "Can't resolve DataContextType:{0}.",
-                        attr.Value));
-            }
-
-            if (isSkin)
-            {
-                var skinNodeInfo = new SkinNodeInfo(
-                    dataContextType,
-                    controlType,
-                    this.node);
-
-                skinNodeInfo.ParseNode(this);
-                this.rootSkinNodeInfo = skinNodeInfo;
-            }
-            else
-            {
-                this.rootTemplateNodeInfo = new TemplateNodeInfo(
-                    controlType,
-                    dataContextType,
-                    this.node);
+                    ex.Message,
+                    ex);
             }
         }
 

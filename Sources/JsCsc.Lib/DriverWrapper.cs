@@ -21,6 +21,7 @@ namespace JsCsc.Lib
     public class DriverWrapper
     {
         private MemoryStream astStream = new MemoryStream();
+        private MemoryStream resourceInfoStream = new MemoryStream();
         private MonoAstVisitor visitor = new MonoAstVisitor();
         private List<Method> methods = new List<Method>();
         private AssemblyDefinition assembly;
@@ -44,6 +45,31 @@ namespace JsCsc.Lib
             {
                 setting.Resources = new List<AssemblyResource>();
             }
+            else
+            {
+                JObject jObject = new JObject();
+                foreach (var res in setting.Resources)
+                {
+                    var fileName = Path.GetFullPath(res.FileName);
+                    jObject.Add(res.Name, fileName);
+                }
+
+                TextWriter txtWriter = new StreamWriter(this.resourceInfoStream);
+                JsonWriter writer = new JsonTextWriter(txtWriter);
+                jObject.WriteTo(writer);
+                writer.Flush();
+                txtWriter.Flush();
+                this.resourceInfoStream.Position = 0;
+            }
+
+            setting.Resources.Add(
+                new AssemblyResource(
+                    this.resourceInfoStream,
+                    "$$ResInfo$$",
+                    true)
+                    {
+                        IsEmbeded = true
+                    });
 
             setting.Resources.Add(
                 new AssemblyResource(

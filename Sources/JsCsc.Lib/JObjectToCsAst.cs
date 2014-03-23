@@ -1151,6 +1151,42 @@ namespace JsCsc.Lib
                 args);
         }
 
+        private Node ParseDynamicIndexBinder(JObject jObject)
+        {
+            return new DynamicIndexAccessor(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                this.ParseExpression(jObject.Value<JObject>(NameTokens.Instance)),
+                this.ParseExpression(jObject.Value<JObject>(NameTokens.Index)));
+        }
+
+        private Node ParseDynamicMemberBinder(JObject jObject)
+        {
+            return new DynamicMemberAccessor(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                this.ParseExpression(jObject.Value<JObject>(NameTokens.Instance)),
+                jObject.Value<string>(NameTokens.Name));
+        }
+
+        private Node ParseNewAnonymousType(JObject jObject)
+        {
+            AnonymousNewExpression rv = new AnonymousNewExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject));
+
+            JArray setters = jObject.Value<JArray>(NameTokens.Setter);
+
+            foreach (var setter in setters)
+            {
+                rv.AddValue(
+                    setter.Value<string>(NameTokens.Name),
+                    this.ParseExpression(jObject.Value<JObject>(NameTokens.Value)));
+            }
+
+            return rv;
+        }
+
         private Node ParseDelegateInvocation(JObject jObject)
         {
             return new MethodCallExpression(
@@ -1501,78 +1537,81 @@ namespace JsCsc.Lib
         private Dictionary<string, Func<JObject, Node>> BuildParserMap()
         {
             Dictionary<string, Func<JObject, Node>> parserMap = new Dictionary<string, Func<JObject, Node>>();
-            parserMap.Add("nullLiteral", this.ParseNullLiteral);
-            parserMap.Add("boolLiteral", this.ParseBoolLiteral);
-            parserMap.Add("charLiteral", this.ParseCharLiteral);
-            parserMap.Add("longLiteral", this.ParseLongLiteral);
-            parserMap.Add("intLiteral", this.ParseIntLiteral);
-            parserMap.Add("uintLiteral", this.ParseUIntLiteral);
-            parserMap.Add("strLiteral", this.ParseStringLiteral);
-            parserMap.Add("decimalLiteral", this.ParseDecimalLiteral);
-            parserMap.Add("doubleLiteral", this.ParseDoubleLiteral);
-            parserMap.Add("floatLiteral", this.ParseFloatLiteral);
-            parserMap.Add("assignment", this.ParseAssignment);
-            parserMap.Add("methodCall", this.ParseMethodCall);
-            parserMap.Add("binaryExpr", this.ParseBinaryExpr);
-            parserMap.Add("unaryExpr", this.ParseUnaryExpr);
-            parserMap.Add("typeCast", this.ParseTypeCast);
-            parserMap.Add("byteLiteral", this.ParseByteLiteral);
-            parserMap.Add("sbyteLiteral", this.ParseSByteLiteral);
-            parserMap.Add("shortLiteral", this.ParseShortLiteral);
-            parserMap.Add("ushortConstant", this.ParseUShortConstant);
-            parserMap.Add("emptyStatement", this.ParseEmptyStatement);
-            parserMap.Add("statementExpr", this.ParseStatementExpr);
-            parserMap.Add("statementList", this.ParseStatementList);
-            parserMap.Add("returnStatement", this.ParseReturnStatement);
-            parserMap.Add("throwStatment", this.ParseThrowStatment);
-            parserMap.Add("breakExpression", this.ParseBreakExpression);
-            parserMap.Add("continueExpression", this.ParseContinueExpression);
-            parserMap.Add("ifStatement", this.ParseIfStatement);
-            parserMap.Add("doWhileStatement", this.ParseDoWhileStatement);
-            parserMap.Add("whileStatement", this.ParseWhileStatement);
-            parserMap.Add("forStatement", this.ParseForStatement);
-            parserMap.Add("ulongLiteral", this.ParseULongLiteral);
-            parserMap.Add("forEachStatement", this.ParseForEachStatement);
-            parserMap.Add("switchStatement", this.ParseSwitchStatement);
-            parserMap.Add("scopeBlock", this.ParseScopeBlock);
-            parserMap.Add("parameterBlock", this.ParseParameterBlock);
-            parserMap.Add("tryFinally", this.ParseTryFinally);
-            parserMap.Add("tryCatch", this.ParseTryCatch);
-            parserMap.Add("nullCoalascing", this.ParseNullCoalascing);
-            parserMap.Add("yield", this.ParseYield);
-            parserMap.Add("iterator", this.ParseIterator);
-            parserMap.Add("typeCheck", this.ParseTypeCheck);
-            parserMap.Add("isExpr", this.ParseIsExpr);
-            parserMap.Add("asExpr", this.ParseAsExpr);
-            parserMap.Add("conditional", this.ParseConditional);
-            parserMap.Add("varaibleAddressReference", this.ParseVariableAddressReference);
-            parserMap.Add("variableReference", this.ParseVariableReference);
-            parserMap.Add("parameterReference", this.ParseParameterReference);
-            parserMap.Add("invocation", this.ParseInvocation);
-            parserMap.Add("new", this.ParseNew);
-            parserMap.Add("arrayCreation", this.ParseArrayCreation);
-            parserMap.Add("thisExpr", this.ParseThisExpr);
-            parserMap.Add("typeOf", this.ParseTypeOf);
-            parserMap.Add("arrayElementAccess", this.ParseArrayElementAccess);
-            parserMap.Add("baseExpr", this.ParseBaseExpr);
-            parserMap.Add("newInitializer", this.ParseNewInitializer);
-            parserMap.Add("methodExpr", this.ParseMethodExpr);
-            parserMap.Add("fieldExpr", this.ParseFieldExpr);
-            parserMap.Add("propertyExpr", this.ParsePropertyExpr);
-            parserMap.Add("indexerExpr", this.ParseIndexerExpr);
-            parserMap.Add("delegateInvocation", this.ParseDelegateInvocation);
-            parserMap.Add("defaultValue", this.ParseDefaultValue);
-            parserMap.Add("tempVariableAddressReference", this.ParseTempVariableAddressReference);
-            parserMap.Add("tempVariableReference", this.ParseTempVariableReference);
-            parserMap.Add("typeExpr", this.ParseTypeExpr);
-            parserMap.Add("delegateCreation", this.ParseDelegateCreation);
-            parserMap.Add("argument", this.ParseArgument);
-            parserMap.Add("boxExpr", this.ParseBoxExpr);
-            parserMap.Add("unBoxExpr", this.ParseUnBoxExpr);
-            parserMap.Add("varInitializer", this.ParseVariableInitializers);
-            parserMap.Add("anonymousMethod", this.ParseAnonymousMethod);
+            parserMap.Add(TypeTokens.NullLiteral, this.ParseNullLiteral);
+            parserMap.Add(TypeTokens.BoolLiteral, this.ParseBoolLiteral);
+            parserMap.Add(TypeTokens.CharLiteral, this.ParseCharLiteral);
+            parserMap.Add(TypeTokens.LongLiteral, this.ParseLongLiteral);
+            parserMap.Add(TypeTokens.IntLiteral, this.ParseIntLiteral);
+            parserMap.Add(TypeTokens.UIntLiteral, this.ParseUIntLiteral);
+            parserMap.Add(TypeTokens.StringLiteral, this.ParseStringLiteral);
+            parserMap.Add(TypeTokens.DecimalLiteral, this.ParseDecimalLiteral);
+            parserMap.Add(TypeTokens.DoubleLiteral, this.ParseDoubleLiteral);
+            parserMap.Add(TypeTokens.FloatLiteral, this.ParseFloatLiteral);
+            parserMap.Add(TypeTokens.Assignment, this.ParseAssignment);
+            parserMap.Add(TypeTokens.MethodCall, this.ParseMethodCall);
+            parserMap.Add(TypeTokens.BinaryExpr, this.ParseBinaryExpr);
+            parserMap.Add(TypeTokens.UnaryExpr, this.ParseUnaryExpr);
+            parserMap.Add(TypeTokens.TypeCast, this.ParseTypeCast);
+            parserMap.Add(TypeTokens.ByteLiteral, this.ParseByteLiteral);
+            parserMap.Add(TypeTokens.SByteLiteral, this.ParseSByteLiteral);
+            parserMap.Add(TypeTokens.ShortLiteral, this.ParseShortLiteral);
+            parserMap.Add(TypeTokens.UShortConstant, this.ParseUShortConstant);
+            parserMap.Add(TypeTokens.EmptyStatement, this.ParseEmptyStatement);
+            parserMap.Add(TypeTokens.StatementExpr, this.ParseStatementExpr);
+            parserMap.Add(TypeTokens.StatementList, this.ParseStatementList);
+            parserMap.Add(TypeTokens.ReturnStatement, this.ParseReturnStatement);
+            parserMap.Add(TypeTokens.ThrowStatment, this.ParseThrowStatment);
+            parserMap.Add(TypeTokens.BreakExpression, this.ParseBreakExpression);
+            parserMap.Add(TypeTokens.ContinueExpression, this.ParseContinueExpression);
+            parserMap.Add(TypeTokens.IfStatement, this.ParseIfStatement);
+            parserMap.Add(TypeTokens.DoWhileStatement, this.ParseDoWhileStatement);
+            parserMap.Add(TypeTokens.WhileStatement, this.ParseWhileStatement);
+            parserMap.Add(TypeTokens.ForStatement, this.ParseForStatement);
+            parserMap.Add(TypeTokens.ULongLiteral, this.ParseULongLiteral);
+            parserMap.Add(TypeTokens.ForEachStatement, this.ParseForEachStatement);
+            parserMap.Add(TypeTokens.SwitchStatement, this.ParseSwitchStatement);
+            parserMap.Add(TypeTokens.ScopeBlock, this.ParseScopeBlock);
+            parserMap.Add(TypeTokens.ParameterBlock, this.ParseParameterBlock);
+            parserMap.Add(TypeTokens.TryFinally, this.ParseTryFinally);
+            parserMap.Add(TypeTokens.TryCatch, this.ParseTryCatch);
+            parserMap.Add(TypeTokens.NullCoalascing, this.ParseNullCoalascing);
+            parserMap.Add(TypeTokens.Yield, this.ParseYield);
+            parserMap.Add(TypeTokens.Iterator, this.ParseIterator);
+            parserMap.Add(TypeTokens.TypeCheck, this.ParseTypeCheck);
+            parserMap.Add(TypeTokens.IsExpr, this.ParseIsExpr);
+            parserMap.Add(TypeTokens.AsExpr, this.ParseAsExpr);
+            parserMap.Add(TypeTokens.Conditional, this.ParseConditional);
+            parserMap.Add(TypeTokens.VariableAddressReference, this.ParseVariableAddressReference);
+            parserMap.Add(TypeTokens.VariableReference, this.ParseVariableReference);
+            parserMap.Add(TypeTokens.ParameterReference, this.ParseParameterReference);
+            parserMap.Add(TypeTokens.Invocation, this.ParseInvocation);
+            parserMap.Add(TypeTokens.New, this.ParseNew);
+            parserMap.Add(TypeTokens.ArrayCreation, this.ParseArrayCreation);
+            parserMap.Add(TypeTokens.ThisExpr, this.ParseThisExpr);
+            parserMap.Add(TypeTokens.TypeOf, this.ParseTypeOf);
+            parserMap.Add(TypeTokens.ArrayElementAccess, this.ParseArrayElementAccess);
+            parserMap.Add(TypeTokens.BaseExpr, this.ParseBaseExpr);
+            parserMap.Add(TypeTokens.NewInitializer, this.ParseNewInitializer);
+            parserMap.Add(TypeTokens.MethodExpr, this.ParseMethodExpr);
+            parserMap.Add(TypeTokens.FieldExpr, this.ParseFieldExpr);
+            parserMap.Add(TypeTokens.PropertyExpr, this.ParsePropertyExpr);
+            parserMap.Add(TypeTokens.IndexerExpr, this.ParseIndexerExpr);
+            parserMap.Add(TypeTokens.DelegateInvocation, this.ParseDelegateInvocation);
+            parserMap.Add(TypeTokens.DefaultValue, this.ParseDefaultValue);
+            parserMap.Add(TypeTokens.TempVariableAddressReference, this.ParseTempVariableAddressReference);
+            parserMap.Add(TypeTokens.TempVariableReference, this.ParseTempVariableReference);
+            parserMap.Add(TypeTokens.TypeExpr, this.ParseTypeExpr);
+            parserMap.Add(TypeTokens.DelegateCreation, this.ParseDelegateCreation);
+            parserMap.Add(TypeTokens.Argument, this.ParseArgument);
+            parserMap.Add(TypeTokens.BoxExpr, this.ParseBoxExpr);
+            parserMap.Add(TypeTokens.UnBoxExpr, this.ParseUnBoxExpr);
+            parserMap.Add(TypeTokens.VariableInitializer, this.ParseVariableInitializers);
+            parserMap.Add(TypeTokens.AnonymousMethod, this.ParseAnonymousMethod);
             parserMap.Add(TypeTokens.WrapToNullable, this.ParseToNullable);
             parserMap.Add(TypeTokens.UnwrapFromNullable, this.ParseFromNullable);
+            parserMap.Add(TypeTokens.DynamicIndexBinder, this.ParseDynamicIndexBinder);
+            parserMap.Add(TypeTokens.DynamicMemberBinder, this.ParseDynamicMemberBinder);
+            parserMap.Add(TypeTokens.NewAnonymousType, this.ParseNewAnonymousType);
 
             return parserMap;
         }

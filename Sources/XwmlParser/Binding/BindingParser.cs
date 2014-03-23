@@ -356,6 +356,17 @@ namespace XwmlParser.Binding
             }
         }
 
+        /// <summary>
+        /// Gets probable methods.
+        /// </summary>
+        /// <param name="resolver">      The resolver. </param>
+        /// <param name="typeReference"> The type reference. </param>
+        /// <param name="methodName">    Name of the method. </param>
+        /// <param name="fromType">      Type of from. </param>
+        /// <param name="toType">        Type of to. </param>
+        /// <returns>
+        /// The probable methods.
+        /// </returns>
         public static List<MethodReference> GetProbableMethods(
             IClrResolver resolver,
             TypeReference typeReference,

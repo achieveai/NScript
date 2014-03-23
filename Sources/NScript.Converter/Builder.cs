@@ -192,22 +192,37 @@ namespace NScript.Converter
 
             foreach (var warning in converterContext.Warnings)
             {
-                System.Console.Error.WriteLine(
-                    string.Format("{0}({1},{2}): warning WRN0123: {3}",
-                        warning.Item1.FileName,
-                        warning.Item1.StartLine,
-                        warning.Item1.StartColumn,
-                        warning.Item2));
+                if (warning.Item1 != null)
+                {
+                    System.Console.Error.WriteLine(
+                        string.Format("{0}({1},{2}): warning WRN0123: {3}",
+                            warning.Item1.FileName,
+                            warning.Item1.StartLine,
+                            warning.Item1.StartColumn,
+                            warning.Item2));
+                }
             }
 
             foreach (var warning in converterContext.Errors)
             {
-                System.Console.Error.WriteLine(
-                    string.Format("{0}({1},{2}): error WRN0123: {3}",
-                        warning.Item1.FileName,
-                        warning.Item1.StartLine,
-                        warning.Item1.StartColumn,
-                        warning.Item2));
+                if (warning.Item1 != null)
+                {
+                    System.Console.Error.WriteLine(
+                        string.Format("{0}({1},{2}): error ERR0123: {3}",
+                            warning.Item1.FileName,
+                            warning.Item1.StartLine,
+                            warning.Item1.StartColumn,
+                            warning.Item2));
+                }
+                else
+                {
+                    System.Console.Error.WriteLine(
+                        string.Format("{0}({1},{2}): error ERR0123: {3}",
+                            string.Empty,
+                            0,
+                            0,
+                            warning.Item2));
+                }
             }
 
             return true;

@@ -1,5 +1,5 @@
 ﻿(function(){
-var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_StringDictionary_$Delegate$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_ArrayG_$Number$_, ptyp_, tmplStore, TestTemplate1_var, TestTemplateVMB_CssBinding_var, TestTemplateVMB_StyleBinding_var, TestTemplateVMB_AttrBinding_var, TestTemplateB_PropertyBinding_var, TestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Number$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
+var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_$_, System_Collections_Generic_StringDictionary_$Delegate$_, System_Collections_Generic_KeyValuePair_$String_x_String$_, System_ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Number$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_INotifyPropertyChanged$_, System_Collections_Generic_KeyValuePair_$String_x_String$_0, System_Collections_Generic_KeyValuePair_$String_x_String$_1, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_String$_2, System_Collections_Generic_KeyValuePair_$String_x_String$_3;
 Function.typeId = "o";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
@@ -1232,22 +1232,22 @@ function Sunlight_Framework_UI_Test_NScriptsTemplatesClass() {
 };
 Sunlight_Framework_UI_Test_NScriptsTemplatesClass.typeId = "bi";
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplate1() {
-  return TestTemplate1();
+  return Test$5cTemplates$5cTestTemplate1();
 };
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB1() {
-  return TestTemplateVMB1();
+  return Test$5cTemplates$5cTestTemplateVMB1();
 };
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_AttrBinding() {
-  return TestTemplateVMB_AttrBinding();
+  return Test$5cTemplates$5cTestTemplateVMB_AttrBinding();
 };
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_CssBinding() {
-  return TestTemplateVMB_CssBinding();
+  return Test$5cTemplates$5cTestTemplateVMB_CssBinding();
 };
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB_StyleBinding() {
-  return TestTemplateVMB_StyleBinding();
+  return Test$5cTemplates$5cTestTemplateVMB_StyleBinding();
 };
 function Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateB_PropertyBinding() {
-  return TestTemplateB_PropertyBinding();
+  return Test$5cTemplates$5cTestTemplateB_PropertyBinding();
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_NScriptsTemplatesClass, "Sunlight.Framework.UI.Test.NScriptsTemplatesClass", Object, []);
 function Sunlight_Framework_Observables_ExtensibleObservableObject() {
@@ -1735,6 +1735,8 @@ ptyp_.observableList = null;
 ptyp_.attachedObservableList = null;
 ptyp_.fixedList = null;
 ptyp_.itemSkin = null;
+ptyp_.itemCssClassName = null;
+ptyp_.inlineItems = false;
 ptyp_.__ctor3 = function Sunlight__Framework__UI__ListView____ctor(element) {
   this.__ctor2(element);
   this.items = System_Collections_Generic_List_$ListViewItem$_.defaultConstructor();
@@ -1807,7 +1809,12 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
         listViewItem = items.get_item(iObject);
       else {
         listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("div"));
-        this.get_element().appendChild(listViewItem.get_element());
+        if (this.itemCssClassName !== null)
+          listViewItem.get_element().className = this.itemCssClassName;
+        if (!this.inlineItems)
+          this.get_element().appendChild(listViewItem.get_element());
+        else
+          this.get_element().parentNode.insertBefore(listViewItem.get_element(), this.get_element());
         listViewItem.set_skin(this.itemSkin);
         items.add(listViewItem);
       }
@@ -1848,13 +1855,21 @@ ptyp_.observableListCollectionChanged = function Sunlight__Framework__UI__ListVi
         insertBeforeElem = items.get_item(changeIndex).get_element();
       for (iObject = 0; iObject < listCount; iObject++) {
         listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("div"));
+        if (this.itemCssClassName !== null)
+          listViewItem.get_element().className = this.itemCssClassName;
         listViewItem.set_skin(this.itemSkin);
         if (!insertBeforeElem) {
-          this.get_element().appendChild(listViewItem.get_element());
+          if (this.inlineItems)
+            this.get_element().parentNode.insertBefore(listViewItem.get_element(), this.get_element());
+          else
+            this.get_element().appendChild(listViewItem.get_element());
           items.add(listViewItem);
         }
         else {
-          this.get_element().insertBefore(listViewItem.get_element(), insertBeforeElem);
+          if (this.inlineItems)
+            this.get_element().parentNode.insertBefore(listViewItem.get_element(), insertBeforeElem);
+          else
+            this.get_element().insertBefore(listViewItem.get_element(), insertBeforeElem);
           items.insert(changeIndex + iObject, listViewItem);
         }
         listViewItem.set_dataContext(list.V_get_Item_d(iObject));
@@ -1891,7 +1906,12 @@ ptyp_.resetObservableItems = function Sunlight__Framework__UI__ListView__ResetOb
       listViewItem = this.items.get_item(iObject);
     else {
       listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("div"));
-      this.get_element().appendChild(listViewItem.get_element());
+      if (this.itemCssClassName !== null)
+        listViewItem.get_element().className = this.itemCssClassName;
+      if (!this.inlineItems)
+        this.get_element().appendChild(listViewItem.get_element());
+      else
+        this.get_element().parentNode.insertBefore(listViewItem.get_element(), this.get_element());
       listViewItem.set_skin(this.itemSkin);
       this.items.add(listViewItem);
     }
@@ -3745,7 +3765,7 @@ test("Test", 0, Sunlight__Framework__UI__Test__ManualTemplateTests__Test);
 module("Sunlight.Framework.UI.Test.UIElementTests", {
 });
 test("TestNewUIElement", 0, Sunlight__Framework__UI__Test__UIElementTests__TestNewUIElement);
-function TestTemplate1_factory(skinFactory, doc) {
+function Test$5cTemplates$5cTestTemplate1_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
@@ -3756,11 +3776,11 @@ function TestTemplate1_factory(skinFactory, doc) {
   objStorage = [];
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 0, 0);
 };
-TestTemplate1_var = null;
-function TestTemplate1() {
-  if (!TestTemplate1_var)
-    TestTemplate1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, TestTemplate1_factory, "0");
-  return TestTemplate1_var;
+Test$5cTemplates$5cTestTemplate1_var = null;
+function Test$5cTemplates$5cTestTemplate1() {
+  if (!Test$5cTemplates$5cTestTemplate1_var)
+    Test$5cTemplates$5cTestTemplate1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelA, Test$5cTemplates$5cTestTemplate1_factory, "0");
+  return Test$5cTemplates$5cTestTemplate1_var;
 };
 function getter(src) {
   return src.get_propStr1();
@@ -3768,7 +3788,7 @@ function getter(src) {
 function getter0(src) {
   return src.get_propBool1();
 };
-function TestTemplateVMB_CssBinding_factory(skinFactory, doc) {
+function Test$5cTemplates$5cTestTemplateVMB_CssBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[1]) {
     domStore[1] = doc.createElement("div");
@@ -3780,16 +3800,16 @@ function TestTemplateVMB_CssBinding_factory(skinFactory, doc) {
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[1], null, 1, 0);
 };
-TestTemplateVMB_CssBinding_var = null;
-function TestTemplateVMB_CssBinding() {
-  if (!TestTemplateVMB_CssBinding_var)
-    TestTemplateVMB_CssBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB_CssBinding_factory, "1");
-  return TestTemplateVMB_CssBinding_var;
+Test$5cTemplates$5cTestTemplateVMB_CssBinding_var = null;
+function Test$5cTemplates$5cTestTemplateVMB_CssBinding() {
+  if (!Test$5cTemplates$5cTestTemplateVMB_CssBinding_var)
+    Test$5cTemplates$5cTestTemplateVMB_CssBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, Test$5cTemplates$5cTestTemplateVMB_CssBinding_factory, "1");
+  return Test$5cTemplates$5cTestTemplateVMB_CssBinding_var;
 };
 function styleSetter(dom, val) {
   dom.style.height = val;
 };
-function TestTemplateVMB_StyleBinding_factory(skinFactory, doc) {
+function Test$5cTemplates$5cTestTemplateVMB_StyleBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[2]) {
     domStore[2] = doc.createElement("div");
@@ -3801,13 +3821,13 @@ function TestTemplateVMB_StyleBinding_factory(skinFactory, doc) {
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[2], null, 1, 0);
 };
-TestTemplateVMB_StyleBinding_var = null;
-function TestTemplateVMB_StyleBinding() {
-  if (!TestTemplateVMB_StyleBinding_var)
-    TestTemplateVMB_StyleBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB_StyleBinding_factory, "2");
-  return TestTemplateVMB_StyleBinding_var;
+Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var = null;
+function Test$5cTemplates$5cTestTemplateVMB_StyleBinding() {
+  if (!Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var)
+    Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_factory, "2");
+  return Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var;
 };
-function TestTemplateVMB_AttrBinding_factory(skinFactory, doc) {
+function Test$5cTemplates$5cTestTemplateVMB_AttrBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[3]) {
     domStore[3] = doc.createElement("div");
@@ -3819,11 +3839,11 @@ function TestTemplateVMB_AttrBinding_factory(skinFactory, doc) {
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[3], null, 1, 0);
 };
-TestTemplateVMB_AttrBinding_var = null;
-function TestTemplateVMB_AttrBinding() {
-  if (!TestTemplateVMB_AttrBinding_var)
-    TestTemplateVMB_AttrBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB_AttrBinding_factory, "3");
-  return TestTemplateVMB_AttrBinding_var;
+Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var = null;
+function Test$5cTemplates$5cTestTemplateVMB_AttrBinding() {
+  if (!Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var)
+    Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_factory, "3");
+  return Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var;
 };
 function getter1(src) {
   return src.get_propInt1();
@@ -3840,7 +3860,7 @@ function getter2(src) {
 function setter1(tar, val) {
   tar.set_oneWayStrictBinding(val);
 };
-function TestTemplateB_PropertyBinding_factory(skinFactory, doc) {
+function Test$5cTemplates$5cTestTemplateB_PropertyBinding_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[4]) {
     domStore[4] = doc.createElement("div");
@@ -3854,13 +3874,13 @@ function TestTemplateB_PropertyBinding_factory(skinFactory, doc) {
     "Part1": 0
   }, 2, 0);
 };
-TestTemplateB_PropertyBinding_var = null;
-function TestTemplateB_PropertyBinding() {
-  if (!TestTemplateB_PropertyBinding_var)
-    TestTemplateB_PropertyBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_Test_TestSkinableWithTestUIElementPart, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateB_PropertyBinding_factory, "4");
-  return TestTemplateB_PropertyBinding_var;
+Test$5cTemplates$5cTestTemplateB_PropertyBinding_var = null;
+function Test$5cTemplates$5cTestTemplateB_PropertyBinding() {
+  if (!Test$5cTemplates$5cTestTemplateB_PropertyBinding_var)
+    Test$5cTemplates$5cTestTemplateB_PropertyBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_Test_TestSkinableWithTestUIElementPart, Sunlight_Framework_UI_Test_TestViewModelB, Test$5cTemplates$5cTestTemplateB_PropertyBinding_factory, "4");
+  return Test$5cTemplates$5cTestTemplateB_PropertyBinding_var;
 };
-function TestTemplateVMB1_factory(skinFactory, doc) {
+function Test$5cTemplates$5cTestTemplateVMB1_factory(skinFactory, doc) {
   var objStorage, htmlRoot, domStore;
   if (!(domStore = DocStorageGetter(doc))[5]) {
     domStore[5] = doc.createElement("div");
@@ -3872,11 +3892,11 @@ function TestTemplateVMB1_factory(skinFactory, doc) {
   objStorage[0] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
   return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[5], null, 0, 0);
 };
-TestTemplateVMB1_var = null;
-function TestTemplateVMB1() {
-  if (!TestTemplateVMB1_var)
-    TestTemplateVMB1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, TestTemplateVMB1_factory, "5");
-  return TestTemplateVMB1_var;
+Test$5cTemplates$5cTestTemplateVMB1_var = null;
+function Test$5cTemplates$5cTestTemplateVMB1() {
+  if (!Test$5cTemplates$5cTestTemplateVMB1_var)
+    Test$5cTemplates$5cTestTemplateVMB1_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, Test$5cTemplates$5cTestTemplateVMB1_factory, "5");
+  return Test$5cTemplates$5cTestTemplateVMB1_var;
 };
 tmplStore = new Array(6);
 function DocStorageGetter(doc) {

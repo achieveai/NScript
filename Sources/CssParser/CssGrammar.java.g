@@ -15,8 +15,8 @@
 // This grammar is free to use providing you retain everything in this header comment
 // section.
 //
-grammar CSS21;
-// grammar CssGrammer;
+// grammar CSS21;
+grammar CssGrammar;
 
  options {
  	// language=CSharp3;

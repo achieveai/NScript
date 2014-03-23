@@ -7,7 +7,9 @@
 namespace XwmlParser
 {
     using HtmlAgilityPack;
+    using NScript.Converter;
     using NScript.JST;
+    using NScript.Utils;
     using System;
     using System.Collections.Generic;
     using System.Text;
@@ -23,31 +25,30 @@ namespace XwmlParser
         ParserContext parserContext;
 
         /// <summary>
-        /// List of names of the class.
-        /// </summary>
-        Dictionary<string, IIdentifier> classNames = new Dictionary<string, IIdentifier>();
-
-        /// <summary>
-        /// The CSS rules.
-        /// </summary>
-        List<CssParser.CssRule> cssRules = new List<CssParser.CssRule>();
-
-        List<CssParser.CssKeyframes> keyFrames = new List<CssParser.CssKeyframes>();
-
-        List<CssParser.Media> mediaRules = new List<CssParser.Media>();
-
-        /// <summary>
         /// Stack of namespaces.
         /// </summary>
         private List<Dictionary<string, string>> namespaceStack = new List<Dictionary<string, string>>();
 
         /// <summary>
+        /// The applicable CSS scopes.
+        /// </summary>
+        private List<CssStyleSheet> applicableCssScopes = new List<CssStyleSheet>();
+
+        /// <summary>
+        /// The document CSS scope.
+        /// </summary>
+        private CssStyleSheet documentCssScope;
+
+        private string resourceName;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="parserContext">    Context for the parser. </param>
-        public DocumentContext(ParserContext parserContext)
+        public DocumentContext(ParserContext parserContext, string resourceName)
         {
             this.parserContext = parserContext;
+            this.resourceName = resourceName;
         }
 
         /// <summary>
@@ -69,36 +70,6 @@ namespace XwmlParser
         { get { return this.parserContext; } }
 
         /// <summary>
-        /// Adds the CSS rules.
-        /// </summary>
-        /// <param name="rules"> The rules. </param>
-        public void AddCssRules(List<CssParser.CssRule> rules)
-        {
-            this.cssRules.AddRange(rules);
-
-            for (int iRule = 0; iRule < rules.Count; iRule++)
-            {
-                CssClassNameFinderVisitor.Instance.Process(
-                    rules[iRule],
-                    (cn) =>
-                    {
-                        if (cn == null)
-                        {
-                            throw new ApplicationException(
-                                "Can't use any other selector than Class name selector in Css");
-                        }
-                        if (!this.classNames.ContainsKey(cn.ClassName))
-                        {
-                            this.classNames[cn.ClassName] =
-                                parserContext.RegisterCssClassName(cn.ClassName);
-                        }
-
-                        this.classNames[cn.ClassName].AddUsage(null);
-                    });
-            }
-        }
-
-        /// <summary>
         /// Pushes a node.
         /// </summary>
         /// <param name="node"> The node. </param>
@@ -112,8 +83,11 @@ namespace XwmlParser
         /// </summary>
         public void PopNode()
         {
-            // Remove the namespace mapping that was inserted for this node.
-            this.namespaceStack.RemoveAt(this.namespaceStack.Count - 1);
+            if (this.namespaceStack.Count > 1)
+            {
+                // Remove the namespace mapping that was inserted for this node.
+                this.namespaceStack.RemoveAt(this.namespaceStack.Count - 1);
+            }
         }
 
         /// <summary>
@@ -162,12 +136,22 @@ namespace XwmlParser
         /// </returns>
         public bool TryGetCssClassIdentifier(string className, out IIdentifier identifier)
         {
-            if (!this.classNames.TryGetValue(className, out identifier))
+            if (this.documentCssScope != null && this.documentCssScope.TryGetCssClassIdentifier(className, out identifier))
             {
-                return this.parserContext.TryGetCssClassIdentifier(className, out identifier);
+                return true;
             }
 
-            return true;
+            for (int iCssScope = 0; iCssScope < this.applicableCssScopes.Count; iCssScope++)
+            {
+                if (this.applicableCssScopes[iCssScope].TryGetCssClassIdentifier(
+                    className,
+                    out identifier))
+                {
+                    return true;
+                }
+            }
+
+            return this.parserContext.TryGetCssClassIdentifier(className, out identifier);
         }
 
         /// <summary>
@@ -178,49 +162,112 @@ namespace XwmlParser
         /// </returns>
         public string GetCssString()
         {
-            StringBuilder sb = new StringBuilder();
-            foreach (var cssRule in this.cssRules)
+            if (this.documentCssScope != null)
             {
-                CssSerializerVisitor.Instance.Process(
-                    sb,
-                    cssRule,
-                    (cn) =>
-                    {
-                        IIdentifier identifier;
-                        this.TryGetCssClassIdentifier(cn.ClassName, out identifier);
-                        return identifier.GetName();
-                    },
-                    (idN) =>
-                    {
-                        return idN.Id;
-                    });
+                return this.documentCssScope.GetCssString();
             }
 
-            foreach (var keyframes in this.keyFrames)
-            {
-                CssSerializerVisitor.Instance.Process(
-                    sb,
-                    keyframes);
-            }
+            return string.Empty;
+        }
 
-            foreach (var media in this.mediaRules)
+        /// <summary>
+        /// Adds the CSS.
+        /// </summary>
+        /// <exception cref="ConverterLocationException"> Thrown when a Converter Location error condition
+        ///     occurs. </exception>
+        /// <param name="styleNode"> The style node. </param>
+        public void AddCss(HtmlNode styleNode)
+        {
+            if (!string.IsNullOrWhiteSpace(styleNode.InnerText))
             {
-                CssSerializerVisitor.Instance.Process(
-                    sb,
-                    media,
-                    (cn) =>
-                    {
-                        IIdentifier identifier;
-                        this.TryGetCssClassIdentifier(cn.ClassName, out identifier);
-                        return identifier.GetName();
-                    },
-                    (idN) =>
-                    {
-                        return idN.Id;
-                    });
-            }
+                this.documentCssScope =
+                    this.documentCssScope
+                    ?? new CssStyleSheet(this.parserContext, this.resourceName);
 
-            return sb.ToString();
+                if (styleNode.Attributes["type"] != null
+                    && styleNode.Attributes["type"].Value.ToLowerInvariant() == "text/less")
+                {
+                    this.documentCssScope.AddLess(styleNode.InnerText);
+                }
+                else
+                {
+                    this.documentCssScope.AddCss(styleNode.InnerText);
+                }
+
+                foreach (var className in this.documentCssScope.ClassNames)
+                {
+                    IIdentifier tmp;
+                    for (int iStyleSheet = 0; iStyleSheet < this.applicableCssScopes.Count; iStyleSheet++)
+                    {
+                        if (this.applicableCssScopes[iStyleSheet].TryGetCssClassIdentifier(
+                            className,
+                            out tmp))
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    styleNode.Line,
+                                    styleNode.LinePosition),
+                                string.Format(
+                                    "Can't overwrite className: {0}, it's already defined in styleSheet: {1}",
+                                    className,
+                                    this.applicableCssScopes[iStyleSheet].ResourceName));
+                        }
+                    }
+                }
+            }
+            else if (styleNode.Attributes.Contains("src"))
+            {
+                try
+                {
+                    var styleSheet = this.parserContext.GetStyleSheet(styleNode.Attributes["src"].Value);
+
+                    if (this.documentCssScope != null)
+                    {
+                        foreach (var cssClassName in this.documentCssScope.ClassNames)
+                        {
+                            IIdentifier tmp;
+                            if (styleSheet.TryGetCssClassIdentifier(cssClassName, out tmp))
+                            {
+                                throw new ConverterLocationException(
+                                    new Location(
+                                        this.resourceName,
+                                        styleNode.Line,
+                                        styleNode.LinePosition),
+                                    string.Format(
+                                        "Can't overwrite className: {0}, it's already defined in local StyleSheet",
+                                        cssClassName));
+                            }
+                        }
+                    }
+
+                    this.applicableCssScopes.Add(styleSheet);
+                }
+                catch(ConverterLocationException locEx)
+                {
+                    throw locEx;
+                }
+                catch(ApplicationException ex)
+                {
+                    throw new ConverterLocationException(
+                        new Location(
+                            this.resourceName,
+                            styleNode.Line,
+                            styleNode.LinePosition),
+                        string.Format(
+                            "base StyleSheet:{0} not found.",
+                            styleNode.Attributes["src"].Value));
+                }
+            }
+            else
+            {
+                throw new ConverterLocationException(
+                    new Location(
+                        this.resourceName,
+                        styleNode.Line,
+                        styleNode.LinePosition),
+                    "Don't know what to do with style block");
+            }
         }
 
         /// <summary>
@@ -244,20 +291,6 @@ namespace XwmlParser
             }
 
             this.namespaceStack.Add(mapping);
-        }
-
-        internal void AddKeyFrames(List<CssParser.CssKeyframes> list)
-        {
-            this.keyFrames.AddRange(list);
-        }
-
-        internal void AddMediaRules(List<CssParser.Media> mediaRules)
-        {
-            if (mediaRules != null
-                && mediaRules.Count > 0)
-            {
-                this.mediaRules.AddRange(mediaRules);
-            }
         }
     }
 }

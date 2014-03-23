@@ -22,21 +22,28 @@ namespace CssParser
         private List<Media> mediaRules;
         public CssGrammer(string css, bool parseProperties = false)
         {
-            ANTLRStringStream input = new ANTLRStringStream(css);
-            CssGrammerLexer lexer = new CssGrammerLexer(input);
-            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            CssGrammerParser parser = new CssGrammerParser(tokenStream);
-            if (parseProperties)
+            try
             {
-                CommonTree tree = parser.declarationSet().Tree;
+                ANTLRStringStream input = new ANTLRStringStream(css);
+                CssGrammerLexer lexer = new CssGrammerLexer(input);
+                CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+                CssGrammerParser parser = new CssGrammerParser(tokenStream);
+                if (parseProperties)
+                {
+                    CommonTree tree = parser.declarationSet().Tree;
 
-                this.ParseStyle(tree);
+                    this.ParseStyle(tree);
+                }
+                else
+                {
+                    CommonTree tree = parser.styleSheet().Tree;
+
+                    this.ParseCss(tree);
+                }
             }
-            else
+            catch(Antlr.Runtime.RecognitionException ex)
             {
-                CommonTree tree = parser.styleSheet().Tree;
-
-                this.ParseCss(tree);
+                throw new ParseException(ex);
             }
         }
 
@@ -109,46 +116,43 @@ namespace CssParser
                     this.mediaRules.Add(this.ParseMediaElement(tree));
                     break;
                 default:
+                    if (tree is CommonErrorNode)
+                    {
+                        throw ((CommonErrorNode)tree).trappedException;
+                    }
+
                     break;
             }
         }
 
         private Media ParseMediaElement(ITree tree)
         {
-            var backKeyFrames = this.keyFrames;
-            var backRules = this.rules;
-
-            this.keyFrames = new List<CssKeyframes>();
-            this.rules = new List<CssRule>();
+            var mqKeyFrames = new List<CssKeyframes>();
+            var mqRules = new List<CssRule>();
             List<MediaQuery> mediaQueries = new List<MediaQuery>();
-            try
+            for (int iChild = 0; iChild < tree.ChildCount; iChild++)
             {
-                for (int iChild = 0; iChild < tree.ChildCount; iChild++)
+                var child = tree.GetChild(iChild);
+                switch (child.Text)
                 {
-                    var child = tree.GetChild(iChild);
-                    switch (child.Text)
-                    {
-                        case "MEDIA_QUERY":
-                            mediaQueries.Add(this.ParseMediaQuery(child));
-                            break;
-                        case "RULE":
-                            this.rules.Add(this.ParseRule(child));
-                            break;
-                        default:
-                            break;
-                    }
+                    case "MEDIA_QUERY":
+                        mediaQueries.Add(this.ParseMediaQuery(child));
+                        break;
+                    case "RULE":
+                        mqRules.Add(this.ParseRule(child));
+                        break;
+                    case "KEYFRAMES":
+                        mqKeyFrames.Add(this.ParseKeyframes(tree));
+                        break;
+                    default:
+                        break;
                 }
+            }
 
-                return new Media(
-                    mediaQueries,
-                    rules,
-                    this.keyFrames);
-            }
-            finally
-            {
-                this.keyFrames = backKeyFrames;
-                this.rules = backRules;
-            }
+            return new Media(
+                mediaQueries,
+                mqRules,
+                mqKeyFrames);
         }
 
         private MediaQuery ParseMediaQuery(ITree tree)
@@ -317,7 +321,10 @@ namespace CssParser
                         this.ParseSelectorOps(child, operators, selectors);
                         break;
                     case "SIMPLE_SEL":
-                        selectors.Add(this.ParseSimpleSelector(child));
+                        this.MergeSelectors(
+                            operators,
+                            selectors,
+                            this.ParseSimpleSelector(child));
                         break;
                     default:
                         break;
@@ -358,41 +365,96 @@ namespace CssParser
 
             operators.Add(op);
             var subTree = tree.GetChild(1);
-            selectors.Add(this.ParseSimpleSelector(subTree));
+            this.MergeSelectors(operators, selectors, this.ParseSimpleSelector(subTree));
         }
 
-        private UnitCssSelector ParseSimpleSelector(ITree tree)
+        private void MergeSelectors(List<SelectorOp> operators, List<UnitCssSelector> selectors, CssSelector simpleSelector)
         {
+            CssRuleSelector ruleSelector = simpleSelector as CssRuleSelector;
+            if (ruleSelector != null)
+            {
+                operators.AddRange(ruleSelector.Ops);
+                selectors.AddRange(ruleSelector.Selectors);
+            }
+            else
+            {
+                selectors.Add((UnitCssSelector)simpleSelector);
+            }
+        }
+
+        private CssSelector ParseSimpleSelector(ITree tree)
+        {
+            List<UnitCssSelector> ruleSelectors = new List<UnitCssSelector>();
             List<UnitSimpleCssSelector> selectors = new List<UnitSimpleCssSelector>();
             for (int i = 0; i < tree.ChildCount; i++)
             {
                 var child = tree.GetChild(i);
+                UnitSimpleCssSelector selector = null;
                 switch (child.Text)
                 {
                     case "CLASS":
-                        selectors.Add(this.ParseClass(child));
+                        selector = this.ParseClass(child);
                         break;
                     case "TAG":
-                        selectors.Add(this.ParseTag(child));
+                        selector = this.ParseTag(child);
                         break;
                     case "ID":
-                        selectors.Add(this.ParseId(child));
+                        selector = this.ParseId(child);
                         break;
                     case "ALL":
-                        selectors.Add(this.ParseAll(child));
+                        selector = this.ParseAll(child);
                         break;
                     case "ATTRIB":
-                        selectors.Add(this.ParseAttrib(child));
+                        selector = this.ParseAttrib(child);
                         break;
                     case "PSEUDO":
-                        selectors.Add(this.ParsePseudo(child));
+                        selector = this.ParsePseudo(child);
                         break;
                     case "PSEUDO_FUNC":
-                        selectors.Add(this.ParsePseudoFunc(child));
+                        selector = this.ParsePseudoFunc(child);
+                        break;
+                    case "PSEUDO_FUNC_SELECTOR":
+                        selector = this.ParsePseudoFuncSelector(child);
                         break;
                     default:
                         break;
                 }
+
+                if (selectors.Count == 0
+                    || tree.GetChild(i-1).TokenStopIndex == child.TokenStartIndex-1)
+                {
+                    selectors.Add(selector);
+                }
+                else
+                {
+                    var unitCssSelector = selectors.Count == 1
+                        ? (UnitCssSelector)selectors[0]
+                        : new AndCssSelector(selectors);
+
+                    ruleSelectors.Add(unitCssSelector);
+                    selectors = new List<UnitSimpleCssSelector>();
+                    selectors.Add(selector);
+                }
+            }
+
+            if (ruleSelectors.Count > 0)
+            {
+                if (selectors.Count > 1)
+                {
+                    ruleSelectors.Add(new AndCssSelector(selectors));
+                }
+                else if (selectors.Count == 1)
+                {
+                    ruleSelectors.Add(selectors[0]);
+                }
+
+                List<SelectorOp> selectorOps = new List<SelectorOp>(ruleSelectors.Count);
+                for (int i = 1; i < ruleSelectors.Count; i++)
+                {
+                    selectorOps.Add(SelectorOp.Under);
+                }
+
+                return new CssRuleSelector(ruleSelectors, selectorOps);
             }
 
             if (selectors.Count == 1)
@@ -403,32 +465,49 @@ namespace CssParser
             return new AndCssSelector(selectors);
         }
 
+        private UnitSimpleCssSelector ParsePseudoFuncSelector(ITree tree)
+        {
+            var name = tree.GetChild(1).Text.Trim();
+            var argChild = tree.GetChild(1);
+            return new PseudoNestedSelector(
+                name,
+                tree.GetChild(1).Text.Trim() == "::",
+                this.ParseSelector(tree.GetChild(2)));
+        }
+
         private PseudoSelector ParsePseudo(ITree child)
         {
-            return new PseudoSelector(child.GetChild(0).Text);
+            return new PseudoSelector(child.GetChild(1).Text, child.GetChild(0).Text == "::");
         }
 
         private PseudoSelector ParsePseudoFunc(ITree tree)
         {
-            var name = tree.GetChild(0).Text.Trim();
-            if (tree.ChildCount == 1)
+            var name = tree.GetChild(1).Text.Trim();
+            if (tree.ChildCount == 2)
             {
-                return new PseudoSelector(name, string.Empty);
+                return new PseudoSelector(
+                    name,
+                    tree.GetChild(0).Text.Trim() == "::",
+                    string.Empty);
             }
             else
             {
-                var argChild = tree.GetChild(1);
-                if (tree.ChildCount == 2)
+                var argChild = tree.GetChild(2);
+                if (tree.ChildCount == 3)
                 {
-                    return new PseudoSelector(name, argChild.Text);
+                    return new PseudoSelector(
+                        name,
+                        tree.GetChild(1).Text.Trim() == "::",
+                        argChild.Text);
                 }
                 else
                 {
                     return new PseudoSelector(
                         name,
+                        tree.GetChild(1).Text.Trim() == "::",
                         argChild.Text
-                        + tree.GetChild(2).Text
-                        + tree.GetChild(3).Text);
+                        + tree.GetChild(3).Text
+                        + tree.GetChild(4).Text);
                 }
             }
         }
@@ -540,7 +619,7 @@ namespace CssParser
                 case "FUNCTION":
                     return this.ParseFunction(child);
                 case "URL_VAL":
-                    throw new NotImplementedException();
+                    return new CssStringPropertyValue(child.GetChild(0).Text);
                 case "COLOR":
                     return new CssColorPropertyValue(child.GetChild(0).Text);
                 default:
@@ -577,6 +656,12 @@ namespace CssParser
                         throw new NotImplementedException();
                     case "COLOR":
                         args.Add(new CssColorPropertyValue(child.GetChild(0).Text));
+                        break;
+                    case "ASSIGN_EXPR":
+                        args.Add(new CssStringPropertyValue(
+                            child.GetChild(0).Text
+                            + "="
+                            + ParsePropertyValue(child.GetChild(1)).ToString()));
                         break;
                     default:
                         break;

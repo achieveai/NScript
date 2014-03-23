@@ -49,13 +49,14 @@ namespace NScript.JST
         private SimpleIdentifier(
             IdentifierScope ownerScope,
             string suggestedName,
-            bool enforceSuggestion)
+            bool enforceSuggestion,
+            bool dontEscape = false)
         {
             this.ownerScope = ownerScope;
             this.enforceSuggestion = enforceSuggestion;
             this.suggestedName = string.IsNullOrWhiteSpace(suggestedName)
                     ? string.Empty
-                    : enforceSuggestion
+                    : enforceSuggestion || dontEscape
                         ? suggestedName
                         : Utils.ToJSIdentifier(suggestedName);
         }
@@ -161,7 +162,8 @@ namespace NScript.JST
         public static SimpleIdentifier CreateScopeIdentifier(
             IdentifierScope ownerScope,
             string suggestedName,
-            bool enforceSuggestion)
+            bool enforceSuggestion,
+            bool dontEscape = false)
         {
             if (enforceSuggestion && suggestedName == null)
             {
@@ -177,7 +179,8 @@ namespace NScript.JST
                 returnValue = new SimpleIdentifier(
                      ownerScope,
                      suggestedName,
-                     enforceSuggestion);
+                     enforceSuggestion,
+                     dontEscape);
 
                 ownerScope.AddIdentifier(returnValue);
             }
@@ -198,7 +201,13 @@ namespace NScript.JST
         {
             for (int parameterIndex = 0; parameterIndex < parameterCount; parameterIndex++)
             {
-                paramIdentifiers.Add(new SimpleIdentifier(ownerScope, string.Format("arg{0}", parameterIndex), false));
+                paramIdentifiers.Add(
+                    new SimpleIdentifier(
+                        ownerScope,
+                        string.Format(
+                            "arg{0}",
+                            parameterIndex),
+                        false));
             }
         }
 

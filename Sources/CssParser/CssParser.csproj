@@ -75,6 +75,7 @@
       <Link>CssGrammerLexer.cs</Link>
     </Compile>
     <Compile Include="CssParts.cs" />
+    <Compile Include="ParseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

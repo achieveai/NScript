@@ -7,6 +7,7 @@
 namespace Sunlight.Framework.UI
 {
     using Sunlight.Framework.Observables;
+    using Sunlight.Framework.UI.Attributes;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -27,6 +28,8 @@ namespace Sunlight.Framework.UI
         IObservableCollection attachedObservableList;
         IList fixedList;
         Skin itemSkin;
+        string itemCssClassName;
+        bool inlineItems;
 
         public ListView(Element element)
             : base(element)
@@ -116,6 +119,26 @@ namespace Sunlight.Framework.UI
             }
         }
 
+        /// <summary>
+        /// Gets or sets the name of the item CSS class.
+        /// </summary>
+        /// <value>
+        /// The name of the item CSS class.
+        /// </value>
+        [CssName]
+        [DefaultDataBinding(Mode=Binders.DataBindingMode.OneTime)]
+        public string ItemCssClassName
+        {
+            get { return this.itemCssClassName; }
+            set { this.itemCssClassName = value; }
+        }
+
+        public bool InlineItems
+        {
+            get { return this.inlineItems; }
+            set { this.inlineItems = value; }
+        }
+
         protected override void OnActivate()
         {
             base.OnActivate();
@@ -193,7 +216,21 @@ namespace Sunlight.Framework.UI
                     {
                         listViewItem = new ListViewItem(
                             this.Element.OwnerDocument.CreateElement("div"));
-                        this.Element.AppendChild(listViewItem.Element);
+                        if (this.itemCssClassName != null)
+                        {
+                            listViewItem.Element.ClassName = this.itemCssClassName;
+                        }
+
+                        if (!this.inlineItems)
+                        {
+                            this.Element.AppendChild(listViewItem.Element);
+                        }
+                        else
+                        {
+                            this.Element.ParentNode.InsertBefore(
+                                listViewItem.Element,
+                                this.Element);
+                        }
                         listViewItem.Skin = this.itemSkin;
                         items.Add(listViewItem);
                     }
@@ -255,16 +292,41 @@ namespace Sunlight.Framework.UI
                         {
                             ListViewItem listViewItem = new ListViewItem(
                                     this.Element.OwnerDocument.CreateElement("div"));
+                            if (this.itemCssClassName != null)
+                            {
+                                listViewItem.Element.ClassName = this.itemCssClassName;
+                            }
+
                             listViewItem.Skin = this.itemSkin;
 
                             if (insertBeforeElem == null)
                             {
-                                this.Element.AppendChild(listViewItem.Element);
+                                if (this.inlineItems)
+                                {
+                                    this.Element.ParentNode.InsertBefore(
+                                        listViewItem.Element,
+                                        this.Element);
+                                }
+                                else
+                                {
+                                    this.Element.AppendChild(listViewItem.Element);
+                                }
+
                                 items.Add(listViewItem);
                             }
                             else
                             {
-                                this.Element.InsertBefore(listViewItem.Element, insertBeforeElem);
+                                if (this.inlineItems)
+                                {
+                                    this.Element.ParentNode.InsertBefore(
+                                        listViewItem.Element,
+                                        insertBeforeElem);
+                                }
+                                else
+                                {
+                                    this.Element.InsertBefore(listViewItem.Element, insertBeforeElem);
+                                }
+
                                 items.Insert(changeIndex + iObject, listViewItem);
                             }
 
@@ -315,7 +377,22 @@ namespace Sunlight.Framework.UI
                 {
                     listViewItem = new ListViewItem(
                         this.Element.OwnerDocument.CreateElement("div"));
-                    this.Element.AppendChild(listViewItem.Element);
+                    if (this.itemCssClassName != null)
+                    {
+                        listViewItem.Element.ClassName = this.itemCssClassName;
+                    }
+
+                    if (!this.inlineItems)
+                    {
+                        this.Element.AppendChild(listViewItem.Element);
+                    }
+                    else
+                    {
+                        this.Element.ParentNode.InsertBefore(
+                            listViewItem.Element,
+                            this.Element);
+                    }
+
                     listViewItem.Skin = this.itemSkin;
                     items.Add(listViewItem);
                 }

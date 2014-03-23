@@ -50,6 +50,64 @@
         }
 
         [Test]
+        public void TestCssSelectorUnder()
+        {
+            CssGrammer grammer = new CssGrammer("div .list {}");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
+            Assert.AreEqual(2, ruleSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssClassName>(ruleSelector.Selectors[1]);
+            Assert.IsInstanceOf<CssTagName>(ruleSelector.Selectors[0]);
+            Assert.AreEqual(SelectorOp.Under, ruleSelector.Ops[0]);
+        }
+
+        [Test]
+        public void TestCssSelectorUnder1()
+        {
+            CssGrammer grammer = new CssGrammer("div:first-child() .list {}");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
+            Assert.AreEqual(2, ruleSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssClassName>(ruleSelector.Selectors[1]);
+            Assert.IsInstanceOf<AndCssSelector>(ruleSelector.Selectors[0]);
+            Assert.AreEqual(SelectorOp.Under, ruleSelector.Ops[0]);
+        }
+
+        [Test]
+        public void TestCssSelectorAnd()
+        {
+            CssGrammer grammer = new CssGrammer("div.list {}");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
+            Assert.AreEqual(2, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<CssClassName>(andCssSelector.Selectors[1]);
+        }
+
+        [Test]
+        public void TestCssSelectorAnd1()
+        {
+            CssGrammer grammer = new CssGrammer("div:first-child().list {}");
+            Assert.AreEqual(1, grammer.Rules.Count);
+            var selectors = grammer.Rules[0].Selectors;
+            Assert.AreEqual(1, selectors.Count);
+            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
+            Assert.AreEqual(3, andCssSelector.Selectors.Count);
+            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
+            Assert.IsInstanceOf<CssClassName>(andCssSelector.Selectors[2]);
+        }
+
+        [Test]
         public void TestCssSelector()
         {
             CssGrammer grammer = new CssGrammer(".list > div { border: #ddeeff thin 1px solid; }");
@@ -204,10 +262,10 @@
             Assert.AreEqual("border", grammer.Properties[0].PropertyName);
 
             var propertyArgs = new string[] { "#ddeeff", "thin", "1px", "solid" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs[0].Values.Count);
+            Assert.AreEqual(propertyArgs.Length, grammer.Properties[0].PropertyArgs[0].Values.Count);
             for (int i = 0; i < propertyArgs.Length; i++)
             {
-                Assert.AreEqual(propertyArgs[i], grammer.Rules[0].Properties[0].PropertyArgs[0].Values[i]);
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[0].Values[i].ToString());
             }
         }
 
@@ -220,17 +278,17 @@
             Assert.AreEqual(2, grammer.Properties.Count);
 
             var propertyArgs = new string[] { "#ddeeff", "thin", "1px", "solid" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs[0].Values.Count);
+            Assert.AreEqual(propertyArgs.Length, grammer.Properties[0].PropertyArgs[0].Values.Count);
             for (int i = 0; i < propertyArgs.Length; i++)
             {
-                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[0].Values[i]);
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[0].Values[i].ToString());
             }
 
             propertyArgs = new string[] { "#ffeedd" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Rules[0].Properties[0].PropertyArgs[0].Values.Count);
+            Assert.AreEqual(propertyArgs.Length, grammer.Properties[1].PropertyArgs[0].Values.Count);
             for (int i = 0; i < propertyArgs.Length; i++)
             {
-                Assert.AreEqual(propertyArgs[i], grammer.Properties[1].PropertyArgs[0].Values[i]);
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[1].PropertyArgs[0].Values[i].ToString());
             }
         }
 

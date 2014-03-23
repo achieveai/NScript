@@ -42,6 +42,11 @@ using Mono.Cecil;
         private TypeReference voidReference;
 
         /// <summary>
+        /// Backing field for VoidReference.
+        /// </summary>
+        private TypeReference dynamicReference;
+
+        /// <summary>
         /// Backing field for BooleanReference
         /// </summary>
         private TypeReference booleanReference;
@@ -232,6 +237,18 @@ using Mono.Cecil;
                 }
 
                 return this.voidReference;
+            }
+        }
+
+        public TypeReference Dynamic
+        {
+            get
+            {
+                if (this.dynamicReference == null)
+                {
+                }
+
+                return null;
             }
         }
 

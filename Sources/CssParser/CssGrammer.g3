@@ -48,12 +48,16 @@ tokens {
     BEGINSWITH;
     PSEUDO;
     PSEUDO_FUNC;
+    PSEUDO_FUNC_SELECTOR;
+	DPSEUDO;
+	DPSEUDO_FUNC;
     FUNCTION;
     TAG;
     ID;
     CLASS;
     ALL;
     NUMARG;
+	ASSIGN_EXPR;
     SELECTORS;
     SELECTOR;
     SELECTOR_OP;
@@ -121,14 +125,14 @@ imports
 media
     : MEDIA_SYM mediaQuery (COMMA mediaQuery)*
         LBRACE
-            ruleSet
+            ruleSet+
         RBRACE
-		-> ^(MEDIA mediaQuery* ruleSet)
+		-> ^(MEDIA mediaQuery* ruleSet+)
     ;
 mediaQuery
-	: (op1='not')? mediaFeature ( 'and' mediaFeature)*
+	: (op1=NOT_SYM)? mediaFeature ( 'and' mediaFeature)*
 		-> ^(MEDIA_QUERY $op1? mediaFeature*)
-	| (op1='not')? medium ('and' mediaFeature)*
+	| (op1=NOT_SYM)? medium ('and' mediaFeature)*
 		-> ^(MEDIA_QUERY $op1? medium mediaFeature*)
 	;
 
@@ -271,7 +275,7 @@ simpleSelector
     ;
     
 esPred
-    : HASH | DOT | LBRACKET | COLON
+    : HASH | DOT | LBRACKET | COLON | DOUBLE_COLON
     ;
     
 elementSubsequent
@@ -316,10 +320,17 @@ attribOp
     ;
 
 pseudo
-    : COLON IDENT LPAREN pseudoFuncArgs? RPAREN
-        -> ^(PSEUDO_FUNC IDENT pseudoFuncArgs?)
-    | COLON IDENT
-        -> ^(PSEUDO IDENT)
+    : pseudoStart identifier LPAREN (pseudoFuncArgs)? RPAREN
+		-> ^(PSEUDO_FUNC pseudoStart identifier pseudoFuncArgs?)
+    | pseudoStart identifier LPAREN (selector)? RPAREN
+		-> ^(PSEUDO_FUNC pseudoStart identifier selector?)
+	| pseudoStart identifier
+		-> ^(PSEUDO pseudoStart identifier)
+    ;
+
+pseudoStart
+    	:	COLON
+    	|	DOUBLE_COLON
     ;
 
 pseudoFuncArgs
@@ -350,18 +361,24 @@ expr
 term
     : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
     | STRING -> ^(STRING_VAL STRING)
-    | IDENT -> ^(IDENTIFIER IDENT)
-    | IDENT LPAREN funcArgs RPAREN
-        -> ^(FUNCTION IDENT funcArgs)
+    | identifier -> ^(IDENTIFIER identifier)
+    | identifier LPAREN funcArgs RPAREN
+        -> ^(FUNCTION identifier funcArgs)
+    | legacyFilterMethod LPAREN funcArgs RPAREN
+    	-> ^(FUNCTION legacyFilterMethod funcArgs)
     | URI -> ^(URL_VAL URI)
     | hexColor -> ^(COLOR hexColor)
     ;
 
+legacyFilterMethod
+:	identifier COLON identifier (DOT identifier)*;
+
 funcArg
     : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
     | STRING -> ^(STRING_VAL STRING)
-    | IDENT -> ^(IDENTIFIER IDENT)
+    | identifier -> ^(IDENTIFIER identifier)
     | hexColor -> ^(COLOR hexColor)
+    | identifier '=' funcArg -> ^(ASSIGN_EXPR identifier funcArg)
     ;
 
 funcArgs
@@ -378,6 +395,11 @@ unitTerm
     | FREQ
     | NUMBER;
     
+identifier
+	: IDENT
+	| NOT_SYM
+	;
+
 hexColor
     : HASH
     ;
@@ -696,6 +718,7 @@ STARTS_WITH_WORD: '|='      ;
 INCLUDES        : '*='      ;
 STARTS_WITH     : '^='      ;
 ENDS_WITH       : '$='      ;
+DOUBLE_COLON    : '::'		;
 
 GREATER         : '>'       ;
 LBRACE          : '{'       ;
@@ -748,6 +771,8 @@ CHARSET_SYM     : '@charset '           ;
 KEYFRAMES_SYM   : '@' K E Y F R A M E S ;
 FROM_SYM        : F R O M               ;
 TO_SYM          : T O                   ;
+NOT_SYM			: N O T					;
+
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
 

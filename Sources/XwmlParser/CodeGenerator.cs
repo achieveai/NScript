@@ -83,6 +83,13 @@ namespace XwmlParser
         Dictionary<string, TemplateParser> templatesById =
             new Dictionary<string, TemplateParser>();
 
+
+        /// <summary>
+        /// The style sheet.
+        /// </summary>
+        Dictionary<string, CssStyleSheet> styleSheet =
+            new Dictionary<string, CssStyleSheet>();
+
         /// <summary>
         /// The skin code generators.
         /// </summary>
@@ -169,8 +176,8 @@ namespace XwmlParser
         /// <summary>
         /// The resource map.
         /// </summary>
-        Dictionary<string, EmbeddedResource> resourceMap =
-            new Dictionary<string, EmbeddedResource>();
+        Dictionary<string, Tuple<EmbeddedResource, string>> resourceMap =
+            new Dictionary<string, Tuple<EmbeddedResource, string>>();
 
         /// <summary>
         /// The CSS registry methods.
@@ -195,9 +202,17 @@ namespace XwmlParser
                         && (resource.Name.EndsWith(".html")
                             || resource.Name.EndsWith(".htm")
                             || resource.Name.EndsWith(".xhtml")
-                            || resource.Name.EndsWith(".xml")))
+                            || resource.Name.EndsWith(".xml")
+                            || resource.Name.EndsWith(".css")
+                            || resource.Name.EndsWith(".less")))
                     {
-                        resourceMap.Add(resource.Name, embeddedResource);
+                        resourceMap.Add(
+                            resource.Name,
+                            Tuple.Create(
+                                embeddedResource,
+                                (string)this.scopeManager.Context.GetResourceFileName(
+                                    module,
+                                    resource.Name)));
                     }
                 }
             }
@@ -360,18 +375,18 @@ namespace XwmlParser
 
             if (htmlParser == null)
             {
-                EmbeddedResource resource;
+                Tuple<EmbeddedResource, string> resource;
                 if (this.resourceMap.TryGetValue(templateNameSplits[0], out resource))
                 {
                     var document = new HtmlAgilityPack.HtmlDocument();
-                    using (System.IO.Stream stream = resource.GetResourceStream())
+                    using (System.IO.Stream stream = resource.Item1.GetResourceStream())
                     using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
                     {
                         document.Load(reader);
                     }
 
                     htmlParser = new HtmlParser(
-                        templateNameSplits[0],
+                        resource.Item2 ?? templateNameSplits[0],
                         document,
                         this.parserContext);
 
@@ -399,6 +414,53 @@ namespace XwmlParser
             }
 
             return templateParser;
+        }
+
+        /// <summary>
+        /// Gets style sheet.
+        /// </summary>
+        /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
+        /// <param name="cssResourceId"> Identifier for the CSS resource. </param>
+        /// <returns>
+        /// The style sheet.
+        /// </returns>
+        public CssStyleSheet GetStyleSheet(string cssResourceId)
+        {
+            CssStyleSheet rv;
+            if (this.styleSheet.TryGetValue(cssResourceId, out rv))
+            {
+                return rv;
+            }
+
+            Tuple<EmbeddedResource, string> resource;
+            if (this.resourceMap.TryGetValue(cssResourceId, out resource))
+            {
+                rv = new CssStyleSheet(
+                    this.parserContext,
+                    resource.Item2 ?? cssResourceId);
+
+                using (System.IO.Stream stream = resource.Item1.GetResourceStream())
+                using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
+                {
+                    if (cssResourceId.ToLowerInvariant().EndsWith(".less"))
+                    {
+                        rv.AddLess(reader.ReadToEnd());
+                    }
+                    else
+                    {
+                        rv.AddCss(reader.ReadToEnd());
+                    }
+                }
+
+                this.styleSheet.Add(cssResourceId, rv);
+            }
+            else
+            {
+                throw new ApplicationException(
+                    string.Format("Can't find StyleSheet: {0}", cssResourceId));
+            }
+
+            return rv;
         }
 
         /// <summary>
@@ -1136,6 +1198,9 @@ namespace XwmlParser
             return expr;
         }
 
+        /// <summary>
+        /// Generates a code.
+        /// </summary>
         private void GenerateCode()
         {
             this.generatedCode.Add(
@@ -1157,6 +1222,12 @@ namespace XwmlParser
                     this.GenerateDocumentInitializerMethod()));
         }
 
+        /// <summary>
+        /// Generates a document initializer method.
+        /// </summary>
+        /// <returns>
+        /// The document initializer method.
+        /// </returns>
         private FunctionExpression GenerateDocumentInitializerMethod()
         {
             var methodScope = new IdentifierScope(
@@ -1295,10 +1366,22 @@ namespace XwmlParser
             return rv;
         }
 
+        /// <summary>
+        /// Gets all CSS.
+        /// </summary>
+        /// <returns>
+        /// all CSS.
+        /// </returns>
         private string GetAllCss()
         {
             StringBuilder sb = new StringBuilder();
             HashSet<DocumentContext> documentContexts = new HashSet<DocumentContext>();
+
+            foreach (var styleSheet in this.styleSheet.Values)
+            {
+                sb.Append(styleSheet.GetCssString());
+            }
+
             foreach (var skinCodeGenerators in this.skinCodeGenerators.Keys)
             {
                 var dc = skinCodeGenerators.HtmlParser.DocumentContext;

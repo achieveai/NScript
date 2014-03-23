@@ -132,13 +132,16 @@ namespace CssParser
     {
         private string name;
         private string arg;
+        private bool isDouble;
 
         public PseudoSelector(
             string name,
+            bool isDouble,
             string arg = null)
         {
             this.name = name;
             this.arg = arg;
+            this.isDouble = isDouble;
         }
 
         public string Name
@@ -146,6 +149,9 @@ namespace CssParser
 
         public string Arg
         { get { return this.arg; } }
+
+        public bool IsDouble
+        { get { return this.isDouble; } }
     }
 
     public class AndCssSelector : UnitCssSelector
@@ -156,6 +162,32 @@ namespace CssParser
         }
 
         public IList<UnitSimpleCssSelector> Selectors { get; private set; }
+    }
+
+    public class PseudoNestedSelector : UnitSimpleCssSelector
+    {
+        private string name;
+        private CssSelector nestedSelector;
+        private bool isDouble;
+
+        public PseudoNestedSelector(
+            string name,
+            bool isDouble,
+            CssSelector nestedSelector)
+        {
+            this.name = name;
+            this.nestedSelector = nestedSelector;
+            this.isDouble = isDouble;
+        }
+
+        public string Name
+        { get { return this.name; } }
+
+        public CssSelector NestedSelector
+        { get { return this.nestedSelector; } }
+
+        public bool IsDouble
+        { get { return this.isDouble; } }
     }
 
     public enum SelectorOp

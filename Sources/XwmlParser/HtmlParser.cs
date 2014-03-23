@@ -79,7 +79,9 @@ namespace XwmlParser
         {
             this.resourceName = fullResourceName;
             this.context = context;
-            this.documentContext = new DocumentContext(context);
+            this.documentContext = new DocumentContext(
+                context,
+                fullResourceName);
             this.node = htmlDoc.DocumentNode;
             this.documentContext.PushNode(this.node);
 
@@ -431,11 +433,7 @@ namespace XwmlParser
                                 "Css style can only be defined in Head.");
                         }
 
-                        // Parse Css.
-                        var grammer = new CssParser.CssGrammer(childNode.InnerText);
-                        this.documentContext.AddCssRules(grammer.Rules);
-                        this.documentContext.AddKeyFrames(grammer.KeyFrames);
-                        this.documentContext.AddMediaRules(grammer.MediaRules);
+                        this.documentContext.AddCss(childNode);
                     }
                     else if (nodeType == NodeType.Template || nodeType == NodeType.Skin)
                     {
@@ -512,8 +510,16 @@ namespace XwmlParser
                         ex.Location,
                         ex.Message,
                         false);
-
-                    this.documentContext.PopNode();
+                }
+                catch (ApplicationException ex)
+                {
+                    ParserContext.ConverterContext.AddError(
+                        new Location(
+                            this.resourceName,
+                            childNode.Line,
+                            childNode.LinePosition),
+                        ex.Message,
+                        false);
                 }
                 finally
                 {

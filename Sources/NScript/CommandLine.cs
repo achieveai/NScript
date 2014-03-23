@@ -45,7 +45,7 @@ namespace NScript
 
             if (builder.Execute())
             {
-                System.Environment.ExitCode = 0;
+                System.Environment.Exit(0);
             }
         }
     }
