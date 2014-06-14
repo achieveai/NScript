@@ -1516,11 +1516,6 @@ ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose1;
 ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated0;
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UISkinableElement, "Sunlight.Framework.UI.UISkinableElement", Sunlight_Framework_UI_UIElement, []);
-function System__Web__Html__Node__ClearChildren(this_) {
-  var tmp;
-  while (tmp = this_.firstChild)
-    this_.removeChild(tmp);
-};
 function System__Web__Html__Node__Remove(this_) {
   return this_.parentNode ? this_.parentNode.removeChild(this_) : this_;
 };
@@ -1791,13 +1786,15 @@ ptyp_.internalDispose1 = function Sunlight__Framework__UI__ListView__InternalDis
   this.internalDispose0();
 };
 ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedList() {
-  var items, itemsCount, iItem, fixedList, fixedListCount, iObject, listViewItem;
+  var items, itemsCount, iItem, item, fixedList, fixedListCount, iObject, listViewItem;
   items = this.items;
   itemsCount = items.get_count();
   if (!this.fixedList) {
-    for (iItem = 0; iItem < itemsCount; iItem++)
-      items.get_item(iItem).dispose();
-    System__Web__Html__Node__ClearChildren(this.get_element());
+    for (iItem = 0; iItem < itemsCount; iItem++) {
+      item = items.get_item(iItem);
+      item.dispose();
+      System__Web__Html__Node__Remove(item.get_element());
+    }
     items.clear();
     return;
   }
@@ -1808,7 +1805,7 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
       if (iObject < itemsCount)
         listViewItem = items.get_item(iObject);
       else {
-        listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("div"));
+        listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("li"));
         if (this.itemCssClassName !== null)
           listViewItem.get_element().className = this.itemCssClassName;
         if (!this.inlineItems)
@@ -1825,13 +1822,15 @@ ptyp_.applyFixedList = function Sunlight__Framework__UI__ListView__ApplyFixedLis
   }
 };
 ptyp_.applyObservableList = function Sunlight__Framework__UI__ListView__ApplyObservableList() {
-  var items, itemsCount, iItem;
+  var items, itemsCount, iItem, item;
   items = this.items;
   itemsCount = items.get_count();
   if (!this.observableList) {
-    for (iItem = 0; iItem < itemsCount; iItem++)
-      items.get_item(iItem).dispose();
-    System__Web__Html__Node__ClearChildren(this.get_element());
+    for (iItem = 0; iItem < itemsCount; iItem++) {
+      item = items.get_item(iItem);
+      item.dispose();
+      System__Web__Html__Node__Remove(item.get_element());
+    }
     items.clear();
     return;
   }
@@ -1905,7 +1904,7 @@ ptyp_.resetObservableItems = function Sunlight__Framework__UI__ListView__ResetOb
     if (iObject < itemsCount)
       listViewItem = this.items.get_item(iObject);
     else {
-      listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("div"));
+      listViewItem = Sunlight__Framework__UI__ListViewItem_factory(this.get_element().ownerDocument.createElement("li"));
       if (this.itemCssClassName !== null)
         listViewItem.get_element().className = this.itemCssClassName;
       if (!this.inlineItems)

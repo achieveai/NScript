@@ -244,6 +244,7 @@
     <Compile Include="Function.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Guid.cs" />
     <Compile Include="IDisposable.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -25,3 +25,11 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 *.vcxproj
 *.vcxproj.filters
+/NScriptToolSet/lib/Microsoft.CSharp.dll
+/NScriptToolSet/lib/Microsoft.CSharp.pdb
+/NScriptToolSet/lib/System.Core.dll
+/NScriptToolSet/lib/System.Core.pdb
+/NScriptToolSet/lib/System.Dynamic.dll
+/NScriptToolSet/lib/System.Dynamic.pdb
+/packages/dotless.1.4.0.0
+/packages

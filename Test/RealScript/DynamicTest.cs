@@ -23,7 +23,7 @@ namespace RealScript
 
         public static dynamic GetFoo()
         {
-            return new {Test = "string" };
+            return new { Test = "string" };
         }
 
         public static int CheckIndex()

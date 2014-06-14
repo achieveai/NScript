@@ -15,16 +15,24 @@ namespace XwmlParser.StaticValues
     /// </summary>
     public class CssNameValue : StaticValue
     {
-        private IIdentifier cssClassName;
+        private IIdentifier[] cssClassNames;
 
         public CssNameValue(
             DocumentContext documentContext,
             string cssClassName)
         {
-            if (!documentContext.TryGetCssClassIdentifier(cssClassName, out this.cssClassName))
+            var cssClassNames = cssClassName.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            this.cssClassNames = new IIdentifier[cssClassNames.Length];
+            for (int iCssClassName = 0; iCssClassName < cssClassNames.Length; iCssClassName++)
             {
-                throw new ApplicationException(
-                    string.Format("CSS class name '{0}' not found.", cssClassName));
+                IIdentifier classIdentifier;
+                if (!documentContext.TryGetCssClassIdentifier(cssClassNames[iCssClassName], out classIdentifier))
+                {
+                    throw new ApplicationException(
+                        string.Format("CSS class name '{0}' not found.", cssClassName));
+                }
+
+                this.cssClassNames[iCssClassName] = classIdentifier;
             }
         }
 
@@ -38,12 +46,29 @@ namespace XwmlParser.StaticValues
         public override Expression GetInitializationExpression(
             SkinCodeGenerator codeGenerator)
         {
-            return new IdentifierStringExpression(
-                null,
-                codeGenerator.Scope,
-                new IdentifierExpression(
-                    this.cssClassName,
-                    codeGenerator.Scope));
+            IdentifierStringExpression rv = null;
+            for (int iClass = 0; iClass < this.cssClassNames.Length; iClass++)
+            {
+                if (iClass == 0)
+                {
+                    rv = new IdentifierStringExpression(
+                            null,
+                            codeGenerator.Scope,
+                            new IdentifierExpression(
+                                this.cssClassNames[iClass],
+                                codeGenerator.Scope));
+                }
+                else
+                {
+                    rv.Append(new StringLiteralExpression(codeGenerator.Scope, " "));
+                    rv.Append(
+                        new IdentifierExpression(
+                                this.cssClassNames[iClass],
+                                codeGenerator.Scope));
+                }
+            }
+
+            return rv;
         }
     }
 }

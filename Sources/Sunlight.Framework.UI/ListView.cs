@@ -17,6 +17,7 @@ namespace Sunlight.Framework.UI
     /// <summary>
     /// Definition for ListView
     /// </summary>
+    [TagName("ul")]
     public class ListView : UIElement
     {
         public const string FixedListPropName = "FixedList",
@@ -77,7 +78,7 @@ namespace Sunlight.Framework.UI
                     if (this.attachedObservableList != value
                         && this.attachedObservableList != null)
                     {
-                        this.attachedObservableList.CollectionChanged += ObservableListCollectionChanged;
+                        this.attachedObservableList.CollectionChanged -= ObservableListCollectionChanged;
                         this.attachedObservableList = null;
                     }
 
@@ -193,10 +194,11 @@ namespace Sunlight.Framework.UI
             {
                 for (int iItem = 0; iItem < itemsCount; iItem++)
                 {
-                    items[iItem].Dispose();
+                    var item = items[iItem];
+                    item.Dispose();
+                    item.Element.Remove();
                 }
 
-                this.Element.ClearChildren();
                 items.Clear();
                 return;
             }
@@ -215,7 +217,7 @@ namespace Sunlight.Framework.UI
                     else
                     {
                         listViewItem = new ListViewItem(
-                            this.Element.OwnerDocument.CreateElement("div"));
+                            this.Element.OwnerDocument.CreateElement("li"));
                         if (this.itemCssClassName != null)
                         {
                             listViewItem.Element.ClassName = this.itemCssClassName;
@@ -251,10 +253,11 @@ namespace Sunlight.Framework.UI
             {
                 for (int iItem = 0; iItem < itemsCount; iItem++)
                 {
-                    items[iItem].Dispose();
+                    var item = items[iItem];
+                    item.Dispose();
+                    item.Element.Remove();
                 }
 
-                this.Element.ClearChildren();
                 items.Clear();
                 return;
             }
@@ -376,7 +379,7 @@ namespace Sunlight.Framework.UI
                 else
                 {
                     listViewItem = new ListViewItem(
-                        this.Element.OwnerDocument.CreateElement("div"));
+                        this.Element.OwnerDocument.CreateElement("li"));
                     if (this.itemCssClassName != null)
                     {
                         listViewItem.Element.ClassName = this.itemCssClassName;

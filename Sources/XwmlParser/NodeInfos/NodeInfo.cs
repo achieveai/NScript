@@ -36,6 +36,9 @@ namespace XwmlParser.NodeInfos
         /// </summary>
         private List<BinderInfo> bindings = new List<BinderInfo>();
 
+        /// <summary>
+        /// The public bindings.
+        /// </summary>
         private ReadOnlyCollection<BinderInfo> publicBindings;
 
         /// <summary>
@@ -49,7 +52,7 @@ namespace XwmlParser.NodeInfos
         private string partId;
 
         /// <summary>
-        /// Specialised constructor for use only by derived classes.
+        /// Specialized constructor for use only by derived classes.
         /// </summary>
         /// <param name="node">     The node. </param>
         /// <param name="tagInfo">  Information describing the tag. </param>

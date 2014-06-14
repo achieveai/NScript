@@ -81,6 +81,8 @@
     <Compile Include="RuntimeBinder\Binder.cs" />
     <Compile Include="RuntimeBinder\CSharpArgumentInfo.cs" />
     <Compile Include="RuntimeBinder\CSharpBinderFlags.cs" />
+    <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
+    <Compile Include="RuntimeBinder\RuntimeBinderInternalCompilerException.cs" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>

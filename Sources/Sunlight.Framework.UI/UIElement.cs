@@ -42,10 +42,10 @@ namespace Sunlight.Framework.UI
         }
 
         /// <summary>
-        /// Gets or sets the css class.
+        /// Gets or sets the CSS class.
         /// </summary>
         /// <value>
-        /// The css class.
+        /// The CSS class.
         /// </value>
         [CssName]
         public string CssClass
@@ -105,6 +105,15 @@ namespace Sunlight.Framework.UI
                 if (this.isHidden != value)
                 {
                     this.isHidden = value;
+                    if (value)
+                    {
+                        this.element.Style.Display = "none";
+                    }
+                    else
+                    {
+                        this.element.Style.Display = "";
+                    }
+
                     this.FirePropertyChanged("IsHidden");
 
                     this.FixActivation();

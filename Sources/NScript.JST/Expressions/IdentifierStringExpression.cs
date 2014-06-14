@@ -9,6 +9,7 @@ namespace NScript.JST
     using System;
     using System.Collections.Generic;
     using NScript.Utils;
+    using System.Text;
 
     /// <summary>
     /// Definition for IdentifierStringExpression
@@ -18,7 +19,7 @@ namespace NScript.JST
         /// <summary>
         /// Inner expression.
         /// </summary>
-        private readonly Expression expression;
+        private readonly List<Expression> expressions;
 
         /// <summary>
         /// Backing field for premendString.
@@ -46,7 +47,8 @@ namespace NScript.JST
             string appendString = "")
             : base(location, scope)
         {
-            this.expression = expression;
+            this.expressions = new List<Expression>();
+            this.expressions.Add(expression);
             this.prependString = prependString;
             this.appendString = appendString;
 
@@ -61,18 +63,36 @@ namespace NScript.JST
         /// Gets the expression.
         /// </summary>
         /// <value>The expression.</value>
-        public Expression Expression
+        public IList<Expression> Expression
         {
-            get { return this.expression; }
+            get { return this.expressions; }
         }
 
         /// <summary>
-        /// Gets the precendence.
+        /// Gets the precedence.
         /// </summary>
         /// <value>The precendence.</value>
         public override Precedence Precedence
         {
             get { return JST.Precedence.Primary; }
+        }
+
+        /// <summary>
+        /// Appends an expr.
+        /// </summary>
+        /// <param name="expr"> The expression to append. </param>
+        public void Append(IdentifierExpression expr)
+        {
+            this.expressions.Add(expr);
+        }
+
+        /// <summary>
+        /// Appends an expr.
+        /// </summary>
+        /// <param name="expr"> The expression to append. </param>
+        public void Append(StringLiteralExpression expr)
+        {
+            this.expressions.Add(expr);
         }
 
         /// <summary>
@@ -100,12 +120,19 @@ namespace NScript.JST
         /// <returns>string for given expression</returns>
         public static string GetString(Expression expression)
         {
+            StringBuilder sb = new StringBuilder();
             IdentifierStringExpression identifierStringExpression = expression as IdentifierStringExpression;
             if (identifierStringExpression != null)
             {
-                return identifierStringExpression.prependString
-                    + IdentifierStringExpression.GetString(identifierStringExpression.Expression)
-                    + identifierStringExpression.appendString;
+                sb.Append(identifierStringExpression.prependString);
+                for (int iExpr = 0; iExpr < identifierStringExpression.expressions.Count; iExpr++)
+                {
+                    sb.Append(IdentifierStringExpression.GetString(
+                        identifierStringExpression.expressions[iExpr]));
+                }
+
+                sb.Append(identifierStringExpression.appendString);
+                return sb.ToString();
             }
 
             IdentifierExpression identifierExpression = expression as IdentifierExpression;
@@ -115,9 +142,15 @@ namespace NScript.JST
             }
 
             IndexExpression indexExpression = expression as IndexExpression;
-            return IdentifierStringExpression.GetString(indexExpression.LeftExpression)
-                + "."
-                + ((IdentifierExpression)indexExpression.RightExpression).Identifier.GetName();
+            if (indexExpression != null)
+            {
+                return IdentifierStringExpression.GetString(indexExpression.LeftExpression)
+                    + "."
+                    + ((IdentifierExpression)indexExpression.RightExpression).Identifier.GetName();
+            }
+
+            StringLiteralExpression stringLiteralExpression = expression as StringLiteralExpression;
+            return stringLiteralExpression.StringLiteral;
         }
 
         /// <summary>
