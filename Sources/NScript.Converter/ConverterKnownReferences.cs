@@ -402,6 +402,26 @@ namespace NScript.Converter
         private MethodReference arrayImplLengthGetter;
 
         /// <summary>
+        /// The array get value.
+        /// </summary>
+        private MethodReference arrayGetValue;
+
+        /// <summary>
+        /// The array implementation get value.
+        /// </summary>
+        private MethodReference arrayImplGetValue;
+
+        /// <summary>
+        /// The array set value.
+        /// </summary>
+        private MethodReference arraySetValue;
+
+        /// <summary>
+        /// The array implementation set value.
+        /// </summary>
+        private MethodReference arrayImplSetValue;
+
+        /// <summary>
         /// The type default constructor.
         /// </summary>
         private MethodReference typeDefaultConstructor;
@@ -1649,6 +1669,53 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Gets the array get value.
+        /// </summary>
+        /// <value>
+        /// The array get value.
+        /// </value>
+        public MethodReference ArrayGetValue
+        {
+            get
+            {
+                if (this.arrayGetValue == null)
+                {
+                    this.arrayGetValue = this.GetMethodReference(
+                        "GetValue",
+                        this.ClrReferences.Object,
+                        this.ClrReferences.SystemArray,
+                        this.ClrReferences.Int32);
+                }
+
+                return this.arrayGetValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets the array set value.
+        /// </summary>
+        /// <value>
+        /// The array set value.
+        /// </value>
+        public MethodReference ArraySetValue
+        {
+            get
+            {
+                if (this.arraySetValue == null)
+                {
+                    this.arraySetValue = this.GetMethodReference(
+                        "SetValue",
+                        this.ClrReferences.Void,
+                        this.ClrReferences.SystemArray,
+                        this.ClrReferences.Int32,
+                        this.ClrReferences.Object);
+                }
+
+                return this.arraySetValue;
+            }
+        }
+
+        /// <summary>
         /// Gets the array impl clone method.
         /// </summary>
         /// <value>
@@ -1815,6 +1882,53 @@ namespace NScript.Converter
         public PropertyReference ArrayImplLengthProperty
         {
             get { return this.ArrayImplLengthGetter.Resolve().GetPropertyDefinition(); }
+        }
+
+        /// <summary>
+        /// Gets the array get value.
+        /// </summary>
+        /// <value>
+        /// The array get value.
+        /// </value>
+        public MethodReference ArrayImplGetValue
+        {
+            get
+            {
+                if (this.arrayImplGetValue == null)
+                {
+                    this.arrayImplGetValue = this.GetMethodReference(
+                        "GetValue",
+                        this.ClrReferences.Object,
+                        this.ArrayImplBase,
+                        this.ClrReferences.Int32);
+                }
+
+                return this.arrayImplGetValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets the array set value.
+        /// </summary>
+        /// <value>
+        /// The array set value.
+        /// </value>
+        public MethodReference ArrayImplSetValue
+        {
+            get
+            {
+                if (this.arrayImplSetValue == null)
+                {
+                    this.arrayImplSetValue = this.GetMethodReference(
+                        "SetValue",
+                        this.ClrReferences.Void,
+                        this.ArrayImplBase,
+                        this.ClrReferences.Int32,
+                        this.ClrReferences.Object);
+                }
+
+                return this.arrayImplSetValue;
+            }
         }
 
         /// <summary>

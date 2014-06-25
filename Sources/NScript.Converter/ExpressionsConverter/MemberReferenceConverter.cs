@@ -10,6 +10,7 @@ namespace NScript.Converter.ExpressionsConverter
     using NScript.CLR.AST;
     using NScript.Converter.TypeSystemConverter;
     using Mono.Cecil;
+    using System;
 
     /// <summary>
     /// Definition for MemberReferenceConverter
@@ -133,6 +134,21 @@ namespace NScript.Converter.ExpressionsConverter
                 else if (methodReference.IsSame(converterKnownReferences.ArrayLengthGetter))
                 {
                     memberReference = (T)(object)converterKnownReferences.ArrayImplLengthGetter;
+                }
+                else if (methodReference.IsSame(converterKnownReferences.ArraySetValue))
+                {
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplSetValue;
+                }
+                else if (methodReference.IsSame(converterKnownReferences.ArrayGetValue))
+                {
+                    memberReference = (T)(object)converterKnownReferences.ArrayImplGetValue;
+                }
+                else
+                {
+                    throw new ApplicationException(
+                        string.Format(
+                            "Are we missing SystemArray method {0} to ArrayImpl mapping?",
+                            methodReference));
                 }
             }
             else if (propertyReference != null)

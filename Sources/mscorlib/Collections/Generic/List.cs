@@ -335,7 +335,8 @@ namespace System.Collections.Generic
         /// </returns>
         public T[] ToArray()
         {
-            return this.nativeArray.Slice(0, this.nativeArray.Length).GetArray();
+            return
+                (T[])(object)new ArrayG<T>(this.nativeArray.Slice(0, this.nativeArray.Length));
         }
 
         /// <summary>

@@ -145,20 +145,22 @@ namespace System
         {
             var nativeArray = this.innerArray;
             var length = nativeArray.Length;
+            var nativeArrDst = (NativeArray<T>)arr;
+            if (nativeArrDst.Length < index + nativeArray.Length)
+            {
+                throw new Exception("can't copy, dest array too small.");
+            }
+
             for (int i = 0; i < length; i++)
             {
-                arr[i + index] = nativeArray[i];
+                nativeArrDst[i + index] = nativeArray[i];
             }
         }
 
         public override sealed void CopyTo(Array array, int index)
         {
-            var nativeArray = this.innerArray;
-            var length = nativeArray.Length;
-            for (int i = 0; i < length; i++)
-            {
-                array.SetValue(i + index, nativeArray[i]);
-            }
+            T[] arr = (T[])array;
+            this.CopyTo(arr, index);
         }
 
         bool ICollection<T>.Remove(T item)
