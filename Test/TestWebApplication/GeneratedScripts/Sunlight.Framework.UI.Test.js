@@ -2048,7 +2048,7 @@ ptyp_.bind = function Sunlight__Framework__UI__Helpers__SkinInstance__Bind(skina
       skinableElement.appendChild(childNodes[0]);
   }
   if (this.isActive && !this.isDiposed)
-    this.updateBinderSource(skinable, 4);
+    this.updateBinderSource(skinable, 3);
   else
     this.templateParentUpdated = true;
   this.updateDataContext();
@@ -2096,7 +2096,7 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
             continue;
           break;
         }
-        case 4: {
+        case 3: {
           if (!this.templateParentUpdated && binder.mode != 0)
             continue;
           source = this.skinableParent;
@@ -2206,7 +2206,7 @@ ptyp_.queuedActivation = function Sunlight__Framework__UI__Helpers__SkinInstance
           liveBinder.set_source(this.skinableParent.get_dataContext());
           break;
         }
-        case 4: {
+        case 3: {
           liveBinder.set_source(this.skinableParent);
           break;
         }
@@ -2304,7 +2304,7 @@ Sunlight_Framework_UI_Helpers_BinderType.typeId = "bz";
 Sunlight_Framework_UI_Helpers_BinderType.enumStrToValueMap = {
   "DataContext": 1,
   "Static": 2,
-  "TemplateParent": 4,
+  "TemplateParent": 3,
   "TargetTypes": 7,
   "PropertyBinder": 16,
   "AttachedPropertyBinder": 32,
@@ -2602,7 +2602,7 @@ function Sunlight_Framework_UI_Test_ValueIfTrue(T, $5fcallStatiConstructor) {
   return ValueIfTrue$1_$T$_;
 };
 function System_ArrayG(T, $5fcallStatiConstructor) {
-  var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker, $5f_initTracker0;
+  var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker, T$5b$5d_$T$_, $5f_initTracker0;
   if (System_ArrayG[T.typeId])
     return System_ArrayG[T.typeId];
   System_ArrayG[T.typeId] = function System__ArrayG$10() {
@@ -2677,12 +2677,20 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.getValue = function System__ArrayG$1__GetValue(index) {
     return System__Type__BoxTypeInstance(T, this.get_item(index));
   };
-  ptyp_.copyTo = function System__ArrayG$1__CopyTo(array, index) {
-    var nativeArray, length, i;
+  ptyp_.copyTo = function System__ArrayG$1__CopyTo0(arr, index) {
+    var nativeArray, length, nativeArrDst, i;
     nativeArray = this.innerArray;
     length = nativeArray.length;
+    nativeArrDst = System__NativeArray$1__op_Implicit(arr);
+    if (nativeArrDst.length < index + nativeArray.length)
+      throw new Error("can't copy, dest array too small.");
     for (i = 0; i < length; i++)
-      array.setValue(i + index, System__Type__BoxTypeInstance(T, nativeArray[i]));
+      nativeArrDst[i + index] = nativeArray[i];
+  };
+  ptyp_.copyTo0 = function System__ArrayG$1__CopyTo(array, index) {
+    var arr;
+    arr = System__Type__CastType(T$5b$5d_$T$_, array);
+    this.copyTo(arr, index);
   };
   ptyp_.getEnumerator = function System__ArrayG$1__GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);
@@ -2694,7 +2702,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.V_GetEnumerator = ptyp_.getEnumerator;
   ptyp_.V_IndexOf = ptyp_.indexOf;
   ptyp_.V_GetValue = ptyp_.getValue;
-  ptyp_.V_CopyTo = ptyp_.copyTo;
+  ptyp_.V_CopyTo = ptyp_.copyTo0;
   ptyp_["V_get_Item_" + IList$1_$T$_.typeId] = ptyp_.get_item;
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
   System__Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", System_ArrayImpl, [IList$1_$T$_, System_Collections_IList, System_Collections_ICollection, System_Collections_IEnumerable, IEnumerable$1_$T$_]);
@@ -2705,6 +2713,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     T = T;
     Enumerator_$T$_ = System_ArrayG_Enumerator(T, true);
     ArrayG$1_$T$_ = System_ArrayG(T, true);
+    T$5b$5d_$T$_ = System_ArrayG(T, true);
   };
   if ($5fcallStatiConstructor)
     ArrayG$1_$T$_._tri();

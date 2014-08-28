@@ -16,7 +16,7 @@ namespace Sunlight.Framework.UI.Helpers
     {
         DataContext = 0x1,
         Static = 0x2,
-        TemplateParent = 0x4,
+        TemplateParent = 0x3,
         TargetTypes = 0x7,
         PropertyBinder = 0x10,
         AttachedPropertyBinder = 0x20,

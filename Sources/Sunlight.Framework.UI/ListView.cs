@@ -120,6 +120,9 @@ namespace Sunlight.Framework.UI
             }
         }
 
+        protected List<ListViewItem> Items
+        { get { return this.items; } }
+
         /// <summary>
         /// Gets or sets the name of the item CSS class.
         /// </summary>
@@ -134,6 +137,7 @@ namespace Sunlight.Framework.UI
             set { this.itemCssClassName = value; }
         }
 
+        [DefaultDataBinding(Mode=Binders.DataBindingMode.OneTime, IsStrict=true, DefaultValue=false)]
         public bool InlineItems
         {
             get { return this.inlineItems; }

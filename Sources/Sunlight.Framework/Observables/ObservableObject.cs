@@ -131,11 +131,52 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
+        /// Fires the property changed3.
+        /// </summary>
+        /// <param name="propertyName1"> The property name1. </param>
+        /// <param name="propertyName2"> The property name2. </param>
+        /// <param name="propertyName3"> The property name3. </param>
+        /// <param name="propertyName4"> The fourth property name. </param>
+        protected void FirePropertyChanged(
+            string propertyName1,
+            string propertyName2,
+            string propertyName3,
+            string propertyName4)
+        {
+            this.FirePropertyChanged(propertyName1);
+            this.FirePropertyChanged(propertyName2);
+            this.FirePropertyChanged(propertyName3);
+            this.FirePropertyChanged(propertyName4);
+        }
+
+        /// <summary>
+        /// Fires the property changed3.
+        /// </summary>
+        /// <param name="propertyName1"> The property name1. </param>
+        /// <param name="propertyName2"> The property name2. </param>
+        /// <param name="propertyName3"> The property name3. </param>
+        /// <param name="propertyName4"> The fourth property name. </param>
+        /// <param name="propertyName5"> The fifth property name. </param>
+        protected void FirePropertyChanged(
+            string propertyName1,
+            string propertyName2,
+            string propertyName3,
+            string propertyName4,
+            string propertyName5)
+        {
+            this.FirePropertyChanged(propertyName1);
+            this.FirePropertyChanged(propertyName2);
+            this.FirePropertyChanged(propertyName3);
+            this.FirePropertyChanged(propertyName4);
+            this.FirePropertyChanged(propertyName5);
+        }
+
+        /// <summary>
         /// Raises PropertyChanged event
         /// </summary>
         /// <param name="propertyNames">An array of properties that are changed.</param>
         protected void FirePropertyChanged(
-            string[] propertyNames)
+            params string[] propertyNames)
         {
             if (this.eventHandlers != null)
             {

@@ -68,6 +68,13 @@ namespace XwmlParser.StaticValues
                 }
             }
 
+            if (rv == null)
+            {
+                return new StringLiteralExpression(
+                    codeGenerator.Scope,
+                    string.Empty);
+            }
+
             return rv;
         }
     }

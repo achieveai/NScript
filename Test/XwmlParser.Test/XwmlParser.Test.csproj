@@ -306,6 +306,12 @@
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\TestTextBindingWithConverter.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestTemplateBinding.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TemplateCode\TestTemplateBinding.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /y "$(ProjectDir)..\sunlight.framework.ui.test\bin\$(ConfigurationName)\*.dll" "$(ProjectDir)$(OutDir)"</PostBuildEvent>
