@@ -1,5 +1,4 @@
 StyleCop.Cache
-obj
 *.user
 *.aps
 *.pch
@@ -14,17 +13,20 @@ obj
 *.cache
 *.ilk
 *.log
-[Bb]in
-[Dd]ebug*/
-[Oo]bj*/
 *.sbr
 *.orig
 *.err
-[Rr]elease*/
-_ReSharper*/
-[Tt]est[Rr]esult*
 *.vcxproj
 *.vcxproj.filters
+*.min.js
+*.min.js.map
+[Rr]elease*/
+_ReSharper*/
+[Tt]est[Rr]esult*/
+[Tt]est[Rr]esult*.xml
+[Bb]in/
+[Dd]ebug*/
+[Oo]bj/
 /NScriptToolSet/lib/Microsoft.CSharp.dll
 /NScriptToolSet/lib/Microsoft.CSharp.pdb
 /NScriptToolSet/lib/System.Core.dll
@@ -34,14 +36,4 @@ _ReSharper*/
 /packages/dotless.1.4.0.0
 /packages
 /Report131207.vsp
-/Test/XwmlParser.Test/TemplateCode/TestAttributeBinding.min.js
-/Test/XwmlParser.Test/TemplateCode/TestAttributeBinding.min.js.map
-/Test/XwmlParser.Test/TemplateCode/TestCss.min.js
-/Test/XwmlParser.Test/TemplateCode/TestCss.min.js.map
-/Test/XwmlParser.Test/TemplateCode/TestCssBinding1.min.js
-/Test/XwmlParser.Test/TemplateCode/TestCssBinding1.min.js.map
-/Test/XwmlParser.Test/TemplateCode/TestSkinWithId.min.js.map
-/Test/XwmlParser.Test/TemplateCode/TestTemplate1.min.js
-/Test/XwmlParser.Test/TemplateCode/TestTemplate1.min.js.map
-/Test/XwmlParser.Test/TemplateCode/TestTextBinding1 - Copy.min.js.map
 /NScript131207.tmp.merged.etl
