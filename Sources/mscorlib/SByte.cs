@@ -4,9 +4,6 @@
 
     public struct SByte
     {
-        [IntrinsicOperator]
-        public extern static implicit operator Number(sbyte i);
-
         [Script("return parseInt(s);")]
         public extern static sbyte Parse(string s);
 

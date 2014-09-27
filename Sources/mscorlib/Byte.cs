@@ -8,9 +8,6 @@
 
         public extern string LocaleFormat(string format);
 
-        [IntrinsicOperator]
-        public static extern implicit operator Number(byte i);
-
         public extern string ToString(int radix);
     }
 }

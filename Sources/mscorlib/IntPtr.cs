@@ -16,9 +16,11 @@
         public extern static int Parse(string s, int radix);
 
         [IntrinsicOperator]
+        [Script("return left === right;")]
         public static extern bool operator ==(IntPtr left, IntPtr right);
 
         [IntrinsicOperator]
+        [Script("return left !== right;")]
         public static extern bool operator !=(IntPtr left, IntPtr right);
 
         public string Format(string format)

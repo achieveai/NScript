@@ -4,9 +4,6 @@
 
     public struct UInt32
     {
-        [IntrinsicOperator]
-        public extern static implicit operator Number(uint i);
-
         [Script("return parseInt(s);")]
         public extern static uint Parse(string s);
 

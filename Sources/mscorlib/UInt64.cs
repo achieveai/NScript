@@ -4,9 +4,6 @@
 
     public struct UInt64
     {
-        [IntrinsicOperator]
-        public extern static implicit operator Number(ulong i);
-
         [Script("return parseInt(s);")]
         public extern static ulong Parse(string s);
 
