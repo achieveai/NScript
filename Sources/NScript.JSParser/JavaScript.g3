@@ -1,7 +1,7 @@
 ﻿grammar JavaScript;
 
 options {
-    language=CSharp3;
+//    language=CSharp3;
     output=AST;
     TokenLabelType=CommonToken;
     ASTLabelType=CommonTree;

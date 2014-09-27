@@ -179,15 +179,6 @@ namespace System.Web.Html
         public extern bool HasChildNodes();
 
         /// <summary>
-        /// Inserts a before described by newChild.
-        /// </summary>
-        /// <param name="newChild"> The new child. </param>
-        /// <returns>
-        /// .
-        /// </returns>
-        public extern Element InsertBefore(Element newChild);
-
-        /// <summary>
         /// Inserts a before.
         /// </summary>
         /// <param name="newChild">       The new child. </param>

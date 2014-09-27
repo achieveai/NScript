@@ -21,13 +21,14 @@ namespace Sunlight.Framework
         }
     }
 
-	public enum NativeTimerHandleType
-	{
-		None,
-		Timeout,
-		Intervale,
-		Immediate
-	}
+    public enum NativeTimerHandleType
+    {
+        None,
+        Timeout,
+        Interval,
+        Immediate,
+        AnimationFrame
+    }
 
     public enum TaskState
     {

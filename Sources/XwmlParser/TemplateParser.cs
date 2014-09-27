@@ -326,6 +326,9 @@ namespace XwmlParser
 
             foreach (var childNode in node.ChildNodes)
             {
+                if (childNode.NodeType == HtmlNodeType.Comment)
+                { continue; }
+
                 var childNodeInfo = this.ParseNode(childNode, nodeInfo);
                 if (!nodeInfo.ProcessChildNode(childNodeInfo))
                 {
@@ -372,7 +375,8 @@ namespace XwmlParser
                         rv = this.ParseUIElementNode(node);
                         break;
                     case NodeType.SkinableElement:
-                        rv = this.ParseSkinableElementNode(node);
+                        // rv = this.ParseSkinableElementNode(node);
+                        rv = this.ParseUIElementNode(node);
                         break;
                     case NodeType.Panel:
                         rv = this.ParsePanelElementNode(node);
@@ -701,7 +705,8 @@ namespace XwmlParser
                 node,
                 tuple.Item2);
 
-            this.ParseSkinableElementNode(node, rv);
+            // this.ParseSkinableElementNode(node, rv);
+            rv.ParseNode(this);
 
             return rv;
         }

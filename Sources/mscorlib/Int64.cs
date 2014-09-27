@@ -4,9 +4,6 @@
 
     public struct Int64
     {
-        [Script("return i;")]
-        public extern static implicit operator Number(long i);
-
         [Script("return parseInt(s);")]
         public extern static long Parse(string s);
 

@@ -52,6 +52,8 @@
 
             TestAssemblyLoader.DllBuilder = new DllBuilder();
             TestAssemblyLoader.LoadMcsCorlibAssemblies();
+            TestAssemblyLoader.LoadSystemCoreAssembly();
+            TestAssemblyLoader.LoadMicrosoftCSharpAssembly();
             TestAssemblyLoader.LoadMcsAssemblies();
 
             TestAssemblyLoader.Context = new ClrContext();
@@ -212,7 +214,6 @@
                 @"Collections\ArrayList.cs",
                 @"Collections\ArrayMapCallback.cs",
                 @"Collections\Dictionary.cs",
-                @"Collections\EqualityComparer.cs",
                 @"Collections\DictionaryEntry.cs",
                 @"Collections\Generic\ICollection.cs",
                 @"Collections\Generic\IDictionary.cs",
@@ -227,9 +228,9 @@
                 @"Collections\Generic\List.cs",
                 @"Collections\Generic\NumberDictionary.cs",
                 @"Collections\Generic\StringDictionary.cs",
+                @"Collections\ICollection.cs",
                 @"Collections\IEnumerable.cs",
                 @"Collections\IEnumerator.cs",
-                @"Collections\ICollection.cs",
                 @"Collections\IEqualityComparer.cs",
                 @"Collections\IList.cs",
                 @"Collections\ObjectModel\ReadOnlyCollection.cs",
@@ -294,7 +295,6 @@
                 @"Reflection\AssemblyTitleAttribute.cs",
                 @"Reflection\AssemblyTrademarkAttribute.cs",
                 @"Reflection\AssemblyVersionAttribute.cs",
-                @"Reflection\DefaultMemberAttribute.cs",
                 @"RegularExpression.cs",
                 @"Reflection\AssemblyVersionCompatibility.cs",
     			@"Reflection\Binder.cs",
@@ -344,6 +344,7 @@
                 @"Runtime\CompilerServices\IgnoreGenericArgumentsAttribute.cs",
                 @"Runtime\CompilerServices\ImplementAttribute.cs",
                 @"Runtime\CompilerServices\IntrinsicFieldAttribute.cs",
+                @"Runtime\CompilerServices\IntrinsicOperator.cs",
                 @"Runtime\CompilerServices\GlobalMethodsAttribute.cs",
                 @"Runtime\CompilerServices\IgnoreNamespaceAttribute.cs",
                 @"Runtime\CompilerServices\ExtendedAttribute.cs",
@@ -370,10 +371,10 @@
                 @"Runtime\CompilerServices\ScriptSkipAttribute.cs",
                 @"Runtime\CompilerServices\Serializable.cs",
                 @"Runtime\CompilerServices\UsedAttribure.cs",
-                @"Runtime\CompilerServices\ClassInterfaceAttribute.cs",
-                @"Runtime\CompilerServices\ComDefaultInterfaceAttribute.cs",
-                @"Runtime\CompilerServices\ComVisible.cs",
                 @"Runtime\InteropServices\OutAttribute.cs",
+                @"Runtime\InteropServices\ComVisible.cs",
+                @"Runtime\InteropServices\ClassInterfaceAttribute.cs",
+                @"Runtime\InteropServices\InAttribute.cs",
                 @"Runtime\Versioning\TargetFrameworkAttribute.cs",
                 @"SByte.cs",
                 @"Serialization\Json.cs",
@@ -487,15 +488,15 @@
             #endregion fileNames
 
             TestAssemblyLoader.DllBuilder.Build(
-                "sytem.core.dll",
-                Path.GetFullPath(@"..\..\..\..\Sources\mscorlib"),
+                "system.core.dll",
+                Path.GetFullPath(@"..\..\..\..\Sources\System.Core"),
                 mscorlibFileNames,
                 new string[]
                 {
                     @"mscorlib.dll"
                 },
                 false,
-                "mscorlibKey.snk");
+                @"..\mscorlib\\mscorlibKey.snk");
         }
 
         private static void LoadMicrosoftCSharpAssembly()
@@ -513,7 +514,7 @@
 
             TestAssemblyLoader.DllBuilder.Build(
                 "microsoft.csharp.dll",
-                Path.GetFullPath(@"..\..\..\..\Sources\mscorlib"),
+                Path.GetFullPath(@"..\..\..\..\Sources\Microsoft.CSharp"),
                 mscorlibFileNames,
                 new string[]
                 {
@@ -521,7 +522,7 @@
                     @"system.core.dll"
                 },
                 false,
-                "mscorlibKey.snk");
+                @"..\mscorlib\mscorlibKey.snk");
         }
 
         private static void LoadMcsAssemblies()

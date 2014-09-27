@@ -110,43 +110,22 @@
             return 0;
         }
 
-        public int IndexOf(object item, int startIndex)
-        {
-            return 0;
-        }
+        public extern int IndexOf(object item, int startIndex);
 
-        public void Insert(int index, object item)
-        {
-        }
+        public extern void Insert(int index, object item);
 
-        public void InsertRange(int index, object[] items)
-        {
-        }
+        public extern void InsertRange(int index, object[] items);
 
-        public string Join()
-        {
-            return null;
-        }
+        public extern string Join();
 
-        public string Join(string delimiter)
-        {
-            return null;
-        }
+        public extern string Join(string delimiter);
 
-        public Array Map(ArrayItemMapCallback mapItemCallback)
-        {
-            return null;
-        }
+        public extern Array Map(ArrayItemMapCallback mapItemCallback);
 
-        public Array Map(ArrayMapCallback mapCallback)
-        {
-            return null;
-        }
+        public extern Array Map(ArrayMapCallback mapCallback);
 
-        public static explicit operator Array(ArrayList list)
-        {
-            return null;
-        }
+        [IntrinsicOperator]
+        public extern static explicit operator Array(ArrayList list);
 
         public static ArrayList Parse(string s)
         {

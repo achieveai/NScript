@@ -89,6 +89,15 @@ namespace NScript.Converter.TypeSystemConverter
                     "System.Runtime.CompilerServices.IntrinsicFieldAttribute"));
 
         /// <summary>
+        /// Backing operator for IntrinsicAttribute
+        /// </summary>
+        private static readonly TypeReference intrinsicOperatorAttribute =
+            new TypeReference(
+                Tuple.Create(
+                    string.Empty,
+                    "System.Runtime.CompilerServices.IntrinsicOperatorAttribute"));
+
+        /// <summary>
         /// Backing field for NonScriptableAttribute
         /// </summary>
         private static readonly TypeReference nonScriptableAttribute =
@@ -270,6 +279,16 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <value>The intrinsic attribute.</value>
         public static TypeReference IntrinsicFieldAttribute
+        {
+            get { return ScriptSharpAttributes.intrinsicFieldAttribute; }
+        }
+
+        /// <summary>
+        /// Gets the intrinsic attribute.
+        /// This is used for properties to tell that we don't need to generate get_ and set_ prefixed functions for them.
+        /// </summary>
+        /// <value>The intrinsic attribute.</value>
+        public static TypeReference IntrinsicOperatorAttribute
         {
             get { return ScriptSharpAttributes.intrinsicFieldAttribute; }
         }

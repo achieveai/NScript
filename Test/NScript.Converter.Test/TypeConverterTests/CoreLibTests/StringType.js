@@ -97,12 +97,6 @@ function System__String__LastIndexOf(this_, ch) {
 function System__String__LastIndexOfa(this_, ch, startIndex) {
   return this_.lastIndexOf(String.fromCharCode(ch), startIndex);
 };
-function System__String__op_Equality(s1, s2) {
-  return s1 == s2;
-};
-function System__String__op_Inequality(s1, s2) {
-  return s1 !== s2;
-};
 function System__String__Split(this_, ch) {
   return System__NativeArray__GetArray(String, this_.split(String.fromCharCode(ch)));
 };

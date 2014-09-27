@@ -10,15 +10,11 @@
         {
         }
 
-        public static implicit operator Record(Dictionary d)
-        {
-            return null;
-        }
+        [IntrinsicOperator]
+        public extern static implicit operator Record(Dictionary d);
 
-        public static implicit operator Dictionary(Record r)
-        {
-            return null;
-        }
+        [IntrinsicOperator]
+        public extern static implicit operator Dictionary(Record r);
     }
 }
 

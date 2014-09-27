@@ -1,6 +1,6 @@
 ﻿function RealScript__SwitchTest__RegressSwitchWithFor(action, changeIndex, newItems, oldItems) {
   var index;
-  if (this.newItems == newItems)
+  if (this.newItems === newItems)
     return;
   switch(action) {
     case 0: {

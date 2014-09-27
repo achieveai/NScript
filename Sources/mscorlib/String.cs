@@ -155,10 +155,10 @@
 
         public extern int LocaleCompare(string string2);
 
-        [Script(@"return s1 === s2;")]
+        [IntrinsicOperator]
         public extern static bool operator ==(string s1, string s2);
 
-        [Script(@"return s1 !== s2;")]
+        [IntrinsicOperator]
         public extern static bool operator !=(string s1, string s2);
 
         public extern string Replace(string oldText, string replaceText);

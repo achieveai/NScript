@@ -342,7 +342,8 @@ namespace NScript.Converter.ExpressionsConverter
             ConverterContext converter,
             MethodReference methodReference)
         {
-            if (methodReference.DeclaringType.FullName == "System.String")
+            if (methodReference.Name.StartsWith("op_")
+                && null != ((MethodDefinition)methodReference.GetDefinition()).CustomAttributes.SelectAttribute(converter.KnownReferences.IntrinsicOperatorAttribute))
             {
                 if (methodReference.Name == "op_Equality")
                 {
@@ -360,86 +361,8 @@ namespace NScript.Converter.ExpressionsConverter
                             e,
                             JST.BinaryOperator.StrictNotEquals);
                 }
-                else if (methodReference.Name == "Concat")
-                {
-                    return MethodCallExpressionConverter.StringConcatConverter;
-                }
-            }
-            else if (methodReference.DeclaringType.FullName == "System.DateTime")
-            {
-                if (methodReference.Name == "op_Equality")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.StrictEquals);
-                }
-                else if (methodReference.Name == "op_Inequality")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.StrictNotEquals);
-                }
-                else if (methodReference.Name == "op_GreaterThan")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.GreaterThan);
-                }
-                else if (methodReference.Name == "op_GreaterThanOrEqual")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.GreaterThanOrEqual);
-                }
-                else if (methodReference.Name == "op_LessThan")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.LessThan);
-                }
-                else if (methodReference.Name == "op_LessThanOrEqual")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.LessThanOrEqual);
-                }
-                else if (methodReference.Name == "op_Subtraction")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.Minus);
-                }
-            }
-            else if (methodReference.Name == "op_Explicit"
-                || methodReference.Name == "op_Implicit")
-            {
-                string typeName = methodReference.DeclaringType.FullName;
-
-                if (typeName == "System.Collections.ArrayList"
-                    || typeName == "System.Number"
-                    || typeName == "System.Int64"
-                    || typeName == "System.Int32"
-                    || typeName == "System.Int16"
-                    || typeName == "System.SByte"
-                    || typeName == "System.UInt64"
-                    || typeName == "System.UInt32"
-                    || typeName == "System.UInt16"
-                    || typeName == "System.Byte"
-                    || typeName == "System.Single")
+                else if (methodReference.Name == "op_Explicit"
+                    || methodReference.Name == "op_Implicit")
                 {
                     return delegate(
                         IMethodScopeConverter methodConverter,
@@ -451,6 +374,14 @@ namespace NScript.Converter.ExpressionsConverter
                     };
                 }
             }
+
+            if (methodReference.DeclaringType.FullName == "System.String")
+            {
+                if (methodReference.Name == "Concat")
+                {
+                    return MethodCallExpressionConverter.StringConcatConverter;
+                }
+            }
             else if (methodReference.DeclaringType.FullName == "System.Number")
             {
                 string methodName = methodReference.Name;
@@ -460,6 +391,33 @@ namespace NScript.Converter.ExpressionsConverter
                     || methodName == "IsFinite")
                 {
                     return MethodCallExpressionConverter.HardCodedAlias;
+                }
+                else if (methodReference.Name == "op_Explicit"
+                    || methodReference.Name == "op_Implicit")
+                {
+                    string typeName = methodReference.DeclaringType.FullName;
+
+                    if (typeName == "System.Collections.ArrayList"
+                        || typeName == "System.Number"
+                        || typeName == "System.Int64"
+                        || typeName == "System.Int32"
+                        || typeName == "System.Int16"
+                        || typeName == "System.SByte"
+                        || typeName == "System.UInt64"
+                        || typeName == "System.UInt32"
+                        || typeName == "System.UInt16"
+                        || typeName == "System.Byte"
+                        || typeName == "System.Single")
+                    {
+                        return delegate(
+                            IMethodScopeConverter methodConverter,
+                            MethodCallExpression methodCall)
+                        {
+                            return ExpressionConverterBase.Convert(
+                                methodConverter,
+                                methodCall.Parameters[0]);
+                        };
+                    }
                 }
             }
 

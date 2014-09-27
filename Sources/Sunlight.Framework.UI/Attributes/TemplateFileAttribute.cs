@@ -3,10 +3,10 @@
 	using System;
 	using System.Collections.Generic;
 
-    class TemplateFileAttribute : Attribute
+    class SkinFileAttribute : Attribute
     {
         private string resourceName;
-        public TemplateFileAttribute(string resourceName)
+        public SkinFileAttribute(string resourceName)
         {
             this.resourceName = resourceName;
         }

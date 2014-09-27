@@ -406,6 +406,7 @@
     <Compile Include="Runtime\CompilerServices\ExtendedAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Runtime\CompilerServices\IntrinsicOperator.cs" />
     <Compile Include="Runtime\CompilerServices\IntrinsicPropertyAttribute.cs">
       <SubType>Code</SubType>
     </Compile>

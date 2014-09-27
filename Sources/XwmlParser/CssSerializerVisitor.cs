@@ -300,6 +300,12 @@ using System.Text;
             return false;
         }
 
+        public override bool Visit(CssCalcPropertyValue obj)
+        {
+            this.stringBuilder.Append(obj.ToString());
+            return false;
+        }
+
         public override bool Visit(CssColorPropertyValue obj)
         {
             this.stringBuilder.Append(obj.HexValue);

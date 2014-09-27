@@ -78,6 +78,7 @@ tokens {
 	MEDIA_QUERY;
 	MEDIA_TYPE;
 	MEDIA_FEATURE;
+    CALC;
 }
 
 @lexer::members {
@@ -358,6 +359,16 @@ expr
         -> ^(EXPR term+)
     ;
 
+calcExpr
+    : 'calc' LPAREN unitTerm (operators unitTerm)+ RPAREN -> ^(CALC operators+ unitTerm+)
+    ;
+
+operators
+    : PLUS
+    | MINUS
+    | STAR
+    | SOLIDUS;
+
 term
     : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
     | STRING -> ^(STRING_VAL STRING)
@@ -368,6 +379,7 @@ term
     	-> ^(FUNCTION legacyFilterMethod funcArgs)
     | URI -> ^(URL_VAL URI)
     | hexColor -> ^(COLOR hexColor)
+    | calcExpr
     ;
 
 legacyFilterMethod
@@ -712,7 +724,7 @@ CDC             : '-->'
                         $channel = 4;   // CDC on channel 4 in case we want it later
                     }
                 ;
-                
+
 INCLUDES_WORD   : '~='      ;
 STARTS_WITH_WORD: '|='      ;
 INCLUDES        : '*='      ;
@@ -764,11 +776,11 @@ IDENT           : '-'? NMSTART NMCHAR*  ;
 //
 HASH            : '#' NAME              ;
 
-IMPORT_SYM      : '@' I M P O R T       ;
-PAGE_SYM        : '@' P A G E           ;
-MEDIA_SYM       : '@' M E D I A         ;
+IMPORT_SYM      : '@import'       ;
+PAGE_SYM        : '@page'           ;
+MEDIA_SYM       : '@media'         ;
 CHARSET_SYM     : '@charset '           ;
-KEYFRAMES_SYM   : '@' K E Y F R A M E S ;
+KEYFRAMES_SYM   : '@keyframes' ;
 FROM_SYM        : F R O M               ;
 TO_SYM          : T O                   ;
 NOT_SYM			: N O T					;

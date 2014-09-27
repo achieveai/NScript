@@ -26,20 +26,28 @@
 
         public extern string LocaleFormat(string format);
 
+        [IntrinsicOperator]
         public extern static implicit operator int(Number n);
 
+        [IntrinsicOperator]
         public extern static implicit operator long(Number n);
 
+        [IntrinsicOperator]
         public extern static implicit operator float(Number n);
 
+        [IntrinsicOperator]
         public extern static implicit operator double(Number n);
 
+        [IntrinsicOperator]
         public extern static implicit operator Number(int n);
 
+        [IntrinsicOperator]
         public extern static implicit operator Number(long n);
 
+        [IntrinsicOperator]
         public extern static implicit operator Number(float n);
 
+        [IntrinsicOperator]
         public extern static implicit operator Number(double n);
 
         [ScriptAlias("parseInt")]

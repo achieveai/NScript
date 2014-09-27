@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="TemplatePartAttribute.cs" company="">
+// <copyright file="SkinPartAttribute.cs" company="">
 //     Copyright (c) . All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -9,17 +9,17 @@ namespace Sunlight.Framework.UI.Attributes
     using System;
 
     /// <summary>
-    /// Definition for TemplatePartAttribute
+    /// Definition for SkinPartAttribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class TemplatePartAttribute : Attribute
+    public class SkinPartAttribute : Attribute
     {
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="partId">      The identifier of the part. </param>
         /// <param name="elementType"> The type of the element. </param>
-        public TemplatePartAttribute(Type elementType, bool required = false)
+        public SkinPartAttribute(Type elementType, bool required = false)
         {
             this.ElementType = elementType;
             this.Required = required;

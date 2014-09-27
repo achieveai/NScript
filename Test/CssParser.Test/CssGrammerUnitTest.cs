@@ -309,6 +309,27 @@
         }
 
         [Test]
+        public void CalcPropertyValueTest()
+        {
+            CssGrammer grammer = new CssGrammer("height: calc(10% + 10em);", true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(1, grammer.Properties.Count);
+
+            var property = grammer.Properties[0];
+            Assert.AreEqual("height", property.PropertyName);
+            Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
+            Assert.IsInstanceOf<CssCalcPropertyValue>(property.PropertyArgs[0].Values[0]);
+
+            var propertyArg = (CssCalcPropertyValue)property.PropertyArgs[0].Values[0];
+            Assert.AreEqual(1, propertyArg.Operators.Length);
+            Assert.AreEqual('+', propertyArg.Operators[0]);
+            Assert.AreEqual(2, propertyArg.PropertyValues.Length);
+            Assert.AreEqual("10%", propertyArg.PropertyValues[0].ToString());
+            Assert.AreEqual("10em", propertyArg.PropertyValues[1].ToString());
+        }
+
+        [Test]
         public void FunctionPropertyValueTest()
         {
             CssGrammer grammer = new CssGrammer("color: rgba(10,20,40,.5);", true);

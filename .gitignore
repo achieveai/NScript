@@ -37,3 +37,6 @@ _ReSharper*/
 /packages
 /Report131207.vsp
 /NScript131207.tmp.merged.etl
+/Sources/CssParser/output/classes
+/Sources/CssParser/output
+/Sources/NScript.JSParser/output

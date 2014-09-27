@@ -113,7 +113,7 @@ function System__NativeArray$1__IndexOf(this_, value, startIndex) {
   var i;
   startIndex = startIndex < 0 ? 0 : startIndex;
   for (i = this_.length; i >= startIndex && i >= 0; --i)
-    if (this_[i] == value)
+    if (this_[i] === value)
       return i;
   return -1;
 };
@@ -121,7 +121,7 @@ function System__NativeArray$1__InsertAt(this_, index, value) {
   var i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  for (i = this_.length - 1; i >= index; index--)
+  for (i = this_.length - 1; i >= index; i--)
     this_[i + 1] = this_[i];
   this_[index] = value;
 };
@@ -148,7 +148,7 @@ function System__NativeArray$1__op_Implicit(n) {
   return n.get_innerArray();
 };
 function System_ArrayG(T, $5fcallStatiConstructor) {
-  var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
+  var Enumerator_$T$_, ArrayG$1_$T$_, T$5b$5d_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
   if (System_ArrayG[T.typeId])
     return System_ArrayG[T.typeId];
   System_ArrayG[T.typeId] = function System__ArrayG$1() {
@@ -188,7 +188,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     throw new Error("Not Implemented.");
   };
   ptyp_.system__Collections__Generic__ICollection_$T$___Remove = function System__ArrayG$1__System__Collections__Generic__ICollection_$T$___Remove(item) {
-    return System__NativeArray$1__IndexOf(this.innerArray, item, 0) !== -1;
+    return System__NativeArray$1__IndexOf(this.innerArray, item, 0) != -1;
   };
   ptyp_.system__Collections__Generic__IEnumerable_$T$___GetEnumerator = function System__ArrayG$1__System__Collections__Generic__IEnumerable_$T$___GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);
@@ -257,21 +257,22 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     return System__NativeArray$1__IndexOf(this.innerArray, item, 0);
   };
   ptyp_.containsa = function System__ArrayG$1__Containsa(item) {
-    return System__NativeArray$1__IndexOf(this.innerArray, item, 0) !== -1;
+    return System__NativeArray$1__IndexOf(this.innerArray, item, 0) != -1;
   };
   ptyp_.copyTo = function System__ArrayG$1__CopyTo(arr, index) {
-    var nativeArray, length, i;
+    var nativeArray, length, nativeArrDst, i;
     nativeArray = this.innerArray;
     length = nativeArray.length;
+    nativeArrDst = System__NativeArray$1__op_Implicit(arr);
+    if (nativeArrDst.length < index + nativeArray.length)
+      throw new Error("can't copy, dest array too small.");
     for (i = 0; i < length; i++)
-      arr.set_item(i + index, nativeArray[i]);
+      nativeArrDst[i + index] = nativeArray[i];
   };
   ptyp_.copyToa = function System__ArrayG$1__CopyToa(array, index) {
-    var nativeArray, length, i;
-    nativeArray = this.innerArray;
-    length = nativeArray.length;
-    for (i = 0; i < length; i++)
-      array.setValue(i + index, System__Type__BoxTypeInstance(T, nativeArray[i]));
+    var arr;
+    arr = System__Type__CastType(T$5b$5d_$T$_, array);
+    this.copyTo(arr, index);
   };
   ptyp_.getEnumerator = function System__ArrayG$1__GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);
@@ -303,6 +304,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
       return;
     $5f_initTracker = true;
     Enumerator_$T$_ = System_ArrayG_Enumerator(T, true);
+    T$5b$5d_$T$_ = System_ArrayG(T, true);
   };
   if ($5fcallStatiConstructor)
     ArrayG$1_$T$_._tri();

@@ -4,7 +4,7 @@
 
     public struct Int16
     {
-        [Script("return i;")]
+        [IntrinsicOperator]
         public extern static implicit operator Number(short i);
 
         [Script("return parseInt(s);")]

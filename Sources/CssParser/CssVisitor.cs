@@ -42,6 +42,8 @@ namespace CssParser
         { return true; }
         public virtual bool Visit(CssUnitPropertyValue obj)
         { return true; }
+        public virtual bool Visit(CssCalcPropertyValue obj)
+        { return true; }
         public virtual bool Visit(CssColorPropertyValue obj)
         { return true; }
         public virtual bool Visit(CssIdentifierPropertyValue obj)
@@ -144,6 +146,8 @@ namespace CssParser
         { }
         public void Visit(CssUnitPropertyValue obj)
         { }
+        public void Visit(CssCalcPropertyValue obj)
+        { }
         public void Visit(CssColorPropertyValue obj)
         { }
         public void Visit(CssIdentifierPropertyValue obj)
@@ -243,6 +247,10 @@ namespace CssParser
                 case "CssUnitPropertyValue":
                     if (this.innerVisitor.Visit((CssUnitPropertyValue)obj))
                         this.Visit((CssUnitPropertyValue)obj);
+                    break;
+                case "CssCalcPropertyValue":
+                    if (this.innerVisitor.Visit((CssCalcPropertyValue)obj))
+                        this.Visit((CssCalcPropertyValue)obj);
                     break;
                 case "CssNumberPropertyValue":
                     if (this.innerVisitor.Visit((CssNumberPropertyValue)obj))

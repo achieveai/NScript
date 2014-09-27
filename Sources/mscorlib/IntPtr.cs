@@ -6,7 +6,7 @@
     [NonScriptable, EditorBrowsable(EditorBrowsableState.Never)]
     public struct IntPtr
     {
-        [Script("return i;")]
+        [IntrinsicOperator]
         public extern static implicit operator Number(IntPtr i);
 
         [Script("return parseInt(s);")]
@@ -15,10 +15,10 @@
         [Script("return parseInt(s, radix);")]
         public extern static int Parse(string s, int radix);
 
-        [Script("return left === right;")]
+        [IntrinsicOperator]
         public static extern bool operator ==(IntPtr left, IntPtr right);
 
-        [Script("return left !== right;")]
+        [IntrinsicOperator]
         public static extern bool operator !=(IntPtr left, IntPtr right);
 
         public string Format(string format)

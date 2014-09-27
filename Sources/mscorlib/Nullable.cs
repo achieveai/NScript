@@ -139,6 +139,7 @@ namespace System
                 return String.Empty;
         }
 
+        [IntrinsicOperator]
         [Script(@" return value; ")]
         public extern static implicit operator Nullable<T>(T value);
 

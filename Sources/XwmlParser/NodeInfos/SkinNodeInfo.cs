@@ -224,7 +224,7 @@ namespace XwmlParser.NodeInfos
             var parserContext = htmlParser.ParserContext;
             var knownTypes = parserContext.KnownTypes;
             var uiElement = knownTypes.UIElement;
-            var templatePartAttr = knownTypes.TemplatePartAttribute;
+            var skinPartAttr = knownTypes.SkinPartAttribute;
             var stringType = parserContext.ConverterContext.ClrKnownReferences.String;
             this.elementRef = knownTypes.ElementRef;
             this.partRequirements = new Dictionary<string, Tuple<TypeReference, bool>>();
@@ -239,7 +239,7 @@ namespace XwmlParser.NodeInfos
                         continue;
                     }
 
-                    var partAttribute = field.CustomAttributes.SelectAttribute(templatePartAttr);
+                    var partAttribute = field.CustomAttributes.SelectAttribute(skinPartAttr);
                     if (partAttribute != null)
                     {
                         TypeReference typeRef = (TypeReference)partAttribute.ConstructorArguments[0].Value;

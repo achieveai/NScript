@@ -77,6 +77,11 @@ namespace NScript.Converter
         private TypeReference intrinsicFieldAttribute;
 
         /// <summary>
+        /// The intrinsic operator attribute.
+        /// </summary>
+        private TypeReference intrinsicOperatorAttribute;
+
+        /// <summary>
         /// The non scriptable attribute.
         /// </summary>
         private TypeReference nonScriptableAttribute;
@@ -757,6 +762,27 @@ namespace NScript.Converter
                 }
 
                 return this.intrinsicFieldAttribute;
+            }
+        }
+
+        /// <summary>
+        /// Gets the intrinsic operator attribute reference.
+        /// </summary>
+        /// <value>
+        /// The intrinsic operator attribute.
+        /// </value>
+        public TypeReference IntrinsicOperatorAttribute
+        {
+            get
+            {
+                if (this.intrinsicOperatorAttribute == null)
+                {
+                    this.intrinsicOperatorAttribute = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "IntrinsicOperatorAttribute");
+                }
+
+                return this.intrinsicOperatorAttribute;
             }
         }
 

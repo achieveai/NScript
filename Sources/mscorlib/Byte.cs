@@ -4,25 +4,14 @@
 
     public struct Byte
     {
-        public string Format(string format)
-        {
-            return null;
-        }
+        public extern string Format(string format);
 
-        public string LocaleFormat(string format)
-        {
-            return null;
-        }
+        public extern string LocaleFormat(string format);
 
-        public static implicit operator Number(byte i)
-        {
-            return null;
-        }
+        [IntrinsicOperator]
+        public static extern implicit operator Number(byte i);
 
-        public string ToString(int radix)
-        {
-            return null;
-        }
+        public extern string ToString(int radix);
     }
 }
 

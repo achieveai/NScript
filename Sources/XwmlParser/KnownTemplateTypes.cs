@@ -111,7 +111,7 @@ namespace XwmlParser
 
         public readonly TypeDefinition DomEventType0;
 
-        public readonly TypeDefinition TemplatePartAttribute;
+        public readonly TypeDefinition SkinPartAttribute;
 
         public readonly TypeDefinition TagNameAttribute;
 
@@ -179,8 +179,8 @@ namespace XwmlParser
             this.TagNameAttribute = clrContext.GetTypeDefinition(
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".TagNameAttribute"));
 
-            this.TemplatePartAttribute = clrContext.GetTypeDefinition(
-                Tuple.Create(uiFrameworkDll, attributesNamespace + ".TemplatePartAttribute"));
+            this.SkinPartAttribute = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, attributesNamespace + ".SkinPartAttribute"));
 
             this.DocumentRef = clrContext.GetTypeDefinition(
                 Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Document"));

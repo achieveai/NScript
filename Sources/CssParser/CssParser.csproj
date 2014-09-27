@@ -44,6 +44,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CssCalcPropertyValue.cs" />
     <Compile Include="CssColorPropertyValue.cs" />
     <Compile Include="CssFunctionPropertyValue.cs" />
     <Compile Include="CssGrammer.cs">

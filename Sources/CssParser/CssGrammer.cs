@@ -622,6 +622,8 @@ namespace CssParser
                     return new CssStringPropertyValue(child.GetChild(0).Text);
                 case "COLOR":
                     return new CssColorPropertyValue(child.GetChild(0).Text);
+                case "CALC":
+                    return this.ParseCalcValue(child);
                 default:
                     return null;
             }
@@ -671,9 +673,33 @@ namespace CssParser
             return rv;
         }
 
+        private CssCalcPropertyValue ParseCalcValue(ITree tree)
+        {
+            int operatorCount = tree.ChildCount / 2;
+            char[] operators = new char[operatorCount];
+            CssUnitPropertyValue[] unitValues = new CssUnitPropertyValue[operatorCount + 1];
+            for (int i = 0; i < operatorCount; i++)
+            {
+                operators[i] = tree.GetChild(i).Text[0];
+            }
+
+            for (int i = 0; i <= operatorCount; i++)
+            {
+                unitValues[i] = (CssUnitPropertyValue)this.ParseUnitValue(tree.GetChild(i + operatorCount).Text, null);
+            }
+
+            return new CssCalcPropertyValue(unitValues, operators);
+        }
+
         private CssPropertyValue ParseUnitValue(ITree tree)
         {
-            string value = tree.GetChild(0).Text.Trim();
+            return this.ParseUnitValue(
+                tree.GetChild(0).Text.Trim(),
+                tree.ChildCount > 1 ? tree.GetChild(1).Text.Trim() : null);
+        }
+
+        private CssPropertyValue ParseUnitValue(string value, string op)
+        {
             string unit = string.Empty;
 
             int lastIndex = value.Length;
@@ -690,10 +716,6 @@ namespace CssParser
                     break;
                 }
             }
-
-            string op = tree.ChildCount > 1
-                ? tree.GetChild(1).Text
-                : null;
 
             double val;
             if (!double.TryParse(value, out val))

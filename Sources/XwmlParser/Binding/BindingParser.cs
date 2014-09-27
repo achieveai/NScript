@@ -172,9 +172,8 @@ namespace XwmlParser.Binding
         public static bool IsBindingText(string str)
         {
             if (str.Length > 3
-                && str[0] == '{'
-                && str[1] != '{'
-                && str[str.Length - 1] == '}')
+                && ((str[0] == '{' && str[1] != '{' && str[str.Length - 1] == '}')
+                ||(str[0] == '[' && str[1] != '[' && str[str.Length - 1] == ']')))
             {
                 return true;
             }

@@ -20,9 +20,6 @@
             return this.Format(format);
         }
 
-        [Script("return i;")]
-        public extern static implicit operator Number(float i);
-
         [Script("return this.toExponential();")]
         public extern string ToExponential();
 

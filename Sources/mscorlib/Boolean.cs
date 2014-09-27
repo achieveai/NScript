@@ -5,13 +5,13 @@
     [ImportedType, IgnoreNamespace, ScriptName("Boolean")]
     public class BooleanNative
     {
-        [Script("return obj;")]
+        [IntrinsicOperator]
         public static extern implicit operator bool?(BooleanNative obj);
 
-        [Script("return b;")]
+        [IntrinsicOperator]
         public static extern implicit operator BooleanNative(bool b);
 
-        [Script("return b;")]
+        [IntrinsicOperator]
         public static extern implicit operator BooleanNative(bool? b);
     }
 
