@@ -46,5 +46,47 @@ namespace System.Web.Html
         /// <param name="name"> The name. </param>
         /// <param name="data"> The data. </param>
         public extern void Append(string name, string data);
+
+        /// <summary>
+        /// Send this message.
+        /// </summary>
+        /// <param name="url"> URL of the document. </param>
+        /// <param name="cb">  The callback(dataString, statusCode, succeeded) </param>
+        public void Send(
+            string url,
+            Action<string, short, bool> cb,
+            string acceptType = "text/*",
+            string[] headerPair = null)
+        {
+            var request = new XMLHttpRequest();
+            request.Open("POST", url, true);
+            request.SetRequestHeader("Accept", acceptType);
+            if (headerPair != null)
+            {
+                for (int iHeader = 0; iHeader < headerPair.Length - 1; iHeader+=2)
+                {
+                    request.SetRequestHeader(headerPair[iHeader], headerPair[iHeader + 1]);
+                }
+            }
+
+            if (cb != null)
+            {
+                request.OnLoad +=
+                    (s, e) =>
+                    {
+                        EventBinder.CleanUp(request);
+                        cb(request.ResponseText, request.Status, false);
+                    };
+
+                request.OnError +=
+                    (s, e) =>
+                    {
+                        EventBinder.CleanUp(request);
+                        cb(null, request.Status, true);
+                    };
+            }
+
+            request.Send(this);
+        }
     }
 }

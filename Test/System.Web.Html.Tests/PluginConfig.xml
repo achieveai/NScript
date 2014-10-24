@@ -6,5 +6,5 @@ using plugins.
 -->
 <Plugins>
   <!-- This is a Test generator plugin which will add methods based on reflection to register and execute tests using QUnit framework. -->
-  <Plugin Assembly="Cs2JsC.Converter.Plugins" ClassName="Cs2JsC.Converter.Plugins.TestGenerator" />
+  <Plugin Assembly="NScript.Converter.Plugins" ClassName="NScript.Converter.Plugins.TestGenerator" />
 </Plugins>

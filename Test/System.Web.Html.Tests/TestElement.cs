@@ -40,8 +40,8 @@ namespace System.Web.Html.Tests
             DivElement element = Window.Instance.Document.CreateElement("div").As<DivElement>();
             element.SetAttribute("_id", "test");
 
-            var attributes = element.GetAttributes();
-            Assert.Equal(1, attributes.Count, "attributes.Length");
+            var attributes = element.Attributes;
+            Assert.Equal(1, attributes.Length, "attributes.Length");
             Assert.Equal("_id", attributes[0].Name, "attributes[0].Name");
             Assert.Equal("test", attributes[0].Value, "attributes[0].Value");
         }
@@ -56,7 +56,7 @@ namespace System.Web.Html.Tests
 
             bool handlerCalled = false;
             string eventType = null;
-            Action<ElementEvent> handler = delegate(ElementEvent evt)
+            Action<Element, ElementEvent> handler = delegate(Element elem, ElementEvent evt)
             {
                 handlerCalled = true;
                 eventType = evt.Type;

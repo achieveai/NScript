@@ -18,6 +18,10 @@
         [Script(@"delete this[key];")]
         public extern void Remove(string key);
 
+        [IgnoreGenericArguments]
+        [Script(@"return this[key];")]
+        public extern T Get<T>(string key);
+
         extern IEnumerator IEnumerable.GetEnumerator();
 
         public extern int Count { get; }

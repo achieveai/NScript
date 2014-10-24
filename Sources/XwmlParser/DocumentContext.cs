@@ -178,49 +178,54 @@ namespace XwmlParser
         /// <param name="styleNode"> The style node. </param>
         public void AddCss(HtmlNode styleNode)
         {
-            if (!string.IsNullOrWhiteSpace(styleNode.InnerText))
+            this.documentCssScope =
+                this.documentCssScope
+                ?? new CssStyleSheet(this.parserContext, this.resourceName);
+
+            if (styleNode.Attributes["type"] != null
+                && styleNode.Attributes["type"].Value.ToLowerInvariant() == "text/less")
             {
-                this.documentCssScope =
-                    this.documentCssScope
-                    ?? new CssStyleSheet(this.parserContext, this.resourceName);
+                this.documentCssScope.AddLess(styleNode.InnerText);
+            }
+            else
+            {
+                this.documentCssScope.AddCss(styleNode.InnerText);
+            }
 
-                if (styleNode.Attributes["type"] != null
-                    && styleNode.Attributes["type"].Value.ToLowerInvariant() == "text/less")
+            foreach (var className in this.documentCssScope.ClassNames)
+            {
+                IIdentifier tmp;
+                for (int iStyleSheet = 0; iStyleSheet < this.applicableCssScopes.Count; iStyleSheet++)
                 {
-                    this.documentCssScope.AddLess(styleNode.InnerText);
-                }
-                else
-                {
-                    this.documentCssScope.AddCss(styleNode.InnerText);
-                }
-
-                foreach (var className in this.documentCssScope.ClassNames)
-                {
-                    IIdentifier tmp;
-                    for (int iStyleSheet = 0; iStyleSheet < this.applicableCssScopes.Count; iStyleSheet++)
+                    if (this.applicableCssScopes[iStyleSheet].TryGetCssClassIdentifier(
+                        className,
+                        out tmp))
                     {
-                        if (this.applicableCssScopes[iStyleSheet].TryGetCssClassIdentifier(
-                            className,
-                            out tmp))
-                        {
-                            throw new ConverterLocationException(
-                                new Location(
-                                    this.resourceName,
-                                    styleNode.Line,
-                                    styleNode.LinePosition),
-                                string.Format(
-                                    "Can't overwrite className: {0}, it's already defined in styleSheet: {1}",
-                                    className,
-                                    this.applicableCssScopes[iStyleSheet].ResourceName));
-                        }
+                        throw new ConverterLocationException(
+                            new Location(
+                                this.resourceName,
+                                styleNode.Line,
+                                styleNode.LinePosition),
+                            string.Format(
+                                "Can't overwrite className: {0}, it's already defined in styleSheet: {1}",
+                                className,
+                                this.applicableCssScopes[iStyleSheet].ResourceName));
                     }
                 }
             }
-            else if (styleNode.Attributes.Contains("src"))
+        }
+
+        public void AddCssLink(HtmlNode styleNode)
+        {
+            if (styleNode.Attributes.Contains("href")
+                && styleNode.Attributes.Contains("rel")
+                && string.Compare(styleNode.Attributes["rel"].Value, "stylesheet", StringComparison.InvariantCultureIgnoreCase) == 0)
             {
                 try
                 {
-                    var styleSheet = this.parserContext.GetStyleSheet(styleNode.Attributes["src"].Value);
+                    var styleSheet = this.parserContext.GetStyleSheet(
+                        styleNode.Attributes["href"].Value,
+                        this.resourceName);
 
                     if (this.documentCssScope != null)
                     {
@@ -256,7 +261,7 @@ namespace XwmlParser
                             styleNode.LinePosition),
                         string.Format(
                             "base StyleSheet:{0} not found.",
-                            styleNode.Attributes["src"].Value));
+                            styleNode.Attributes["href"].Value));
                 }
             }
             else
@@ -266,7 +271,7 @@ namespace XwmlParser
                         this.resourceName,
                         styleNode.Line,
                         styleNode.LinePosition),
-                    "Don't know what to do with style block");
+                    "Don't know what to do with link block");
             }
         }
 

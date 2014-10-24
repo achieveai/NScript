@@ -67,7 +67,7 @@
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy *.js ..\..\..\TestWebApplication\GeneratedScripts
-copy *.js.map ..\..\..\TestWebApplication\GeneratedScripts</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)$(OutDir)*.js" "$(projectDir)..\TestWebApplication\GeneratedScripts"
+copy "$(ProjectDir)$(OutDir)*.map" "$(projectDir)..\TestWebApplication\GeneratedScripts"</PostBuildEvent>
   </PropertyGroup>
 </Project>

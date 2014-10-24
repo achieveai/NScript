@@ -3,7 +3,7 @@
     using System.Runtime.CompilerServices;
 
     [ImportedType, IgnoreNamespace, ScriptName("Boolean")]
-    public class BooleanNative
+    public sealed class BooleanNative
     {
         [IntrinsicOperator]
         public static extern implicit operator bool?(BooleanNative obj);

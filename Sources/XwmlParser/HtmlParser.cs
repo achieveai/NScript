@@ -33,7 +33,8 @@ namespace XwmlParser
         CssStyle,
         Comment,
         Meta,
-        Body
+        Body,
+        Link
     }
 
     /// <summary>
@@ -77,6 +78,7 @@ namespace XwmlParser
             HtmlDocument htmlDoc,
             ParserContext context)
         {
+            HtmlParser.RemoveComments(htmlDoc);
             this.resourceName = fullResourceName;
             this.context = context;
             this.documentContext = new DocumentContext(
@@ -206,10 +208,16 @@ namespace XwmlParser
             {
                 return NodeType.Head;
             }
-            if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStypeTag)
+            if (nodeName.Item1 == null && nodeName.Item2 == Strings.CssStyleTag)
             {
                 return NodeType.CssStyle;
             }
+
+            if (nodeName.Item1 == null && nodeName.Item2 == Strings.LinkTag)
+            {
+                return NodeType.Link;
+            }
+
             if (nodeName.Item1 == null &&
                 (nodeName.Item2 == Strings.Meta
                 || nodeName.Item2 == Strings.Title))
@@ -351,6 +359,31 @@ namespace XwmlParser
         }
 
         /// <summary>
+        /// Removes the comments described by htmlDoc.
+        /// </summary>
+        /// <param name="htmlDoc"> The HTML document. </param>
+        public static void RemoveComments(HtmlDocument htmlDoc)
+        {
+            var nodes = htmlDoc.DocumentNode.SelectNodes("//comment()");
+            if (nodes != null)
+            {
+                foreach (var comment in nodes)
+                {
+                    if (comment.PreviousSibling != null
+                        && comment.NextSibling != null
+                        && comment.NextSibling.NodeType == HtmlNodeType.Text
+                        && comment.PreviousSibling.NodeType == HtmlNodeType.Text)
+                    {
+                        ((HtmlTextNode)comment.PreviousSibling).Text += comment.NextSibling.InnerText;
+                        comment.ParentNode.RemoveChild(comment.NextSibling);
+                    }
+
+                    comment.ParentNode.RemoveChild(comment);
+                }
+            }
+        }
+
+        /// <summary>
         /// Parse document.
         /// </summary>
         /// <exception cref="ConverterLocationException"> Thrown when a Converter Location error condition
@@ -434,6 +467,20 @@ namespace XwmlParser
                         }
 
                         this.documentContext.AddCss(childNode);
+                    }
+                    else if (nodeType == NodeType.Link)
+                    {
+                        if (!parsingHead)
+                        {
+                            throw new ConverterLocationException(
+                                new Location(
+                                    this.resourceName,
+                                    childNode.Line,
+                                    childNode.LinePosition),
+                                "Css style can only be defined in Head.");
+                        }
+
+                        this.documentContext.AddCssLink(childNode);
                     }
                     else if (nodeType == NodeType.Template || nodeType == NodeType.Skin)
                     {

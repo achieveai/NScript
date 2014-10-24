@@ -16,7 +16,8 @@ namespace XwmlParser
     {
         public const string Skin = "skin";
         public const string Template = "template";
-        public const string CssStypeTag = "style";
+        public const string CssStyleTag = "style";
+        public const string LinkTag = "link";
         public const string Meta = "meta";
         public const string Title = "title";
         public const string Body = "body";

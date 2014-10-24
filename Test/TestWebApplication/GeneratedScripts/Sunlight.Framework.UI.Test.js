@@ -1165,7 +1165,7 @@ ptyp_.flushQueue = function Sunlight__Framework__TaskScheduler__FlushQueue(taskQ
     task = taskQueue.dequeue();
     this.executeTask(task);
     now = System__DateTime__get_Now();
-    if (Date.op_LessThan(endBy, now))
+    if (endBy < now)
       return;
   }
 };
@@ -1478,9 +1478,12 @@ ptyp_.set_skinInstance = function Sunlight__Framework__UI__UISkinableElement__se
       this.skinInstance.bind(this);
       if (this.get_isActive())
         this.skinInstance.activate();
+      this.V_ApplySkinInternal(this.skinInstance);
     }
     this.firePropertyChanged("SkinInstance");
   }
+};
+ptyp_.applySkinInternal = function Sunlight__Framework__UI__UISkinableElement__ApplySkinInternal(skin) {
 };
 ptyp_.onBeforeFirstActivate0 = function Sunlight__Framework__UI__UISkinableElement__OnBeforeFirstActivate() {
   this.onBeforeFirstActivate();
@@ -1491,7 +1494,7 @@ ptyp_.onActivate0 = function Sunlight__Framework__UI__UISkinableElement__OnActiv
   this.onActivate();
   if (this.skin && !this.skinInstance)
     this.set_skinInstance(this.skin.createInstance());
-  if (this.skinInstance)
+  else if (this.skinInstance)
     this.skinInstance.activate();
 };
 ptyp_.onDeactivate0 = function Sunlight__Framework__UI__UISkinableElement__OnDeactivate() {
@@ -1515,6 +1518,7 @@ ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose1;
 ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated0;
+ptyp_.V_ApplySkinInternal = ptyp_.applySkinInternal;
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UISkinableElement, "Sunlight.Framework.UI.UISkinableElement", Sunlight_Framework_UI_UIElement, []);
 function System__Web__Html__Node__Remove(this_) {
   return this_.parentNode ? this_.parentNode.removeChild(this_) : this_;

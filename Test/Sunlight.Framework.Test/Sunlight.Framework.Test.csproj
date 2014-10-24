@@ -59,6 +59,14 @@
       <Project>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</Project>
       <Name>Sunlight.Framework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Sources\System.Web.Html\System.Web.Html.csproj">
+      <Project>{a60706ff-08d7-4320-99f9-a2413275cdf6}</Project>
+      <Name>System.Web.Html</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sources\System.Web\System.Web.csproj">
+      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
+      <Name>System.Web</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TestRunner\SunlightUnit.csproj">
       <Project>{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}</Project>
       <Name>SunlightUnit</Name>

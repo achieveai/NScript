@@ -345,33 +345,122 @@ namespace NScript.Converter.ExpressionsConverter
             if (methodReference.Name.StartsWith("op_")
                 && null != ((MethodDefinition)methodReference.GetDefinition()).CustomAttributes.SelectAttribute(converter.KnownReferences.IntrinsicOperatorAttribute))
             {
-                if (methodReference.Name == "op_Equality")
+                JST.BinaryOperator? op = null;
+                switch (methodReference.Name)
+                {
+                    case "op_Explicit":
+                    case "op_Implicit":
+                        return delegate(
+                            IMethodScopeConverter methodConverter,
+                            MethodCallExpression methodCall)
+                        {
+                            return ExpressionConverterBase.Convert(
+                                methodConverter,
+                                methodCall.Parameters[0]);
+                        };
+                    case "op_Equality":
+                        op = JST.BinaryOperator.StrictEquals;
+                        break;
+                    case "op_Inequality":
+                        op = JST.BinaryOperator.StrictNotEquals;
+                        break;
+                    case "op_GreaterThan":
+                        op = JST.BinaryOperator.GreaterThan;
+                        break;
+                    case "op_GreaterThanOrEqual":
+                        op = JST.BinaryOperator.GreaterThanOrEqual;
+                        break;
+                    case "op_LessThan":
+                        op = JST.BinaryOperator.LessThan;
+                        break;
+                    case "op_LessThanOrEqual":
+                        op = JST.BinaryOperator.LessThanOrEqual;
+                        break;
+                    case "op_Addition":
+                        op = JST.BinaryOperator.Plus;
+                        break;
+                    case "op_Subtraction":
+                        op = JST.BinaryOperator.Minus;
+                        break;
+                    case "op_Multiply":
+                        op = JST.BinaryOperator.Mul;
+                        break;
+                    case "op_Division":
+                        op = JST.BinaryOperator.Div;
+                        break;
+                    case "op_Modulus":
+                        op = JST.BinaryOperator.Mod;
+                        break;
+                    case "op_ExclusiveOr":
+                        op = JST.BinaryOperator.BitwiseXor;
+                        break;
+                    case "op_BitwiseAnd":
+                        op = JST.BinaryOperator.BitwiseAnd;
+                        break;
+                    case "op_BitwiseOr":
+                        op = JST.BinaryOperator.BitwiseOr;
+                        break;
+                    case "op_LogicalAnd":
+                        op = JST.BinaryOperator.LogicalAnd;
+                        break;
+                    case "op_LogicalOr":
+                        op = JST.BinaryOperator.LogicalOr;
+                        break;
+                    case "op_LeftShift":
+                        op = JST.BinaryOperator.LeftShift;
+                        break;
+                    case "op_RightShift":
+                    case "op_SignedRightShift":
+                        op = JST.BinaryOperator.RightShift;
+                        break;
+                    case "op_UnsignedRightShift":
+                        op = JST.BinaryOperator.UnsignedRightShift;
+                        break;
+                    case "op_AdditionAssignment":
+                        op = JST.BinaryOperator.PlusAssignment;
+                        break;
+                    case "op_SubtractionAssignment":
+                        op = JST.BinaryOperator.MinusAssignment;
+                        break;
+                    case "op_MultiplyAssignment":
+                        op = JST.BinaryOperator.MulAssignment;
+                        break;
+                    case "op_DivisionAssignment":
+                        op = JST.BinaryOperator.DivAssignment;
+                        break;
+                    case "op_ModulusAssignment":
+                        op = JST.BinaryOperator.ModAssignment;
+                        break;
+                    case "op_ExclusiveOrAssignment":
+                        op = JST.BinaryOperator.BitwiseXorAssignment;
+                        break;
+                    case "op_BitwiseAndAssignment":
+                        op = JST.BinaryOperator.BitwiseAndAssignment;
+                        break;
+                    case "op_BitwiseOrAssignment":
+                        op = JST.BinaryOperator.BitwiseOrAssignment;
+                        break;
+                    case "op_LeftShiftAssignment":
+                        op = JST.BinaryOperator.LeftShiftAssignment;
+                        break;
+                    case "op_RightShiftAssignment":
+                    case "op_SignedRightShiftAssignment":
+                        op = JST.BinaryOperator.RightShiftAssignment;
+                        break;
+                    case "op_UnsignedRightShiftAssignment":
+                        op = JST.BinaryOperator.UnsignedRightShiftAssignment;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (op.HasValue)
                 {
                     return (c, e) =>
                         MethodCallExpressionConverter.FuncOperatorToNativeOperator(
                             c,
                             e,
-                            JST.BinaryOperator.StrictEquals);
-                }
-                else if (methodReference.Name == "op_Inequality")
-                {
-                    return (c, e) =>
-                        MethodCallExpressionConverter.FuncOperatorToNativeOperator(
-                            c,
-                            e,
-                            JST.BinaryOperator.StrictNotEquals);
-                }
-                else if (methodReference.Name == "op_Explicit"
-                    || methodReference.Name == "op_Implicit")
-                {
-                    return delegate(
-                        IMethodScopeConverter methodConverter,
-                        MethodCallExpression methodCall)
-                    {
-                        return ExpressionConverterBase.Convert(
-                            methodConverter,
-                            methodCall.Parameters[0]);
-                    };
+                            op.Value);
                 }
             }
 

@@ -76,6 +76,8 @@ namespace Sunlight.Framework.UI
                         {
                             this.skinInstance.Activate();
                         }
+
+                        this.ApplySkinInternal(this.skinInstance);
                     }
 
                     this.FirePropertyChanged(SkinInstancePropertyName);
@@ -107,8 +109,7 @@ namespace Sunlight.Framework.UI
             {
                 this.SkinInstance = this.skin.CreateInstance();
             }
-
-            if (this.skinInstance != null)
+            else if (this.skinInstance != null)
             {
                 this.skinInstance.Activate();
             }

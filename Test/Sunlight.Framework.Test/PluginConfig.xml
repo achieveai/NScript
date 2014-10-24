@@ -1,4 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Plugins>
-  <Plugin Assembly="Cs2JsC.Converter.Plugins" ClassName="Cs2JsC.Converter.Plugins.TestGenerator" />
+  <Plugin Assembly="NScript.Converter.Plugins" ClassName="NScript.Converter.Plugins.TestGenerator" />
 </Plugins>

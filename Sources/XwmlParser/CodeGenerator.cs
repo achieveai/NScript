@@ -206,13 +206,11 @@ namespace XwmlParser
                             || resource.Name.EndsWith(".css")
                             || resource.Name.EndsWith(".less")))
                     {
-                        resourceMap.Add(
-                            resource.Name,
-                            Tuple.Create(
-                                embeddedResource,
-                                (string)this.scopeManager.Context.GetResourceFileName(
-                                    module,
-                                    resource.Name)));
+                        this.AddResource(
+                            embeddedResource,
+                            (string)this.scopeManager.Context.GetResourceFileName(
+                                module,
+                                resource.Name));
                     }
                 }
             }
@@ -355,6 +353,22 @@ namespace XwmlParser
         }
 
         /// <summary>
+        /// Adds a resource to 'resourceFileName'.
+        /// </summary>
+        /// <param name="resource">         The resource. </param>
+        /// <param name="resourceFileName"> Filename of the resource file. </param>
+        public void AddResource(
+            EmbeddedResource resource,
+            string resourceFileName)
+        {
+            resourceMap.Add(
+                resource.Name,
+                Tuple.Create(
+                    resource,
+                    resourceFileName));
+        }
+
+        /// <summary>
         /// Gets template getter identifier.
         /// </summary>
         /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
@@ -424,25 +438,31 @@ namespace XwmlParser
         /// <returns>
         /// The style sheet.
         /// </returns>
-        public CssStyleSheet GetStyleSheet(string cssResourceId)
+        public CssStyleSheet GetStyleSheet(
+            string cssResourceId,
+            string currentFileId)
         {
+            string relativeCssResourceId = this.GetRelativeResourceId(
+                cssResourceId,
+                currentFileId);
+
             CssStyleSheet rv;
-            if (this.styleSheet.TryGetValue(cssResourceId, out rv))
+            if (this.styleSheet.TryGetValue(relativeCssResourceId, out rv))
             {
                 return rv;
             }
 
             Tuple<EmbeddedResource, string> resource;
-            if (this.resourceMap.TryGetValue(cssResourceId, out resource))
+            if (this.resourceMap.TryGetValue(relativeCssResourceId, out resource))
             {
                 rv = new CssStyleSheet(
                     this.parserContext,
-                    resource.Item2 ?? cssResourceId);
+                    resource.Item2 ?? relativeCssResourceId);
 
                 using (System.IO.Stream stream = resource.Item1.GetResourceStream())
                 using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
                 {
-                    if (cssResourceId.ToLowerInvariant().EndsWith(".less"))
+                    if (relativeCssResourceId.ToLowerInvariant().EndsWith(".less"))
                     {
                         rv.AddLess(reader.ReadToEnd());
                     }
@@ -452,7 +472,7 @@ namespace XwmlParser
                     }
                 }
 
-                this.styleSheet.Add(cssResourceId, rv);
+                this.styleSheet.Add(relativeCssResourceId, rv);
             }
             else
             {
@@ -1393,6 +1413,35 @@ namespace XwmlParser
             }
 
             return sb.ToString();
+        }
+
+        private string GetRelativeResourceId(
+            string resourceId,
+            string baseResourceId)
+        {
+            if (this.resourceMap.ContainsKey(resourceId))
+            {
+                return resourceId;
+            }
+
+            string directoryName = System.IO.Path.GetDirectoryName(baseResourceId);
+            string relativeResouceId = resourceId.Replace("/", "\\");
+            while(relativeResouceId.StartsWith("..\\"))
+            {
+                directoryName = System.IO.Path.GetDirectoryName(directoryName);
+                relativeResouceId = relativeResouceId.Substring(3);
+            }
+
+            string resourceFileName = System.IO.Path.Combine(directoryName, relativeResouceId);
+            foreach (var item in this.resourceMap)
+            {
+                if (string.Compare(item.Value.Item2, resourceFileName, StringComparison.InvariantCultureIgnoreCase) == 0)
+                {
+                    return item.Key;
+                }
+            }
+
+            return resourceId;
         }
     }
 }

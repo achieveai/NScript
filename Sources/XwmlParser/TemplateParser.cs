@@ -326,9 +326,6 @@ namespace XwmlParser
 
             foreach (var childNode in node.ChildNodes)
             {
-                if (childNode.NodeType == HtmlNodeType.Comment)
-                { continue; }
-
                 var childNodeInfo = this.ParseNode(childNode, nodeInfo);
                 if (!nodeInfo.ProcessChildNode(childNodeInfo))
                 {

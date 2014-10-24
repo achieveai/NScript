@@ -13,6 +13,8 @@
 
         public extern DateTime(string date);
 
+        public extern DateTime(DateTime dateTime);
+
         public extern DateTime(int year, int month, int date);
 
         public extern DateTime(int year, int month, int date, int hours);
@@ -95,44 +97,176 @@
         [ScriptAlias("Date.parseDate")]
         public extern static DateTime Parse(string value);
 
-        public extern void SetDate(int date);
+        /// <summary>
+        /// Sets a date.
+        /// </summary>
+        /// <param name="date"> The date. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetDate(int date);
 
-        public extern void SetFullYear(int year);
+        /// <summary>
+        /// Sets full year.
+        /// </summary>
+        /// <param name="year"> The year. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetFullYear(int year);
 
-        public extern void SetHours(int hours);
+        /// <summary>
+        /// Sets the hours.
+        /// </summary>
+        /// <param name="hours"> The hours. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetHours(int hours);
 
-        public extern void SetMilliseconds(int milliseconds);
+        /// <summary>
+        /// Sets the milliseconds.
+        /// </summary>
+        /// <param name="milliseconds"> The milliseconds. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetMilliseconds(int milliseconds);
 
-        public extern void SetMinutes(int minutes);
+        /// <summary>
+        /// Sets the minutes.
+        /// </summary>
+        /// <param name="minutes"> The minutes. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetMinutes(int minutes);
 
-        public extern void SetMonth(int month);
+        /// <summary>
+        /// Sets a month.
+        /// </summary>
+        /// <param name="month"> The month. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetMonth(int month);
 
-        public extern void SetSeconds(int seconds);
+        /// <summary>
+        /// Sets the seconds.
+        /// </summary>
+        /// <param name="seconds"> The seconds. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetSeconds(int seconds);
 
-        public extern void SetTime(int milliseconds);
+        /// <summary>
+        /// Sets a time.
+        /// </summary>
+        /// <param name="milliseconds"> The milliseconds. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetTime(int milliseconds);
 
-        public extern void SetUTCDate(int date);
+        /// <summary>
+        /// Sets UTC date.
+        /// </summary>
+        /// <param name="date"> The date. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetUTCDate(int date);
 
-        public extern void SetUTCFullYear(int year);
+        /// <summary>
+        /// Sets UTC full year.
+        /// </summary>
+        /// <param name="year"> The year. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetUTCFullYear(int year);
 
-        public extern void SetUTCHours(int hours);
+        /// <summary>
+        /// Sets UTC hours.
+        /// </summary>
+        /// <param name="hours"> The hours. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetUTCHours(int hours);
 
-        public extern void SetUTCMilliseconds(int milliseconds);
+        /// <summary>
+        /// Sets UTC milliseconds.
+        /// </summary>
+        /// <param name="milliseconds"> The milliseconds. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetUTCMilliseconds(int milliseconds);
 
-        public extern void SetUTCMinutes(int minutes);
+        /// <summary>
+        /// Sets UTC minutes.
+        /// </summary>
+        /// <param name="minutes"> The minutes. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetUTCMinutes(int minutes);
 
-        public extern void SetUTCMonth(int month);
+        /// <summary>
+        /// Sets UTC month.
+        /// </summary>
+        /// <param name="month"> The month. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetUTCMonth(int month);
 
-        public extern void SetUTCSeconds(int seconds);
+        /// <summary>
+        /// Sets UTC seconds.
+        /// </summary>
+        /// <param name="seconds"> The seconds. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetUTCSeconds(int seconds);
 
-        public extern void SetYear(int year);
+        /// <summary>
+        /// Sets a year.
+        /// </summary>
+        /// <param name="year"> The year. </param>
+        /// <returns>
+        /// Ticks for updated DateTime.
+        /// </returns>
+        public extern int SetYear(int year);
 
+        /// <summary>
+        /// Converts this object to a date string.
+        /// (day MMM dd YYYY) format.
+        /// </summary>
+        /// <returns>
+        /// This object as a string.
+        /// </returns>
         public extern string ToDateString();
 
+        /// <summary>
+        /// Converts this object to a locale date string.
+        /// </summary>
+        /// <returns>
+        /// This object as a string.
+        /// </returns>
         public extern string ToLocaleDateString();
 
         public extern string ToLocaleTimeString();
 
+        /// <summary>
+        /// Converts this object to a time string.
+        /// (hh:mm:ss GMT-tttt (TMZ))
+        /// </summary>
+        /// <returns>
+        /// This object as a string.
+        /// </returns>
         public extern string ToTimeString();
 
         public extern string ToUTCString();
@@ -151,6 +285,25 @@
 
         [PreserveCase]
         public extern static int UTC(int year, int month, int day, int hours, int minutes, int seconds, int milliseconds);
+
+        public DateTime AddDays(int days)
+        {
+            return this + days * 86400000;
+        }
+
+        public DateTime AddMonths(int months)
+        {
+            DateTime rv = new DateTime(this);
+            rv.SetMonth(this.GetMonth() + months);
+            return rv;
+        }
+
+        public DateTime AddYears(int years)
+        {
+            DateTime rv = new DateTime(this);
+            rv.SetFullYear(this.GetFullYear() + years);
+            return rv;
+        }
 
         public static DateTime Now
         {
