@@ -13,6 +13,7 @@ namespace XwmlParser
     using Mono.Cecil;
     using NScript.Utils;
     using NScript.Converter;
+    using System.Text.RegularExpressions;
 
     public enum NodeType
     {
@@ -42,6 +43,11 @@ namespace XwmlParser
     /// </summary>
     public class HtmlParser
     {
+        private static Regex textBreakingRegEx
+            = new Regex(
+                "^(?<text>(?:({{)|[^{])*)(?:(?<binding>{[^{}]+})(?<text>(?:[^{]|({{))*))*$",
+                RegexOptions.Multiline | RegexOptions.Compiled);
+
         /// <summary>
         /// Context for the document.
         /// </summary>
@@ -79,6 +85,7 @@ namespace XwmlParser
             ParserContext context)
         {
             HtmlParser.RemoveComments(htmlDoc);
+            HtmlParser.SplitTextBindingNodes(htmlDoc);
             this.resourceName = fullResourceName;
             this.context = context;
             this.documentContext = new DocumentContext(
@@ -381,6 +388,103 @@ namespace XwmlParser
                     comment.ParentNode.RemoveChild(comment);
                 }
             }
+        }
+
+        public static void SplitTextBindingNodes(HtmlDocument htmlDoc)
+        {
+            var nodes = htmlDoc.DocumentNode.SelectNodes("//body//text()");
+
+            if (nodes != null)
+            {
+                foreach(var node in nodes)
+                {
+                    HtmlTextNode textNode = (HtmlTextNode)node;
+
+                    var match = HtmlParser.textBreakingRegEx.Match(textNode.Text);
+                    var bindingGroup = match.Groups["binding"];
+                    if (match.Success
+                        && bindingGroup.Captures.Count >= 1
+                        && bindingGroup.Captures[0].Length < textNode.Text.Length)
+                    {
+                        var textGroups = match.Groups["text"];
+                        string text = textNode.Text;
+                        List<HtmlTextNode> textNodes = new List<HtmlTextNode>();
+                        Capture capture;
+                        for (int iCapture = 0; iCapture < bindingGroup.Captures.Count; iCapture++)
+                        {
+                            capture = textGroups.Captures[iCapture];
+                            HtmlParser.AddTextNode(
+                                textNodes,
+                                capture,
+                                text,
+                                textNode.Line,
+                                textNode.LinePosition);
+
+                            capture = bindingGroup.Captures[iCapture];
+                            HtmlParser.AddTextNode(
+                                textNodes,
+                                capture,
+                                text,
+                                textNode.Line,
+                                textNode.LinePosition);
+                        }
+
+                        capture = textGroups.Captures[bindingGroup.Captures.Count];
+                        HtmlParser.AddTextNode(
+                            textNodes,
+                            capture,
+                            text,
+                            textNode.Line,
+                            textNode.LinePosition);
+
+                        if (textNodes.Count > 1)
+                        {
+                            for (int iTextNode = 0; iTextNode < textNodes.Count; iTextNode++)
+                            {
+                                textNode.ParentNode.InsertBefore(textNodes[iTextNode], textNode);
+                            }
+
+                            textNode.ParentNode.RemoveChild(textNode);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void AddTextNode(
+            List<HtmlTextNode> textNodes,
+            Capture capture,
+            string text,
+            int startPositionLine,
+            int startPositionCol)
+        {
+            if (capture.Length == null)
+            { return; }
+
+            int lineDelta = startPositionLine;
+            int positionDelta = startPositionCol;
+
+            for (int iPos = 0; iPos < capture.Index; iPos++)
+            {
+                if (text[iPos] == '\n')
+                {
+                    lineDelta++;
+                    positionDelta = 0;
+                }
+                else
+                {
+                    positionDelta++;
+                }
+            }
+
+            var rv = (HtmlTextNode)HtmlTextNode.CreateNode(capture.Value);
+            typeof(HtmlNode).GetProperty("Line").SetValue(rv, lineDelta);
+            typeof(HtmlNode).GetProperty("LinePosition").SetValue(rv, positionDelta);
+            textNodes.Add(rv);
+        }
+
+        private static void SetLinePosition(HtmlNode node, int line, int position)
+        {
         }
 
         /// <summary>
