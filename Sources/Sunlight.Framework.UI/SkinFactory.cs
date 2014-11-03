@@ -15,10 +15,10 @@ namespace Sunlight.Framework.UI
     /// </summary>
     public class Skin
     {
-        Func<Skin, Document, SkinInstance> factoryMethod;
-        Type skinableType;
-        Type dataContextType;
-        string id;
+        readonly Func<Skin, Document, SkinInstance> factoryMethod;
+        readonly Type skinableType;
+        readonly Type dataContextType;
+        readonly string id;
 
         public Skin(
             Type skinableType,
@@ -31,6 +31,9 @@ namespace Sunlight.Framework.UI
             this.dataContextType = dataContextType;
             this.id = id;
         }
+
+        public string Id
+        { get { return this.id; } }
 
         public Type SkinableType
         {

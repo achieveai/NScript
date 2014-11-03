@@ -616,7 +616,7 @@ namespace NScript.Converter.TypeSystemConverter
                     }
 
                     RuntimeScopeManager.CalculateFriendlyTypeReferenceName(
-                        genericArguments[0],
+                        genericArguments[paramIndex],
                         strBuilder,
                         worker);
                 }

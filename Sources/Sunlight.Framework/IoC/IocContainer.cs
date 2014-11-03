@@ -110,5 +110,10 @@ namespace Sunlight.Framework
         {
             return new Lazy<T>(this.factoryMap[typeof(T).TypeId].GetValue<T>);
         }
+
+        public Factory<T> ResolveFactory<T>() where T : class
+        {
+            return new Factory<T>(this.factoryMap[typeof(T).TypeId].GetValue<T>);
+        }
     }
 }

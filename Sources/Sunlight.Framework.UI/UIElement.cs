@@ -18,10 +18,10 @@ namespace Sunlight.Framework.UI
     /// </summary>
     public class UIElement : ContextBindableObject
     {
-        Element element;
-        bool isHidden = false;
-
-        StringDictionary<Action<UIEvent>> eventRegistrationDict = new StringDictionary<Action<UIEvent>>();
+        private Element element;
+        private bool isHidden = false;
+        private IocContainer container;
+        private StringDictionary<Action<UIEvent>> eventRegistrationDict = new StringDictionary<Action<UIEvent>>();
 
         public UIElement(Element element)
         {
@@ -62,6 +62,20 @@ namespace Sunlight.Framework.UI
                     this.element.ClassName = value;
                     this.FirePropertyChanged("CssClass");
                 }
+            }
+        }
+
+        public IocContainer Container
+        {
+            get { return this.container; }
+            set
+            {
+                if (this.container != null)
+                {
+                    throw new Exception("can't set container once set");
+                }
+
+                this.container = value;
             }
         }
 

@@ -1012,12 +1012,12 @@ function System__Delegate__CreateJoinedArray(array) {
 System__Type__RegisterReferenceType(System_Delegate, "System.Delegate", Object, []);
 function System_MulticastDelegate() {
 };
-System_MulticastDelegate.typeId = "bb";
+System_MulticastDelegate.typeId = "A";
 System_MulticastDelegate.prototype = new System_Delegate();
 System__Type__RegisterReferenceType(System_MulticastDelegate, "System.MulticastDelegate", System_Delegate, []);
 function Sunlight_Framework_Test_Binders_SourcePropertyBinderTests_BinderTestHelper() {
 };
-Sunlight_Framework_Test_Binders_SourcePropertyBinderTests_BinderTestHelper.typeId = "bc";
+Sunlight_Framework_Test_Binders_SourcePropertyBinderTests_BinderTestHelper.typeId = "bb";
 function Sunlight__Framework__Test__Binders__SourcePropertyBinderTests$2fBinderTestHelper_factory() {
   return new Sunlight_Framework_Test_Binders_SourcePropertyBinderTests_BinderTestHelper();
 };
@@ -1038,7 +1038,7 @@ ptyp_.V_SourceValueUpdated_f = ptyp_.sourceValueUpdated;
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_Binders_SourcePropertyBinderTests_BinderTestHelper, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests/BinderTestHelper", Object, [Sunlight_Framework_Binders_ISourceDataBinder]);
 function Sunlight_Framework_IocContainer() {
 };
-Sunlight_Framework_IocContainer.typeId = "bd";
+Sunlight_Framework_IocContainer.typeId = "bc";
 function Sunlight__Framework__IocContainer_factory() {
   var this_;
   this_ = new Sunlight_Framework_IocContainer();
@@ -1081,7 +1081,7 @@ ptyp_.__ctor = function Sunlight__Framework__IocContainer____ctor() {
 System__Type__RegisterReferenceType(Sunlight_Framework_IocContainer, "Sunlight.Framework.IocContainer", Object, []);
 function Sunlight_Framework_Test_IocTestType2() {
 };
-Sunlight_Framework_Test_IocTestType2.typeId = "be";
+Sunlight_Framework_Test_IocTestType2.typeId = "bd";
 function Sunlight__Framework__Test__IocTestType2_factory(x) {
   var this_;
   this_ = new Sunlight_Framework_Test_IocTestType2();
@@ -1099,7 +1099,7 @@ ptyp_.testMethod = function Sunlight__Framework__Test__IocTestType2__TestMethod(
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_IocTestType2, "Sunlight.Framework.Test.IocTestType2", Object, []);
 function Sunlight_Framework_Test_IocTestType1Base() {
 };
-Sunlight_Framework_Test_IocTestType1Base.typeId = "bf";
+Sunlight_Framework_Test_IocTestType1Base.typeId = "be";
 function Sunlight__Framework__Test__IocTestType1Base_factory(x) {
   var this_;
   this_ = new Sunlight_Framework_Test_IocTestType1Base();
@@ -1121,7 +1121,7 @@ Sunlight_Framework_Test_IIocTestType1.typeId = "b";
 System__Type__RegisterInterface(Sunlight_Framework_Test_IIocTestType1, "Sunlight.Framework.Test.IIocTestType1");
 function Sunlight_Framework_Test_IocTestType1() {
 };
-Sunlight_Framework_Test_IocTestType1.typeId = "bg";
+Sunlight_Framework_Test_IocTestType1.typeId = "bf";
 function Sunlight__Framework__Test__IocTestType1_factory(x, y) {
   var this_;
   this_ = new Sunlight_Framework_Test_IocTestType1();
@@ -1142,7 +1142,7 @@ ptyp_.V_TestMethod_b = ptyp_.testMethod;
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_IocTestType1, "Sunlight.Framework.Test.IocTestType1", Sunlight_Framework_Test_IocTestType1Base, [Sunlight_Framework_Test_IIocTestType1]);
 function Sunlight_Framework_IoC_IocHelper() {
 };
-Sunlight_Framework_IoC_IocHelper.typeId = "bh";
+Sunlight_Framework_IoC_IocHelper.typeId = "bg";
 function Sunlight__Framework__IoC__IocHelper_factory(isSingleton, registerAs) {
   var this_;
   this_ = new Sunlight_Framework_IoC_IocHelper();
@@ -1167,7 +1167,7 @@ ptyp_.isSingleton = function Sunlight__Framework__IoC__IocHelper__IsSingleton() 
 System__Type__RegisterReferenceType(Sunlight_Framework_IoC_IocHelper, "Sunlight.Framework.IoC.IocHelper", Object, []);
 function Sunlight_Framework_EventBus() {
 };
-Sunlight_Framework_EventBus.typeId = "bi";
+Sunlight_Framework_EventBus.typeId = "bh";
 function Sunlight__Framework__EventBus_factory() {
   var this_;
   this_ = new Sunlight_Framework_EventBus();
@@ -1250,7 +1250,7 @@ ptyp_.__ctor = function Sunlight__Framework__EventBus____ctor() {
 System__Type__RegisterReferenceType(Sunlight_Framework_EventBus, "Sunlight.Framework.EventBus", Object, []);
 function Sunlight_Framework_Test_EventBusTests_Evt1() {
 };
-Sunlight_Framework_Test_EventBusTests_Evt1.typeId = "bj";
+Sunlight_Framework_Test_EventBusTests_Evt1.typeId = "bi";
 function Sunlight__Framework__Test__EventBusTests$2fEvt1_factory() {
   return new Sunlight_Framework_Test_EventBusTests_Evt1();
 };
@@ -1263,7 +1263,7 @@ System__Type__RegisterReferenceType(Sunlight_Framework_Test_EventBusTests_Evt1, 
 function Sunlight_Framework_Test_EventBusTests_Evt2(boxedValue) {
   this.boxedValue = boxedValue;
 };
-Sunlight_Framework_Test_EventBusTests_Evt2.typeId = "bk";
+Sunlight_Framework_Test_EventBusTests_Evt2.typeId = "bj";
 Sunlight_Framework_Test_EventBusTests_Evt2.getDefaultValue = function() {
   return {
     x: 0
@@ -1273,7 +1273,7 @@ Sunlight_Framework_Test_EventBusTests_Evt2.prototype = new System_ValueType();
 System__Type__RegisterStructType(Sunlight_Framework_Test_EventBusTests_Evt2, "Sunlight.Framework.Test.EventBusTests/Evt2", []);
 function Sunlight_Framework_Test_ObservableObjectTests_ObservableTestObject() {
 };
-Sunlight_Framework_Test_ObservableObjectTests_ObservableTestObject.typeId = "bl";
+Sunlight_Framework_Test_ObservableObjectTests_ObservableTestObject.typeId = "bk";
 function Sunlight__Framework__Test__ObservableObjectTests$2fObservableTestObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Test_ObservableObjectTests_ObservableTestObject();
@@ -1303,7 +1303,7 @@ ptyp_.__ctor0 = function Sunlight__Framework__Test__ObservableObjectTests$2fObse
 System__Type__RegisterReferenceType(Sunlight_Framework_Test_ObservableObjectTests_ObservableTestObject, "Sunlight.Framework.Test.ObservableObjectTests/ObservableTestObject", Sunlight_Framework_Observables_ObservableObject, []);
 function Sunlight_Framework_TypeRegistry() {
 };
-Sunlight_Framework_TypeRegistry.typeId = "bm";
+Sunlight_Framework_TypeRegistry.typeId = "bl";
 function Sunlight__Framework__TypeRegistry_factory(factory) {
   var this_;
   this_ = new Sunlight_Framework_TypeRegistry();
@@ -1331,7 +1331,7 @@ ptyp_.getValue = function Sunlight__Framework__TypeRegistry__GetValue() {
   return this.value;
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_TypeRegistry, "Sunlight.Framework.TypeRegistry", Object, []);
-Error.typeId = "bn";
+Error.typeId = "bm";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function Sunlight_Framework_ExceptionHelpers() {
 };
@@ -1351,7 +1351,7 @@ function Sunlight_Framework_Binders_IValueConverter() {
 };
 Sunlight_Framework_Binders_IValueConverter.typeId = "e";
 System__Type__RegisterInterface(Sunlight_Framework_Binders_IValueConverter, "Sunlight.Framework.Binders.IValueConverter");
-Array.typeId = "bw";
+Array.typeId = "bt";
 System__Type__RegisterReferenceType(Array, "System.Array", Object, [System_Collections_ICollection]);
 function System_ArrayG(T, $5fcallStatiConstructor) {
   var ArrayG$1_$T$_, T$5b$5d_$T$_, $5f_initTracker;
@@ -1362,7 +1362,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_ = System_ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = System_ArrayG;
-  ArrayG$1_$T$_.typeId = "bo$" + T.typeId + "$";
+  ArrayG$1_$T$_.typeId = "bn$" + T.typeId + "$";
   ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory1(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
@@ -1451,7 +1451,7 @@ function System_Func(T1, TRes, $5fcallStatiConstructor) {
   Func$2_$T1_x_T1$_ = System_Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_T1$_.genericParameters = [T1, TRes];
   Func$2_$T1_x_T1$_.genericClosure = System_Func;
-  Func$2_$T1_x_T1$_.typeId = "bp$" + T1.typeId + "_" + TRes.typeId + "$";
+  Func$2_$T1_x_T1$_.typeId = "A$" + T1.typeId + "_" + TRes.typeId + "$";
   Func$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Func$2_$T1_x_T1$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", System_MulticastDelegate, []);
   Func$2_$T1_x_T1$_._tri = function() {
@@ -1475,7 +1475,7 @@ function Sunlight_Framework_Lazy(T, $5fcallStatiConstructor) {
   Lazy$1_$T$_ = Sunlight_Framework_Lazy[T.typeId];
   Lazy$1_$T$_.genericParameters = [T];
   Lazy$1_$T$_.genericClosure = Sunlight_Framework_Lazy;
-  Lazy$1_$T$_.typeId = "bq$" + T.typeId + "$";
+  Lazy$1_$T$_.typeId = "bo$" + T.typeId + "$";
   Lazy$1_$T$_.__ctor = function Sunlight_Framework_Lazy$1_factory0(factory) {
     var this_;
     this_ = new Lazy$1_$T$_();
@@ -1522,7 +1522,7 @@ function Sunlight_Framework_Observables_ObservableCollection(T, $5fcallStatiCons
   ObservableCollection$1_$T$_ = Sunlight_Framework_Observables_ObservableCollection[T.typeId];
   ObservableCollection$1_$T$_.genericParameters = [T];
   ObservableCollection$1_$T$_.genericClosure = Sunlight_Framework_Observables_ObservableCollection;
-  ObservableCollection$1_$T$_.typeId = "br$" + T.typeId + "$";
+  ObservableCollection$1_$T$_.typeId = "bp$" + T.typeId + "$";
   ObservableCollection$1_$T$_.defaultConstructor = function Sunlight_Framework_Observables_ObservableCollection$1_factory0() {
     var this_;
     this_ = new ObservableCollection$1_$T$_();
@@ -1603,7 +1603,7 @@ function Sunlight_Framework_Observables_CollectionChangedEventArgs(T, $5fcallSta
   CollectionChangedEventArgs$1_$T$_ = Sunlight_Framework_Observables_CollectionChangedEventArgs[T.typeId];
   CollectionChangedEventArgs$1_$T$_.genericParameters = [T];
   CollectionChangedEventArgs$1_$T$_.genericClosure = Sunlight_Framework_Observables_CollectionChangedEventArgs;
-  CollectionChangedEventArgs$1_$T$_.typeId = "bs$" + T.typeId + "$";
+  CollectionChangedEventArgs$1_$T$_.typeId = "bq$" + T.typeId + "$";
   CollectionChangedEventArgs$1_$T$_.__ctor = function Sunlight_Framework_Observables_CollectionChangedEventArgs$1_factory0(action, changeIndex, newItems, oldItems) {
     var this_;
     this_ = new CollectionChangedEventArgs$1_$T$_();
@@ -1670,7 +1670,7 @@ function System_Action(T1, T2, $5fcallStatiConstructor) {
   Action$2_$T1_x_T1$_ = System_Action[T1.typeId][T2.typeId];
   Action$2_$T1_x_T1$_.genericParameters = [T1, T2];
   Action$2_$T1_x_T1$_.genericClosure = System_Action;
-  Action$2_$T1_x_T1$_.typeId = "bt$" + T1.typeId + "_" + T2.typeId + "$";
+  Action$2_$T1_x_T1$_.typeId = "A$" + T1.typeId + "_" + T2.typeId + "$";
   Action$2_$T1_x_T1$_.prototype = new System_MulticastDelegate();
   System__Type__RegisterReferenceType(Action$2_$T1_x_T1$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", System_MulticastDelegate, []);
   Action$2_$T1_x_T1$_._tri = function() {
@@ -1698,7 +1698,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "bu$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "br$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   KeyValuePair$2_$String_x_String$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
@@ -1782,7 +1782,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   List$1_$T$_ = System_Collections_Generic_List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = System_Collections_Generic_List;
-  List$1_$T$_.typeId = "bv$" + T.typeId + "$";
+  List$1_$T$_.typeId = "bs$" + T.typeId + "$";
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory0() {
     var this_;
     this_ = new List$1_$T$_();
@@ -1858,7 +1858,7 @@ function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) 
   KeyValuePair$2_$K_x_K$_ = System_Collections_Generic_KeyValuePair[K.typeId][V.typeId];
   KeyValuePair$2_$K_x_K$_.genericParameters = [K, V];
   KeyValuePair$2_$K_x_K$_.genericClosure = System_Collections_Generic_KeyValuePair;
-  KeyValuePair$2_$K_x_K$_.typeId = "bx$" + K.typeId + "_" + V.typeId + "$";
+  KeyValuePair$2_$K_x_K$_.typeId = "bu$" + K.typeId + "_" + V.typeId + "$";
   KeyValuePair$2_$K_x_K$_.getDefaultValue = function() {
     return {
       key: System__Type__GetDefaultValueStatic(K),

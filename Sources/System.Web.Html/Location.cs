@@ -78,6 +78,15 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
+        /// Gets the origin for c.
+        /// </summary>
+        /// <value>
+        /// The origin.
+        /// </value>
+        public extern string Origin
+        { get; }
+
+        /// <summary>
         /// Gets or sets the hash.
         /// </summary>
         /// <value>

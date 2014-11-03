@@ -313,9 +313,28 @@ namespace System.Web.Html
         /// <summary>
         /// Opens the given document.
         /// </summary>
-        /// <param name="url">    URL of the document. </param>
-        /// <param name="target"> Target for the. </param>
-        public extern void Open(string url, string target);
+        /// <param name="url">   URL of the document. </param>
+        /// <param name="title"> title of the window. </param>
+        /// <returns>
+        /// Window object for the opened window.
+        /// </returns>
+        public extern Window Open(string url, string title);
+
+        /// <summary>
+        /// Opens the given document.
+        /// </summary>
+        /// <param name="url">             URL of the document. </param>
+        /// <param name="title">           title of the window. </param>
+        /// <param name="windowOpenParam"> The window open parameter. </param>
+        /// <returns>
+        /// Window object for opened window.
+        /// </returns>
+        public extern Window Open(string url, string title, string windowOpenParam);
+
+        /// <summary>
+        /// Closes this object.
+        /// </summary>
+        public extern void Close();
 
         /// <summary>
         /// Binds.

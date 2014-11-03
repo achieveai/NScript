@@ -30,10 +30,12 @@ namespace System.Web
 
         /// <summary>
         /// Decode URI component.
+        /// Normally called for Query Parameter Name or Value.
         /// </summary>
         /// <param name="str"> The. </param>
         /// <returns>
-        /// .
+        /// Will Decode "@#$&=:/,;?+"
+        /// Will NOT Decode "~!*()"
         /// </returns>
         [ScriptAlias("decodeURIComponent")]
         public extern static string DecodeURIComponent(string str);
@@ -47,15 +49,17 @@ namespace System.Web
         /// Will Encode: All special characters except below
         /// Will NOT encode "~!@#$&*()=:/,;?+'"
         /// </returns>
-        [ScriptAlias("encodeURIComponent")]
+        [ScriptAlias("encodeURI")]
         public extern static string EncodeURI(string str);
 
         /// <summary>
         /// Decode URI.
+        /// Normall called for whole URL.
         /// </summary>
         /// <param name="str"> The. </param>
         /// <returns>
-        /// .
+        /// Will Decode: All special characters except below
+        /// Will NOT decode "~!@#$&*()=:/,;?+'"
         /// </returns>
         [ScriptAlias("decodeURI")]
         public extern static string DecodeURI(string str);

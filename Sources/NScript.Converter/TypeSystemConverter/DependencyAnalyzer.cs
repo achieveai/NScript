@@ -228,7 +228,63 @@ namespace NScript.Converter.TypeSystemConverter
                 rv.Add(typeRef);
             }
 
-            return rv;
+            Dictionary<TypeReference, int> pointingTo = new Dictionary<TypeReference, int>();
+            Dictionary<TypeReference, List<TypeReference>> dependencies
+                = new Dictionary<TypeReference, List<TypeReference>>();
+
+            foreach (var typeRef in rv)
+            {
+                List<TypeReference> list = new List<TypeReference>();
+                dependencies[typeRef] = list;
+
+                IList<TypeReference> genericArguments = typeRef.GetGenericArguments();
+                if (genericArguments != null
+                    && genericArguments.Count > 0
+                    && genericArguments.FirstOrDefault(trb => trb.IsGenericParameter) == null)
+                {
+                    foreach (var genericArg in genericArguments)
+                    {
+                        if (typesAlreadyAdded.Contains(genericArg))
+                        {
+                            list.Add(genericArg);
+                            if (pointingTo.ContainsKey(genericArg))
+                            {
+                                pointingTo[genericArg]++;
+                            }
+                            else
+                            {
+                                pointingTo[genericArg] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            List<TypeReference> reverseList = new List<TypeReference>();
+            while(pointingTo.Count > 0)
+            {
+                for (int iRv = rv.Count - 1; iRv >= 0; iRv--)
+                {
+                    if (!pointingTo.ContainsKey(rv[iRv]))
+                    {
+                        reverseList.Add(rv[iRv]);
+                        foreach (var dep in dependencies[rv[iRv]])
+                        {
+                            if (pointingTo[dep]-- == 1)
+                            {
+                                pointingTo.Remove(dep);
+                            }
+                        }
+
+                        rv.RemoveAt(iRv);
+                    }
+                }
+            }
+
+            reverseList.AddRange(rv);
+
+            reverseList.Reverse();
+            return reverseList;
         }
 
         /// <summary>
