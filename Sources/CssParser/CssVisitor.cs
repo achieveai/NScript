@@ -240,6 +240,10 @@ namespace CssParser
                     if (this.innerVisitor.Visit((CssIdentifierPropertyValue)obj))
                         this.Visit((CssIdentifierPropertyValue)obj);
                     break;
+                case "CssPropertyValueSet":
+                    if (this.innerVisitor.Visit((CssPropertyValueSet)obj))
+                        this.Visit((CssPropertyValueSet)obj);
+                    break;
                 case "CssColorPropertyValue":
                     if (this.innerVisitor.Visit((CssColorPropertyValue)obj))
                         this.Visit((CssColorPropertyValue)obj);

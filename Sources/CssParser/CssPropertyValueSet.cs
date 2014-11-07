@@ -13,7 +13,7 @@ namespace CssParser
     /// <summary>
     /// Definition for CssMultiplePropertyValues
     /// </summary>
-    public class CssPropertyValueSet
+    public class CssPropertyValueSet: CssPropertyValue
     {
         public CssPropertyValueSet(IList<CssPropertyValue> values)
         {

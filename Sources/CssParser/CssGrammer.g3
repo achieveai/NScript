@@ -49,15 +49,15 @@ tokens {
     PSEUDO;
     PSEUDO_FUNC;
     PSEUDO_FUNC_SELECTOR;
-	DPSEUDO;
-	DPSEUDO_FUNC;
+    DPSEUDO;
+    DPSEUDO_FUNC;
     FUNCTION;
     TAG;
     ID;
     CLASS;
     ALL;
     NUMARG;
-	ASSIGN_EXPR;
+    ASSIGN_EXPR;
     SELECTORS;
     SELECTOR;
     SELECTOR_OP;
@@ -65,20 +65,22 @@ tokens {
     SEL_OP;
     PROPERTY;
     EXPR;
-	EXPRS;
+    EXPRS;
     COLOR;
     UNIT_VAL;
     STRING_VAL;
     URL_VAL;
     IDENTIFIER;
-	KEYFRAMES;
-	KEYFRAME;
-	KEYFRAMESELECTORS;
-	MEDIA;
-	MEDIA_QUERY;
-	MEDIA_TYPE;
-	MEDIA_FEATURE;
+    UNITEXPRS;
+    KEYFRAMES;
+    KEYFRAME;
+    KEYFRAMESELECTORS;
+    MEDIA;
+    MEDIA_QUERY;
+    MEDIA_TYPE;
+    MEDIA_FEATURE;
     CALC;
+    RGBA;
 }
 
 @lexer::members {
@@ -128,46 +130,46 @@ media
         LBRACE
             ruleSet+
         RBRACE
-		-> ^(MEDIA mediaQuery* ruleSet+)
+        -> ^(MEDIA mediaQuery* ruleSet+)
     ;
 mediaQuery
-	: (op1=NOT_SYM)? mediaFeature ( 'and' mediaFeature)*
-		-> ^(MEDIA_QUERY $op1? mediaFeature*)
-	| (op1=NOT_SYM)? medium ('and' mediaFeature)*
-		-> ^(MEDIA_QUERY $op1? medium mediaFeature*)
-	;
+    : (op1=NOT_SYM)? mediaFeature ( 'and' mediaFeature)*
+        -> ^(MEDIA_QUERY $op1? mediaFeature*)
+    | (op1=NOT_SYM)? medium ('and' mediaFeature)*
+        -> ^(MEDIA_QUERY $op1? medium mediaFeature*)
+    ;
 
 
 
 mediaFeature
-	: LPAREN property COLON term RPAREN
-		-> ^(MEDIA_FEATURE property term)
-	| LPAREN property RPAREN
-		-> ^(MEDIA_FEATURE property)
-	| rangeForm
-	;
+    : LPAREN property COLON term RPAREN
+        -> ^(MEDIA_FEATURE property term)
+    | LPAREN property RPAREN
+        -> ^(MEDIA_FEATURE property)
+    | rangeForm
+    ;
 rangeForm
-	: LPAREN property comparisionOp term RPAREN
-		-> ^(MEDIA_FEATURE property term comparisionOp)
-	| LPAREN t1=term r1=rightDirectionOp property r2=rightDirectionOp t2=term RPAREN
-		-> ^(MEDIA_FEATURE property $t1 $r1 $t2 $r2)
-	| LPAREN t1=term l1=leftDirectionOp property l2=leftDirectionOp t2=term RPAREN
-		-> ^(MEDIA_FEATURE property $t1 $l1 $t2 $l2)
-	;
+    : LPAREN property comparisionOp term RPAREN
+        -> ^(MEDIA_FEATURE property term comparisionOp)
+    | LPAREN t1=term r1=rightDirectionOp property r2=rightDirectionOp t2=term RPAREN
+        -> ^(MEDIA_FEATURE property $t1 $r1 $t2 $r2)
+    | LPAREN t1=term l1=leftDirectionOp property l2=leftDirectionOp t2=term RPAREN
+        -> ^(MEDIA_FEATURE property $t1 $l1 $t2 $l2)
+    ;
 
 comparisionOp
-	: leftDirectionOp
-	| rightDirectionOp
-	;
+    : leftDirectionOp
+    | rightDirectionOp
+    ;
 
 leftDirectionOp
-	: '<='
-	| '<'
-	;
+    : '<='
+    | '<'
+    ;
 
 rightDirectionOp
-	: '>='
-	| GREATER
+    : '>='
+    | GREATER
     ;
 
 // ---------    
@@ -186,12 +188,12 @@ bodyset
     : ruleSet
     | media
     | page
-	| keyframesRule
+    | keyframesRule
     ;   
     
 keyframesRule
     : KEYFRAMES_SYM IDENT LBRACE keyframesBlock* RBRACE
-		-> ^(KEYFRAMES IDENT keyframesBlock*)
+        -> ^(KEYFRAMES IDENT keyframesBlock*)
     ;
 
 keyframesBlock
@@ -201,7 +203,7 @@ keyframesBlock
 
 keyframeSelectors
     : keyframeSelector (COMMA keyframeSelector)*
-		-> ^(KEYFRAMESELECTORS keyframeSelector+)
+        -> ^(KEYFRAMESELECTORS keyframeSelector+)
     ;
 
 keyframeSelector
@@ -251,6 +253,7 @@ ruleSet
 selectors
     : selector (COMMA selector)*
         -> ^(SELECTORS selector+)
+    | FONT_FACE
     ;
 
 public
@@ -322,16 +325,16 @@ attribOp
 
 pseudo
     : pseudoStart identifier LPAREN (pseudoFuncArgs)? RPAREN
-		-> ^(PSEUDO_FUNC pseudoStart identifier pseudoFuncArgs?)
+        -> ^(PSEUDO_FUNC pseudoStart identifier pseudoFuncArgs?)
     | pseudoStart identifier LPAREN (selector)? RPAREN
-		-> ^(PSEUDO_FUNC pseudoStart identifier selector?)
-	| pseudoStart identifier
-		-> ^(PSEUDO pseudoStart identifier)
+        -> ^(PSEUDO_FUNC pseudoStart identifier selector?)
+    | pseudoStart identifier
+        -> ^(PSEUDO pseudoStart identifier)
     ;
 
 pseudoStart
-    	:	COLON
-    	|	DOUBLE_COLON
+        :	COLON
+        |	DOUBLE_COLON
     ;
 
 pseudoFuncArgs
@@ -342,7 +345,7 @@ pseudoFuncArgs
 
 declaration
     : property COLON expressions prio?
-		-> ^(PROPERTY property expressions prio?)
+        -> ^(PROPERTY property expressions prio?)
     ;
     
 prio
@@ -370,32 +373,40 @@ operators
     | SOLIDUS;
 
 term
-    : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
+    : identifier -> ^(IDENTIFIER identifier)
     | STRING -> ^(STRING_VAL STRING)
-    | identifier -> ^(IDENTIFIER identifier)
+    | color
+    | calcExpr
+    | URI -> ^(URL_VAL URI)
+    | (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
     | identifier LPAREN funcArgs RPAREN
         -> ^(FUNCTION identifier funcArgs)
     | legacyFilterMethod LPAREN funcArgs RPAREN
-    	-> ^(FUNCTION legacyFilterMethod funcArgs)
-    | URI -> ^(URL_VAL URI)
-    | hexColor -> ^(COLOR hexColor)
-    | calcExpr
+        -> ^(FUNCTION legacyFilterMethod funcArgs)
+    | unitExpr
     ;
 
 legacyFilterMethod
 :	identifier COLON identifier (DOT identifier)*;
 
-funcArg
-    : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
+unitExpr
+    : identifier -> ^(IDENTIFIER identifier)
     | STRING -> ^(STRING_VAL STRING)
-    | identifier -> ^(IDENTIFIER identifier)
-    | hexColor -> ^(COLOR hexColor)
+    | color
+    | calcExpr
+    | URI -> ^(URL_VAL URI)
+    | (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
+    ;
+    
+funcArg
+    : unitExpr+ -> ^(UNITEXPRS unitExpr+)
     | identifier '=' funcArg -> ^(ASSIGN_EXPR identifier funcArg)
+    | id='color-stop' LPAREN funcArgs RPAREN -> ^(FUNCTION $id funcArgs)
     ;
 
 funcArgs
     : funcArg (COMMA funcArg)*
-	;
+    ;
 
 unitTerm
     : PERCENTAGE
@@ -408,12 +419,17 @@ unitTerm
     | NUMBER;
     
 identifier
-	: IDENT
-	| NOT_SYM
-	;
+    : IDENT
+    | NOT_SYM
+    | TO_SYM
+    ;
 
-hexColor
-    : HASH
+color
+        : 'rgba' LPAREN n1=NUMBER COMMA n2=NUMBER COMMA n3=NUMBER COMMA n4=NUMBER RPAREN
+            -> ^(RGBA $n1 $n2 $n3 $n4)
+        | 'rgb' LPAREN n1=NUMBER COMMA n2=NUMBER COMMA n3=NUMBER RPAREN
+            -> ^(RGBA $n1 $n2 $n3)
+        | cl=HASH -> ^(COLOR $cl)
     ;
     
 // ==============================================================
@@ -781,6 +797,7 @@ PAGE_SYM        : '@page'           ;
 MEDIA_SYM       : '@media'         ;
 CHARSET_SYM     : '@charset '           ;
 KEYFRAMES_SYM   : '@keyframes' ;
+FONT_FACE		: '@font-face'		;
 FROM_SYM        : F R O M               ;
 TO_SYM          : T O                   ;
 NOT_SYM			: N O T					;

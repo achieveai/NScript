@@ -276,6 +276,10 @@ namespace CssParser
                     case "SELECTORS":
                         selectors = this.ParseSelectors(child);
                         break;
+                    case "@font-face":
+                        selectors = new List<CssSelector>();
+                        selectors.Add(new CssTagName("@font-face"));
+                        break;
                     default:
                         break;
                 }
@@ -610,6 +614,8 @@ namespace CssParser
         {
             switch (child.Text)
             {
+                case "UNITEXPRS":
+                    return new CssPropertyValueSet(this.ParsePropertyValues(child));
                 case "UNIT_VAL":
                     return this.ParseUnitValue(child);
                 case "IDENTIFIER":
@@ -624,6 +630,19 @@ namespace CssParser
                     return new CssColorPropertyValue(child.GetChild(0).Text);
                 case "CALC":
                     return this.ParseCalcValue(child);
+                case "RGBA":
+                    {
+                        List<CssPropertyValue> rgbMethodArgs = new List<CssPropertyValue>();
+                        for (int iGrandChild = 0; iGrandChild < child.ChildCount; iGrandChild++)
+                        {
+                            rgbMethodArgs.Add(
+                                new CssNumberPropertyValue(double.Parse(child.GetChild(iGrandChild).Text)));
+                        }
+
+                        return new CssFunctionPropertyValue(
+                            rgbMethodArgs.Count == 4 ? "rgba" : "rgb",
+                            rgbMethodArgs);
+                    }
                 default:
                     return null;
             }
@@ -640,34 +659,7 @@ namespace CssParser
             for (int iChild = 1; iChild < tree.ChildCount; iChild+=2)
             {
                 var child = tree.GetChild(iChild);
-                switch (child.Text)
-                {
-                    case "UNIT_VAL":
-                        args.Add(this.ParseUnitValue(child));
-                        break;
-                    case "IDENTIFIER":
-                        args.Add(new CssIdentifierPropertyValue(child.GetChild(0).Text));
-                        break;
-                    case "STRING_VAL":
-                        args.Add(new CssStringPropertyValue(child.GetChild(0).Text));
-                        break;
-                    case "FUNCTION":
-                        args.Add(this.ParseFunction(child));
-                        break;
-                    case "URL_VAL":
-                        throw new NotImplementedException();
-                    case "COLOR":
-                        args.Add(new CssColorPropertyValue(child.GetChild(0).Text));
-                        break;
-                    case "ASSIGN_EXPR":
-                        args.Add(new CssStringPropertyValue(
-                            child.GetChild(0).Text
-                            + "="
-                            + ParsePropertyValue(child.GetChild(1)).ToString()));
-                        break;
-                    default:
-                        break;
-                }
+                args.Add(this.ParsePropertyValue(child));
             }
 
             return rv;

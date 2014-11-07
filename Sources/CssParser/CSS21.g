@@ -19,64 +19,68 @@ grammar CSS21;
 // grammar CssGrammer;
 
  options {
- 	// language=CSharp3;
- 	// TokenLabelType=CommonToken;
- 	// ASTLabelType=CommonTree;
- 	backtrack=true;
- 	memoize=true;
- 	output=AST;
- 	}
+    // language=CSharp3;
+    // TokenLabelType=CommonToken;
+    // ASTLabelType=CommonTree;
+    backtrack=true;
+    memoize=true;
+    output=AST;
+    }
 
 tokens {
-	IMPORT;
-	NESTED;
-	NEST;
-	RULE;
-	ATTRIB;
-	ATTRIB_VALUE;
-	ATTRIB_EQUALS;
-	ATTRIB_CONTAINS;
-	ATTRIB_CONTAINS_WORD;
-	ATTRIB_STARTS_WITH;
-	ATTRIB_STARTS_WITH_WORD;
-	ATTRIB_ENDS_WITH;
-	PARENTOF;
-	PRECEDEDS;
-	FOLLOWS;
-	UNDER;
-	HASVALUE;
-	BEGINSWITH;
-	PSEUDO;
-	PSEUDO_FUNC;
-	DPSEUDO;
-	DPSEUDO_FUNC;
-	FUNCTION;
-	TAG;
-	ID;
-	CLASS;
-	ALL;
-	NUMARG;
-	ASSIGN_EXPR;
-	SELECTORS;
-	SELECTOR;
-	SELECTOR_OP;
-	SIMPLE_SEL;
-	SEL_OP;
-	PROPERTY;
-	EXPR;
-	EXPRS;
-	COLOR;
-	UNIT_VAL;
-	STRING_VAL;
-	URL_VAL;
-	IDENTIFIER;
-	KEYFRAMES;
-	KEYFRAME;
-	KEYFRAMESELECTORS;
-	MEDIA;
-	MEDIA_QUERY;
-	MEDIA_TYPE;
-	MEDIA_FEATURE;
+    IMPORT;
+    NESTED;
+    NEST;
+    RULE;
+    ATTRIB;
+    ATTRIB_VALUE;
+    ATTRIB_EQUALS;
+    ATTRIB_CONTAINS;
+    ATTRIB_CONTAINS_WORD;
+    ATTRIB_STARTS_WITH;
+    ATTRIB_STARTS_WITH_WORD;
+    ATTRIB_ENDS_WITH;
+    PARENTOF;
+    PRECEDEDS;
+    FOLLOWS;
+    UNDER;
+    HASVALUE;
+    BEGINSWITH;
+    PSEUDO;
+    PSEUDO_FUNC;
+    PSEUDO_FUNC_SELECTOR;
+    DPSEUDO;
+    DPSEUDO_FUNC;
+    FUNCTION;
+    TAG;
+    ID;
+    CLASS;
+    ALL;
+    NUMARG;
+    ASSIGN_EXPR;
+    SELECTORS;
+    SELECTOR;
+    SELECTOR_OP;
+    SIMPLE_SEL;
+    SEL_OP;
+    PROPERTY;
+    EXPR;
+    EXPRS;
+    COLOR;
+    UNIT_VAL;
+    STRING_VAL;
+    URL_VAL;
+    IDENTIFIER;
+    UNITEXPRS;
+    KEYFRAMES;
+    KEYFRAME;
+    KEYFRAMESELECTORS;
+    MEDIA;
+    MEDIA_QUERY;
+    MEDIA_TYPE;
+    MEDIA_FEATURE;
+    CALC;
+    RGBA;
 }
 
 // @lexer::members {
@@ -126,47 +130,47 @@ media
         LBRACE
             ruleSet+
         RBRACE
-		-> ^(MEDIA mediaQuery* ruleSet+)
+        -> ^(MEDIA mediaQuery* ruleSet+)
     ;
 mediaQuery
-	: (op1=NOT_SYM)? mediaFeature ( 'and' mediaFeature)*
-		-> ^(MEDIA_QUERY $op1? mediaFeature*)
-	| (op1=NOT_SYM)? medium ('and' mediaFeature)*
-		-> ^(MEDIA_QUERY $op1? medium mediaFeature*)
-	;
+    : (op1=NOT_SYM)? mediaFeature ( 'and' mediaFeature)*
+        -> ^(MEDIA_QUERY $op1? mediaFeature*)
+    | (op1=NOT_SYM)? medium ('and' mediaFeature)*
+        -> ^(MEDIA_QUERY $op1? medium mediaFeature*)
+    ;
 
 
 
 mediaFeature
-	: LPAREN property COLON term RPAREN
-		-> ^(MEDIA_FEATURE property term)
-	| LPAREN property RPAREN
-		-> ^(MEDIA_FEATURE property)
-	| rangeForm
-	;
+    : LPAREN property COLON term RPAREN
+        -> ^(MEDIA_FEATURE property term)
+    | LPAREN property RPAREN
+        -> ^(MEDIA_FEATURE property)
+    | rangeForm
+    ;
 rangeForm
-	: LPAREN property comparisionOp term RPAREN
-		-> ^(MEDIA_FEATURE property term comparisionOp)
-	| LPAREN t1=term r1=rightDirectionOp property r2=rightDirectionOp t2=term RPAREN
-		-> ^(MEDIA_FEATURE property $t1 $r1 $t2 $r2)
-	| LPAREN t1=term l1=leftDirectionOp property l2=leftDirectionOp t2=term RPAREN
-		-> ^(MEDIA_FEATURE property $t1 $l1 $t2 $l2)
-	;
+    : LPAREN property comparisionOp term RPAREN
+        -> ^(MEDIA_FEATURE property term comparisionOp)
+    | LPAREN t1=term r1=rightDirectionOp property r2=rightDirectionOp t2=term RPAREN
+        -> ^(MEDIA_FEATURE property $t1 $r1 $t2 $r2)
+    | LPAREN t1=term l1=leftDirectionOp property l2=leftDirectionOp t2=term RPAREN
+        -> ^(MEDIA_FEATURE property $t1 $l1 $t2 $l2)
+    ;
 
 comparisionOp
-	: leftDirectionOp
-	| rightDirectionOp
-	;
+    : leftDirectionOp
+    | rightDirectionOp
+    ;
 
 leftDirectionOp
-	: '<='
-	| '<'
-	;
+    : '<='
+    | '<'
+    ;
 
 rightDirectionOp
-	: '>='
-	| GREATER
-	;
+    : '>='
+    | GREATER
+    ;
 
 // ---------    
 // Medium.  The name of a medim that are particulare set of rules applies to.
@@ -184,12 +188,12 @@ bodyset
     : ruleSet
     | media
     | page
-	| keyframesRule
-    ;   
+    | keyframesRule
+    ;
 
 keyframesRule
     : KEYFRAMES_SYM IDENT LBRACE keyframesBlock* RBRACE
-		-> ^(KEYFRAMES IDENT keyframesBlock*)
+        -> ^(KEYFRAMES IDENT keyframesBlock*)
     ;
 
 keyframesBlock
@@ -199,7 +203,7 @@ keyframesBlock
 
 keyframeSelectors
     : keyframeSelector (COMMA keyframeSelector)*
-		-> ^(KEYFRAMESELECTORS keyframeSelector+)
+        -> ^(KEYFRAMESELECTORS keyframeSelector+)
     ;
 
 keyframeSelector
@@ -228,7 +232,7 @@ op
 combinator
     : PLUS -> ^(PRECEDEDS)
     | GREATER -> ^(PARENTOF)
-	| '~' -> ^(FOLLOWS)
+    | '~' -> ^(FOLLOWS)
     | WS -> ^(UNDER)
     ;
     
@@ -243,34 +247,35 @@ property
     
 ruleSet
     : sel=selectors LBRACE (decls=declarationSet)? RBRACE
-		-> ^(RULE $sel $decls?)
+        -> ^(RULE $sel $decls?)
     ;
 
 selectors
     : selector (COMMA selector)*
-		-> ^(SELECTORS selector+)
-	;
+        -> ^(SELECTORS selector+)
+    | FONT_FACE
+    ;
 
 public
 declarationSet
-	: declaration SEMI (declaration SEMI)* -> declaration+
+    : declaration SEMI (declaration SEMI)* -> declaration+
     ;
     
 selector
     :simpleSelector moreSelectors*
-		-> ^(SELECTOR simpleSelector moreSelectors*)
+        -> ^(SELECTOR simpleSelector moreSelectors*)
     ;
 
 moreSelectors
-	: combinator simpleSelector
-		-> ^(SELECTOR_OP combinator simpleSelector)
+    : combinator simpleSelector
+        -> ^(SELECTOR_OP combinator simpleSelector)
     ;
 
 simpleSelector
     : elementName ((esPred)=>elementSubsequent)*
-		-> ^(SIMPLE_SEL elementName elementSubsequent*)
+        -> ^(SIMPLE_SEL elementName elementSubsequent*)
     | ((esPred)=>elementSubsequent)+
-		-> ^(SIMPLE_SEL elementSubsequent+)
+        -> ^(SIMPLE_SEL elementSubsequent+)
     ;
     
 esPred
@@ -286,7 +291,7 @@ elementSubsequent
     
 cssClass
     : DOT IDENT
-		-> ^(CLASS IDENT)
+        -> ^(CLASS IDENT)
     ;
     
 elementName
@@ -296,51 +301,51 @@ elementName
     
 attrib
     : LBRACKET IDENT attribVal?  RBRACKET
-		-> ^(ATTRIB IDENT attribVal?)
-	;
+        -> ^(ATTRIB IDENT attribVal?)
+    ;
 
 attribVal
-	: attribOp attribValue
-		-> ^(ATTRIB_VALUE attribOp attribValue)
-	;
+    : attribOp attribValue
+        -> ^(ATTRIB_VALUE attribOp attribValue)
+    ;
 
 attribValue
-	: IDENT
-	| STRING
-	;
+    : IDENT
+    | STRING
+    ;
 
 attribOp
-	: OPEQ -> ^(ATTRIB_EQUALS)
-	| INCLUDES_WORD -> ^(ATTRIB_CONTAINS_WORD)
-	| STARTS_WITH_WORD -> ^(ATTRIB_STARTS_WITH_WORD)
-	| INCLUDES -> ^(ATTRIB_CONTAINS)
-	| STARTS_WITH -> ^(ATTRIB_STARTS_WITH)
-	| ENDS_WITH -> ^(ATTRIB_ENDS_WITH)
-	;
+    : OPEQ -> ^(ATTRIB_EQUALS)
+    | INCLUDES_WORD -> ^(ATTRIB_CONTAINS_WORD)
+    | STARTS_WITH_WORD -> ^(ATTRIB_STARTS_WITH_WORD)
+    | INCLUDES -> ^(ATTRIB_CONTAINS)
+    | STARTS_WITH -> ^(ATTRIB_STARTS_WITH)
+    | ENDS_WITH -> ^(ATTRIB_ENDS_WITH)
+    ;
 
 pseudo
     : pseudoStart identifier LPAREN (pseudoFuncArgs)? RPAREN
-		-> ^(PSEUDO_FUNC pseudoStart identifier pseudoFuncArgs?)
+        -> ^(PSEUDO_FUNC pseudoStart identifier pseudoFuncArgs?)
     | pseudoStart identifier LPAREN (selector)? RPAREN
-		-> ^(PSEUDO_FUNC pseudoStart identifier selector?)
-	| pseudoStart identifier
-		-> ^(PSEUDO pseudoStart identifier)
+        -> ^(PSEUDO_FUNC pseudoStart identifier selector?)
+    | pseudoStart identifier
+        -> ^(PSEUDO pseudoStart identifier)
     ;
 
 pseudoStart
-    	:	COLON
-    	|	DOUBLE_COLON
-    	;
+        :	COLON
+        |	DOUBLE_COLON
+        ;
 
 pseudoFuncArgs
-	: IDENT
-	| MULTIPLIER (unaryOperator NUMBER)?
-	| NUMBER
+    : IDENT
+    | MULTIPLIER (unaryOperator NUMBER)?
+    | NUMBER
     ;
 
 declaration
     : property COLON expressions prio?
-		-> ^(PROPERTY property expressions prio?)
+        -> ^(PROPERTY property expressions prio?)
     ;
     
 prio
@@ -354,54 +359,78 @@ expressions
     
 expr
     : term+
-		-> ^(EXPR term+)
+        -> ^(EXPR term+)
     ;
 
+calcExpr
+    : 'calc' LPAREN unitTerm (operators unitTerm)+ RPAREN -> ^(CALC operators+ unitTerm+)
+    ;
+
+operators
+    : PLUS
+    | MINUS
+    | STAR
+    | SOLIDUS;
+
 term
-    : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
+    : identifier -> ^(IDENTIFIER identifier)
     | STRING -> ^(STRING_VAL STRING)
-    | identifier -> ^(IDENTIFIER identifier)
+    | color
+    | calcExpr
+    | URI -> ^(URL_VAL URI)
+    | (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
     | identifier LPAREN funcArgs RPAREN
         -> ^(FUNCTION identifier funcArgs)
     | legacyFilterMethod LPAREN funcArgs RPAREN
-    	-> ^(FUNCTION legacyFilterMethod funcArgs)
-    | URI -> ^(URL_VAL URI)
-    | hexColor -> ^(COLOR hexColor)
+        -> ^(FUNCTION legacyFilterMethod funcArgs)
+    | unitExpr
     ;
 
 legacyFilterMethod
 :	identifier COLON identifier (DOT identifier)*;
 
-funcArg
-    : (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
+unitExpr
+    : identifier -> ^(IDENTIFIER identifier)
     | STRING -> ^(STRING_VAL STRING)
-    | identifier -> ^(IDENTIFIER identifier)
-    | hexColor -> ^(COLOR hexColor)
+    | color
+    | calcExpr
+    | URI -> ^(URL_VAL URI)
+    | (oper=unaryOperator)? val=unitTerm -> ^(UNIT_VAL $val $oper?)
+    ;
+    
+funcArg
+    : unitExpr+ -> ^(UNITEXPRS unitExpr+)
     | identifier '=' funcArg -> ^(ASSIGN_EXPR identifier funcArg)
+    | id='color-stop' LPAREN funcArgs RPAREN -> ^(FUNCTION $id funcArgs)
     ;
 
 funcArgs
     : funcArg (COMMA funcArg)*
-	;
-
+    ;
+    
 unitTerm
-	: PERCENTAGE
-	| LENGTH
-	| EMS
-	| EXS
-	| ANGLE
-	| TIME
-	| FREQ
-	| NUMBER;
+    : PERCENTAGE
+    | LENGTH
+    | EMS
+    | EXS
+    | ANGLE
+    | TIME
+    | FREQ
+    | NUMBER;
 
 identifier
-	: IDENT
-	| NOT_SYM
-	;
-
-hexColor
-    : HASH
+    : IDENT
+    | NOT_SYM
+    | TO_SYM
     ;
+
+color
+    	: 'rgba' LPAREN n1=NUMBER COMMA n2=NUMBER COMMA n3=NUMBER COMMA n4=NUMBER RPAREN
+    		-> ^(RGBA $n1 $n2 $n3 $n4)
+    	| 'rgb' LPAREN n1=NUMBER COMMA n2=NUMBER COMMA n3=NUMBER RPAREN
+    		-> ^(RGBA $n1 $n2 $n3)
+    	| cl=HASH -> ^(COLOR $cl)
+    	;
     
 // ==============================================================
 // LEXER
@@ -768,6 +797,7 @@ PAGE_SYM        : '@' P A G E           ;
 MEDIA_SYM       : '@' M E D I A         ;
 CHARSET_SYM     : '@charset '           ;
 KEYFRAMES_SYM   : '@' K E Y F R A M E S ;
+FONT_FACE	: '@font-face'		;
 FROM_SYM        : F R O M               ;
 TO_SYM          : T O                   ;
 NOT_SYM			: N O T					;
@@ -793,7 +823,7 @@ fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
 fragment    DIMENSION   :;  // nnn'Somethingnotyetinvented'
 fragment    PERCENTAGE  :;  // '%'
-fragment	MULTIPLIER	:;  // 'n' used for nth construct
+fragment    MULTIPLIER	:;  // 'n' used for nth construct
 
 NUMBER
     :   ( ('0'..'9'+ ('.' '0'..'9'+)?)  | ('.' '0'..'9'+) )

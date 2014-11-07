@@ -348,6 +348,45 @@
         }
 
         [Test]
+        public void FunctionPropertyValueTestWithLinearGradient()
+        {
+            CssGrammer grammer = new CssGrammer("background-image: linear-gradient(top bottom, #03a9f4, #0288d1);", true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(1, grammer.Properties.Count);
+
+            var property = grammer.Properties[0];
+            Assert.AreEqual("background-image", property.PropertyName);
+            Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
+            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0].Values[0]);
+
+            var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
+            Assert.AreEqual("linear-gradient", propertyArg.FunctionName);
+            Assert.AreEqual(3, propertyArg.Args.Count);
+        }
+
+        [Test]
+        public void FunctionPropertyWebkitLinearGradientProperty()
+        {
+            CssGrammer grammer = new CssGrammer(
+                "background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);",
+                true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(1, grammer.Properties.Count);
+
+            var property = grammer.Properties[0];
+            Assert.AreEqual("background-image", property.PropertyName);
+            Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
+            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0].Values[0]);
+
+            var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
+            Assert.AreEqual("-webkit-linear-gradient", propertyArg.FunctionName);
+            Assert.AreEqual(8, propertyArg.Args.Count);
+        }
+
+
+        [Test]
         public void MediaQueryTest()
         {
             var css = @"@media all and (max-width: 699px) and (width >= 200px) { #sidebar { } }";

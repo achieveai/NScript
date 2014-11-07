@@ -270,6 +270,8 @@ namespace Sunlight.Framework.Binders
 
                 this.OnDataContextUpdated(oldValue);
                 this.FirePropertyChanged(DataContextPropertyName);
+
+                this.FixActivation();
             }
         }
 

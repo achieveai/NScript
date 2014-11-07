@@ -1382,6 +1382,7 @@ ptyp_.setDataContext = function Sunlight__Framework__Binders__ContextBindableObj
     this.dataContext = value;
     this.V_OnDataContextUpdated(oldValue);
     this.firePropertyChanged("DataContext");
+    this.fixActivation();
   }
 };
 ptyp_.onParentDataContextUpdated = function Sunlight__Framework__Binders__ContextBindableObject__OnParentDataContextUpdated(sender, propertyName) {
@@ -2889,6 +2890,7 @@ ptyp_.setDataContext = function Sunlight__Framework__Binders__ContextBindableObj
     this.dataContext = value;
     this.V_OnDataContextUpdated(oldValue);
     this.firePropertyChanged("DataContext");
+    this.fixActivation();
   }
 };
 ptyp_.onParentDataContextUpdated = function Sunlight__Framework__Binders__ContextBindableObject__OnParentDataContextUpdated(sender, propertyName) {
