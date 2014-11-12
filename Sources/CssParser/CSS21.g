@@ -363,7 +363,7 @@ expr
     ;
 
 calcExpr
-    : 'calc' LPAREN unitTerm (operators unitTerm)+ RPAREN -> ^(CALC operators+ unitTerm+)
+    : 'calc' LPAREN unitTerm (operators unitTerm)* RPAREN -> ^(CALC operators* unitTerm+)
     ;
 
 operators

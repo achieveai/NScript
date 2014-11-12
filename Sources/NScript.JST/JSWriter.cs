@@ -499,10 +499,9 @@ namespace NScript.JST
                 }
             }
 
-            if (outputMap)
+            if (jsFileName != null)
             {
-                writer.WriteLine();
-                writer.Write("//@ sourceMappingURL={0}", sourceMapping.MapFile);
+                writer.Write("\r\n})();");
                 sourceMapping.AddMapping(
                     ++curLine,
                     0,
@@ -511,9 +510,10 @@ namespace NScript.JST
                     jsFileName);
             }
 
-            if (jsFileName != null)
+            if (outputMap)
             {
-                writer.Write("\r\n})();");
+                writer.WriteLine();
+                writer.Write("//# sourceMappingURL={0}", sourceMapping.MapFile);
                 sourceMapping.AddMapping(
                     ++curLine,
                     0,

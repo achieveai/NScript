@@ -94,6 +94,16 @@ namespace XwmlParser
             this.node = htmlDoc.DocumentNode;
             this.documentContext.PushNode(this.node);
 
+            foreach (var error in htmlDoc.ParseErrors)
+            {
+                if (error.Code == HtmlParseErrorCode.EndTagNotRequired)
+                { continue; }
+
+                this.ParserContext.ConverterContext.AddError(
+                    new Location(fullResourceName, error.Line, error.LinePosition),
+                    error.Reason,
+                    false);
+            }
             foreach (var node in this.node.ChildNodes)
             {
                 if (node.OriginalName == "html")

@@ -665,7 +665,7 @@ namespace CssParser
             return rv;
         }
 
-        private CssCalcPropertyValue ParseCalcValue(ITree tree)
+        private CssPropertyValue ParseCalcValue(ITree tree)
         {
             int operatorCount = tree.ChildCount / 2;
             char[] operators = new char[operatorCount];
@@ -678,6 +678,11 @@ namespace CssParser
             for (int i = 0; i <= operatorCount; i++)
             {
                 unitValues[i] = (CssUnitPropertyValue)this.ParseUnitValue(tree.GetChild(i + operatorCount).Text, null);
+            }
+
+            if (operatorCount == 0)
+            {
+                return unitValues[0];
             }
 
             return new CssCalcPropertyValue(unitValues, operators);
