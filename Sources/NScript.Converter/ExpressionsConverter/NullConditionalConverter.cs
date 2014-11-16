@@ -62,7 +62,7 @@ namespace NScript.Converter.ExpressionsConverter
                     new JST.BinaryExpression(
                         firstExpression.Location,
                         converter.Scope,
-                        JST.BinaryOperator.StrictEquals,
+                        JST.BinaryOperator.StrictNotEquals,
                         firstExpression,
                         new JST.NullLiteralExpression(converter.Scope)),
                     new IdentifierExpression(tmpIdentifier, converter.Scope),
