@@ -1028,8 +1028,12 @@ namespace NScript.Converter
                     else
                     {
                         bool isExtern = this.IsExtern(method);
-                        hasExternMethod = isExtern || hasExternMethod;
 
+                        // Let's skip extern methods that are just ScriptAliased, since they do not require TypeDefinition name.
+                        if (isExtern && null != method.CustomAttributes.SelectAttribute(this.KnownReferences.ScriptAliasAttribute))
+                        { continue; }
+
+                        hasExternMethod = isExtern || hasExternMethod;
                         if (!isExtern && !method.IsAbstract && method.IsVirtual)
                         {
                             hasImplementedVirtual = true;
