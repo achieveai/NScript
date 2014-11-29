@@ -278,6 +278,12 @@ namespace XwmlParser.NodeInfos
             string value)
         {
             var knownReferences = parserContext.ConverterContext.ClrKnownReferences;
+            if (typeReference.IsGenericInstance
+                && typeReference.Resolve().IsSameDefinition(knownReferences.NullableType))
+            {
+                typeReference = ((GenericInstanceType)typeReference).GenericArguments[0];
+            }
+
             if (typeReference.IsEnum())
             {
                 return new EnumValue(

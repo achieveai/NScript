@@ -315,7 +315,7 @@ namespace Sunlight.Framework.UI.Helpers
 
                         liveObjects[iPath] = src;
 
-                        if (src != null && iPath < pathLength - 1)
+                        if (src != null && iPath < pathLength - 1 && src != null)
                         {
                             ((INotifyPropertyChanged)src).AddPropertyChangedListener(
                                 binderInfo.PropertyNames[iPath],
@@ -353,10 +353,14 @@ namespace Sunlight.Framework.UI.Helpers
                 for (int iPath = this.binderInfo.PropertyGetterPath.Length - 2, till = this.pathTraversed;
                     iPath >= till; iPath--)
                 {
-                    ((INotifyPropertyChanged)liveObjects[iPath]).RemovePropertyChangedListener(
-                        this.binderInfo.PropertyNames[iPath],
-                        this.OnSourcePropertyChanged);
-                    liveObjects[iPath] = null;
+                    var item = liveObjects[iPath];
+                    if (item != null)
+                    {
+                        ((INotifyPropertyChanged)item).RemovePropertyChangedListener(
+                            this.binderInfo.PropertyNames[iPath],
+                            this.OnSourcePropertyChanged);
+                        liveObjects[iPath] = null;
+                    }
                 }
             }
         }

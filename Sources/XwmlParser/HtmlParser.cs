@@ -46,7 +46,7 @@ namespace XwmlParser
         private static Regex textBreakingRegEx
             = new Regex(
                 "^(?<text>(?:({{)|[^{])*)(?:(?<binding>{[^{}]+})(?<text>(?:[^{]|({{))*))*$",
-                RegexOptions.Multiline | RegexOptions.Compiled);
+                RegexOptions.Multiline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Context for the document.
@@ -423,14 +423,31 @@ namespace XwmlParser
                         for (int iCapture = 0; iCapture < bindingGroup.Captures.Count; iCapture++)
                         {
                             capture = textGroups.Captures[iCapture];
-                            HtmlParser.AddTextNode(
-                                textNodes,
-                                capture,
-                                text,
-                                textNode.Line,
-                                textNode.LinePosition);
+                            if (capture.Length > 0)
+                            {
+                                HtmlParser.AddTextNode(
+                                    textNodes,
+                                    capture,
+                                    text,
+                                    textNode.Line,
+                                    textNode.LinePosition);
+                            }
 
                             capture = bindingGroup.Captures[iCapture];
+                            if (capture.Length > 0)
+                            {
+                                HtmlParser.AddTextNode(
+                                    textNodes,
+                                    capture,
+                                    text,
+                                    textNode.Line,
+                                    textNode.LinePosition);
+                            }
+                        }
+
+                        capture = textGroups.Captures[bindingGroup.Captures.Count];
+                        if (capture.Length > 0)
+                        {
                             HtmlParser.AddTextNode(
                                 textNodes,
                                 capture,
@@ -438,14 +455,6 @@ namespace XwmlParser
                                 textNode.Line,
                                 textNode.LinePosition);
                         }
-
-                        capture = textGroups.Captures[bindingGroup.Captures.Count];
-                        HtmlParser.AddTextNode(
-                            textNodes,
-                            capture,
-                            text,
-                            textNode.Line,
-                            textNode.LinePosition);
 
                         if (textNodes.Count > 1)
                         {
