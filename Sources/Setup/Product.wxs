@@ -2,6 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ProductVersion="1.0.0.0" ?>
   <?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
+  <?define V8EngineDir="$(var.SolutionDir)Sources\XwmlParser\ClearScript.V8" ?>
 
   <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
@@ -105,6 +106,7 @@
         <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.dll" />
         <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.pdb" />
         <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.xml" />
+
         <File Source="$(var.ToolsetDir)\bin\CssParser.dll" />
         <File Source="$(var.ToolsetDir)\bin\CssParser.pdb" />
         <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll" />
@@ -113,6 +115,15 @@
         <File Source="$(var.ToolsetDir)\bin\dotless.core.pdb" />
         <File Source="$(var.ToolsetDir)\bin\pandora.dll" />
         <File Source="$(var.ToolsetDir)\bin\Microsoft.Practices.ServiceLocation.dll" />
+        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.dll" />
+        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll" />
+        <File Source="$(var.ToolsetDir)\bin\ClearScript.dll" />
+
+        <File Source="$(var.V8EngineDir)\ClearScriptV8-32.dll" />
+        <File Source="$(var.V8EngineDir)\ClearScriptV8-64.dll" />
+        <File Source="$(var.V8EngineDir)\V8-ia32.dll" />
+        <File Source="$(var.V8EngineDir)\V8-x64.dll" />
       </Component>
 
       <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">

@@ -1054,7 +1054,7 @@ ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__
         if (liveObjects.get_item(iPath) !== null && iPath < pathLength - 1)
           System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
         liveObjects.set_item(iPath, src);
-        if (src !== null && iPath < pathLength - 1)
+        if (src !== null && iPath < pathLength - 1 && src !== null)
           System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, src).V_AddPropertyChangedListener_b(binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
       }
       ++this.pathTraversed;
@@ -1067,14 +1067,17 @@ ptyp_.getValueInternal = function Sunlight__Framework__UI__Helpers__LiveBinder__
     return src;
 };
 ptyp_.cleanRegistrations = function Sunlight__Framework__UI__Helpers__LiveBinder__CleanRegistrations() {
-  var liveObjects, iPath, till;
+  var liveObjects, iPath, till, item;
   liveObjects = this.liveObjects;
   if (this.pathTraversed < this.liveObjects.V_get_Length()) {
     liveObjects.set_item(liveObjects.V_get_Length() - 1, null);
     for (
     iPath = this.binderInfo.propertyGetterPath.length - 2, till = this.pathTraversed; iPath >= till; iPath--) {
-      System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(this.binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
-      liveObjects.set_item(iPath, null);
+      item = liveObjects.get_item(iPath);
+      if (item !== null) {
+        System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, item).V_RemovePropertyChangedListener_b(this.binderInfo.propertyNames[iPath], System__Delegate__Create("onSourcePropertyChanged", this));
+        liveObjects.set_item(iPath, null);
+      }
     }
   }
 };
@@ -3916,5 +3919,5 @@ function DocStorageGetter(doc) {
   }
   return doc.stateStore;
 };
-//@ sourceMappingURL=Sunlight.Framework.UI.Test.map
 })();
+//# sourceMappingURL=Sunlight.Framework.UI.Test.map

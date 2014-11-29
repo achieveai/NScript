@@ -18,6 +18,18 @@ namespace XwmlParser
     /// </summary>
     public class CssStyleSheet
     {
+        private static JavaScriptEngineSwitcher.V8.V8JsEngine jsEngine = new JavaScriptEngineSwitcher.V8.V8JsEngine();
+        private static Autoprefixer.Compiler compiler;
+
+        private static Autoprefixer.BrowserSpecification browserSpecification =
+            new Autoprefixer.BrowserSpecification()
+                .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.Firefox, 27)
+                .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.Chrome, 27)
+                .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.Safari, 5)
+                .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.Explorer, 10)
+                .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.iOS, 5)
+                .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.Android, 4);
+
         /// <summary>
         /// Context for the parser.
         /// </summary>
@@ -51,6 +63,19 @@ namespace XwmlParser
         {
             this.parserContext = parserContext;
             this.ResourceName = resourceName;
+        }
+
+        public static Autoprefixer.Compiler Compiler
+        {
+            get
+            {
+                if (CssStyleSheet.compiler == null)
+                {
+                    CssStyleSheet.compiler = new Autoprefixer.Compiler(() => CssStyleSheet.jsEngine);
+                }
+
+                return CssStyleSheet.compiler;
+            }
         }
 
         public IEnumerable<string> ClassNames
@@ -116,7 +141,9 @@ namespace XwmlParser
                     });
             }
 
-            return sb.ToString();
+            return CssStyleSheet.Compiler.Prefix(
+                sb.ToString(),
+                CssStyleSheet.browserSpecification);
         }
 
         /// <summary>
