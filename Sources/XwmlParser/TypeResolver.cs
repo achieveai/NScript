@@ -98,7 +98,10 @@ namespace XwmlParser
                 {
                     if (field.Name == fieldName)
                     {
-                        return field;
+                        return new FieldReference(
+                            field.Name,
+                            field.FieldType.FixGenericTypeArguments(typeReference),
+                            typeReference);
                     }
                 }
             } while ((typeReference = typeReference.GetBaseType()) != null);
@@ -122,7 +125,13 @@ namespace XwmlParser
                 {
                     if (property.Name == propertyName)
                     {
-                        return property;
+                        return new NScript.CLR.AST.InternalPropertyReference(
+                            property.GetMethod != null
+                                ? property.GetMethod.FixGenericTypeArguments(typeReference)
+                                : null,
+                            property.SetMethod != null
+                                ? property.SetMethod.FixGenericTypeArguments(typeReference)
+                                : null);
                     }
                 }
             } while ((typeReference = typeReference.GetBaseType()) != null);

@@ -615,7 +615,7 @@ namespace XwmlParser.Binding
             {
                 return Tuple.Create<MemberReference, TypeReference>(
                     property,
-                    property.PropertyType);
+                    property.PropertyType.FixGenericTypeArguments(property.DeclaringType));
             }
 
             field = resolver.GetFieldReference(
@@ -626,7 +626,7 @@ namespace XwmlParser.Binding
             {
                 return Tuple.Create<MemberReference, TypeReference>(
                     field,
-                    field.FieldType);
+                    field.FieldType.FixGenericTypeArguments(field.DeclaringType));
             }
 
             return null;
