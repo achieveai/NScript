@@ -525,7 +525,7 @@ namespace JsCsc.Lib
         public JObject Visit(StringConcat expression)
         {
             JObject rv = new JObject();
-            rv[NameTokens.TypeName] = TypeTokens.MethodCall;
+            rv[NameTokens.TypeName] = TypeTokens.StrCatExpr;
             rv[NameTokens.Loc] = expression.GetStrLoc();
             rv[NameTokens.Method] = MemberReferenceSerializer.Serialize(expression.Method);
             rv[NameTokens.Arguments] = this.EnumerateArgs(expression.Arguments);

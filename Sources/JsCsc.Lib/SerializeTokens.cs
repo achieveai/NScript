@@ -102,6 +102,7 @@ namespace JsCsc.Lib
         public const string DynamicMemberBinder = "dynamicMB";
         public const string DynamicIndexBinder = "dynamicIB";
         public const string NewAnonymousType = "nat";
+        public const string StrCatExpr = "strcat";
     }
 
     public static class NameTokens

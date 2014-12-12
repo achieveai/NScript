@@ -1187,6 +1187,45 @@ namespace JsCsc.Lib
             return rv;
         }
 
+        private Node ParseStrCat(JObject jObject)
+        {
+            if (jObject.Value<JObject>(NameTokens.Method) != null)
+            { return this.ParseMethodCall(jObject); }
+
+            var args = this.ParseArguments(jObject.Value<JArray>(NameTokens.Arguments));
+            Expression instance = this.ParseExpression(jObject.Value<JObject>(NameTokens.Instance));
+            MethodReference methodReference = null;
+
+            foreach (var method in this._clrContext.KnownReferences.String.Resolve().Methods)
+            {
+                if (method.Name != "Concat")
+                {continue;}
+
+                if (method.Parameters.Count == args.Length
+                    && method.Parameters[0].ParameterType.IsSame(this._clrContext.KnownReferences.Object))
+                {
+                    methodReference = method;
+                    break;
+                }
+                else if (method.Parameters.Count == 1
+                    && method.Parameters[0].ParameterType.IsArray
+                    && ((ArrayType)method.Parameters[0].ParameterType).ElementType.IsSame(
+                            this._clrContext.KnownReferences.Object))
+                {
+                    methodReference = method;
+                }
+            }
+
+            // TODO: move methodReferenceExpression to a different JObject node.
+            return new MethodCallExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                this.GetMethodReferenceExpression(
+                    instance,
+                    methodReference),
+                args);
+        }
+
         private Node ParseDelegateInvocation(JObject jObject)
         {
             return new MethodCallExpression(
@@ -1612,6 +1651,7 @@ namespace JsCsc.Lib
             parserMap.Add(TypeTokens.DynamicIndexBinder, this.ParseDynamicIndexBinder);
             parserMap.Add(TypeTokens.DynamicMemberBinder, this.ParseDynamicMemberBinder);
             parserMap.Add(TypeTokens.NewAnonymousType, this.ParseNewAnonymousType);
+            parserMap.Add(TypeTokens.StrCatExpr, this.ParseStrCat);
 
             return parserMap;
         }
