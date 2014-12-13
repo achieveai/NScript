@@ -157,7 +157,7 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
-        public String[] Array
+        public TestViewModelA[] Array
         {
             get
             {

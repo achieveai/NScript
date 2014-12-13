@@ -25,6 +25,9 @@ namespace XwmlParser
 
         private readonly RuntimeScopeManager runtimeManager;
 
+        private readonly NScript.Converter.ConverterKnownReferences converterRefs;
+
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -35,6 +38,9 @@ namespace XwmlParser
         {
             this.runtimeManager = runtimeManager;
             this.context = context;
+            this.converterRefs
+                        = new NScript.Converter.ConverterKnownReferences(this.context);
+
         }
 
         /// <summary>
@@ -123,9 +129,6 @@ namespace XwmlParser
             {
                 if (typeReference.IsArray)
                 {
-                    NScript.Converter.ConverterKnownReferences converterRefs
-                        = new NScript.Converter.ConverterKnownReferences(this.context);
-
                     typeReference = converterRefs.FixArrayType(typeReference);
                 }
 
@@ -232,6 +235,11 @@ namespace XwmlParser
                 return false;
             }
 
+            if (typeReference.IsArray)
+            {
+                typeReference = this.converterRefs.FixArrayType(typeReference);
+            }
+
             while (typeReference != null
                 && (typeDefinition = typeReference.Resolve()) != null)
             {
@@ -262,6 +270,11 @@ namespace XwmlParser
             if (parentType.Resolve().IsInterface)
             {
                 return false;
+            }
+
+            if (typeReference.IsArray)
+            {
+                typeReference = this.converterRefs.FixArrayType(typeReference);
             }
 
             typeReference = typeReference.GetBaseType();
