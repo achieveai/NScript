@@ -95,7 +95,7 @@ namespace Sunlight.Framework.UI.Test
             : base(element)
         { }
 
-        public Element Part
+        public new Element Part
         {
             get
             {

@@ -27,11 +27,13 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <DefineConstants>TRACE</DefineConstants>
+    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Globals.cs" />

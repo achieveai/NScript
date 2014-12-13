@@ -22,16 +22,6 @@ using Mono.Cecil;
         private readonly ClrContext clrContext;
 
         /// <summary>
-        /// The type references.
-        /// </summary>
-        private Dictionary<string, TypeReference> typeReferences;
-
-        /// <summary>
-        /// The method references.
-        /// </summary>
-        private Dictionary<string, MethodReference> methodReferences;
-
-        /// <summary>
         /// Backing field for the ModuleDefinition.
         /// </summary>
         private ModuleDefinition msCorlibModule;
@@ -40,11 +30,6 @@ using Mono.Cecil;
         /// Backing field for VoidReference.
         /// </summary>
         private TypeReference voidReference;
-
-        /// <summary>
-        /// Backing field for VoidReference.
-        /// </summary>
-        private TypeReference dynamicReference;
 
         /// <summary>
         /// Backing field for BooleanReference
@@ -206,24 +191,6 @@ using Mono.Cecil;
         }
 
         /// <summary>
-        /// Gets the type references.
-        /// </summary>
-        /// <value>
-        /// The type references.
-        /// </value>
-        public Dictionary<string, TypeReference> TypeReferences
-        { get { return this.typeReferences; } }
-
-        /// <summary>
-        /// Gets the method references.
-        /// </summary>
-        /// <value>
-        /// The method references.
-        /// </value>
-        public Dictionary<string, MethodReference> MethodReferences
-        {get { return this.methodReferences; } }
-
-        /// <summary>
         /// Gets the void reference.
         /// </summary>
         public TypeReference Void
@@ -237,18 +204,6 @@ using Mono.Cecil;
                 }
 
                 return this.voidReference;
-            }
-        }
-
-        public TypeReference Dynamic
-        {
-            get
-            {
-                if (this.dynamicReference == null)
-                {
-                }
-
-                return null;
             }
         }
 

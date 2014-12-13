@@ -37,11 +37,6 @@ namespace Sunlight.Framework.UI.Helpers
         private Element rootElement;
 
         /// <summary>
-        /// The child identifier mappings.
-        /// </summary>
-        private StringDictionary<UIElement> childIdMappings = new StringDictionary<UIElement>();
-
-        /// <summary>
         /// true if this object is active.
         /// </summary>
         bool isActive;
@@ -247,7 +242,6 @@ namespace Sunlight.Framework.UI.Helpers
                 var childElementLength = childElements.Length;
                 var elementsOfIntrest = this.elementsOfIntrest;
                 var binderLength = binders.Length;
-                var skinParent = this.skinableParent;
                 var dataContext = this.dataContext;
                 Action<UIElement, object> dataContextSetter = SkinBinderHelper.SetDataContext;
 
@@ -286,7 +280,7 @@ namespace Sunlight.Framework.UI.Helpers
                         {
                             liveBinder = new LiveBinder(binder);
                             liveBinder.Source = source;
-                            liveBinder.Target = this.elementsOfIntrest[binder.ObjectIndex];
+                            liveBinder.Target = elementsOfIntrest[binder.ObjectIndex];
                             liveBinder.IsActive = true;
                             this.liveBinders[iLiveBinder] = liveBinder;
                         }
@@ -301,7 +295,7 @@ namespace Sunlight.Framework.UI.Helpers
                         SkinBinderHelper.SetPropertyValue(
                             binder,
                             source,
-                            this.elementsOfIntrest[binder.ObjectIndex],
+                            elementsOfIntrest[binder.ObjectIndex],
                             this.extraObjects);
 
                         if ((object)binder.TargetPropertySetter == (object)dataContextSetter)
@@ -319,7 +313,7 @@ namespace Sunlight.Framework.UI.Helpers
                 for (int iChild = 0; iChild < childElementLength; iChild++)
                 {
                     var objectIndex = childElements[iChild];
-                    var childElement = this.elementsOfIntrest.GetFrom<UIElement>(childElements[iChild]);
+                    var childElement = elementsOfIntrest.GetFrom<UIElement>(childElements[iChild]);
                     if (!this.hasDataContextBinding[objectIndex])
                     {
                         childElement.DataContext = dataContext;
@@ -492,7 +486,6 @@ namespace Sunlight.Framework.UI.Helpers
             var binders = this.binders;
             var bindersLength = binders.Length;
             var liveBindersLength = object.IsNullOrUndefined(liveBinders) ? 0 : liveBinders.Length;
-            Action<UIElement, object> dataContextSetter = SkinBinderHelper.SetDataContext;
 
             for (int iBinder = 0, iLiveBinder = 0; iBinder < bindersLength; iBinder++)
             {

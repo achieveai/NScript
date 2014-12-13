@@ -1,5 +1,5 @@
 ﻿(function(){
-var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_StringDictionary_$Delegate$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$UIEvent$_$_, System_ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Task$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_String$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_KeyValuePair_$String_x_Delegate$_, System_Collections_Generic_StringDictionary_$UIElement$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_UIElement$_, System_Collections_Generic_KeyValuePair_$String_x_Int32$_;
+var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_StringDictionary_$Delegate$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$UIEvent$_$_, System_ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Task$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_String$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_KeyValuePair_$String_x_Delegate$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_Int32$_;
 Function.typeId = "o";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
@@ -1999,7 +1999,6 @@ ptyp_.parentFactory = null;
 ptyp_.elementsOfIntrest = null;
 ptyp_.childElements = null;
 ptyp_.rootElement = null;
-ptyp_.childIdMappings = null;
 ptyp_.isActive = false;
 ptyp_.isDiposed = false;
 ptyp_.binders = null;
@@ -2013,7 +2012,6 @@ ptyp_.firstActivationDone = false;
 ptyp_.dataContextUpdated = false;
 ptyp_.templateParentUpdated = false;
 ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__SkinInstance____ctor(factory, rootElement, childElements, elementsOfIntrests, binders, partIdMapping, liveBinderCount, extraObjectCount) {
-  this.childIdMappings = System_Collections_Generic_StringDictionary_$UIElement$_.defaultConstructor();
   System__Object__IsNullOrUndefined(rootElement);
   this.parentFactory = factory;
   this.rootElement = rootElement;
@@ -2077,7 +2075,7 @@ ptyp_.updateDataContext = function Sunlight__Framework__UI__Helpers__SkinInstanc
   }
 };
 ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activate() {
-  var childElements, binders, childElementLength, elementsOfIntrest, binderLength, skinParent, dataContext, dataContextSetter, iBinder, iLiveBinder, binder, source, liveBinder, iChild, objectIndex, childElement;
+  var childElements, binders, childElementLength, elementsOfIntrest, binderLength, dataContext, dataContextSetter, iBinder, iLiveBinder, binder, source, liveBinder, iChild, objectIndex, childElement;
   if (!this.isActive && !this.isDiposed) {
     this.isActive = true;
     childElements = this.childElements;
@@ -2085,7 +2083,6 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
     childElementLength = childElements.length;
     elementsOfIntrest = this.elementsOfIntrest;
     binderLength = binders.length;
-    skinParent = this.skinableParent;
     dataContext = this.dataContext;
     dataContextSetter = Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetDataContext;
     for (
@@ -2116,7 +2113,7 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
         if (System__Object__IsNullOrUndefined(liveBinder)) {
           liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, null);
           liveBinder.set_source(source);
-          liveBinder.set_target(this.elementsOfIntrest[binder.objectIndex]);
+          liveBinder.set_target(elementsOfIntrest[binder.objectIndex]);
           liveBinder.set_isActive(true);
           this.liveBinders[iLiveBinder] = liveBinder;
         }
@@ -2126,7 +2123,7 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
         }
       }
       else {
-        Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetPropertyValue(binder, source, this.elementsOfIntrest[binder.objectIndex], this.extraObjects);
+        Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetPropertyValue(binder, source, elementsOfIntrest[binder.objectIndex], this.extraObjects);
         if (binder.targetPropertySetter === dataContextSetter)
           this.hasDataContextBinding[binder.objectIndex] = true;
       }
@@ -2135,7 +2132,7 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
     }
     for (iChild = 0; iChild < childElementLength; iChild++) {
       objectIndex = childElements[iChild];
-      childElement = System__NativeArray__GetFrom(this.elementsOfIntrest, childElements[iChild]);
+      childElement = System__NativeArray__GetFrom(elementsOfIntrest, childElements[iChild]);
       if (!this.hasDataContextBinding[objectIndex])
         childElement.set_dataContext(dataContext);
       childElement.activate();
@@ -2237,12 +2234,11 @@ ptyp_.queuedDeactivation = function Sunlight__Framework__UI__Helpers__SkinInstan
   }
 };
 ptyp_.updateBinderSource = function Sunlight__Framework__UI__Helpers__SkinInstance__UpdateBinderSource(source, sourceType) {
-  var liveBinders, binders, bindersLength, liveBindersLength, dataContextSetter, iBinder, iLiveBinder, binder, childElements, childElementLength, iChild, objectIndex, childElement;
+  var liveBinders, binders, bindersLength, liveBindersLength, iBinder, iLiveBinder, binder, childElements, childElementLength, iChild, objectIndex, childElement;
   liveBinders = this.liveBinders;
   binders = this.binders;
   bindersLength = binders.length;
   liveBindersLength = System__Object__IsNullOrUndefined(liveBinders) ? 0 : liveBinders.length;
-  dataContextSetter = Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetDataContext;
   for (
   iBinder = 0, iLiveBinder = 0; iBinder < bindersLength; iBinder++) {
     binder = binders[iBinder];
@@ -3709,8 +3705,6 @@ System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_St
 System_Collections_Generic_KeyValuePair_$String_x_Delegate$_ = System_Collections_Generic_KeyValuePair(String, System_Delegate);
 System_Collections_Generic_StringDictionary_$Delegate$_ = System_Collections_Generic_StringDictionary(System_Delegate);
 System_ArrayG_$Number$_ = System_ArrayG(Number);
-System_Collections_Generic_KeyValuePair_$String_x_UIElement$_ = System_Collections_Generic_KeyValuePair(String, Sunlight_Framework_UI_UIElement);
-System_Collections_Generic_StringDictionary_$UIElement$_ = System_Collections_Generic_StringDictionary(Sunlight_Framework_UI_UIElement);
 System_Collections_Generic_KeyValuePair_$String_x_Int32$_ = System_Collections_Generic_KeyValuePair(String, System_Int32);
 System_Collections_Generic_StringDictionary_$Int32$_ = System_Collections_Generic_StringDictionary(System_Int32);
 Sunlight__Framework__UI__Test__ManualTemplateTests____cctor();
@@ -3736,8 +3730,6 @@ System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_St
 System_Collections_Generic_KeyValuePair_$String_x_Delegate$_._tri();
 System_Collections_Generic_StringDictionary_$Delegate$_._tri();
 System_ArrayG_$Number$_._tri();
-System_Collections_Generic_KeyValuePair_$String_x_UIElement$_._tri();
-System_Collections_Generic_StringDictionary_$UIElement$_._tri();
 System_Collections_Generic_KeyValuePair_$String_x_Int32$_._tri();
 System_Collections_Generic_StringDictionary_$Int32$_._tri();
 module("Sunlight.Framework.UI.Test.LiveBinderTests", {

@@ -97,6 +97,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.JSParser.Test", "Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.MsCorlib", "Sources\mscorlib\NScript.MsCorlib.csproj", "{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}"
 	ProjectSection(ProjectDependencies) = postProject
+		{71392F3D-7171-43FA-8F68-365A31889AB0} = {71392F3D-7171-43FA-8F68-365A31889AB0}
 		{584493DA-04A9-4A95-AA49-F532A85D8C1A} = {584493DA-04A9-4A95-AA49-F532A85D8C1A}
 	EndProjectSection
 EndProject
@@ -178,6 +179,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI.Test", "Test\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XwmlParser.Test", "Test\XwmlParser.Test\XwmlParser.Test.csproj", "{D54C40D0-8658-41F3-9426-7747CE9E6FA6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB} = {F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{24FDD8D7-FC72-4366-ADC9-B917C8388942}"
 	ProjectSection(SolutionItems) = preProject

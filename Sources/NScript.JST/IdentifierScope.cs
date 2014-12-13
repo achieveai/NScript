@@ -87,11 +87,6 @@ namespace NScript.JST
         private readonly ReadOnlyCollection<SimpleIdentifier> readonlyUsedIdentifiers;
 
         /// <summary>
-        /// The readonly conflicting scopes.
-        /// </summary>
-        private readonly ReadOnlyCollection<IdentifierScope> readonlyConflictingScopes;
-
-        /// <summary>
         /// Backing field for ChildScopes.
         /// </summary>
         private readonly ReadOnlyCollection<IdentifierScope> readonlyChildScopes;
@@ -271,17 +266,6 @@ namespace NScript.JST
         public IList<IdentifierScope> ChildScopes
         {
             get { return this.readonlyChildScopes; }
-        }
-
-        /// <summary>
-        /// Gets the conflicting scopes.
-        /// </summary>
-        /// <value>
-        /// The conflicting scopes.
-        /// </value>
-        public IList<IdentifierScope> ConflictingScopes
-        {
-            get { return this.readonlyConflictingScopes; }
         }
 
         internal void AddConflictingScope(IdentifierScope scope)

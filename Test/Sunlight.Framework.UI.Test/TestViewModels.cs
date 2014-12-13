@@ -157,6 +157,14 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        public String[] Array
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         public void DomEvent1(Element elem, ElementEvent evt)
         { }
 

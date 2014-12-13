@@ -17,11 +17,6 @@ namespace Sunlight.Framework.UI
     public abstract class UIPanel : UIElement
     {
         /// <summary>
-        /// The inner children.
-        /// </summary>
-        private List<UIElement> innerChildren = new List<UIElement>();
-
-        /// <summary>
         /// The children.
         /// </summary>
         private ObservableCollection<UIElement> children = new ObservableCollection<UIElement>();

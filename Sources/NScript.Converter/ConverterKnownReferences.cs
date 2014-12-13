@@ -237,16 +237,6 @@ namespace NScript.Converter
         private MethodReference unboxMethod;
 
         /// <summary>
-        /// Backing field for ValueBoxMethod.
-        /// </summary>
-        private MethodReference valueBoxMethod;
-
-        /// <summary>
-        /// Backing field for ValueUnboxMethod.
-        /// </summary>
-        private MethodReference valueUnboxMethod;
-
-        /// <summary>
         /// Backing field for RegisterReferenceTypeMethod.
         /// </summary>
         private MethodReference registerRefTypeMethod;

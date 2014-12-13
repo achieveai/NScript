@@ -126,7 +126,7 @@ namespace Sunlight.Framework.Observables
         /// Gets item after the change
         /// </summary>
         /// <value>The new items.</value>
-        public new IList<T> NewItems
+        public IList<T> NewItems
         {
             get { return this.newItems; }
         }
@@ -135,7 +135,7 @@ namespace Sunlight.Framework.Observables
         /// Gets item before the change
         /// </summary>
         /// <value>The old items.</value>
-        public new IList<T> OldItems
+        public IList<T> OldItems
         {
             get { return this.oldItems; }
         }

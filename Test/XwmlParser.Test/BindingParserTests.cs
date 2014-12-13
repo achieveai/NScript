@@ -6,13 +6,10 @@
 
 namespace XwmlParser.Test
 {
-    using System;
-    using System.Collections.Generic;
-    using NScript.CLR.Test;
-    using XwmlParser.Binding;
-    using NUnit.Framework;
-    using NScript.CLR;
     using Mono.Cecil;
+    using NScript.CLR;
+    using NUnit.Framework;
+    using XwmlParser.Binding;
 
     /// <summary>
     /// Definition for BindingParserTests
@@ -46,7 +43,7 @@ namespace XwmlParser.Test
         [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
         public void TestParser1(string bindingStr)
         {
-            var dataContextType = 
+            var dataContextType =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
             var controlType =
                 resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
@@ -93,7 +90,7 @@ namespace XwmlParser.Test
         [TestCase("{Mode=OneTime, Source=DataContext, Path=PropStr1}")]
         public void TestParserWithInheritance(string bindingStr)
         {
-            var dataContextType = 
+            var dataContextType =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");
             var controlType =
                 resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
@@ -142,7 +139,7 @@ namespace XwmlParser.Test
         [TestCase("{Mode=OneTime, Source=DataContext, Path=TestIface.PropStr2}")]
         public void TestParser2(string bindingStr)
         {
-            var dataContextType = 
+            var dataContextType =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
             var testIfaceType =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestInterface");
@@ -201,7 +198,7 @@ namespace XwmlParser.Test
         [TestCase("{Mode=OneTime, Source=DataContext, Path=((testVM:TestViewModelB)TestIface).PropStrB}", BindingMode.OneTime)]
         public void TestParserCast(string bindingStr, BindingMode mode)
         {
-            var dataContextType = 
+            var dataContextType =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
             var testVMB =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");
@@ -262,7 +259,7 @@ namespace XwmlParser.Test
         [TestCase("{Mode=OneTime, Source=DataContext, Path=testVM:TestViewModelB.StaticProp.PropStrB}", BindingMode.OneTime)]
         public void TestParserStatic(string bindingStr, BindingMode mode)
         {
-            var dataContextType = 
+            var dataContextType =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
             var testVMB =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");
@@ -320,7 +317,7 @@ namespace XwmlParser.Test
         [TestCase("{testVM:TestViewModelB.StaticProp.PropStrB, Converter=testVM:ConverterCollection.ParseStuff}")]
         public void TestParseConverter(string bindingStr)
         {
-            var dataContextType = 
+            var dataContextType =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelA");
             var testVMB =
                 resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.TestViewModelB");

@@ -121,6 +121,14 @@ namespace XwmlParser
         {
             do
             {
+                if (typeReference.IsArray)
+                {
+                    NScript.Converter.ConverterKnownReferences converterRefs
+                        = new NScript.Converter.ConverterKnownReferences(this.context);
+
+                    typeReference = converterRefs.FixArrayType(typeReference);
+                }
+
                 foreach (var property in typeReference.Resolve().Properties)
                 {
                     if (property.Name == propertyName)
