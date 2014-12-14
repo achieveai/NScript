@@ -23,8 +23,14 @@ namespace XwmlParser
         /// </summary>
         private readonly ClrContext context;
 
+        /// <summary>
+        /// Manager for runtime.
+        /// </summary>
         private readonly RuntimeScopeManager runtimeManager;
 
+        /// <summary>
+        /// The converter references.
+        /// </summary>
         private readonly NScript.Converter.ConverterKnownReferences converterRefs;
 
 
@@ -39,7 +45,7 @@ namespace XwmlParser
             this.runtimeManager = runtimeManager;
             this.context = context;
             this.converterRefs
-                        = new NScript.Converter.ConverterKnownReferences(this.context);
+                        = runtimeManager.Context.KnownReferences;
 
         }
 

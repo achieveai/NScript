@@ -12,6 +12,7 @@ namespace JsCsc
         {
             DriverWrapper wrapper = new DriverWrapper();
             wrapper.Compile(args);
+            System.Environment.Exit(0);
         }
     }
 }

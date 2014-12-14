@@ -437,5 +437,5 @@ module("System.Web.Html.Tests.TestElement", {
 test("TestCreateElement", 0, System__Web__Html__Tests__TestElement__TestCreateElement);
 test("TestAttribute", 0, System__Web__Html__Tests__TestElement__TestAttribute);
 test("TestEventBinding", 0, System__Web__Html__Tests__TestElement__TestEventBinding);
-//@ sourceMappingURL=System.Web.Html.Tests.map
 })();
+//# sourceMappingURL=System.Web.Html.Tests.map
