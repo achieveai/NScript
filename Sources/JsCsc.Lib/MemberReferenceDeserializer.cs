@@ -6,11 +6,11 @@
 
 namespace JsCsc.Lib
 {
-    using System;
-    using System.Collections.Generic;
-    using NScript.CLR;
     using Mono.Cecil;
     using Newtonsoft.Json.Linq;
+    using NScript.CLR;
+    using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for MemberReferenceDeserializer

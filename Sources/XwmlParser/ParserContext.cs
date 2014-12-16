@@ -175,11 +175,13 @@ namespace XwmlParser
 
         internal CssStyleSheet GetStyleSheet(
             string cssResourceName,
-            string srcResourceName)
+            string srcResourceName,
+            List<CssStyleSheet> styleSheets)
         {
             return this.codeGenerator.GetStyleSheet(
                 cssResourceName,
-                srcResourceName);
+                srcResourceName,
+                styleSheets);
         }
 
         /// <summary>

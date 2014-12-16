@@ -21,7 +21,7 @@ namespace XwmlParser
         private static JavaScriptEngineSwitcher.V8.V8JsEngine jsEngine = new JavaScriptEngineSwitcher.V8.V8JsEngine();
         private static Autoprefixer.Compiler compiler;
 
-        private static Autoprefixer.BrowserSpecification browserSpecification =
+        public static readonly Autoprefixer.BrowserSpecification browserSpecification =
             new Autoprefixer.BrowserSpecification()
                 .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.Firefox, 27)
                 .BrowserVersionGreaterThanOrEqual(Autoprefixer.Browsers.Chrome, 27)
@@ -53,7 +53,12 @@ namespace XwmlParser
         /// <summary>
         /// List of names of the class.
         /// </summary>
-        Dictionary<string, IIdentifier> classNames = new Dictionary<string, IIdentifier>();
+        Dictionary<string, Tuple<IIdentifier, bool>> classNames = new Dictionary<string, Tuple<IIdentifier, bool>>();
+
+        /// <summary>
+        /// The dependencies.
+        /// </summary>
+        List<CssStyleSheet> dependencies = new List<CssStyleSheet>();
 
         /// <summary>
         /// Constructor.
@@ -82,6 +87,9 @@ namespace XwmlParser
         {
             get { return this.classNames.Keys; }
         }
+
+        public IList<CssStyleSheet> Dependencies
+        { get { return this.dependencies; } }
 
         /// <summary>
         /// Gets or sets the name of the resource.
@@ -141,44 +149,40 @@ namespace XwmlParser
                     });
             }
 
-            return CssStyleSheet.Compiler.Prefix(
-                sb.ToString(),
-                CssStyleSheet.browserSpecification);
+            return sb.ToString();
         }
 
         /// <summary>
         /// Adds the CSS.
         /// </summary>
         /// <param name="cssText"> The CSS text. </param>
-        internal void AddCss(string cssText)
+        internal void AddCss(
+            string cssText,
+            Location cssBlockStartPosition,
+            List<CssStyleSheet> previousStyles)
         {
             try
             {
                 var grammer = new CssParser.CssGrammer(cssText);
-                this.AddCssRules(grammer.Rules);
+                this.AddCssRules(
+                    grammer.Rules,
+                    cssBlockStartPosition,
+                    previousStyles);
                 this.AddKeyFrames(grammer.KeyFrames);
-                this.AddMediaRules(grammer.MediaRules);
+                this.AddMediaRules(
+                    grammer.MediaRules,
+                    cssBlockStartPosition,
+                    previousStyles);
             }
             catch(CssParser.ParseException ex)
             {
                 throw new ConverterLocationException(
                     new Location(
-                        this.ResourceName,
-                        ex.Line,
-                        ex.Position),
+                        cssBlockStartPosition.FileName,
+                        ex.Line + cssBlockStartPosition.StartLine,
+                        (ex.Line == 1 ? cssBlockStartPosition.StartColumn : 0) + ex.Position),
                     ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Adds the less.
-        /// </summary>
-        /// <param name="lessText"> The less text. </param>
-        internal void AddLess(string lessText)
-        {
-            dotless.Core.LessEngine engine = new dotless.Core.LessEngine();
-            var css = engine.TransformToCss(lessText, this.ResourceName);
-            this.AddCss(css);
         }
 
         /// <summary>
@@ -191,7 +195,15 @@ namespace XwmlParser
         /// </returns>
         public bool TryGetCssClassIdentifier(string className, out IIdentifier identifier)
         {
-            return this.classNames.TryGetValue(className, out identifier);
+            Tuple<IIdentifier, bool> result;
+            if (this.classNames.TryGetValue(className, out result))
+            {
+                identifier = result.Item1;
+                return true;
+            }
+
+            identifier = null;
+            return false;
         }
 
         /// <summary>
@@ -199,7 +211,10 @@ namespace XwmlParser
         /// </summary>
         /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
         /// <param name="rules"> The rules. </param>
-        private void AddCssRules(IList<CssParser.CssRule> rules)
+        private void AddCssRules(
+            IList<CssParser.CssRule> rules,
+            Location cssBlockStartPosition,
+            List<CssStyleSheet> previousStyles)
         {
             this.cssRules.AddRange(rules);
 
@@ -207,21 +222,7 @@ namespace XwmlParser
             {
                 CssClassNameFinderVisitor.Instance.Process(
                     rules[iRule],
-                    (cn) =>
-                    {
-                        if (cn == null)
-                        {
-                            throw new ApplicationException(
-                                "Can't use any other selector than Class name selector in Css");
-                        }
-                        if (!this.classNames.ContainsKey(cn.ClassName))
-                        {
-                            this.classNames[cn.ClassName] =
-                                parserContext.RegisterCssClassName(cn.ClassName);
-                        }
-
-                        this.classNames[cn.ClassName].AddUsage(null);
-                    });
+                    (cn, nested) => this.AddCssClassName(cn, nested, cssBlockStartPosition, previousStyles));
             }
         }
 
@@ -239,7 +240,10 @@ namespace XwmlParser
         /// </summary>
         /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
         /// <param name="mediaRules"> The media rules. </param>
-        private void AddMediaRules(IList<CssParser.Media> mediaRules)
+        private void AddMediaRules(
+            IList<CssParser.Media> mediaRules,
+            Location cssBlockStartPosition,
+            IList<CssStyleSheet> prevoiusStyles)
         {
             if (mediaRules != null
                 && mediaRules.Count > 0)
@@ -252,24 +256,77 @@ namespace XwmlParser
                     {
                         CssClassNameFinderVisitor.Instance.Process(
                             mediaRule.RuleSet[iRule],
-                            (cn) =>
-                            {
-                                if (cn == null)
-                                {
-                                    throw new ApplicationException(
-                                        "Can't use any other selector than Class name selector in Css");
-                                }
-                                if (!this.classNames.ContainsKey(cn.ClassName))
-                                {
-                                    this.classNames[cn.ClassName] =
-                                        parserContext.RegisterCssClassName(cn.ClassName);
-                                }
-
-                                this.classNames[cn.ClassName].AddUsage(null);
-                            });
+                            (cn, nested) => this.AddCssClassName(cn, nested, cssBlockStartPosition, prevoiusStyles));
                     }
                 }
             }
+        }
+
+        private void AddCssClassName(
+            CssParser.CssClassName cn,
+            bool nested,
+            Location cssBlockStartPosition,
+            IList<CssStyleSheet> previousSheets)
+        {
+            if (cn == null)
+            {
+                throw new ApplicationException(
+                    "Can't use any other selector than Class name selector in Css");
+            }
+
+            IIdentifier previousIdentifier = null;
+            bool isDeclared = false;
+            Tuple<IIdentifier, bool> result;
+            CssStyleSheet declaredSheet = null;
+            foreach (var previousStyle in previousSheets)
+            {
+                if (previousStyle.classNames.TryGetValue(cn.ClassName, out result))
+                {
+                    if (result.Item2 || previousIdentifier == null)
+                    {
+                        declaredSheet = previousStyle;
+                        previousIdentifier = result.Item1;
+                        isDeclared = isDeclared || result.Item2;
+                    }
+                }
+            }
+
+            if (declaredSheet != null
+                && this.dependencies.IndexOf(declaredSheet) < 0)
+            {
+                this.dependencies.Add(declaredSheet);
+            }
+
+            if (isDeclared && !nested)
+            {
+                this.parserContext.ConverterContext.AddError(
+                    new Location(
+                        cssBlockStartPosition.FileName,
+                        cssBlockStartPosition.StartLine + cn.Line,
+                        (cn.Line == 1 ? cssBlockStartPosition.StartLine : 0) + cn.Col),
+                    string.Format(
+                        "Class name {0} is already declared in {1}. You can only use this class with modifiers in this file",
+                        cn.ClassName,
+                        declaredSheet.ResourceName),
+                    false);
+            }
+
+            if (!this.classNames.TryGetValue(cn.ClassName, out result))
+            {
+                this.classNames[cn.ClassName] =
+                    Tuple.Create(
+                        previousIdentifier ?? parserContext.RegisterCssClassName(cn.ClassName),
+                        !nested || previousIdentifier == null);
+            }
+            else if (!result.Item2 && !nested)
+            {
+                this.classNames[cn.ClassName] =
+                    Tuple.Create(
+                        parserContext.RegisterCssClassName(cn.ClassName),
+                        true);
+            }
+
+            this.classNames[cn.ClassName].Item1.AddUsage(null);
         }
     }
 }

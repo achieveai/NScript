@@ -278,7 +278,8 @@ namespace CssParser
                         break;
                     case "@font-face":
                         selectors = new List<CssSelector>();
-                        selectors.Add(new CssTagName("@font-face"));
+                        selectors.Add(
+                            new CssTagName("@font-face",child.Line, child.CharPositionInLine));
                         break;
                     default:
                         break;
@@ -340,7 +341,7 @@ namespace CssParser
                 return selectors[0];
             }
 
-            return new CssRuleSelector(selectors, operators);
+            return new CssRuleSelector(selectors, operators, tree.Line, tree.CharPositionInLine);
         }
 
         private void ParseSelectorOps(
@@ -433,7 +434,9 @@ namespace CssParser
                 {
                     var unitCssSelector = selectors.Count == 1
                         ? (UnitCssSelector)selectors[0]
-                        : new AndCssSelector(selectors);
+                        : new AndCssSelector(
+                            selectors,
+                            child.Line, child.CharPositionInLine);
 
                     ruleSelectors.Add(unitCssSelector);
                     selectors = new List<UnitSimpleCssSelector>();
@@ -445,7 +448,11 @@ namespace CssParser
             {
                 if (selectors.Count > 1)
                 {
-                    ruleSelectors.Add(new AndCssSelector(selectors));
+                    ruleSelectors.Add(
+                        new AndCssSelector(
+                            selectors,
+                            tree.Line,
+                            tree.CharPositionInLine));
                 }
                 else if (selectors.Count == 1)
                 {
@@ -458,7 +465,7 @@ namespace CssParser
                     selectorOps.Add(SelectorOp.Under);
                 }
 
-                return new CssRuleSelector(ruleSelectors, selectorOps);
+                return new CssRuleSelector(ruleSelectors, selectorOps, tree.Line, tree.CharPositionInLine);
             }
 
             if (selectors.Count == 1)
@@ -466,7 +473,7 @@ namespace CssParser
                 return selectors[0];
             }
 
-            return new AndCssSelector(selectors);
+            return new AndCssSelector(selectors, tree.Line, tree.CharPositionInLine);
         }
 
         private UnitSimpleCssSelector ParsePseudoFuncSelector(ITree tree)
@@ -476,12 +483,17 @@ namespace CssParser
             return new PseudoNestedSelector(
                 name,
                 tree.GetChild(1).Text.Trim() == "::",
-                this.ParseSelector(tree.GetChild(2)));
+                this.ParseSelector(tree.GetChild(2)),
+                tree.Line,
+                tree.CharPositionInLine);
         }
 
         private PseudoSelector ParsePseudo(ITree child)
         {
-            return new PseudoSelector(child.GetChild(1).Text, child.GetChild(0).Text == "::");
+            return new PseudoSelector(
+                child.GetChild(1).Text, child.GetChild(0).Text == "::",
+                child.Line,
+                child.CharPositionInLine);
         }
 
         private PseudoSelector ParsePseudoFunc(ITree tree)
@@ -492,6 +504,8 @@ namespace CssParser
                 return new PseudoSelector(
                     name,
                     tree.GetChild(0).Text.Trim() == "::",
+                    tree.Line,
+                    tree.CharPositionInLine,
                     string.Empty);
             }
             else
@@ -502,6 +516,8 @@ namespace CssParser
                     return new PseudoSelector(
                         name,
                         tree.GetChild(1).Text.Trim() == "::",
+                        tree.Line,
+                        tree.CharPositionInLine,
                         argChild.Text);
                 }
                 else
@@ -509,6 +525,8 @@ namespace CssParser
                     return new PseudoSelector(
                         name,
                         tree.GetChild(1).Text.Trim() == "::",
+                        tree.Line,
+                        tree.CharPositionInLine,
                         argChild.Text
                         + tree.GetChild(3).Text
                         + tree.GetChild(4).Text);
@@ -551,27 +569,27 @@ namespace CssParser
                 value = tree.GetChild(1).Text;
             }
 
-            return new AttributeSelector(attribName, value, condition);
+            return new AttributeSelector(attribName, value, condition, tree.Line, tree.CharPositionInLine);
         }
 
         private CssClassName ParseClass(ITree tree)
         {
-            return new CssClassName(tree.GetChild(0).Text);
+            return new CssClassName(tree.GetChild(0).Text, tree.Line, tree.CharPositionInLine);
         }
 
         private CssTagName ParseTag(ITree tree)
         {
-            return new CssTagName(tree.GetChild(0).Text);
+            return new CssTagName(tree.GetChild(0).Text, tree.Line, tree.CharPositionInLine);
         }
 
         private CssId ParseId(ITree tree)
         {
-            return new CssId(tree.GetChild(0).Text.Substring(1));
+            return new CssId(tree.GetChild(0).Text.Substring(1), tree.Line, tree.CharPositionInLine);
         }
 
         private AllSelector ParseAll(ITree tree)
         {
-            return new AllSelector();
+            return new AllSelector(tree.Line, tree.CharPositionInLine);
         }
 
         private CssProperty ParseProperty(ITree tree)

@@ -11,6 +11,7 @@ namespace XwmlParser
     using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
+    using NScript.Utils;
     using System;
     using System.Collections.Generic;
     using System.Text;
@@ -440,7 +441,8 @@ namespace XwmlParser
         /// </returns>
         public CssStyleSheet GetStyleSheet(
             string cssResourceId,
-            string currentFileId)
+            string currentFileId,
+            List<CssStyleSheet> styleSheets)
         {
             string relativeCssResourceId = this.GetRelativeResourceId(
                 cssResourceId,
@@ -462,14 +464,13 @@ namespace XwmlParser
                 using (System.IO.Stream stream = resource.Item1.GetResourceStream())
                 using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
                 {
-                    if (relativeCssResourceId.ToLowerInvariant().EndsWith(".less"))
-                    {
-                        rv.AddLess(reader.ReadToEnd());
-                    }
-                    else
-                    {
-                        rv.AddCss(reader.ReadToEnd());
-                    }
+                    rv.AddCss(
+                        reader.ReadToEnd(),
+                        new Location(
+                            rv.ResourceName,
+                            0,
+                            0),
+                        styleSheets);
                 }
 
                 this.styleSheet.Add(relativeCssResourceId, rv);
@@ -1396,8 +1397,31 @@ namespace XwmlParser
         {
             StringBuilder sb = new StringBuilder();
             HashSet<DocumentContext> documentContexts = new HashSet<DocumentContext>();
+            List<CssStyleSheet> dependencyOrderedList = new List<CssStyleSheet>();
+
+            Action<CssStyleSheet> looper = null;
+            looper = (cssSheet) =>
+                {
+                    foreach (var dep in cssSheet.Dependencies)
+                    {
+                        if (dependencyOrderedList.IndexOf(dep) < 0)
+                        {
+                            looper(dep);
+                        }
+                    }
+
+                    if (dependencyOrderedList.IndexOf(cssSheet) < 0)
+                    {
+                        dependencyOrderedList.Add(cssSheet);
+                    }
+                };
 
             foreach (var styleSheet in this.styleSheet.Values)
+            {
+                looper(styleSheet);
+            }
+
+            foreach (var styleSheet in dependencyOrderedList)
             {
                 sb.Append(styleSheet.GetCssString());
             }
@@ -1412,7 +1436,9 @@ namespace XwmlParser
                 }
             }
 
-            return sb.ToString();
+            return CssStyleSheet.Compiler.Prefix(
+                sb.ToString(),
+                CssStyleSheet.browserSpecification);
         }
 
         private string GetRelativeResourceId(

@@ -182,15 +182,13 @@ namespace XwmlParser
                 this.documentCssScope
                 ?? new CssStyleSheet(this.parserContext, this.resourceName);
 
-            if (styleNode.Attributes["type"] != null
-                && styleNode.Attributes["type"].Value.ToLowerInvariant() == "text/less")
-            {
-                this.documentCssScope.AddLess(styleNode.InnerText);
-            }
-            else
-            {
-                this.documentCssScope.AddCss(styleNode.InnerText);
-            }
+            this.documentCssScope.AddCss(
+                styleNode.InnerText,
+                new Location(
+                    this.resourceName,
+                    styleNode.Line,
+                    styleNode.LinePosition),
+                this.applicableCssScopes);
 
             foreach (var className in this.documentCssScope.ClassNames)
             {
@@ -225,7 +223,8 @@ namespace XwmlParser
                 {
                     var styleSheet = this.parserContext.GetStyleSheet(
                         styleNode.Attributes["href"].Value,
-                        this.resourceName);
+                        this.resourceName,
+                        this.applicableCssScopes);
 
                     if (this.documentCssScope != null)
                     {

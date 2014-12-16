@@ -14,19 +14,33 @@ namespace CssParser
     /// </summary>
     public abstract class CssSelector
     {
+        public readonly int Col;
+        public readonly int Line;
+
+        public CssSelector(
+            int line,
+            int col)
+        {
+            this.Line = line;
+            this.Col = col;
+        }
     }
 
     /// <summary>
     /// Unit CSS selector.
     /// </summary>
     public abstract class UnitCssSelector : CssSelector
-    { }
+    {
+        public UnitCssSelector(int line, int col) : base(line, col) { }
+    }
 
     /// <summary>
     /// Unit simple CSS selector.
     /// </summary>
     public abstract class UnitSimpleCssSelector : UnitCssSelector
-    { }
+    {
+        public UnitSimpleCssSelector(int line, int col) : base(line, col) { }
+    }
 
     /// <summary>
     /// CSS class.
@@ -42,7 +56,10 @@ namespace CssParser
         /// Constructor.
         /// </summary>
         /// <param name="className">    Name of the class. </param>
-        public CssClassName(string className)
+        public CssClassName(
+            string className,
+            int line,
+            int col) : base(line, col)
         {
             this.className = className;
         }
@@ -64,7 +81,8 @@ namespace CssParser
     {
         private string tagName;
 
-        public CssTagName(string tagName)
+        public CssTagName(string tagName, int line, int col)
+            :base(line, col)
         {
             this.tagName = tagName;
         }
@@ -76,7 +94,8 @@ namespace CssParser
     public class CssId : UnitSimpleCssSelector
     {
         private string id;
-        public CssId(string id)
+        public CssId(string id, int line, int col)
+            : base(line, col)
         {
             this.id = id;
         }
@@ -87,7 +106,8 @@ namespace CssParser
 
     public class AllSelector : UnitSimpleCssSelector
     {
-        public AllSelector()
+        public AllSelector(int line, int col)
+            :base(line, col)
         { }
     }
 
@@ -111,7 +131,10 @@ namespace CssParser
         public AttributeSelector(
             string attribute,
             string value,
-            AttributeCondition condition)
+            AttributeCondition condition,
+            int line,
+            int col)
+            :base(line, col)
         {
             this.attribute = attribute;
             this.value = value;
@@ -137,7 +160,10 @@ namespace CssParser
         public PseudoSelector(
             string name,
             bool isDouble,
+            int line,
+            int col,
             string arg = null)
+            :base (line, col)
         {
             this.name = name;
             this.arg = arg;
@@ -156,7 +182,8 @@ namespace CssParser
 
     public class AndCssSelector : UnitCssSelector
     {
-        public AndCssSelector(IList<UnitSimpleCssSelector> selectors)
+        public AndCssSelector(IList<UnitSimpleCssSelector> selectors, int line, int col)
+            : base(line, col)
         {
             this.Selectors = selectors;
         }
@@ -173,7 +200,10 @@ namespace CssParser
         public PseudoNestedSelector(
             string name,
             bool isDouble,
-            CssSelector nestedSelector)
+            CssSelector nestedSelector,
+            int line,
+            int col)
+            :base(line, col)
         {
             this.name = name;
             this.nestedSelector = nestedSelector;
@@ -204,7 +234,10 @@ namespace CssParser
         private List<SelectorOp> ops;
         public CssRuleSelector(
             List<UnitCssSelector> selectors,
-            List<SelectorOp> ops)
+            List<SelectorOp> ops,
+            int line,
+            int col)
+            :base(line, col)
         {
             this.ops = ops;
             this.selectors = selectors;
