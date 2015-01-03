@@ -82,13 +82,32 @@ using System.Collections.Generic;
         /// <summary>
         /// List that stores the items in the collection.
         /// </summary>
-        private List<T> items = new List<T>();
+        private readonly List<T> items;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObservableCollection"/> class.
         /// </summary>
         public ObservableCollection()
         {
+            this.items = new List<T>();
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="items">  List that stores the items in the collection. </param>
+        /// <param name="shared"> (optional) the shared. </param>
+        public ObservableCollection(List<T> items, bool shared = false)
+        {
+            if (shared)
+            {
+                this.items = items;
+            }
+            else
+            {
+                this.items = new List<T>();
+                this.items.AddRange(items);
+            }
         }
 
         /// <summary>
@@ -125,7 +144,7 @@ using System.Collections.Generic;
                     this.Count - 1,
                     "index");
 
-                if (Object.Equals(this.items[index], value))
+                if (!Object.Equals(this.items[index], value))
                 {
                     T oldItem = this.items[index];
                     this.items[index] = value;
@@ -302,9 +321,9 @@ using System.Collections.Generic;
 
             this.CheckReentrancy();
 
-            var backupItems = this.items;
+            var backupItems = this.items.ToArray();
 
-            this.items = new List<T>();
+            this.items.Clear();
             this.OnCollectionChanged(
                 CollectionChangedAction.Remove,
                 0,

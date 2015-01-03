@@ -13,7 +13,6 @@ namespace NScript.Converter.Test.TypeConverterTests
     using NScript.Converter.TypeSystemConverter;
     using Mono.Cecil;
     using FluentAssertions;
-    using FluentAssertions.Collections;
 
     /// <summary>
     /// Definition for DependencyAnalyzerTests
@@ -41,13 +40,13 @@ namespace NScript.Converter.Test.TypeConverterTests
             dependencyAnalyzer.AddTypeForAnalysis(typeDefinition);
 
             dependencyAnalyzer.TypeToTypeReferences[typeDefinition]
-                .Should().Contain(
+                .Should<TypeReference>().Contain(
                     TestAssemblyLoader.GetTypeReference(
                         "Foo",
                         false));
 
             dependencyAnalyzer.TypeToTypeReferences[typeDefinition]
-                .Should().Contain(
+                .Should<TypeReference>().Contain(
                     TestAssemblyLoader.GetTypeReference(
                         "BaseInterface",
                         false));

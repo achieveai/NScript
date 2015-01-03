@@ -16,14 +16,17 @@ namespace CssParser
     /// </summary>
     public partial class CssGrammer
     {
+        public static readonly System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
         private List<CssRule> rules;
         private List<CssProperty> properties;
         private List<CssKeyframes> keyFrames;
         private List<Media> mediaRules;
+
         public CssGrammer(string css, bool parseProperties = false)
         {
             try
             {
+                stopWatch.Start();
                 ANTLRStringStream input = new ANTLRStringStream(css);
                 CssGrammerLexer lexer = new CssGrammerLexer(input);
                 CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -44,6 +47,10 @@ namespace CssParser
             catch(Antlr.Runtime.RecognitionException ex)
             {
                 throw new ParseException(ex);
+            }
+            finally
+            {
+                stopWatch.Stop();
             }
         }
 

@@ -107,6 +107,7 @@ namespace Sunlight.Framework.UI
             }
         }
 
+        [DefaultDataBinding(DefaultValue=true)]
         public bool IsHidden
         {
             get

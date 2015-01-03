@@ -10,6 +10,8 @@ namespace NScript.JSParser
 {
     public class Parser
     {
+        public readonly static System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+
         /// <summary>
         /// Parses the specified js.
         /// </summary>
@@ -20,13 +22,16 @@ namespace NScript.JSParser
             IdentifierScope parentScope,
             IResolver resolver)
         {
+            stopWatch.Start();
             ANTLRStringStream input = new ANTLRStringStream(js);
             JavaScriptLexer lexer = new JavaScriptLexer(input);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             JavaScriptParser parser = new JavaScriptParser(tokenStream);
             CommonTree tree = parser.program().Tree;
 
-            return Parser.WalkTree(tree, parentScope, resolver);
+            var rv = Parser.WalkTree(tree, parentScope, resolver);
+            stopWatch.Stop();
+            return rv;
         }
 
         /// <summary>

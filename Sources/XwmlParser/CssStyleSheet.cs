@@ -311,6 +311,8 @@ namespace XwmlParser
                     false);
             }
 
+            // TODO: there is still a case where all the classes in a selector are shared css classes. We need to
+            // disallow this.
             if (!this.classNames.TryGetValue(cn.ClassName, out result))
             {
                 this.classNames[cn.ClassName] =

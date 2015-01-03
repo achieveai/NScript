@@ -25,8 +25,12 @@ namespace XwmlParser.StaticValues
             this.cssClassNames = new IIdentifier[cssClassNames.Length];
             for (int iCssClassName = 0; iCssClassName < cssClassNames.Length; iCssClassName++)
             {
+                if (string.IsNullOrWhiteSpace(cssClassNames[iCssClassName]))
+                { continue; }
+
+                cssClassName = cssClassNames[iCssClassName];
                 IIdentifier classIdentifier;
-                if (!documentContext.TryGetCssClassIdentifier(cssClassNames[iCssClassName], out classIdentifier))
+                if (!documentContext.TryGetCssClassIdentifier(cssClassName, out classIdentifier))
                 {
                     throw new ApplicationException(
                         string.Format("CSS class name '{0}' not found.", cssClassName));
