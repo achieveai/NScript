@@ -157,7 +157,7 @@ namespace System.Web.Html
         /// <summary>
         /// The onerror.
         /// </summary>
-        public extern event Action<Window, string, string, int> OnError;
+        public extern event Action<Window, ErrorEvent> OnError;
 
         /// <summary>
         /// The onresize.

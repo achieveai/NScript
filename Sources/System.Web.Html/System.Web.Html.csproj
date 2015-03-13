@@ -41,6 +41,7 @@
     <Compile Include="AnchorElement.cs" />
     <Compile Include="CheckBoxElement.cs" />
     <Compile Include="DomError.cs" />
+    <Compile Include="ErrorEvent.cs" />
     <Compile Include="File.cs" />
     <Compile Include="FileInput.cs" />
     <Compile Include="FileReader.cs" />

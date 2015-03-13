@@ -150,6 +150,22 @@ namespace JsCsc.Lib
                         continue;
                     }
 
+                    Indexer indexer = member as Indexer;
+                    if (indexer != null)
+                    {
+                        if (indexer.Get != null)
+                        {
+                            this.methodBlocks.Add(indexer.Get, indexer.Get.Block);
+                        }
+
+                        if (indexer.Set != null)
+                        {
+                            this.methodBlocks.Add(indexer.Set, indexer.Set.Block);
+                        }
+
+                        continue;
+                    }
+
                     Method method = member as Method;
                     if (method != null)
                     {
@@ -232,6 +248,52 @@ namespace JsCsc.Lib
                             jarray.Add(
                                 toJObject.SerializeMethodBody(
                                     property.Set,
+                                    null));
+                        }
+
+                        continue;
+                    }
+
+                    Indexer indexer = member as Indexer;
+                    if (indexer != null)
+                    {
+                        if (indexer.Get != null && !indexer.Get.IsCompilerGenerated)
+                        {
+                            if (!this.methodBlocks.ContainsKey(indexer.Get))
+                            {
+                                continue;
+                            }
+
+                            jarray.Add(
+                                toJObject.SerializeMethodBody(
+                                    indexer.Get,
+                                    this.methodBlocks[indexer.Get]));
+                        }
+                        else if (indexer.Get != null && !indexer.IsCompilerGenerated)
+                        {
+                            jarray.Add(
+                                toJObject.SerializeMethodBody(
+                                    indexer.Get,
+                                    null));
+                        }
+
+                        if (indexer.Set != null && !indexer.Set.IsCompilerGenerated)
+                        {
+                            if (!this.methodBlocks.ContainsKey(indexer.Set))
+                            {
+                                continue;
+                            }
+
+                            jarray.Add(
+                                toJObject.SerializeMethodBody(
+                                    indexer.Set,
+                                    this.methodBlocks[indexer.Set]));
+                        }
+                        else if (indexer.Set != null && !indexer.IsCompilerGenerated)
+                        {
+                            jarray.Add(
+                                toJObject.SerializeMethodBody(
+                                    indexer.Set,
                                     null));
                         }
 
