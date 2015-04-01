@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for IFrameElement
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLIFrameElement")]
     public sealed class IFrameElement : Element
     {
         private extern IFrameElement();

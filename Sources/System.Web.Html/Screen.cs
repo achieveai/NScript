@@ -11,6 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Screen.
     /// </summary>
+    [IgnoreNamespace, ScriptName("Object")]
     public sealed class Screen
     {
         /// <summary>

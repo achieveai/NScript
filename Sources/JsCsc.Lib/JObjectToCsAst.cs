@@ -1281,8 +1281,9 @@ namespace JsCsc.Lib
                 this.LocFromJObject(jObject),
                 (ParameterBlock)this.ParseParameterBlock(
                     jObject.Value<JObject>(NameTokens.Block)),
-                this.DeserializeType(
-                    jObject.Value<JObject>(NameTokens.Type)));
+                jObject.Value<JObject>(NameTokens.Type) != null
+                    ? this.DeserializeType(jObject.Value<JObject>(NameTokens.Type))
+                    : this._clrContext.KnownReferences.MulticastDelegate);
         }
 
         private ParameterVariable ParseArgumentVariable(JObject jObject)

@@ -137,7 +137,7 @@ namespace System.Web.Html
     /// <summary>
     /// Media element.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLMediaElement")]
     public abstract class MediaElement : SourceElement
     {
         /// <summary>

@@ -1845,10 +1845,19 @@ namespace JsCsc.Lib
         { return this.Dispatch(expression.Expression); }
 
         public JObject Visit(AnonymousMethodExpression expression)
-        { throw new NotImplementedException(); }
+        {
+            // This is pretty much like AnonymousMethodBody
+            JObject rv = new JObject();
+            rv[NameTokens.TypeName] = TypeTokens.AnonymousMethod;
+            rv[NameTokens.Loc] = expression.GetStrLoc();
+            rv[NameTokens.Type] = null;
+            rv[NameTokens.Block] = this.Dispatch(expression.Block);
+
+            return rv;
+        }
 
         public JObject Visit(LambdaExpression expression)
-        { throw new NotImplementedException(); }
+        { return this.Visit((AnonymousMethodExpression)expression); }
 
         public JObject Visit(RuntimeValueExpression expression)
         { throw new NotImplementedException(); }

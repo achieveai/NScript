@@ -263,6 +263,38 @@ namespace System.Web.Html
         public extern int PageYOffset { get; }
 
         /// <summary>
+        /// Gets the screen x coordinate.
+        /// </summary>
+        /// <value>
+        /// The screen x coordinate.
+        /// </value>
+        public extern int? ScreenX { get; }
+
+        /// <summary>
+        /// Gets the screen y coordinate.
+        /// </summary>
+        /// <value>
+        /// The screen y coordinate.
+        /// </value>
+        public extern int? ScreenY { get; }
+
+        /// <summary>
+        /// Gets the screen left.
+        /// </summary>
+        /// <value>
+        /// The screen left.
+        /// </value>
+        public extern int? ScreenLeft { get; }
+
+        /// <summary>
+        /// Gets the screen top.
+        /// </summary>
+        /// <value>
+        /// The screen top.
+        /// </value>
+        public extern int? ScreenTop { get; }
+
+        /// <summary>
         /// The screen.
         /// </summary>
         /// <value>

@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ScriptElement
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLScriptElement")]
     public sealed class ScriptElement : Element
     {
         private extern ScriptElement();

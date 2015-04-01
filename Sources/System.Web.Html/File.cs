@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for File.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("Object")]
     public class File
     {
         /// <summary>

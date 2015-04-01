@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for MapElement.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLMapElement")]
     public sealed class MapElement : Element
     {
         /// <summary>

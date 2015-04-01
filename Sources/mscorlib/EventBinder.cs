@@ -286,7 +286,9 @@ namespace System
         private void EventHandlerBubble(object evt)
         {
             if (this.disposed) return;
-            ((Action<object,object>)this.bubblePhaseEvents[GetEventType(evt)])(this.target, evt);
+            Delegate del;
+            if (this.bubblePhaseEvents.TryGetValue(GetEventType(evt), out del))
+            { ((Action<object, object>)del)(this.target, evt); }
         }
     }
 }

@@ -265,9 +265,18 @@ ptyp_.eventHandlerCapture = function System__EventBinder__EventHandlerCapture(ev
   this.capturePhaseEvents.get_item(System__EventBinder__GetEventType(evt))(this.target, evt);
 };
 ptyp_.eventHandlerBubble = function System__EventBinder__EventHandlerBubble(evt) {
+  var del;
   if (this.disposed)
     return;
-  this.bubblePhaseEvents.get_item(System__EventBinder__GetEventType(evt))(this.target, evt);
+  if (this.bubblePhaseEvents.tryGetValue(System__EventBinder__GetEventType(evt), {
+    read: function() {
+      return del;
+    },
+    write: function(arg0) {
+      return del = arg0;
+    }
+  }))
+    del(this.target, evt);
 };
 System__Type__RegisterReferenceType(System_EventBinder, "System.EventBinder", Object, []);
 function System_Delegate() {

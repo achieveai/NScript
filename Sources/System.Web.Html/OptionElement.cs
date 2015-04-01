@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for OptionElement.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLOptionElement")]
     public class OptionElement : Node
     {
         /// <summary>

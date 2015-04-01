@@ -5,10 +5,12 @@ namespace System.Web.Html
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// File input element.
     /// </summary>
+    [IgnoreNamespace, ScriptName("HTMLInputElement")]
     public class FileInputElement : InputElement
     {
         /// <summary>

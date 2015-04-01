@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Element.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLElement")]
     public class Element : Node
     {
         /// <summary>

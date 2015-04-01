@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for MessageEvent
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("Object")]
     public sealed class MessageEvent : ElementEvent
     {
         private extern MessageEvent();

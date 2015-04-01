@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for InputElement.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLInputElement")]
     public class InputElement : Element
     {
         /// <summary>

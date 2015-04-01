@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for DivElement.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLDivElement")]
     public sealed class DivElement : Element
     {
         /// <summary>

@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for Location.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("Object")]
     public sealed class Location
     {
         /// <summary>

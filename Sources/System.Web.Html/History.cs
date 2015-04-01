@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for History
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("Object")]
     public sealed class History
     {
         private extern History();

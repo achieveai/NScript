@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for FormElement.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLFormElement")]
     public sealed class FormElement : Element
     {
         /// <summary>

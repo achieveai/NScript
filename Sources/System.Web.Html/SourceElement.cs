@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for SourceElement.
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLSouceElement")]
     public class SourceElement : Element
     {
         /// <summary>

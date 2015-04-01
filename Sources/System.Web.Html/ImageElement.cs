@@ -11,7 +11,7 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ImageElement
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("HTMLImageElement")]
     public sealed class ImageElement : Element
     {
         private extern ImageElement();
