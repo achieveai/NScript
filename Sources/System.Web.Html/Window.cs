@@ -343,6 +343,15 @@ namespace System.Web.Html
         public extern Window[] Frames { get; }
 
         /// <summary>
+        /// Gets the navigation timing object.
+        /// </summary>
+        /// <value>
+        /// The performance.
+        /// </value>
+        public extern Performance Performance
+        { get; }
+
+        /// <summary>
         /// Opens the given document.
         /// </summary>
         /// <param name="url">   URL of the document. </param>
