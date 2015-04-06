@@ -131,5 +131,31 @@ namespace System.Web.Html
         /// </value>
         public extern string UserAgent
         { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this object has send beacon API.
+        /// </summary>
+        /// <value>
+        /// true if this object has send beacon api, false if not.
+        /// </value>
+        public extern bool HasSendBeaconApi
+        {
+            [Script("return !!this.sendBeacon;")]
+            get;
+        }
+
+        /// <summary>
+        /// Sends a beacon.
+        /// </summary>
+        /// <param name="url">  URL of the document. </param>
+        /// <param name="data"> The data. </param>
+        public extern void SendBeacon(string url, string data);
+
+        /// <summary>
+        /// Sends a beacon.
+        /// </summary>
+        /// <param name="url">  URL of the document. </param>
+        /// <param name="data"> The data. </param>
+        public extern void SendBeacon(string url, FormData data);
     }
 }

@@ -1091,7 +1091,7 @@ namespace NScript.Converter
                         && baseKind != TypeKind.JSONType
                         && !typeDefinition.IsValueType)
                     {
-                        throw new InvalidDataException(
+                        throw new ApplicationException(
                             string.Format(
                                 "BaseType: '{0}' of Imported/JSONType Type: '{1}' should be Imported/JSONType/Extended",
                                 baseType,
@@ -1100,7 +1100,7 @@ namespace NScript.Converter
 
                     if (hasImplementedVirtual)
                     {
-                        throw new InvalidDataException(
+                        throw new ApplicationException(
                             string.Format(
                                 "Imported Type: '{0}' can not have virtual method implementation. Only instance Methods/Properties/Fields are allowed",
                                 typeDefinition));
@@ -1108,7 +1108,7 @@ namespace NScript.Converter
 
                     if (hasVirtualMethods)
                     {
-                        throw new InvalidDataException(
+                        throw new ApplicationException(
                             string.Format(
                                 "Imported Type: '{0}' can not have virtual methods, virtuals are not really needed.",
                                 typeDefinition));
@@ -1116,7 +1116,7 @@ namespace NScript.Converter
 
                     if (hasPublicFields)
                     {
-                        throw new InvalidDataException(
+                        throw new ApplicationException(
                             string.Format(
                                 "Imported Type: '{0}' can not have fields, fields not yet supported for imported types (this may also because of compiler generated Properties or Events, please use extern in those cases).",
                                 typeDefinition));
@@ -1124,7 +1124,7 @@ namespace NScript.Converter
 
                     if (hasNonNullableStructField)
                     {
-                        throw new InvalidDataException(
+                        throw new ApplicationException(
                             string.Format(
                                 "Imported Type: '{0}' can not have member field of struct type that is not Nullable",
                                 typeDefinition));

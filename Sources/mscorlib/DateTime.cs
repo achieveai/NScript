@@ -27,6 +27,8 @@
 
         public extern string Format(string format);
 
+        public extern int ValueOf();
+
         public extern int GetDate();
 
         public extern int GetDay();
@@ -96,6 +98,9 @@
 
         [ScriptAlias("Date.parseDate")]
         public extern static DateTime Parse(string value);
+
+        [ScriptName("now")]
+        public extern static long NowTicks();
 
         /// <summary>
         /// Sets a date.
