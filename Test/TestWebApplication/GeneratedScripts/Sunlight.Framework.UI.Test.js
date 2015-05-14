@@ -592,6 +592,7 @@ ptyp_.__ctor3 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____cto
   this.forwardConverter = forwardConverter;
   this.defaultValue = defaultValue;
   this.mode = 1;
+  this.extraObjectIndex = extraObjectIndex;
 };
 ptyp_.__ctor2 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
   this.binderIndex = -1;
@@ -2111,7 +2112,7 @@ ptyp_.activate = function Sunlight__Framework__UI__Helpers__SkinInstance__Activa
       if (binder.mode == 2) {
         liveBinder = this.liveBinders[iLiveBinder];
         if (System__Object__IsNullOrUndefined(liveBinder)) {
-          liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, null);
+          liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, this.extraObjects);
           liveBinder.set_source(source);
           liveBinder.set_target(elementsOfIntrest[binder.objectIndex]);
           liveBinder.set_isActive(true);
@@ -2203,7 +2204,7 @@ ptyp_.queuedActivation = function Sunlight__Framework__UI__Helpers__SkinInstance
     if (binder.mode != 0) {
       liveBinder = liveBinders[iLivebinder];
       if (System__Object__IsNullOrUndefined(liveBinder)) {
-        liveBinders[iLivebinder] = liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, null);
+        liveBinders[iLivebinder] = liveBinder = Sunlight__Framework__UI__Helpers__LiveBinder_factory(binder, this.extraObjects);
         liveBinder.set_target(this.elementsOfIntrest[binder.objectIndex]);
       }
       switch(binder.binderType & 7) {

@@ -278,7 +278,7 @@ namespace Sunlight.Framework.UI.Helpers
                         LiveBinder liveBinder = this.liveBinders[iLiveBinder];
                         if (object.IsNullOrUndefined(liveBinder))
                         {
-                            liveBinder = new LiveBinder(binder);
+                            liveBinder = new LiveBinder(binder, this.extraObjects);
                             liveBinder.Source = source;
                             liveBinder.Target = elementsOfIntrest[binder.ObjectIndex];
                             liveBinder.IsActive = true;
@@ -432,7 +432,7 @@ namespace Sunlight.Framework.UI.Helpers
                     LiveBinder liveBinder = liveBinders[iLivebinder];
                     if (object.IsNullOrUndefined(liveBinder))
                     {
-                        liveBinders[iLivebinder] = liveBinder = new LiveBinder(binder);
+                        liveBinders[iLivebinder] = liveBinder = new LiveBinder(binder, this.extraObjects);
                         liveBinder.Target = this.elementsOfIntrest[binder.ObjectIndex];
                     }
 

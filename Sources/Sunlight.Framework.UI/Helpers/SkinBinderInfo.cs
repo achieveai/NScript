@@ -235,6 +235,7 @@ namespace Sunlight.Framework.UI.Helpers
             this.ForwardConverter = forwardConverter;
             this.DefaultValue = defaultValue;
             this.Mode = DataBindingMode.OneWay;
+            this.ExtraObjectIndex = extraObjectIndex;
         }
 
         /// <summary>
