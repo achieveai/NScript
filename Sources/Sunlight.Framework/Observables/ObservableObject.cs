@@ -85,6 +85,23 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
+        /// Fires properties changed for all handlers.
+        /// </summary>
+        protected void FireAllPropertiesChanged()
+        {
+            if (this.eventHandlers != null)
+            {
+                var keys = this.eventHandlers.Keys;
+                foreach (var key in keys)
+                {
+                    var value = this.eventHandlers[key];
+                    if (value != null)
+                    { value(this, key); }
+                }
+            }
+        }
+
+        /// <summary>
         /// Fires the property changed1.
         /// </summary>
         /// <param name="propertyName">Name of the property.</param>

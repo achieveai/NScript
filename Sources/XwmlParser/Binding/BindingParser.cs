@@ -247,10 +247,17 @@ namespace XwmlParser.Binding
             }
 
             int argStartIndex = bindingStr.IndexOf('(', stringPart.Item1);
+            int argEndIndex = -1;
             if (argStartIndex < 0
                 || argStartIndex > stringPart.Item2)
             {
                 argStartIndex = stringPart.Item2;
+            }
+            else
+            {
+                argEndIndex = bindingStr.IndexOf(')', argStartIndex);
+                if (argEndIndex > stringPart.Item2)
+                { argEndIndex = -1; }
             }
 
             int colonIndex = bindingStr.IndexOf(':', stringPart.Item1);
@@ -342,17 +349,238 @@ namespace XwmlParser.Binding
                         dotParts[dotParts.Count-1]));
             }
 
-            if (methodReferences.Count == 1)
+            List<string> args = GetConverterArguments(
+                bindingStr,
+                argStartIndex,
+                argEndIndex);
+
+            MethodReference methodRef = null;
+            List<Tuple<ConverterArgType, object>> resolvedArgs = null;
+            foreach (var item in methodReferences)
+            {
+                resolvedArgs = ParseArguments(
+                    item,
+                    args,
+                    documentContext);
+
+                if (resolvedArgs != null)
+                {
+                    methodRef = item;
+                    break;
+                }
+            }
+
+            if (methodRef != null)
             {
                 return new DelegateConverterInfo(
-                    methodReferences[0],
-                    null);
+                    methodRef,
+                    resolvedArgs);
             }
             else
             {
                 throw new ApplicationException(
-                    "Arguments not yet supported, or there were multiple methods matching criteria");
+                    "Error parsing arguments, or method did not have match with arguments");
             }
+        }
+
+        /// <summary>
+        /// Gets converter arguments.
+        /// </summary>
+        /// <param name="bindingStr"> The binding string. </param>
+        /// <param name="start">      The start. </param>
+        /// <param name="end">        The end. </param>
+        /// <returns>
+        /// The converter arguments.
+        /// </returns>
+        private static List<string> GetConverterArguments(
+            string bindingStr,
+            int start,
+            int end)
+        {
+            if (end <= start)
+            { return null; }
+
+            bool inQuotes = false;
+            char quoteChar = '\0';
+            int lastBp = start + 1;
+            List<string> rv = new List<string>();
+            for (int i = start + 1; i < end; i++)
+            {
+                var ch = bindingStr[i];
+                switch (ch)
+                {
+                    case '"':
+                    case '\'':
+                        if (inQuotes)
+                        {
+                            if (quoteChar == ch)
+                            { inQuotes = false; }
+                        }
+                        else
+                        {
+                            inQuotes = true;
+                            quoteChar = ch;
+                        }
+                        break;
+                    case '\\':
+                        if (inQuotes)
+                        { i++; }
+                        break;
+                    case ',':
+                        if (!inQuotes)
+                        {
+                            if (lastBp < i)
+                            { rv.Add(bindingStr.Substring(lastBp, i - lastBp).Trim()); }
+
+                            lastBp = i + 1;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (lastBp < end)
+            {
+                rv.Add(bindingStr.Substring(lastBp, end - lastBp).Trim());
+            }
+
+            return rv;
+        }
+
+        /// <summary>
+        /// Parse arguments.
+        /// </summary>
+        /// <param name="methodRef">       The method reference. </param>
+        /// <param name="args">            The arguments. </param>
+        /// <param name="documentContext"> Context for the document. </param>
+        /// <returns>
+        /// .
+        /// </returns>
+        private static List<Tuple<ConverterArgType, object>> ParseArguments(
+            MethodReference methodRef,
+            List<string> args,
+            IDocumentContext documentContext)
+        {
+            if (args == null || args.Count == 0)
+            {
+                if (methodRef.Parameters.Count == 1)
+                { return new List<Tuple<ConverterArgType, object>>(); }
+                else
+                { return null; }
+            }
+
+            if (args.Count != methodRef.Parameters.Count - 1)
+            { return null; }
+
+            var knownReferences = documentContext.ParserContext.ConverterContext.ClrKnownReferences;
+            List<Tuple<ConverterArgType, object>> rv = new List<Tuple<ConverterArgType, object>>();
+            for (int i = 0; i < args.Count; i++)
+            {
+                var argType = methodRef.Parameters[i + 1].ParameterType;
+                var arg = args[i];
+                if (knownReferences.String.IsSame(argType))
+                {
+                    if (arg[0] != arg[arg.Length-1]
+                        ||(arg[0] != '\'' && arg[0] != '"'))
+                    { return null; }
+
+                    rv.Add(
+                        Tuple.Create<ConverterArgType, object>(
+                            ConverterArgType.String,
+                            arg.Substring(1, arg.Length-2)));
+                }
+                else if (knownReferences.Boolean.IsSame(argType))
+                {
+                    bool val;
+                    if (!bool.TryParse(arg, out val))
+                    { return null; }
+
+                    rv.Add(
+                        Tuple.Create<ConverterArgType, object>(
+                            ConverterArgType.Boolean,
+                            val));
+                }
+                else if (knownReferences.Int32.IsSame(argType)
+                    || knownReferences.Int64.IsSame(argType)
+                    || knownReferences.SByte.IsSame(argType)
+                    || knownReferences.Short.IsSame(argType))
+                {
+                    long val;
+
+                    if (!long.TryParse(arg, out val))
+                    { return null; }
+
+                    rv.Add(
+                        Tuple.Create<ConverterArgType, object>(
+                            ConverterArgType.Integer,
+                            val));
+                }
+                else if (knownReferences.UInt32.IsSame(argType)
+                    || knownReferences.UInt64.IsSame(argType)
+                    || knownReferences.Byte.IsSame(argType)
+                    || knownReferences.UShort.IsSame(argType))
+                {
+                    ulong val;
+
+                    if (!ulong.TryParse(arg, out val))
+                    { return null; }
+
+                    rv.Add(
+                        Tuple.Create<ConverterArgType, object>(
+                            ConverterArgType.Integer,
+                            (long)val));
+                }
+                else if (knownReferences.Double.IsSame(argType)
+                    || knownReferences.Single.IsSame(argType))
+                {
+                    double val;
+
+                    if (!double.TryParse(arg, out val))
+                    { return null; }
+
+                    rv.Add(
+                        Tuple.Create<ConverterArgType, object>(
+                            ConverterArgType.Float,
+                            val));
+                }
+                else if (argType.IsEnum())
+                {
+                    int value = 0;
+                    bool found = false;
+                    foreach (var field in TypeHelpers.GetEnumValues((TypeDefinition)argType.GetDefinition()))
+                    {
+                        if (string.Equals(field.Name, arg, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            found = true;
+                            var val = field.Constant;
+
+                            if (val.GetType() == typeof(int))
+                            { value = (int)val; }
+                            if (val.GetType() == typeof(uint))
+                            { value = (int)(uint)val; }
+                            if (val.GetType() == typeof(long))
+                            { value = (int)(long)val; }
+                            if (val.GetType() == typeof(ulong))
+                            { value = (int)(ulong)val; }
+                            if (val.GetType() == typeof(short))
+                            { value = (int)(short)val; }
+                            if (val.GetType() == typeof(ushort))
+                            { value = (int)(ushort)val; }
+                        }
+                    }
+
+                    if (!found)
+                    { return null; }
+
+                    rv.Add(
+                        Tuple.Create<ConverterArgType, object>(
+                            ConverterArgType.Enum,
+                            value));
+                }
+            }
+
+            return rv;
         }
 
         /// <summary>

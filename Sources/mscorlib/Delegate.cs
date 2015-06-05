@@ -90,9 +90,9 @@
             var fn = ""__@"" + functionName;
             if (!(fn in instance)) {
                 instance[fn] = function() {
-                    return f.apply(instance, arguments);
+                    return f.apply(instance, [instance].concat(Array.prototype.slice.call(arguments)));
                 };
-                instance[fn].@{[mscorlib]System.Type::FullName} = instance.constructor.toString() + '::' + functionName;
+                instance[fn].@{[mscorlib]System.Type::FullName} = '::' + functionName;
                 instance[fn].@{[mscorlib]System.Type::IsDelegate} = true;
             }
 
