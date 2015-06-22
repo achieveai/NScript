@@ -34,11 +34,13 @@ namespace NScript.CLR.AST
             Expression leftExpression)
             : base(context, location, fieldReference, leftExpression)
         {
+#if DEBUG
             if (fieldReference.Resolve().IsStatic ||
                 fieldReference.Resolve().HasConstant)
             {
                 throw new ArgumentException("static member can't have LeftExpression");
             }
+#endif
 
             this.fieldReference = fieldReference;
         }
@@ -55,11 +57,13 @@ namespace NScript.CLR.AST
             FieldReference fieldReference)
             : base(context, location, fieldReference, null)
         {
+#if DEBUG
             if (!fieldReference.Resolve().IsStatic &&
                 !fieldReference.Resolve().HasConstant)
             {
                 throw new ArgumentException("leftExpression not passed for instance member");
             }
+#endif
 
             this.fieldReference = fieldReference;
         }

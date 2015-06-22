@@ -154,6 +154,7 @@ namespace JsCsc.Lib
         public static void Serialize(ICustomSerializer serializer, FieldSpec fieldSpec)
         {
             IInterfaceMemberSpec memberSpec = fieldSpec.MemberDefinition as IInterfaceMemberSpec;
+            ImportedMemberDefinition importedMemberDefinition = fieldSpec.MemberDefinition as ImportedMemberDefinition;
             serializer.AddValue(NameTokens.TypeName, TypeTokens.FieldSpec);
             serializer.AddValue(
                 NameTokens.Name,
@@ -161,8 +162,10 @@ namespace JsCsc.Lib
             serializer.AddValue(
                 NameTokens.MemberType,
                 memberSpec != null
-                    ? memberSpec.MemberType
-                    : fieldSpec.MemberType,
+                    ? memberSpec.MemberType :
+                        importedMemberDefinition != null
+                            ? importedMemberDefinition.MemberType
+                            : fieldSpec.MemberType,
                 MemberReferenceSerializer.Serialize);
             serializer.AddValue(
                 NameTokens.DeclaringType,
@@ -383,10 +386,17 @@ namespace JsCsc.Lib
         public static JObject Serialize(FieldSpec fieldSpec)
         {
             IInterfaceMemberSpec memberSpec = fieldSpec.MemberDefinition as IInterfaceMemberSpec;
+            ImportedMemberDefinition importedMemberDefinition = fieldSpec.MemberDefinition as ImportedMemberDefinition;
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.FieldSpec;
             rv[NameTokens.Name] = fieldSpec.Name;
-            rv[NameTokens.MemberType] = MemberReferenceSerializer.Serialize(memberSpec != null ? memberSpec.MemberType : fieldSpec.MemberType);
+            rv[NameTokens.MemberType] =
+                MemberReferenceSerializer.Serialize(memberSpec != null
+                    ? memberSpec.MemberType :
+                        importedMemberDefinition != null
+                            ? importedMemberDefinition.MemberType
+                            : fieldSpec.MemberType,
+                fieldSpec.DeclaringType);
             rv[NameTokens.DeclaringType] = MemberReferenceSerializer.Serialize(fieldSpec.DeclaringType);
 
             return rv;
