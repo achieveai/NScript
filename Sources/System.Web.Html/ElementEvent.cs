@@ -15,14 +15,6 @@ namespace System.Web.Html
     public class ElementEvent
     {
         /// <summary>
-        /// Gets the element event.
-        /// </summary>
-        /// <returns>
-        /// .
-        /// </returns>
-        internal extern ElementEvent();
-
-        /// <summary>
         /// Gets a value indicating whether the alternate key.
         /// </summary>
         /// <value>

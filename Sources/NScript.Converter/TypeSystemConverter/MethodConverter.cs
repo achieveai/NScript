@@ -349,7 +349,8 @@ namespace NScript.Converter.TypeSystemConverter
                             || this.context.IsPsudoType(this.typeConverter.TypeDefinition)
                             || this.typeConverter.AllStaticMethods
                             || this.RuntimeManager.ImplementInstanceAsStatic)
-                        && this.methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.KeepInstanceUsageAttribute) == null)
+                        && this.methodDefinition.CustomAttributes.SelectAttribute(
+                                this.KnownReferences.KeepInstanceUsageAttribute) == null)
                     || !this.methodDefinition.HasThis;
             }
         }

@@ -1010,12 +1010,12 @@ ptyp_.flowValue = function Sunlight__Framework__UI__Helpers__LiveBinder__FlowVal
   if (this.liveObjects === null)
     this.liveObjects = System_ArrayG_$Object$_.__ctor0(this.binderInfo.propertyGetterPath.length + 1);
   if (this.liveObjects.get_item(0) !== this.source) {
-    if (this.liveObjects.get_item(0) !== null) {
+    if (!System__Object__IsNullOrUndefined(this.liveObjects.get_item(0))) {
       this.pathTraversed = 0;
       this.cleanRegistrations();
     }
     this.liveObjects.set_item(0, this.source);
-    if (this.liveObjects.get_item(0) !== null)
+    if (!System__Object__IsNullOrUndefined(this.liveObjects.get_item(0)))
       System__Type__CastType(Sunlight_Framework_Observables_INotifyPropertyChanged, this.liveObjects.get_item(0)).V_AddPropertyChangedListener_b(this.binderInfo.propertyNames[0], System__Delegate__Create("onSourcePropertyChanged", this));
   }
   this.setTargetProperty(this.getValue());
@@ -3916,7 +3916,7 @@ function DocStorageGetter(doc) {
   if (!doc.stateStore) {
     doc.stateStore = new Array(6);
     style = doc.createElement("style");
-    style.textContent = ".black{background-color:black;color:white;}";
+    style.textContent = ".black{background-color:black;\ncolor:white;\n}\n";
     doc.body.appendChild(style);
   }
   return doc.stateStore;

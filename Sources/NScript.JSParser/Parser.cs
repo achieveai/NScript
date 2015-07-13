@@ -452,6 +452,7 @@ namespace NScript.JSParser
         {
             int type = ((CommonTree)tree.Children[0]).Token.Type;
             UnaryOperator op = UnaryOperator.Void;
+            bool doubleNot = false;
             switch (type)
             {
                 case JavaScriptParser.DELETE:
@@ -485,15 +486,30 @@ namespace NScript.JSParser
                 case JavaScriptParser.NOT:
                     op = UnaryOperator.LogicalNot;
                     break;
+                case JavaScriptParser.DOUBLE_NOT:
+                    op = UnaryOperator.LogicalNot;
+                    doubleNot = true;
+                    break;
                 default:
                     break;
             }
 
-            return new UnaryExpression(
+            var rv = new UnaryExpression(
                 null,
                 resolver.Scope,
                 op,
                 Parser.ParseExpression((CommonTree)tree.Children[1], resolver));
+
+            if (doubleNot)
+            {
+                rv = new UnaryExpression(
+                    null,
+                    resolver.Scope,
+                    op,
+                    rv);
+            }
+
+            return rv;
         }
 
         /// <summary>

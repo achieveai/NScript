@@ -488,7 +488,7 @@ unaryExpression
     ;
 
 prefixOperator
-    : DELETE | VOID | TYPE_OF | PLUS_INC | MINUS_INC | PLUS | MINUS | BIT_NOT | NOT
+    : DELETE | VOID | TYPE_OF | PLUS_INC | MINUS_INC | PLUS | MINUS | BIT_NOT | NOT | DOUBLE_NOT
     ;
 
 postfixExpression
@@ -560,7 +560,7 @@ importedMethodArguments
 importedTypeName
     : '[' assem=importedTypeNamePart ']' type=importedTypeNamePart -> ^(TYPENAME $assem $type)
     | Identifier -> ^(TYPENAME Identifier)
-	| GenericSignature -> ^(TYPENAME GenericSignature)
+    | GenericSignature -> ^(TYPENAME GenericSignature)
     ;
 
 importedAssemblyNamePart
@@ -580,7 +580,7 @@ TypeNameIdentifier
 
 GenericSignature
     : '!' DecimalDigit+
-	| '!!' DecimalDigit+
+    | DOUBLE_NOT DecimalDigit+
     ;
 
 /*
@@ -600,6 +600,8 @@ GT  : '>';
 LT  : '<';
 GTE : '>=';
 LTE : '<=';
+
+DOUBLE_NOT: '!!';
 
 PLUS_INC: '++';
 MINUS_INC: '--';

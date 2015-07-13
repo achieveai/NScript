@@ -274,14 +274,15 @@ namespace NScript.Converter.ExpressionsConverter
             bool isExtendedOrPsudo = runtimeManager.Context.IsExtended(declaringTypeDefinition)
                 || runtimeManager.Context.IsPsudoType(declaringTypeDefinition);
             if (methodReference.HasThis
-                && !(methodReference.DeclaringType.IsValueType
-                    && (!isExtendedOrPsudo || runtimeManager.Context.IsImplemented(methodDefinition)))
+                && !((methodReference.DeclaringType.IsValueType
+                        || runtimeManager.ImplementInstanceAsStatic)
+                    && (!isExtendedOrPsudo
+                        || runtimeManager.Context.IsImplemented(methodDefinition)))
                 && (callContext.IsVirtual
                     || !isExtendedOrPsudo
                     || !runtimeManager.Context.IsImplemented(methodDefinition)
                     || methodReference.Resolve().CustomAttributes.SelectAttribute(
-                            runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) != null)
-                && !runtimeManager.ImplementInstanceAsStatic)
+                            runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) != null))
             {
                 genericArguments = genericArguments ?? new List<JST.Expression>();
 

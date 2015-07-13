@@ -19,41 +19,41 @@ using System.Text;
         private static string[] browserPrefixes = new string[] {"-webkit-", "-moz-", "-o-", "-ms-", String.Empty};
         private static string[] standardNoPrefixes = new string[] { String.Empty };
         private static HashSet<string> verndorSpecificProperties = new HashSet<string>{
-            "transform",
-            "animation",
-            "animation-delay",
-            "animation-direction",
-            "animation-duration",
-            "animation-fill-mode",
-            "animation-iteration-count",
-            "animation-name",
-            "animation-play-state",
-            "animation-timing-function",
-            "backface-visibility",
-            "background-clip",
-            "background-origin",
-            "box-shadow",
-            "box-sizing",
-            "clip-path",
-            "column-count",
-            "column-fill",
-            "column-gap",
-            "column-rule",
-            "column-rule-color",
-            "column-rule-style",
-            "column-rule-width",
-            "column-span",
-            "column-width",
-            "columns",
-            "filter",
-            "flex",
-            "flex-align",
-            "flex-direction",
-            "flex-wrap",
-            "text-overflow",
-            "writing-mode",
-            "word-wrap",
-            "zoom"
+            // "transform",
+            // "animation",
+            // "animation-delay",
+            // "animation-direction",
+            // "animation-duration",
+            // "animation-fill-mode",
+            // "animation-iteration-count",
+            // "animation-name",
+            // "animation-play-state",
+            // "animation-timing-function",
+            // "backface-visibility",
+            // "background-clip",
+            // "background-origin",
+            // "box-shadow",
+            // "box-sizing",
+            // "clip-path",
+            // "column-count",
+            // "column-fill",
+            // "column-gap",
+            // "column-rule",
+            // "column-rule-color",
+            // "column-rule-style",
+            // "column-rule-width",
+            // "column-span",
+            // "column-width",
+            // "columns",
+            // "filter",
+            // "flex",
+            // "flex-align",
+            // "flex-direction",
+            // "flex-wrap",
+            // "text-overflow",
+            // "writing-mode",
+            // "word-wrap",
+            // "zoom"
         };
 
         private static CssSerializerVisitor instance;
@@ -346,7 +346,7 @@ using System.Text;
 
             this.stringBuilder.Append("{");
             this.WriteProperties(obj.Properties);
-            this.stringBuilder.Append("}");
+            this.stringBuilder.Append("}\n");
             return false;
         }
 
@@ -370,6 +370,7 @@ using System.Text;
             }
 
             this.stringBuilder.Append('}');
+            this.stringBuilder.Append('\n');
             return false;
         }
 
@@ -396,9 +397,11 @@ using System.Text;
                     this.stringBuilder.Append('{');
                     this.WriteProperties(frame.Properties);
                     this.stringBuilder.Append('}');
+                    this.stringBuilder.Append('\n');
                 }
 
                 this.stringBuilder.Append('}');
+                this.stringBuilder.Append('\n');
             }
 
             return false;
@@ -428,7 +431,11 @@ using System.Text;
                         this.Visit(prop.PropertyArgs[iValue]);
                     }
 
+                    if (prop.Priority)
+                    { this.stringBuilder.Append(" !important"); }
+
                     this.stringBuilder.Append(';');
+                    this.stringBuilder.Append('\n');
                 }
             }
         }

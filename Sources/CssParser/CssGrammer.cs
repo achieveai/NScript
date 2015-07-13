@@ -601,9 +601,12 @@ namespace CssParser
 
         private CssProperty ParseProperty(ITree tree)
         {
+            var prio = tree.ChildCount == 3 && tree.GetChild(2).Text == "!important";
+
             return new CssProperty(
                 tree.GetChild(0).Text,
-                this.ParsePropertyValueSet(tree.GetChild(1)));
+                this.ParsePropertyValueSet(tree.GetChild(1)),
+                prio);
         }
 
         private List<CssPropertyValueSet> ParsePropertyValueSet(ITree tree)

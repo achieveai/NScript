@@ -70,16 +70,18 @@ namespace CssParser
         /// The property arguments.
         /// </summary>
         private IList<CssPropertyValueSet> propertyArgs;
+        private bool prio;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="propertyName"> Name of the property. </param>
         /// <param name="propertyArgs"> The property arguments. </param>
-        public CssProperty(string propertyName, IList<CssPropertyValueSet> propertyArgs)
+        public CssProperty(string propertyName, IList<CssPropertyValueSet> propertyArgs, bool prio)
         {
             this.propertyName = propertyName;
             this.propertyArgs = propertyArgs;
+            this.prio = prio;
         }
 
         /// <summary>
@@ -99,5 +101,8 @@ namespace CssParser
         /// </value>
         public IList<CssPropertyValueSet> PropertyArgs
         { get { return this.propertyArgs; } }
+
+        public bool Priority
+        { get { return this.prio; } }
     }
 }

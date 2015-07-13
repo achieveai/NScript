@@ -216,7 +216,7 @@ namespace Sunlight.Framework.UI.Helpers
 
             if (this.liveObjects[0] != this.source)
             {
-                if (this.liveObjects[0] != null)
+                if (!object.IsNullOrUndefined(this.liveObjects[0]))
                 {
                     this.pathTraversed = 0;
                     this.CleanRegistrations();
@@ -224,7 +224,7 @@ namespace Sunlight.Framework.UI.Helpers
 
                 this.liveObjects[0] = this.source;
 
-                if (this.liveObjects[0] != null)
+                if (!object.IsNullOrUndefined(this.liveObjects[0]))
                 {
                     ((INotifyPropertyChanged)this.liveObjects[0]).AddPropertyChangedListener(
                         this.binderInfo.PropertyNames[0],
