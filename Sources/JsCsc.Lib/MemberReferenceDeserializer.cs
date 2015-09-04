@@ -371,7 +371,10 @@ namespace JsCsc.Lib
             string moduleName = jObject.Value<string>(NameTokens.Name);
             if (!this._context.TryGetModuleDefinition(moduleName, out rv))
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException(
+                    string.Format(
+                    "Unable to resolve assembly:{0}, are you missing assembly reference?",
+                    moduleName));
             }
 
             return rv;

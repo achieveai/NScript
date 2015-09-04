@@ -97,16 +97,38 @@ namespace NScript.Converter
 
             clrContext.LoadAssembly(this.mainAssembly);
 
-            ConverterContext converterContext = new ConverterContext(
-                clrContext,
-                this.methodConverterPlugins,
-                this.typeConverterPlugins);
-            RuntimeScopeManager runtimeManager = new RuntimeScopeManager(converterContext);
-            List<MethodDefinition> methodDefinitionsToEmit = new List<MethodDefinition>();
-            MethodDefinition entryPoint =
-                Path.GetExtension(mainAssembly) == ".exe"
-                    ? this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly))
-                    : null;
+            RuntimeScopeManager runtimeManager;
+            ConverterContext converterContext;
+            List<MethodDefinition> methodDefinitionsToEmit;
+            MethodDefinition entryPoint;
+
+            try
+            {
+                converterContext = new ConverterContext(
+                    clrContext,
+                    this.methodConverterPlugins,
+                    this.typeConverterPlugins);
+                runtimeManager = new RuntimeScopeManager(converterContext);
+                methodDefinitionsToEmit = new List<MethodDefinition>();
+
+                entryPoint =
+                    Path.GetExtension(mainAssembly) == ".exe"
+                        ? this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly))
+                        : null;
+            }
+            catch(System.Exception ex)
+            {
+                System.Console.Out.WriteLine(
+                    string.Format("{0}({1},{2}): error ERR0123: {3}",
+                        string.Empty,
+                        0,
+                        0,
+                        ex.Message));
+
+                System.Console.Out.WriteLine(ex.StackTrace);
+
+                return false;
+            }
 
             try
             {
@@ -186,15 +208,15 @@ namespace NScript.Converter
             }
             catch(System.Exception ex)
             {
-                System.Console.Error.WriteLine("NScript.Exe(0,0): error UNK0001: {0}", ex.Message);
-                System.Console.Error.WriteLine(ex.StackTrace);
+                System.Console.Out.WriteLine("NScript.Exe(0,0): error UNK0001: {0}", ex.Message);
+                System.Console.Out.WriteLine(ex.StackTrace);
             }
 
             foreach (var warning in converterContext.Warnings)
             {
                 if (warning.Item1 != null)
                 {
-                    System.Console.Error.WriteLine(
+                    System.Console.Out.WriteLine(
                         string.Format("{0}({1},{2}): warning WRN0123: {3}",
                             warning.Item1.FileName,
                             warning.Item1.StartLine,
@@ -207,7 +229,7 @@ namespace NScript.Converter
             {
                 if (warning.Item1 != null)
                 {
-                    System.Console.Error.WriteLine(
+                    System.Console.Out.WriteLine(
                         string.Format("{0}({1},{2}): error ERR0123: {3}",
                             warning.Item1.FileName,
                             warning.Item1.StartLine,
@@ -216,7 +238,7 @@ namespace NScript.Converter
                 }
                 else
                 {
-                    System.Console.Error.WriteLine(
+                    System.Console.Out.WriteLine(
                         string.Format("{0}({1},{2}): error ERR0123: {3}",
                             string.Empty,
                             0,
