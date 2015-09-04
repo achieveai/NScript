@@ -1052,7 +1052,7 @@ namespace NScript.CLR
         /// true if overriding, false if not.
         /// </returns>
         public static bool IsOverriding(
-            this MethodDefinition derivedMethod,
+            this MethodReference derivedMethod,
             MethodReference baseMethod,
             TypeReference baseType)
         {
@@ -1255,18 +1255,18 @@ namespace NScript.CLR
         /// supported for now.
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<MethodReference, MethodDefinition> GetInterfaceOverrides(
+        public static Dictionary<MethodReference, MethodReference> GetInterfaceOverrides(
             this TypeDefinition typeDefinition,
             ClrContext clrContext)
         {
             if (typeDefinition.IsInterface)
             {
-                return new Dictionary<MethodReference, MethodDefinition>();
+                return new Dictionary<MethodReference, MethodReference>();
             }
 
-            List<MethodDefinition> virtualMethods = new List<MethodDefinition>();
-            Dictionary<MethodReference, MethodDefinition> rv =
-                new Dictionary<MethodReference, MethodDefinition>(MemberReferenceComparer.Instance);
+            List<MethodReference> virtualMethods = new List<MethodReference>();
+            Dictionary<MethodReference, MethodReference> rv =
+                new Dictionary<MethodReference, MethodReference>(MemberReferenceComparer.Instance);
 
             HashSet<TypeReference> baseIfaces = null;
             if (typeDefinition.BaseType != null)
@@ -1280,7 +1280,7 @@ namespace NScript.CLR
 
             foreach (var vMethod in virtualMethods)
             {
-                foreach (var method in vMethod.Overrides)
+                foreach (var method in ((MethodDefinition)vMethod.GetDefinition()).Overrides)
                 {
                     if (!rv.ContainsKey(method))
                     {
@@ -1288,6 +1288,8 @@ namespace NScript.CLR
                     }
                 }
             }
+
+            List<Tuple<MethodReference, TypeReference>> unmatchedMethods = new List<Tuple<MethodReference, TypeReference>>();
 
             foreach (var baseType in TypeHelpers.GetBaseTypes(typeDefinition))
             {
@@ -1303,9 +1305,7 @@ namespace NScript.CLR
                     bool matched = false;
 
                     if (baseMethod.DeclaringType.HasGenericParameters)
-                    {
-                        baseMethod = baseMethodDef.FixGenericTypeArguments(baseType);
-                    }
+                    { baseMethod = baseMethodDef.FixGenericTypeArguments(baseType); }
 
                     if (rv.ContainsKey(baseMethod))
                     { continue; }
@@ -1316,7 +1316,7 @@ namespace NScript.CLR
                         {
                             rv.Add(
                                 baseMethod.FixGenericTypeArguments(baseType),
-                                virtualMethod);
+                                (MethodDefinition)virtualMethod.GetDefinition());
                             matched = true;
                             break;
                         }
@@ -1324,13 +1324,47 @@ namespace NScript.CLR
 
                     if (!matched && baseDefinition.IsInterface && !typeDefinition.IsInterface)
                     {
-                        throw new InvalidProgramException(
-                            string.Format(
-                                "Can't map interface method {0} to instance method for type {1}",
-                                baseMethod,
-                                typeDefinition));
+                        unmatchedMethods.Add(Tuple.Create(baseMethodDef, baseType));
                     }
                 }
+
+                if (!baseDefinition.IsInterface)
+                {
+                    foreach (var m in baseDefinition.Methods.Where((m) => m.IsVirtual))
+                    {
+                        if (baseType.HasGenericParameters)
+                        { virtualMethods.Add(m.FixGenericTypeArguments(baseType)); }
+                        else
+                        { virtualMethods.Add(m); }
+                    }
+                }
+            }
+
+            for (int iUnmatched = unmatchedMethods.Count - 1; iUnmatched >= 0; iUnmatched--)
+            {
+                var unmatcheMethod = unmatchedMethods[iUnmatched].Item1;
+                var unmatchedMethodType = unmatchedMethods[iUnmatched].Item2;
+                foreach (var virtualMethod in virtualMethods)
+                {
+                    if (virtualMethod.IsOverriding(unmatcheMethod, unmatchedMethodType))
+                    {
+                        rv.Add(
+                            unmatcheMethod.FixGenericTypeArguments(unmatchedMethodType),
+                            virtualMethod);
+
+                        unmatchedMethods.RemoveAt(iUnmatched);
+                        break;
+                    }
+                }
+            }
+
+            if (unmatchedMethods.Count > 0)
+            {
+                    throw new InvalidProgramException(
+                        string.Format(
+                            "Can't map interface method {0} to instance method for type {1}",
+                            unmatchedMethods[0].Item1,
+                            unmatchedMethods[0].Item2));
             }
 
             return rv;

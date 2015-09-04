@@ -162,7 +162,8 @@ namespace NScript.Converter.TypeSystemConverter
             foreach (var kvPair in this.TypeDefinition.GetInterfaceOverrides(this.Context.ClrContext))
             {
                 MethodReference virtualBase = kvPair.Key;
-                MethodDefinition method = kvPair.Value;
+                MethodReference method = kvPair.Value;
+                MethodDefinition methodDef = (MethodDefinition)method.GetDefinition();
                 Expression value = null;
                 TypeDefinition virtualBaseTypeDef = virtualBase.DeclaringType.Resolve();
 
@@ -172,7 +173,7 @@ namespace NScript.Converter.TypeSystemConverter
                 { continue; }
 
                 if (virtualBaseTypeDef.IsInterface
-                    && !(method.IsFinal && method.IsNewSlot))
+                    && !(methodDef.IsFinal && methodDef.IsNewSlot))
                 {
                     // Since all the overrides to this method won't be redirecting this pointer,
                     // we need to create method that will redirect to the the virtual method
@@ -213,7 +214,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
                 else
                 {
-                    MethodConverter methodConverter = this.GetMethodConverter(method);
+                    MethodConverter methodConverter = this.GetMethodConverter(methodDef);
 
                     if (methodConverter != null)
                     {
@@ -222,7 +223,7 @@ namespace NScript.Converter.TypeSystemConverter
                             value = this.MapClassVirtual(
                                 prototype,
                                 virtualBase,
-                                method);
+                                methodDef);
                         }
                         else
                         {
@@ -234,7 +235,7 @@ namespace NScript.Converter.TypeSystemConverter
                                     this.Scope,
                                     prototype,
                                     new IdentifierExpression(
-                                        this.TypeScopeManager.ResolveMethod(method), this.Scope));
+                                        this.TypeScopeManager.ResolveMethod(methodDef), this.Scope));
                         }
                     }
                 }

@@ -1565,15 +1565,18 @@ namespace NScript.Converter.TypeSystemConverter
                             if (!this.membersProcessed.Contains(method))
                             {
                                 this.usedMembersToProcess.Enqueue(method);
-                                if (overridenMethod.DeclaringType.Resolve().IsInterface
-                                    && method.IsVirtual)
+                                if (overridenMethod.DeclaringType.Resolve().IsInterface)
                                 {
-                                    // If this type is inheriting from interface and this method is
-                                    // also virtual. In this case any call to method on interface will
-                                    // also make virtual call on this method. So we need to add this method
-                                    // to virtuals used set.
-                                    this.virtualMethodReferencesUsed.Add(method);
-                                    this.virtualMethodsUsed.Add(method);
+                                    MethodDefinition methodDef = (MethodDefinition)method.GetDefinition();
+                                    if (methodDef.IsVirtual)
+                                    {
+                                        // If this type is inheriting from interface and this method is
+                                        // also virtual. In this case any call to method on interface will
+                                        // also make virtual call on this method. So we need to add this method
+                                        // to virtuals used set.
+                                        this.virtualMethodReferencesUsed.Add(method);
+                                        this.virtualMethodsUsed.Add(methodDef);
+                                    }
                                 }
                             }
                         }

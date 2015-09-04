@@ -142,7 +142,8 @@ namespace NScript.Converter.TypeSystemConverter
 
             foreach (var kvPair in interfaceToOverrideMap)
             {
-                if (this.GetMethodConverter(kvPair.Value) == null)
+                var methodDef = (MethodDefinition)kvPair.Value.GetDefinition();
+                if (this.GetMethodConverter(methodDef) == null)
                 {
                     continue;
                 }
@@ -151,7 +152,7 @@ namespace NScript.Converter.TypeSystemConverter
                     this.MapToVirtual(
                         prototype,
                         kvPair.Key,
-                        kvPair.Value));
+                        methodDef));
             }
 
             foreach (var method in this.TypeDefinition.Methods)
