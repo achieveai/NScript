@@ -440,6 +440,7 @@ namespace NScript.Converter
                 int dotIndex = returnValue.LastIndexOf('.');
 
                 returnValue = returnValue.Substring(dotIndex + 1);
+                nameSpace = null;
             }
 
             if (nameSpace != null)

@@ -724,7 +724,7 @@ namespace NScript.Converter.TypeSystemConverter
                 {
                     resolvedIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                         nameSpace.Scope,
-                        isExtended || string.IsNullOrEmpty(typeName.Item1)
+                        isExtended  || string.IsNullOrEmpty(typeName.Item1)
                             ? typeName.Item2
                             : (typeName.Item1 + '.' + typeName.Item2).Replace('.', '_'),
                         isExtended);

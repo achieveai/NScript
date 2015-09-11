@@ -52,6 +52,10 @@ namespace XwmlParser
             SourceType sourceType,
             string namedPartName)
         {
+            if (mode == BindingMode.TwoWay
+                && (targetBindingInfo is CssClassTargetBindingInfo))
+            { throw new ApplicationException("CssBinder does not support TwoWaybinding."); }
+
             this.TargetBindingInfo = targetBindingInfo;
             this.SourceBindingInfo = sourceBindingInfo;
             this.ConverterInfo = converterInfo;
