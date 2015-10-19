@@ -1462,7 +1462,8 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 var typeReference = this.usedTypeReferencesToProcess.Dequeue();
                 if (this.typeReferencesUsed.Contains(typeReference)
-                    || typeReference.IsGenericParameter)
+                    || typeReference.IsGenericParameter
+                    || (typeReference.IsArray && typeReference.GetElementType().IsGenericParameter) )
                 {
                     continue;
                 }
@@ -1475,7 +1476,8 @@ namespace NScript.Converter.TypeSystemConverter
                     GenericInstanceType genericTypeReference = (GenericInstanceType)typeReference;
                     foreach (var param in genericTypeReference.GenericArguments)
                     {
-                        this.usedTypeReferencesToProcess.Enqueue(param);
+                        if (!param.IsGenericParameter)
+                        { this.usedTypeReferencesToProcess.Enqueue(param); }
                     }
                 }
 

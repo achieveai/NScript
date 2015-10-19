@@ -188,11 +188,6 @@ namespace System
             set;
         }
 
-        public T[] GetArray()
-        {
-            return (T[])(object)new ArrayG<T>(this);
-        }
-
         [Script("return array ? array.@{[mscorlib]System.ArrayG`1::innerArray} : null;")]
         public static extern NativeArray<T> GetNativeArray(T[] array);
 
@@ -296,9 +291,7 @@ namespace System
         public extern void Sort(Func<T, T, int> sortFunction);
 
         public static implicit operator NativeArray<T>(T[] n)
-        {
-            return ((ArrayG<T>)(object)n).InnerArray;
-        }
+        { return ((ArrayG<T>)(object)n).InnerArray; }
 
         [ScriptName("shift")]
         private extern void ShiftImpl();
@@ -317,5 +310,11 @@ namespace System
 
         [ScriptName("splice")]
         private extern void SpliceImpl();
+    }
+
+    public static class NativeArrayExtensions
+    {
+        public static T[] GetArray<T>(this NativeArray<T> n)
+        { return (T[])(object)new ArrayG<T>(n); }
     }
 }

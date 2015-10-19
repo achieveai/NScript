@@ -449,7 +449,11 @@ namespace JsCsc.Lib
                 }
             }
 
-            var loopBlock = body.Statements[0] as ScopeBlock;
+            ScopeBlock loopBlock = body.Statements[0] as ScopeBlock;
+            if (body is ForLoop
+                || body is ForEachLoop)
+            { loopBlock = body; }
+
             if (loopBlock == null)
             {
                 loopBlock = new ScopeBlock(
