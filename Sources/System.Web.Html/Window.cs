@@ -373,6 +373,14 @@ namespace System.Web.Html
         public extern Window Open(string url, string title, string windowOpenParam);
 
         /// <summary>
+        /// Posts a message.
+        /// </summary>
+        /// <param name="data">           The data. </param>
+        /// <param name="targetOrigin">   Target origin. </param>
+        /// <param name="transferObject"> (optional) the transfer object. </param>
+        public extern void PostMessage(object data, string targetOrigin, object transferObject = null);
+
+        /// <summary>
         /// Closes this object.
         /// </summary>
         public extern void Close();

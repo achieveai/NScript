@@ -70,6 +70,31 @@ namespace System.Web
     public class XMLHttpRequest
     {
         /// <summary>
+        /// Type of the BLOB.
+        /// </summary>
+        public const string BlobType = "blob";
+
+        /// <summary>
+        /// Type of the array buffer.
+        /// </summary>
+        public const string ArrayBufferType = "arraybuffer";
+
+        /// <summary>
+        /// Type of the document.
+        /// </summary>
+        public const string DocumentType = "document";
+
+        /// <summary>
+        /// Type of the JSON.
+        /// </summary>
+        public const string JsonType = "json";
+
+        /// <summary>
+        /// Type of the text.
+        /// </summary>
+        public const string TextType = "text";
+
+        /// <summary>
         /// State of the ready.
         /// </summary>
         public extern ReadyState ReadyState { get; }
@@ -78,6 +103,22 @@ namespace System.Web
         /// The response text.
         /// </summary>
         public extern string ResponseText { get; }
+
+        /// <summary>
+        /// Gets the type of the response.
+        /// </summary>
+        /// <value>
+        /// The type of the response.
+        /// </value>
+        public extern string ResponseType { get; set; }
+
+        /// <summary>
+        /// Gets the response.
+        /// </summary>
+        /// <value>
+        /// The response.
+        /// </value>
+        public extern object Response { get; }
 
         /// <summary>
         /// The status.
@@ -99,9 +140,71 @@ namespace System.Web
         /// </summary>
         public extern event Action<XMLHttpRequest, ProgressEvent> OnReadSateChange;
 
+        /// <summary>
+        /// Event queue for all listeners interested in OnLoad events.
+        /// </summary>
         public extern event Action<XMLHttpRequest, ProgressEvent> OnLoad;
 
+        /// <summary>
+        /// Event queue for all listeners interested in OnError events.
+        /// </summary>
         public extern event Action<XMLHttpRequest, ProgressEvent> OnError;
+
+        /// <summary>
+        /// Event queue for all listeners interested in OnTimeout events.
+        /// </summary>
+        public extern event Action<XMLHttpRequest, ProgressEvent> OnTimeout;
+
+        /// <summary>
+        /// Gets the given document.
+        /// </summary>
+        /// <param name="url"> URL of the document. </param>
+        /// <param name="cb">  The cb. </param>
+        [IgnoreGenericArguments]
+        public static void GetArrayBuffer<T>(
+            string url,
+            Action<NativeArray<T>, short, bool> cb,
+            string acceptType = "*",
+            string[] headerPair = null,
+            int timeout = -1)
+        {
+            XMLHttpRequest.GetRaw(
+                url,
+                (request, code, success) =>
+                {
+                    if (success) { cb((NativeArray<T>)request.Response, code, true);}
+                    else { cb(null, code, false); }
+                },
+                XMLHttpRequest.ArrayBufferType,
+                acceptType,
+                headerPair,
+                timeout);
+        }
+
+        /// <summary>
+        /// Gets the given document.
+        /// </summary>
+        /// <param name="url"> URL of the document. </param>
+        /// <param name="cb">  The cb. </param>
+        public static void GetBlob(
+            string url,
+            Action<Blob, short, bool> cb,
+            string acceptType = "*",
+            string[] headerPair = null,
+            int timeout = -1)
+        {
+            XMLHttpRequest.GetRaw(
+                url,
+                (request, code, success) =>
+                {
+                    if (success) { cb((Blob)request.Response, code, true);}
+                    else { cb(null, code, false); }
+                },
+                XMLHttpRequest.BlobType,
+                acceptType,
+                headerPair,
+                timeout);
+        }
 
         /// <summary>
         /// Gets the given document.
@@ -115,9 +218,38 @@ namespace System.Web
             string[] headerPair = null,
             int timeout = -1)
         {
+            XMLHttpRequest.GetRaw(
+                url,
+                (request, code, success) =>
+                {
+                    if (success) { cb(request.ResponseText, code, true);}
+                    else { cb(null, code, false); }
+                },
+                null,
+                acceptType,
+                headerPair,
+                timeout);
+        }
+
+        /// <summary>
+        /// Gets the given document.
+        /// </summary>
+        /// <param name="url"> URL of the document. </param>
+        /// <param name="cb">  The cb. </param>
+        public static void GetRaw(
+            string url,
+            Action<XMLHttpRequest, short, bool> cb,
+            string responseType,
+            string acceptType = "text/*",
+            string[] headerPair = null,
+            int timeout = -1)
+        {
             var request = new XMLHttpRequest();
             request.Open("GET", url, true);
             request.SetRequestHeader("Accept", acceptType);
+            if (timeout > 0)
+            { request.Timeout = timeout; }
+
             if (headerPair != null)
             {
                 for (int iHeader = 0; iHeader < headerPair.Length - 1; iHeader+=2)
@@ -132,16 +264,22 @@ namespace System.Web
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(request.ResponseText, request.Status, false);
+                        cb(request, request.Status, false);
                     };
 
-                request.OnError +=
+                Action<XMLHttpRequest, ProgressEvent> errorCb = 
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(null, request.Status, true);
+                        cb(request, request.Status, true);
                     };
+
+                request.OnError += errorCb;
+                request.OnTimeout += errorCb;
             }
+
+            if (!string.IsNullOrEmpty(responseType))
+            { request.ResponseType = responseType; }
 
             request.Send();
         }

@@ -484,13 +484,18 @@ namespace NScript.Converter.TypeSystemConverter
                                     typeReferencesRegistered.Add(dependentTypeReference);
                                     typesInitializedInOrder.Add(dependentTypeReference);
 
-                                    statements.Add(
-                                        new ExpressionStatement(
-                                            null,
-                                            this.Scope,
-                                            this.InitializeGenericType(
-                                                dependentTypeReference,
-                                                this.Scope)));
+
+                                    if (!this.context.HasIgnoreNamespaceAttribute(dependentTypeReference.Resolve())
+                                        && !this.context.IsExtended(dependentTypeReference.Resolve()))
+                                    {
+                                        statements.Add(
+                                            new ExpressionStatement(
+                                                null,
+                                                this.Scope,
+                                                this.InitializeGenericType(
+                                                    dependentTypeReference,
+                                                    this.Scope)));
+                                    }
                                 }
                             }));
 
@@ -722,6 +727,13 @@ namespace NScript.Converter.TypeSystemConverter
                 // Create the name of identifier to be used.
                 if (typeName != null)
                 {
+                    if (isExtended
+                        && !string.IsNullOrEmpty(typeName.Item1)
+                        && !this.context.HasIgnoreNamespaceAttribute(typeDefinition))
+                    {
+                        nameSpace = nameSpace.GetNamespace(typeName.Item1, true);
+                    }
+
                     resolvedIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                         nameSpace.Scope,
                         isExtended  || string.IsNullOrEmpty(typeName.Item1)
@@ -731,13 +743,6 @@ namespace NScript.Converter.TypeSystemConverter
 
                     returnValue = new List<IIdentifier>();
                     returnValue.Add(resolvedIdentifier);
-                    if (isExtended
-                        && !string.IsNullOrEmpty(typeName.Item1)
-                        && !this.context.HasIgnoreNamespaceAttribute(typeDefinition))
-                    {
-                        nameSpace = nameSpace.GetNamespace(typeName.Item1, true);
-                    }
-
                     while (nameSpace.Parent != null)
                     {
                         returnValue.Insert(0, nameSpace.Identifier);

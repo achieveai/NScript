@@ -27,6 +27,9 @@
 
         public extern char CharCodeAt(int index);
 
+        [Script(@"return this[index];")]
+        public extern string At(int index);
+
         [Script(@"
             s1 = s1 || '';
             s2 = s2 || '';

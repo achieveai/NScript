@@ -24,6 +24,7 @@ namespace System.Web.Html.Data
         Error,
         NoUpdate,
         Progress,
-        UpdateReady
+        UpdateReady,
+        Obsolete
     }
 }

@@ -2,10 +2,11 @@
 {
     using System.Runtime.CompilerServices;
 
+    [ScriptName("Function"), IgnoreNamespace]
     public abstract class Delegate
     {
         [PreserveCase]
-        public static readonly Delegate Null;
+        private static readonly Delegate Null;
 
         protected extern Delegate(object target, string method);
 

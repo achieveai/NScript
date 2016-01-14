@@ -25,6 +25,7 @@ namespace System.Web.Html.Data
         public extern event Action<ApplicationCache, ElementEvent> OnNoUpdate;
         public extern event Action<ApplicationCache, ElementEvent> OnProgress;
         public extern event Action<ApplicationCache, ElementEvent> OnUpdateReady;
+        public extern event Action<ApplicationCache, ElementEvent> OnObsolete;
 
         /// <summary>
         /// Adds the specified URI.

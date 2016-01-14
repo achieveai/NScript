@@ -13,7 +13,7 @@ namespace System
     /// Definition for NativeArray
     /// </summary>
     [ScriptName("Array"), IgnoreNamespace]
-    public sealed class NativeArray
+    public class NativeArray
     {
         public extern NativeArray(int length);
 
@@ -177,7 +177,7 @@ namespace System
     /// Definition for NativeArray
     /// </summary>
     [ScriptName("Array"), IgnoreNamespace, IgnoreGenericArguments]
-    public sealed class NativeArray<T>
+    public class NativeArray<T>
     {
         public extern NativeArray(int length);
 
@@ -310,6 +310,114 @@ namespace System
 
         [ScriptName("splice")]
         private extern void SpliceImpl();
+    }
+
+    [ScriptName("Uint8ClampedArray"), IgnoreNamespace, ImportedType]
+    public class Uint8ClampedArray : NativeArray<byte>
+    {
+        public extern Uint8ClampedArray();
+
+        public extern Uint8ClampedArray(int size);
+
+        public extern Uint8ClampedArray(NativeArray arr);
+
+        public extern Uint8ClampedArray(NativeArray<byte> arr);
+    }
+
+    [ScriptName("Uint8Array"), IgnoreNamespace, ImportedType]
+    public class Uint8Array : NativeArray<byte>
+    {
+        public extern Uint8Array();
+
+        public extern Uint8Array(int size);
+
+        public extern Uint8Array(NativeArray arr);
+
+        public extern Uint8Array(NativeArray<byte> arr);
+    }
+
+    [ScriptName("Int8Array"), IgnoreNamespace, ImportedType]
+    public class Int8Array : NativeArray<sbyte>
+    {
+        public extern Int8Array();
+
+        public extern Int8Array(int size);
+
+        public extern Int8Array(NativeArray arr);
+
+        public extern Int8Array(NativeArray<sbyte> arr);
+    }
+
+    [ScriptName("Int16Array"), IgnoreNamespace, ImportedType]
+    public class Int16Array : NativeArray<short>
+    {
+        public extern Int16Array();
+
+        public extern Int16Array(int size);
+
+        public extern Int16Array(NativeArray arr);
+
+        public extern Int16Array(NativeArray<short> arr);
+    }
+
+    [ScriptName("UInt16Array"), IgnoreNamespace, ImportedType]
+    public class Uint16Array : NativeArray<ushort>
+    {
+        public extern Uint16Array();
+
+        public extern Uint16Array(int size);
+
+        public extern Uint16Array(NativeArray arr);
+
+        public extern Uint16Array(NativeArray<ushort> arr);
+    }
+
+    [ScriptName("Int32Array"), IgnoreNamespace, ImportedType]
+    public class Int32Array : NativeArray<int>
+    {
+        public extern Int32Array();
+
+        public extern Int32Array(int size);
+
+        public extern Int32Array(NativeArray arr);
+
+        public extern Int32Array(NativeArray<int> arr);
+    }
+
+    [ScriptName("Uint32Array"), IgnoreNamespace, ImportedType]
+    public class Uint32Array : NativeArray<uint>
+    {
+        public extern Uint32Array();
+
+        public extern Uint32Array(int size);
+
+        public extern Uint32Array(NativeArray arr);
+
+        public extern Uint32Array(NativeArray<uint> arr);
+    }
+
+    [ScriptName("Float32Array"), IgnoreNamespace, ImportedType]
+    public class Float32Array : NativeArray<float>
+    {
+        public extern Float32Array();
+
+        public extern Float32Array(int size);
+
+        public extern Float32Array(NativeArray arr);
+
+        public extern Float32Array(NativeArray<float> arr);
+    }
+
+    [ScriptName("Float64Array"), IgnoreNamespace, ImportedType]
+    public class Float64Array : NativeArray<double>
+    {
+        public extern Float64Array();
+
+        public extern Float64Array(int size);
+
+        public extern Float64Array(NativeArray arr);
+
+        public extern Float64Array(NativeArray<double> arr);
     }
 
     public static class NativeArrayExtensions

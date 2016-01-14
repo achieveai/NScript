@@ -3,6 +3,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
+    [ScriptName("Function"), IgnoreNamespace]
     public abstract class MulticastDelegate : Delegate
     {
         protected extern MulticastDelegate(object target, string method);

@@ -1019,11 +1019,14 @@ namespace NScript.Converter
                         // method.Body.CodeSize == 0 for extern constructor.
                         else if (
                             method.Body != null
-                            && ((method.Body.CodeSize != 7 && method.Body.Instructions.Count != 3)
+                            && ((method.Body.CodeSize != 7
+                                && method.Body.Instructions.Count != 3)
                                 || typeDefinition.IsValueType))
                         {
                             hasConstructor = true;
-                            implmentedConstructor = implmentedConstructor || !this.IsExtern(method);
+                            bool isExtern = this.IsExtern(method);
+                            implmentedConstructor = implmentedConstructor || !isExtern;
+                            hasExternMethod = isExtern || hasExternMethod;
                         }
                     }
                     else
@@ -1070,11 +1073,14 @@ namespace NScript.Converter
                 if (null != typeDefinition.CustomAttributes.SelectAttribute(
                     this.KnownReferences.ExtendedAttribute))
                 {
-                    if (baseType != null && baseKind != TypeKind.Extended && !typeDefinition.IsValueType)
+                    if (baseType != null
+                        && baseKind != TypeKind.Extended
+                        && baseKind != TypeKind.Imported
+                        && !typeDefinition.IsValueType)
                     {
                         throw new InvalidDataException(
                             string.Format(
-                                "BaseType:'{0}' of ExtendedType: '{1}' should also be ExtendedType.",
+                                "BaseType:'{0}' of ExtendedType: '{1}' should also be ExtendedType or ImportedType.",
                                 baseType,
                                 typeDefinition));
                     }
@@ -1134,7 +1140,8 @@ namespace NScript.Converter
                     if (!hasNonPropertyMethods
                         && !hasConstructor
                         && baseType != null
-                        && (baseKind == TypeKind.JSONType || baseType.IsSameDefinition(this.ClrKnownReferences.Object)))
+                        && (baseKind == TypeKind.JSONType
+                            || baseType.IsSameDefinition(this.ClrKnownReferences.Object)))
                     {
                         rv = TypeKind.JSONType;
                     }

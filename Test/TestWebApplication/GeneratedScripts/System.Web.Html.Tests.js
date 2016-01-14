@@ -1,5 +1,5 @@
 ﻿(function(){
-var System__Type__typeMapping, System_Collections_Generic_StringDictionary_$Delegate$_, ptyp_;
+var System__Type__typeMapping, System_Collections_Generic_StringDictionary_$Function$_, ptyp_;
 Function.typeId = "b";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
@@ -188,8 +188,8 @@ ptyp_.bubblePhaseEvents = null;
 ptyp_.target = null;
 ptyp_.disposed = false;
 ptyp_.__ctor = function System__EventBinder____ctor(element) {
-  this.capturePhaseEvents = System_Collections_Generic_StringDictionary_$Delegate$_.defaultConstructor();
-  this.bubblePhaseEvents = System_Collections_Generic_StringDictionary_$Delegate$_.defaultConstructor();
+  this.capturePhaseEvents = System_Collections_Generic_StringDictionary_$Function$_.defaultConstructor();
+  this.bubblePhaseEvents = System_Collections_Generic_StringDictionary_$Function$_.defaultConstructor();
   this.target = element;
 };
 ptyp_.addEvent = function System__EventBinder__AddEvent0(name, action, onCapture) {
@@ -279,9 +279,6 @@ ptyp_.eventHandlerBubble = function System__EventBinder__EventHandlerBubble(evt)
     del(this.target, evt);
 };
 System__Type__RegisterReferenceType(System_EventBinder, "System.EventBinder", Object, []);
-function System_Delegate() {
-};
-System_Delegate.typeId = "f";
 function System__Delegate__Combine(a, b) {
   var funcs, rv;
   funcs = [];
@@ -364,10 +361,9 @@ function System__Delegate__CreateJoinedArray(array) {
   rv.isDelegate = true;
   return rv;
 };
-System__Type__RegisterReferenceType(System_Delegate, "System.Delegate", Object, []);
 function System_ValueType() {
 };
-System_ValueType.typeId = "g";
+System_ValueType.typeId = "f";
 ptyp_ = System_ValueType.prototype;
 ptyp_.boxedValue = null;
 System__Type__RegisterReferenceType(System_ValueType, "System.ValueType", Object, []);
@@ -375,7 +371,7 @@ Function.getDefaultValue = function() {
   return {
   };
 };
-Error.typeId = "h";
+Error.typeId = "g";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstructor) {
   var StringDictionary$1_$TValue$_, $5f_initTracker;
@@ -386,7 +382,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "i$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "h$" + TValue.typeId + "$";
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -438,8 +434,8 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
     StringDictionary$1_$TValue$_._tri();
   return StringDictionary$1_$TValue$_;
 };
-System_Collections_Generic_StringDictionary_$Delegate$_ = System_Collections_Generic_StringDictionary(System_Delegate);
-System_Collections_Generic_StringDictionary_$Delegate$_._tri();
+System_Collections_Generic_StringDictionary_$Function$_ = System_Collections_Generic_StringDictionary(Function);
+System_Collections_Generic_StringDictionary_$Function$_._tri();
 module("System.Web.Html.Tests.TestElement", {
   "setup": System__Web__Html__Tests__TestElement__Setup
 });

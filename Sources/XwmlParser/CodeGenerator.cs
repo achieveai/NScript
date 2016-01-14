@@ -1341,7 +1341,7 @@ namespace XwmlParser
                                 methodScope),
                             new StringLiteralExpression(
                                 methodScope,
-                                "body")),
+                                "head")),
                         new StringLiteralExpression(
                             methodScope,
                             "appendChild")),

@@ -126,6 +126,24 @@ namespace System.Web.Html
         protected extern Element();
 
         /// <summary>
+        /// Gets or sets the first element child.
+        /// </summary>
+        /// <value>
+        /// The first element child.
+        /// </value>
+        public extern Element FirstElementChild
+        { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last element child.
+        /// </summary>
+        /// <value>
+        /// The last element child.
+        /// </value>
+        public extern Element LastElementChild
+        { get; set; }
+
+        /// <summary>
         /// The previous element sibling.
         /// </summary>
         public extern Element PreviousElementSibling

@@ -16,7 +16,7 @@ namespace System.Web.Html
     {
         private extern MessageEvent();
 
-        public extern string Data
+        public extern object Data
         { get; }
 
         public extern string Origin

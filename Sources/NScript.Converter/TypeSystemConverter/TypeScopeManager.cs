@@ -665,6 +665,7 @@ namespace NScript.Converter
             if (!this.typeDefinition.IsAbstract
                 && !this.typeDefinition.IsSealed
                 && !this.context.IsExtended(typeDefinition)
+                && !this.context.IsImportedType(typeDefinition)
                 && !this.context.IsPsudoType(typeDefinition))
             {
                 this.hasMultipleConstructorImpls = methodSlots[".ctor"].Count > 1;
