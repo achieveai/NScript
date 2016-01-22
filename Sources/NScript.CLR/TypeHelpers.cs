@@ -1100,7 +1100,8 @@ namespace NScript.CLR
 
                 for (int iParam = 0; iParam < baseMethod.Parameters.Count && matched; iParam++)
                 {
-                    if (baseMethod.Parameters[iParam].Attributes == derivedMethod.Parameters[iParam].Attributes)
+                    if ((baseMethod.Parameters[iParam].Attributes & (ParameterAttributes.In | ParameterAttributes.Out | ParameterAttributes.Retval))
+                        == (derivedMethod.Parameters[iParam].Attributes & (ParameterAttributes.In | ParameterAttributes.Out | ParameterAttributes.Retval)))
                     {
                         var typeArgument = baseMethod.Parameters[iParam].ParameterType
                             .FixGenericTypeArguments(

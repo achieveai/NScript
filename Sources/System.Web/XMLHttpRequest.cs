@@ -170,11 +170,8 @@ namespace System.Web
         {
             XMLHttpRequest.GetRaw(
                 url,
-                (request, code, success) =>
-                {
-                    if (success) { cb((NativeArray<T>)request.Response, code, true);}
-                    else { cb(null, code, false); }
-                },
+                (request, code, error) =>
+                { cb(error ? null : (NativeArray<T>)request.Response, code, error); },
                 XMLHttpRequest.ArrayBufferType,
                 acceptType,
                 headerPair,
@@ -195,11 +192,8 @@ namespace System.Web
         {
             XMLHttpRequest.GetRaw(
                 url,
-                (request, code, success) =>
-                {
-                    if (success) { cb((Blob)request.Response, code, true);}
-                    else { cb(null, code, false); }
-                },
+                (request, code, error) =>
+                { cb(error ? null : (Blob)request.Response, code, error); },
                 XMLHttpRequest.BlobType,
                 acceptType,
                 headerPair,
@@ -220,11 +214,7 @@ namespace System.Web
         {
             XMLHttpRequest.GetRaw(
                 url,
-                (request, code, success) =>
-                {
-                    if (success) { cb(request.ResponseText, code, true);}
-                    else { cb(null, code, false); }
-                },
+                (request, code, error) => { cb(error ? null : request.ResponseText, code, error); },
                 null,
                 acceptType,
                 headerPair,
