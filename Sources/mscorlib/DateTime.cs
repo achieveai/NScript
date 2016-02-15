@@ -96,7 +96,7 @@
         [Script(@"return new Date(a.valueOf() - n);")]
         public extern static DateTime operator -(DateTime a, Number n);
 
-        [ScriptAlias("Date.parseDate")]
+        [Script(@"return new Date(value);")]
         public extern static DateTime Parse(string value);
 
         [ScriptName("now")]
@@ -254,6 +254,14 @@
         /// This object as a string.
         /// </returns>
         public extern string ToDateString();
+
+        /// <summary>
+        /// Converts this object to an ISO string.
+        /// </summary>
+        /// <returns>
+        /// This object as a string.
+        /// </returns>
+        public extern string ToISOString();
 
         /// <summary>
         /// Converts this object to a locale date string.

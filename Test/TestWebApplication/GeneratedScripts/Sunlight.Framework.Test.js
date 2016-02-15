@@ -1214,18 +1214,22 @@ ptyp_.unSubscribe = function Sunlight__Framework__EventBus__UnSubscribe(T, callb
   }
 };
 ptyp_.raise = function Sunlight__Framework__EventBus__Raise(T, evt) {
-  var typeId, registeredCallback;
+  var type, typeId, registeredCallback;
   Sunlight__Framework__ExceptionHelpers__ThrowOnArgumentNull(System__Type__BoxTypeInstance(T, evt), "evt");
-  typeId = T.typeId;
-  if (this.eventSubscriptsion.tryGetValue(typeId, {
-    read: function() {
-      return registeredCallback;
-    },
-    write: function(arg0) {
-      return registeredCallback = arg0;
-    }
-  }))
-    registeredCallback(evt);
+  type = T;
+  do {
+    typeId = type.typeId;
+    if (this.eventSubscriptsion.tryGetValue(typeId, {
+      read: function() {
+        return registeredCallback;
+      },
+      write: function(arg0) {
+        return registeredCallback = arg0;
+      }
+    }))
+      registeredCallback(evt);
+    type = type.baseType;
+  } while (type);
 };
 ptyp_.raiseOneTime = function Sunlight__Framework__EventBus__RaiseOneTime(T, evt) {
   var typeId, alreadyRegistered;

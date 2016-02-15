@@ -66,12 +66,18 @@ namespace Sunlight.Framework
             ExceptionHelpers.ThrowOnArgumentNull(evt, "evt");
 
             Delegate registeredCallback;
-            string typeId = typeof(T).TypeId;
+            Type type = typeof(T);
 
-            if (eventSubscriptsion.TryGetValue(typeId, out registeredCallback))
+            do
             {
-                ((Action<T>)registeredCallback)(evt);
-            }
+                string typeId = type.TypeId;
+                if (eventSubscriptsion.TryGetValue(typeId, out registeredCallback))
+                {
+                    ((Action<T>)registeredCallback)(evt);
+                }
+
+                type = type.BaseType;
+            } while (type != null);
         }
 
         public void RaiseOneTime<T>(T evt)

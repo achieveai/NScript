@@ -7,6 +7,9 @@
 
     public static class Utils
     {
+        /// <summary>
+        /// The character mapping.
+        /// </summary>
         private const string charMapping = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
         /// <summary>
@@ -16,6 +19,9 @@
         /// <returns>fixed string for JS.</returns>
         public static string ToJSString(string str)
         {
+            if (str == null)
+            { return "null"; }
+
             StringBuilder strBuilder = new StringBuilder(str.Length);
 
             for (int strIndex = 0; strIndex < str.Length; strIndex++)
