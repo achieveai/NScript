@@ -464,6 +464,7 @@ namespace NScript.Converter.TypeSystemConverter
                                     dependencyAnalyzer.TypeToTypeReferences[typeConverter.TypeDefinition])
                                 {
                                     if (dependent == null
+                                        || dependent.IsGenericParameter
                                         || !this.typesDefinitionsUsed.ContainsKey(dependent.Resolve()))
                                     {
                                         continue;

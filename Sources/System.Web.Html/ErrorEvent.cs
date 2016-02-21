@@ -12,7 +12,6 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ErrorEvent
     /// </summary>
-    [IgnoreNamespace]
     [JsonType]
     public class ErrorEvent
     {
@@ -34,7 +33,6 @@ namespace System.Web.Html
     /// Error object.
     /// </summary>
     [JsonType]
-    [IgnoreNamespace]
     public class ErrorObject
     {
         public extern string Stack { get; }

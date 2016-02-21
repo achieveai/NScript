@@ -17,6 +17,14 @@ namespace System.Runtime.CompilerServices
     }
 
     /// <summary>
+    /// Attribute for pseudo interface type.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Type), NonScriptable]
+    public class PseudoInterfaceTypeAttribute : Attribute
+    {
+    }
+
+    /// <summary>
     /// Attribute for json type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Type), NonScriptable]

@@ -122,6 +122,11 @@ namespace NScript.Converter
         private TypeReference psudoTypeAttribute;
 
         /// <summary>
+        /// The imported type attribute.
+        /// </summary>
+        private TypeReference importedTypeAttribute;
+
+        /// <summary>
         /// The json type attribute.
         /// </summary>
         private TypeReference jsonTypeAttribute;
@@ -971,6 +976,27 @@ namespace NScript.Converter
         /// <value>
         /// The psudo type attribute.
         /// </value>
+        public TypeReference ImportedTypeAttribute
+        {
+            get
+            {
+                if (this.importedTypeAttribute == null)
+                {
+                    this.importedTypeAttribute = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "ImportedTypeAttribute");
+                }
+
+                return this.importedTypeAttribute;
+            }
+        }
+
+        /// <summary>
+        /// Gets the psudo type attribute.
+        /// </summary>
+        /// <value>
+        /// The psudo type attribute.
+        /// </value>
         public TypeReference PsudoTypeAttribute
         {
             get
@@ -979,7 +1005,7 @@ namespace NScript.Converter
                 {
                     this.psudoTypeAttribute = this.GetTypeReference(
                         ClrKnownReferences.CompilerServicesStr,
-                        "PsudoTypeAttribute");
+                        "PseudoInterfaceTypeAttribute");
                 }
 
                 return this.psudoTypeAttribute;
@@ -2362,7 +2388,7 @@ namespace NScript.Converter
                         "ToString",
                         this.ClrReferences.String,
                         this.ClrReferences.Enum,
-                        this.ClrReferences.Enum,
+                        this.ClrReferences.TypeType,
                         this.ClrReferences.Int32);
                 }
 

@@ -106,13 +106,14 @@ namespace JsCsc.Lib
 
         private void OnResolveComplete(AssemblyDefinition assemblyDefinition)
         {
+            HashSet<TypeDefinition> typesProcessed = new HashSet<TypeDefinition>();
             foreach (var container in GetNestedContainers(assemblyDefinition.Module.Containers))
             {
-                TypeDefinition typeDef = container as TypeDefinition;
-                if (typeDef == null)
-                {
-                    continue;
-                }
+                TypeDefinition typeDef = container.PartialContainer as TypeDefinition;
+                if (typeDef == null || typesProcessed.Contains(typeDef))
+                { continue; }
+
+                typesProcessed.Add(typeDef);
 
                 if (container.Kind == MemberKind.Interface) continue;
 
@@ -121,12 +122,15 @@ namespace JsCsc.Lib
                     Property property = member as Property;
                     if (property != null)
                     {
-                        if (property.Get != null && property.Get.Block != null)
+                        if (property.Get != null
+                            && property.Get.Block != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(property.Get)))
                         {
                             this.methodBlocks.Add(property.Get, property.Get.Block);
                         }
 
                         if (property.Set != null && property.Set.Block != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(property.Set)))
                         {
                             this.methodBlocks.Add(property.Set, property.Set.Block);
                         }
@@ -138,11 +142,13 @@ namespace JsCsc.Lib
                     if (evt != null)
                     {
                         if (evt.Add != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(evt.Add)))
                         {
                             this.methodBlocks.Add(evt.Add, evt.Add.Block);
                         }
 
                         if (evt.Remove != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(evt.Remove)))
                         {
                             this.methodBlocks.Add(evt.Remove, evt.Remove.Block);
                         }
@@ -154,11 +160,13 @@ namespace JsCsc.Lib
                     if (indexer != null)
                     {
                         if (indexer.Get != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(indexer.Get)))
                         {
                             this.methodBlocks.Add(indexer.Get, indexer.Get.Block);
                         }
 
                         if (indexer.Set != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(indexer.Set)))
                         {
                             this.methodBlocks.Add(indexer.Set, indexer.Set.Block);
                         }
@@ -170,6 +178,7 @@ namespace JsCsc.Lib
                     if (method != null)
                     {
                         if (method.Block != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(method)))
                         {
                             this.methodBlocks.Add(method, method.Block);
                         }
@@ -181,6 +190,7 @@ namespace JsCsc.Lib
                     if (constructor != null)
                     {
                         if (constructor.Block != null)
+                            // && (!typeDef.IsPartial || !this.methodBlocks.ContainsKey(constructor)))
                         {
                             this.methodBlocks.Add(constructor, constructor.Block);
                         }
@@ -195,15 +205,17 @@ namespace JsCsc.Lib
 
             JArray jarray = new JArray();
             AstToJObject toJObject = new AstToJObject();
+            HashSet<TypeDefinition> typesProcessed = new HashSet<TypeDefinition>();
 
             foreach (var container in GetNestedContainers(assemblyDefinition.Module.Containers))
             {
-                TypeDefinition typeDef = container as TypeDefinition;
-                if (typeDef == null)
-                {
-                    continue;
-                }
+                TypeDefinition typeDef = container.PartialContainer as TypeDefinition;
 
+                // Partials will appear multiple times, so skip if already processed
+                if (typeDef == null || typesProcessed.Contains(typeDef))
+                { continue; }
+
+                typesProcessed.Add(typeDef);
                 if (container.Kind == MemberKind.Interface) continue;
 
                 foreach (var member in typeDef.Members)
@@ -214,9 +226,7 @@ namespace JsCsc.Lib
                         if (property.Get != null && !property.Get.IsCompilerGenerated)
                         {
                             if (!this.methodBlocks.ContainsKey(property.Get))
-                            {
-                                continue;
-                            }
+                            { continue; }
 
                             jarray.Add(
                                 toJObject.SerializeMethodBody(
@@ -389,9 +399,9 @@ namespace JsCsc.Lib
                 }
             }
 
-            using (var gzipStream = new GZipStream(this.astStream, CompressionMode.Compress, true))
+            // using (var gzipStream = new GZipStream(this.astStream, CompressionMode.Compress, true))
             {
-                using (var stream = new StreamWriter(gzipStream, Encoding.UTF8))
+                using (var stream = new StreamWriter(this.astStream, Encoding.UTF8, 4069, true))
                 using (var jsWriter = new JsonTextWriter(stream))
                 {
                     // jsWriter.Indentation = 2;

@@ -168,9 +168,9 @@ namespace NScript.Converter
                         EmbeddedResource embededResource = (EmbeddedResource)resource;
 
                         using (var stream = embededResource.GetResourceStream())
-                        using (var unzipStream = new GZipStream(stream, CompressionMode.Decompress))
+                        // using (var unzipStream = new GZipStream(stream, CompressionMode.Decompress))
                         {
-                            JsonTextReader reader = new JsonTextReader(new StreamReader(unzipStream));
+                            JsonTextReader reader = new JsonTextReader(new StreamReader(stream));
                             jsonAstArray = JArray.Load(reader);
                         }
                     }
@@ -987,7 +987,9 @@ namespace NScript.Converter
             {
                 rv = TypeKind.Normal;
             }
-            else if (typeDefinition.IsInterface && null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute))
+            else if (typeDefinition.IsInterface
+                && (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute)
+                || null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.JsonTypeAttribute)))
             {
                 //  rv = TypeKind.Imported;
                 throw new InvalidProgramException("Imported interfaces yet to be supported");
@@ -1004,6 +1006,8 @@ namespace NScript.Converter
                 bool hasNonNullableStructField = false;
                 bool hasNonPropertyMethods = false;
                 bool hasVirtualMethods = false;
+                bool hasNoMethods = true;
+                bool hasNoFields = true;
 
                 foreach (var method in typeDefinition.Methods)
                 {
@@ -1031,6 +1035,7 @@ namespace NScript.Converter
                     }
                     else
                     {
+                        hasNoMethods = false;
                         bool isExtern = this.IsExtern(method);
 
                         // Let's skip extern methods that are just ScriptAliased, since they do not require TypeDefinition name.
@@ -1149,13 +1154,9 @@ namespace NScript.Converter
                     {
                         rv = TypeKind.Imported;
                     }
-
-                    if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute))
-                    {
-                    }
                 }
 
-                if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute)
+                if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.ImportedTypeAttribute)
                     && rv != TypeKind.Imported)
                 {
                     if (!hasExternMethod)
@@ -1178,10 +1179,10 @@ namespace NScript.Converter
                     }
                 }
 
-                if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.PsudoTypeAttribute)
+                if (null != typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.JsonTypeAttribute)
                     && rv != TypeKind.JSONType)
                 {
-                    if (!hasExternMethod)
+                    if (!hasExternMethod && !hasNoMethods)
                     {
                         throw new InvalidDataException(
                             string.Format(
@@ -1216,13 +1217,17 @@ namespace NScript.Converter
                                 "JSON Type: '{0}' can't have a constructor",
                                 typeDefinition));
                     }
-                    else if (baseType != null
+                    else if (baseType == null
                             || (baseKind != TypeKind.JSONType && !baseType.IsSameDefinition(this.ClrKnownReferences.Object)))
                     {
                         throw new InvalidDataException(
                             string.Format(
                                 "JSON Type: '{0}' can only be derived from other JSON types.",
                                 typeDefinition));
+                    }
+                    else
+                    {
+                        rv = TypeKind.JSONType;
                     }
                 }
 
