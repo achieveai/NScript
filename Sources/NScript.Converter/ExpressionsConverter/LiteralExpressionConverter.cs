@@ -77,6 +77,9 @@ namespace NScript.Converter.ExpressionsConverter
         /// <returns>JS Expression node</returns>
         public static JST.Expression ConvertStringLiteral(IMethodScopeConverter methodConverter, StringLiteral literal)
         {
+            if (literal.String == null)
+            { return new JST.NullLiteralExpression(methodConverter.Scope); }
+
             return new JST.StringLiteralExpression(
                 methodConverter.Scope,
                 literal.String);

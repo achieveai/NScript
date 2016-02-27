@@ -17,9 +17,9 @@ namespace XwmlParser.Binding
     public class StyleTargetBindingInfo : TargetBindingInfo
     {
         public StyleTargetBindingInfo(
-            TypeReference booleanType,
+            TypeReference targetType,
             string styleName)
-            : base(booleanType)
+            : base(targetType)
         {
             this.StyleName = styleName;
         }

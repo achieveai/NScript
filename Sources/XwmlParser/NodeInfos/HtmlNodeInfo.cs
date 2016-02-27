@@ -176,7 +176,7 @@ namespace XwmlParser.NodeInfos
                     binderInfo =
                         BindingParser.ParseBinding(
                             new StyleTargetBindingInfo(
-                                parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.Boolean,
+                                parser.DocumentContext.ParserContext.ConverterContext.ClrKnownReferences.String,
                                 attr.OriginalName.Substring("style.".Length)),
                             attr.Value,
                             parser.DocumentContext,
@@ -194,7 +194,7 @@ namespace XwmlParser.NodeInfos
                         BindingParser.ParseBinding(
                             new DomEventTargetBindingInfo(
                                 parser.DocumentContext.ParserContext.KnownTypes.DomEventType2,
-                                attr.OriginalName.Substring("style.".Length)),
+                                attr.OriginalName.Substring("event.".Length)),
                             attr.Value,
                             parser.DocumentContext,
                             parser.DataContextType,

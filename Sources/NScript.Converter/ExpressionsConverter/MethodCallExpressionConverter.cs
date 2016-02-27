@@ -669,23 +669,5 @@ namespace NScript.Converter.ExpressionsConverter
                         methodName)),
                 arguments);
         }
-
-        /// <summary>
-        /// Creates the instance.
-        /// </summary>
-        /// <param name="converter">The converter.</param>
-        /// <param name="methodCall">The method call.</param>
-        /// <returns>Return new object expression.</returns>
-        private static JST.Expression CreateInstance(
-            IMethodScopeConverter converter,
-            MethodCallExpression methodCall)
-        {
-            return new JST.NewObjectExpression(
-                methodCall.Location,
-                converter.Scope,
-                ExpressionConverterBase.Convert(
-                    converter,
-                    methodCall.Parameters[0]));
-        }
     }
 }
