@@ -1,0 +1,10 @@
+{
+  "name": "TsParser",
+  "version": "0.0.0",
+  "description": "TsParser",
+  "main": "app.js",
+  "author": {
+    "name": "gautamb",
+    "email": ""
+  }
+}

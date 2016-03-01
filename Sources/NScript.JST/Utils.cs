@@ -147,36 +147,25 @@
         /// <returns>string encoded i (encoded using [a-z][a-zA-Z]*)</returns>
         public static string GetCompressedInt(int i)
         {
-            Stack<char> charStack = new Stack<char>();
+            StringBuilder retValue = new StringBuilder();
 
             do
             {
-                if (i > 26)
+                var idx = 0;
+                if (retValue.Length == 0)
                 {
-                    if (i > charMapping.Length)
-                    {
-                        charStack.Push(charMapping[i % 62]);
-                        i /= 62;
-                    }
-                    else
-                    {
-                        charStack.Push(charMapping[i % 26]);
-                        i /= 26;
-                    }
+                    idx = i % 26;
+                    i /= 26;
                 }
                 else
                 {
-                    charStack.Push(charMapping[i]);
-                    i = 0;
+                    idx = i % 62;
+                    i /= 62;
                 }
+
+                retValue.Append(charMapping[idx]);
             } while (i > 0);
 
-            StringBuilder retValue = new StringBuilder(charStack.Count);
-
-            while (charStack.Count > 0)
-            {
-                retValue.Append(charStack.Pop());
-            }
 
             return retValue.ToString();
         }

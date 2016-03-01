@@ -20,6 +20,7 @@ StyleCop.Cache
 *.vcxproj.filters
 *.min.js
 *.min.js.map
+.ntvs_analysis.dat
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*/
@@ -48,3 +49,8 @@ Test/TestWebApplication/GeneratedScripts/Sunlight.Framework.Test.ashx
 Test/TestWebApplication/GeneratedScripts/Sunlight.Framework.Test.map
 Test/TestWebApplication/GeneratedScripts/System.Web.Html.Tests.ashx
 Test/TestWebApplication/GeneratedScripts/System.Web.Html.Tests.map
+/TDSparser/TDSparser/node_modules
+/TDSparser/TDSparser/*.js
+/TDSparser/TDSparser/*.js.map
+/TDSparser/TsParser/*.js
+/TDSparser/TsParser/*.js.map

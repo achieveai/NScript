@@ -1,0 +1,15 @@
+{
+    "name": "TDSparser",
+    "version": "0.0.0",
+    "description": "TDSparser",
+    "main": "app.js",
+    "author": {
+        "name": "Gautam",
+        "email": ""
+    },
+    "dependencies": {
+        "fs": "0.0.2",
+        "typescript": "^1.5.0-beta",
+        "lodash": "^3.6.0"
+    },
+}
