@@ -1,5 +1,6 @@
 ﻿import {readFileSync, writeFileSync} from "fs";
 import * as _ from "lodash";
+import * as ts from "./node_modules/typescript/lib/typescript";
 
 export function GenerateTypeName(typeRef: TypeRef): string {
     switch (typeRef._t) {
@@ -45,23 +46,28 @@ class Class {
     instanceProperties: Property[];
     staticMethods: Method[];
     staticProperties: Property[];
+    nestedClasses: Class[];
+    parentClass: Class;
 
     constructor(
         name: string,
         isSecondary: boolean,
         staticIFace: TypeDecl,
         instanceIFace: TypeDecl,
+        parentClass?: Class,
         isIFace?: boolean) {
 
         this.name = name;
-        this.isSecondary = isSecondary,
-        this.staticIFace = staticIFace,
+        this.isSecondary = isSecondary;
+        this.staticIFace = staticIFace;
         this.instanceIFace = instanceIFace;
+        this.parentClass = parentClass;
         this.isIFace = !!isIFace;
 
         this.constructors = [];
         this.selfMethods = [];
         this.staticSelfMethods = [];
+        this.nestedClasses = [];
 
         var tmp = { methods: <Method[]>[], properties: <Property[]>[] };
 
@@ -135,6 +141,10 @@ class Class {
                     Property.CreateProperties(<PropertyMemberDecl>member));
             }
         }
+    }
+
+    public addNestedClass(cls: Class) {
+        this.nestedClasses.push(cls);
     }
 
     public generateCsFile(): string {
@@ -286,7 +296,7 @@ class Property {
 
             p.name = CapitalizeForDotNet(p.name);
             p.undefinable = !!property.undefinable;
-            p.readonly = p.originalName.toLowerCase() == p.originalName
+            p.readonly = p.originalName.toUpperCase() == p.originalName
                 && (p.propertyType._t == ts.SyntaxKind.NumberKeyword
                     || p.propertyType._t == ts.SyntaxKind.BooleanKeyword
                     || p.propertyType._t == ts.SyntaxKind.StringKeyword);
@@ -361,14 +371,19 @@ export var typeNameToClassMap: {
     [key: string]: Class;
 } = {};
 
-var declarationQueue: VariablesToProcess[] = [];
+var declarationQueue: {
+    fullName: string,
+    name: string,
+    vartype: TypeRef,
+    parentClass: Class
+}[] = [];
 export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
     for (var i = 0; i < nodes.length; ++i) {
         var node = nodes[i];
         switch (node._t) {
             case ts.SyntaxKind.VariableDeclaration:
                 var varDecl = <Variable>node;
-                declarationQueue.push({ fullName: varDecl.name, vartype: varDecl.varType });
+                declarationQueue.push({ fullName: varDecl.name, vartype: varDecl.varType, name: varDecl.name, parentClass: null });
                 break;
             case ts.SyntaxKind.ClassDeclaration:
                 var typeDecl = <TypeDecl>node;
@@ -392,11 +407,18 @@ export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
         }
 
         var cls = new Class(
-            entry.fullName,
+            entry.name,
             false,
             classPair.staticIface,
-            classPair.instanceIface);
-        classes.push(cls);
+            classPair.instanceIface,
+            entry.parentClass);
+
+        if (entry.parentClass) {
+            entry.parentClass.addNestedClass(cls);
+        } else {
+            classes.push(cls);
+        }
+
         typeNameToClassMap[classPair.staticIface.name] = cls;
         typeNameToClassMap[classPair.instanceIface.name] = cls;
 
@@ -408,14 +430,21 @@ export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
             processed[classPair.instanceTypeName] = classPair.instanceIface;
         }
 
-        for (var i = 0; i < cls.staticProperties.length; ++i) {
+        for (var i = cls.staticProperties.length - 1; i >= 0; --i) {
             var prop = cls.staticProperties[i];
-            if (prop.propertyType._t == ts.SyntaxKind.TypeReference) {
-                declarationQueue.push(
-                    {
-                        fullName: entry.fullName + "." + cls.staticProperties[i].name,
-                        vartype: cls.staticProperties[i].propertyType
-                    });
+            if (prop.propertyType._t == ts.SyntaxKind.Identifier
+                && typeNames[prop.propertyType.name]) {
+                var classPair = GetStaticClassInterfacePair(typeNames[prop.propertyType.name]);
+                if (classPair != null) {
+                    cls.staticProperties.splice(i, 1);
+                    declarationQueue.push(
+                        {
+                            fullName: entry.fullName + "." + prop.name,
+                            name: prop.name,
+                            vartype: prop.propertyType,
+                            parentClass: cls
+                        });
+                }
             }
         }
     }
@@ -438,6 +467,7 @@ export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
                             false,
                             null,
                             typeDecl,
+                            null,
                             true));
                     done = false;
             }

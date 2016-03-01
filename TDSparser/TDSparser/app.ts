@@ -34,7 +34,7 @@ Things to fix
 */
 
 import {readFileSync, writeFileSync} from "fs";
-import * as ts from "typescript";
+import * as ts from "./node_modules/typescript/lib/typescript";
 import * as _ from "lodash";
 import * as ProcessNodes from "./ProcessNodes";
 import {makeJson} from "./TdsToJson";

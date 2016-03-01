@@ -6,6 +6,7 @@
     <Name>TDSparser</Name>
     <RootNamespace>TDSparser</RootNamespace>
     <NodeExePath>C:\Program Files (x86)\nodejs\node.exe</NodeExePath>
+    <ScriptArguments>.\typings\hammerjs\hammerjs.d.ts .\HammerJs.cs</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -35,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
+    <Content Include="classTemplate.tmpl" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="ProcessNodes.ts" />
