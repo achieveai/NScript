@@ -1,0 +1,182 @@
+<%
+var ts = require("typescript");
+var processNodes = require("./ProcessNodes");
+
+function GenerateClassMembers(t) {
+    for(var iC = 0; iC < t.constructors.length; ++iC) {
+        GenerateConstructorSignature(
+            t.constructors[iC],
+            t.name);
+    }
+
+    for(var iP = 0; iP < t.staticProperties.length; ++iP) {
+        GeneratePropertySignature(t.staticProperties[iP], true, !t.isIFace);
+    }
+
+    for(var iP = 0; iP < t.instanceProperties.length; ++iP) {
+        GeneratePropertySignature(t.instanceProperties[iP], false, !t.isIFace);
+    }
+
+    for(var iM = 0; iM < t.staticMethods.length; ++iM) {
+        GenerateMethodSignature(t.staticMethods[iM], true, !t.isIFace);
+    }
+
+    for(var iM = 0; iM < t.instanceMethods.length; ++iM) {
+        GenerateMethodSignature(t.instanceMethods[iM], false, !t.isIFace);
+    }
+}
+
+function GenerateConstructorSignature(
+    member,
+    typeName) {
+    %>
+    public extern  <%=typeName%><%
+    GenerateParameters(member.parameters);
+}
+
+function GeneratePropertySignature(member, isStatic, isClass) {
+    if (member.name == member.originalName) {
+%>
+
+        [PreserveName, IntrinsicProperty]
+        <%
+    } else {
+%>
+
+        [ScriptName("<%= member.originalName %>"), IntrinsicProperty]
+        <%
+    }
+
+    if (isClass) {
+        %>public extern <%
+        if (isStatic) {
+            %>static <%
+        }
+    }
+
+    GenerateTypeReference(member.propertyType, member.undefinable);
+    %> <%=member.name%><%
+    if (member.readonly) {
+    %>
+         { get; } <%
+    }
+    else {
+    %>
+         { get; set; } <%
+    }
+}
+
+function GenerateMethodSignature(member, isStatic, isClass, isDelegate) {
+    if (!isDelegate) {
+        if (member.name == member.originalName) {
+        %>
+
+        [PreserveName]
+        <%
+        } else {
+        %>
+
+        [ScriptName("<%= member.originalName %>")]
+        <%
+        }
+
+        if (isClass) {
+            %>public extern <%
+            if (isStatic) {
+                %>static <%
+            }
+        }
+    }
+
+    GenerateTypeReference(member.returnType, member.undefinable);
+    %> <%=member.name%><%
+    GenerateTypeArgs(member.typeParameters);
+    GenerateParameters(member.parameters);
+}
+
+function GenerateParameters(parameters) {
+    %>(<%
+    if (parameters && parameters.length)
+    for(var iArg = 0; iArg < parameters.length; ++iArg)
+    {
+        if (iArg > 0) {
+            %>, <%
+        }
+        var arg = parameters[iArg];
+
+        if (arg.dotdotdot) {
+            %>params <%
+        }
+        GenerateTypeReference(arg.argType, arg.undefinable);
+        %> <%=arg.name%><%
+    }
+    %>);<%
+}
+
+function GenerateTypeReference(type, isOptional) {
+    if (!type)
+    {return;}
+
+    var _t = type._t;
+    if (_t == ts.SyntaxKind.VoidKeyword) {
+        %>void<%
+    } else if (_t == ts.SyntaxKind.NumberKeyword) {
+        %>Number<%
+    } else if (_t == ts.SyntaxKind.AnyKeyword) {
+        %>object<%
+    } else if (_t == ts.SyntaxKind.BooleanKeyword) {
+        %>bool<%
+        if (isOptional) {%>?<%}
+    } else if (_t == ts.SyntaxKind.StringKeyword
+            || _t == ts.SyntaxKind.StringLiteral) {
+        %>string<%
+    } else if (_t == ts.SyntaxKind.ArrayType) {
+        GenerateTypeReference(type.elementType);
+        %>[]<%
+    } else {
+        if (processNodes.typeNameToClassMap[type.name]) {
+            %><%=processNodes.typeNameToClassMap[type.name].name%><%
+        }
+        else {
+            %><%= type.name%><%
+        }
+        GenerateTypeArgs(type.typeArgs);
+    }
+}
+
+function GenerateTypeArgs(typeArgs) {
+    if (!typeArgs || !typeArgs.length)
+    { return;}
+
+    %><<%
+    for(var iTArgs = 0; iTArgs < typeArgs.length; ++iTArgs) {
+        if (iTArgs > 0) {
+            %>, <%
+        }
+
+        GenerateTypeReference(typeArgs[iTArgs])
+    }
+    %>><%
+}
+
+if (obj.isDelegate) {
+    %>
+    [ImportedType]
+    public delegate <%
+    GenerateMethodSignature(obj.selfMethods[0], false, false, true);
+} else {
+    if (obj.isIFace) {
+    %>
+    [ImportedType]
+    public interface <%=obj.name%> <%
+    } else {
+    %>
+    [ImportedType, IgnoreNamespace, ScriptName("<%= obj.name%>")]
+    public class <%= obj.name%> <%
+    }
+    %>
+    {<%
+    GenerateClassMembers(obj);
+    %>
+    }<%
+}%>

@@ -38,18 +38,23 @@ import * as ts from "./node_modules/typescript/lib/typescript";
 import * as _ from "lodash";
 import * as ProcessNodes from "./ProcessNodes";
 import {makeJson} from "./TdsToJson";
+import * as parseArgs from "minimist";
+// var parseArgs = require("minimist");
 
 var cl = ts.parseCommandLine(["test"]);
 var program = ts.createProgram(["tmpe"], cl.options, null);
 var typeChecker = program.getTypeChecker();
 
-var args = process.argv.slice(2);
+var args = parseArgs(process.argv, {});
+var input = args["i"] ? <string>args["i"] : args._[0];
+var outputFileName = <string>args["o"];
+
 let sourceFile = ts.createSourceFile(
     "fileName",
-    readFileSync(
-        args[0]).toString(),
+    readFileSync(input, "utf8"),
         // "/Users/Gautamb/Documents/Visual Studio 2013/Projects/TDSparser/TDSparser/testTDS.txt").toString(),
-    ts.ScriptTarget.Latest, false);
+        ts.ScriptTarget.Latest,
+        false);
 
 var nodes = <ParsedNode[]>makeJson(sourceFile);
 nodes = _.flatten(nodes);
@@ -64,4 +69,4 @@ for (var i = 0; i < ProcessNodes.classes.length; ++i) {
     output += strPart;
 }
 
-writeFileSync(args[1], output);
+writeFileSync(outputFileName, output);

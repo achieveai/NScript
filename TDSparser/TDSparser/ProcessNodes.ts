@@ -307,6 +307,14 @@ class Property {
     }
 }
 
+class Delegate {
+    public methods: Method[];
+
+    constructor(methods: Method[]) {
+        this.methods = methods;
+    }
+}
+
 function CapitalizeForDotNet(name: string): string {
     if (name[0].toLowerCase() == name[0]) {
         return name[0].toUpperCase() + name.substr(1);
@@ -354,7 +362,6 @@ export function ProcessPass1(nodes: ParsedNode[], moduleName: string = null) {
     }
 }
 
-
 interface StaticIfaceCombo {
     staticTypeName: string,
     instanceTypeName: string,
@@ -377,6 +384,9 @@ var declarationQueue: {
     vartype: TypeRef,
     parentClass: Class
 }[] = [];
+
+var delegates: { name: string, del: Delegate }[];
+
 export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
     for (var i = 0; i < nodes.length; ++i) {
         var node = nodes[i];
@@ -395,6 +405,15 @@ export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
                         null,
                         typeDecl
                     ));
+                break;
+            case ts.SyntaxKind.MethodDeclaration:
+                var methodDec = <CoreMemberMethodDecl>node;
+                processed[methodDec.name] = methodDec;
+                delegates.push(
+                    {
+                        name: methodDec.name,
+                        del: new Delegate(Method.CreateMethods(methodDec))
+                    });
                 break;
         }
     }

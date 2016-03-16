@@ -403,6 +403,7 @@ export function makeJson(sourceFile: ts.SourceFile): ParsedNode[]{
             case ts.SyntaxKind.SourceFile:
                 break;
             case ts.SyntaxKind.TypeReference:
+            case ts.SyntaxKind.QualifiedName:
                 rv = unknownNodeToJson(node);
                 break;
             default:
