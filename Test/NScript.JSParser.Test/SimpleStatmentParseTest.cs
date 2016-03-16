@@ -8,7 +8,7 @@ namespace NScript.JSParser.Test
 {
     using System;
     using System.Collections.Generic;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for SimpleStatmentParseTest

@@ -11,7 +11,7 @@ namespace NScript.JSParser.Test
     using System.Linq;
     using NScript.JST;
     using System.IO;
-    using MbUnit.Framework;
+    using NUnit.Framework;
 
     /// <summary>
     /// Definition for JSParserAndGeneratorHelper

@@ -53,7 +53,8 @@ namespace NScript.Converter.StatementsConverter
                 JST.Statement falseStatement = ScopeBlockConverter.Convert(converter, statement.FalseCaseStatements);
                 falseBlock = falseStatement as JST.ScopeBlock;
 
-                if (falseBlock == null)
+                if (falseBlock == null
+                    && falseStatement != null)
                 {
                     jstStatements = new List<JST.Statement>();
                     jstStatements.Add(falseStatement);

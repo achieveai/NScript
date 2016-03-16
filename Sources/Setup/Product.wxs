@@ -11,11 +11,11 @@
 		<MediaTemplate EmbedCab="yes"/>
 
     <Property Id="USERITEMTEMPLATEDIR">
-      <RegistrySearch Id="ItemTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
+      <RegistrySearch Id="ItemTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
     </Property>
 
     <Property Id="USERPROJECTTEMPLATEDIR">
-      <RegistrySearch Id="ProjectTemplateDir" Root="HKCU" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
+      <RegistrySearch Id="ProjectTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
     </Property>
          
 		<Feature Id="ProductFeature" Title="nScript" Level="1">
@@ -55,11 +55,11 @@
   <Fragment>
     <ComponentGroup Id="ProductComponents">
       <Component Id="RegistryEntry" Directory="INSTALLFOLDER" Guid="{E995DA69-5D6E-4F76-979D-D86DA16189AA}">
-        <RegistryKey Root="HKCU" Key="Software\NScript">
+        <RegistryKey Root="HKLM" Key="Software\NScript">
           <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
         </RegistryKey>
 
-        <RegistryKey Root="HKCU" Key="Software\WOW6432Node\NScript">
+        <RegistryKey Root="HKLM" Key="Software\WOW6432Node\NScript">
           <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
         </RegistryKey>
       </Component>
@@ -96,8 +96,6 @@
         <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.dll" />
         <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.pdb" />
         <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.xml" />
         <File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
@@ -106,15 +104,10 @@
         <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.dll" />
         <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.pdb" />
         <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.xml" />
-
         <File Source="$(var.ToolsetDir)\bin\CssParser.dll" />
         <File Source="$(var.ToolsetDir)\bin\CssParser.pdb" />
         <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll" />
         <File Source="$(var.ToolsetDir)\bin\XwmlParser.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\dotless.core.dll" />
-        <File Source="$(var.ToolsetDir)\bin\dotless.core.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\pandora.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.Practices.ServiceLocation.dll" />
         <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.dll" />
         <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.dll" />
         <File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll" />
