@@ -548,7 +548,8 @@ namespace NScript.Converter.TypeSystemConverter
                     if (typeReferencesRegistered.Contains(typeReference)
                         || !this.typesDefinitionsUsed.ContainsKey(typeReference.Resolve())
                         || typeReference.GetGenericTypeScope().HasValue
-                        || this.context.IsImportedType(typeReference.Resolve()))
+                        || this.context.IsImportedType(typeReference.Resolve())
+                        || this.context.IsJsonType(typeReference.Resolve()))
                     {
                         continue;
                     }
@@ -780,8 +781,9 @@ namespace NScript.Converter.TypeSystemConverter
             TypeReference typeReference = (TypeReference)typeReferenceBase;
             typeReference = this.Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
 
-
-            if (typeReferenceBase.GetGenericTypeScope().HasValue)
+            var typeDef = typeReference.Resolve();
+            if ((typeDef == null || !this.context.IsPsudoType(typeDef))
+                && typeReferenceBase.GetGenericTypeScope().HasValue)
             {
                 if (initializeRefsAndStaticCtor == null)
                 {
