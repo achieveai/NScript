@@ -1,0 +1,507 @@
+﻿namespace JsCsc.Lib.Serialization
+
+struct ModuleSpecSer
+{
+0: string Name;
+}
+
+struct TypeSpecSer
+{
+0: nullable<string> Name;
+1: ModuleSpecSer Module;
+2: nullable<TypeSpecSer> NestedParent;
+3: nullable<string> Namespace;
+4: nullable<int32> Arity;
+}
+
+struct GenericParamSer : TypeSpecSer
+{
+0: int32 Position;
+1: bool IsMethodOwned;
+}
+
+struct ArrayTypeSer : TypeSpecSer
+{
+0: TypeSpecSer ElementType;
+}
+
+struct GenericInstanceTypeSer : TypeSpecSer
+{
+0: vector<TypeSpecSer> TypeParams;
+}
+
+struct ParamSer
+{
+0: TypeSpecSer ParamType;
+1: int32 ModFlags;
+2: string Name;
+}
+
+struct FieldSpecSer
+{
+0: TypeSpecSer DeclaringType;
+1: TypeSpecSer MemberType;
+2: string Name;
+}
+
+struct MethodSpecSer
+{
+0: TypeSpecSer DeclaringType;
+1: TypeSpecSer ReturnType;
+2: string Name;
+3: bool IsStatic;
+4: int32 Arity;
+5: vector<ParamSer> Parameters;
+6: vector<TypeSpecSer> TypeArgs;
+}
+
+struct TypeInfoSer
+{
+0: map<int32, TypeSpecSer> Types;
+1: map<int32, MethodSpecSer> Methods;
+2: map<int32, FieldSpecSer> Fields;
+}
+
+struct LocationSer
+{
+0: int32 StartLine;
+1: int32 StartColumn;
+2: int32 EndLine;
+3: int32 EndColumn;
+}
+
+struct AstBase
+{
+0: nullable<LocationSer> Location;
+}
+
+struct LocalVariableSer : AstBase
+{
+0: int32 Type;
+1: string Name;
+2: int32 BlockId;
+}
+
+struct ParameterSer : LocalVariableSer
+{
+0: int32 Modifier;
+}
+
+struct ExpressionSer : AstBase
+{
+}
+
+struct StatementSer : AstBase
+{
+}
+
+struct BlockSer : StatementSer
+{
+0: vector<StatementSer> Statements;
+}
+
+struct NullExpression : ExpressionSer
+{
+}
+
+struct LiteralExpression<T> : ExpressionSer
+{
+0: T Value;
+}
+
+struct MethodCallArg
+{
+0: bool IsByRef;
+1: ExpressionSer Value;
+}
+
+struct MethodCallExpression : ExpressionSer
+{
+0: int32 Method;
+1: nullable<ExpressionSer> Instance;
+2: vector<MethodCallArg> Arguments;
+}
+
+struct StrCatExpression : MethodCallExpression
+{
+}
+
+struct NewExpression : MethodCallExpression
+{
+0: int32 Type;
+}
+
+struct ObjectInitilaizer : AstBase
+{
+0: nullable<int32> Setter;
+1: nullable<int32> Field;
+2: nullable<ExpressionSer> Value;
+3: nullable<MethodCallExpression> MethodCall;
+}
+
+struct NewInitializerExpression : NewExpression
+{
+0: vector<ObjectInitilaizer> Initializers;
+}
+
+struct NewAnonymoustype : ExpressionSer
+{
+0: map<string, ExpressionSer> Initializers;
+}
+
+struct MethodExpression : ExpressionSer
+{
+0: int32 Method;
+1: ExpressionSer Instance;
+}
+
+struct FieldExpression : ExpressionSer
+{
+0: int32 Field;
+1: ExpressionSer Instance;
+}
+
+struct PropertyExpression : ExpressionSer
+{
+0: int32 Getter;
+1: int32 Setter;
+2: ExpressionSer Instance;
+}
+
+struct IndexExpression : ExpressionSer
+{
+0: int32 Getter;
+1: int32 Setter;
+2: ExpressionSer Instance;
+3: vector<MethodCallArg> Arguments;
+}
+
+struct DynamicIndexBinderExpression : ExpressionSer
+{
+0: ExpressionSer Instance;
+1: ExpressionSer Index;
+}
+
+struct DynamicMethodBinderExpression : ExpressionSer
+{
+0: string Name;
+1: ExpressionSer Instance;
+2: ExpressionSer Value;
+}
+
+struct DelegateInvocationExpression : ExpressionSer
+{
+0: ExpressionSer Instance;
+1: vector<MethodCallArg> Arguments;
+}
+
+struct ConstructorInitializerExpression : MethodCallExpression
+{
+}
+
+struct DefaultValueExpr : ExpressionSer
+{
+0: int32 Type;
+}
+
+struct TypeExpressionSer : ExpressionSer
+{
+0: int32 Type;
+}
+
+struct UserCastExpression : MethodCallExpression
+{
+}
+
+struct TypeCastExpression : ExpressionSer
+{
+0: int32 Type;
+1: ExpressionSer Expression;
+}
+
+struct DelegateCreationExpression : ExpressionSer
+{
+0: ExpressionSer Method;
+1: int32 Type;
+}
+
+struct ArrayCreationExpression : ExpressionSer
+{
+0: int32 ArrayType;
+1: int32 ElementType;
+2: vector<ExpressionSer> Initializers;
+3: vector<ExpressionSer> Arguments;
+}
+
+struct ThisExpression : ExpressionSer
+{
+}
+
+struct BaseThisExpression : ThisExpression
+{ }
+
+struct TypeOfExpression : ExpressionSer
+{
+0: int32 Type;
+}
+
+struct ElementAccessExpression : ExpressionSer
+{
+0: ExpressionSer Left;
+1: vector<MethodCallArg> Arguments;
+}
+
+struct AssignExpression: ExpressionSer
+{
+0: ExpressionSer Left;
+1: ExpressionSer Right;
+}
+
+struct CompoundAssignExpression: AssignExpression
+{
+0: int32 Operator;
+}
+
+struct CastExpression : ExpressionSer
+{
+0: int32 Type;
+1: ExpressionSer Expression;
+2: bool IsUnbox;
+}
+
+struct BoxCastExpression : ExpressionSer
+{
+0: ExpressionSer Expression;
+}
+
+struct NullConstantExpression : ExpressionSer
+{
+}
+
+struct ConstantExpression<T> : ExpressionSer
+{
+0: T Value;
+}
+
+struct ThrowExpression : StatementSer
+{
+0: ExpressionSer Expression;
+}
+
+struct UnwrapExpression : ExpressionSer
+{
+0: ExpressionSer Expression;
+}
+
+struct WrapExpression : ExpressionSer
+{
+0: ExpressionSer Expression;
+}
+
+struct LiftedNullExpression : ExpressionSer
+{
+0: int32 Type;
+}
+
+struct NullCoalescingOperatorSer : ExpressionSer
+{
+0: ExpressionSer Left;
+1: ExpressionSer Right;
+}
+
+struct UnaryExpression : ExpressionSer
+{
+0: int32 Operator;
+1: ExpressionSer Expression;
+2: bool IsLifted;
+}
+
+struct BinaryExpression : ExpressionSer
+{
+0: int32 Operator;
+1: ExpressionSer Left;
+2: ExpressionSer Right;
+3: bool IsLifted;
+}
+
+struct IsExpression : ExpressionSer
+{
+0: int32 Type;
+1: ExpressionSer Expression;
+}
+
+struct AsExpression : ExpressionSer
+{
+0: int32 Type;
+1: ExpressionSer Expression;
+}
+
+struct ConditionalExpression : ExpressionSer
+{
+0: ExpressionSer Condition;
+1: ExpressionSer TrueExpression;
+2: ExpressionSer FalseExpression;
+}
+
+struct LocalVariableRefExpression : ExpressionSer
+{
+0: bool IsAddressReference;
+1: LocalVariableSer LocalVariable;
+}
+
+struct TempVariableRefExpression : LocalVariableRefExpression
+{
+}
+
+struct ParameterReferenceExpression : ExpressionSer
+{
+0: ParameterSer Parameter;
+}
+
+struct StatementExpressionSer : StatementSer
+{
+0: ExpressionSer Expression;
+}
+
+struct YieldStatement : StatementExpressionSer
+{
+}
+
+struct YieldBreakStatement : StatementSer
+{
+}
+
+struct StatementListSer : StatementSer
+{
+0: vector<StatementSer> Statements;
+}
+
+struct ReturnStatement : StatementSer
+{
+0: nullable<ExpressionSer> Expression;
+}
+
+struct BreakStatement : StatementSer
+{ }
+
+struct ContinueStatement : StatementSer
+{ }
+
+struct EmptyStatementSer : StatementSer
+{
+}
+
+struct VariableBlockDeclaration : StatementSer
+{
+0: vector<ExpressionSer> Initializers;
+}
+
+struct IfStatement : StatementSer
+{
+0: ExpressionSer Condition;
+1: StatementSer TrueStatement;
+2: nullable<StatementSer> FalseStatement;
+}
+
+struct LoopStatement : StatementSer
+{
+0: StatementSer Loop;
+}
+
+struct DoStatement : LoopStatement
+{
+0: ExpressionSer Condition;
+1: StatementSer Loop;
+}
+
+struct WhileStatement : LoopStatement
+{
+0: ExpressionSer Condition;
+1: StatementSer Loop;
+}
+
+struct ForStatement : LoopStatement
+{
+0: nullable<ExpressionSer> Condition;
+1: nullable<StatementSer> Initializer;
+2: nullable<StatementSer> Iterator;
+3: StatementSer Loop;
+}
+
+struct ForEachStatement : LoopStatement
+{
+0: ExpressionSer Collection;
+1: string LocalVariableName;
+2: StatementSer Loop;
+}
+
+struct SwitchCaseLabel
+{
+0: nullable<ExpressionSer> LabelValue;
+}
+
+struct SwitchSectionSer
+{
+0: vector<SwitchCaseLabel> Labels;
+1: StatementSer Block;
+}
+
+struct SwitchStatement: StatementSer
+{
+0: ExpressionSer SwitchExpression;
+1: vector<SwitchSectionSer> Blocks;
+}
+
+struct TryFinallyBlockSer : StatementSer
+{
+0: StatementSer TryBlock;
+1: StatementSer FinallyBlock;
+}
+
+struct ExplicitBlockSer : BlockSer
+{
+0: int32 Id;
+}
+
+struct CatchBlock : StatementSer
+{
+0: nullable<int32> CatchType;
+1: nullable<LocalVariableSer> LocalVariable;
+2: ExplicitBlockSer Block;
+}
+
+struct TryCatchBlock : StatementSer
+{
+0: StatementSer TryBlock;
+1: vector<CatchBlock> CatchBlocks;
+}
+
+struct ParameterBlock : ExplicitBlockSer
+{
+0: vector<ParameterSer> Parameters;
+1: bool IsMethodOwned;
+}
+
+struct IteratorBlock : StatementSer
+{
+0: int32 Type;
+1: ParameterBlock Block;
+}
+
+struct AnonymousMethodBodyExpr : ExpressionSer
+{
+0: int32 Type;
+1: ParameterBlock Block;
+}
+
+struct AnonymousMethodExpr : ExpressionSer
+{
+0: ParameterBlock Block;
+}
+
+struct MethodBody : AstBase
+{
+0: int32 MethodId;
+1: nullable<string> FileName;
+2: bonded<ParameterBlock> Body;
+}

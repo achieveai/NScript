@@ -8,6 +8,7 @@ namespace JsCsc.Lib
 {
     using NScript.Utils;
     using Newtonsoft.Json.Linq;
+    using JsCsc.Lib.Serialization;
 
     /// <summary>
     /// Definition for ExtensionMethods
@@ -34,6 +35,27 @@ namespace JsCsc.Lib
             return null;
         }
 
+        public static LocationSer GetSerLoc(
+            Mono.CSharp.Location startLoc,
+            Mono.CSharp.Location endLoc)
+        {
+            return new LocationSer
+            {
+                StartColumn = startLoc.Column,
+                StartLine = startLoc.Row,
+                EndColumn = endLoc.Column,
+                EndLine = endLoc.Row
+            };
+        }
+
+        public static LocationSer GetSerLoc(this Mono.CSharp.Expression expression)
+        {
+            if (expression.Location.IsNull)
+            { return null; }
+
+            return GetSerLoc(expression.Location, expression.EndLocation);
+        }
+
         public static string GetStrLoc(this Mono.CSharp.Expression expression)
         {
             if (expression.Location.IsNull)
@@ -48,6 +70,16 @@ namespace JsCsc.Lib
                 expression.EndLocation.Column);
         }
 
+        public static LocationSer GetSerLoc(this Mono.CSharp.Statement statement)
+        {
+            if (statement.Location.IsNull)
+            {
+                return null;
+            }
+
+            return GetSerLoc(statement.Location, statement.EndLocation);
+        }
+
         public static string GetStrLoc(this Mono.CSharp.Statement statement)
         {
             if (statement.Location.IsNull)
@@ -60,6 +92,16 @@ namespace JsCsc.Lib
                 statement.Location.Column,
                 statement.EndLocation.Row,
                 statement.EndLocation.Column);
+        }
+
+        public static LocationSer GetSerLoc(this Mono.CSharp.Block block)
+        {
+            if (block.Location.IsNull)
+            {
+                return null;
+            }
+
+            return GetSerLoc(block.Location, block.EndLocation);
         }
 
         public static string GetStrLoc(this Mono.CSharp.Block block)

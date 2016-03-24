@@ -12,6 +12,7 @@ namespace JsCsc.Lib
     using Mono.Cecil;
     using Mono.CSharp;
     using Newtonsoft.Json.Linq;
+    using JsCsc.Lib.Serialization;
 
     /// <summary>
     /// Definition for MemberReferenceSerializer
@@ -424,6 +425,208 @@ namespace JsCsc.Lib
             rv[NameTokens.Type] = MemberReferenceSerializer.Serialize(paramData.Item2);
 
             return rv;
+        }
+
+        public static ModuleSpecSer SerializeN(IKVM.Reflection.Module module)
+        { return new ModuleSpecSer {Name = module.Name}; }
+
+        public static ModuleSpecSer SerializeN(ModuleContainer moduleContainer)
+        { return new ModuleSpecSer { Name = moduleContainer.DeclaringAssembly.Name }; }
+
+        public static TypeSpecSer SerializeN(
+            TypeSpec type,
+            TypeSpec typeContext = null,
+            MethodSpec methodContext = null)
+        {
+            var rvSer = new TypeSpecSer();
+
+            string Name = null;
+            ModuleSpecSer moduleSer = null;
+
+            if (type == null)
+            { return null; }
+
+            var metaInfo = type.GetMetaInfo();
+            moduleSer = MemberReferenceSerializer.SerializeN(metaInfo.Module);
+
+            if (type.IsGenericParameter)
+            {
+                TypeParameterSpec paramSpec = (TypeParameterSpec)type;
+                return new GenericParamSer
+                {
+                    Name = Name,
+                    Position = paramSpec.DeclaredPosition,
+                    IsMethodOwned = paramSpec.IsMethodOwned,
+                    Module = moduleSer
+                };
+            }
+
+            if (type.IsArray)
+            {
+                return new ArrayTypeSer
+                {
+                    Module = moduleSer,
+                    Name = Name,
+                    ElementType = MemberReferenceSerializer.SerializeN(
+                        ((ArrayContainer)type).Element,
+                        typeContext,
+                        methodContext)
+                };
+            }
+
+            LinkedList<TypeSpecSer> genericArgs = new LinkedList<TypeSpecSer>();
+            if (type.IsGeneric && type is InflatedTypeSpec)
+            {
+                InflatedTypeSpec inflatedTypeSpec = (InflatedTypeSpec)type;
+                foreach (var typeArg in inflatedTypeSpec.TypeArguments)
+                {
+                    genericArgs.AddLast(
+                        MemberReferenceSerializer.SerializeN(
+                            typeArg,
+                            typeContext,
+                            methodContext));
+                }
+            }
+            else if (type.IsGeneric && typeContext != null && type.MemberDefinition == typeContext.MemberDefinition)
+            {
+                // All this is a hack around bug in Mono where it doesn't really keep type as InflatedType instread
+                // makes it a typeSpec.
+                string typeNameStr = type.ToString();
+                int indexOfGt = typeNameStr.IndexOf('<');
+                int indexOfLt = typeNameStr.IndexOf('>');
+                string[] typeArgNames = typeNameStr.Substring(indexOfGt + 1, indexOfLt - indexOfGt - 1).Split(',');
+                for (int i = 0; i < type.Arity; i++)
+                {
+                    genericArgs.AddLast(
+                        new GenericParamSer
+                        {
+                            Module = MemberReferenceSerializer.SerializeN(metaInfo.Module),
+                            Name = typeArgNames[i],
+                            Position = i,
+                            IsMethodOwned = false
+                        });
+                }
+            }
+
+            TypeSpecSer rv;
+            if (type.IsGeneric && (type is InflatedTypeSpec
+                || (typeContext != null && typeContext.MemberDefinition == type.MemberDefinition)))
+            {
+                rv = new GenericInstanceTypeSer
+                { TypeParams = genericArgs };
+            }
+            else
+            { rv = new TypeSpecSer(); }
+
+            rv.Name = metaInfo.Name;
+            rv.Namespace = metaInfo.Namespace;
+            rv.Arity = type.Arity;
+            rv.NestedParent = metaInfo.IsNested
+                ? MemberReferenceSerializer.SerializeN(
+                    type.DeclaringType,
+                    typeContext,
+                    methodContext)
+                : null;
+
+            return rv;
+        }
+
+        public static MethodSpecSer SerializeN(Method method)
+        {
+            return MemberReferenceSerializer.SerializeN((MethodSpec)method.Spec);
+        }
+
+        public static MethodSpecSer SerializeN(MethodSpec method)
+        {
+            if (method == null)
+            {
+                return null;
+            }
+
+            IParametersMember parametersMember = method.MemberDefinition as IParametersMember;
+            var parameters = parametersMember != null // && method.Parameters == null
+                ? parametersMember.Parameters
+                : method.Parameters;
+
+            TypeSpec methodReturnType = parametersMember != null
+                    ? parametersMember.MemberType
+                    : method.ReturnType;
+
+            TypeSpec declaringType = parametersMember != null && parametersMember is MethodCore
+                ? ((MethodCore)parametersMember).Spec.DeclaringType
+                : method.DeclaringType;
+
+            var rv = new MethodSpecSer{
+                    DeclaringType =
+                        MemberReferenceSerializer.SerializeN(
+                            method.DeclaringType),
+                    ReturnType =
+                        MemberReferenceSerializer.SerializeN(
+                            methodReturnType),
+                    Name = method.IsConstructor
+                        ? (method.IsStatic ? ".cctor" : ".ctor")
+                        : method.Name,
+                    IsStatic = method.IsStatic,
+                    Arity = method.Arity
+            };
+
+            rv.Parameters = new List<ParamSer>();
+            for (int iParam = 0; iParam < parameters.Count; iParam++)
+            {
+                var paramData = Tuple.Create(parameters.FixedParameters[iParam], parameters.Types[iParam]);
+                ParameterAttributes attribute = ParameterAttributes.None;
+                var modFlags = paramData.Item1.ModFlags;
+
+                if ((modFlags & Parameter.Modifier.REF) == Parameter.Modifier.REF)
+                {
+                    attribute |= ParameterAttributes.Retval;
+                }
+
+                if ((modFlags & Parameter.Modifier.OUT) == Parameter.Modifier.OUT)
+                {
+                    attribute |= ParameterAttributes.Out;
+                }
+
+                rv.Parameters.Add(
+                    new ParamSer
+                    {
+                        Name = paramData.Item1.Name,
+                        ModFlags = (int)attribute,
+                        ParamType =
+                            MemberReferenceSerializer.SerializeN(
+                                paramData.Item2,
+                                method.DeclaringType, method)
+                    });
+            }
+
+            if (method.TypeArguments != null)
+            {
+                rv.TypeArgs = new List<TypeSpecSer>();
+
+                foreach (var typeArg in method.TypeArguments)
+                { rv.TypeArgs.Add(MemberReferenceSerializer.SerializeN(typeArg)); }
+            }
+
+            return rv;
+        }
+
+        public static FieldSpecSer SerializeN(FieldSpec fieldSpec)
+        {
+            IInterfaceMemberSpec memberSpec = fieldSpec.MemberDefinition as IInterfaceMemberSpec;
+            ImportedMemberDefinition importedMemberDefinition = fieldSpec.MemberDefinition as ImportedMemberDefinition;
+            return new FieldSpecSer
+                {
+                    Name = fieldSpec.Name,
+                    MemberType = 
+                        MemberReferenceSerializer.SerializeN(memberSpec != null
+                            ? memberSpec.MemberType :
+                                importedMemberDefinition != null
+                                    ? importedMemberDefinition.MemberType
+                                    : fieldSpec.MemberType,
+                        fieldSpec.DeclaringType),
+                    DeclaringType =
+                        MemberReferenceSerializer.SerializeN(fieldSpec.DeclaringType)
+                };
         }
     }
 }
