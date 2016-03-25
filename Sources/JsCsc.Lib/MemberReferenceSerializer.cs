@@ -474,13 +474,13 @@ namespace JsCsc.Lib
                 };
             }
 
-            LinkedList<TypeSpecSer> genericArgs = new LinkedList<TypeSpecSer>();
+            var genericArgs = new List<TypeSpecSer>();
             if (type.IsGeneric && type is InflatedTypeSpec)
             {
                 InflatedTypeSpec inflatedTypeSpec = (InflatedTypeSpec)type;
                 foreach (var typeArg in inflatedTypeSpec.TypeArguments)
                 {
-                    genericArgs.AddLast(
+                    genericArgs.Add(
                         MemberReferenceSerializer.SerializeN(
                             typeArg,
                             typeContext,
@@ -497,7 +497,7 @@ namespace JsCsc.Lib
                 string[] typeArgNames = typeNameStr.Substring(indexOfGt + 1, indexOfLt - indexOfGt - 1).Split(',');
                 for (int i = 0; i < type.Arity; i++)
                 {
-                    genericArgs.AddLast(
+                    genericArgs.Add(
                         new GenericParamSer
                         {
                             Module = MemberReferenceSerializer.SerializeN(metaInfo.Module),

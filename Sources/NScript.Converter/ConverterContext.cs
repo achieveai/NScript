@@ -18,6 +18,10 @@ namespace NScript.Converter
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using NScript.Utils;
+    using Bond;
+    using Bond.Protocols;
+    using Bond.IO.Unsafe;
+    using FullAst = JsCsc.Lib.Serialization.FullAst;
 
     /// <summary>
     /// Definition for ConverterContext.
@@ -151,6 +155,14 @@ namespace NScript.Converter
             IList<IMethodConverterPlugin> methodConverterPlugins = null,
             IList<ITypeConverterPlugin> typeConverterPlugins = null)
         {
+            double jsonCost = 0;
+            double bondCost = 0;
+            var stopWatch = new System.Diagnostics.Stopwatch();
+
+            var bondDeserializer
+                = new Deserializer<FastBinaryReader<InputBuffer>>(
+                    typeof(FullAst));
+
             this.clrContext = clrContext;
             this.converterKnownReferences = new ConverterKnownReferences(this.clrContext);
             this.methodConverterPlugins = methodConverterPlugins ?? new List<IMethodConverterPlugin>();
@@ -161,18 +173,41 @@ namespace NScript.Converter
             {
                 JArray jsonAstArray = null;
                 JObject resourceFileNameMap = null;
+                FullAst fullAst = null;
                 foreach (var resource in module.Resources)
                 {
                     if (resource.Name == "$$AstInfo$$")
                     {
                         EmbeddedResource embededResource = (EmbeddedResource)resource;
 
+                        stopWatch.Restart();
                         using (var stream = embededResource.GetResourceStream())
                         // using (var unzipStream = new GZipStream(stream, CompressionMode.Decompress))
                         {
                             JsonTextReader reader = new JsonTextReader(new StreamReader(stream));
                             jsonAstArray = JArray.Load(reader);
                         }
+                        stopWatch.Stop();
+                        jsonCost += stopWatch.Elapsed.TotalSeconds;
+                    }
+                    else if (resource.Name == "$$BstInfo$$")
+                    {
+                        EmbeddedResource embededResource = (EmbeddedResource)resource;
+
+                        stopWatch.Restart();
+                        using (var stream = embededResource.GetResourceStream())
+                        {
+                            byte[] buffer = new byte[stream.Length];
+                            stream.Read(buffer, 0, buffer.Length);
+
+                            var reader = 
+                                new FastBinaryReader<InputBuffer>(
+                                    new InputBuffer(buffer, buffer.Length));
+
+                            fullAst = bondDeserializer.Deserialize<FullAst>(reader);
+                        }
+                        stopWatch.Stop();
+                        bondCost += stopWatch.Elapsed.TotalSeconds;
                     }
                     else if (resource.Name == "$$ResInfo$$")
                     {
@@ -195,6 +230,7 @@ namespace NScript.Converter
 
                 if (jsonAstArray != null)
                 {
+                    stopWatch.Restart();
                     for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
                     {
                         var tuple = toAst.ParseMethodBody(
@@ -202,6 +238,22 @@ namespace NScript.Converter
 
                         this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
                     }
+                    stopWatch.Stop();
+                    jsonCost += stopWatch.Elapsed.TotalSeconds;
+
+                    stopWatch.Restart();
+                    var bondToAst = new BondToAst(
+                        fullAst.TypeInfo,
+                        this.ClrContext);
+
+                    foreach (var item in fullAst.Methods)
+                    {
+                        var tupl = bondToAst.ParseMethodBody(item);
+                        tupl.Item2();
+                    }
+
+                    stopWatch.Stop();
+                    bondCost += stopWatch.Elapsed.TotalSeconds;
                 }
 
                 Dictionary<string, string> resourceNameMap = new Dictionary<string, string>();

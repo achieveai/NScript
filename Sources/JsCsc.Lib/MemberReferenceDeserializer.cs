@@ -19,7 +19,6 @@ namespace JsCsc.Lib
     {
         private ClrContext _context;
         private Dictionary<string, TypeReference> _systemTypes;
-        private JObjectToCsAst _astDeserializer;
         private MethodDefinition methodContext = null;
         private Dictionary<string, GenericParameter> _methodContextTypeParams;
         private Dictionary<string, GenericParameter> _activeContext;
@@ -29,10 +28,8 @@ namespace JsCsc.Lib
         /// </summary>
         /// <param name="context">The context.</param>
         public MemberReferenceDeserializer(
-            JObjectToCsAst astDeserializer,
             ClrContext context)
         {
-            this._astDeserializer = astDeserializer;
             this._context = context;
             this._systemTypes = this.CreateKnownDefinitionsMap();
         }
@@ -53,10 +50,9 @@ namespace JsCsc.Lib
         }
 
         /// <summary>
-        /// Deserializes the method.
+        ///     Deserializes the method.
         /// </summary>
-        /// <param name="jObject">The j object.</param>
-        /// <returns></returns>
+        /// <param name="jObject"> The j object. </param>
         public MethodReference DeserializeMethod(JObject jObject)
         {
             var declaringType = this.DeserializeType(
@@ -219,6 +215,140 @@ namespace JsCsc.Lib
         }
 
         /// <summary>
+        ///     Deserializes the method.
+        /// </summary>
+        /// <param name="methodSpec"> Information describing the method. </param>
+        public MethodReference DeserializeMethod(Serialization.MethodSpecSer methodSpec)
+        {
+            var declaringType = this.DeserializeType(methodSpec.DeclaringType);
+
+            this._activeContext = this.GetTypeNameMaps(declaringType);
+
+            string name = methodSpec.Name;
+            int arity = methodSpec.Arity;
+
+            var returningType = this.DeserializeType(methodSpec.ReturnType);
+
+            if (returningType.HasGenericParameters && returningType is TypeDefinition)
+            {
+                // Returning type can't be TypeDefinition if typeDefinition is generic, it has to
+                // be TypeReference.
+                var genericInstanceType = new GenericInstanceType(returningType);
+                for (int iArity = 0; iArity < returningType.GenericParameters.Count; iArity++)
+                {
+                    genericInstanceType.GenericArguments.Add(returningType.GenericParameters[iArity]);
+                }
+
+                returningType = genericInstanceType;
+            }
+
+            MethodReference rv = new MethodReference(
+                name,
+                returningType,
+                declaringType);
+
+            MethodReference rvDef = new MethodReference(
+                name,
+                returningType,
+                declaringType.Resolve());
+
+            var argsArray = methodSpec.Parameters;
+            for (int iParam = 0; iParam < argsArray.Count; iParam++)
+            {
+                var paramObj = argsArray[iParam];
+                ParameterAttributes attr = (ParameterAttributes)paramObj.ModFlags;
+                TypeReference argType = this.DeserializeType(paramObj.ParamType);
+                if ((attr & ParameterAttributes.Out) != 0
+                    || (attr & ParameterAttributes.Retval) != 0)
+                { argType = new ByReferenceType(argType); }
+
+                rv.Parameters.Add(
+                    new ParameterDefinition(
+                        paramObj.Name,
+                        attr,
+                        argType));
+
+                rvDef.Parameters.Add(
+                    new ParameterDefinition(
+                        paramObj.Name,
+                        attr,
+                        argType));
+            }
+
+            this._activeContext = this._methodContextTypeParams;
+
+            var typeArgsArray = methodSpec.TypeArgs;
+            if (arity > 0)
+            {
+                for (int iArity = 0; iArity < arity; iArity++)
+                {
+                    rvDef.GenericParameters.Add(
+                        new GenericParameter(
+                            iArity,
+                            GenericParameterType.Method,
+                            rv.Module));
+                }
+
+                // Now let's fix both the generic parameters and argument types so that
+                // generic parameters have property owners.
+                MethodDefinition tmpMethodDefinition = rvDef.Resolve();
+                this._activeContext = this.GetTypeNameMaps(tmpMethodDefinition);
+
+                rv = new MethodReference();
+                rv.Name = name;
+                rv.DeclaringType = declaringType;
+
+                for (int iArity = 0; iArity < arity; iArity++)
+                {
+                    var genericParam =
+                        new GenericParameter(
+                            tmpMethodDefinition.GenericParameters[iArity].Name,
+                            rv);
+
+                    rv.GenericParameters.Add(genericParam);
+                    this._activeContext[genericParam.Name] = genericParam;
+                }
+
+                returningType = this.DeserializeType(methodSpec.ReturnType);
+                rv.ReturnType = returningType;
+
+                for (int iParam = 0; iParam < argsArray.Count; iParam++)
+                {
+                    var paramObj = argsArray[iParam];
+                    ParameterAttributes attr = (ParameterAttributes)paramObj.ModFlags;
+                    TypeReference argType = this.DeserializeType(paramObj.ParamType);
+                    if (attr == ParameterAttributes.Out
+                        || attr == ParameterAttributes.Retval)
+                    { argType = new ByReferenceType(argType); }
+
+                    rv.Parameters.Add(
+                        new ParameterDefinition(
+                            paramObj.Name,
+                            attr,
+                            argType));
+                }
+
+                this._activeContext = this._methodContextTypeParams;
+            }
+
+            MethodDefinition methodDefinition = rv.Resolve();
+            rv.HasThis = methodDefinition.HasThis;
+            rv.ExplicitThis = methodDefinition.ExplicitThis;
+
+            if (typeArgsArray != null)
+            {
+                GenericInstanceMethod genericMethod = new GenericInstanceMethod(rv);
+
+                for (int iParam = 0; iParam < typeArgsArray.Count; iParam++)
+                { genericMethod.GenericArguments.Add(this.DeserializeType(typeArgsArray[iParam])); }
+
+                rv = genericMethod;
+            }
+
+            return rv;
+        }
+
+        /// <summary>
         /// Deserializes the type.
         /// </summary>
         /// <param name="jObject">The j object.</param>
@@ -335,10 +465,113 @@ namespace JsCsc.Lib
         }
 
         /// <summary>
-        /// Deserializes the field.
+        ///     Deserializes the type.
         /// </summary>
-        /// <param name="jObject">The j object.</param>
-        /// <returns></returns>
+        /// <param name="typeSpec"> Information describing the type. </param>
+        public TypeReference DeserializeType(Serialization.TypeSpecSer typeSpec)
+        {
+            ModuleDefinition moduleDef = this.GetModuleDefinition(typeSpec.Module);
+
+            if (moduleDef == null)
+            { return this._context.KnownReferences.Void; }
+
+            string name = typeSpec.Name;
+            int arity = typeSpec.Arity;
+
+            if (typeSpec is Serialization.GenericParamSer)
+            {
+                var genericParamSpec = (Serialization.GenericParamSer)typeSpec;
+                bool isMethodOwned = genericParamSpec.IsMethodOwned;
+                int position = genericParamSpec.Position;
+                string genericParamName = genericParamSpec.Name;
+
+                if (this._activeContext == null
+                    || !this._activeContext.ContainsKey(genericParamName))
+                {
+                    return new GenericParameter(
+                        position,
+                        isMethodOwned
+                            ? GenericParameterType.Method
+                            : GenericParameterType.Type,
+                        moduleDef);
+                }
+                else
+                {
+                    return this._activeContext[genericParamName];
+                }
+            }
+            else if (typeSpec is Serialization.ArrayTypeSer)
+            {
+                return new ArrayType(
+                    this.DeserializeType(
+                        ((Serialization.ArrayTypeSer)typeSpec).ElementType));
+            }
+
+            TypeReference rv = new TypeReference(
+                typeSpec.Namespace,
+                name,
+                moduleDef,
+                moduleDef);
+
+            var declaringTypeObj = typeSpec.NestedParent;
+            GenericInstanceType genericDeclaringType = null;
+            if (declaringTypeObj != null)
+            {
+                TypeReference declaringType = this.DeserializeType(declaringTypeObj);
+                genericDeclaringType = declaringType as GenericInstanceType;
+                if (genericDeclaringType != null)
+                {
+                    declaringType = genericDeclaringType.ElementType;
+                }
+
+                rv.DeclaringType = declaringType;
+            }
+
+            if (arity > 0)
+            {
+                for (int i = 0; i < arity; i++)
+                {
+                    rv.GenericParameters.Add(new GenericParameter(rv));
+                }
+
+                // since this is a definition, we should resolve this type.
+                rv = rv.Resolve();
+            }
+
+            if (typeSpec is Serialization.GenericInstanceTypeSer)
+            {
+                var genericInstanceSpec = typeSpec as Serialization.GenericInstanceTypeSer;
+                var typeParamArray = genericInstanceSpec.TypeParams;
+                GenericInstanceType type = new GenericInstanceType(rv.Resolve());
+                for (int iTypeParam = 0; iTypeParam < typeParamArray.Count; iTypeParam++)
+                { type.GenericArguments.Add(this.DeserializeType(typeParamArray[iTypeParam])); }
+
+                rv = type;
+            }
+
+            if (genericDeclaringType != null)
+            {
+                GenericInstanceType type = rv as GenericInstanceType;
+                if (type == null)
+                { type = new GenericInstanceType(rv.Resolve()); }
+
+                for (int iTypeParam = 0; iTypeParam < genericDeclaringType.GenericArguments.Count; iTypeParam++)
+                { type.GenericArguments.Add(genericDeclaringType.GenericArguments[iTypeParam]); }
+
+                rv = type;
+            }
+
+            this.FixSystemType(ref rv);
+
+            rv.IsValueType = rv.Resolve().IsValueType;
+
+            return rv;
+        }
+
+        /// <summary>
+        ///     Deserializes the field.
+        /// </summary>
+        /// <param name="jObject"> The j object. </param>
         public FieldReference DeserializeField(JObject jObject)
         {
             var declaringType = this.DeserializeType(
@@ -351,6 +584,24 @@ namespace JsCsc.Lib
 
             return new FieldReference(
                 jObject.Value<string>(NameTokens.Name),
+                memberType,
+                declaringType);
+        }
+
+        /// <summary>
+        ///     Deserializes the field.
+        /// </summary>
+        /// <param name="fieldSpecSer"> The field specifier ser. </param>
+        public FieldReference DeserializeField(Serialization.FieldSpecSer fieldSpecSer)
+        {
+            var declaringType = this.DeserializeType(fieldSpecSer.DeclaringType);
+
+            this._activeContext = this.GetTypeNameMaps(declaringType);
+            var memberType = this.DeserializeType(fieldSpecSer.MemberType);
+            this._activeContext = this._methodContextTypeParams;
+
+            return new FieldReference(
+                fieldSpecSer.Name,
                 memberType,
                 declaringType);
         }
@@ -369,6 +620,33 @@ namespace JsCsc.Lib
 
             ModuleDefinition rv;
             string moduleName = jObject.Value<string>(NameTokens.Name);
+            if (!this._context.TryGetModuleDefinition(moduleName, out rv))
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                    "Unable to resolve assembly:{0}, are you missing assembly reference?",
+                    moduleName));
+            }
+
+            return rv;
+        }
+
+        /// <summary>
+        ///     Gets the module definition.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"> Thrown when the requested operation is invalid. </exception>
+        /// <param name="moduleSpec"> Information describing the module. </param>
+        /// <returns>
+        ///     The module definition.
+        /// </returns>
+        private ModuleDefinition GetModuleDefinition(Serialization.ModuleSpecSer moduleSpec)
+        {
+            if (moduleSpec == null
+                || moduleSpec.Name == null)
+            { return null; }
+
+            ModuleDefinition rv;
+            string moduleName = moduleSpec.Name;
             if (!this._context.TryGetModuleDefinition(moduleName, out rv))
             {
                 throw new InvalidOperationException(

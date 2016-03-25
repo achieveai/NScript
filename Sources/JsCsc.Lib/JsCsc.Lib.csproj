@@ -88,6 +88,7 @@
     <None Include="AstConverter.cs" />
     <Compile Include="AstToJObject.cs" />
     <Compile Include="AstToSerialization.cs" />
+    <Compile Include="BondToAst.cs" />
     <Compile Include="DriverWrapper.cs" />
     <Compile Include="ExpressionVisitDispatcher.cs" />
     <Compile Include="ExtensionMethods.cs" />

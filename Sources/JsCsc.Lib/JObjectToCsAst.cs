@@ -29,7 +29,7 @@ namespace JsCsc.Lib
         public JObjectToCsAst(ClrContext context)
         {
             this._parserMap = this.BuildParserMap();
-            this._memberReferenceDeserializer = new MemberReferenceDeserializer(this, context);
+            this._memberReferenceDeserializer = new MemberReferenceDeserializer(context);
             this._clrContext = context;
         }
 

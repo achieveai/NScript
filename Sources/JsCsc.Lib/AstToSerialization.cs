@@ -30,7 +30,10 @@ namespace JsCsc.Lib
 
         private LinkedList<Tuple<int, Ast.ParameterBlock>> parameterBlockStack = new LinkedList<Tuple<int, Ast.ParameterBlock>>();
 
-        private TypeInfoSer TypeSerializationInfo;
+        private Dictionary<TypeSpec, int> typeDict = new Dictionary<TypeSpec, int>();
+        private Dictionary<MethodSpec, int> methodDict = new Dictionary<MethodSpec, int>();
+        private Dictionary<FieldSpec, int> fieldDict = new Dictionary<FieldSpec, int>();
+        public TypeInfoSer TypeSerializationInfo;
 
         public AstToSerialization()
         {
@@ -314,7 +317,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(UnboxCast expression)
         {
-            return new CastExpression
+            return new TypeCastExpression
             {
                 Location = expression.GetSerLoc(),
                 Type = this.GetTypeSpecId(expression.Type),
@@ -330,12 +333,11 @@ namespace JsCsc.Lib
 
         public AstBase Visit(Cast expression)
         {
-            return new CastExpression
+            return new TypeCastExpression
             {
                 Location = expression.GetSerLoc(),
                 Type = this.GetTypeSpecId(expression.TargetType.Type),
-                Expression = this.Dispatch(expression.Expr),
-                IsUnbox = false
+                Expression = this.Dispatch(expression.Expr)
             };
         }
 
@@ -732,8 +734,6 @@ namespace JsCsc.Lib
 
         public AstBase Visit(Switch expression)
         {
-            JArray jarray = new JArray();
-
             var switchSections = new List<SwitchSectionSer>();
             foreach (var section in expression.Sections)
             {
@@ -753,7 +753,7 @@ namespace JsCsc.Lib
                     }
                 }
 
-                jarray.Add(
+                switchSections.Add(
                     new SwitchSectionSer
                     {
                         Labels = caseLabels,
@@ -780,7 +780,6 @@ namespace JsCsc.Lib
 
         public AstBase Visit(ExplicitBlock expression)
         {
-            throw new NotImplementedException();
             var rv = new ExplicitBlockSer
             {
                 Id = ++this.id,
@@ -801,7 +800,7 @@ namespace JsCsc.Lib
         {
             var rv = new ParameterBlock
             {
-                Location = expression.GetSerLoc(),
+                Location = expression != null ? expression.GetSerLoc() : null,
                 Id = ++this.id
             };
 
@@ -827,7 +826,8 @@ namespace JsCsc.Lib
             {
                 rv.Statements.Insert(
                     insertOffset++,
-                    (StatementSer)this.Visit(initializer));
+                    new StatementExpressionSer
+                    { Expression = (ExpressionSer)this.Visit(initializer) });
             }
 
             if (initializer != null
@@ -1301,7 +1301,7 @@ namespace JsCsc.Lib
                 {
                     ElementInitializer initializer = init as ElementInitializer;
                     ObjectInitilaizer objInitializer = new ObjectInitilaizer
-                    { Location = initializer.GetSerLoc(), };
+                    { Location = init.GetSerLoc(), };
 
                     if (initializer != null)
                     {
@@ -1394,7 +1394,7 @@ namespace JsCsc.Lib
                 Location = expression.GetSerLoc(),
                 Getter = this.GetMethodSpecId(expression.Getter),
                 Setter = this.GetMethodSpecId(expression.Setter),
-                Instance = this.Dispatch(expression.InstanceExpression)
+                Instance = this.Dispatch(expression.InstanceExpression),
             };
         }
 
@@ -1611,10 +1611,11 @@ namespace JsCsc.Lib
 
         public AstBase Visit(AnonymousMethodExpression expression)
         {
-            return new AnonymousMethodExpr
+            return new AnonymousMethodBodyExpr
             {
                 Location = expression.GetSerLoc(),
-                Block = (ParameterBlock)this.Dispatch(expression.Block)
+                Block = (ParameterBlock)this.Dispatch(expression.Block),
+                Type = 0
             };
         }
 
@@ -1659,7 +1660,7 @@ namespace JsCsc.Lib
         { throw new NotImplementedException(); }
 
         public AstBase Visit(ContextualReturn statement)
-        { throw new NotImplementedException(); }
+        { return this.Visit((Return)statement); }
 
         private ParameterSer Dispatch(Parameter parameter)
         {
@@ -1796,12 +1797,26 @@ namespace JsCsc.Lib
         /// </returns>
         public int GetTypeSpecId(TypeSpec typeSpec)
         {
-            var token = typeSpec.GetMetaInfo().MetadataToken;
+            int token = 0;
+            if (typeSpec != null)
+            {
+                if (!this.typeDict.TryGetValue(typeSpec, out token))
+                { token = this.methodDict.Count + 1; }
+            }
+
+            // var token = typeSpec != null
+            //     ? typeSpec.GetMetaInfo().MetadataToken
+            //     : int.MinValue;
             if (this.TypeSerializationInfo.Types.ContainsKey(token))
             { return token; }
 
             this.TypeSerializationInfo.Types[token]
-                = MemberReferenceSerializer.SerializeN(typeSpec);
+                = typeSpec != null
+                    ? MemberReferenceSerializer.SerializeN(typeSpec)
+                    : null;
+
+            if (typeSpec != null)
+            { this.typeDict.Add(typeSpec, token); }
 
             return token;
         }
@@ -1825,12 +1840,26 @@ namespace JsCsc.Lib
         /// </returns>
         public int GetMethodSpecId(MethodSpec typeSpec)
         {
-            var token = typeSpec.GetMetaInfo().MetadataToken;
+            int token = 0;
+            if (typeSpec != null)
+            {
+                if (!this.methodDict.TryGetValue(typeSpec, out token))
+                { token = this.methodDict.Count + 1; }
+            }
+
+            // var token = typeSpec != null
+            //     ? typeSpec.GetMetaInfo().MetadataToken
+            //     : int.MinValue;
             if (this.TypeSerializationInfo.Methods.ContainsKey(token))
             { return token; }
 
             this.TypeSerializationInfo.Methods[token]
-                = MemberReferenceSerializer.SerializeN(typeSpec);
+                = typeSpec != null
+                    ? MemberReferenceSerializer.SerializeN(typeSpec)
+                    : null;
+
+            if (typeSpec != null)
+            { this.methodDict.Add(typeSpec, token); }
 
             return token;
         }
@@ -1844,12 +1873,26 @@ namespace JsCsc.Lib
         /// </returns>
         public int GetFieldSpecId(FieldSpec typeSpec)
         {
-            var token = typeSpec.GetMetaInfo().MetadataToken;
+            int token = 0;
+            if (typeSpec != null)
+            {
+                if (!this.fieldDict.TryGetValue(typeSpec, out token))
+                { token = this.fieldDict.Count + 1; }
+            }
+
+            // var token = typeSpec != null
+            //     ? typeSpec.GetMetaInfo().MetadataToken
+            //     : int.MinValue;
             if (this.TypeSerializationInfo.Fields.ContainsKey(token))
             { return token; }
 
             this.TypeSerializationInfo.Fields[token]
-                = MemberReferenceSerializer.SerializeN(typeSpec);
+                = typeSpec != null
+                    ? MemberReferenceSerializer.SerializeN(typeSpec)
+                    : null;
+
+            if (typeSpec != null)
+            { this.fieldDict.Add(typeSpec, token); }
 
             return token;
         }

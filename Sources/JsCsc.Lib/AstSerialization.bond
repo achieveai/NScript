@@ -2,16 +2,16 @@
 
 struct ModuleSpecSer
 {
-0: string Name;
+0: nullable<string> Name;
 }
 
 struct TypeSpecSer
 {
 0: nullable<string> Name;
-1: ModuleSpecSer Module;
+1: nullable<ModuleSpecSer> Module;
 2: nullable<TypeSpecSer> NestedParent;
 3: nullable<string> Namespace;
-4: nullable<int32> Arity;
+4: int32 Arity;
 }
 
 struct GenericParamSer : TypeSpecSer
@@ -22,7 +22,7 @@ struct GenericParamSer : TypeSpecSer
 
 struct ArrayTypeSer : TypeSpecSer
 {
-0: TypeSpecSer ElementType;
+0: nullable<TypeSpecSer> ElementType;
 }
 
 struct GenericInstanceTypeSer : TypeSpecSer
@@ -47,7 +47,7 @@ struct FieldSpecSer
 struct MethodSpecSer
 {
 0: TypeSpecSer DeclaringType;
-1: TypeSpecSer ReturnType;
+1: nullable<TypeSpecSer> ReturnType;
 2: string Name;
 3: bool IsStatic;
 4: int32 Arity;
@@ -57,9 +57,9 @@ struct MethodSpecSer
 
 struct TypeInfoSer
 {
-0: map<int32, TypeSpecSer> Types;
-1: map<int32, MethodSpecSer> Methods;
-2: map<int32, FieldSpecSer> Fields;
+0: map<int32, nullable<TypeSpecSer>> Types;
+1: map<int32, nullable<MethodSpecSer>> Methods;
+2: map<int32, nullable<FieldSpecSer>> Fields;
 }
 
 struct LocationSer
@@ -78,7 +78,7 @@ struct AstBase
 struct LocalVariableSer : AstBase
 {
 0: int32 Type;
-1: string Name;
+1: nullable<string> Name;
 2: int32 BlockId;
 }
 
@@ -152,46 +152,43 @@ struct NewAnonymoustype : ExpressionSer
 struct MethodExpression : ExpressionSer
 {
 0: int32 Method;
-1: ExpressionSer Instance;
+1: nullable<ExpressionSer> Instance;
 }
 
 struct FieldExpression : ExpressionSer
 {
 0: int32 Field;
-1: ExpressionSer Instance;
+1: nullable<ExpressionSer> Instance;
 }
 
 struct PropertyExpression : ExpressionSer
 {
 0: int32 Getter;
 1: int32 Setter;
-2: ExpressionSer Instance;
+2: nullable<ExpressionSer> Instance;
 }
 
-struct IndexExpression : ExpressionSer
+struct IndexExpression : PropertyExpression
 {
-0: int32 Getter;
-1: int32 Setter;
-2: ExpressionSer Instance;
-3: vector<MethodCallArg> Arguments;
+0: vector<MethodCallArg> Arguments;
 }
 
 struct DynamicIndexBinderExpression : ExpressionSer
 {
-0: ExpressionSer Instance;
-1: ExpressionSer Index;
+0: nullable<ExpressionSer> Instance;
+1: nullable<ExpressionSer> Index;
 }
 
 struct DynamicMethodBinderExpression : ExpressionSer
 {
-0: string Name;
-1: ExpressionSer Instance;
-2: ExpressionSer Value;
+0: nullable<string> Name;
+1: nullable<ExpressionSer> Instance;
+2: nullable<ExpressionSer> Value;
 }
 
 struct DelegateInvocationExpression : ExpressionSer
 {
-0: ExpressionSer Instance;
+0: nullable<ExpressionSer> Instance;
 1: vector<MethodCallArg> Arguments;
 }
 
@@ -216,12 +213,13 @@ struct UserCastExpression : MethodCallExpression
 struct TypeCastExpression : ExpressionSer
 {
 0: int32 Type;
-1: ExpressionSer Expression;
+1: nullable<ExpressionSer> Expression;
+2: bool IsUnbox;
 }
 
 struct DelegateCreationExpression : ExpressionSer
 {
-0: ExpressionSer Method;
+0: nullable<ExpressionSer> Method;
 1: int32 Type;
 }
 
@@ -262,13 +260,6 @@ struct CompoundAssignExpression: AssignExpression
 0: int32 Operator;
 }
 
-struct CastExpression : ExpressionSer
-{
-0: int32 Type;
-1: ExpressionSer Expression;
-2: bool IsUnbox;
-}
-
 struct BoxCastExpression : ExpressionSer
 {
 0: ExpressionSer Expression;
@@ -285,17 +276,17 @@ struct ConstantExpression<T> : ExpressionSer
 
 struct ThrowExpression : StatementSer
 {
-0: ExpressionSer Expression;
+0: nullable<ExpressionSer> Expression;
 }
 
 struct UnwrapExpression : ExpressionSer
 {
-0: ExpressionSer Expression;
+0: nullable<ExpressionSer> Expression;
 }
 
 struct WrapExpression : ExpressionSer
 {
-0: ExpressionSer Expression;
+0: nullable<ExpressionSer> Expression;
 }
 
 struct LiftedNullExpression : ExpressionSer
@@ -360,7 +351,7 @@ struct ParameterReferenceExpression : ExpressionSer
 
 struct StatementExpressionSer : StatementSer
 {
-0: ExpressionSer Expression;
+0: nullable<ExpressionSer> Expression;
 }
 
 struct YieldStatement : StatementExpressionSer
@@ -503,5 +494,11 @@ struct MethodBody : AstBase
 {
 0: int32 MethodId;
 1: nullable<string> FileName;
-2: bonded<ParameterBlock> Body;
+2: nullable<bonded<ParameterBlock>> Body;
+}
+
+struct FullAst
+{
+0: list<MethodBody> Methods;
+1: TypeInfoSer TypeInfo;
 }
