@@ -440,7 +440,6 @@ namespace JsCsc.Lib
         {
             var rvSer = new TypeSpecSer();
 
-            string Name = null;
             ModuleSpecSer moduleSer = null;
 
             if (type == null)
@@ -454,7 +453,7 @@ namespace JsCsc.Lib
                 TypeParameterSpec paramSpec = (TypeParameterSpec)type;
                 return new GenericParamSer
                 {
-                    Name = Name,
+                    Name = type.Name,
                     Position = paramSpec.DeclaredPosition,
                     IsMethodOwned = paramSpec.IsMethodOwned,
                     Module = moduleSer
@@ -466,7 +465,6 @@ namespace JsCsc.Lib
                 return new ArrayTypeSer
                 {
                     Module = moduleSer,
-                    Name = Name,
                     ElementType = MemberReferenceSerializer.SerializeN(
                         ((ArrayContainer)type).Element,
                         typeContext,
@@ -520,6 +518,7 @@ namespace JsCsc.Lib
 
             rv.Name = metaInfo.Name;
             rv.Namespace = metaInfo.Namespace;
+            rv.Module = moduleSer;
             rv.Arity = type.Arity;
             rv.NestedParent = metaInfo.IsNested
                 ? MemberReferenceSerializer.SerializeN(

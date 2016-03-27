@@ -253,7 +253,7 @@ namespace JsCsc.Lib
                 declaringType.Resolve());
 
             var argsArray = methodSpec.Parameters;
-            for (int iParam = 0; iParam < argsArray.Count; iParam++)
+            for (int iParam = 0; argsArray != null && iParam < argsArray.Count; iParam++)
             {
                 var paramObj = argsArray[iParam];
                 ParameterAttributes attr = (ParameterAttributes)paramObj.ModFlags;
@@ -312,7 +312,7 @@ namespace JsCsc.Lib
                 returningType = this.DeserializeType(methodSpec.ReturnType);
                 rv.ReturnType = returningType;
 
-                for (int iParam = 0; iParam < argsArray.Count; iParam++)
+                for (int iParam = 0; argsArray != null && iParam < argsArray.Count; iParam++)
                 {
                     var paramObj = argsArray[iParam];
                     ParameterAttributes attr = (ParameterAttributes)paramObj.ModFlags;
@@ -470,6 +470,8 @@ namespace JsCsc.Lib
         /// <param name="typeSpec"> Information describing the type. </param>
         public TypeReference DeserializeType(Serialization.TypeSpecSer typeSpec)
         {
+            if (typeSpec == null) { return this._context.KnownReferences.Void; }
+
             ModuleDefinition moduleDef = this.GetModuleDefinition(typeSpec.Module);
 
             if (moduleDef == null)

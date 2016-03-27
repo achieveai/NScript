@@ -57,8 +57,7 @@ namespace JsCsc.Lib
                     ? rootBlock.Location.NameFullPath
                     : fields.First().Location.NameFullPath,
                 MethodId = this.GetMethodSpecId(constructor.Spec),
-                Body = new Bond.Bonded<ParameterBlock>(
-                    this.Visit(rootBlock, constructor.Initializer, fields))
+                Body = this.Visit(rootBlock, constructor.Initializer, fields)
             };
 
             return methodBlock;
@@ -75,8 +74,7 @@ namespace JsCsc.Lib
                     ? rootBlock.Location.NameFullPath
                     : null,
                 Body = rootBlock != null
-                    ? new Bond.Bonded<ParameterBlock>(
-                        this.Visit(rootBlock, null, null))
+                    ? this.Visit(rootBlock, null, null)
                     : null
             };
         }
@@ -92,8 +90,7 @@ namespace JsCsc.Lib
                     ? rootBlock.Location.NameFullPath
                     : null,
                 Body = rootBlock != null
-                    ? new Bond.Bonded<ParameterBlock>(
-                        this.Visit(rootBlock, null, null))
+                    ? this.Visit(rootBlock, null, null)
                     : null
             };
         }
@@ -111,7 +108,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(BoolLiteral expression)
         {
-            return new LiteralExpression<bool>
+            return new BoolLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -120,7 +117,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(CharLiteral expression)
         {
-            return new LiteralExpression<char>
+            return new CharLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -129,7 +126,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(IntLiteral expression)
         {
-            return new LiteralExpression<int>
+            return new IntLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -138,7 +135,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(UIntLiteral expression)
         {
-            return new LiteralExpression<uint>
+            return new UIntLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -147,7 +144,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(LongLiteral expression)
         {
-            return new LiteralExpression<long>
+            return new LongLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -156,7 +153,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(ULongLiteral expression)
         {
-            return new LiteralExpression<ulong>
+            return new ULongLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -165,7 +162,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(FloatLiteral expression)
         {
-            return new LiteralExpression<float>
+            return new FloatLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -174,7 +171,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(DoubleLiteral expression)
         {
-            return new LiteralExpression<double>
+            return new DoubleLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -183,7 +180,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(DecimalLiteral expression)
         {
-            return new LiteralExpression<decimal>
+            return new DecimalLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -192,7 +189,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(StringLiteral expression)
         {
-            return new LiteralExpression<string>
+            return new StringLiteralExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -288,7 +285,7 @@ namespace JsCsc.Lib
                     throw new NotImplementedException();
             }
 
-            return new CompoundAssignExpression
+            return new BinaryExpression
             {
                 Location = expression.GetSerLoc(),
                 Operator = (int)op.Value,
@@ -346,7 +343,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(BoolConstant expression)
         {
-            return new ConstantExpression<bool>
+            return new BoolConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -355,7 +352,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(ByteConstant expression)
         {
-            return new ConstantExpression<byte>
+            return new ByteConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -364,7 +361,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(CharConstant expression)
         {
-            return new ConstantExpression<char>
+            return new CharConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -373,7 +370,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(SByteConstant expression)
         {
-            return new ConstantExpression<sbyte>
+            return new SbyteConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -382,7 +379,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(ShortConstant expression)
         {
-            return new ConstantExpression<short>
+            return new ShortConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -391,7 +388,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(UShortConstant expression)
         {
-            return new ConstantExpression<ushort>
+            return new UshortConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -400,7 +397,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(IntConstant expression)
         {
-            return new ConstantExpression<int>
+            return new IntConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -409,7 +406,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(UIntConstant expression)
         {
-            return new ConstantExpression<uint>
+            return new UintConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -418,7 +415,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(LongConstant expression)
         {
-            return new ConstantExpression<long>
+            return new LongConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -427,7 +424,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(ULongConstant expression)
         {
-            return new ConstantExpression<ulong>
+            return new UlongConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -436,7 +433,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(FloatConstant expression)
         {
-            return new ConstantExpression<float>
+            return new FloatConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -445,7 +442,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(DoubleConstant expression)
         {
-            return new ConstantExpression<double>
+            return new DoubleConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -454,7 +451,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(DecimalConstant expression)
         {
-            return new ConstantExpression<decimal>
+            return new DecimalConstantExpression
             {
                 Location = expression.GetSerLoc(),
                 Value = expression.Value
@@ -641,18 +638,17 @@ namespace JsCsc.Lib
                     }
                 }
 
+                var initializers = expressions.Select(e => this.Dispatch(e)).ToList();
                 return new VariableBlockDeclaration
                 {
                     Location = expression.GetSerLoc(),
-                    Initializers = expressions.Select(e => this.Dispatch(e)).ToList()
+                    Initializers = initializers
                 };
             }
             else
             {
-                return new VariableBlockDeclaration
-                {
-                    Location = expression.GetSerLoc(),
-                };
+                return new EmptyStatementSer
+                { Location = expression.GetSerLoc() };
             }
         }
 
@@ -771,7 +767,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(Mono.CSharp.Block expression)
         {
-            return new BlockSer
+            return new StatementListSer
             {
                 Location = expression.GetSerLoc(),
                 Statements = this.Dispatch(expression.Statements)
@@ -780,14 +776,14 @@ namespace JsCsc.Lib
 
         public AstBase Visit(ExplicitBlock expression)
         {
+            this.scopeBlockStack.AddFirst(Tuple.Create(++this.id, expression));
             var rv = new ExplicitBlockSer
             {
-                Id = ++this.id,
-                Location = expression.GetSerLoc()
+                Id = this.id,
+                Location = expression.GetSerLoc(),
+                Statements = this.Dispatch(expression.Statements)
             };
 
-            this.scopeBlockStack.AddFirst(Tuple.Create(this.id, expression));
-            rv.Statements = this.Dispatch(expression.Statements);
             this.scopeBlockStack.RemoveFirst();
 
             return rv;
@@ -902,6 +898,7 @@ namespace JsCsc.Lib
                 {
                     Location = catchBlock.GetSerLoc(),
                     Block = (ExplicitBlockSer)this.Dispatch(catchBlock.Block),
+                    CatchType = this.GetTypeSpecId(catchBlock.CatchType)
                 };
 
                 this.scopeBlockStack.AddFirst(
@@ -909,8 +906,8 @@ namespace JsCsc.Lib
                         catchBlockSer.Block.Id,
                         (ExplicitBlock)catchBlock.Block));
                 catchBlockSer.LocalVariable = this.Dispatch(catchBlock.Variable);
-
                 this.scopeBlockStack.RemoveFirst();
+
                 rv.CatchBlocks.Add(catchBlockSer);
             }
 
@@ -949,7 +946,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(LiftedNull expression)
         {
-            return new LiftedNullExpression
+            return new DefaultValueExpr
             {
                 Location = expression.GetSerLoc(),
                 Type = this.GetTypeSpecId(expression.Type)
@@ -1471,13 +1468,13 @@ namespace JsCsc.Lib
 
         public AstBase Visit(ConstructorInitializer expression)
         {
-            return new ConstructorInitializerExpression
-            {
-                Location = expression.GetSerLoc(),
-                Instance = new ThisExpression(),
-                Method = this.GetMethodSpecId(expression.BaseConstructor),
-                Arguments = this.EnumerateArgs(expression.Arguments)
-            };
+            return new MethodCallExpression
+                {
+                    Method = this.GetMethodSpecId(expression.BaseConstructor),
+                    Location = expression.GetSerLoc(),
+                    Instance = new ThisExpression(),
+                    Arguments = this.EnumerateArgs(expression.Arguments)
+                };
         }
 
         public AstBase Visit(ConstructorThisInitializer expression)
@@ -1506,7 +1503,7 @@ namespace JsCsc.Lib
 
         public AstBase Visit(StringConstant expression)
         {
-            return new ConstantExpression<string>
+            return new StringConstantExpression
             {
                 Value = expression.Value,
                 Location = expression.GetSerLoc(),
@@ -1582,14 +1579,12 @@ namespace JsCsc.Lib
 
         public AstBase Visit(UserCast expression)
         {
-            return new UserCastExpression
+            return new MethodCallExpression
             {
                 Location = expression.GetSerLoc(),
                 Method = this.GetMethodSpecId(expression.Method),
                 Arguments = new List<MethodCallArg>
-                {
-                    new MethodCallArg { Value = this.Dispatch(expression.Source) }
-                }
+                { new MethodCallArg { Value = this.Dispatch(expression.Source) } }
             };
         }
 
@@ -1685,7 +1680,8 @@ namespace JsCsc.Lib
                 {
                     Location = ExtensionMethods.GetSerLoc(parameter.Location, parameter.EndLocation),
                     Modifier = (int)attributes,
-                    Type = this.GetTypeSpecId(parameter.Type)
+                    Type = this.GetTypeSpecId(parameter.Type),
+                    Name = paramName
                 };
         }
 

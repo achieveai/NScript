@@ -2,16 +2,18 @@
 
 struct ModuleSpecSer
 {
-0: nullable<string> Name;
+0: bond_meta::name _name;
+1: nullable<string> Name;
 }
 
 struct TypeSpecSer
 {
-0: nullable<string> Name;
-1: nullable<ModuleSpecSer> Module;
-2: nullable<TypeSpecSer> NestedParent;
-3: nullable<string> Namespace;
-4: int32 Arity;
+0: bond_meta::name _name;
+1: nullable<string> Name;
+2: nullable<ModuleSpecSer> Module;
+3: nullable<TypeSpecSer> NestedParent;
+4: nullable<string> Namespace;
+5: int32 Arity;
 }
 
 struct GenericParamSer : TypeSpecSer
@@ -32,47 +34,53 @@ struct GenericInstanceTypeSer : TypeSpecSer
 
 struct ParamSer
 {
-0: TypeSpecSer ParamType;
-1: int32 ModFlags;
-2: string Name;
+0: bond_meta::name _name;
+1: TypeSpecSer ParamType;
+2: int32 ModFlags;
+3: string Name;
 }
 
 struct FieldSpecSer
 {
-0: TypeSpecSer DeclaringType;
-1: TypeSpecSer MemberType;
-2: string Name;
+0: bond_meta::name _name;
+1: TypeSpecSer DeclaringType;
+2: TypeSpecSer MemberType;
+3: string Name;
 }
 
 struct MethodSpecSer
 {
-0: TypeSpecSer DeclaringType;
-1: nullable<TypeSpecSer> ReturnType;
-2: string Name;
-3: bool IsStatic;
-4: int32 Arity;
-5: vector<ParamSer> Parameters;
-6: vector<TypeSpecSer> TypeArgs;
+0: bond_meta::name _name;
+1: TypeSpecSer DeclaringType;
+2: nullable<TypeSpecSer> ReturnType;
+3: string Name;
+4: bool IsStatic;
+5: int32 Arity;
+6: vector<ParamSer> Parameters;
+7: vector<TypeSpecSer> TypeArgs;
 }
 
 struct TypeInfoSer
 {
-0: map<int32, nullable<TypeSpecSer>> Types;
-1: map<int32, nullable<MethodSpecSer>> Methods;
-2: map<int32, nullable<FieldSpecSer>> Fields;
+0: bond_meta::name _name;
+1: map<int32, nullable<TypeSpecSer>> Types;
+2: map<int32, nullable<MethodSpecSer>> Methods;
+3: map<int32, nullable<FieldSpecSer>> Fields;
 }
 
 struct LocationSer
 {
-0: int32 StartLine;
-1: int32 StartColumn;
-2: int32 EndLine;
-3: int32 EndColumn;
+0: bond_meta::name _name;
+1: int32 StartLine;
+2: int32 StartColumn;
+3: int32 EndLine;
+4: int32 EndColumn;
 }
 
 struct AstBase
 {
-0: nullable<LocationSer> Location;
+0: bond_meta::name _name;
+1: nullable<LocationSer> Location;
 }
 
 struct LocalVariableSer : AstBase
@@ -111,8 +119,9 @@ struct LiteralExpression<T> : ExpressionSer
 
 struct MethodCallArg
 {
-0: bool IsByRef;
-1: ExpressionSer Value;
+0: bond_meta::name _name;
+1: bool IsByRef;
+2: ExpressionSer Value;
 }
 
 struct MethodCallExpression : ExpressionSer
@@ -428,13 +437,15 @@ struct ForEachStatement : LoopStatement
 
 struct SwitchCaseLabel
 {
-0: nullable<ExpressionSer> LabelValue;
+0: bond_meta::name _name;
+1: nullable<ExpressionSer> LabelValue;
 }
 
 struct SwitchSectionSer
 {
-0: vector<SwitchCaseLabel> Labels;
-1: StatementSer Block;
+0: bond_meta::name _name;
+1: vector<SwitchCaseLabel> Labels;
+2: StatementSer Block;
 }
 
 struct SwitchStatement: StatementSer
@@ -499,6 +510,7 @@ struct MethodBody : AstBase
 
 struct FullAst
 {
-0: list<MethodBody> Methods;
-1: TypeInfoSer TypeInfo;
+0: bond_meta::name _name;
+1: list<MethodBody> Methods;
+2: TypeInfoSer TypeInfo;
 }

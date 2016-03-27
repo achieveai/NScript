@@ -61,7 +61,7 @@ namespace JsCsc.Lib
                     try
                     {
 
-                        var methodBlockObject = jObject.Body.Deserialize();
+                        var methodBlockObject = jObject.Body;
                         if (methodBlockObject != null)
                         {
                             TopLevelBlock rv = new TopLevelBlock(method);
@@ -99,7 +99,7 @@ namespace JsCsc.Lib
                 this.LocFromJObject(jObject));
         }
 
-        private Node ParseBoolLiteral(Serialization.LiteralExpression<bool> jObject)
+        private Node ParseBoolLiteral(Serialization.BoolLiteralExpression jObject)
         {
             return new BooleanLiteral(
                 this._clrContext,
@@ -107,7 +107,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseCharLiteral(Serialization.LiteralExpression<char> jObject)
+        private Node ParseCharLiteral(Serialization.CharLiteralExpression jObject)
         {
             return new CharLiteral(
                 this._clrContext,
@@ -115,7 +115,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseLongLiteral(Serialization.LiteralExpression<long> jObject)
+        private Node ParseLongLiteral(Serialization.LongLiteralExpression jObject)
         {
             return new IntLiteral(
                 this._clrContext,
@@ -123,7 +123,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseULongLiteral(Serialization.LiteralExpression<ulong> jObject)
+        private Node ParseULongLiteral(Serialization.ULongLiteralExpression jObject)
         {
             return new IntLiteral(
                 this._clrContext,
@@ -131,7 +131,7 @@ namespace JsCsc.Lib
                 (long)jObject.Value);
         }
 
-        private Node ParseIntLiteral(Serialization.LiteralExpression<int> jObject)
+        private Node ParseIntLiteral(Serialization.IntLiteralExpression jObject)
         {
             return new IntLiteral(
                 this._clrContext,
@@ -139,7 +139,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseUIntLiteral(Serialization.LiteralExpression<uint> jObject)
+        private Node ParseUIntLiteral(Serialization.UIntLiteralExpression jObject)
         {
             return new UIntLiteral(
                 this._clrContext,
@@ -147,7 +147,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseStringLiteral(Serialization.LiteralExpression<string> jObject)
+        private Node ParseStringLiteral(Serialization.StringLiteralExpression jObject)
         {
             return new StringLiteral(
                 this._clrContext,
@@ -155,12 +155,12 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseDecimalLiteral(Serialization.LiteralExpression<decimal> jObject)
+        private Node ParseDecimalLiteral(Serialization.DecimalLiteralExpression jObject)
         {
             throw new NotImplementedException();
         }
 
-        private Node ParseDoubleLiteral(Serialization.LiteralExpression<double> jObject)
+        private Node ParseDoubleLiteral(Serialization.DoubleLiteralExpression jObject)
         {
             return new DoubleLiteral(
                 this._clrContext,
@@ -168,7 +168,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseFloatLiteral(Serialization.LiteralExpression<float> jObject)
+        private Node ParseFloatLiteral(Serialization.FloatLiteralExpression jObject)
         {
             return new DoubleLiteral(
                 this._clrContext,
@@ -176,7 +176,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseByteLiteral(Serialization.LiteralExpression<byte> jObject)
+        private Node ParseByteLiteral(Serialization.ByteLiteralExpression jObject)
         {
             return new UIntLiteral(
                 this._clrContext,
@@ -184,7 +184,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseSByteLiteral(Serialization.LiteralExpression<sbyte> jObject)
+        private Node ParseSByteLiteral(Serialization.SByteLiteralExpression jObject)
         {
             return new IntLiteral(
                 this._clrContext,
@@ -192,7 +192,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseShortLiteral(Serialization.LiteralExpression<short> jObject)
+        private Node ParseShortLiteral(Serialization.ShortLiteralExpression jObject)
         {
             return new IntLiteral(
                 this._clrContext,
@@ -200,7 +200,7 @@ namespace JsCsc.Lib
                 jObject.Value);
         }
 
-        private Node ParseUShortLiteral(Serialization.LiteralExpression<ushort> jObject)
+        private Node ParseLiteral(Serialization.UShortLiteralExpression jObject)
         {
             return new IntLiteral(
                 this._clrContext,
@@ -310,12 +310,123 @@ namespace JsCsc.Lib
                 this.ParseExpression(jObject.Expression));
         }
 
-        private Node ParseUShortConstant(Serialization.ConstantExpression<ushort> jObject)
+        private Node ParseConstant(Serialization.ByteConstantExpression jObject)
         {
             return new UIntLiteral(
                 this._clrContext,
                 this.LocFromJObject(jObject),
                 jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.SbyteConstantExpression jObject)
+        {
+            return new IntLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.ShortConstantExpression jObject)
+        {
+            return new IntLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.UshortConstantExpression jObject)
+        {
+            return new UIntLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.IntConstantExpression jObject)
+        {
+            return new IntLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.UintConstantExpression jObject)
+        {
+            return new UIntLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.LongConstantExpression jObject)
+        {
+            return new IntLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.UlongConstantExpression jObject)
+        {
+            return new UIntLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.FloatConstantExpression jObject)
+        {
+            return new DoubleLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.DoubleConstantExpression jObject)
+        {
+            return new DoubleLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.DecimalConstantExpression jObject)
+        {
+            return new DoubleLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                (double)jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.StringConstantExpression jObject)
+        {
+            return new StringLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.CharConstantExpression jObject)
+        {
+            return new CharLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.BoolConstantExpression jObject)
+        {
+            return new BooleanLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Value);
+        }
+
+        private Node ParseConstant(Serialization.NullConstantExpression jObject)
+        {
+            return new NullLiteral(
+                this._clrContext,
+                this.LocFromJObject(jObject));
         }
 
         private Node ParseEmptyStatement(Serialization.EmptyStatementSer jObject)
@@ -369,10 +480,10 @@ namespace JsCsc.Lib
         private Node ParseVariableInitializers(Serialization.VariableBlockDeclaration jObject)
         {
             var expressions = this.ParseExpressions(jObject.Initializers);
-            if (expressions.Length == 1)
-            {
-                return new ExpressionStatement(expressions[0]);
-            }
+            if (expressions != null && expressions.Length == 1)
+            { return new ExpressionStatement(expressions[0]); }
+            else if (expressions == null)
+            { expressions = new Expression[0]; }
 
             return new InitializerStatement(
                 this._clrContext,
@@ -525,9 +636,10 @@ namespace JsCsc.Lib
                     jObject.Id,
                     rv));
 
-            foreach (var statement in this.ParseStatements(jObject.Statements))
+            if (jObject.Statements != null)
             {
-                rv.AddStatement(statement);
+                foreach (var statement in this.ParseStatements(jObject.Statements))
+                { rv.AddStatement(statement); }
             }
 
             this.scopeBlockStack.RemoveFirst();
@@ -561,7 +673,7 @@ namespace JsCsc.Lib
 
             var parameterArray = jObject.Parameters;
 
-            for (int iParam = 0; iParam < parameterArray.Count; iParam++)
+            for (int iParam = 0; parameterArray != null && iParam < parameterArray.Count; iParam++)
             {
                 var paramObj = parameterArray[iParam];
                 ParameterAttributes attr = (ParameterAttributes)paramObj.Modifier;
@@ -596,9 +708,10 @@ namespace JsCsc.Lib
                     jObject.Id,
                     rv));
 
-            foreach (var statement in this.ParseStatements(jObject.Statements))
+            if (jObject.Statements != null)
             {
-                rv.AddStatement(statement);
+                foreach (var statement in this.ParseStatements(jObject.Statements))
+                { rv.AddStatement(statement); }
             }
 
             this.scopeBlockStack.RemoveFirst();
@@ -669,7 +782,8 @@ namespace JsCsc.Lib
                 HandlerBlock handlerBlock = new HandlerBlock(
                     this._clrContext,
                     this.LocFromJObject(handlerObj),
-                    this.DeserializeType(handlerObj.CatchType.Value),
+                    this.DeserializeType(handlerObj.CatchType ?? 0)
+                        ?? this._clrContext.KnownReferences.Exception,
                     exceptionVariable != null
                         ? new VariableReference(
                                 this._clrContext,
@@ -1393,7 +1507,7 @@ namespace JsCsc.Lib
         private Expression[] ParseArguments(List<Serialization.MethodCallArg> arguments)
         {
             if (arguments == null)
-            { return null; }
+            { return new Expression[0]; }
 
             Expression[] rv = new Expression[arguments.Count];
             for (int iArg = 0; iArg < arguments.Count; iArg++)
@@ -1430,6 +1544,7 @@ namespace JsCsc.Lib
 
         private TypeReference DeserializeType(int jObject)
         {
+            if (jObject == 0) { return null; }
             var tmp = this._typeInfo.Types[jObject];
             return tmp == null
                 ? null
@@ -1438,6 +1553,7 @@ namespace JsCsc.Lib
 
         private MethodReference DeserializeMethod(int jObject)
         {
+            if (jObject == 0) { return null; }
             var tmp = this._typeInfo.Methods[jObject];
             return tmp == null
                 ? null
@@ -1446,6 +1562,7 @@ namespace JsCsc.Lib
 
         private FieldReference DeserializeField(int jObject)
         {
+            if (jObject == 0) { return null; }
             var tmp = this._typeInfo.Fields[jObject];
             return tmp == null
                 ? null
@@ -1492,47 +1609,47 @@ namespace JsCsc.Lib
 					typeof(Serialization.NullExpression),
 					(a) => this.ParseNullLiteral((Serialization.NullExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<bool>),
-					(a) => this.ParseBoolLiteral((Serialization.LiteralExpression<bool>)a));
+					typeof(Serialization.BoolLiteralExpression),
+					(a) => this.ParseBoolLiteral((Serialization.BoolLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<char>),
-					(a) => this.ParseCharLiteral((Serialization.LiteralExpression<char>)a));
+					typeof(Serialization.CharLiteralExpression),
+					(a) => this.ParseCharLiteral((Serialization.CharLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<byte>),
-					(a) => this.ParseByteLiteral((Serialization.LiteralExpression<byte>)a));
+					typeof(Serialization.ByteLiteralExpression),
+					(a) => this.ParseByteLiteral((Serialization.ByteLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<sbyte>),
-					(a) => this.ParseSByteLiteral((Serialization.LiteralExpression<sbyte>)a));
+					typeof(Serialization.SByteLiteralExpression),
+					(a) => this.ParseSByteLiteral((Serialization.SByteLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<short>),
-					(a) => this.ParseShortLiteral((Serialization.LiteralExpression<short>)a));
+					typeof(Serialization.ShortLiteralExpression),
+					(a) => this.ParseShortLiteral((Serialization.ShortLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<ushort>),
-					(a) => this.ParseUShortLiteral((Serialization.LiteralExpression<ushort>)a));
+					typeof(Serialization.UShortLiteralExpression),
+					(a) => this.ParseLiteral((Serialization.UShortLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<int>),
-					(a) => this.ParseIntLiteral((Serialization.LiteralExpression<int>)a));
+					typeof(Serialization.IntLiteralExpression),
+					(a) => this.ParseIntLiteral((Serialization.IntLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<uint>),
-					(a) => this.ParseUIntLiteral((Serialization.LiteralExpression<uint>)a));
+					typeof(Serialization.UIntLiteralExpression),
+					(a) => this.ParseUIntLiteral((Serialization.UIntLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<long>),
-					(a) => this.ParseLongLiteral((Serialization.LiteralExpression<long>)a));
+					typeof(Serialization.LongLiteralExpression),
+					(a) => this.ParseLongLiteral((Serialization.LongLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<ulong>),
-					(a) => this.ParseULongLiteral((Serialization.LiteralExpression<ulong>)a));
+					typeof(Serialization.ULongLiteralExpression),
+					(a) => this.ParseULongLiteral((Serialization.ULongLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<float>),
-					(a) => this.ParseFloatLiteral((Serialization.LiteralExpression<float>)a));
+					typeof(Serialization.FloatLiteralExpression),
+					(a) => this.ParseFloatLiteral((Serialization.FloatLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<double>),
-					(a) => this.ParseDoubleLiteral((Serialization.LiteralExpression<double>)a));
+					typeof(Serialization.DoubleLiteralExpression),
+					(a) => this.ParseDoubleLiteral((Serialization.DoubleLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<decimal>),
-					(a) => this.ParseDecimalLiteral((Serialization.LiteralExpression<decimal>)a));
+					typeof(Serialization.DecimalLiteralExpression),
+					(a) => this.ParseDecimalLiteral((Serialization.DecimalLiteralExpression)a));
             parserMap.Add(
-					typeof(Serialization.LiteralExpression<string>),
-					(a) => this.ParseStringLiteral((Serialization.LiteralExpression<string>)a));
+					typeof(Serialization.StringLiteralExpression),
+					(a) => this.ParseStringLiteral((Serialization.StringLiteralExpression)a));
             parserMap.Add(
 					typeof(Serialization.AssignExpression),
 					(a) => this.ParseAssignment((Serialization.AssignExpression)a));
@@ -1549,8 +1666,47 @@ namespace JsCsc.Lib
 					typeof(Serialization.TypeCastExpression),
 					(a) => this.ParseTypeCast((Serialization.TypeCastExpression)a));
             parserMap.Add(
-					typeof(Serialization.ConstantExpression<ushort>),
-					(a) => this.ParseUShortConstant((Serialization.ConstantExpression<ushort>)a));
+					typeof(Serialization.ByteConstantExpression),
+					(a) => this.ParseConstant((Serialization.ByteConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.SbyteConstantExpression),
+					(a) => this.ParseConstant((Serialization.SbyteConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.ShortConstantExpression),
+					(a) => this.ParseConstant((Serialization.ShortConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.UshortConstantExpression),
+					(a) => this.ParseConstant((Serialization.UshortConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.IntConstantExpression),
+					(a) => this.ParseConstant((Serialization.IntConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.UintConstantExpression),
+					(a) => this.ParseConstant((Serialization.UintConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.LongConstantExpression),
+					(a) => this.ParseConstant((Serialization.LongConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.UlongConstantExpression),
+					(a) => this.ParseConstant((Serialization.UlongConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.FloatConstantExpression),
+					(a) => this.ParseConstant((Serialization.FloatConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.DoubleConstantExpression),
+					(a) => this.ParseConstant((Serialization.DoubleConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.StringConstantExpression),
+					(a) => this.ParseConstant((Serialization.StringConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.CharConstantExpression),
+					(a) => this.ParseConstant((Serialization.CharConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.NullConstantExpression),
+					(a) => this.ParseConstant((Serialization.NullConstantExpression)a));
+            parserMap.Add(
+					typeof(Serialization.BoolConstantExpression),
+					(a) => this.ParseConstant((Serialization.BoolConstantExpression)a));
             parserMap.Add(
 					typeof(Serialization.EmptyStatementSer),
 					(a) => this.ParseEmptyStatement((Serialization.EmptyStatementSer)a));

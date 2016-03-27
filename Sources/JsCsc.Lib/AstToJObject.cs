@@ -2004,9 +2004,7 @@ namespace JsCsc.Lib
         {
             JArray rv = new JArray();
             foreach (var stmt in coll)
-            {
-                rv.Add(this.Dispatch(stmt));
-            }
+            { rv.Add(this.Dispatch(stmt)); }
 
             return rv;
         }

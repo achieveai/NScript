@@ -15,9 +15,6 @@ namespace JsCsc.Lib
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using JsCsc.Lib.Serialization;
-    using Bond.Protocols;
-    using Bond.IO.Unsafe;
-    using Bond;
 
     /// <summary>
     /// Definition for Driver
@@ -215,24 +212,24 @@ namespace JsCsc.Lib
 
         private void OnEmitComplete(AssemblyDefinition assemblyDefinition)
         {
-            var stopWatch = System.Diagnostics.Stopwatch.StartNew();
-            this.EmitAstUsingJson(assemblyDefinition);
-            stopWatch.Stop();
-            double jsonTime = stopWatch.Elapsed.TotalSeconds;
-            stopWatch.Reset();
-            stopWatch.Start();
+            // var stopWatch = System.Diagnostics.Stopwatch.StartNew();
+            // this.EmitAstUsingJson(assemblyDefinition);
+            // stopWatch.Stop();
+            // double jsonTime = stopWatch.Elapsed.TotalSeconds;
+            // stopWatch.Reset();
+            // stopWatch.Start();
             this.EmitAstUsingBond(assemblyDefinition);
-            stopWatch.Stop();
-            double bondTime = stopWatch.Elapsed.TotalSeconds;
+            // stopWatch.Stop();
+            // double bondTime = stopWatch.Elapsed.TotalSeconds;
 
-            Console.WriteLine("Json: {0}, Bond: {1}", jsonTime, bondTime);
+            // Console.WriteLine("Json: {0}, Bond: {1}", jsonTime, bondTime);
         }
 
         private void EmitAstUsingBond(AssemblyDefinition assemblyDefinition)
         {
             this.assembly = assemblyDefinition;
 
-            var jarray = new FullAst();
+            var jarray = new FullAst() { Methods = new LinkedList<MethodBody>() };
             var toSer = new AstToSerialization();
             HashSet<TypeDefinition> typesProcessed = new HashSet<TypeDefinition>();
 
@@ -433,15 +430,7 @@ namespace JsCsc.Lib
 
                 jarray.TypeInfo = toSer.TypeSerializationInfo;
 
-                var outputBuffer = new OutputStream(this.bstStream);
-                var writer = new FastBinaryWriter<OutputStream>(outputBuffer);
-                var serializer = new Serializer<FastBinaryWriter<OutputStream>>(typeof(FullAst));
-                serializer.Serialize(
-                    jarray,
-                    writer);
-
-                outputBuffer.Flush();
-
+                ProtoBuf.Serializer.Serialize(this.bstStream, jarray);
                 // var deserializer = new Deserializer<FastBinaryReader<InputBuffer>>(typeof(FullAst));
                 // var reader = new FastBinaryReader<InputBuffer>(new InputBuffer(outputBuffer.Data));
                 // deserializer.Deserialize<FullAst>(reader);

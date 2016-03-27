@@ -96,6 +96,7 @@
         <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.dll" />
         <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Pdb.pdb" />
         <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
+        <File Source="$(var.ToolsetDir)\bin\protobuf-net.dll" />
         <File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />

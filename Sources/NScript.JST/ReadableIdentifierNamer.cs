@@ -19,8 +19,8 @@ namespace NScript.JST
         /// </summary>
         public class ReadableIdentifierNamer
         {
-            Dictionary<SimpleIdentifier, HashSet<SimpleIdentifier>> identifierMap
-                = new Dictionary<SimpleIdentifier, HashSet<SimpleIdentifier>>();
+            Dictionary<SimpleIdentifier, List<SimpleIdentifier>> identifierMap
+                = new Dictionary<SimpleIdentifier, List<SimpleIdentifier>>();
 
             Dictionary<SimpleIdentifier, string> assignedNames
                 = new Dictionary<SimpleIdentifier, string>();
@@ -77,7 +77,7 @@ namespace NScript.JST
                 {
                     string postfix = ReadableIdentifierNamer.GetPostfix(i);
                     bool clash = false;
-                    HashSet<SimpleIdentifier> conflicts = null;
+                    List<SimpleIdentifier> conflicts = null;
                     if (this.identifierMap.TryGetValue(ident, out conflicts))
                     {
                         foreach (var conflictIdent in conflicts)
@@ -85,11 +85,25 @@ namespace NScript.JST
                             string name;
                             if (this.assignedNames.TryGetValue(conflictIdent, out name))
                             {
-                                if (name.Length == prefix.Length + postfix.Length
-                                    && name.StartsWith(prefix) && name.EndsWith(postfix))
+                                if (postfix.Length == 0)
                                 {
-                                    clash = true;
-                                    continue;
+                                    clash = name == prefix;
+                                    if (clash) { break; }
+                                }
+                                else if (name.Length == prefix.Length + postfix.Length)
+                                {
+                                    bool match = true;
+                                    for (int iName = prefix.Length - 1; match && iName >= 0; iName--)
+                                    { match = name[iName] == prefix[iName]; }
+
+                                    for (int jPostFix = 0; match && jPostFix < postfix.Length; jPostFix++)
+                                    { match = name[name.Length - jPostFix - 1] == postfix[postfix.Length - jPostFix - 1]; }
+
+                                    if (!match)
+                                    {
+                                        clash = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -168,17 +182,18 @@ namespace NScript.JST
 
             private void AddConflictIdentifiers(SimpleIdentifier left, SimpleIdentifier right)
             {
-                HashSet<SimpleIdentifier> identifiers;
+                List<SimpleIdentifier> identifiers;
                 if (!this.identifierMap.TryGetValue(left, out identifiers))
                 {
-                    identifiers = new HashSet<SimpleIdentifier>();
+                    identifiers = new List<SimpleIdentifier>();
                     this.identifierMap.Add(left, identifiers);
                 }
 
                 identifiers.Add(right);
+
                 if (!this.identifierMap.TryGetValue(right, out identifiers))
                 {
-                    identifiers = new HashSet<SimpleIdentifier>();
+                    identifiers = new List<SimpleIdentifier>();
                     this.identifierMap.Add(right, identifiers);
                 }
 

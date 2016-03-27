@@ -1,5 +1,5 @@
 ﻿(function(){
-var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_StringDictionary_$Function$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$UIEvent$_$_, System_ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Task$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_String$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_KeyValuePair_$String_x_Function$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_Int32$_;
+var Sunlight__Framework__UI__Test__ManualTemplateTests__noneValue, Sunlight_Framework_UI_Test_ValueIfTrue_$String$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder, System_ArrayG_$ArrayG_$Func_$Object_x_Object$_$_$_, System_ArrayG_$ArrayG_$String$_$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder, System_ArrayG_$Func_$Object_x_Object$_$_, Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder, System_ArrayG_$String$_, Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder, System_ArrayG_$SkinBinderInfo$_, System_ArrayG_$Object$_, System_ArrayG_$TestViewModelB$_, System__Type__typeMapping, System_Collections_Generic_NumberDictionary_$Task$_, System_Collections_Generic_Queue_$Task$_, Sunlight__Framework__TaskScheduler__instance, System_Collections_Generic_List_$ListViewItem$_, System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_, System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_StringDictionary_$Function$_, System_Collections_Generic_KeyValuePair_$String_x_Function$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$UIEvent$_$_, System_ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, System_Func_$Object_x_Object$_, System_Collections_Generic_KeyValuePair_$Number_x_Task$_, System_Action_$UIEvent$_, System_Action_$INotifyPropertyChanged_x_String$_, System_Collections_Generic_KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, System_Collections_Generic_StringDictionary_$Int32$_, System_Collections_Generic_KeyValuePair_$String_x_Int32$_;
 Function.typeId = "o";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
@@ -163,17 +163,17 @@ Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder = null;
 Sunlight__Framework__UI__Test__LiveBinderTests__oneWayMultiBinder = null;
 Sunlight__Framework__UI__Test__LiveBinderTests__twoWayMultiBinder = null;
 function Sunlight__Framework__UI__Test__LiveBinderTests__Setup() {
-  Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder = Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del(obj) {
+  Sunlight__Framework__UI__Test__LiveBinderTests__oneWayBinder = Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory(System__NativeArray$1__op_Implicit(System_ArrayG_$ArrayG_$Func_$Object_x_Object$_$_$_.__ctor([function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del(obj) {
     return System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, obj).get_propStr1();
-  }])), System__NativeArray$1__op_Implicit(System_ArrayG_$String$_.__ctor(["PropStr1"])), function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del2(tar, val) {
-    System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, tar).set_propStr1(System__Type__CastType(String, val));
+  }])), System__NativeArray$1__op_Implicit(System_ArrayG_$ArrayG_$String$_$_.__ctor(["PropStr1"])), function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del2(tar, val) {
+    System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, tar).set_propStr1(val);
   }, 17, 0, 0, null, null);
   Sunlight__Framework__UI__Test__LiveBinderTests__twoWayBinder = Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del3(obj) {
     return System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, obj).get_propStr1();
   }])), function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del4(tar, val) {
-    System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, tar).set_propStr1(System__Type__CastType(String, val));
-  }, System__NativeArray$1__op_Implicit(System_ArrayG_$String$_.__ctor(["PropStr1"])), function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del5(tar, val) {
-    System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, tar).set_propStr1(System__Type__CastType(String, val));
+    System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, tar).set_propStr1(val);
+  }, System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor(["PropStr1"])), function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del5(tar, val) {
+    System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, tar).set_propStr1(val);
   }, function Sunlight__Framework__UI__Test__LiveBinderTests__Setup_del6(obj) {
     return System__Type__CastType(Sunlight_Framework_UI_Test_TestViewModelA, obj).get_propStr1();
   }, "PropStr1", 17, 0, 0, null, null, null);
@@ -381,14 +381,14 @@ function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestSimpleBinder(
   var src, stmtTemp1, tar1;
   src = (stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1.set_propInt1(1), stmtTemp1.set_propBool1(true), stmtTemp1);
   tar1 = Sunlight__Framework__UI__Test__TestViewModelA_factory();
-  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Getter])), Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Setter, 17, 0, null, null)])), src, System__NativeArray$1__op_Implicit(System_ArrayG_$Object$_.__ctor([tar1])));
+  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Getter])), Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Setter, 17, 0, null, null)])), src, System__NativeArray$1__op_Implicit(System_ArrayG_$Object$_.__ctor([tar1])));
   QUnit.equal(src.get_propStr1(), tar1.get_propStr1(), "After BindDataContext values should be equal");
 };
 function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestAttrBinding() {
   var src, stmtTemp1, target;
   src = (stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1);
   target = window.document.createElement("div");
-  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory2(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestAttrBinding_del(o1, o2, o3) {
+  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestAttrBinding_del(o1, o2, o3) {
     Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute(o1, System__Type__CastType(String, o2), System__Type__CastType(String, o3));
   }, "tmp", 113, 0, null, null, 0)])), src, System__NativeArray$1__op_Implicit(System_ArrayG_$Object$_.__ctor([target])));
   QUnit.equal(src.get_propStr1(), target.getAttribute("tmp"), "After BindDataContext values should be equal");
@@ -398,12 +398,12 @@ function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestStyleBinding(
   src = (stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp1.set_propBool1(true), stmtTemp1);
   target = window.document.createElement("div");
   target.className = "t1";
-  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory2(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropBool1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestStyleBinding_del(o1, o2, o3) {
+  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropBool1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestStyleBinding_del(o1, o2, o3) {
     Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass(o1, System__Type__UnBoxTypeInstance(System_Boolean, o2), System__Type__CastType(String, o3));
   }, "test", 113, 0, null, null, 0)])), src, System__NativeArray$1__op_Implicit(System_ArrayG_$Object$_.__ctor([target])));
   QUnit.equal("t1 test", target.className, "After BindDataContext values should be equal");
   src.set_propBool1(false);
-  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory2(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropBool1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestStyleBinding_del2(o1, o2, o3) {
+  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropBool1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestStyleBinding_del2(o1, o2, o3) {
     Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass(o1, System__Type__UnBoxTypeInstance(System_Boolean, o2), System__Type__CastType(String, o3));
   }, "test", 113, 0, null, null, 0)])), src, System__NativeArray$1__op_Implicit(System_ArrayG_$Object$_.__ctor([target])));
   QUnit.equal("t1", target.className, "After BindDataContext values should be equal");
@@ -412,7 +412,7 @@ function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestTextContentBi
   var src, stmtTemp1, target;
   src = (stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1);
   target = window.document.createElement("div");
-  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestTextContentBinding_del(o1, o2) {
+  Sunlight__Framework__UI__Helpers__SkinBinderHelper__Bind(System__NativeArray$1__op_Implicit(System_ArrayG_$SkinBinderInfo$_.__ctor([Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(System__NativeArray$1__op_Implicit(System_ArrayG_$Func_$Object_x_Object$_$_.__ctor([Sunlight__Framework__UI__Test__TestViewModelA__PropStr1Getter])), function Sunlight__Framework__UI__Test__SkinBinderHelperTests__TestTextContentBinding_del(o1, o2) {
     Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent(o1, System__Type__CastType(String, o2));
   }, 17, 0, null, null)])), src, System__NativeArray$1__op_Implicit(System_ArrayG_$Object$_.__ctor([target])));
   QUnit.equal(src.get_propStr1(), target.textContent, "After BindDataContext values should be equal");
@@ -425,11 +425,11 @@ function Sunlight__Framework__UI__Test__TestListView__Setup() {
   Sunlight__Framework__TaskScheduler__set_Instance(Sunlight__Framework__TaskScheduler_factory(Sunlight__Framework__TestWindowTimer_factory(), 10, 10));
 };
 function Sunlight__Framework__UI__Test__TestListView__TestChildSkin() {
-  var document, listView, vmAs, stmtTemp1, stmtTemp10, stmtTemp11, elems, i;
+  var document, listView, vmAs, stmtTemp1, stmtTemp10, stmtTemp10, elems, i;
   document = window.document;
   listView = Sunlight__Framework__UI__ListView_factory(document.createElement("div"));
   listView.set_itemSkin(Sunlight__Framework__UI__Test__NScriptsTemplatesClass__get_TestTemplateVMB1());
-  vmAs = System_ArrayG_$TestViewModelB$_.__ctor([(stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp1.set_propStr1("StrTest"), stmtTemp1), (stmtTemp10 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp10.set_propStr1("TestStr"), stmtTemp10), (stmtTemp11 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp11.set_propStr1("TestTT1"), stmtTemp11)]);
+  vmAs = System_ArrayG_$TestViewModelB$_.__ctor([(stmtTemp1 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp1.set_propStr1("StrTest"), stmtTemp1), (stmtTemp10 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp10.set_propStr1("TestStr"), stmtTemp10), (stmtTemp10 = Sunlight__Framework__UI__Test__TestViewModelB_factory(), stmtTemp10.set_propStr1("TestTT1"), stmtTemp10)]);
   listView.set_fixedList(vmAs);
   listView.set_inactiveIfNullContext(false);
   listView.activate();
@@ -496,13 +496,13 @@ System__Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, 
 function Sunlight_Framework_UI_Helpers_SkinBinderInfo() {
 };
 Sunlight_Framework_UI_Helpers_SkinBinderInfo.typeId = "x";
-function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
+function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
   this_.__ctor(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue);
   return this_;
 };
-function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory2(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
+function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
   this_.__ctor0(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex);
@@ -511,19 +511,19 @@ function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory2(propertyGette
 function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
-  this_.__ctor1(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue);
+  this_.__ctor0(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue);
   return this_;
 };
-function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
+function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
-  this_.__ctor3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex);
+  this_.__ctor0(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex);
   return this_;
 };
 function Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
   var this_;
   this_ = new Sunlight_Framework_UI_Helpers_SkinBinderInfo();
-  this_.__ctor2(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue);
+  this_.__ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue);
   return this_;
 };
 ptyp_ = Sunlight_Framework_UI_Helpers_SkinBinderInfo.prototype;
@@ -543,7 +543,7 @@ ptyp_.forwardConverter = null;
 ptyp_.backwardConverter = null;
 ptyp_.defaultValue = null;
 ptyp_.mode = 0;
-ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor1(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
+ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor0(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -554,7 +554,7 @@ ptyp_.__ctor = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor
   this.defaultValue = defaultValue;
   this.mode = 0;
 };
-ptyp_.__ctor0 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor2(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
+ptyp_.__ctor0 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor0(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -567,7 +567,7 @@ ptyp_.__ctor0 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____cto
   this.mode = 0;
   this.extraObjectIndex = extraObjectIndex;
 };
-ptyp_.__ctor1 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue) {
+ptyp_.__ctor0 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -579,7 +579,7 @@ ptyp_.__ctor1 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____cto
   this.defaultValue = defaultValue;
   this.mode = 1;
 };
-ptyp_.__ctor3 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
+ptyp_.__ctor0 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor0(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -594,7 +594,7 @@ ptyp_.__ctor3 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____cto
   this.mode = 1;
   this.extraObjectIndex = extraObjectIndex;
 };
-ptyp_.__ctor2 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
+ptyp_.__ctor0 = function Sunlight__Framework__UI__Helpers__SkinBinderInfo____ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -785,6 +785,10 @@ System_ValueType.typeId = "ab";
 ptyp_ = System_ValueType.prototype;
 ptyp_.boxedValue = null;
 System__Type__RegisterReferenceType(System_ValueType, "System.ValueType", Object, []);
+Function.getDefaultValue = function() {
+  return {
+  };
+};
 function System_Int32(boxedValue) {
   this.boxedValue = boxedValue;
 };
@@ -1275,7 +1279,7 @@ Sunlight_Framework_Binders_ContextBindableObject.typeId = "jb";
 function Sunlight__Framework__Binders__ContextBindableObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Binders_ContextBindableObject();
-  this_.__ctor1();
+  this_.__ctor0();
   return this_;
 };
 Sunlight_Framework_Binders_ContextBindableObject.defaultConstructor = Sunlight__Framework__Binders__ContextBindableObject_factory;
@@ -1388,13 +1392,13 @@ ptyp_.setDataContext = function Sunlight__Framework__Binders__ContextBindableObj
 ptyp_.onParentDataContextUpdated = function Sunlight__Framework__Binders__ContextBindableObject__OnParentDataContextUpdated(sender, propertyName) {
   if (this.parent.get_isActive() && !this.dataContextSetterCalled)
     this.setDataContext(this.parent.get_dataContext());
-  if (propertyName === "IsActive" || propertyName === null)
+  if (propertyName === "IsActive" || !propertyName)
     if (this.parent.get_isActive())
       this.activate();
     else
       this.deactivate();
 };
-ptyp_.__ctor1 = function Sunlight__Framework__Binders__ContextBindableObject____ctor() {
+ptyp_.__ctor0 = function Sunlight__Framework__Binders__ContextBindableObject____ctor() {
   this.__ctor0();
   this.isInactiveIfNullContext = true;
 };
@@ -1412,7 +1416,7 @@ Sunlight_Framework_UI_UIElement.typeId = "kb";
 function Sunlight__Framework__UI__UIElement_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_UIElement();
-  this_.__ctor2(element);
+  this_.__ctor0(element);
   return this_;
 };
 ptyp_ = new Sunlight_Framework_Binders_ContextBindableObject();
@@ -1420,8 +1424,8 @@ Sunlight_Framework_UI_UIElement.prototype = ptyp_;
 ptyp_.element = null;
 ptyp_.isHidden = false;
 ptyp_.eventRegistrationDict = null;
-ptyp_.__ctor2 = function Sunlight__Framework__UI__UIElement____ctor(element) {
-  this.__ctor1();
+ptyp_.__ctor0 = function Sunlight__Framework__UI__UIElement____ctor(element) {
+  this.__ctor0();
   this.eventRegistrationDict = System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_.defaultConstructor();
   this.element = element;
 };
@@ -1449,15 +1453,15 @@ Sunlight_Framework_UI_UISkinableElement.typeId = "lb";
 function Sunlight__Framework__UI__UISkinableElement_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_UISkinableElement();
-  this_.__ctor3(element);
+  this_.__ctor0(element);
   return this_;
 };
 ptyp_ = new Sunlight_Framework_UI_UIElement();
 Sunlight_Framework_UI_UISkinableElement.prototype = ptyp_;
 ptyp_.skin = null;
 ptyp_.skinInstance = null;
-ptyp_.__ctor3 = function Sunlight__Framework__UI__UISkinableElement____ctor(element) {
-  this.__ctor2(element);
+ptyp_.__ctor0 = function Sunlight__Framework__UI__UISkinableElement____ctor(element) {
+  this.__ctor0(element);
 };
 ptyp_.set_skin = function Sunlight__Framework__UI__UISkinableElement__set_Skin(value) {
   if (this.skin != value) {
@@ -1503,7 +1507,7 @@ ptyp_.onDeactivate0 = function Sunlight__Framework__UI__UISkinableElement__OnDea
     this.skinInstance.deactivate();
   this.onDeactivate();
 };
-ptyp_.internalDispose1 = function Sunlight__Framework__UI__UISkinableElement__InternalDispose() {
+ptyp_.internalDispose0 = function Sunlight__Framework__UI__UISkinableElement__InternalDispose() {
   if (this.get_skinInstance())
     this.set_skinInstance(null);
   this.set_skin(null);
@@ -1517,7 +1521,7 @@ ptyp_.onDataContextUpdated0 = function Sunlight__Framework__UI__UISkinableElemen
 ptyp_.V_OnBeforeFirstActivate = ptyp_.onBeforeFirstActivate0;
 ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
-ptyp_.V_InternalDispose = ptyp_.internalDispose1;
+ptyp_.V_InternalDispose = ptyp_.internalDispose0;
 ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated0;
 ptyp_.V_ApplySkinInternal = ptyp_.applySkinInternal;
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_UISkinableElement, "Sunlight.Framework.UI.UISkinableElement", Sunlight_Framework_UI_UIElement, []);
@@ -1575,8 +1579,8 @@ function System__Web__Html__Element__UnBind(this_, eventName, handler, capture) 
 };
 function System__Web__Html__Element__UnBind0(this_, eventName) {
   this_.importedExtension = this_.importedExtension || System__Object__GetNewImportedExtension();
-  System__EventBinder__RemoveEvent1(this_, eventName, true);
-  System__EventBinder__RemoveEvent1(this_, eventName, false);
+  System__EventBinder__RemoveEvent0(this_, eventName, true);
+  System__EventBinder__RemoveEvent0(this_, eventName, false);
 };
 function Sunlight_Framework_UI_Test_TestViewModelB() {
 };
@@ -1584,13 +1588,13 @@ Sunlight_Framework_UI_Test_TestViewModelB.typeId = "mb";
 function Sunlight__Framework__UI__Test__TestViewModelB_factory() {
   var this_;
   this_ = new Sunlight_Framework_UI_Test_TestViewModelB();
-  this_.__ctor1();
+  this_.__ctor0();
   return this_;
 };
 Sunlight_Framework_UI_Test_TestViewModelB.defaultConstructor = Sunlight__Framework__UI__Test__TestViewModelB_factory;
 ptyp_ = new Sunlight_Framework_UI_Test_TestViewModelA();
 Sunlight_Framework_UI_Test_TestViewModelB.prototype = ptyp_;
-ptyp_.__ctor1 = function Sunlight__Framework__UI__Test__TestViewModelB____ctor() {
+ptyp_.__ctor0 = function Sunlight__Framework__UI__Test__TestViewModelB____ctor() {
   this.__ctor0();
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_Test_TestViewModelB, "Sunlight.Framework.UI.Test.TestViewModelB", Sunlight_Framework_UI_Test_TestViewModelA, []);
@@ -1600,13 +1604,13 @@ Sunlight_Framework_UI_Test_TestSkinableWithTestUIElementPart.typeId = "nb";
 function Sunlight__Framework__UI__Test__TestSkinableWithTestUIElementPart_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_Test_TestSkinableWithTestUIElementPart();
-  this_.__ctor4(element);
+  this_.__ctor0(element);
   return this_;
 };
 ptyp_ = new Sunlight_Framework_UI_UISkinableElement();
 Sunlight_Framework_UI_Test_TestSkinableWithTestUIElementPart.prototype = ptyp_;
-ptyp_.__ctor4 = function Sunlight__Framework__UI__Test__TestSkinableWithTestUIElementPart____ctor(element) {
-  this.__ctor3(element);
+ptyp_.__ctor0 = function Sunlight__Framework__UI__Test__TestSkinableWithTestUIElementPart____ctor(element) {
+  this.__ctor0(element);
 };
 ptyp_.get_part = function Sunlight__Framework__UI__Test__TestSkinableWithTestUIElementPart__get_Part() {
   if (this.get_skinInstance())
@@ -1620,14 +1624,14 @@ Sunlight_Framework_UI_Test_TestUIElement.typeId = "ob";
 function Sunlight__Framework__UI__Test__TestUIElement_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_Test_TestUIElement();
-  this_.__ctor3(element);
+  this_.__ctor0(element);
   return this_;
 };
 ptyp_ = new Sunlight_Framework_UI_UIElement();
 Sunlight_Framework_UI_Test_TestUIElement.prototype = ptyp_;
 ptyp_.twoWayLooseBinding = 0;
-ptyp_.__ctor3 = function Sunlight__Framework__UI__Test__TestUIElement____ctor(element) {
-  this.__ctor2(element);
+ptyp_.__ctor0 = function Sunlight__Framework__UI__Test__TestUIElement____ctor(element) {
+  this.__ctor0(element);
 };
 ptyp_.get_oneWayStrictBinding = function Sunlight__Framework__UI__Test__TestUIElement__get_OneWayStrictBinding() {
   return this.OneWayStrictBinding;
@@ -1725,7 +1729,7 @@ Sunlight_Framework_UI_ListView.typeId = "qb";
 function Sunlight__Framework__UI__ListView_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_ListView();
-  this_.__ctor3(element);
+  this_.__ctor0(element);
   return this_;
 };
 ptyp_ = new Sunlight_Framework_UI_UIElement();
@@ -1737,8 +1741,8 @@ ptyp_.fixedList = null;
 ptyp_.itemSkin = null;
 ptyp_.itemCssClassName = null;
 ptyp_.inlineItems = false;
-ptyp_.__ctor3 = function Sunlight__Framework__UI__ListView____ctor(element) {
-  this.__ctor2(element);
+ptyp_.__ctor0 = function Sunlight__Framework__UI__ListView____ctor(element) {
+  this.__ctor0(element);
   this.items = System_Collections_Generic_List_$ListViewItem$_.defaultConstructor();
 };
 ptyp_.set_fixedList = function Sunlight__Framework__UI__ListView__set_FixedList(value) {
@@ -1779,7 +1783,7 @@ ptyp_.onDeactivate0 = function Sunlight__Framework__UI__ListView__OnDeactivate()
       items.get_item(iItem).deactivate();
   this.onDeactivate();
 };
-ptyp_.internalDispose1 = function Sunlight__Framework__UI__ListView__InternalDispose() {
+ptyp_.internalDispose0 = function Sunlight__Framework__UI__ListView__InternalDispose() {
   var items, itemCount, iItem;
   items = this.items;
   itemCount = items.get_count();
@@ -1935,7 +1939,7 @@ ptyp_.removeChildren = function Sunlight__Framework__UI__ListView__RemoveChildre
 };
 ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
-ptyp_.V_InternalDispose = ptyp_.internalDispose1;
+ptyp_.V_InternalDispose = ptyp_.internalDispose0;
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_ListView, "Sunlight.Framework.UI.ListView", Sunlight_Framework_UI_UIElement, []);
 function Sunlight_Framework_Task() {
 };
@@ -2266,13 +2270,13 @@ Sunlight_Framework_UI_ListViewItem.typeId = "ub";
 function Sunlight__Framework__UI__ListViewItem_factory(element) {
   var this_;
   this_ = new Sunlight_Framework_UI_ListViewItem();
-  this_.__ctor4(element);
+  this_.__ctor0(element);
   return this_;
 };
 ptyp_ = new Sunlight_Framework_UI_UISkinableElement();
 Sunlight_Framework_UI_ListViewItem.prototype = ptyp_;
-ptyp_.__ctor4 = function Sunlight__Framework__UI__ListViewItem____ctor(element) {
-  this.__ctor3(element);
+ptyp_.__ctor0 = function Sunlight__Framework__UI__ListViewItem____ctor(element) {
+  this.__ctor0(element);
 };
 System__Type__RegisterReferenceType(Sunlight_Framework_UI_ListViewItem, "Sunlight.Framework.UI.ListViewItem", Sunlight_Framework_UI_UISkinableElement, []);
 Error.typeId = "vb";
@@ -2321,10 +2325,6 @@ Sunlight_Framework_UI_Helpers_BinderType.getDefaultValue = function() {
 };
 Sunlight_Framework_UI_Helpers_BinderType.prototype = new System_Enum();
 System__Type__RegisterEnum(Sunlight_Framework_UI_Helpers_BinderType, "Sunlight.Framework.UI.Helpers.BinderType", true);
-Function.getDefaultValue = function() {
-  return {
-  };
-};
 function Sunlight_Framework_WindowTimer() {
 };
 Sunlight_Framework_WindowTimer.typeId = "zb";
@@ -2392,7 +2392,7 @@ function System__EventBinder__RemoveEvent(importedElement, name, action, onCaptu
   binder = System__EventBinder__GetBinder(importedElement);
   binder.removeEvent(name, action, onCapture);
 };
-function System__EventBinder__RemoveEvent1(importedElement, name, onCapture) {
+function System__EventBinder__RemoveEvent0(importedElement, name, onCapture) {
   var binder;
   if (importedElement.importedExtension === null || importedElement.importedExtension.importedExtension === null)
     return;
@@ -2473,7 +2473,7 @@ ptyp_.removeEvent = function System__EventBinder__RemoveEvent0(name, handler, on
       evts.set_item(name, elementEvent);
   }
 };
-ptyp_.removeEvent0 = function System__EventBinder__RemoveEvent2(name, onCapture) {
+ptyp_.removeEvent0 = function System__EventBinder__RemoveEvent0(name, onCapture) {
   var isW3wc, evts;
   isW3wc = System__EventBinder__IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
@@ -2504,7 +2504,7 @@ ptyp_.eventHandlerIE = function System__EventBinder__EventHandlerIE() {
 ptyp_.eventHandlerCapture = function System__EventBinder__EventHandlerCapture(evt) {
   if (this.disposed)
     return;
-  this.capturePhaseEvents.get_item(System__EventBinder__GetEventType(evt))(this.target, evt);
+  System__Type__CastType(System_Collections_Generic_KeyValuePair_$String_x_Function$_, this.capturePhaseEvents.get_item(System__EventBinder__GetEventType(evt)))(this.target, evt);
 };
 ptyp_.eventHandlerBubble = function System__EventBinder__EventHandlerBubble(evt) {
   var del;
@@ -2616,16 +2616,16 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_.typeId = "ec$" + T.typeId + "$";
   IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
-  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory1(size) {
+  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory0(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
     this_.__ctor0(size);
     return this_;
   };
-  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory2(nativeArray) {
+  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory0(nativeArray) {
     var this_;
     this_ = new ArrayG$1_$T$_();
-    this_.__ctor1(nativeArray);
+    this_.__ctor0(nativeArray);
     return this_;
   };
   ptyp_ = new System_ArrayImpl();
@@ -2645,7 +2645,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     for (i = 0; i < size; i++)
       this.innerArray[i] = def;
   };
-  ptyp_.__ctor1 = function System__ArrayG$1____ctor(nativeArray) {
+  ptyp_.__ctor0 = function System__ArrayG$1____ctor(nativeArray) {
     this.__ctor();
     this.innerArray = nativeArray;
   };
@@ -2788,7 +2788,7 @@ Sunlight_Framework_Binders_ContextBindableObject.typeId = "jb";
 function Sunlight__Framework__Binders__ContextBindableObject_factory() {
   var this_;
   this_ = new Sunlight_Framework_Binders_ContextBindableObject();
-  this_.__ctor1();
+  this_.__ctor0();
   return this_;
 };
 Sunlight_Framework_Binders_ContextBindableObject.defaultConstructor = Sunlight__Framework__Binders__ContextBindableObject_factory;
@@ -2901,13 +2901,13 @@ ptyp_.setDataContext = function Sunlight__Framework__Binders__ContextBindableObj
 ptyp_.onParentDataContextUpdated = function Sunlight__Framework__Binders__ContextBindableObject__OnParentDataContextUpdated(sender, propertyName) {
   if (this.parent.get_isActive() && !this.dataContextSetterCalled)
     this.setDataContext(this.parent.get_dataContext());
-  if (propertyName === "IsActive" || propertyName === null)
+  if (propertyName === "IsActive" || !propertyName)
     if (this.parent.get_isActive())
       this.activate();
     else
       this.deactivate();
 };
-ptyp_.__ctor1 = function Sunlight__Framework__Binders__ContextBindableObject____ctor() {
+ptyp_.__ctor0 = function Sunlight__Framework__Binders__ContextBindableObject____ctor() {
   this.__ctor0();
   this.isInactiveIfNullContext = true;
 };
@@ -3189,7 +3189,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
     this_.__ctor();
     return this_;
   };
-  StringDictionary$1_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1_factory1(innerDict) {
+  StringDictionary$1_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1_factory0(innerDict) {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
     this_.__ctor0(innerDict);
@@ -3694,7 +3694,9 @@ function System_Collections_Generic_IList(T, $5fcallStatiConstructor) {
 Sunlight_Framework_UI_Test_ValueIfTrue_$String$_ = Sunlight_Framework_UI_Test_ValueIfTrue(String);
 System_Func_$Object_x_Object$_ = System_Func(Object, Object);
 System_ArrayG_$Func_$Object_x_Object$_$_ = System_ArrayG(System_Func_$Object_x_Object$_);
+System_ArrayG_$ArrayG_$Func_$Object_x_Object$_$_$_ = System_ArrayG(System_ArrayG_$Func_$Object_x_Object$_$_);
 System_ArrayG_$String$_ = System_ArrayG(String);
+System_ArrayG_$ArrayG_$String$_$_ = System_ArrayG(System_ArrayG_$String$_);
 System_ArrayG_$SkinBinderInfo$_ = System_ArrayG(Sunlight_Framework_UI_Helpers_SkinBinderInfo);
 System_ArrayG_$Object$_ = System_ArrayG(Object);
 System_ArrayG_$TestViewModelB$_ = System_ArrayG(Sunlight_Framework_UI_Test_TestViewModelB);
@@ -3719,7 +3721,9 @@ System__DateTime____cctor();
 Sunlight_Framework_UI_Test_ValueIfTrue_$String$_._tri();
 System_Func_$Object_x_Object$_._tri();
 System_ArrayG_$Func_$Object_x_Object$_$_._tri();
+System_ArrayG_$ArrayG_$Func_$Object_x_Object$_$_$_._tri();
 System_ArrayG_$String$_._tri();
+System_ArrayG_$ArrayG_$String$_$_._tri();
 System_ArrayG_$SkinBinderInfo$_._tri();
 System_ArrayG_$Object$_._tri();
 System_ArrayG_$TestViewModelB$_._tri();
@@ -3801,7 +3805,7 @@ function Test$5cTemplates$5cTestTemplateVMB_CssBinding_factory(skinFactory, doc)
   if (!(domStore = DocStorageGetter(doc))[1]) {
     domStore[1] = doc.createElement("div");
     domStore[1].innerHTML = " <div test=\"id\"></div> ";
-    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, ""), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter0], ["PropBool1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0)];
+    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, ""), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter0], ["PropBool1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0)];
   }
   htmlRoot = domStore[1].cloneNode(true);
   objStorage = new Array(1);
@@ -3840,7 +3844,7 @@ function Test$5cTemplates$5cTestTemplateVMB_AttrBinding_factory(skinFactory, doc
   if (!(domStore = DocStorageGetter(doc))[3]) {
     domStore[3] = doc.createElement("div");
     domStore[3].innerHTML = " <div test=\"foo\">Test Me</div> ";
-    tmplStore[3] = tmplStore[3] ? tmplStore[3] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory3([getter], ["PropStr1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute, "test1", 113, 0, 0, null, null, 0)];
+    tmplStore[3] = tmplStore[3] ? tmplStore[3] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter], ["PropStr1"], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute, "test1", 113, 0, 0, null, null, 0)];
   }
   htmlRoot = domStore[3].cloneNode(true);
   objStorage = new Array(1);
@@ -3853,7 +3857,7 @@ function Test$5cTemplates$5cTestTemplateVMB_AttrBinding() {
     Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var = Sunlight__Framework__UI__Skin_factory(Sunlight_Framework_UI_UISkinableElement, Sunlight_Framework_UI_Test_TestViewModelB, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_factory, "3");
   return Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var;
 };
-function getter1(src) {
+function getter0(src) {
   return src.get_propInt1();
 };
 function setter(tar, val) {
@@ -3862,10 +3866,10 @@ function setter(tar, val) {
 function setter0(tar, val) {
   tar.set_twoWayLooseBinding(val);
 };
-function getter2(src) {
+function getter0(src) {
   return src.get_twoWayLooseBinding();
 };
-function setter1(tar, val) {
+function setter0(tar, val) {
   tar.set_oneWayStrictBinding(val);
 };
 function Test$5cTemplates$5cTestTemplateB_PropertyBinding_factory(skinFactory, doc) {
@@ -3873,7 +3877,7 @@ function Test$5cTemplates$5cTestTemplateB_PropertyBinding_factory(skinFactory, d
   if (!(domStore = DocStorageGetter(doc))[4]) {
     domStore[4] = doc.createElement("div");
     domStore[4].innerHTML = " <div> This is a test. </div> ";
-    tmplStore[4] = tmplStore[4] ? tmplStore[4] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter1], setter, ["PropInt1"], setter0, getter2, "TwoWayLooseBinding", 17, 0, 0, null, null, 11), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropStr1"], setter1, 17, 0, 1, null, "test")];
+    tmplStore[4] = tmplStore[4] ? tmplStore[4] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter0], setter, ["PropInt1"], setter0, getter0, "TwoWayLooseBinding", 17, 0, 0, null, null, 11), Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([getter], ["PropStr1"], setter0, 17, 0, 1, null, "test")];
   }
   htmlRoot = domStore[4].cloneNode(true);
   objStorage = new Array(1);
@@ -3893,7 +3897,7 @@ function Test$5cTemplates$5cTestTemplateVMB1_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[5]) {
     domStore[5] = doc.createElement("div");
     domStore[5].innerHTML = " <div test=\"test me\"></div> ";
-    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory1([getter], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, "")];
+    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory0([getter], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, null, "")];
   }
   htmlRoot = domStore[5].cloneNode(true);
   objStorage = new Array(1);
