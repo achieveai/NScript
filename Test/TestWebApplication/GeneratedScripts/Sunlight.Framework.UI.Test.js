@@ -2593,7 +2593,7 @@ function Sunlight_Framework_UI_Test_ValueIfTrue(T, $5fcallStatiConstructor) {
     this.defaultValue = System__Type__GetDefaultValueStatic(T);
   };
   System__Type__RegisterReferenceType(ValueIfTrue$1_$T$_, "Sunlight.Framework.UI.Test.ValueIfTrue`1<" + T.fullName + ">", Object, []);
-  ValueIfTrue$1_$T$_._tri = function() {
+  ValueIfTrue$1_$T$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -2601,7 +2601,7 @@ function Sunlight_Framework_UI_Test_ValueIfTrue(T, $5fcallStatiConstructor) {
     ValueIfTrue$1_$T$_ = Sunlight_Framework_UI_Test_ValueIfTrue(T, true);
   };
   if ($5fcallStatiConstructor)
-    ValueIfTrue$1_$T$_._tri();
+    ValueIfTrue$1_$T$_.$5ftri();
   return ValueIfTrue$1_$T$_;
 };
 function System_ArrayG(T, $5fcallStatiConstructor) {
@@ -2709,7 +2709,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_["V_get_Item_" + IList$1_$T$_.typeId] = ptyp_.get_item;
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
   System__Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", System_ArrayImpl, [IList$1_$T$_, System_Collections_IList, System_Collections_ICollection, System_Collections_IEnumerable, IEnumerable$1_$T$_]);
-  ArrayG$1_$T$_._tri = function() {
+  ArrayG$1_$T$_.$5ftri = function() {
     if ($5f_initTracker0)
       return;
     $5f_initTracker0 = true;
@@ -2719,7 +2719,7 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     T$5b$5d_$T$_ = System_ArrayG(T, true);
   };
   if ($5fcallStatiConstructor)
-    ArrayG$1_$T$_._tri();
+    ArrayG$1_$T$_.$5ftri();
   return ArrayG$1_$T$_;
 };
 function System__NativeArray$1__Pop(this_) {
@@ -2770,7 +2770,7 @@ function System_Func(T1, TRes, $5fcallStatiConstructor) {
   Func$2_$T1_x_TRes$_.typeId = "fc$" + T1.typeId + "_" + TRes.typeId + "$";
   Func$2_$T1_x_TRes$_.prototype = new Function0();
   System__Type__RegisterReferenceType(Func$2_$T1_x_TRes$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", Function0, []);
-  Func$2_$T1_x_TRes$_._tri = function() {
+  Func$2_$T1_x_TRes$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -2779,7 +2779,7 @@ function System_Func(T1, TRes, $5fcallStatiConstructor) {
     Func$2_$T1_x_TRes$_ = System_Func(T1, TRes, true);
   };
   if ($5fcallStatiConstructor)
-    Func$2_$T1_x_TRes$_._tri();
+    Func$2_$T1_x_TRes$_.$5ftri();
   return Func$2_$T1_x_TRes$_;
 };
 function Sunlight_Framework_Binders_ContextBindableObject() {
@@ -3003,7 +3003,7 @@ function System_Collections_Generic_NumberDictionary(TValue, $5fcallStatiConstru
   ptyp_.V_CopyTo_c = ptyp_.copyTo;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(NumberDictionary$1_$TValue$_, "System.Collections.Generic.NumberDictionary`1<" + TValue.fullName + ">", Object, [System_Collections_ICollection, IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_, System_Collections_IEnumerable]);
-  NumberDictionary$1_$TValue$_._tri = function() {
+  NumberDictionary$1_$TValue$_.$5ftri = function() {
     if ($5f_initTracker0)
       return;
     $5f_initTracker0 = true;
@@ -3012,7 +3012,7 @@ function System_Collections_Generic_NumberDictionary(TValue, $5fcallStatiConstru
     NumberDictionary$1_$TValue$_ = System_Collections_Generic_NumberDictionary(TValue, true);
   };
   if ($5fcallStatiConstructor)
-    NumberDictionary$1_$TValue$_._tri();
+    NumberDictionary$1_$TValue$_.$5ftri();
   return NumberDictionary$1_$TValue$_;
 };
 function System_Collections_Generic_Queue(T, $5fcallStatiConstructor) {
@@ -3057,7 +3057,7 @@ function System_Collections_Generic_Queue(T, $5fcallStatiConstructor) {
   ptyp_.V_GetEnumerator_f = ptyp_.system__Collections__IEnumerable__GetEnumerator;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(Queue$1_$T$_, "System.Collections.Generic.Queue`1<" + T.fullName + ">", Object, [IEnumerable$1_$T$_, System_Collections_IEnumerable]);
-  Queue$1_$T$_._tri = function() {
+  Queue$1_$T$_.$5ftri = function() {
     if ($5f_initTracker0)
       return;
     $5f_initTracker0 = true;
@@ -3066,7 +3066,7 @@ function System_Collections_Generic_Queue(T, $5fcallStatiConstructor) {
     Queue$1_$T$_ = System_Collections_Generic_Queue(T, true);
   };
   if ($5fcallStatiConstructor)
-    Queue$1_$T$_._tri();
+    Queue$1_$T$_.$5ftri();
   return Queue$1_$T$_;
 };
 function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
@@ -3158,7 +3158,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
   ptyp_.V_get_Count_c = ptyp_.get_count;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [IList$1_$T$_, System_Collections_IList, System_Collections_ICollection, System_Collections_IEnumerable, IEnumerable$1_$T$_]);
-  List$1_$T$_._tri = function() {
+  List$1_$T$_.$5ftri = function() {
     if ($5f_initTracker0)
       return;
     $5f_initTracker0 = true;
@@ -3167,7 +3167,7 @@ function System_Collections_Generic_List(T, $5fcallStatiConstructor) {
     List$1_$T$_ = System_Collections_Generic_List(T, true);
   };
   if ($5fcallStatiConstructor)
-    List$1_$T$_._tri();
+    List$1_$T$_.$5ftri();
   return List$1_$T$_;
 };
 function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstructor) {
@@ -3274,7 +3274,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   ptyp_.V_CopyTo_c = ptyp_.copyTo;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_.typeId] = ptyp_.getEnumerator;
   System__Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [System_Collections_ICollection, IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_, System_Collections_IEnumerable]);
-  StringDictionary$1_$TValue$_._tri = function() {
+  StringDictionary$1_$TValue$_.$5ftri = function() {
     if ($5f_initTracker0)
       return;
     $5f_initTracker0 = true;
@@ -3283,7 +3283,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
     StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary(TValue, true);
   };
   if ($5fcallStatiConstructor)
-    StringDictionary$1_$TValue$_._tri();
+    StringDictionary$1_$TValue$_.$5ftri();
   return StringDictionary$1_$TValue$_;
 };
 function System_Action(T1, $5fcallStatiConstructor) {
@@ -3298,7 +3298,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
   Action$1_$T1$_.typeId = "kc$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new Function0();
   System__Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", Function0, []);
-  Action$1_$T1$_._tri = function() {
+  Action$1_$T1$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3306,7 +3306,7 @@ function System_Action(T1, $5fcallStatiConstructor) {
     Action$1_$T1$_ = System_Action(T1, true);
   };
   if ($5fcallStatiConstructor)
-    Action$1_$T1$_._tri();
+    Action$1_$T1$_.$5ftri();
   return Action$1_$T1$_;
 };
 function System_Action0(T1, T2, $5fcallStatiConstructor) {
@@ -3323,7 +3323,7 @@ function System_Action0(T1, T2, $5fcallStatiConstructor) {
   Action$2_$T1_x_T2$_.typeId = "lc$" + T1.typeId + "_" + T2.typeId + "$";
   Action$2_$T1_x_T2$_.prototype = new Function0();
   System__Type__RegisterReferenceType(Action$2_$T1_x_T2$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", Function0, []);
-  Action$2_$T1_x_T2$_._tri = function() {
+  Action$2_$T1_x_T2$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3332,7 +3332,7 @@ function System_Action0(T1, T2, $5fcallStatiConstructor) {
     Action$2_$T1_x_T2$_ = System_Action0(T1, T2, true);
   };
   if ($5fcallStatiConstructor)
-    Action$2_$T1_x_T2$_._tri();
+    Action$2_$T1_x_T2$_.$5ftri();
   return Action$2_$T1_x_T2$_;
 };
 function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) {
@@ -3366,7 +3366,7 @@ function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) 
   };
   KeyValuePair$2_$K_x_V$_.prototype = new System_ValueType();
   System__Type__RegisterStructType(KeyValuePair$2_$K_x_V$_, "System.Collections.Generic.KeyValuePair`2<" + K.fullName + "," + V.fullName + ">", []);
-  KeyValuePair$2_$K_x_V$_._tri = function() {
+  KeyValuePair$2_$K_x_V$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3375,7 +3375,7 @@ function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) 
     V = V;
   };
   if ($5fcallStatiConstructor)
-    KeyValuePair$2_$K_x_V$_._tri();
+    KeyValuePair$2_$K_x_V$_.$5ftri();
   return KeyValuePair$2_$K_x_V$_;
 };
 function System_Collections_Generic_NumberDictionary_Enumerator(TValue, $5fcallStatiConstructor) {
@@ -3416,7 +3416,7 @@ function System_Collections_Generic_NumberDictionary_Enumerator(TValue, $5fcallS
   ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.NumberDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_, System_Collections_IEnumerator]);
-  Enumerator_$TValue$_._tri = function() {
+  Enumerator_$TValue$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3424,7 +3424,7 @@ function System_Collections_Generic_NumberDictionary_Enumerator(TValue, $5fcallS
     Enumerator_$TValue$_ = System_Collections_Generic_NumberDictionary_Enumerator(TValue, true);
   };
   if ($5fcallStatiConstructor)
-    Enumerator_$TValue$_._tri();
+    Enumerator_$TValue$_.$5ftri();
   return Enumerator_$TValue$_;
 };
 function System_Collections_Generic_Queue_QueueEnumerator(T, $5fcallStatiConstructor) {
@@ -3467,7 +3467,7 @@ function System_Collections_Generic_Queue_QueueEnumerator(T, $5fcallStatiConstru
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(QueueEnumerator_$T$_, "System.Collections.Generic.Queue`1/QueueEnumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
-  QueueEnumerator_$T$_._tri = function() {
+  QueueEnumerator_$T$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3475,7 +3475,7 @@ function System_Collections_Generic_Queue_QueueEnumerator(T, $5fcallStatiConstru
     QueueEnumerator_$T$_ = System_Collections_Generic_Queue_QueueEnumerator(T, true);
   };
   if ($5fcallStatiConstructor)
-    QueueEnumerator_$T$_._tri();
+    QueueEnumerator_$T$_.$5ftri();
   return QueueEnumerator_$T$_;
 };
 function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
@@ -3515,7 +3515,7 @@ function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(ListEnumerator$1_$T$_, "System.Collections.Generic.ListEnumerator`1<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
-  ListEnumerator$1_$T$_._tri = function() {
+  ListEnumerator$1_$T$_.$5ftri = function() {
     if ($5f_initTracker0)
       return;
     $5f_initTracker0 = true;
@@ -3524,7 +3524,7 @@ function System_Collections_Generic_ListEnumerator(T, $5fcallStatiConstructor) {
     ListEnumerator$1_$T$_ = System_Collections_Generic_ListEnumerator(T, true);
   };
   if ($5fcallStatiConstructor)
-    ListEnumerator$1_$T$_._tri();
+    ListEnumerator$1_$T$_.$5ftri();
   return ListEnumerator$1_$T$_;
 };
 function System_Collections_Generic_StringDictionary_Enumerator(TValue, $5fcallStatiConstructor) {
@@ -3565,7 +3565,7 @@ function System_Collections_Generic_StringDictionary_Enumerator(TValue, $5fcallS
   ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.StringDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_, System_Collections_IEnumerator]);
-  Enumerator_$TValue$_._tri = function() {
+  Enumerator_$TValue$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3573,7 +3573,7 @@ function System_Collections_Generic_StringDictionary_Enumerator(TValue, $5fcallS
     Enumerator_$TValue$_ = System_Collections_Generic_StringDictionary_Enumerator(TValue, true);
   };
   if ($5fcallStatiConstructor)
-    Enumerator_$TValue$_._tri();
+    Enumerator_$TValue$_.$5ftri();
   return Enumerator_$TValue$_;
 };
 function System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor) {
@@ -3587,7 +3587,7 @@ function System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor) {
   IEnumerable$1_$T$_.genericClosure = System_Collections_Generic_IEnumerable;
   IEnumerable$1_$T$_.typeId = "k$" + T.typeId + "$";
   System__Type__RegisterInterface(IEnumerable$1_$T$_, "System.Collections.Generic.IEnumerable`1<" + T.fullName + ">");
-  IEnumerable$1_$T$_._tri = function() {
+  IEnumerable$1_$T$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3595,7 +3595,7 @@ function System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor) {
     IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, true);
   };
   if ($5fcallStatiConstructor)
-    IEnumerable$1_$T$_._tri();
+    IEnumerable$1_$T$_.$5ftri();
   return IEnumerable$1_$T$_;
 };
 function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
@@ -3635,7 +3635,7 @@ function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_g = ptyp_.moveNext;
   System__Type__RegisterReferenceType(Enumerator_$T$_, "System.ArrayG`1/Enumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, System_Collections_IEnumerator]);
-  Enumerator_$T$_._tri = function() {
+  Enumerator_$T$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3643,7 +3643,7 @@ function System_ArrayG_Enumerator(T, $5fcallStatiConstructor) {
     Enumerator_$T$_ = System_ArrayG_Enumerator(T, true);
   };
   if ($5fcallStatiConstructor)
-    Enumerator_$T$_._tri();
+    Enumerator_$T$_.$5ftri();
   return Enumerator_$T$_;
 };
 function System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor) {
@@ -3657,7 +3657,7 @@ function System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor) {
   IEnumerator$1_$T$_.genericClosure = System_Collections_Generic_IEnumerator;
   IEnumerator$1_$T$_.typeId = "n$" + T.typeId + "$";
   System__Type__RegisterInterface(IEnumerator$1_$T$_, "System.Collections.Generic.IEnumerator`1<" + T.fullName + ">");
-  IEnumerator$1_$T$_._tri = function() {
+  IEnumerator$1_$T$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3665,7 +3665,7 @@ function System_Collections_Generic_IEnumerator(T, $5fcallStatiConstructor) {
     IEnumerator$1_$T$_ = System_Collections_Generic_IEnumerator(T, true);
   };
   if ($5fcallStatiConstructor)
-    IEnumerator$1_$T$_._tri();
+    IEnumerator$1_$T$_.$5ftri();
   return IEnumerator$1_$T$_;
 };
 function System_Collections_Generic_IList(T, $5fcallStatiConstructor) {
@@ -3680,7 +3680,7 @@ function System_Collections_Generic_IList(T, $5fcallStatiConstructor) {
   IList$1_$T$_.typeId = "sc$" + T.typeId + "$";
   IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
   System__Type__RegisterInterface(IList$1_$T$_, "System.Collections.Generic.IList`1<" + T.fullName + ">");
-  IList$1_$T$_._tri = function() {
+  IList$1_$T$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -3688,7 +3688,7 @@ function System_Collections_Generic_IList(T, $5fcallStatiConstructor) {
     IList$1_$T$_ = System_Collections_Generic_IList(T, true);
   };
   if ($5fcallStatiConstructor)
-    IList$1_$T$_._tri();
+    IList$1_$T$_.$5ftri();
   return IList$1_$T$_;
 };
 Sunlight_Framework_UI_Test_ValueIfTrue_$String$_ = Sunlight_Framework_UI_Test_ValueIfTrue(String);
@@ -3718,30 +3718,28 @@ System_Collections_Generic_StringDictionary_$Int32$_ = System_Collections_Generi
 Sunlight__Framework__UI__Test__ManualTemplateTests____cctor();
 System__String____cctor();
 System__DateTime____cctor();
-Sunlight_Framework_UI_Test_ValueIfTrue_$String$_._tri();
-System_Func_$Object_x_Object$_._tri();
-System_ArrayG_$Func_$Object_x_Object$_$_._tri();
-System_ArrayG_$ArrayG_$Func_$Object_x_Object$_$_$_._tri();
-System_ArrayG_$String$_._tri();
-System_ArrayG_$ArrayG_$String$_$_._tri();
-System_ArrayG_$SkinBinderInfo$_._tri();
-System_ArrayG_$Object$_._tri();
-System_ArrayG_$TestViewModelB$_._tri();
-System_Collections_Generic_KeyValuePair_$Number_x_Task$_._tri();
-System_Collections_Generic_NumberDictionary_$Task$_._tri();
-System_Collections_Generic_Queue_$Task$_._tri();
-System_Collections_Generic_List_$ListViewItem$_._tri();
-System_Action_$UIEvent$_._tri();
-System_Collections_Generic_KeyValuePair_$String_x_Action_$UIEvent$_$_._tri();
-System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_._tri();
-System_Action_$INotifyPropertyChanged_x_String$_._tri();
-System_Collections_Generic_KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_._tri();
-System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_._tri();
-System_Collections_Generic_KeyValuePair_$String_x_Function$_._tri();
-System_Collections_Generic_StringDictionary_$Function$_._tri();
-System_ArrayG_$Number$_._tri();
-System_Collections_Generic_KeyValuePair_$String_x_Int32$_._tri();
-System_Collections_Generic_StringDictionary_$Int32$_._tri();
+Sunlight_Framework_UI_Test_ValueIfTrue_$String$_.$5ftri();
+System_Func_$Object_x_Object$_.$5ftri();
+System_ArrayG_$Func_$Object_x_Object$_$_.$5ftri();
+System_ArrayG_$String$_.$5ftri();
+System_ArrayG_$SkinBinderInfo$_.$5ftri();
+System_ArrayG_$Object$_.$5ftri();
+System_ArrayG_$TestViewModelB$_.$5ftri();
+System_Collections_Generic_KeyValuePair_$Number_x_Task$_.$5ftri();
+System_Collections_Generic_NumberDictionary_$Task$_.$5ftri();
+System_Collections_Generic_Queue_$Task$_.$5ftri();
+System_Collections_Generic_List_$ListViewItem$_.$5ftri();
+System_Action_$UIEvent$_.$5ftri();
+System_Collections_Generic_KeyValuePair_$String_x_Action_$UIEvent$_$_.$5ftri();
+System_Collections_Generic_StringDictionary_$Action_$UIEvent$_$_.$5ftri();
+System_Action_$INotifyPropertyChanged_x_String$_.$5ftri();
+System_Collections_Generic_KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
+System_Collections_Generic_StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
+System_Collections_Generic_KeyValuePair_$String_x_Function$_.$5ftri();
+System_Collections_Generic_StringDictionary_$Function$_.$5ftri();
+System_ArrayG_$Number$_.$5ftri();
+System_Collections_Generic_KeyValuePair_$String_x_Int32$_.$5ftri();
+System_Collections_Generic_StringDictionary_$Int32$_.$5ftri();
 module("Sunlight.Framework.UI.Test.LiveBinderTests", {
   "setup": Sunlight__Framework__UI__Test__LiveBinderTests__Setup
 });

@@ -320,7 +320,7 @@ namespace NScript.Converter.TypeSystemConverter
                     this.genericTypeRefInitializer = SimpleIdentifier.CreateScopeIdentifier(
                         this.staticBaseIdentifiers,
                         "_tri",
-                        true);
+                        false);
                 }
 
                 return this.genericTypeRefInitializer;
