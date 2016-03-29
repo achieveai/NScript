@@ -99,7 +99,7 @@ namespace NScript.JST
                                     for (int jPostFix = 0; match && jPostFix < postfix.Length; jPostFix++)
                                     { match = name[name.Length - jPostFix - 1] == postfix[postfix.Length - jPostFix - 1]; }
 
-                                    if (!match)
+                                    if (match)
                                     {
                                         clash = true;
                                         break;

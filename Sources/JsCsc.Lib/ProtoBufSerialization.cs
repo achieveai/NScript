@@ -210,6 +210,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(152, typeof(ParameterReferenceExpression))]
     [ProtoInclude(177, typeof(AnonymousMethodBodyExpr))]
     [ProtoInclude(178, typeof(AnonymousMethodExpr))]
+    [ProtoInclude(176, typeof(IteratorBlock))]
     public class ExpressionSer
         : AstBase
     {
@@ -232,7 +233,6 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(171, typeof(TryFinallyBlockSer))]
     [ProtoInclude(173, typeof(CatchBlock))]
     [ProtoInclude(174, typeof(TryCatchBlock))]
-    [ProtoInclude(176, typeof(IteratorBlock))]
     [ProtoInclude(107, typeof(BlockSer))]
     public class StatementSer
         : AstBase
@@ -946,7 +946,7 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class IteratorBlock
-        : StatementSer
+        : ExpressionSer
     {
         public int Type { get; set; }
 

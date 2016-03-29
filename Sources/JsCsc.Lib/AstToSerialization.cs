@@ -1797,7 +1797,7 @@ namespace JsCsc.Lib
             if (typeSpec != null)
             {
                 if (!this.typeDict.TryGetValue(typeSpec, out token))
-                { token = this.methodDict.Count + 1; }
+                { token = this.typeDict.Count + 1; }
             }
 
             // var token = typeSpec != null

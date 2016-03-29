@@ -1,5 +1,5 @@
 ﻿(function(){
-var System__Type__typeMapping, System_Collections_Generic_StringDictionary_$Function$_, System_Collections_Generic_KeyValuePair_$String_x_Function$_, System__String__formatHelperRegex, System__String__trimStartHelperRegex, System__String__trimEndHelperRegex, ptyp_;
+var System__Type__typeMapping, System_Collections_Generic_StringDictionary_$Function$_, ptyp_;
 Function.typeId = "b";
 System__Type__typeMapping = null;
 function System__Type__CastType(this_, instance) {
@@ -262,7 +262,7 @@ ptyp_.eventHandlerIE = function System__EventBinder__EventHandlerIE() {
 ptyp_.eventHandlerCapture = function System__EventBinder__EventHandlerCapture(evt) {
   if (this.disposed)
     return;
-  System__Type__CastType(System_Collections_Generic_KeyValuePair_$String_x_Function$_, this.capturePhaseEvents.get_item(System__EventBinder__GetEventType(evt)))(this.target, evt);
+  this.capturePhaseEvents.get_item(System__EventBinder__GetEventType(evt))(this.target, evt);
 };
 ptyp_.eventHandlerBubble = function System__EventBinder__EventHandlerBubble(evt) {
   var del;
@@ -367,26 +367,14 @@ System_ValueType.typeId = "f";
 ptyp_ = System_ValueType.prototype;
 ptyp_.boxedValue = null;
 System__Type__RegisterReferenceType(System_ValueType, "System.ValueType", Object, []);
-String.typeId = "g";
-System__String__formatHelperRegex = null;
-System__String__trimStartHelperRegex = null;
-System__String__trimEndHelperRegex = null;
-function System__String____cctor() {
-  System__String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
-  System__String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
-  System__String__trimEndHelperRegex = new RegExp("[\\s\\xA0]+$");
-};
-System__Type__RegisterReferenceType(String, "System.String", Object, []);
-RegExp.typeId = "h";
-System__Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
 Function.getDefaultValue = function() {
   return {
   };
 };
-Error.typeId = "i";
+Error.typeId = "g";
 System__Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstructor) {
-  var StringDictionary$1_$TValue$_, KeyValuePair$2_$String_x_TValue$_, $5f_initTracker;
+  var StringDictionary$1_$TValue$_, $5f_initTracker;
   if (System_Collections_Generic_StringDictionary[TValue.typeId])
     return System_Collections_Generic_StringDictionary[TValue.typeId];
   System_Collections_Generic_StringDictionary[TValue.typeId] = function System__Collections__Generic__StringDictionary$10() {
@@ -394,9 +382,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
   StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = System_Collections_Generic_StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "j$" + TValue.typeId + "$";
-  KeyValuePair$2_$String_x_TValue$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
-  KeyValuePair$2_$String_x_TValue$_ = System_Collections_Generic_KeyValuePair(String, TValue, $5fcallStatiConstructor);
+  StringDictionary$1_$TValue$_.typeId = "h$" + TValue.typeId + "$";
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -437,7 +423,7 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
     return false;
   };
   System__Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, []);
-  StringDictionary$1_$TValue$_._tri = function() {
+  StringDictionary$1_$TValue$_.$5ftri = function() {
     if ($5f_initTracker)
       return;
     $5f_initTracker = true;
@@ -445,47 +431,11 @@ function System_Collections_Generic_StringDictionary(TValue, $5fcallStatiConstru
     StringDictionary$1_$TValue$_ = System_Collections_Generic_StringDictionary(TValue, true);
   };
   if ($5fcallStatiConstructor)
-    StringDictionary$1_$TValue$_._tri();
+    StringDictionary$1_$TValue$_.$5ftri();
   return StringDictionary$1_$TValue$_;
 };
-function System_Collections_Generic_KeyValuePair(K, V, $5fcallStatiConstructor) {
-  var KeyValuePair$2_$K_x_V$_, $5f_initTracker;
-  if (System_Collections_Generic_KeyValuePair[K.typeId] && System_Collections_Generic_KeyValuePair[K.typeId][V.typeId])
-    return System_Collections_Generic_KeyValuePair[K.typeId][V.typeId];
-    System_Collections_Generic_KeyValuePair[K.typeId] = {
-    };
-  System_Collections_Generic_KeyValuePair[K.typeId][V.typeId] = function(boxedValue) {
-    this.boxedValue = boxedValue;
-  };
-  KeyValuePair$2_$K_x_V$_ = System_Collections_Generic_KeyValuePair[K.typeId][V.typeId];
-  KeyValuePair$2_$K_x_V$_.genericParameters = [K, V];
-  KeyValuePair$2_$K_x_V$_.genericClosure = System_Collections_Generic_KeyValuePair;
-  KeyValuePair$2_$K_x_V$_.typeId = "k$" + K.typeId + "_" + V.typeId + "$";
-  KeyValuePair$2_$K_x_V$_.getDefaultValue = function() {
-    return {
-      key: System__Type__GetDefaultValueStatic(K),
-      val: System__Type__GetDefaultValueStatic(V)
-    };
-  };
-  KeyValuePair$2_$K_x_V$_.prototype = new System_ValueType();
-  System__Type__RegisterStructType(KeyValuePair$2_$K_x_V$_, "System.Collections.Generic.KeyValuePair`2<" + K.fullName + "," + V.fullName + ">", []);
-  KeyValuePair$2_$K_x_V$_._tri = function() {
-    if ($5f_initTracker)
-      return;
-    $5f_initTracker = true;
-    K = K;
-    V = V;
-    KeyValuePair$2_$K_x_V$_ = System_Collections_Generic_KeyValuePair(K, V, true);
-  };
-  if ($5fcallStatiConstructor)
-    KeyValuePair$2_$K_x_V$_._tri();
-  return KeyValuePair$2_$K_x_V$_;
-};
 System_Collections_Generic_StringDictionary_$Function$_ = System_Collections_Generic_StringDictionary(Function);
-System_Collections_Generic_KeyValuePair_$String_x_Function$_ = System_Collections_Generic_KeyValuePair(String, Function);
-System__String____cctor();
-System_Collections_Generic_StringDictionary_$Function$_._tri();
-System_Collections_Generic_KeyValuePair_$String_x_Function$_._tri();
+System_Collections_Generic_StringDictionary_$Function$_.$5ftri();
 module("System.Web.Html.Tests.TestElement", {
   "setup": System__Web__Html__Tests__TestElement__Setup
 });

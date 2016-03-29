@@ -15,6 +15,7 @@ namespace NScript.CLR.Test
     using Mono.Cecil;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using JsCsc.Lib.Serialization;
 
     /// <summary>
     /// Definition for DllBuilder
@@ -45,7 +46,8 @@ namespace NScript.CLR.Test
 
         HashSet<string> loadedDlls = new HashSet<string>();
         ClrContext context = new ClrContext();
-        Dictionary<MethodDefinition, TopLevelBlock> blockMaps = new Dictionary<MethodDefinition, TopLevelBlock>(new MemberReferenceComparer());
+        Dictionary<MethodDefinition, Func<TopLevelBlock>> blockMaps =
+            new Dictionary<MethodDefinition, Func<TopLevelBlock>>(new MemberReferenceComparer());
 
         public DllBuilder()
         {
@@ -58,9 +60,9 @@ namespace NScript.CLR.Test
 
         public TopLevelBlock GetTopLevelBlock(MethodDefinition methodDefinition)
         {
-            TopLevelBlock rv;
+            Func<TopLevelBlock> rv;
             this.blockMaps.TryGetValue(methodDefinition, out rv);
-            return rv;
+            return rv();
         }
 
         public void Build(string outFileName, string sourceFilesPath, string[] sourceFiles, string[] references, bool isDebug, string keyFile = null)
@@ -142,35 +144,60 @@ namespace NScript.CLR.Test
             }
 
             JArray jsonAstArray = null;
+            FullAst fullAst = null;
             foreach (var resource in module.Resources)
             {
                 if (resource.Name == "$$AstInfo$$")
                 {
-                    Mono.Cecil.EmbeddedResource embededResource = (Mono.Cecil.EmbeddedResource)resource;
+                    // Mono.Cecil.EmbeddedResource embededResource = (Mono.Cecil.EmbeddedResource)resource;
 
+                    // using (var stream = embededResource.GetResourceStream())
+                    // using (var unzipStream = new GZipStream(stream, CompressionMode.Decompress))
+                    // {
+                    //     JsonTextReader reader = new JsonTextReader(new StreamReader(unzipStream));
+                    //     jsonAstArray = JArray.Load(reader);
+                    // }
+
+                    // break;
+                }
+                else if (resource.Name == "$$BstInfo$$")
+                {
+                    EmbeddedResource embededResource = (EmbeddedResource)resource;
+
+                    // stopWatch.Restart();
                     using (var stream = embededResource.GetResourceStream())
-                    using (var unzipStream = new GZipStream(stream, CompressionMode.Decompress))
                     {
-                        JsonTextReader reader = new JsonTextReader(new StreamReader(unzipStream));
-                        jsonAstArray = JArray.Load(reader);
+                        fullAst = ProtoBuf.Serializer.Deserialize<FullAst>(stream);
                     }
-
-                    break;
+                    // stopWatch.Stop();
+                    // bondCost += stopWatch.Elapsed.TotalSeconds;
                 }
             }
 
             MemberReferenceConverter referenceConverter = new MemberReferenceConverter(context);
-            JObjectToCsAst toAst = new JObjectToCsAst(context);
+            var toAst = new BondToAst(fullAst.TypeInfo, context);
 
-            for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
+            foreach (var methodBody in fullAst.Methods)
             {
                 var topLevelBlock = toAst.ParseMethodBody(
-                    jsonAstArray.Value<JObject>(iAst));
+                    methodBody);
 
                 this.blockMaps.Add(
                     topLevelBlock.Item1,
                     topLevelBlock.Item2);
             }
+
+            // JObjectToCsAst toAst = new BondToAst(context);
+
+            // for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
+            // {
+            //     var topLevelBlock = toAst.ParseMethodBody(
+            //         jsonAstArray.Value<JObject>(iAst));
+
+            //     this.blockMaps.Add(
+            //         topLevelBlock.Item1,
+            //         topLevelBlock.Item2);
+            // }
         }
     }
 }
