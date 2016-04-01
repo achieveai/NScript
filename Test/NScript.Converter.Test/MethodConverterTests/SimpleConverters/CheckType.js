@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__CheckType(obj) {
-  return RealScript_TestReferenceClass.isInstanceOfType(obj);
+﻿function BasicStatements__CheckType(obj) {
+  return TestReferenceClass.isInstanceOfType(obj);
 }

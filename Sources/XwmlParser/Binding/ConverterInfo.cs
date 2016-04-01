@@ -236,11 +236,10 @@ namespace XwmlParser.Binding
                 case ConverterArgType.Boolean:
                     return (Boolean)x.Item2 == (Boolean)y.Item2;
                 case ConverterArgType.Integer:
-                    return (Int32)x.Item2 == (Int32)y.Item2;
-                case ConverterArgType.Float:
-                    return (Double)x.Item2 == (Double)y.Item2;
                 case ConverterArgType.Enum:
                     return Convert.ToInt32(x.Item2) == Convert.ToInt32(y.Item2);
+                case ConverterArgType.Float:
+                    return Convert.ToDouble(x.Item2) == Convert.ToDouble(y.Item2);
                 case ConverterArgType.String:
                     return (string)x.Item2 == (string)y.Item2;
                 case ConverterArgType.StaticPropInfo:

@@ -1,3 +1,3 @@
-﻿function RealScript__JsScriptImport__GetSomething() {
+﻿function JsScriptImport__GetSomething() {
   return RealScript.JsScriptImport(10);
 }

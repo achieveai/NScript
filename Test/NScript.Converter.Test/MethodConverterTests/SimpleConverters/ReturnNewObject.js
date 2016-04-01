@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__ReturnNewObject() {
-  return RealScript__TestReferenceClass_factory();
+﻿function BasicStatements__ReturnNewObject() {
+  return TestReferenceClass_factory();
 }

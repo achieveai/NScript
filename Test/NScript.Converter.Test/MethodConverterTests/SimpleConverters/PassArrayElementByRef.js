@@ -1,5 +1,5 @@
-﻿function RealScript__BasicStatements__PassArrayElementByRef(intArray) {
-  RealScript__BasicStatements__AccessRefArgument(10, (function(arg0, arg1) {
+﻿function BasicStatements__PassArrayElementByRef(intArray) {
+  BasicStatements__AccessRefArgument(10, (function(arg0, arg1) {
     return {
       read: function() {
         return arg0[arg1];

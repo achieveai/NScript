@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__ReturnObjectArray() {
-  return System_ArrayG_$TestReferenceClass$_.__ctor(10);
+﻿function BasicStatements__ReturnObjectArray() {
+  return ArrayG_$TestReferenceClass$_.__ctor(10);
 }

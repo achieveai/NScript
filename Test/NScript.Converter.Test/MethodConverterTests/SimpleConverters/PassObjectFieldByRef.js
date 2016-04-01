@@ -1,5 +1,5 @@
-﻿function RealScript__BasicStatements__PassObjectFieldByRef(cl) {
-  RealScript__BasicStatements__AccessRefArgument(10, (function(arg0) {
+﻿function BasicStatements__PassObjectFieldByRef(cl) {
+  BasicStatements__AccessRefArgument(10, (function(arg0) {
     return {
       read: function() {
         return arg0.intField;

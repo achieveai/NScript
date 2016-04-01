@@ -1,37 +1,37 @@
-﻿function System_Int32(boxedValue) {
+﻿function Int32(boxedValue) {
   this.boxedValue = boxedValue;
 };
-System_Int32.typeId = "b";
-System_Int32.getDefaultValue = function() {
+Int32.typeId = "b";
+Int32.getDefaultValue = function() {
   return 0;
 };
-function System__Int32__Parse(s) {
+function Int32__Parse(s) {
   return parseInt(s);
 };
-function System__Int32__Parsea(s, radix) {
+function Int32__Parsea(s, radix) {
   return parseInt(s, radix);
 };
-function System__Int32__Format(this_, format) {
-  return System__Int32__ToString(this_, 10);
+function Int32__Format(this_, format) {
+  return Int32__ToString(this_, 10);
 };
-function System__Int32__LocaleFormat(this_, format) {
-  return System__Int32__Format(this_, format);
+function Int32__LocaleFormat(this_, format) {
+  return Int32__Format(this_, format);
 };
-function System__Int32__ToString(this_, radix) {
+function Int32__ToString(this_, radix) {
   return this_.toString(radix);
 };
-function System__Int32__ToStringa(this_) {
-  return System__Int32__ToString(this_, 10);
+function Int32__ToStringa(this_) {
+  return Int32__ToString(this_, 10);
 };
-function System__Int32__ToLocaleString(this_) {
-  return System__Int32__ToStringa(this_);
+function Int32__ToLocaleString(this_) {
+  return Int32__ToStringa(this_);
 };
-ptyp_ = new System_ValueType();
-System_Int32.prototype = ptyp_;
+ptyp_ = new ValueType();
+Int32.prototype = ptyp_;
 ptyp_.toLocaleString = function() {
-  return System__Int32__ToLocaleString(this.boxedValue);
+  return Int32__ToLocaleString(this.boxedValue);
 };
 ptyp_.toString = function() {
-  return System__Int32__ToStringa(this.boxedValue);
+  return Int32__ToStringa(this.boxedValue);
 };
-System__Type__RegisterStructType(System_Int32, "System.Int32", []);
+Type__RegisterStructType(Int32, "System.Int32", []);

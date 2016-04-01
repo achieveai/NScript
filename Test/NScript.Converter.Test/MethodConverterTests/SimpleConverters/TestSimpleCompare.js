@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__TestSimpleCompare(i) {
+﻿function BasicStatements__TestSimpleCompare(i) {
   return i == 10;
 }

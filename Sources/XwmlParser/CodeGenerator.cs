@@ -888,10 +888,10 @@ namespace XwmlParser
                         break;
                     case ConverterArgType.Enum:
                     case ConverterArgType.Integer:
-                        args.Add(new NumberLiteralExpression(methodScope, (int)arg.Item2));
+                        args.Add(new NumberLiteralExpression(methodScope, Convert.ToInt32(arg.Item2)));
                         break;
                     case ConverterArgType.Float:
-                        args.Add(new DoubleLiteralExpression(methodScope, (double)arg.Item2));
+                        args.Add(new DoubleLiteralExpression(methodScope, Convert.ToDouble(arg.Item2)));
                         break;
                     case ConverterArgType.String:
                         args.Add(new StringLiteralExpression(methodScope, (string)arg.Item2));

@@ -192,9 +192,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternGenerator", "Sources\ExternGenerator\ExternGenerator.csproj", "{427A547E-5E65-429F-86A3-52D5126DB0C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B9FB0CC4-9644-4D0A-801B-45835B2E6E9B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{41B33C1E-AB6C-4BE0-AF91-983E619AE261}"
 	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
-		Performance2.psess = Performance2.psess
+		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
 Global
@@ -755,9 +756,6 @@ Global
 		{30070734-422B-4C24-BE3F-906E2AE03A12} = {A64B5AAF-7EF9-42F8-8F93-00424C95C99A}
 		{C57A61D9-4E45-41BB-AE75-933FBA9A9079} = {A64B5AAF-7EF9-42F8-8F93-00424C95C99A}
 		{427A547E-5E65-429F-86A3-52D5126DB0C0} = {BC2DF808-D5CB-4C06-8AC2-D772407CDD23}
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = NScript1.vsmdi

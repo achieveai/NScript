@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__ReturnArrayElement(arr, index) {
+﻿function BasicStatements__ReturnArrayElement(arr, index) {
   return arr.get_item(index);
 }

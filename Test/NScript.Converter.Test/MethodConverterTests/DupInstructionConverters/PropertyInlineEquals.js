@@ -1,3 +1,3 @@
-﻿function RealScript__DupInstructionBlocks__PropertyInlineEquals(referenceClass) {
+﻿function DupInstructionBlocks__PropertyInlineEquals(referenceClass) {
   referenceClass.intField = referenceClass.set_intProperty(referenceClass.get_property().intField);
 }

@@ -1,3 +1,3 @@
-﻿function RealScript__DelegateBlocks__InstanceReferencingDelegate() {
-  return System__Delegate__Create("instanceReferencingDelegate_Helper", this);
+﻿function DelegateBlocks__InstanceReferencingDelegate() {
+  return Delegate__Create("instanceReferencingDelegate_Helper", this);
 }

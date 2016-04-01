@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__ReturnMethodCall() {
-  return RealScript__BasicStatements__ReturnInt();
+﻿function BasicStatements__ReturnMethodCall() {
+  return BasicStatements__ReturnInt();
 }

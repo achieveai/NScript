@@ -1,15 +1,15 @@
 ﻿Function.typeId = "b";
-System__Type__typeMapping = null;
-function System__Type__GetType(typeName) {
-  return System__Type__CastType(Function, System__Type__typeMapping[typeName]);
+Type__typeMapping = null;
+function Type__GetType(typeName) {
+  return Type__CastType(Function, Type__typeMapping[typeName]);
 };
-function System__Type__GetInterfaces(this_) {
+function Type__GetInterfaces(this_) {
   return this_.interfaces;
 };
-function System__Type__AsType(this_, instance) {
+function Type__AsType(this_, instance) {
   return this_.isInstanceOfType(instance) ? instance : null;
 };
-function System__Type__CastType(this_, instance) {
+function Type__CastType(this_, instance) {
   if (this_.isInstanceOfType(instance) || instance === null || typeof instance === "undefined") {
     if (this_.isStruct)
       return instance.boxedValue;
@@ -17,42 +17,42 @@ function System__Type__CastType(this_, instance) {
   }
   throw "InvalidCast to " + this_.fullName;
 };
-function System__Type__ToLocaleString(this_) {
+function Type__ToLocaleString(this_) {
   return this_.fullName ? this_.fullName : this_.name;
 };
-function System__Type__ToString(this_) {
+function Type__ToString(this_) {
   return this_.fullName ? this_.fullName : this_.name;
 };
-function System__Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
+function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
   this_.fullName = typeName;
   this_.baseType = parentType;
   this_.interfaces = parentType ? interfaces.concat(parentType.interfaces) : interfaces;
-  if (!System__Type__typeMapping)
-    System__Type__typeMapping = {
+  if (!Type__typeMapping)
+    Type__typeMapping = {
     };
-  System__Type__typeMapping[this_.fullName] = this_;
+  Type__typeMapping[this_.fullName] = this_;
 };
-function System__Type__RegisterStructType(this_, typeName, interfaces) {
+function Type__RegisterStructType(this_, typeName, interfaces) {
   this_.isStruct = true;
   this_.fullName = typeName;
-  this_.baseType = System_ValueType;
+  this_.baseType = ValueType;
   this_.interfaces = interfaces;
-  if (!System__Type__typeMapping)
-    System__Type__typeMapping = {
+  if (!Type__typeMapping)
+    Type__typeMapping = {
     };
-  System__Type__typeMapping[this_.fullName] = this_;
+  Type__typeMapping[this_.fullName] = this_;
 };
-function System__Type__RegisterInterface(this_, typeName) {
+function Type__RegisterInterface(this_, typeName) {
   this_.isInterface = true;
   this_.fullName = typeName;
 };
-function System__Type__RegisterEnum(this_, typeName, isFlag) {
+function Type__RegisterEnum(this_, typeName, isFlag) {
   var enumStrToValueMap, valueToStr, lowerStrToValue, key;
   this_.isEnum = true;
   this_.fullName = typeName;
   this_.isFlagEnum = isFlag;
-  this_.baseType = System_Enum;
+  this_.baseType = Enum;
   enumStrToValueMap = this_.enumStrToValueMap;
   valueToStr = {
   };
@@ -64,12 +64,12 @@ function System__Type__RegisterEnum(this_, typeName, isFlag) {
   }
   this_.enumValueToStrMap = valueToStr;
   this_.enumLowerStrToValueMap = lowerStrToValue;
-  if (!System__Type__typeMapping)
-    System__Type__typeMapping = {
+  if (!Type__typeMapping)
+    Type__typeMapping = {
     };
-  System__Type__typeMapping[this_.fullName] = this_;
+  Type__typeMapping[this_.fullName] = this_;
 };
-function System__Type__BoxTypeInstance(type, instance) {
+function Type__BoxTypeInstance(type, instance) {
   if (type.isNullable)
     return type.nullableBox(instance);
   else if (type.isStruct)
@@ -77,7 +77,7 @@ function System__Type__BoxTypeInstance(type, instance) {
   else
     return instance;
 };
-function System__Type__UnBoxTypeInstance(type, instance) {
+function Type__UnBoxTypeInstance(type, instance) {
   if (type.isNullable && instance === null)
     return null;
   else if (type.isStruct)
@@ -85,7 +85,7 @@ function System__Type__UnBoxTypeInstance(type, instance) {
   else
     return instance;
 };
-function System__Type__GetDefaultConstructor(type) {
+function Type__GetDefaultConstructor(type) {
   if (type.isStruct)
     return type.getDefaultValue;
   else if (type.defaultConstructor)
@@ -95,12 +95,12 @@ function System__Type__GetDefaultConstructor(type) {
         return null;
     };
 };
-function System__Type__GetDefaultValueStatic(type) {
+function Type__GetDefaultValueStatic(type) {
   if (type.isStruct)
     return type.getDefaultValue();
   return null;
 };
-function System__Type__InitializeBaseInterfaces(type) {
+function Type__InitializeBaseInterfaces(type) {
   var rv, baseType, baseInterfaces, key, interfaces;
   if (!type.baseInterfaces) {
     rv = {
@@ -108,7 +108,7 @@ function System__Type__InitializeBaseInterfaces(type) {
     baseType = type.baseType;
     if (baseType != null && baseType != Object) {
       if (baseType)
-        System__Type__InitializeBaseInterfaces(type);
+        Type__InitializeBaseInterfaces(type);
       baseInterfaces = baseType.baseInterfaces;
       if (baseInterfaces)
         for (key in baseInterfaces)
@@ -121,14 +121,14 @@ function System__Type__InitializeBaseInterfaces(type) {
     type.baseInterfaces = rv;
   }
 };
-function System__Type_factory() {
+function Type_factory() {
   var this_;
   this_ = Function.getDefaultValue();
 };
-function System__Type_factory() {
+function Type_factory() {
   return new Function();
 };
-Function.defaultConstructor = System__Type_factory;
+Function.defaultConstructor = Type_factory;
 ptyp_ = Function.prototype;
 ptyp_.isDelegate = false;
 ptyp_.isClass = false;
@@ -146,30 +146,30 @@ ptyp_.enumStrToValueMap = null;
 ptyp_.enumLowerStrToValueMap = null;
 ptyp_.isFlagEnum = false;
 ptyp_.interfaces = null;
-ptyp_.isInstanceOfType = function System__Type__IsInstanceOfType(instance) {
+ptyp_.isInstanceOfType = function Type__IsInstanceOfType(instance) {
   if (instance === null || typeof instance === "undefined")
     return false;
   if (!this.isInterface)
     return instance instanceof this || instance && instance.constructor == this;
   else if (!instance.constructor.baseInterfaces)
-    System__Type__InitializeBaseInterfaces(instance.constructor);
+    Type__InitializeBaseInterfaces(instance.constructor);
   return instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
 };
-ptyp_.defaultConstructor = function System__Type__DefaultConstructor() {
+ptyp_.defaultConstructor = function Type__DefaultConstructor() {
   if (this.isStruct)
     return this.getDefaultValue;
   throw "Default constructor not implemented";
 };
-ptyp_.getDefaultValue = function System__Type__GetDefaultValue() {
+ptyp_.getDefaultValue = function Type__GetDefaultValue() {
   return null;
 };
-ptyp_.nullableBox = function System__Type__NullableBox(instance) {
+ptyp_.nullableBox = function Type__NullableBox(instance) {
   return null;
 };
 ptyp_.toLocaleString = function() {
-  return System__Type__ToLocaleString(this);
+  return Type__ToLocaleString(this);
 };
 ptyp_.toString = function() {
-  return System__Type__ToString(this);
+  return Type__ToString(this);
 };
-System__Type__RegisterReferenceType(Function, "System.Type", Object, []);
+Type__RegisterReferenceType(Function, "System.Type", Object, []);

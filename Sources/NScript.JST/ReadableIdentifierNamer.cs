@@ -160,7 +160,7 @@ namespace NScript.JST
                     {
                         var matchIdent = scope.paramaterIdentifiers[iIdent];
                         if (matchIdent != ident
-                            && matchIdent.SuggestedName == ident.SuggestedName)
+                            && CanConflict(matchIdent.SuggestedName, ident.SuggestedName))
                         {
                             this.AddConflictIdentifiers(ident, matchIdent);
                         }
@@ -173,7 +173,7 @@ namespace NScript.JST
                 {
                     var matchIdent = scope.scopedIdentifiers[iIdent];
                     if (matchIdent != ident
-                        && matchIdent.SuggestedName == ident.SuggestedName)
+                        && CanConflict(matchIdent.SuggestedName, ident.SuggestedName))
                     {
                         this.AddConflictIdentifiers(ident, matchIdent);
                     }
@@ -183,21 +183,44 @@ namespace NScript.JST
             private void AddConflictIdentifiers(SimpleIdentifier left, SimpleIdentifier right)
             {
                 List<SimpleIdentifier> identifiers;
-                if (!this.identifierMap.TryGetValue(left, out identifiers))
+                if (CanConflict(left.SuggestedName, right.SuggestedName))
                 {
-                    identifiers = new List<SimpleIdentifier>();
-                    this.identifierMap.Add(left, identifiers);
+                    if (!this.identifierMap.TryGetValue(left, out identifiers))
+                    {
+                        identifiers = new List<SimpleIdentifier>();
+                        this.identifierMap.Add(left, identifiers);
+                    }
+
+                    identifiers.Add(right);
                 }
 
-                identifiers.Add(right);
-
-                if (!this.identifierMap.TryGetValue(right, out identifiers))
+                if (CanConflict(right.SuggestedName, left.SuggestedName))
                 {
-                    identifiers = new List<SimpleIdentifier>();
-                    this.identifierMap.Add(right, identifiers);
+                    if (!this.identifierMap.TryGetValue(right, out identifiers))
+                    {
+                        identifiers = new List<SimpleIdentifier>();
+                        this.identifierMap.Add(right, identifiers);
+                    }
+
+                    identifiers.Add(left);
+                }
+            }
+
+            private static bool CanConflict(string left, string right)
+            {
+                int minLength = Math.Min(left.Length, right.Length);
+                int maxLen = Math.Max(left.Length, right.Length);
+
+                if (maxLen > minLength + 2)
+                { return false; }
+
+                for (int idx = minLength - 2; idx >= 0; idx--)
+                {
+                    if (left[idx] != right[idx])
+                    { return false; }
                 }
 
-                identifiers.Add(left);
+                return true;
             }
 
             private void ProcessScopes(

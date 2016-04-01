@@ -740,7 +740,7 @@ namespace NScript.Converter.TypeSystemConverter
                         nameSpace.Scope,
                         isExtended  || string.IsNullOrEmpty(typeName.Item1)
                             ? typeName.Item2
-                            : (typeName.Item1 + '.' + typeName.Item2).Replace('.', '_'),
+                            : (typeName.Item2).Replace('.', '_'),
                         isExtended);
 
                     returnValue = new List<IIdentifier>();
@@ -953,7 +953,7 @@ namespace NScript.Converter.TypeSystemConverter
             if (!this.methodNameIdentifier.TryGetValue(methodReference, out returnValue))
             {
                 string suggestedName =
-                    methodReference.DeclaringType.Resolve().FullName + "." + methodReference.Name;
+                    methodReference.DeclaringType.Resolve().Name + "." + methodReference.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
 
@@ -1051,7 +1051,7 @@ namespace NScript.Converter.TypeSystemConverter
             if (!this.staticFactoryMap.TryGetValue(constructor, out returnValue))
             {
                 string suggestedName =
-                    constructor.DeclaringType.Resolve().FullName + "_factory";
+                    constructor.DeclaringType.Resolve().Name + "_factory";
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
 
@@ -1084,7 +1084,7 @@ namespace NScript.Converter.TypeSystemConverter
             if (!this.staticMemberMap.TryGetValue(fieldDefinition, out returnValue))
             {
                 string suggestedName =
-                    fieldDefinition.DeclaringType.Resolve().FullName + "." + fieldDefinition.Name;
+                    fieldDefinition.DeclaringType.Resolve().Name + "." + fieldDefinition.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
 
@@ -1112,7 +1112,7 @@ namespace NScript.Converter.TypeSystemConverter
             if (!this.staticMemberMap.TryGetValue(propertyDefinition, out returnValue))
             {
                 string suggestedName =
-                    propertyDefinition.DeclaringType.Resolve().FullName + "." + propertyDefinition.Name;
+                    propertyDefinition.DeclaringType.Resolve().Name + "." + propertyDefinition.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
 

@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__ReturnIntArray() {
-  return System_ArrayG_$Int32$_.__ctor(10);
+﻿function BasicStatements__ReturnIntArray() {
+  return ArrayG_$Int32$_.__ctor(10);
 }
