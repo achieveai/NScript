@@ -51,7 +51,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 if (identifierName == MethodConverter.ThisArgument)
                 {
-                    return this.converter.ResolveThis(scope);
+                    return this.converter.ResolveThis(scope, null);
                 }
 
                 identifier = this.converter.RuntimeManager.GetKnownIdentifier(

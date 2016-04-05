@@ -425,10 +425,16 @@ namespace NScript.Converter.ExpressionsConverter
                         leftConditionPartExpression.Location,
                         converter.Scope,
                         JST.BinaryOperator.Assignment,
-                        new JST.IdentifierExpression(tmpVar, converter.Scope),
+                        new JST.IdentifierExpression(
+                            tmpVar,
+                            converter.Scope,
+                            leftConditionPartExpression.Location),
                         leftConditionPartExpression);
 
-                    leftJstExpression = new JST.IdentifierExpression(tmpVar, converter.Scope);
+                    leftJstExpression = new JST.IdentifierExpression(
+                        tmpVar,
+                        converter.Scope,
+                        leftConditionPartExpression.Location);
                 }
             }
             else
@@ -453,10 +459,16 @@ namespace NScript.Converter.ExpressionsConverter
                         rightConditionPartExpression.Location,
                         converter.Scope,
                         JST.BinaryOperator.Assignment,
-                        new JST.IdentifierExpression(tmpVar, converter.Scope),
+                        new JST.IdentifierExpression(
+                            tmpVar,
+                            converter.Scope,
+                            rightConditionPartExpression.Location),
                         rightConditionPartExpression);
 
-                    rightJstExpression = new JST.IdentifierExpression(tmpVar, converter.Scope);
+                    rightJstExpression = new JST.IdentifierExpression(
+                        tmpVar,
+                        converter.Scope,
+                        rightConditionPartExpression.Location);
                 }
             }
             else

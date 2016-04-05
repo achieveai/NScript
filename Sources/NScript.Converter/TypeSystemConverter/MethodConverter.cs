@@ -604,7 +604,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="scope">The scope.</param>
         /// <returns></returns>
-        public JST.Expression ResolveThis(IdentifierScope scope)
+        public JST.Expression ResolveThis(IdentifierScope scope, Location loc)
         {
             if (thisIdentifier != null)
             {
@@ -613,7 +613,7 @@ namespace NScript.Converter.TypeSystemConverter
                     scope);
             }
 
-            return new ThisExpression(null, scope);
+            return new ThisExpression(loc, scope);
         }
 
         /// <summary>
@@ -1235,7 +1235,7 @@ namespace NScript.Converter.TypeSystemConverter
                     null,
                     Scope,
                     BinaryOperator.Assignment,
-                    ResolveThis(Scope),
+                    ResolveThis(Scope, null),
                     new MethodCallExpression(
                         null,
                         Scope,
@@ -1427,7 +1427,7 @@ namespace NScript.Converter.TypeSystemConverter
                     new ReturnStatement(
                         null,
                         Scope,
-                        ResolveThis(Scope)));
+                        ResolveThis(Scope, null)));
             }
 
             foreach (var genericArgIdPair in localTypeReferences)
@@ -1784,7 +1784,7 @@ namespace NScript.Converter.TypeSystemConverter
                     new JST.IndexExpression(
                         null,
                         this.Scope,
-                        this.ResolveThis(this.Scope),
+                        this.ResolveThis(this.Scope, null),
                         new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
                         false),
                     MethodConverter.GenerateWrapperExpression(
@@ -1792,7 +1792,7 @@ namespace NScript.Converter.TypeSystemConverter
                         new JST.IndexExpression(
                             null,
                             this.Scope,
-                            this.ResolveThis(this.Scope),
+                            this.ResolveThis(this.Scope, null),
                             new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
                             false),
                         this,
@@ -1857,7 +1857,7 @@ namespace NScript.Converter.TypeSystemConverter
                         new JST.IndexExpression(
                             null,
                             this.Scope,
-                            this.ResolveThis(this.Scope),
+                            this.ResolveThis(this.Scope, null),
                             new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
                             false),
                         MethodConverter.GenerateExtrationExpression(
@@ -1909,7 +1909,7 @@ namespace NScript.Converter.TypeSystemConverter
                     new IndexExpression(
                         null,
                         this.Scope,
-                        this.ResolveThis(this.Scope),
+                        this.ResolveThis(this.Scope, null),
                         new JST.IdentifierExpression(
                             this.typeConverter.ResolveWrappedMethod(this.methodDefinition),
                             this.Scope));
@@ -1975,7 +1975,7 @@ namespace NScript.Converter.TypeSystemConverter
                     new JST.IndexExpression(
                         null,
                         this.Scope,
-                        this.ResolveThis(this.Scope),
+                        this.ResolveThis(this.Scope, null),
                         new JST.IdentifierExpression(this.Resolve(importedAdapterField), this.Scope),
                         false),
                     new JST.BinaryExpression(
@@ -1985,7 +1985,7 @@ namespace NScript.Converter.TypeSystemConverter
                         new JST.IndexExpression(
                             null,
                             this.Scope,
-                            this.ResolveThis(this.Scope),
+                            this.ResolveThis(this.Scope, null),
                             new JST.IdentifierExpression(this.Resolve(importedAdapterField), this.Scope),
                             false),
                         new JST.MethodCallExpression(
@@ -2028,7 +2028,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
             else
             {
-                return this.ResolveThis(this.Scope);
+                return this.ResolveThis(this.Scope, null);
             }
         }
 

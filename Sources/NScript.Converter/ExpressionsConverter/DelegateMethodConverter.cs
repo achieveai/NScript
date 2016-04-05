@@ -57,7 +57,8 @@ namespace NScript.Converter.ExpressionsConverter
                             converter.Scope,
                             new JST.IdentifierExpression(
                                 methodIdentifiers[methodIdentifiers.Count - 1],
-                                converter.Scope)));
+                                converter.Scope,
+                                location)));
 
                     // Type reference.
                     args.Add(
@@ -147,7 +148,8 @@ namespace NScript.Converter.ExpressionsConverter
                         objectExpression,
                         new JST.IdentifierExpression(
                             converter.Resolve(expression.Method.MethodReference),
-                            converter.Scope)));
+                            converter.Scope,
+                            location)));
 
                 delegateConverterArgs.Add(
                         new JST.InlineNewArrayInitialization(

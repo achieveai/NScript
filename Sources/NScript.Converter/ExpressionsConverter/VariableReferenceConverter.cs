@@ -27,11 +27,12 @@ namespace NScript.Converter.ExpressionsConverter
 
                 return new JST.IdentifierExpression(
                     converter.ResolveLocal(localVariable.Name),
-                    converter.Scope);
+                    converter.Scope,
+                    expression.Location);
             }
             else if (expression.Variable is ThisVariable)
             {
-                return converter.ResolveThis(converter.Scope);
+                return converter.ResolveThis(converter.Scope, expression.Location);
             }
             else if (expression.Variable is ParameterVariable)
             {
@@ -39,7 +40,8 @@ namespace NScript.Converter.ExpressionsConverter
 
                 return new JST.IdentifierExpression(
                     converter.ResolveArgument(localVariable.Name),
-                    converter.Scope);
+                    converter.Scope,
+                    expression.Location);
             }
 
             throw new NotImplementedException();

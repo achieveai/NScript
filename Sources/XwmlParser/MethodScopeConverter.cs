@@ -99,7 +99,7 @@ namespace XwmlParser
             return rv;
         }
 
-        public NScript.JST.Expression ResolveThis(NScript.JST.IdentifierScope identifierScope)
+        public NScript.JST.Expression ResolveThis(NScript.JST.IdentifierScope identifierScope, NScript.Utils.Location loc)
         {
             throw new NotImplementedException();
         }

@@ -354,7 +354,8 @@ namespace NScript.JST
             writer.Write(
                     this.Left,
                     this.Left.OperatorPlacement != JST.OperatorPlacement.Postfix
-                        && this.Left.Precedence < this.Precedence);
+                        && (this.Left.Precedence < this.Precedence
+                            || (!this.IsLeftToRight && this.Left.Precedence == this.Precedence)));
 
             if (binaryOpSym.HasValue)
             {
@@ -368,7 +369,8 @@ namespace NScript.JST
             writer.Write(
                 this.rightExpression,
                 this.Right.OperatorPlacement != JST.OperatorPlacement.Prefix
-                    && this.Right.Precedence < this.Precedence);
+                    && (this.Right.Precedence < this.Precedence
+                        || (this.IsLeftToRight && this.Right.Precedence == this.Precedence)));
         }
     }
 }

@@ -33,7 +33,9 @@
 
         JST.IIdentifier ResolveLocal(string localName);
 
-        JST.Expression ResolveThis(JST.IdentifierScope identifierScope);
+        JST.Expression ResolveThis(
+            JST.IdentifierScope identifierScope,
+            Location loc);
 
         JST.Expression ProcessParameterBlock(ParameterBlock parameterBlock);
 

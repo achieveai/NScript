@@ -35,7 +35,7 @@ namespace NScript.Converter.StatementsConverter
                 return new JST.ReturnStatement(
                     location,
                     methodScopeConverter.Scope,
-                    methodConverter.ResolveThis(methodScopeConverter.Scope));
+                    methodConverter.ResolveThis(methodScopeConverter.Scope, location));
             }
 
             return new JST.ReturnStatement(

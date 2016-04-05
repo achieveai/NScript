@@ -26,9 +26,15 @@ namespace NScript.JST
         /// <param name="scope">The scope.</param>
         public IdentifierExpression(
             IIdentifier identifier,
-            IdentifierScope scope)
-            : base(null, scope)
+            IdentifierScope scope,
+            Location loc = null)
+            : base(loc, scope)
         {
+            if (identifier.SuggestedName == "get_fullHeight")
+            {
+                if (identifier.SuggestedName != null) ;
+            }
+
             this.identifier = identifier;
             this.identifier.AddUsage(this.Scope);
         }
@@ -109,6 +115,11 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
+            if (identifier.SuggestedName == "get_fullHeight")
+            {
+                if (identifier.SuggestedName != null) ;
+            }
+
             writer.Write(this.identifier);
         }
     }
