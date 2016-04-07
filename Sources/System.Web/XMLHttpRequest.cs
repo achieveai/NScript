@@ -254,7 +254,7 @@ namespace System.Web
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(request, request.Status, false);
+                        cb(request, request.Status, request.Status >= 400);
                     };
 
                 Action<XMLHttpRequest, ProgressEvent> errorCb = 

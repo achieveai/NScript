@@ -221,7 +221,7 @@ namespace Sunlight.Framework.UI
                     else
                     {
                         listViewItem = new ListViewItem(
-                            this.Element.OwnerDocument.CreateElement("li"));
+                            this.CreateElement());
                         if (this.itemCssClassName != null)
                         {
                             listViewItem.Element.ClassName = this.itemCssClassName;
@@ -298,7 +298,7 @@ namespace Sunlight.Framework.UI
                         for (int iObject = 0; iObject < listCount; iObject++)
                         {
                             ListViewItem listViewItem = new ListViewItem(
-                                    this.Element.OwnerDocument.CreateElement("div"));
+                                    this.CreateElement());
                             if (this.itemCssClassName != null)
                             {
                                 listViewItem.Element.ClassName = this.itemCssClassName;
@@ -383,7 +383,7 @@ namespace Sunlight.Framework.UI
                 else
                 {
                     listViewItem = new ListViewItem(
-                        this.Element.OwnerDocument.CreateElement("li"));
+                        this.CreateElement());
                     if (this.itemCssClassName != null)
                     {
                         listViewItem.Element.ClassName = this.itemCssClassName;
@@ -420,6 +420,11 @@ namespace Sunlight.Framework.UI
                 item.Element.Remove();
                 item.Dispose();
             }
+        }
+
+        private Element CreateElement()
+        {
+            return this.Element.OwnerDocument.CreateElement(this.inlineItems ? "div" : "li");
         }
     }
 }

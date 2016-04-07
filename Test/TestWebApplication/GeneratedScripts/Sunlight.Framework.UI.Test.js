@@ -1810,7 +1810,7 @@ ptyp_.applyFixedList = function ListView__ApplyFixedList() {
       if (iObject < itemsCount)
         listViewItem = items.get_item(iObject);
       else {
-        listViewItem = ListViewItem_factory(this.get_element().ownerDocument.createElement("li"));
+        listViewItem = ListViewItem_factory(this.createElement());
         if (this.itemCssClassName !== null)
           listViewItem.get_element().className = this.itemCssClassName;
         if (!this.inlineItems)
@@ -1858,7 +1858,7 @@ ptyp_.observableListCollectionChanged = function ListView__ObservableListCollect
       if (changeIndex < items.get_count())
         insertBeforeElem = items.get_item(changeIndex).get_element();
       for (iObject = 0; iObject < listCount; iObject++) {
-        listViewItem = ListViewItem_factory(this.get_element().ownerDocument.createElement("div"));
+        listViewItem = ListViewItem_factory(this.createElement());
         if (this.itemCssClassName !== null)
           listViewItem.get_element().className = this.itemCssClassName;
         listViewItem.set_skin(this.itemSkin);
@@ -1909,7 +1909,7 @@ ptyp_.resetObservableItems = function ListView__ResetObservableItems() {
     if (iObject < itemsCount)
       listViewItem = this.items.get_item(iObject);
     else {
-      listViewItem = ListViewItem_factory(this.get_element().ownerDocument.createElement("li"));
+      listViewItem = ListViewItem_factory(this.createElement());
       if (this.itemCssClassName !== null)
         listViewItem.get_element().className = this.itemCssClassName;
       if (!this.inlineItems)
@@ -1932,6 +1932,9 @@ ptyp_.removeChildren = function ListView__RemoveChildren(changeIndex, delCount) 
     Node__Remove(item.get_element());
     item.dispose();
   }
+};
+ptyp_.createElement = function ListView__CreateElement() {
+  return this.get_element().ownerDocument.createElement(this.inlineItems ? "div" : "li");
 };
 ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
