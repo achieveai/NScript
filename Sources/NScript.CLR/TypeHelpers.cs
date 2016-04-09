@@ -350,6 +350,9 @@ namespace NScript.CLR
                 if (leftGeneric.GenericArguments.Count != rightGeneric.GenericArguments.Count)
                 { return false; }
 
+                if (!leftGeneric.ElementType.IsSame(rightGeneric.ElementType))
+                { return false; }
+
                 for (int genericIndex = 0; genericIndex < leftGeneric.GenericArguments.Count; genericIndex++)
                 {
                     if (!TypeHelpers.IsSame(
