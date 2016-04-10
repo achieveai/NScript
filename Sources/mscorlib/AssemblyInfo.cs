@@ -10,6 +10,6 @@
 [assembly: System.Reflection.AssemblyProduct("WebApps mscorlib")]
 [assembly: System.Reflection.AssemblyTrademark("")]
 [assembly: System.Reflection.AssemblyFileVersion("0.1.1.0")]
-[assembly: System.CLSCompliant(true)]
+[assembly: System.CLSCompliant(false)]
 [assembly: System.Reflection.AssemblyTitle("mscorlib")]
 

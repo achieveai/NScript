@@ -379,7 +379,9 @@ namespace XwmlParser.Binding
             else
             {
                 throw new ApplicationException(
-                    "Error parsing arguments, or method did not have match with arguments");
+                    string.Format(
+                        "Error parsing arguments, or method did not have match with arguments. BindingString: {0}",
+                        bindingStr));
             }
         }
 

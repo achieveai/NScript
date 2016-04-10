@@ -2987,7 +2987,7 @@ function NumberDictionary(TValue, $5fcallStatiConstructor) {
   };
   ptyp_.copyTo = function NumberDictionary$1__CopyTo(array, index) {
     var keys, i;
-    keys = this.get_keys();
+    keys = Type__CastType(ArrayG_$Number$_, this.get_keys());
     for (i = 0; i < keys.V_get_Length(); i++)
       array.setValue(i + index, Type__BoxTypeInstance(KeyValuePair$2_$Number_x_TValue$_, KeyValuePair$2_$Number_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
   };
@@ -3251,7 +3251,7 @@ function StringDictionary(TValue, $5fcallStatiConstructor) {
   };
   ptyp_.copyTo = function StringDictionary$1__CopyTo(array, index) {
     var keys, i;
-    keys = this.get_keys();
+    keys = Type__CastType(ArrayG_$String$_, this.get_keys());
     for (i = 0; i < keys.V_get_Length(); i++)
       array.setValue(i + index, Type__BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, KeyValuePair$2_$String_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
   };
