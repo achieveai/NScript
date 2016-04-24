@@ -640,39 +640,50 @@ namespace CssParser
 
         public CssPropertyValue ParsePropertyValue(ITree child)
         {
-            switch (child.Text)
+            try
             {
-                case "UNITEXPRS":
-                    return new CssPropertyValueSet(this.ParsePropertyValues(child));
-                case "UNIT_VAL":
-                    return this.ParseUnitValue(child);
-                case "IDENTIFIER":
-                    return new CssIdentifierPropertyValue(child.GetChild(0).Text);
-                case "STRING_VAL":
-                    return new CssStringPropertyValue(child.GetChild(0).Text);
-                case "FUNCTION":
-                    return this.ParseFunction(child);
-                case "URL_VAL":
-                    return new CssStringPropertyValue(child.GetChild(0).Text);
-                case "COLOR":
-                    return new CssColorPropertyValue(child.GetChild(0).Text);
-                case "CALC":
-                    return this.ParseCalcValue(child);
-                case "RGBA":
-                    {
-                        List<CssPropertyValue> rgbMethodArgs = new List<CssPropertyValue>();
-                        for (int iGrandChild = 0; iGrandChild < child.ChildCount; iGrandChild++)
+                switch (child.Text)
+                {
+                    case "UNITEXPRS":
+                        return new CssPropertyValueSet(this.ParsePropertyValues(child));
+                    case "UNIT_VAL":
+                        return this.ParseUnitValue(child);
+                    case "IDENTIFIER":
+                        return new CssIdentifierPropertyValue(child.GetChild(0).Text);
+                    case "STRING_VAL":
+                        return new CssStringPropertyValue(child.GetChild(0).Text);
+                    case "FUNCTION":
+                        return this.ParseFunction(child);
+                    case "URL_VAL":
+                        return new CssStringPropertyValue(child.GetChild(0).Text);
+                    case "COLOR":
+                        return new CssColorPropertyValue(child.GetChild(0).Text);
+                    case "CALC":
+                        return this.ParseCalcValue(child);
+                    case "RGBA":
                         {
-                            rgbMethodArgs.Add(
-                                new CssNumberPropertyValue(double.Parse(child.GetChild(iGrandChild).Text)));
-                        }
+                            List<CssPropertyValue> rgbMethodArgs = new List<CssPropertyValue>();
+                            for (int iGrandChild = 0; iGrandChild < child.ChildCount; iGrandChild++)
+                            {
+                                rgbMethodArgs.Add(
+                                    new CssNumberPropertyValue(double.Parse(child.GetChild(iGrandChild).Text)));
+                            }
 
-                        return new CssFunctionPropertyValue(
-                            rgbMethodArgs.Count == 4 ? "rgba" : "rgb",
-                            rgbMethodArgs);
-                    }
-                default:
-                    return null;
+                            return new CssFunctionPropertyValue(
+                                rgbMethodArgs.Count == 4 ? "rgba" : "rgb",
+                                rgbMethodArgs);
+                        }
+                    default:
+                        return null;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new ParseException(
+                    "Error parsing CSS ",
+                    child.Line,
+                    child.CharPositionInLine,
+                    ex);
             }
         }
 

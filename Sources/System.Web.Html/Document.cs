@@ -158,6 +158,8 @@ namespace System.Web.Html
         /// </returns>
         public extern Element CreateElement(string tagName);
 
+        public extern Element CreateElementNS(string ns, string tagName);
+
         /// <summary>
         /// Creates an event.
         /// </summary>
