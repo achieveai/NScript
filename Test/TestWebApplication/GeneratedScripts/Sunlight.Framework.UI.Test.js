@@ -1695,11 +1695,14 @@ function SkinBinderHelper__SetPropertyValue(binder, source, target, extraElement
   }
 };
 function SkinBinderHelper__TraversePropertyPath(binder, source) {
-  var iGetter, pathLength;
-  for (
-  iGetter = 0, pathLength = binder.propertyGetterPath.length; iGetter < pathLength; iGetter++)
+  var iGetter, pathLength, isStatic;
+  iGetter = 0, pathLength = binder.propertyGetterPath.length;
+  isStatic = (binder.binderType & 2) == 2;
+  for (; iGetter < pathLength && (isStatic && iGetter == 0 || !Object__IsNullOrUndefined(source)); iGetter++)
     source = binder.propertyGetterPath[iGetter](source);
-  if (binder.forwardConverter)
+  if (iGetter < pathLength)
+    return binder.defaultValue;
+  else if (binder.forwardConverter)
     source = binder.forwardConverter(source);
   return source;
 };

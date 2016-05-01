@@ -60,6 +60,9 @@ namespace NScript.Converter.ExpressionsConverter
                 return new JST.NumberLiteralExpression(scope, 0);
             }
 
+            if (typeReference.IsArray)
+            { return new JST.NullLiteralExpression(scope); }
+
             TypeDefinition typeDefinition = typeReference.Resolve();
 
             if (typeDefinition != null)

@@ -170,16 +170,15 @@ namespace Sunlight.Framework.UI.Helpers
             SkinBinderInfo binder,
             object source)
         {
-            for (int iGetter = 0, pathLength = binder.PropertyGetterPath.Length;
-                iGetter < pathLength; iGetter++)
-            {
-                source = binder.PropertyGetterPath[iGetter](source);
-            }
+            int iGetter = 0, pathLength = binder.PropertyGetterPath.Length;
+            bool isStatic = (binder.BinderType & BinderType.Static) == BinderType.Static;
+            for (;iGetter < pathLength && ((isStatic && iGetter == 0) || !object.IsNullOrUndefined(source)) ; iGetter++)
+            { source = binder.PropertyGetterPath[iGetter](source); }
 
-            if (binder.ForwardConverter != null)
-            {
-                source = binder.ForwardConverter(source);
-            }
+            if (iGetter < pathLength)
+            { return binder.DefaultValue; }
+            else if (binder.ForwardConverter != null)
+            { source = binder.ForwardConverter(source); }
 
             return source;
         }
