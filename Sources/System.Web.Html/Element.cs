@@ -336,7 +336,7 @@ namespace System.Web.Html
         /// Need support for static instance methods for filters. the return type is List&lt;
         /// VisualFilter&gt;
         /// </summary>
-        private extern NativeArray filters
+        private extern NativeArray<VisualFilter> filters
         { get; }
 
         /// <summary>
@@ -832,7 +832,9 @@ namespace System.Web.Html
         /// <returns>
         /// The client rects.
         /// </returns>
-        private extern NativeArray GetClientRects();
+        private extern NativeArray<ClientRect> GetClientRects();
+
+        public extern ClientRect GetBoundingClientRect();
 
         /// <summary>
         /// Gets the elements by class name internal.

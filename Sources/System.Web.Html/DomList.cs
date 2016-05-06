@@ -13,9 +13,9 @@ namespace System.Web.Html
     /// </summary>
     public sealed class DomList<T> : IList<T>
     {
-        NativeArray array;
+        NativeArray<T> array;
 
-        internal DomList(NativeArray array)
+        internal DomList(NativeArray<T> array)
         {
             this.array = array;
         }
@@ -26,7 +26,7 @@ namespace System.Web.Html
         {
             for (int j = this.array.Length, i = 0; i < j; i++)
             {
-                if (object.Equals(item, array.GetFrom<T>(i)))
+                if (object.Equals(item, array[i]))
                 {
                     return i;
                 }
@@ -54,7 +54,7 @@ namespace System.Web.Html
                     throw new Exception("index not in range");
                 }
 
-                return this.array.GetFrom<T>(index);
+                return this.array[index];
             }
             set
             {
@@ -85,7 +85,7 @@ namespace System.Web.Html
         {
             for (int i = 0; i < this.array.Length; i++)
             {
-                arr[index + i] = this.array.GetFrom<T>(i);
+                arr[index + i] = this.array[i];
             }
         }
 

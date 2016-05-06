@@ -57,5 +57,23 @@ namespace System.Web.Html
         /// </value>
         public extern double Top
         { get; }
+
+        /// <summary>
+        /// Gets the height.
+        /// </summary>
+        /// <value>
+        /// The height.
+        /// </value>
+        public extern double? Height
+        { get; }
+
+        /// <summary>
+        /// Gets the width.
+        /// </summary>
+        /// <value>
+        /// The width.
+        /// </value>
+        public extern double? Width
+        { get; }
     }
 }

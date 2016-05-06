@@ -36,7 +36,7 @@ namespace System.Web.Html
         /// <value>
         /// A List of files.
         /// </value>
-        private extern NativeArray Files
+        private extern NativeArray<File> Files
         { get; }
 
         /// <summary>

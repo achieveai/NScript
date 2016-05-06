@@ -106,7 +106,7 @@ namespace System.Web.Html
         /// <value>
         /// The attributes.
         /// </value>
-        private extern NativeArray Attributes
+        private extern NativeArray<NodeAttribute> Attributes
         { get; }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace System.Web.Html
         /// <value>
         /// The child nodes.
         /// </value>
-        private extern NativeArray ChildNodes
+        private extern NativeArray<Element> ChildNodes
         { get; }
 
         /// <summary>
@@ -249,6 +249,6 @@ namespace System.Web.Html
         /// The elements by tag name internal.
         /// </returns>
         [ScriptName("GetElementsByTagName")]
-        private extern NativeArray GetElementsByTagNameInternal(string tagName);
+        private extern NativeArray<Element> GetElementsByTagNameInternal(string tagName);
     }
 }
