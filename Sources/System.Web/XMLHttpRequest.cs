@@ -307,7 +307,7 @@ namespace System.Web
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(request.ResponseText, request.Status, false);
+                        cb(request.ResponseText, request.Status, request.Status >= 400);
                     };
 
                 request.OnError +=

@@ -54,3 +54,6 @@ Test/TestWebApplication/GeneratedScripts/System.Web.Html.Tests.map
 /TDSparser/TDSparser/*.js.map
 /TDSparser/TsParser/*.js
 /TDSparser/TsParser/*.js.map
+*.vspx
+*.diagsession
+*.psess
