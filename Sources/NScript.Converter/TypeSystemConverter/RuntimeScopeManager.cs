@@ -1453,12 +1453,14 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Identifier for the method that points to virtual function.</returns>
         private IIdentifier ResolveVirtualMethodHelper(MethodReference methodReference)
         {
+            var methodDefinition = methodReference.Resolve();
+
             this.usedTypeReferencesToProcess.Enqueue(methodReference.DeclaringType);
             this.usedMembersToProcess.Enqueue(methodReference);
             this.virtualMethodReferencesUsed.Add(methodReference);
-            this.virtualMethodsUsed.Add(methodReference.Resolve());
+            this.virtualMethodsUsed.Add(methodDefinition);
 
-            return this.GetTypeScope(methodReference.DeclaringType).ResolveVirtualMethod(methodReference);
+            return this.GetTypeScope(methodReference.DeclaringType).ResolveVirtualMethod(methodDefinition);
         }
 
         /// <summary>

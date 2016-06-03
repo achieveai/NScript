@@ -358,6 +358,27 @@ namespace NScript.CLR
             return methodReference;
         }
 
+        public MethodReference GetBaseSlotForVirtual(MethodReference methodReference)
+        {
+            var methodDefinition = methodReference.Resolve();
+            if (methodDefinition.IsNewSlot)
+            { return methodReference; }
+
+            var baseTypeRef = methodReference.DeclaringType.GetBaseType();
+            while (baseTypeRef != null)
+            {
+                foreach (var overridable in this.GetVirtualOverridables(baseTypeRef.Resolve()))
+                {
+                    if (methodReference.IsOverriding(overridable, baseTypeRef))
+                    { return overridable; }
+                }
+
+                baseTypeRef = baseTypeRef.GetBaseType();
+            }
+
+            throw new InvalidProgramException();
+        }
+
         /// <summary>
         /// Gets the virtual overridables. The method is the method that creates the slot
         /// and not the method in passed in typeDefinition.

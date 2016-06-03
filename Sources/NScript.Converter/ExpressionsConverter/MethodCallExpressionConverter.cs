@@ -248,10 +248,14 @@ namespace NScript.Converter.ExpressionsConverter
             RuntimeScopeManager runtimeManager)
         {
             MethodReference methodReference = callContext.Method;
+
+            // Compiler generated code won't go in here. It's template parser generated code that
+            // goes in this.
+            if (callContext.IsVirtual)
+            { methodReference = runtimeManager.Context.ClrContext.GetBaseSlotForVirtual(methodReference); }
+
             if (methodReference.HasThis && callContext.ThisExpression == null)
-            {
-                throw new ArgumentNullException("thisExpression should not be null");
-            }
+            { throw new ArgumentNullException("thisExpression should not be null"); }
 
             GenericInstanceMethod genericMethod = methodReference as GenericInstanceMethod;
             List<JST.Expression> genericArguments = new List<JST.Expression>();
