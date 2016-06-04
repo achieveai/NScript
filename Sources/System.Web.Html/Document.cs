@@ -6,7 +6,8 @@
 
 namespace System.Web.Html
 {
-    using System.Runtime.CompilerServices;
+    using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Document.
@@ -384,5 +385,56 @@ namespace System.Web.Html
         /// </returns>
         [ScriptName("querySelectorAll")]
         public extern NativeArray<Element> QuerySelectorAll(string selector);
+
+        public StringDictionary<string> GetCookies()
+        {
+            var rv = new StringDictionary<string>();
+
+            var cookieParts = this.Cookie.Split(';');
+            for (int iPart = cookieParts.Length - 1; iPart >= 0; iPart--)
+            {
+                var singleCookieParts = cookieParts[iPart].Split('=');
+                if (singleCookieParts.Length == 0)
+                { continue; }
+
+                var cookieName = singleCookieParts[0];
+                var cookieValue = singleCookieParts[1];
+
+                if (cookieName[0] == ' ')
+                { cookieName = cookieName.Substring(1); }
+
+                rv.Add(cookieName, cookieValue);
+            }
+
+            return rv;
+        }
+
+        public void SetCookie(
+            string cookieName,
+            string value,
+            float days = 0,
+            string path = "/")
+        {
+            string expires;
+            if (days > 0)
+            {
+                var date = new DateTime();
+                date.SetTime(date.GetTime() + (int)(days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.ToUTCString();
+            }
+            else { expires = ""; }
+
+            this.Cookie = cookieName
+                + "=" + value + expires
+                + (!string.IsNullOrEmpty(path) ? "; path=" + path : "path=/");
+        }
+
+        public void DeleteCookie(string cookieName, string path = null, string domain = null)
+        {
+            this.Cookie = cookieName + "=" +
+                ((!string.IsNullOrEmpty(path)) ? ";path="+path:string.Empty)+
+                ((!string.IsNullOrEmpty(domain))?";domain="+domain:string.Empty) +
+                ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        }
     }
 }
