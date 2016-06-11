@@ -86,6 +86,11 @@ namespace NScript.JSParser
                 identifier,
                 false);
 
+            if (this.scopeDictionaries[0].ContainsKey(identifier))
+            {
+                throw new InvalidProgramException(
+                    string.Format("{0} declared twice", identifier));
+            }
             this.scopeDictionaries[0].Add(identifier, rv);
 
             return rv;

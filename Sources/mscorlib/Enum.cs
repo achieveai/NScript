@@ -9,18 +9,24 @@
         }
 
         [Script(@"
-            var rv = type.@{[mscorlib]System.Type::enumLowerStrToValueMap}[s];
+            var rv = type.@{[mscorlib]System.Type::enumStrToValueMap}[s];
             if (rv === undefined) {
-                throw ""Can't parse "" + s + "" as enum"";
+                rv = type.@{[mscorlib]System.Type::enumLowerStrToValueMap}[s.toLowerCase()];
+                if (rv === undefined) {
+                    throw ""Can't parse "" + s + "" as enum"";
+                }
             }
             return rv;
             ")]
         public extern static Enum Parse(Type type, string s);
 
         [Script(@"
-            var rv = T.@{[mscorlib]System.Type::enumLowerStrToValueMap}[s];
+            var rv = T.@{[mscorlib]System.Type::enumStrToValueMap}[s];
             if (rv === undefined) {
-                throw ""Can't parse "" + s + "" as enum"";
+                rv = T.@{[mscorlib]System.Type::enumLowerStrToValueMap}[s.toLowerCase()];
+                if (rv === undefined) {
+                    throw ""Can't parse "" + s + "" as enum"";
+                }
             }
             return rv;
             ")]
