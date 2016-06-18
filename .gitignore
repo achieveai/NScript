@@ -57,3 +57,4 @@ Test/TestWebApplication/GeneratedScripts/System.Web.Html.Tests.map
 *.vspx
 *.diagsession
 *.psess
+TDSparser/TDSparser/HammerJs.cs
