@@ -1680,6 +1680,13 @@ namespace NScript.Converter.TypeSystemConverter
             EventDefinition eventDefinition = (EventDefinition)this.methodDefinition.GetAssociatedMember();
             string eventName = eventDefinition.Name;
 
+            var attr = TypeHelpers.SelectAttribute(
+                eventDefinition.CustomAttributes,
+                KnownReferences.ScriptNameAttribute);
+
+            if (attr != null)
+            { return (string)attr.ConstructorArguments[0].Value; }
+
             if (eventName.StartsWith("On")
                 && eventName.Length > 3
                 && char.IsUpper(eventName, 2))

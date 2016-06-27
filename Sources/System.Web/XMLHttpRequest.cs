@@ -171,7 +171,7 @@ namespace System.Web
             XMLHttpRequest.GetRaw(
                 url,
                 (request, code, error) =>
-                { cb(error ? null : (NativeArray<T>)request.Response, code, error); },
+                { if (cb != null) cb(error ? null : (NativeArray<T>)request.Response, code, error); },
                 XMLHttpRequest.ArrayBufferType,
                 acceptType,
                 headerPair,
@@ -193,7 +193,7 @@ namespace System.Web
             XMLHttpRequest.GetRaw(
                 url,
                 (request, code, error) =>
-                { cb(error ? null : (Blob)request.Response, code, error); },
+                { if (cb != null) cb(error ? null : (Blob)request.Response, code, error); },
                 XMLHttpRequest.BlobType,
                 acceptType,
                 headerPair,
@@ -214,7 +214,7 @@ namespace System.Web
         {
             XMLHttpRequest.GetRaw(
                 url,
-                (request, code, error) => { cb(error ? null : request.ResponseText, code, error); },
+                (request, code, error) => { if (cb != null) cb(error ? null : request.ResponseText, code, error); },
                 null,
                 acceptType,
                 headerPair,
@@ -254,14 +254,16 @@ namespace System.Web
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(request, request.Status, request.Status >= 400);
+                        if (cb != null)
+                        { cb(request, request.Status, request.Status >= 400); }
                     };
 
                 Action<XMLHttpRequest, ProgressEvent> errorCb = 
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(request, request.Status, true);
+                        if (cb != null)
+                        { cb(request, request.Status, true); }
                     };
 
                 request.OnError += errorCb;
@@ -307,14 +309,16 @@ namespace System.Web
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(request.ResponseText, request.Status, request.Status >= 400);
+                        if (cb != null)
+                        { cb(request.ResponseText, request.Status, request.Status >= 400); }
                     };
 
                 request.OnError +=
                     (s, e) =>
                     {
                         EventBinder.CleanUp(request);
-                        cb(null, request.Status, true);
+                        if (cb != null)
+                        { cb(null, request.Status, true); }
                     };
             }
 
