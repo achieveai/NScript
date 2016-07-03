@@ -762,18 +762,18 @@ namespace NScript.Converter
                 isFixedName = true;
                 return (string)attribute.ConstructorArguments[0].Value;
             }
+            else if ((attribute = memberDefinition.CustomAttributes.SelectAttribute(
+                this.KnownReferences.PreserveCaseAttribute)) != null)
+            {
+                isFixedName = true;
+                return memberDefinition.Name;
+            }
             else if (memberDefinition.CustomAttributes.SelectAttribute(
                 this.KnownReferences.PreserveNameAttribute) != null)
             {
                 isFixedName = true;
                 return char.ToLowerInvariant(memberDefinition.Name[0])
                     + memberDefinition.Name.Substring(1);
-            }
-            else if ((attribute = memberDefinition.CustomAttributes.SelectAttribute(
-                this.KnownReferences.PreserveCaseAttribute)) != null)
-            {
-                isFixedName = true;
-                return memberDefinition.Name;
             }
             else if (
                 (!this.IsImplemented(memberDefinition)
@@ -801,21 +801,30 @@ namespace NScript.Converter
 
                 if (propertyDefinition != null)
                 {
-                    attribute = propertyDefinition.CustomAttributes.SelectAttribute(
-                        this.KnownReferences.ScriptAliasAttribute);
-
-                    if (attribute != null)
+                    if ((attribute = propertyDefinition.CustomAttributes.SelectAttribute(
+                        this.KnownReferences.ScriptAliasAttribute)) != null)
                     {
                         isAlias = true;
                         return (string)attribute.ConstructorArguments[0].Value;
                     }
-
-                    attribute = propertyDefinition.CustomAttributes.SelectAttribute(
-                            this.KnownReferences.ScriptNameAttribute);
-
-                    if (attribute != null)
+                    else if ((attribute = propertyDefinition.CustomAttributes.SelectAttribute(
+                            this.KnownReferences.ScriptNameAttribute)) != null)
                     {
+                        isFixedName = true;
                         return (string)attribute.ConstructorArguments[0].Value;
+                    }
+                    else if ((attribute = propertyDefinition.CustomAttributes.SelectAttribute(
+                        this.KnownReferences.PreserveCaseAttribute)) != null)
+                    {
+                        isFixedName = true;
+                        return propertyDefinition.Name;
+                    }
+                    else if (propertyDefinition.CustomAttributes.SelectAttribute(
+                        this.KnownReferences.PreserveNameAttribute) != null)
+                    {
+                        isFixedName = true;
+                        return char.ToLowerInvariant(propertyDefinition.Name[0])
+                            + propertyDefinition.Name.Substring(1);
                     }
 
                     if (propertyDefinition.DeclaringType.FullName == "System.Number")

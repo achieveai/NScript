@@ -165,6 +165,9 @@ namespace NScript.JST
             bool enforceSuggestion,
             bool dontEscape = false)
         {
+            if (suggestedName == "pLAYING")
+            { }
+
             if (enforceSuggestion && suggestedName == null)
             {
                 throw new ArgumentException("suggestedName");
@@ -278,6 +281,9 @@ namespace NScript.JST
         /// <returns>Name to be written in script</returns>
         public string GetName()
         {
+            if (this.suggestedName.ToLowerInvariant() == "playing")
+            { }
+
             if (this.enforceSuggestion)
             {
                 return this.SuggestedName;

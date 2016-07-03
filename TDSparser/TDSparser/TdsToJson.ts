@@ -431,7 +431,7 @@ export function makeJson(sourceFile: ts.SourceFile): ParsedNode[]{
         return rv;
     }
 
-    function variableStatementToJson(node: ts.VariableStatement): any {
+    function variableStatementToJson(node: ts.VariableStatement): Variable[] {
         let variables: Variable[] = [];
         let declList = node.declarationList;
         for (let iDecl = 0; iDecl < declList.declarations.length; ++iDecl) {
@@ -482,6 +482,10 @@ export function makeJson(sourceFile: ts.SourceFile): ParsedNode[]{
         let variables: Variable[] = [];
 
         let name = modDecl.name.text;
+        while (modDecl.body.kind == ts.SyntaxKind.ModuleDeclaration) {
+            modDecl = <ts.ModuleDeclaration>modDecl.body;
+            name = name + "." + modDecl.name.text;
+        }
 
         var stmts = (<ts.ModuleBlock>modDecl.body).statements;
         for (let iStmt = 0; iStmt < stmts.length; iStmt++) {
@@ -497,7 +501,7 @@ export function makeJson(sourceFile: ts.SourceFile): ParsedNode[]{
                     classes.push(classDeclToJson(<ts.ClassDeclaration>stmt));
                     break;
                 case ts.SyntaxKind.VariableStatement:
-                    variables = variables.concat(<any[]>variableStatementToJson(<ts.VariableStatement>stmt).variables);
+                    variables = variables.concat(variableStatementToJson(<ts.VariableStatement>stmt));
                     break;
                 default:
                     break;

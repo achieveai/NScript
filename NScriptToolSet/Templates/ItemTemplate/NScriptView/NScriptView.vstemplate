@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+	<Name>NScript View/Control class with views etc.</Name>
+    <Description>Empty NScript ViewModel class with view.</Description>
+    <Icon Package="{FAE04EC1-301F-11d3-BF4B-00C04F79EFBC}" ID="4515" />
+    <TemplateID>Microsoft.CSharp.Class</TemplateID>
+    <ProjectType>CSharp</ProjectType>
+    <SortOrder>90</SortOrder>
+    <RequiredFrameworkVersion>2.0</RequiredFrameworkVersion>
+    <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+    <DefaultName>NScriptView.cs</DefaultName>
+  </TemplateData>
+  <TemplateContent>
+    <ProjectItem ReplaceParameters="true" ItemType="Compile" TargetFileName="$fileinputname$View.cs">NScriptView.cs</ProjectItem>
+    <ProjectItem ReplaceParameters="true" ItemType="DotLess"          TargetFileName="$fileinputname$View.cs\$fileinputname$View.less">NScriptView.less</ProjectItem>
+    <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource" TargetFileName="$fileinputname$View.cs\$fileinputname$View.html">NScriptView.html</ProjectItem>
+    <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource" TargetFileName="$fileinputname$View.cs\$fileinputname$View.less\$fileinputname$View.css">NScriptView.css</ProjectItem>
+    <References>
+      <Reference Include="System.Web.dll">
+        <HintPath>$(NScriptToolSetPath)\lib\System.Web.dll</HintPath>
+      </Reference>
+      <Reference Include="System.Web.Html.dll">
+        <HintPath>$(NScriptToolSetPath)\lib\System.Web.Html.dll</HintPath>
+      </Reference>
+      <Reference Include="Sunlight.Framework">
+        <HintPath>$(NScriptToolSetPath)\lib\Sunlight.Framework.dll</HintPath>
+      </Reference>
+      <Reference Include="Sunlight.Framework.UI">
+        <HintPath>$(NScriptToolSetPath)\lib\Sunlight.Framework.UI.dll</HintPath>
+      </Reference>
+    </References>
+  </TemplateContent>
+</VSTemplate>

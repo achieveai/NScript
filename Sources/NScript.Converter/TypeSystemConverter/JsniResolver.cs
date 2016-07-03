@@ -59,10 +59,20 @@ namespace NScript.Converter.TypeSystemConverter
 
                 if (identifier == null)
                 {
-                    throw new ApplicationException(
-                        string.Format("Can't resolve local variable {0} in script for {1}",
-                            identifierName,
-                            this.converter.MethodDefinition));
+                    if (identifierName.StartsWith("@:"))
+                    {
+                        identifier = SimpleIdentifier.CreateScopeIdentifier(
+                            this.converter.RuntimeManager.Scope,
+                            identifierName.Substring(2),
+                            true);
+                    }
+                    else
+                    {
+                        throw new ApplicationException(
+                            string.Format("Can't resolve local variable {0} in script for {1}",
+                                identifierName,
+                                this.converter.MethodDefinition));
+                    }
                 }
             }
 

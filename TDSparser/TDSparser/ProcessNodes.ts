@@ -343,20 +343,37 @@ var processed: { [idx: string]: ParsedNode } = {};
 export function ProcessPass1(nodes: ParsedNode[], moduleName: string = null) {
     for (var i = 0; i < nodes.length; ++i) {
         var node = nodes[i];
+        var prependName = moduleName ? moduleName + "." : "";
         switch (node._t) {
             case ts.SyntaxKind.ClassDeclaration:
                 var typeDecl = <TypeDecl>node;
                 instanceIFaces.push(typeDecl);
                 classIFaces.push({
-                    name: typeDecl.name,
+                    name: prependName + typeDecl.name,
                     iface: typeDecl
                 });
 
-                typeNames[typeDecl.name] = typeDecl;
+                typeNames[prependName + typeDecl.name] = typeDecl;
                 break;
             case ts.SyntaxKind.InterfaceDeclaration:
                 var typeDecl = <TypeDecl>node;
-                typeNames[typeDecl.name] = typeDecl;
+                typeNames[prependName + typeDecl.name] = typeDecl;
+                break;
+            case ts.SyntaxKind.ModuleDeclaration:
+                var modDecl = <Module>node;
+                ProcessPass1(
+                    modDecl.classes.concat(modDecl.ifaces),
+                    prependName + modDecl.name);
+
+                ProcessPass1(
+                    modDecl.subModules,
+                    prependName + modDecl.name);
+
+                ProcessPass1(
+                    modDecl.variables,
+                    prependName + modDecl.name);
+                break;
+            case ts.SyntaxKind.VariableDeclaration:
                 break;
         }
     }
@@ -390,17 +407,23 @@ var delegates: { name: string, del: Delegate }[];
 export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
     for (var i = 0; i < nodes.length; ++i) {
         var node = nodes[i];
+        var prependName = moduleName ? moduleName + "." : "";
         switch (node._t) {
             case ts.SyntaxKind.VariableDeclaration:
                 var varDecl = <Variable>node;
-                declarationQueue.push({ fullName: varDecl.name, vartype: varDecl.varType, name: varDecl.name, parentClass: null });
+                declarationQueue.push({
+                    fullName: prependName + varDecl.name,
+                    vartype: varDecl.varType,
+                    name: varDecl.name,
+                    parentClass: null
+                });
                 break;
             case ts.SyntaxKind.ClassDeclaration:
                 var typeDecl = <TypeDecl>node;
-                processed[typeDecl.name] = typeDecl;
+                processed[prependName + typeDecl.name] = typeDecl;
                 classes.push(
                     new Class(
-                        typeDecl.name,
+                        prependName + typeDecl.name,
                         false,
                         null,
                         typeDecl
@@ -408,19 +431,38 @@ export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
                 break;
             case ts.SyntaxKind.MethodDeclaration:
                 var methodDec = <CoreMemberMethodDecl>node;
-                processed[methodDec.name] = methodDec;
+                processed[prependName + methodDec.name] = methodDec;
                 delegates.push(
                     {
-                        name: methodDec.name,
+                        name: prependName + methodDec.name,
                         del: new Delegate(Method.CreateMethods(methodDec))
                     });
+                break;
+            case ts.SyntaxKind.ModuleDeclaration:
+                var modDecl = <Module>node;
+                ProcessPass2(
+                    modDecl.classes.concat(modDecl.ifaces),
+                    prependName + modDecl.name);
+
+                ProcessPass2(
+                    modDecl.subModules,
+                    prependName + modDecl.name);
+
+                ProcessPass2(
+                    modDecl.variables,
+                    prependName + modDecl.name);
                 break;
         }
     }
 
     while (declarationQueue.length > 0) {
         var entry = declarationQueue.shift();
-        var classPair = GetStaticClassInterfacePair(typeNames[entry.vartype.name]);
+        var typeInfo = typeNames[entry.vartype.name];
+        if (!typeInfo) {
+            continue;
+        }
+
+        var classPair = GetStaticClassInterfacePair(typeInfo);
         if (classPair == null) {
             continue;
         }
@@ -479,7 +521,7 @@ export function ProcessPass2(nodes: ParsedNode[], moduleName: string = null) {
             switch (typeNames[key]._t) {
                 case ts.SyntaxKind.InterfaceDeclaration:
                     var typeDecl = <TypeDecl>typeNames[key];
-                    processed[typeDecl.name] = typeDecl;
+                    processed[key] = typeDecl;
                     classes.push(
                         new Class(
                             typeDecl.name,

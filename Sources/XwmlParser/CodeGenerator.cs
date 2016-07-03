@@ -199,19 +199,23 @@ namespace XwmlParser
                 foreach (var resource in module.Resources)
                 {
                     EmbeddedResource embeddedResource = resource as EmbeddedResource;
-                    if (embeddedResource != null
-                        && (resource.Name.EndsWith(".html")
-                            || resource.Name.EndsWith(".htm")
-                            || resource.Name.EndsWith(".xhtml")
-                            || resource.Name.EndsWith(".xml")
-                            || resource.Name.EndsWith(".css")
-                            || resource.Name.EndsWith(".less")))
+                    if (embeddedResource == null) { continue; }
+
+                    var fileName = scopeManager.Context.GetResourceFileName(
+                        module,
+                        embeddedResource.Name);
+
+                    if (fileName != null
+                        && (fileName.EndsWith(".html")
+                            || fileName.EndsWith(".htm")
+                            || fileName.EndsWith(".xhtml")
+                            || fileName.EndsWith(".xml")
+                            || fileName.EndsWith(".css")
+                            || fileName.EndsWith(".less")))
                     {
                         this.AddResource(
                             embeddedResource,
-                            (string)this.scopeManager.Context.GetResourceFileName(
-                                module,
-                                resource.Name));
+                            (string)fileName);
                     }
                 }
             }
@@ -294,9 +298,7 @@ namespace XwmlParser
 
             MethodReference methodRef = propertyReference.Resolve().SetMethod;
             if (methodRef == null)
-            {
-                throw new InvalidOperationException();
-            }
+            { throw new ApplicationException(string.Format("PropertySetter not found for {0}", propertyReference)); }
             
             methodRef = methodRef.FixGenericTypeArguments(
                 propertyReference.DeclaringType);
