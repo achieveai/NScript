@@ -282,7 +282,7 @@
         /// </returns>
         public extern string ToTimeString();
 
-        public extern string ToUTCString();
+        public extern string ToGMTString();
 
         [PreserveCase]
         public extern static int UTC(int year, int month, int day);
