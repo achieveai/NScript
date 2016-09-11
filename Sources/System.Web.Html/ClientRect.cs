@@ -11,17 +11,9 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for ClientRect.
     /// </summary>
-    [IgnoreNamespace]
+    [JsonType]
     public sealed class ClientRect
     {
-        /// <summary>
-        /// Gets the client rectangle.
-        /// </summary>
-        /// <returns>
-        /// .
-        /// </returns>
-        private extern ClientRect();
-
         /// <summary>
         /// Gets the bottom.
         /// </summary>
