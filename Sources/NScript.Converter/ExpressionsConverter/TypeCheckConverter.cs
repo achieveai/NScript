@@ -53,7 +53,7 @@ namespace NScript.Converter.ExpressionsConverter
             if (expression.CheckType == TypeCheckType.CastType
                 && expression.ResultType.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType))
             {
-                if (!TypeCheckConverter.ReferenceEquals(
+                if (TypeCheckConverter.ReferenceEquals(
                     ((GenericInstanceType)expression.ResultType).GenericArguments[0],
                     expression.Expression.ResultType))
                 {

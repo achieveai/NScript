@@ -413,28 +413,30 @@ using System.Runtime.CompilerServices;
             string cookieName,
             string value,
             float days = 0,
-            string path = "/")
+            string path = "/",
+            string domain = null)
         {
             string expires;
             if (days > 0)
             {
                 var date = new DateTime();
                 date.SetTime(date.GetTime() + (int)(days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.ToUTCString();
+                expires = "; expires=" + date.ToGMTString();
             }
             else { expires = ""; }
 
             this.Cookie = cookieName
                 + "=" + value + expires
-                + (!string.IsNullOrEmpty(path) ? "; path=" + path : "path=/");
+                + ";path=" + (!string.IsNullOrEmpty(path) ? path : "/")
+                + (!string.IsNullOrEmpty(domain) ? ";domain=" + domain : string.Empty);
         }
 
-        public void DeleteCookie(string cookieName, string path = null, string domain = null)
+        public void DeleteCookie(string cookieName, string path = "/", string domain = null)
         {
-            this.Cookie = cookieName + "=" +
-                ((!string.IsNullOrEmpty(path)) ? ";path="+path:string.Empty)+
-                ((!string.IsNullOrEmpty(domain))?";domain="+domain:string.Empty) +
-                ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
+            this.Cookie = cookieName + "=;path=" +
+                ((!string.IsNullOrEmpty(path)) ? path : "/") +
+                ((!string.IsNullOrEmpty(domain)) ? ";domain=" + domain : string.Empty) +
+                ";expires=" + new DateTime(0).ToGMTString();
         }
     }
 }
