@@ -15,8 +15,8 @@
     <AssemblyName>$safeprojectname$</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\NScript)</NScriptToolSetPath>
-    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\NScript)</NScriptToolSetPath>
+    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\NScript)</NScriptToolSetPath>
+    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\NScript)</NScriptToolSetPath>
     <OutputPath>$(ProjectDir)bin\$(Configuration)</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

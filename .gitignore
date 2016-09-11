@@ -58,3 +58,4 @@ Test/TestWebApplication/GeneratedScripts/System.Web.Html.Tests.map
 *.diagsession
 *.psess
 TDSparser/TDSparser/HammerJs.cs
+*.un~

@@ -24,7 +24,7 @@ namespace $rootnamespace$
         /// <value>
         /// The default skin.
         /// </value>
-        [Skin("$rootnamespace$.$safeitemrootname$View.html:DefaultSkin")]
+        [Skin("$rootnamespace$.$safeitemrootname$:DefaultSkin")]
         public static Skin DefaultSkin
         { get { return null; } }
     }

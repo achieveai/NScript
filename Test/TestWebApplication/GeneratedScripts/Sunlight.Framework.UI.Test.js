@@ -2728,9 +2728,6 @@ function ArrayG(T, $5fcallStatiConstructor) {
     ArrayG$1_$T$_.$5ftri();
   return ArrayG$1_$T$_;
 };
-function NativeArray$1__Pop(this_) {
-  return this_.pop();
-};
 function NativeArray$1__Push(this_, value) {
   return this_.push(value);
 };
@@ -3044,8 +3041,12 @@ function Queue(T, $5fcallStatiConstructor) {
     return this.getEnumerator();
   };
   ptyp_.dequeue = function Queue$1__Dequeue() {
-    if (this.get_count() > 0)
-      return NativeArray$1__Pop(this.nativeArray);
+    var rv;
+    if (this.get_count() > 0) {
+      rv = this.nativeArray[0];
+      NativeArray$1__RemoveAt(this.nativeArray, 0);
+      return rv;
+    }
     throw new Error("No elements in stack");
   };
   ptyp_.enqueue = function Queue$1__Enqueue(item) {

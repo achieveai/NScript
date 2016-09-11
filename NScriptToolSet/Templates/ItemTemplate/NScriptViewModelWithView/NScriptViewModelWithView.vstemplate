@@ -12,10 +12,10 @@
     <DefaultName>NScriptViewModel.cs</DefaultName>
   </TemplateData>
   <TemplateContent>
-    <ProjectItem ReplaceParameters="true" ItemType="Compile" TargetFileName="$fileinputname$VM.cs">NScriptViewModel.cs</ProjectItem>
-    <ProjectItem ReplaceParameters="true" ItemType="DotLess"          TargetFileName="$fileinputname$VM.cs\$fileinputname$View.less">NScriptView.less</ProjectItem>
-    <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource" TargetFileName="$fileinputname$VM.cs\$fileinputname$View.html">NScriptView.html</ProjectItem>
-    <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource" TargetFileName="$fileinputname$VM.cs\$fileinputname$View.less\$fileinputname$View.css">NScriptView.css</ProjectItem>
+    <ProjectItem ReplaceParameters="true" ItemType="Compile" TargetFileName="$fileinputname$ViewModel.cs">NScriptViewModel.cs</ProjectItem>
+    <ProjectItem ReplaceParameters="true" ItemType="DotLess"          TargetFileName="$fileinputname$ViewModel.cs\$fileinputname$View.less">NScriptView.less</ProjectItem>
+    <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource" TargetFileName="$fileinputname$ViewModel.cs\$fileinputname$View.html">NScriptView.html</ProjectItem>
+    <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource" TargetFileName="$fileinputname$ViewModel.cs\$fileinputname$View.less\$fileinputname$View.css">NScriptView.css</ProjectItem>
     <References>
       <Reference Include="System.Web.dll">
         <HintPath>$(NScriptToolSetPath)\lib\System.Web.dll</HintPath>

@@ -377,8 +377,15 @@ namespace System.Web.Html
         /// </summary>
         /// <param name="data">           The data. </param>
         /// <param name="targetOrigin">   Target origin. </param>
+        public extern void PostMessage(object data, string targetOrigin);
+
+        /// <summary>
+        /// Posts a message.
+        /// </summary>
+        /// <param name="data">           The data. </param>
+        /// <param name="targetOrigin">   Target origin. </param>
         /// <param name="transferObject"> (optional) the transfer object. </param>
-        public extern void PostMessage(object data, string targetOrigin, object transferObject = null);
+        public extern void PostMessage(object data, string targetOrigin, params object[] transferObjects);
 
         /// <summary>
         /// Closes this object.

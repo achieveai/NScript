@@ -39,7 +39,9 @@ namespace System.Collections.Generic
         {
             if (this.Count > 0)
             {
-                return this.nativeArray.Pop();
+                var rv = this.nativeArray[0];
+                this.nativeArray.RemoveAt(0);
+                return rv;
             }
 
             throw new Exception("No elements in stack");
