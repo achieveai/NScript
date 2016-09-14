@@ -394,7 +394,7 @@ using System.Runtime.CompilerServices;
             for (int iPart = cookieParts.Length - 1; iPart >= 0; iPart--)
             {
                 var singleCookieParts = cookieParts[iPart].Split('=');
-                if (singleCookieParts.Length == 0)
+                if (singleCookieParts.Length <= 1)
                 { continue; }
 
                 var cookieName = singleCookieParts[0];

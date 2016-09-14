@@ -1,5 +1,5 @@
 ﻿(function(){
-var ManualTemplateTests__noneValue, ValueIfTrue_$String$_, String__formatHelperRegex, String__trimStartHelperRegex, String__trimEndHelperRegex, LiveBinderTests__oneWayBinder, ArrayG_$Func_$Object_x_Object$_$_, ArrayG_$String$_, LiveBinderTests__twoWayBinder, LiveBinderTests__oneWayMultiBinder, LiveBinderTests__twoWayMultiBinder, ArrayG_$SkinBinderInfo$_, ArrayG_$Object$_, ArrayG_$TestViewModelB$_, Type__typeMapping, NumberDictionary_$Task$_, Queue_$Task$_, TaskScheduler__instance, List_$ListViewItem$_, StringDictionary_$Action_$UIEvent$_$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$Function$_, KeyValuePair_$String_x_Action_$UIEvent$_$_, ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, Func_$Object_x_Object$_, KeyValuePair_$Number_x_Task$_, Action_$UIEvent$_, Action_$INotifyPropertyChanged_x_String$_, KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, KeyValuePair_$String_x_Function$_, StringDictionary_$Int32$_, KeyValuePair_$String_x_Int32$_;
+var ManualTemplateTests__noneValue, ValueIfTrue_$String$_, String__formatHelperRegex, String__trimStartHelperRegex, String__trimEndHelperRegex, LiveBinderTests__oneWayBinder, ArrayG_$Func_$Object_x_Object$_$_, ArrayG_$String$_, LiveBinderTests__twoWayBinder, LiveBinderTests__oneWayMultiBinder, LiveBinderTests__twoWayMultiBinder, ArrayG_$SkinBinderInfo$_, ArrayG_$Object$_, ArrayG_$TestViewModelB$_, Type__typeMapping, NumberDictionary_$Task$_, Queue_$Task$_, TaskScheduler__instance, List_$ListViewItem$_, StringDictionary_$Action_$UIEvent$_$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$Function$_, KeyValuePair_$String_x_Action_$UIEvent$_$_, List_$Object$_, ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, Func_$Object_x_Object$_, KeyValuePair_$Number_x_Task$_, Action_$UIEvent$_, Action_$INotifyPropertyChanged_x_String$_, KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, KeyValuePair_$String_x_Function$_, StringDictionary_$Int32$_, KeyValuePair_$String_x_Int32$_;
 Function.typeId = "o";
 Type__typeMapping = null;
 function Type__CastType(this_, instance) {
@@ -1462,8 +1462,10 @@ ptyp_.__ctor3 = function UISkinableElement____ctor(element) {
 ptyp_.set_skin = function UISkinableElement__set_Skin(value) {
   if (this.skin != value) {
     this.skin = value;
-    if (this.skin && this.get_isActive())
+    if (this.skin && this.get_isActive()) {
+      this.get_element().setAttribute("skin-id", this.skin.get_id());
       this.set_skinInstance(this.skin.createInstance());
+    }
     this.firePropertyChanged("Skin");
   }
 };
@@ -1740,9 +1742,11 @@ ptyp_.fixedList = null;
 ptyp_.itemSkin = null;
 ptyp_.itemCssClassName = null;
 ptyp_.inlineItems = false;
+ptyp_.topN = 0;
 ptyp_.__ctor3 = function ListView____ctor(element) {
   this.__ctor2(element);
   this.items = List_$ListViewItem$_.defaultConstructor();
+  this.topN = 1073741824;
 };
 ptyp_.set_fixedList = function ListView__set_FixedList(value) {
   if (value && this.observableList)
@@ -1808,7 +1812,7 @@ ptyp_.applyFixedList = function ListView__ApplyFixedList() {
   }
   if (this.get_isActive()) {
     fixedList = this.fixedList;
-    fixedListCount = fixedList.V_get_Count_c();
+    fixedListCount = Math.min(fixedList.V_get_Count_c(), this.topN);
     for (iObject = 0; iObject < fixedListCount; iObject++) {
       if (iObject < itemsCount)
         listViewItem = items.get_item(iObject);
@@ -1849,65 +1853,97 @@ ptyp_.applyObservableList = function ListView__ApplyObservableList() {
   }
 };
 ptyp_.observableListCollectionChanged = function ListView__ObservableListCollectionChanged(collection, args) {
-  var items, changeIndex, list, listCount, insertBeforeElem, iObject, listViewItem;
+  var items, changeIndex, newItems, oldItems, itemCount, addCount, replaceCount, list, i, replaceList, replaceStartIndex;
   Debug__Assert(collection == this.attachedObservableList);
   items = this.items;
   changeIndex = args.V_get_ChangeIndex_i();
+  if (args.V_get_Action_i() == 4)
+    this.resetObservableItems();
+  if (changeIndex > this.topN)
+    return;
+  newItems = args.V_get_NewItems_i();
+  oldItems = args.V_get_OldItems_i();
+  itemCount = args.V_get_Action_i() == 1 ? oldItems.V_get_Count_c() : newItems.V_get_Count_c();
   switch(args.V_get_Action_i()) {
     case 0: {
-      list = args.V_get_NewItems_i();
-      listCount = list.V_get_Count_c();
-      insertBeforeElem = null;
-      if (changeIndex < items.get_count())
-        insertBeforeElem = items.get_item(changeIndex).get_element();
-      for (iObject = 0; iObject < listCount; iObject++) {
-        listViewItem = ListViewItem_factory(this.createElement());
-        if (this.itemCssClassName !== null)
-          listViewItem.get_element().className = this.itemCssClassName;
-        listViewItem.set_skin(this.itemSkin);
-        if (!insertBeforeElem) {
-          if (this.inlineItems)
-            this.get_element().parentNode.insertBefore(listViewItem.get_element(), this.get_element());
-          else
-            this.get_element().appendChild(listViewItem.get_element());
-          items.add(listViewItem);
-        }
+      if (changeIndex + itemCount + this.items.get_count() > this.topN)
+        if (this.items.get_count() >= this.topN)
+          this.observableEventReplace(changeIndex, this.topN - changeIndex, newItems);
         else {
-          if (this.inlineItems)
-            this.get_element().parentNode.insertBefore(listViewItem.get_element(), insertBeforeElem);
-          else
-            this.get_element().insertBefore(listViewItem.get_element(), insertBeforeElem);
-          items.insert(changeIndex + iObject, listViewItem);
+          addCount = this.topN - this.items.get_count();
+          this.observableEventAdd(changeIndex, this.topN - this.items.get_count(), newItems);
+          replaceCount = this.topN - changeIndex - addCount;
+          list = List_$Object$_.defaultConstructor();
+          for (i = addCount; i < replaceCount && i < itemCount; i++)
+            list.add(newItems.V_get_Item_d(i));
+          this.observableEventAdd(changeIndex + addCount, replaceCount, list);
         }
-        listViewItem.set_dataContext(list.V_get_Item_d(iObject));
-        listViewItem.activate();
-      }
+      else
+        this.observableEventAdd(changeIndex, itemCount, newItems);
       break;
     }
     case 1: {
-      this.removeChildren(changeIndex, args.V_get_OldItems_i().V_get_Count_c());
+      if (this.observableList.V_get_Count_j() <= this.topN)
+        this.removeChildren(args.V_get_ChangeIndex_i(), args.V_get_OldItems_i().V_get_Count_c());
+      else {
+        replaceList = List_$Object$_.defaultConstructor();
+        replaceStartIndex = changeIndex + itemCount;
+        replaceCount = Math.min(changeIndex + itemCount, Math.min(this.topN, this.observableList.V_get_Count_j() - itemCount)) - changeIndex;
+        for (i = 0; i < replaceCount; i++)
+          replaceList.add(this.observableList.V_get_Item_j(replaceStartIndex + i));
+        this.observableEventReplace(changeIndex, replaceCount, replaceList);
+        if (this.observableList.V_get_Count_j() - itemCount <= this.topN)
+          this.removeChildren(changeIndex + replaceCount, this.items.get_count() - changeIndex - replaceCount);
+        throw new Error("Not Tested");
+      }
       break;
     }
     case 2: {
-      list = args.V_get_NewItems_i();
-      listCount = list.V_get_Count_c();
-      for (iObject = 0; iObject < listCount; iObject++)
-        items.get_item(changeIndex + iObject).set_dataContext(list.V_get_Item_d(iObject));
-      break;
-    }
-    case 4: {
-      this.resetObservableItems();
+      this.observableEventReplace(changeIndex, Math.min(changeIndex + itemCount, this.topN) - changeIndex, newItems);
       break;
     }
     default:
     throw new Error("Invalid operation");
   }
 };
+ptyp_.observableEventReplace = function ListView__ObservableEventReplace(changeIndex, listCount, list) {
+  var iObject;
+  for (iObject = 0; iObject < listCount; iObject++)
+    this.items.get_item(changeIndex + iObject).set_dataContext(list.V_get_Item_d(iObject));
+};
+ptyp_.observableEventAdd = function ListView__ObservableEventAdd(changeIndex, listCount, list) {
+  var insertBeforeElem, iObject, listViewItem;
+  insertBeforeElem = null;
+  if (changeIndex < this.items.get_count())
+    insertBeforeElem = this.items.get_item(changeIndex).get_element();
+  for (iObject = 0; iObject < listCount; iObject++) {
+    listViewItem = ListViewItem_factory(this.createElement());
+    if (this.itemCssClassName !== null)
+      listViewItem.get_element().className = this.itemCssClassName;
+    listViewItem.set_skin(this.itemSkin);
+    if (!insertBeforeElem) {
+      if (this.inlineItems)
+        this.get_element().parentNode.insertBefore(listViewItem.get_element(), this.get_element());
+      else
+        this.get_element().appendChild(listViewItem.get_element());
+      this.items.add(listViewItem);
+    }
+    else {
+      if (this.inlineItems)
+        this.get_element().parentNode.insertBefore(listViewItem.get_element(), insertBeforeElem);
+      else
+        this.get_element().insertBefore(listViewItem.get_element(), insertBeforeElem);
+      this.items.insert(changeIndex + iObject, listViewItem);
+    }
+    listViewItem.set_dataContext(list.V_get_Item_d(iObject));
+    listViewItem.activate();
+  }
+};
 ptyp_.resetObservableItems = function ListView__ResetObservableItems() {
   var observableList, itemsCount, listCount, iObject, listViewItem;
   observableList = this.observableList;
   itemsCount = this.items.get_count();
-  listCount = observableList.V_get_Count_j();
+  listCount = Math.min(observableList.V_get_Count_j(), this.topN);
   for (iObject = 0; iObject < listCount; iObject++) {
     if (iObject < itemsCount)
       listViewItem = this.items.get_item(iObject);
@@ -1980,6 +2016,9 @@ ptyp_.__ctor = function Skin____ctor(skinableType, dataContextType, factoryMetho
   this.skinableType = skinableType;
   this.dataContextType = dataContextType;
   this.id = id;
+};
+ptyp_.get_id = function Skin__get_Id() {
+  return this.id;
 };
 ptyp_.get_skinableType = function Skin__get_SkinableType() {
   return this.skinableType;
@@ -3717,6 +3756,7 @@ KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_ = KeyValuePai
 StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_ = StringDictionary(Action_$INotifyPropertyChanged_x_String$_);
 KeyValuePair_$String_x_Function$_ = KeyValuePair(String, Function);
 StringDictionary_$Function$_ = StringDictionary(Function);
+List_$Object$_ = List(Object);
 ArrayG_$Number$_ = ArrayG(Number);
 KeyValuePair_$String_x_Int32$_ = KeyValuePair(String, Int32);
 StringDictionary_$Int32$_ = StringDictionary(Int32);
@@ -3742,6 +3782,7 @@ KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
 StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
 KeyValuePair_$String_x_Function$_.$5ftri();
 StringDictionary_$Function$_.$5ftri();
+List_$Object$_.$5ftri();
 ArrayG_$Number$_.$5ftri();
 KeyValuePair_$String_x_Int32$_.$5ftri();
 StringDictionary_$Int32$_.$5ftri();

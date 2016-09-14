@@ -31,10 +31,23 @@ namespace Sunlight.Framework.UI
         Skin itemSkin;
         string itemCssClassName;
         bool inlineItems;
+        private int topN = 1 << 30;
 
         public ListView(Element element)
             : base(element)
         { }
+
+        /// <summary>
+        /// Gets or sets the top n, mostly one time binding.
+        /// </summary>
+        /// <value>
+        /// The top n.
+        /// </value>
+        public int TopN
+        {
+            get { return this.topN; }
+            set { this.topN = value; }
+        }
 
         public IList FixedList
         {
@@ -210,7 +223,7 @@ namespace Sunlight.Framework.UI
             if (this.IsActive)
             {
                 var fixedList = this.fixedList;
-                int fixedListCount = fixedList.Count;
+                int fixedListCount = Math.Min(fixedList.Count, this.topN);
                 for (int iObject = 0; iObject < fixedListCount; iObject++)
                 {
                     ListViewItem listViewItem;
@@ -283,88 +296,163 @@ namespace Sunlight.Framework.UI
             Debug.Assert(collection == this.attachedObservableList);
             var items = this.items;
             var changeIndex = args.ChangeIndex;
+
+            if (args.Action == CollectionChangedAction.Reset)
+            { this.ResetObservableItems(); }
+
+            if (changeIndex > this.topN)
+            { return; }
+
+            var newItems = args.NewItems;
+            var oldItems = args.OldItems;
+            var itemCount = args.Action == CollectionChangedAction.Remove
+                ? oldItems.Count
+                : newItems.Count;
             switch (args.Action)
             {
                 case CollectionChangedAction.Add:
+                    if (changeIndex + itemCount + this.items.Count > this.topN)
                     {
-                        var list = args.NewItems;
-                        var listCount = list.Count;
-                        Element insertBeforeElem = null;
-                        if (changeIndex < items.Count)
+                        if (this.items.Count >= this.topN)
                         {
-                            insertBeforeElem = items[changeIndex].Element;
+                            this.ObservableEventReplace(
+                                changeIndex,
+                                this.topN - changeIndex,
+                                newItems);
                         }
-
-                        for (int iObject = 0; iObject < listCount; iObject++)
+                        else
                         {
-                            ListViewItem listViewItem = new ListViewItem(
-                                    this.CreateElement());
-                            if (this.itemCssClassName != null)
-                            {
-                                listViewItem.Element.ClassName = this.itemCssClassName;
-                            }
+                            int addCount = this.topN - this.items.Count;
+                            this.ObservableEventAdd(
+                                changeIndex,
+                                this.topN - this.items.Count,
+                                newItems);
 
-                            listViewItem.Skin = this.itemSkin;
+                            int replaceCount = this.topN - changeIndex - addCount;
+                            List<object> list = new List<object>();
+                            for (int i = addCount; i < replaceCount && i < itemCount; i++)
+                            { list.Add(newItems[i]); }
 
-                            if (insertBeforeElem == null)
-                            {
-                                if (this.inlineItems)
-                                {
-                                    this.Element.ParentNode.InsertBefore(
-                                        listViewItem.Element,
-                                        this.Element);
-                                }
-                                else
-                                {
-                                    this.Element.AppendChild(listViewItem.Element);
-                                }
-
-                                items.Add(listViewItem);
-                            }
-                            else
-                            {
-                                if (this.inlineItems)
-                                {
-                                    this.Element.ParentNode.InsertBefore(
-                                        listViewItem.Element,
-                                        insertBeforeElem);
-                                }
-                                else
-                                {
-                                    this.Element.InsertBefore(listViewItem.Element, insertBeforeElem);
-                                }
-
-                                items.Insert(changeIndex + iObject, listViewItem);
-                            }
-
-                            listViewItem.DataContext = list[iObject];
-                            listViewItem.Activate();
+                            this.ObservableEventAdd(
+                                changeIndex + addCount,
+                                replaceCount,
+                                list);
                         }
-
-                        break;
                     }
+                    else
+                    {
+                        this.ObservableEventAdd(
+                            changeIndex,
+                            itemCount,
+                            newItems);
+                    }
+                    break;
                 case CollectionChangedAction.Remove:
+                    if (this.observableList.Count <= this.topN)
                     {
-                        this.RemoveChildren(changeIndex, args.OldItems.Count);
-                        break;
+                        this.RemoveChildren(args.ChangeIndex, args.OldItems.Count);
                     }
-                case CollectionChangedAction.Replace:
+                    else
                     {
-                        var list = args.NewItems;
-                        var listCount = list.Count;
+                        List<object> replaceList = new List<object>();
+                        int replaceStartIndex = changeIndex + itemCount;
+                        int replaceCount =
+                            Math.Min(
+                                changeIndex + itemCount,
+                                Math.Min(
+                                    this.topN,
+                                    this.observableList.Count - itemCount))
+                            - changeIndex;
 
-                        for (int iObject = 0; iObject < listCount; iObject++)
+                        for (int i = 0; i < replaceCount; i++)
+                        { replaceList.Add(this.observableList[replaceStartIndex + i]); }
+
+                        this.ObservableEventReplace(changeIndex, replaceCount, replaceList);
+
+                        if (this.observableList.Count - itemCount <= this.topN)
                         {
-                            items[changeIndex + iObject].DataContext = list[iObject];
+                            this.RemoveChildren(
+                                changeIndex + replaceCount,
+                                this.items.Count - changeIndex - replaceCount);
                         }
 
-                        break;
+                        throw new Exception("Not Tested");
                     }
-                case CollectionChangedAction.Reset:
-                    this.ResetObservableItems();
+                    break;
+                case CollectionChangedAction.Replace:
+                    this.ObservableEventReplace(
+                        changeIndex,
+                        Math.Min(changeIndex + itemCount, this.topN) - changeIndex,
+                        newItems);
                     break;
                 default:
                     throw new Exception("Invalid operation");
+            }
+        }
+
+        private void ObservableEventReplace(
+            int changeIndex,
+            int listCount,
+            IList list)
+        {
+            for (int iObject = 0; iObject < listCount; iObject++)
+            {
+                items[changeIndex + iObject].DataContext = list[iObject];
+            }
+        }
+
+        private void ObservableEventAdd(int changeIndex, int listCount, IList list)
+        {
+            Element insertBeforeElem = null;
+            if (changeIndex < items.Count)
+            {
+                insertBeforeElem = items[changeIndex].Element;
+            }
+
+            for (int iObject = 0; iObject < listCount; iObject++)
+            {
+                ListViewItem listViewItem = new ListViewItem(
+                        this.CreateElement());
+                if (this.itemCssClassName != null)
+                {
+                    listViewItem.Element.ClassName = this.itemCssClassName;
+                }
+
+                listViewItem.Skin = this.itemSkin;
+
+                if (insertBeforeElem == null)
+                {
+                    if (this.inlineItems)
+                    {
+                        this.Element.ParentNode.InsertBefore(
+                            listViewItem.Element,
+                            this.Element);
+                    }
+                    else
+                    {
+                        this.Element.AppendChild(listViewItem.Element);
+                    }
+
+                    items.Add(listViewItem);
+                }
+                else
+                {
+                    if (this.inlineItems)
+                    {
+                        this.Element.ParentNode.InsertBefore(
+                            listViewItem.Element,
+                            insertBeforeElem);
+                    }
+                    else
+                    {
+                        this.Element.InsertBefore(listViewItem.Element, insertBeforeElem);
+                    }
+
+                    items.Insert(changeIndex + iObject, listViewItem);
+                }
+
+                listViewItem.DataContext = list[iObject];
+                listViewItem.Activate();
             }
         }
 
@@ -372,7 +460,7 @@ namespace Sunlight.Framework.UI
         {
             var observableList = this.observableList;
             var itemsCount = this.items.Count;
-            int listCount = observableList.Count;
+            int listCount = Math.Min(observableList.Count, this.topN);
             for (int iObject = 0; iObject < listCount; iObject++)
             {
                 ListViewItem listViewItem;
@@ -382,8 +470,7 @@ namespace Sunlight.Framework.UI
                 }
                 else
                 {
-                    listViewItem = new ListViewItem(
-                        this.CreateElement());
+                    listViewItem = new ListViewItem(this.CreateElement());
                     if (this.itemCssClassName != null)
                     {
                         listViewItem.Element.ClassName = this.itemCssClassName;

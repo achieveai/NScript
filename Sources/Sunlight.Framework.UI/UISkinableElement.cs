@@ -42,6 +42,7 @@ namespace Sunlight.Framework.UI
                     if (this.skin != null
                         && this.IsActive)
                     {
+                        this.Element.SetAttribute("skin-id", this.skin.Id);
                         this.SkinInstance = this.skin.CreateInstance();
                     }
 
