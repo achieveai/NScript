@@ -403,7 +403,7 @@ using System.Runtime.CompilerServices;
                 if (cookieName[0] == ' ')
                 { cookieName = cookieName.Substring(1); }
 
-                rv.Add(cookieName, cookieValue);
+                rv[cookieName] = cookieValue;
             }
 
             return rv;

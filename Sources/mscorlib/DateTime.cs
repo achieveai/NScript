@@ -25,6 +25,9 @@
 
         public extern DateTime(int year, int month, int date, int hours, int minutes, int seconds, int milliseconds);
 
+        public DateTime Date
+        { get { return new DateTime(this.GetFullYear(), this.GetMonth(), this.GetDate()); } }
+
         public extern string Format(string format);
 
         public extern int ValueOf();
@@ -98,6 +101,15 @@
 
         [Script(@"return new Date(value);")]
         public extern static DateTime Parse(string value);
+
+        [Script("return this.getTimezoneOffset() * 60000;")]
+        public extern int UtcOffset();
+
+        public DateTime ToUTC()
+        { return this + this.UtcOffset(); }
+
+        public DateTime ToLocal()
+        { return this - this.UtcOffset(); }
 
         [ScriptName("now")]
         public extern static long NowTicks();

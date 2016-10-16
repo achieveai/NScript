@@ -148,7 +148,10 @@ using Mono.Cecil;
         {
             get
             {
-                return ((GenericInstanceType)this.innerExpression.ResultType).GenericArguments[0];
+                var genericInstanceType = this.innerExpression.ResultType as GenericInstanceType;
+                return genericInstanceType != null
+                    ? genericInstanceType.GenericArguments[0]
+                    : this.innerExpression.ResultType;
             }
         }
 
