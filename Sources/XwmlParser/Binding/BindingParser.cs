@@ -349,6 +349,13 @@ namespace XwmlParser.Binding
                         dotParts[dotParts.Count-1]));
             }
 
+            if (methodReferences.Count == 0)
+            {
+                throw new ApplicationException(
+                    string.Format("Method name {0} not found, check spelling for the method name",
+                        dotParts[dotParts.Count - 1]));
+            }
+
             List<string> args = GetConverterArguments(
                 bindingStr,
                 argStartIndex,
