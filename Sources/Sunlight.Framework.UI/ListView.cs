@@ -230,6 +230,7 @@ namespace Sunlight.Framework.UI
                     if (iObject < itemsCount)
                     {
                         listViewItem = items[iObject];
+                        listViewItem.IsSelected = false;
                     }
                     else
                     {
@@ -467,6 +468,7 @@ namespace Sunlight.Framework.UI
                 if (iObject < itemsCount)
                 {
                     listViewItem = items[iObject];
+                    listViewItem.IsSelected = false;
                 }
                 else
                 {

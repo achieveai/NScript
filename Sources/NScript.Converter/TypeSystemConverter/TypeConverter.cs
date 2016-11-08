@@ -234,7 +234,10 @@ namespace NScript.Converter.TypeSystemConverter
         {
             get
             {
+                // TODO: We currently do not treat implemented classes with IgnoreGenericArgument like
+                // normal type.
                 return this.typeDefinition.HasGenericParameters
+                    // this.context.HasGenericArguments(this.typeDefinition)
                     && !this.context.IsPsudoType(this.typeDefinition);
             }
         }

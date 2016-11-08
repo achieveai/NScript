@@ -1720,6 +1720,8 @@ function StringDictionary(TValue, $5fcallStatiConstructor) {
     return this.innerDict[index];
   };
   ptyp_.set_item = function StringDictionary$1__set_Item(index, value) {
+    if (!(index in this.innerDict))
+      this.count++;
     this.innerDict[index] = value;
   };
   ptyp_.get_keys = function StringDictionary$1__get_Keys() {

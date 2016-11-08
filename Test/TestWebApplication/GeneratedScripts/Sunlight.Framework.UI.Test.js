@@ -1814,8 +1814,10 @@ ptyp_.applyFixedList = function ListView__ApplyFixedList() {
     fixedList = this.fixedList;
     fixedListCount = Math.min(fixedList.V_get_Count_c(), this.topN);
     for (iObject = 0; iObject < fixedListCount; iObject++) {
-      if (iObject < itemsCount)
+      if (iObject < itemsCount) {
         listViewItem = items.get_item(iObject);
+        listViewItem.set_isSelected(false);
+      }
       else {
         listViewItem = ListViewItem_factory(this.createElement());
         if (this.itemCssClassName !== null)
@@ -1945,8 +1947,10 @@ ptyp_.resetObservableItems = function ListView__ResetObservableItems() {
   itemsCount = this.items.get_count();
   listCount = Math.min(observableList.V_get_Count_j(), this.topN);
   for (iObject = 0; iObject < listCount; iObject++) {
-    if (iObject < itemsCount)
+    if (iObject < itemsCount) {
       listViewItem = this.items.get_item(iObject);
+      listViewItem.set_isSelected(false);
+    }
     else {
       listViewItem = ListViewItem_factory(this.createElement());
       if (this.itemCssClassName !== null)
@@ -2316,8 +2320,15 @@ function ListViewItem_factory(element) {
 };
 ptyp_ = new UISkinableElement();
 ListViewItem.prototype = ptyp_;
+ptyp_.isSelected = false;
 ptyp_.__ctor4 = function ListViewItem____ctor(element) {
   this.__ctor3(element);
+};
+ptyp_.set_isSelected = function ListViewItem__set_IsSelected(value) {
+  if (this.isSelected != value) {
+    this.isSelected = value;
+    this.firePropertyChanged("IsSelected");
+  }
 };
 Type__RegisterReferenceType(ListViewItem, "Sunlight.Framework.UI.ListViewItem", UISkinableElement, []);
 Error.typeId = "vb";
@@ -3261,6 +3272,8 @@ function StringDictionary(TValue, $5fcallStatiConstructor) {
     return this.innerDict[index];
   };
   ptyp_.set_item = function StringDictionary$1__set_Item(index, value) {
+    if (!(index in this.innerDict))
+      this.count++;
     this.innerDict[index] = value;
   };
   ptyp_.get_keys = function StringDictionary$1__get_Keys() {

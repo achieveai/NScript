@@ -530,6 +530,20 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Ignore generic arguments.
+        /// </summary>
+        /// <param name="methodDefinition"> The method definition. </param>
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public bool HasGenericArguments(
+            TypeDefinition typeDefinition)
+        {
+            return typeDefinition.HasGenericParameters
+                && typeDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.IgnoreGenericArgumentsAttribute) == null;
+        }
+
+        /// <summary>
         /// Determines whether the specified type definition has ignore namespace attribute .
         /// </summary>
         /// <param name="typeDefinition"> The type definition. </param>

@@ -36,7 +36,11 @@ namespace System.Collections.Generic
                 return this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}[index];")]
             get;
 
-            [Script(@"this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}[index] = value;")]
+            [Script(@"
+                if (!(index in this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}))
+                    this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::count}++;
+                this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}[index] = value;
+            ")]
             set;
         }
 
@@ -60,16 +64,13 @@ namespace System.Collections.Generic
             get { return false; }
         }
 
-        public void Add(string key, TValue value)
-        {
-            if (this.ContainsKey(key))
-            {
-                throw new Exception("Key already exists");
-            }
-
-            this.count++;
-            this[key] = value;
-        }
+        [Script(@"
+            if (key in this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict})
+                throw new @{[mscorlib]System.Exception}(""key already exists"");
+            this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::count}++;
+            this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}[key] = value;
+        ")]
+        public extern void Add(string key, TValue value);
 
         [Script(@"return key in this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict};")]
         public extern bool ContainsKey(string key);

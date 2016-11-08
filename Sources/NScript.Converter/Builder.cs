@@ -206,6 +206,15 @@ namespace NScript.Converter
 
                 writer.Write(this.jsScript, string.Format("SrcMapper.ashx?js={0}&fname=", Path.GetFileName(this.jsScript)));
             }
+            catch(ConverterLocationException ex)
+            {
+                System.Console.Out.WriteLine(
+                    string.Format("{0}({1},{2}): error ERR0123: {3}",
+                        ex.Location.FileName,
+                        ex.Location.StartLine,
+                        ex.Location.StartColumn,
+                        ex.Message));
+            }
             catch(System.Exception ex)
             {
                 System.Console.Out.WriteLine("NScript.Exe(0,0): error UNK0001: {0}", ex.Message);

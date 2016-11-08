@@ -254,7 +254,24 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return delegate(IMethodScopeConverter mc, Expression statement)
             {
-                return converter(mc, (T)statement);
+                try
+                {
+                    return converter(mc, (T)statement);
+                }
+                catch(ApplicationException ex)
+                {
+                    if (ex is ConverterLocationException)
+                    { throw; }
+
+                    if (statement.Location != null)
+                    {
+                        throw new ConverterLocationException(
+                            statement.Location,
+                            ex.Message);
+                    }
+                    else
+                    { throw; }
+                }
             };
         }
     }

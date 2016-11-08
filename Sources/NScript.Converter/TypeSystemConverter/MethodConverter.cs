@@ -651,6 +651,17 @@ namespace NScript.Converter.TypeSystemConverter
             if (typeScope.HasValue
                 && typeScope.Value == GenericParameterType.Method)
             {
+                // TODO: We currently do not treat implemented classes with IgnoreGenericArgument like
+                // normal type.
+                // var genericInstanceType = typeReference as GenericInstanceType;
+                // bool requiresGenericParameter = genericInstanceType != null
+                //     ? this.context.HasGenericArguments(genericInstanceType.ElementType.Resolve())
+                //     : true;
+
+                // // if the type being resolve does not require any generic parameters, there is no point in going forward.
+                // if (!requiresGenericParameter)
+                // { return typeConverter.Resolve(typeReference); }
+
                 if (!hasGenericArguments)
                 {
                     throw new ApplicationException(
