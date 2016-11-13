@@ -179,6 +179,45 @@ namespace System.Web
         }
 
         /// <summary>
+        /// Gets array buffer promise.
+        /// </summary>
+        /// <typeparam name="T"> Generic type parameter. </typeparam>
+        /// <param name="url">        URL of the document. </param>
+        /// <param name="acceptType"> (optional) type of the accept. </param>
+        /// <param name="headerPair"> (optional) the header pair. </param>
+        /// <param name="timeout">    The timeout. </param>
+        /// <returns>
+        /// Promise object for NativeArray of T;
+        /// </returns>
+        public static Promise<NativeArray<T>> GetArrayBufferPromise<T>(
+            string url,
+            string acceptType = "*",
+            string[] headerPair = null,
+            int timeout=-1)
+        {
+            return new Promise<NativeArray<T>>(
+                delegate(Action<NativeArray<T>> resolve, Action<object> reject)
+                {
+                    XMLHttpRequest.GetArrayBuffer<T>(
+                        url,
+                        (arr, code, isError) =>
+                        {
+                            if (isError)
+                            {
+                                reject((int?)code);
+                            }
+                            else
+                            {
+                                resolve(arr);
+                            }
+                        },
+                        acceptType,
+                        headerPair,
+                        timeout);
+                });
+        }
+
+        /// <summary>
         /// Gets the given document.
         /// </summary>
         /// <param name="url"> URL of the document. </param>
@@ -201,6 +240,44 @@ namespace System.Web
         }
 
         /// <summary>
+        /// Gets BLOB promise.
+        /// </summary>
+        /// <param name="url">        URL of the document. </param>
+        /// <param name="acceptType"> (optional) type of the accept. </param>
+        /// <param name="headerPair"> (optional) the header pair. </param>
+        /// <param name="timeout">    The timeout. </param>
+        /// <returns>
+        /// The BLOB promise.
+        /// </returns>
+        public static Promise<Blob> GetBlob(
+            string url,
+            string acceptType = "*",
+            string[] headerPair = null,
+            int timeout=-1)
+        {
+            return new Promise<Blob>(
+                delegate(Action<Blob> resolve, Action<object> reject)
+                {
+                    XMLHttpRequest.GetBlob(
+                        url,
+                        (arr, code, isError) =>
+                        {
+                            if (isError)
+                            {
+                                reject((int?)code);
+                            }
+                            else
+                            {
+                                resolve(arr);
+                            }
+                        },
+                        acceptType,
+                        headerPair,
+                        timeout);
+                });
+        }
+
+        /// <summary>
         /// Gets the given document.
         /// </summary>
         /// <param name="url"> URL of the document. </param>
@@ -219,6 +296,44 @@ namespace System.Web
                 acceptType,
                 headerPair,
                 timeout);
+        }
+
+        /// <summary>
+        /// Submists a Get request.
+        /// </summary>
+        /// <param name="url">        URL of the document. </param>
+        /// <param name="acceptType"> (optional) type of the accept. </param>
+        /// <param name="headerPair"> (optional) the header pair. </param>
+        /// <param name="timeout">    The timeout. </param>
+        /// <returns>
+        /// The promise.
+        /// </returns>
+        public static Promise<string> Get(
+            string url,
+            string acceptType = "*",
+            string[] headerPair = null,
+            int timeout=-1)
+        {
+            return new Promise<string>(
+                delegate(Action<string> resolve, Action<object> reject)
+                {
+                    XMLHttpRequest.Get(
+                        url,
+                        (arr, code, isError) =>
+                        {
+                            if (isError)
+                            {
+                                reject((int?)code);
+                            }
+                            else
+                            {
+                                resolve(arr);
+                            }
+                        },
+                        acceptType,
+                        headerPair,
+                        timeout);
+                });
         }
 
         /// <summary>
@@ -277,6 +392,47 @@ namespace System.Web
         }
 
         /// <summary>
+        /// Make a GET request to server.
+        /// </summary>
+        /// <param name="url">          URL of the document. </param>
+        /// <param name="responseType"> The type of the response. </param>
+        /// <param name="acceptType">   (optional) type of the accept. </param>
+        /// <param name="headerPair">   (optional) the header pair. </param>
+        /// <param name="timeout">      The timeout. </param>
+        /// <returns>
+        /// The Promise object.
+        /// </returns>
+        public static Promise<XMLHttpRequest> GetRaw(
+            string url,
+            string responseType,
+            string acceptType = "*",
+            string[] headerPair = null,
+            int timeout=-1)
+        {
+            return new Promise<XMLHttpRequest>(
+                delegate(Action<XMLHttpRequest> resolve, Action<object> reject)
+                {
+                    XMLHttpRequest.GetRaw(
+                        url,
+                        (arr, code, isError) =>
+                        {
+                            if (isError)
+                            {
+                                reject((int?)code);
+                            }
+                            else
+                            {
+                                resolve(arr);
+                            }
+                        },
+                        responseType,
+                        acceptType,
+                        headerPair,
+                        timeout);
+                });
+        }
+
+        /// <summary>
         /// Post this message.
         /// </summary>
         /// <param name="url">         URL of the document. </param>
@@ -323,6 +479,47 @@ namespace System.Web
             }
 
             request.Send(data);
+        }
+
+        /// <summary>
+        /// Post data to server, return a promise.
+        /// </summary>
+        /// <param name="url">         URL of the document. </param>
+        /// <param name="contentType"> Type of the content. </param>
+        /// <param name="data">        The name of the event such as 'load'. </param>
+        /// <param name="acceptType">  (optional) type of the accept. </param>
+        /// <param name="headerPair">  (optional) the header pair. </param>
+        /// <returns>
+        /// Promise object
+        /// </returns>
+        public static Promise<string> Post(
+            string url,
+            string contentType,
+            string data,
+            string acceptType = "*",
+            string[] headerPair = null)
+        {
+            return new Promise<string>(
+                delegate(Action<string> resolve, Action<object> reject)
+                {
+                    XMLHttpRequest.Post(
+                        url,
+                        (arr, code, isError) =>
+                        {
+                            if (isError)
+                            {
+                                reject((int?)code);
+                            }
+                            else
+                            {
+                                resolve(arr);
+                            }
+                        },
+                        contentType,
+                        data,
+                        acceptType,
+                        headerPair);
+                });
         }
 
         /// <summary>

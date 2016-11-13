@@ -348,7 +348,8 @@ namespace NScript.Converter.ExpressionsConverter
             MethodReference methodReference)
         {
             if (methodReference.Name.StartsWith("op_")
-                && null != ((MethodDefinition)methodReference.GetDefinition()).CustomAttributes.SelectAttribute(converter.KnownReferences.IntrinsicOperatorAttribute))
+                && null != ((MethodDefinition)methodReference.GetDefinition()).CustomAttributes.SelectAttribute(
+                        converter.KnownReferences.IntrinsicOperatorAttribute))
             {
                 JST.BinaryOperator? op = null;
                 switch (methodReference.Name)
