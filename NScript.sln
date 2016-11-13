@@ -162,6 +162,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ItemTemplate", "ItemTemplat
 		NScriptToolSet\Templates\ItemTemplate\NScript.VSTDIR = NScriptToolSet\Templates\ItemTemplate\NScript.VSTDIR
 		NScriptToolSet\Templates\ItemTemplate\NScriptClass.zip = NScriptToolSet\Templates\ItemTemplate\NScriptClass.zip
 		NScriptToolSet\Templates\ItemTemplate\NScriptTestClass.zip = NScriptToolSet\Templates\ItemTemplate\NScriptTestClass.zip
+		NScriptToolSet\Templates\ItemTemplate\NScriptView.zip = NScriptToolSet\Templates\ItemTemplate\NScriptView.zip
+		NScriptToolSet\Templates\ItemTemplate\NScriptViewModelWithView.zip = NScriptToolSet\Templates\ItemTemplate\NScriptViewModelWithView.zip
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Class", "Class", "{28A76871-90D6-499A-9E3A-317541FDB7D9}"

@@ -26,39 +26,23 @@ namespace System
         public static extern Promise Race(NativeArray<Promise> promises);
         public static extern Promise Race(params Promise[] promises);
 
-        public extern Promise<U> Then<T, U>(
-            Func<T, U> onFulfilled);
+        public extern Promise Then(Action onFulfilled);
 
-        public extern Promise<U> Then<T, U>(
-            Func<T, Promise<U>> onFulfilled);
+        public extern Promise Then(Func<Promise> onFulfilled);
 
-        public extern Promise<U> Then<T, U, V>(
-            Func<T, U> onFulfilled,
-            Func<V, U> onRejected);
+        public extern Promise<T> Then<T>(Func<Promise<T>> onFulfilled);
 
-        public extern Promise<U> Then<T, U, V>(
-            Func<T, Promise<U>> onFulfilled,
-            Func<V, U> onRejected);
+        public extern Promise Then(Action onFulfilled, Action onRejected);
 
-        public extern Promise<U> Then<T, U, V>(
-            Func<T, U> onFulfilled,
-            Func<V, Promise<U>> onRejected);
+        public extern Promise Then<E>(Action onFulfilled, Action<E> onRejected);
 
-        public extern Promise<U> Then<T, U, V>(
-            Func<T, Promise<U>> onFulfilled,
-            Func<V, Promise<U>> onRejected);
+        public extern Promise Then<E>(Func<Promise> onFulfilled, Action<E> onRejected);
 
-        public extern Promise<U> Then<T, U, V>(
-            Func<T, U> onFulfilled,
-            Action<V> onRejected);
+        public extern Promise<T> Then<T, E>(Func<Promise<T>> onFulfilled, Action<E> onRejected);
 
-        public extern Promise<U> Then<T, U, V>(
-            Func<T, Promise<U>> onFulfilled,
-            Action<V> onRejected);
+        public extern Promise<U> Catch<E, U>(Func<E, U> onRejected);
 
-        public extern Promise<U> Catch<U, V>(Func<V, U> onRejected);
-
-        public extern Promise<U> Catch<U, V>(Func<V, Promise<U>> onRejected);
+        public extern Promise<U> Catch<E, U>(Func<E, Promise<U>> onRejected);
 
         public extern Promise Catch<E>(Action<E> onRejected);
     }
@@ -79,13 +63,11 @@ namespace System
 
         public extern Promise Then(Action<T> onFulfilled);
 
-        public extern Promise Then(Action<T, Promise> onFulfilled);
+        public extern Promise Then(Func<T, Promise> onFulfilled);
 
         public extern Promise Then<E>(Action<T> onFulfilled, Action<E> onRejected);
 
         public extern Promise Then<E>(Func<T, Promise> onFulfilled, Action<E> onRejected);
-
-        public extern Promise Then<E>(Func<T> onFulfilled, Action<E, Promise> onRejected);
 
         public extern Promise Then<E>(Func<T, Promise> onFulfilled, Action<E, Promise> onRejected);
 
@@ -93,29 +75,33 @@ namespace System
 
         public extern Promise<U> Then<U>(Func<T, Promise<U>> onFulfilled);
 
-        public extern Promise<U> Then<U, V>(
+        public extern Promise<U> Then<U, E>(
             Func<T, U> onFulfilled,
-            Func<V, U> onRejected);
+            Func<E, U> onRejected);
 
-        public extern Promise<U> Then<U, V>(
+        public extern Promise<U> Then<U, E>(
             Func<T, Promise<U>> onFulfilled,
-            Func<V, U> onRejected);
+            Func<E, U> onRejected);
 
-        public extern Promise<U> Then<U, V>(
+        public extern Promise<U> Then<U, E>(
             Func<T, U> onFulfilled,
-            Func<V, Promise<U>> onRejected);
+            Func<E, Promise<U>> onRejected);
 
-        public extern Promise<U> Then<U, V>(
+        public extern Promise<U> Then<U, E>(
             Func<T, Promise<U>> onFulfilled,
-            Func<V, Promise<U>> onRejected);
+            Func<E, Promise<U>> onRejected);
 
-        public extern Promise<U> Then<U, V>(
+        public extern Promise<U> Then<U, E>(
             Func<T, U> onFulfilled,
-            Action<V> onRejected);
+            Action<E> onRejected);
 
-        public extern Promise<U> Then<U, V>(
+        public extern Promise<U> Then<U, E>(
             Func<T, Promise<U>> onFulfilled,
-            Action<V> onRejected);
+            Action<E> onRejected);
+
+        public extern Promise<T> Catch<E>(Func<E, T> onRejected);
+
+        public extern Promise<T> Catch<E>(Func<E, Promise<T>> onRejected);
 
         public extern new Promise<T> Catch<E>(Action<E> onRejected);
     }
