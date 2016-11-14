@@ -335,7 +335,10 @@ namespace JsCsc.Lib
             JObject rv = new JObject();
             rv[NameTokens.TypeName] = TypeTokens.MethodSpec;
             rv[NameTokens.DeclaringType] = MemberReferenceSerializer.Serialize(method.DeclaringType);
-            rv[NameTokens.ReturnType] = MemberReferenceSerializer.Serialize(methodReturnType);
+            rv[NameTokens.ReturnType] = MemberReferenceSerializer.Serialize(
+                methodReturnType,
+                method.DeclaringType,
+                method);
             rv[NameTokens.Name] = method.IsConstructor
                 ? (method.IsStatic ? ".cctor" : ".ctor")
                 : method.Name;
@@ -561,7 +564,9 @@ namespace JsCsc.Lib
                             method.DeclaringType),
                     ReturnType =
                         MemberReferenceSerializer.SerializeN(
-                            methodReturnType),
+                            methodReturnType,
+                            method.DeclaringType,
+                            method),
                     Name = method.IsConstructor
                         ? (method.IsStatic ? ".cctor" : ".ctor")
                         : method.Name,

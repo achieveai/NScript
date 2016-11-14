@@ -7,7 +7,8 @@
 namespace System
 {
     using System;
-    using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Definition for Promise
@@ -30,6 +31,8 @@ namespace System
 
         public extern Promise Then(Func<Promise> onFulfilled);
 
+        public extern Promise<T> Then<T>(Func<T> onFulfilled);
+
         public extern Promise<T> Then<T>(Func<Promise<T>> onFulfilled);
 
         public extern Promise Then(Action onFulfilled, Action onRejected);
@@ -45,6 +48,32 @@ namespace System
         public extern Promise<U> Catch<E, U>(Func<E, Promise<U>> onRejected);
 
         public extern Promise Catch<E>(Action<E> onRejected);
+
+        public static Promise<List<R>> For<R>(int startIdx, Func<int, bool> condition, Func<int, Promise<R>> func)
+        {
+            return ForInternal<R>(startIdx, condition, func, new List<R>());
+        }
+
+        private static Promise<List<R>> ForInternal<R>(
+            int startIdx,
+            Func<int, bool> condition,
+            Func<int, Promise<R>> func,
+            List<R> result)
+        {
+            if (condition(startIdx))
+            { return Promise.Resolve(result); }
+
+            return func(startIdx).Then((res) =>
+                {
+                    result.Add(res);
+
+                    return ForInternal<R>(
+                        startIdx + 1,
+                        condition,
+                        func,
+                        result);
+                });
+        }
     }
 
     [IgnoreNamespace, IgnoreGenericArguments, ScriptName("Promise")]
