@@ -143,6 +143,9 @@ namespace Sunlight.Framework.UI
         protected List<ListViewItem> Items
         { get { return this.items; } }
 
+        protected ISelectionHelper SelectionHelper
+        { get { return this.selectionHelper; } }
+
         /// <summary>
         /// Gets or sets the name of the item CSS class.
         /// </summary>
