@@ -32,10 +32,17 @@ namespace Sunlight.Framework.UI
         string itemCssClassName;
         bool inlineItems;
         private int topN = 1 << 30;
+        private ISelectionHelper selectionHelper;
 
         public ListView(Element element)
             : base(element)
         { }
+
+        public ListView(Element element, ISelectionHelper selectionHelper)
+            :base(element)
+        {
+            this.selectionHelper = selectionHelper;
+        }
 
         /// <summary>
         /// Gets or sets the top n, mostly one time binding.
@@ -234,8 +241,8 @@ namespace Sunlight.Framework.UI
                     }
                     else
                     {
-                        listViewItem = new ListViewItem(
-                            this.CreateElement());
+                        listViewItem = new ListViewItem(this.CreateElement());
+
                         if (this.itemCssClassName != null)
                         {
                             listViewItem.Element.ClassName = this.itemCssClassName;
@@ -256,6 +263,7 @@ namespace Sunlight.Framework.UI
                     }
 
                     listViewItem.DataContext = fixedList[iObject];
+                    listViewItem.SelectionHelper = this.selectionHelper;
                     listViewItem.Activate();
                 }
 
@@ -453,6 +461,7 @@ namespace Sunlight.Framework.UI
                 }
 
                 listViewItem.DataContext = list[iObject];
+                listViewItem.SelectionHelper = this.selectionHelper;
                 listViewItem.Activate();
             }
         }
@@ -494,6 +503,7 @@ namespace Sunlight.Framework.UI
                 }
 
                 listViewItem.DataContext = observableList[iObject];
+                listViewItem.SelectionHelper = this.selectionHelper;
                 listViewItem.Activate();
             }
 

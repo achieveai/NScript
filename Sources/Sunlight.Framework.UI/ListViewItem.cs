@@ -18,10 +18,12 @@ namespace Sunlight.Framework.UI
             IsFocusedPropName = "IsFocused";
 
         private bool isSelected, isFocused;
+        private ISelectionHelper selectionHelper;
 
         public ListViewItem(Element element)
             : base(element)
-        {}
+        {
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this object is selected.
@@ -41,6 +43,9 @@ namespace Sunlight.Framework.UI
                 if (this.isSelected != value)
                 {
                     this.isSelected = value;
+                    if (this.selectionHelper != null)
+                    { this.selectionHelper.SelectItem(this.DataContext); }
+
                     this.FirePropertyChanged(ListViewItem.IsSelectedPropName);
                 }
             }
@@ -67,6 +72,47 @@ namespace Sunlight.Framework.UI
                     this.FirePropertyChanged(ListViewItem.IsFocusedPropName);
                 }
             }
+        }
+
+        public ISelectionHelper SelectionHelper
+        {
+            get
+            { return this.selectionHelper; }
+
+            set
+            {
+                if (this.selectionHelper == value) return;
+
+                if (this.selectionHelper != null)
+                { this.selectionHelper.SelectionChanged -= this.OnSelectionHelperSelectionChanged; }
+
+                this.selectionHelper = value;
+                if (this.selectionHelper != null)
+                {
+                    this.selectionHelper.SelectionChanged += this.OnSelectionHelperSelectionChanged;
+                    this.OnSelectionHelperSelectionChanged();
+                }
+            }
+        }
+
+        protected override void OnDataContextUpdated(object oldValue)
+        {
+            base.OnDataContextUpdated(oldValue);
+            if (this.selectionHelper != null)
+            { this.OnSelectionHelperSelectionChanged(); }
+        }
+
+        protected override void InternalDispose()
+        {
+            if (this.selectionHelper != null)
+            { this.selectionHelper.SelectionChanged -= this.OnSelectionHelperSelectionChanged; }
+
+            base.InternalDispose();
+        }
+
+        private void OnSelectionHelperSelectionChanged()
+        {
+            this.IsSelected = this.selectionHelper.IsSelected(this.DataContext);
         }
     }
 }
