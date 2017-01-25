@@ -44,7 +44,16 @@ namespace Sunlight.Framework.UI
                 {
                     this.isSelected = value;
                     if (this.selectionHelper != null)
-                    { this.selectionHelper.SelectItem(this.DataContext); }
+                    {
+                        if (value)
+                        {
+                            this.selectionHelper.SelectItem(this.DataContext);
+                        }
+                        else
+                        {
+                            this.selectionHelper.UnSelectItem(this.DataContext);
+                        }
+                    }
 
                     this.FirePropertyChanged(ListViewItem.IsSelectedPropName);
                 }

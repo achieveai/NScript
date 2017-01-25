@@ -47,7 +47,7 @@ namespace System.Collections.Generic
             var arrayNativeArray = NativeArray<T>.GetNativeArray(array);
             if (((object)arrayNativeArray) is NativeArray<T>)
             {
-                this.nativeArray = NativeArray<T>.GetNativeArray(array).Slice(0, 0);
+                this.nativeArray = NativeArray<T>.GetNativeArray(array).Slice(0, arrayNativeArray.Length);
             }
             else
             {

@@ -2333,7 +2333,10 @@ ptyp_.set_isSelected = function ListViewItem__set_IsSelected(value) {
   if (this.isSelected != value) {
     this.isSelected = value;
     if (this.selectionHelper)
-      this.selectionHelper.V_SelectItem_e(this.get_dataContext());
+      if (value)
+        this.selectionHelper.V_SelectItem_e(this.get_dataContext());
+      else
+        this.selectionHelper.V_UnSelectItem_e(this.get_dataContext());
     this.firePropertyChanged("IsSelected");
   }
 };
