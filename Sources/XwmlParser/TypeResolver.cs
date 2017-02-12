@@ -273,10 +273,14 @@ namespace XwmlParser
         /// </returns>
         public bool TypeInherits(TypeReference typeReference, TypeReference parentType)
         {
-            if (parentType.Resolve().IsInterface)
+            var parentDef = parentType.Resolve();
+            if (parentDef.IsInterface)
             {
                 return false;
             }
+
+            if (typeReference.Resolve().IsInterface)
+            { return parentDef.IsSame(this.context.KnownReferences.Object); }
 
             if (typeReference.IsArray)
             {

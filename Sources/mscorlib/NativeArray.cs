@@ -213,16 +213,12 @@ namespace System
 
         public extern string Join(string seperator);
 
-        [Script(@"return this.pop();")]
         public extern T Pop();
 
-        [Script(@"return this.push(value);")]
         public extern int Push(T value);
 
-        [Script(@"return this.shift();")]
         public extern T Shift();
 
-        [Script(@"return this.unshift(value);")]
         public extern void Unshift(T value);
 
         public extern void Reverse();

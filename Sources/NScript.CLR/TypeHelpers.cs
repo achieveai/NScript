@@ -1828,6 +1828,12 @@ namespace NScript.CLR
         /// </returns>
         public static bool ExtendsType(this TypeReference type, TypeReference typeReference)
         {
+            if (type.Resolve().IsInterface)
+            {
+                var typeDef = typeReference.Resolve();
+                return typeDef.IsClass && typeDef.BaseType == null;
+            }
+
             do
             {
                 if (type.IsSame(typeReference))

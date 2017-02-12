@@ -20,6 +20,11 @@ namespace Sunlight.Framework.Observables
         private StringDictionary<Action<INotifyPropertyChanged, string>> eventHandlers = null;
 
         /// <summary>
+        /// The linked properties.
+        /// </summary>
+        private StringDictionary<List<string>> linkedProperties = null;
+
+        /// <summary>
         /// Add a callback listening for property changes
         /// </summary>
         /// <param name="propertyName">Property name</param>
@@ -85,6 +90,26 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
+        /// Adds a linked property to 'otherProperty'.
+        /// </summary>
+        /// <param name="sourceProperty"> Source property. </param>
+        /// <param name="otherProperty">  The other property. </param>
+        protected void AddLinkedProperty(string sourceProperty, string otherProperty)
+        {
+            if (this.linkedProperties == null)
+            { this.linkedProperties = new StringDictionary<List<string>>(); }
+
+            List<string> propertyNames = null;
+            if (!this.linkedProperties.TryGetValue(sourceProperty, out propertyNames))
+            {
+                propertyNames = new List<string>();
+                this.linkedProperties.Add(sourceProperty, propertyNames);
+            }
+
+            propertyNames.Add(otherProperty);
+        }
+
+        /// <summary>
         /// Fires properties changed for all handlers.
         /// </summary>
         protected void FireAllPropertiesChanged()
@@ -115,7 +140,23 @@ namespace Sunlight.Framework.Observables
                 {
                     cb(this, propertyName);
                 }
+
+                if (this.linkedProperties != null)
+                {
+                    List<string> linkedProperties;
+                    if (this.linkedProperties.TryGetValue(propertyName, out linkedProperties))
+                    {
+                        for (int iProp = 0; iProp < linkedProperties.Count; iProp++)
+                        {
+                            if (this.eventHandlers.TryGetValue(linkedProperties[iProp], out cb))
+                            {
+                                cb(this, propertyName);
+                            }
+                        }
+                    }
+                }
             }
+
         }
 
         /// <summary>
@@ -205,6 +246,25 @@ namespace Sunlight.Framework.Observables
                     if (this.eventHandlers.TryGetValue(propertyName, out cb))
                     {
                         cb(this, propertyName);
+                    }
+                }
+
+                if (this.linkedProperties != null)
+                {
+                    List<string> linkedProperties;
+                    for (int iProp = 0; iProp < propertyNames.Length; iProp++)
+                    {
+                        string propertyName = propertyNames[iProp];
+                        if (this.linkedProperties.TryGetValue(propertyName, out linkedProperties))
+                        {
+                            for (int jProp = 0; jProp < linkedProperties.Count; jProp++)
+                            {
+                                if (this.eventHandlers.TryGetValue(linkedProperties[jProp], out cb))
+                                {
+                                    cb(this, propertyName);
+                                }
+                            }
+                        }
                     }
                 }
             }
