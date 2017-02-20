@@ -70,4 +70,14 @@ namespace RealScript
             return JsScriptImport.ExternGenericCall<long>(10);
         }
     }
+
+    [JsonType]
+    public class FlagsEnumOrOperatorRegression
+    {
+        public extern string Str
+        { get; set; }
+
+        public extern FlagEnum? FlagEnum
+        { get; set; }
+    }
 }

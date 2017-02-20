@@ -405,11 +405,20 @@ namespace NScript.Converter.ExpressionsConverter
             // left === null || right === null ? null : left [op] right;
             // So let's modify the left and right so that we can change
             // the expression as above.
-            if (isLifted && leftExpression is FromNullable)
+            if (isLifted && leftExpression.ResultType.IsSameDefinition(converter.ClrKnownReferences.NullableType))
             {
-                leftConditionPartExpression = ExpressionConverterBase.Convert(
-                    converter,
-                    ((FromNullable)leftExpression).InnerExpression);
+                if (leftExpression is FromNullable)
+                {
+                    leftConditionPartExpression = ExpressionConverterBase.Convert(
+                        converter,
+                        ((FromNullable)leftExpression).InnerExpression);
+                }
+                else
+                {
+                    leftConditionPartExpression = ExpressionConverterBase.Convert(
+                        converter,
+                        leftExpression);
+                }
 
                 leftJstExpression = leftConditionPartExpression;
                 if (BinaryExpressionConverter.MayHaveSideEffects(leftConditionPartExpression))
@@ -444,12 +453,22 @@ namespace NScript.Converter.ExpressionsConverter
                     leftExpression);
             }
 
-            if (isLifted && rightExpression is FromNullable)
+            if (isLifted && rightExpression.ResultType.IsSameDefinition(converter.ClrKnownReferences.NullableType))
             {
-                rightConditionPartExpression = ExpressionConverterBase.Convert(
-                    converter,
-                    ((FromNullable)rightExpression).InnerExpression);
-                rightJstExpression = rightConditionPartExpression;
+                if (rightExpression is FromNullable)
+                {
+                    rightConditionPartExpression = ExpressionConverterBase.Convert(
+                        converter,
+                        ((FromNullable)rightExpression).InnerExpression);
+                    rightJstExpression = rightConditionPartExpression;
+                }
+                else
+                {
+                    rightConditionPartExpression = ExpressionConverterBase.Convert(
+                        converter,
+                        rightExpression);
+                    rightJstExpression = rightConditionPartExpression;
+                }
 
                 if (BinaryExpressionConverter.MayHaveSideEffects(rightConditionPartExpression))
                 {
@@ -658,6 +677,16 @@ namespace NScript.Converter.ExpressionsConverter
                         converter.Scope,
                         condition,
                         new JST.NullLiteralExpression(converter.Scope),
+                        rv);
+                }
+
+                if (isAssignmentOp)
+                {
+                    rv = new JST.BinaryExpression(
+                        location,
+                        converter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        leftStoreExpression ?? leftJstExpression,
                         rv);
                 }
             }

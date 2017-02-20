@@ -546,6 +546,7 @@
                 @"IfBlocks.cs",
                 @"BasicBlockTestFunctions.cs",
                 @"BasicStatements.cs",
+                @"EnumTypes.cs",
                 @"InlineComplexStatements.cs",
                 @"JsScriptImport.cs",
                 @"LoopTests.cs",

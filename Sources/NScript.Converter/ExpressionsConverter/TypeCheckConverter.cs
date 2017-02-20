@@ -59,6 +59,13 @@ namespace NScript.Converter.ExpressionsConverter
                 {
                     return nestedExpression;
                 }
+                else if (!RequireCast(
+                    converter.RuntimeManager.Context,
+                    expression.ResultType,
+                    expression.Expression.ResultType))
+                {
+                    return nestedExpression;
+                }
                 else if (expression.Expression.ResultType.IsValueType)
                 {
                     throw new NotImplementedException("Don't know how to handle this case");
@@ -193,6 +200,16 @@ namespace NScript.Converter.ExpressionsConverter
                 && t2.IsIntegerOrEnum())
             {
                 return false;
+            }
+
+            if (t1.IsGenericInstance && t2.IsGenericInstance
+                &&t1.Resolve().IsSameDefinition(context.ClrKnownReferences.NullableType)
+                && t2.Resolve().IsSameDefinition(context.ClrKnownReferences.NullableType))
+            {
+                return RequireCast(
+                    context,
+                    ((GenericInstanceType)t1).GenericArguments[0],
+                    ((GenericInstanceType)t2).GenericArguments[0]);
             }
 
             if (t1.IsArray && t2.Resolve().IsSameDefinition(context.KnownReferences.ArrayImplGeneric)

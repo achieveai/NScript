@@ -216,5 +216,26 @@ namespace RealScript
         {
             return dict["0"];
         }
+
+        public static FlagEnum? RegressionFlagsOrAssign(FlagEnum? en)
+        {
+            en |= FlagEnum.Two;
+            return en;
+        }
+
+        public static FlagEnum? RegressionFlagsOr(FlagEnum? en)
+        {
+            return en | FlagEnum.Two;
+        }
+
+        public static void RegressionFlagsOrAssign2(FlagsEnumOrOperatorRegression obj)
+        {
+            obj.FlagEnum |= FlagEnum.Two;
+        }
+
+        public static void RegressionFlagsOr2(FlagsEnumOrOperatorRegression obj)
+        {
+            obj.FlagEnum =  obj.FlagEnum | FlagEnum.Two;
+        }
     }
 }

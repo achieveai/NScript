@@ -12,6 +12,7 @@ namespace NScript.Converter.Test.MethodConverterTests
     /// <summary>
     /// Definition for RegressionTests
     /// </summary>
+    [TestFixture]
     public class RegressionTests
     {
         private const string TestClassNameStr = "FuncRegressions";
@@ -38,14 +39,18 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [TestCase(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.All)]
-        [TestCase(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoopsMcs.js", TestType.All)]
-        [TestCase(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All)]
-        [TestCase(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All)]
-        [TestCase("JsScriptImport", "GetAndSetIndexerProperty", "GetAndSetIndexerPropertyMcs.js", TestType.All)]
-        [TestCase(TestClassNameStr, "CollapsingForInIfRegression", "CollapsingForInIfRegression.js", TestType.All)]
-        [TestCase(TestClassNameStr, "RegressionWithLastIndexOfString", "RegressionWithLastIndexOfString.js", TestType.All)]
-        [TestCase(TestClassNameStr, "OddNativeArrayPushBehavior", "OddNativeArrayPushBehavior.js", TestType.All)]
+        //[TestCase(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.All)]
+        //[TestCase(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoopsMcs.js", TestType.All)]
+        //[TestCase(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All)]
+        //[TestCase(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All)]
+        //[TestCase("JsScriptImport", "GetAndSetIndexerProperty", "GetAndSetIndexerPropertyMcs.js", TestType.All)]
+        //[TestCase(TestClassNameStr, "CollapsingForInIfRegression", "CollapsingForInIfRegression.js", TestType.All)]
+        //[TestCase(TestClassNameStr, "RegressionWithLastIndexOfString", "RegressionWithLastIndexOfString.js", TestType.All)]
+        //[TestCase(TestClassNameStr, "OddNativeArrayPushBehavior", "OddNativeArrayPushBehavior.js", TestType.All)]
+        [TestCase("BasicStatements", "RegressionFlagsOr", "RegressionFlagsOr.js", TestType.All)]
+        //[TestCase("BasicStatements", "RegressionFlagsOrAssign", "RegressionFlagsOrAssign.js", TestType.All)]
+        [TestCase("BasicStatements", "RegressionFlagsOr2", "RegressionFlagsOr2.js", TestType.All)]
+        [TestCase("BasicStatements", "RegressionFlagsOrAssign2", "RegressionFlagsOrAssign2.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

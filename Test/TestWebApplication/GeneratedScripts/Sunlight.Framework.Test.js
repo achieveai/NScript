@@ -775,6 +775,7 @@ function ObservableObject() {
 ObservableObject.typeId = "v";
 ptyp_ = ObservableObject.prototype;
 ptyp_.eventHandlers = null;
+ptyp_.linkedProperties = null;
 ptyp_.addPropertyChangedListener = function ObservableObject__AddPropertyChangedListener(propertyName, callback) {
   var cb;
   if (!this.eventHandlers)
@@ -812,7 +813,7 @@ ptyp_.removePropertyChangedListener = function ObservableObject__RemovePropertyC
   }
 };
 ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(propertyName) {
-  var cb;
+  var cb, linkedProperties, iProp;
   if (this.eventHandlers) {
     if (this.eventHandlers.tryGetValue(propertyName, {
       read: function() {
@@ -823,6 +824,26 @@ ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(prope
       }
     }))
       cb(this, propertyName);
+    if (this.linkedProperties) {
+      if (this.linkedProperties.tryGetValue(propertyName, {
+        read: function() {
+          return linkedProperties;
+        },
+        write: function(arg0) {
+          return linkedProperties = arg0;
+        }
+      }))
+        for (iProp = 0; iProp < linkedProperties.get_count(); iProp++)
+          if (this.eventHandlers.tryGetValue(linkedProperties.get_item(iProp), {
+            read: function() {
+              return cb;
+            },
+            write: function(arg0) {
+              return cb = arg0;
+            }
+          }))
+            cb(this, propertyName);
+    }
   }
 };
 ptyp_.__ctor = function ObservableObject____ctor() {
@@ -1817,7 +1838,7 @@ function List(T, $5fcallStatiConstructor) {
     return this.nativeArray.length;
   };
   ptyp_.add = function List$1__Add(item) {
-    NativeArray$1__Push(this.nativeArray, item);
+    this.nativeArray.push(item);
   };
   ptyp_.V_CopyTo_c = ptyp_.system__Collections__ICollection__CopyTo;
   ptyp_.V_get_Count_c = ptyp_.get_count;
@@ -1832,9 +1853,6 @@ function List(T, $5fcallStatiConstructor) {
   if ($5fcallStatiConstructor)
     List$1_$T$_.$5ftri();
   return List$1_$T$_;
-};
-function NativeArray$1__Push(this_, value) {
-  return this_.push(value);
 };
 function NativeArray$1__RemoveAt(this_, index) {
   var len, i;
