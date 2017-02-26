@@ -405,7 +405,9 @@ namespace NScript.Converter.ExpressionsConverter
             // left === null || right === null ? null : left [op] right;
             // So let's modify the left and right so that we can change
             // the expression as above.
-            if (isLifted && leftExpression.ResultType.IsSameDefinition(converter.ClrKnownReferences.NullableType))
+            if (isLifted
+                && op != BinaryOperator.Assignment
+                && leftExpression.ResultType.IsSameDefinition(converter.ClrKnownReferences.NullableType))
             {
                 if (leftExpression is FromNullable)
                 {
@@ -453,7 +455,9 @@ namespace NScript.Converter.ExpressionsConverter
                     leftExpression);
             }
 
-            if (isLifted && rightExpression.ResultType.IsSameDefinition(converter.ClrKnownReferences.NullableType))
+            if (isLifted
+                && op != BinaryOperator.Assignment
+                && rightExpression.ResultType.IsSameDefinition(converter.ClrKnownReferences.NullableType))
             {
                 if (rightExpression is FromNullable)
                 {
@@ -680,7 +684,7 @@ namespace NScript.Converter.ExpressionsConverter
                         rv);
                 }
 
-                if (isAssignmentOp)
+                if (isAssignmentOp && op != BinaryOperator.Assignment)
                 {
                     rv = new JST.BinaryExpression(
                         location,

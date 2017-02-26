@@ -104,7 +104,7 @@ namespace System
         [Script(@"
             this.@{[mscorlib]System.ArrayG`1::innerArray}.sort(compareCallback);
             ")]
-        public extern void Sort(Func<T, int> compareCallback);
+        public extern void Sort(Func<T, T, int> compareCallback);
 
         public override sealed object GetValue(int index)
         {

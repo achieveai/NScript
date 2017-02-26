@@ -11,7 +11,7 @@
 
         internal extern Array();
 
-        public static void Sort<T>(T[] array, Func<T, int> comparator)
+        public static void Sort<T>(T[] array, Func<T, T, int> comparator)
         {
             ((ArrayG<T>)(object)array).Sort(comparator);
         }
@@ -73,7 +73,7 @@
 
         internal ArrayImpl() { }
 
-        public static void Sort<T>(T[] array, Func<T, int> comparator)
+        public static void Sort<T>(T[] array, Func<T, T, int> comparator)
         {
             ((ArrayG<T>)(object)array).Sort(comparator);
         }
