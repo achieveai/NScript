@@ -202,13 +202,19 @@ namespace NScript.Converter.ExpressionsConverter
                 return false;
             }
 
-            if (t1.IsGenericInstance && t2.IsGenericInstance
-                &&t1.Resolve().IsSameDefinition(context.ClrKnownReferences.NullableType)
-                && t2.Resolve().IsSameDefinition(context.ClrKnownReferences.NullableType))
+            if (t1.IsGenericInstance && t1.Resolve().IsSameDefinition(context.ClrKnownReferences.NullableType))
             {
                 return RequireCast(
                     context,
                     ((GenericInstanceType)t1).GenericArguments[0],
+                    t2);
+            }
+
+            if (t2.IsGenericInstance && t2.Resolve().IsSameDefinition(context.ClrKnownReferences.NullableType))
+            {
+                return RequireCast(
+                    context,
+                    t1,
                     ((GenericInstanceType)t2).GenericArguments[0]);
             }
 

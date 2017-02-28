@@ -151,7 +151,7 @@ namespace System
         [Script(@" return this; ")]
         private extern T GetValue();
 
-        [Script(@" return this !== null; ")]
+        [Script(@" return this !== null && typeof this != 'undefined'; ")]
         private extern bool GetHasValue();
 
         [Script(@"return o === null ? null : @{[mscorlib]System.Type::BoxTypeInstance([mscorlib]System.Type, [mscorlib]System.Object)}(@{T},o);")]
