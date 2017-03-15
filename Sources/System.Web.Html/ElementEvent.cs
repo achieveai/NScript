@@ -12,7 +12,7 @@ namespace System.Web.Html
     /// Definition for ElementEvent.
     /// </summary>
     [IgnoreNamespace, ScriptName("Object")]
-    public class ElementEvent
+    public class ElementEvent : Event
     {
         /// <summary>
         /// Gets a value indicating whether the alternate key.
@@ -33,30 +33,12 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the cancel bubble.
-        /// </summary>
-        /// <value>
-        /// true if we cancel bubble, false if not.
-        /// </value>
-        public extern bool CancelBubble
-        { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether the control key.
         /// </summary>
         /// <value>
         /// true if control key, false if not.
         /// </value>
         public extern bool CtrlKey
-        { get; }
-
-        /// <summary>
-        /// Gets the current target.
-        /// </summary>
-        /// <value>
-        /// The current target.
-        /// </value>
-        public extern Element CurrentTarget
         { get; }
 
         /// <summary>
@@ -123,15 +105,6 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the return value.
-        /// </summary>
-        /// <value>
-        /// true if return value, false if not.
-        /// </value>
-        public extern bool ReturnValue
-        { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether the shift key.
         /// </summary>
         /// <value>
@@ -146,7 +119,7 @@ namespace System.Web.Html
         /// <value>
         /// The source element.
         /// </value>
-        public extern Element SrcElement
+        public new extern Element SrcElement
         { get; }
 
         /// <summary>
@@ -155,7 +128,7 @@ namespace System.Web.Html
         /// <value>
         /// The target.
         /// </value>
-        public extern Element Target
+        public new extern Element Target
         { get; }
 
         /// <summary>
@@ -175,29 +148,5 @@ namespace System.Web.Html
         /// </value>
         public extern Element ToElement
         { get; }
-
-        /// <summary>
-        /// Gets the type.
-        /// </summary>
-        /// <value>
-        /// The type.
-        /// </value>
-        public extern string Type
-        { get; }
-
-        /// <summary>
-        /// Prevent default.
-        /// </summary>
-        public extern void PreventDefault();
-
-        /// <summary>
-        /// Stops an immediate propagation.
-        /// </summary>
-        public extern void StopImmediatePropagation();
-
-        /// <summary>
-        /// Stops a propagation.
-        /// </summary>
-        public extern void StopPropagation();
     }
 }

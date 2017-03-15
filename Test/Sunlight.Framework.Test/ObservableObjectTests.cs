@@ -69,15 +69,15 @@ namespace Sunlight.Framework.Test
         }
 
         [Test]
-        public static void TestCreateNewObservableObject()
+        public static void TestCreateNewObservableObject(Assert assert)
         {
             ObservableTestObject observableObject = new ObservableTestObject();
 
-            Assert.NotEqual(null, observableObject, "ObservableObject should be created");
+            assert.NotEqual(null, observableObject, "ObservableObject should be created");
         }
 
         [Test]
-        public static void TestFirePropertyChanged()
+        public static void TestFirePropertyChanged(Assert assert)
         {
             ObservableTestObject observableObject = new ObservableTestObject();
             bool strChanged = false;
@@ -92,18 +92,18 @@ namespace Sunlight.Framework.Test
             observableObject.AddPropertyChangedListener("StringProp", cb1);
             observableObject.StringProp = "1";
 
-            Assert.IsTrue(strChanged, "change callback called");
+            assert.IsTrue(strChanged, "change callback called");
 
             strChanged = false;
             cbCalled = false;
 
             observableObject.IntProp = 1;
-            Assert.IsTrue(!strChanged, "String change callback not called.");
-            Assert.IsTrue(!cbCalled, "Callback should not be called for different property change");
+            assert.IsTrue(!strChanged, "String change callback not called.");
+            assert.IsTrue(!cbCalled, "Callback should not be called for different property change");
         }
 
         [Test]
-        public static void TestRemovePropertyChangeCallback()
+        public static void TestRemovePropertyChangeCallback(Assert assert)
         {
             ObservableTestObject observableObject = new ObservableTestObject();
             bool cbCalled = false;
@@ -113,13 +113,13 @@ namespace Sunlight.Framework.Test
             observableObject.AddPropertyChangedListener("StringProp", cb1);
             observableObject.StringProp = "1";
 
-            Assert.IsTrue(cbCalled, "change callback called");
+            assert.IsTrue(cbCalled, "change callback called");
             cbCalled = false;
 
             observableObject.RemovePropertyChangedListener("StringProp", cb1);
 
             observableObject.StringProp = "2";
-            Assert.IsTrue(!cbCalled, "after removing change listner, callback should not be called.");
+            assert.IsTrue(!cbCalled, "after removing change listner, callback should not be called.");
         }
     }
 }

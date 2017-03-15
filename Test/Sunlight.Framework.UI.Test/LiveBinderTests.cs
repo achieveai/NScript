@@ -155,7 +155,7 @@ namespace Sunlight.Framework.UI.Test
         /// Tests live binder on activate.
         /// </summary>
         [Test]
-        public static void TestLiveBinderOnActivate()
+        public static void TestLiveBinderOnActivate(Assert assert)
         {
             TestViewModelA src = new TestViewModelA();
             TestViewModelA target = new TestViewModelA();
@@ -164,17 +164,17 @@ namespace Sunlight.Framework.UI.Test
             liveBinder.Source = src;
             liveBinder.Target = target;
 
-            Assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
         }
 
         /// <summary>
         /// Tests live binder on activate.
         /// </summary>
         [Test]
-        public static void TestLiveBinderOnChange()
+        public static void TestLiveBinderOnChange(Assert assert)
         {
             TestViewModelA src = new TestViewModelA();
             TestViewModelA target = new TestViewModelA();
@@ -183,20 +183,20 @@ namespace Sunlight.Framework.UI.Test
             liveBinder.Source = src;
             liveBinder.Target = target;
 
-            Assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
 
             src.PropStr1 = "testChanged";
-            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
         }
 
         /// <summary>
         /// Tests live binder on activate.
         /// </summary>
         [Test]
-        public static void TestLiveBinderMultiOnActivate()
+        public static void TestLiveBinderMultiOnActivate(Assert assert)
         {
             TestViewModelA src = new TestViewModelA();
             TestViewModelA target = new TestViewModelA();
@@ -206,17 +206,17 @@ namespace Sunlight.Framework.UI.Test
             liveBinder.Source = src;
             liveBinder.Target = target;
 
-            Assert.NotEqual(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            assert.NotEqual(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
         }
 
         /// <summary>
         /// Tests live binder on activate.
         /// </summary>
         [Test]
-        public static void TestLiveBinderMultiOnChange()
+        public static void TestLiveBinderMultiOnChange(Assert assert)
         {
             TestViewModelA src = new TestViewModelA();
             TestViewModelA target = new TestViewModelA();
@@ -226,26 +226,26 @@ namespace Sunlight.Framework.UI.Test
             liveBinder.Source = src;
             liveBinder.Target = target;
 
-            Assert.NotEqual(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            assert.NotEqual(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
 
             src.TestVMA.PropStr1 = "testChanged";
-            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes on lastElement should have flowed.");
+            assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes on lastElement should have flowed.");
 
             src.TestVMA = new TestViewModelA() { PropStr1 = "ChangedTest" };
-            Assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
+            assert.Equal(src.TestVMA.PropStr1, target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
 
             src.TestVMA = null;
-            Assert.Equal(null, target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
+            assert.Equal(null, target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
         }
 
         /// <summary>
         /// Tests live binder on activate.
         /// </summary>
         [Test]
-        public static void TestTwoWayLiveBinderOnChange()
+        public static void TestTwoWayLiveBinderOnChange(Assert assert)
         {
             TestViewModelA src = new TestViewModelA();
             TestViewModelA target = new TestViewModelA();
@@ -254,23 +254,23 @@ namespace Sunlight.Framework.UI.Test
             liveBinder.Source = src;
             liveBinder.Target = target;
 
-            Assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            assert.NotEqual(src.PropStr1, target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
 
             src.PropStr1 = "testChanged";
-            Assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.PropStr1, target.PropStr1, "if liveBinder is active and changes should have flowed.");
 
             target.PropStr1 = "Changed Again";
-            Assert.Equal(target.PropStr1, src.PropStr1, "if liveBinder is active in twoWay changes on target should flow back.");
+            assert.Equal(target.PropStr1, src.PropStr1, "if liveBinder is active in twoWay changes on target should flow back.");
         }
 
         /// <summary>
         /// Tests two way live binder multi on change with converters.
         /// </summary>
         [Test]
-        public static void TestTwoWayLiveBinderMultiOnChangeWithConverters()
+        public static void TestTwoWayLiveBinderMultiOnChangeWithConverters(Assert assert)
         {
             TestViewModelA src = new TestViewModelA();
             TestViewModelA target = new TestViewModelA();
@@ -280,19 +280,19 @@ namespace Sunlight.Framework.UI.Test
             liveBinder.Source = src;
             liveBinder.Target = target;
 
-            Assert.NotEqual(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is notActive, changes should not flow");
+            assert.NotEqual(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is notActive, changes should not flow");
 
             liveBinder.IsActive = true;
-            Assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active and changes should have flowed.");
+            assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active and changes should have flowed.");
 
             src.TestVMA.PropInt1 = 2;
-            Assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active and changes on lastElement should have flowed.");
+            assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active and changes on lastElement should have flowed.");
 
             src.TestVMA = new TestViewModelA() { PropInt1 = 3 };
-            Assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
+            assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active and changes on firstElement should have flowed.");
 
             target.PropStr1 = "21";
-            Assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active in twoWay changes on target should flow back.");
+            assert.Equal(src.TestVMA.PropInt1.ToString(), target.PropStr1, "if liveBinder is active in twoWay changes on target should flow back.");
         }
 
     }

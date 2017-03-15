@@ -65,7 +65,7 @@ namespace Sunlight.Framework.Test
     public class ContainerTests
     {
         [Test]
-        public static void TestRegisterResolve()
+        public static void TestRegisterResolve(Assert assert)
         {
             IocContainer container = new IocContainer();
 
@@ -77,21 +77,21 @@ namespace Sunlight.Framework.Test
 
             var t2 = container.Resolve<IocTestType2>();
 
-            Assert.IsTrue(t2 != null, "t2 != null");
-            Assert.Equal(1, t2.TestMethod(), "1 == t1.TestMethod()");
+            assert.IsTrue(t2 != null, "t2 != null");
+            assert.Equal(1, t2.TestMethod(), "1 == t1.TestMethod()");
 
             var t1 = container.Resolve<IocTestType1>();
 
-            Assert.IsTrue(t1 != null, "t1 != null");
-            Assert.Equal(3, t1.TestMethod(), "3 == t1.TestMethod()");
+            assert.IsTrue(t1 != null, "t1 != null");
+            assert.Equal(3, t1.TestMethod(), "3 == t1.TestMethod()");
 
             x = 10;
             t1 = container.Resolve<IocTestType1>();
-            Assert.Equal(12, t1.TestMethod(), "12 == t1.TestMethod()");
+            assert.Equal(12, t1.TestMethod(), "12 == t1.TestMethod()");
         }
 
         [Test]
-        public static void TestRegisterResolveWithAs()
+        public static void TestRegisterResolveWithAs(Assert assert)
         {
             IocContainer container = new IocContainer();
 
@@ -104,17 +104,17 @@ namespace Sunlight.Framework.Test
 
             var t2 = container.Resolve<IocTestType2>();
 
-            Assert.IsTrue(t2 != null, "t2 != null");
-            Assert.Equal(1, t2.TestMethod(), "1 == t1.TestMethod()");
+            assert.IsTrue(t2 != null, "t2 != null");
+            assert.Equal(1, t2.TestMethod(), "1 == t1.TestMethod()");
 
             var t1 = container.Resolve<IIocTestType1>();
 
-            Assert.IsTrue(t1 != null, "t1 != null");
-            Assert.Equal(3, t1.TestMethod(), "3 == t1.TestMethod()");
+            assert.IsTrue(t1 != null, "t1 != null");
+            assert.Equal(3, t1.TestMethod(), "3 == t1.TestMethod()");
         }
 
         [Test]
-        public static void TestRegisterResolveIsSingleton()
+        public static void TestRegisterResolveIsSingleton(Assert assert)
         {
             IocContainer container = new IocContainer();
 
@@ -127,18 +127,18 @@ namespace Sunlight.Framework.Test
 
             var t2 = container.Resolve<IocTestType2>();
 
-            Assert.IsTrue(t2 != null, "t2 != null");
-            Assert.Equal(1, t2.TestMethod(), "1 == t1.TestMethod()");
+            assert.IsTrue(t2 != null, "t2 != null");
+            assert.Equal(1, t2.TestMethod(), "1 == t1.TestMethod()");
 
             var t1 = container.Resolve<IocTestType1>();
 
             x = 10;
             var t1_ = container.Resolve<IocTestType1>();
-            Assert.StrictEqual(t1_, t1, "t1_ === t1");
+            assert.StrictEqual(t1_, t1, "t1_ === t1");
         }
 
         [Test]
-        public static void TestRegisterResolveLazy()
+        public static void TestRegisterResolveLazy(Assert assert)
         {
             IocContainer container = new IocContainer();
 
@@ -149,10 +149,10 @@ namespace Sunlight.Framework.Test
                 .IsSingleton();
 
             var t1 = container.ResolveLazy<IocTestType1>();
-            Assert.Equal(1, x, "x === 1");
+            assert.Equal(1, x, "x === 1");
 
-            Assert.Equal(3, t1.Value.TestMethod(), "t1.Value.TestMethod() == 3");
-            Assert.Equal(2, x, "x === 2");
+            assert.Equal(3, t1.Value.TestMethod(), "t1.Value.TestMethod() == 3");
+            assert.Equal(2, x, "x === 2");
         }
     }
 }

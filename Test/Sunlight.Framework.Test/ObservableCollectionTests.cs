@@ -17,35 +17,35 @@ namespace Sunlight.Framework.Test
     public class ObservableCollectionTests
     {
         [Test]
-        public static void TestCreateNewObservableCollection()
+        public static void TestCreateNewObservableCollection(Assert assert)
         {
             ObservableCollection<int> observableCollection = new ObservableCollection<int>();
 
-            Assert.NotEqual(null, observableCollection, "ObservableCollection should be created");
-            Assert.Equal(0, observableCollection.Count, "ObservableCollection's size should be 0");
+            assert.NotEqual(null, observableCollection, "ObservableCollection should be created");
+            assert.Equal(0, observableCollection.Count, "ObservableCollection's size should be 0");
         }
 
         [Test]
-        public static void TestAddItemToObservableCollection()
+        public static void TestAddItemToObservableCollection(Assert assert)
         {
             ObservableCollection<int> observableCollection = new ObservableCollection<int>();
             bool eventRaised = false;
 
             observableCollection.CollectionChanged += (coll, evtArg) =>
                 {
-                    Assert.Equal(observableCollection, coll, "ObservableCollection");
-                    Assert.Equal(1, evtArg.NewItems.Count, "evtArg.NewItems.Count");
-                    Assert.IsTrue(Object.IsNullOrUndefined(evtArg.OldItems), "Object.IsNullOrUndefined(evtArg.OldItems)");
-                    Assert.Equal(0, evtArg.ChangeIndex, "evtArg.changeIndex");
+                    assert.Equal(observableCollection, coll, "ObservableCollection");
+                    assert.Equal(1, evtArg.NewItems.Count, "evtArg.NewItems.Count");
+                    assert.IsTrue(Object.IsNullOrUndefined(evtArg.OldItems), "Object.IsNullOrUndefined(evtArg.OldItems)");
+                    assert.Equal(0, evtArg.ChangeIndex, "evtArg.changeIndex");
                     eventRaised = true;
                 };
 
             observableCollection.Add(1);
-            Assert.IsTrue(eventRaised, "Change event raised");
+            assert.IsTrue(eventRaised, "Change event raised");
         }
 
         [Test]
-        public static void TestRemoveItemToObservableCollection()
+        public static void TestRemoveItemToObservableCollection(Assert assert)
         {
             ObservableCollection<int> observableCollection = new ObservableCollection<int>();
             bool eventRaised = false;
@@ -55,15 +55,15 @@ namespace Sunlight.Framework.Test
 
             observableCollection.CollectionChanged += (coll, evtArg) =>
                 {
-                    Assert.Equal(observableCollection, coll, "ObservableCollection");
-                    Assert.Equal(2, evtArg.OldItems.Count, "evtArg.OldItems.Count");
-                    Assert.IsTrue(Object.IsNullOrUndefined(evtArg.NewItems), "Object.IsNullOrUndefined(evtArg.NewItems)");
-                    Assert.Equal(1, evtArg.ChangeIndex, "evtArg.changeIndex");
+                    assert.Equal(observableCollection, coll, "ObservableCollection");
+                    assert.Equal(2, evtArg.OldItems.Count, "evtArg.OldItems.Count");
+                    assert.IsTrue(Object.IsNullOrUndefined(evtArg.NewItems), "Object.IsNullOrUndefined(evtArg.NewItems)");
+                    assert.Equal(1, evtArg.ChangeIndex, "evtArg.changeIndex");
                     eventRaised = true;
                 };
 
             observableCollection.RemoveRangeAt(1, 2);
-            Assert.IsTrue(eventRaised, "Change event raised");
+            assert.IsTrue(eventRaised, "Change event raised");
         }
     }
 }

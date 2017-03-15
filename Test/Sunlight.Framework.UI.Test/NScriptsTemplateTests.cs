@@ -32,17 +32,17 @@ namespace Sunlight.Framework.UI.Test
         /// Test case to test a unit of functionality.
         /// </summary>
         [Test]
-        public static void Test()
+        public static void Test(Assert assert)
         {
-            Assert.NotEqual(null, NScriptsTemplatesClass.TestTemplate1, "Template should not be null");
-            Assert.IsTrue(true, "true should be true");
+            assert.NotEqual(null, NScriptsTemplatesClass.TestTemplate1, "Template should not be null");
+            assert.IsTrue(true, "true should be true");
         }
 
         /// <summary>
         /// Tests apply skin.
         /// </summary>
         [Test]
-        public static void TestApplySkin()
+        public static void TestApplySkin(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
             UISkinableElement control = new UISkinableElement(element);
@@ -52,14 +52,14 @@ namespace Sunlight.Framework.UI.Test
 
             control.Activate();
 
-            Assert.NotEqual(null, element.QuerySelector("[test]"), "After applying skin, skin element should be loaded");
+            assert.NotEqual(null, element.QuerySelector("[test]"), "After applying skin, skin element should be loaded");
         }
 
         /// <summary>
         /// Tests CSS binder.
         /// </summary>
         [Test]
-        public static void TestCssBinder()
+        public static void TestCssBinder(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
             UISkinableElement control = new UISkinableElement(element);
@@ -71,18 +71,18 @@ namespace Sunlight.Framework.UI.Test
             control.Activate();
 
             var elem = element.QuerySelector("[test]");
-            Assert.NotEqual(null, elem, "After applying skin, skin element should be loaded");
-            Assert.Equal("", elem.ClassName, "Class should not be set if PropBool1 is not set.");
+            assert.NotEqual(null, elem, "After applying skin, skin element should be loaded");
+            assert.Equal("", elem.ClassName, "Class should not be set if PropBool1 is not set.");
 
             vm.PropBool1 = true;
-            Assert.NotEqual("", elem.ClassName, "Class should be set if PropBool1 is set.");
+            assert.NotEqual("", elem.ClassName, "Class should be set if PropBool1 is set.");
         }
 
         /// <summary>
         /// Tests style binder.
         /// </summary>
         [Test]
-        public static void TestStyleBinder()
+        public static void TestStyleBinder(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
             UISkinableElement control = new UISkinableElement(element);
@@ -94,18 +94,18 @@ namespace Sunlight.Framework.UI.Test
             control.Activate();
 
             var elem = element.QuerySelector("[test]");
-            Assert.NotEqual(null, elem, "After applying skin, skin element should be loaded");
-            Assert.Equal("", elem.Style.Height, "Style should not be set if PropStr1 is not set.");
+            assert.NotEqual(null, elem, "After applying skin, skin element should be loaded");
+            assert.Equal("", elem.Style.Height, "Style should not be set if PropStr1 is not set.");
 
             vm.PropStr1 = "10px";
-            Assert.Equal("10px", elem.Style.Height, "Style should be set if PropStr1 is set.");
+            assert.Equal("10px", elem.Style.Height, "Style should be set if PropStr1 is set.");
         }
 
         /// <summary>
         /// Tests attribute binder.
         /// </summary>
         [Test]
-        public static void TestAttrBinder()
+        public static void TestAttrBinder(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
             UISkinableElement control = new UISkinableElement(element);
@@ -117,15 +117,15 @@ namespace Sunlight.Framework.UI.Test
             control.Activate();
 
             var elem = element.QuerySelector("[test]");
-            Assert.NotEqual(elem, null, "After applying skin, skin element should be loaded");
-            Assert.Equal(elem.GetAttribute("test1"), null, "Attribute 'test' should not be set if PropStr1 is not set.");
+            assert.NotEqual(elem, null, "After applying skin, skin element should be loaded");
+            assert.Equal(elem.GetAttribute("test1"), null, "Attribute 'test' should not be set if PropStr1 is not set.");
 
             vm.PropStr1 = "TTTest";
-            Assert.Equal("TTTest", elem.GetAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
+            assert.Equal("TTTest", elem.GetAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
         }
 
         [Test]
-        public static void TestPropertyBinder()
+        public static void TestPropertyBinder(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
             TestSkinableWithTestUIElementPart control = new TestSkinableWithTestUIElementPart(element);
@@ -136,16 +136,16 @@ namespace Sunlight.Framework.UI.Test
 
             control.Activate();
 
-            Assert.IsTrue(control.Part != null, "templatePart should not be null.");
-            Assert.Equal(control.Part.OneWayStrictBinding, vm.PropStr1, "vmPropStr1 should be equal to OnewayStrictBinding.");
+            assert.IsTrue(control.Part != null, "templatePart should not be null.");
+            assert.Equal(control.Part.OneWayStrictBinding, vm.PropStr1, "vmPropStr1 should be equal to OnewayStrictBinding.");
             vm.PropStr1 = "T1";
-            Assert.Equal(control.Part.OneWayStrictBinding, vm.PropStr1, "vmPropStr1 should be equal to OnewayStrictBinding.");
+            assert.Equal(control.Part.OneWayStrictBinding, vm.PropStr1, "vmPropStr1 should be equal to OnewayStrictBinding.");
 
-            Assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+            assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
             vm.PropInt1 = 11;
-            Assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+            assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
             control.Part.TwoWayLooseBinding = 101;
-            Assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+            assert.Equal(control.Part.TwoWayLooseBinding, vm.PropInt1, "TwoWayLooseBinding and bound property PropInt1 should be equal.");
         }
     }
 }

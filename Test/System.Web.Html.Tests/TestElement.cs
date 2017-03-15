@@ -27,27 +27,27 @@ namespace System.Web.Html.Tests
         /// <summary>
         /// Test case to test a unit of functionality.
         /// </summary>
-        public static void TestCreateElement()
+        public static void TestCreateElement(Assert assert)
         {
             Element element = Window.Instance.Document.CreateElement("div");
-            Assert.NotEqual(null, element, "element should not be null.");
-            Assert.Equal("DIV", element.TagName, "TagName of element");
+            assert.NotEqual(null, element, "element should not be null.");
+            assert.Equal("DIV", element.TagName, "TagName of element");
         }
 
         [Test]
-        public static void TestAttribute()
+        public static void TestAttribute(Assert assert)
         {
             DivElement element = Window.Instance.Document.CreateElement("div").As<DivElement>();
             element.SetAttribute("_id", "test");
 
             var attributes = element.Attributes;
-            Assert.Equal(1, attributes.Length, "attributes.Length");
-            Assert.Equal("_id", attributes[0].Name, "attributes[0].Name");
-            Assert.Equal("test", attributes[0].Value, "attributes[0].Value");
+            assert.Equal(1, attributes.Length, "attributes.Length");
+            assert.Equal("_id", attributes[0].Name, "attributes[0].Name");
+            assert.Equal("test", attributes[0].Value, "attributes[0].Value");
         }
 
         [Test]
-        public static void TestEventBinding()
+        public static void TestEventBinding(Assert assert)
         {
             Element element = Window.Instance.Document.CreateElement("div");
             element.TextContent = "Foo";
@@ -84,15 +84,15 @@ namespace System.Web.Html.Tests
 
             element.DispatchEvent(testEvt);
 
-            Assert.IsTrue(handlerCalled, "Handler should be called");
-            Assert.Equal("click", eventType, "EventType");
+            assert.IsTrue(handlerCalled, "Handler should be called");
+            assert.Equal("click", eventType, "EventType");
 
             element.UnBind("click", handler);
             handlerCalled = false;
             eventType = null;
 
             element.DispatchEvent(testEvt);
-            Assert.IsTrue(!handlerCalled, "Handler should not be called");
+            assert.IsTrue(!handlerCalled, "Handler should not be called");
         }
     }
 }

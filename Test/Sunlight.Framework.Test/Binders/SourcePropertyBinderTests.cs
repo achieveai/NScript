@@ -56,7 +56,7 @@ namespace Sunlight.Framework.Test.Binders
         }
 
         [Test]
-        public static void BasicValueTest()
+        public static void BasicValueTest(Assert assert)
         {
             SourcePropertyBinder sourceBinder = new SourcePropertyBinder(
                 new string[] { null },
@@ -72,12 +72,12 @@ namespace Sunlight.Framework.Test.Binders
             var src = SourcePropertyBinderTests.PrepSimpleObject();
             sourceBinder.Source = src;
 
-            Assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
-            Assert.Equal(src.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
+            assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
+            assert.Equal(src.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
         }
 
         [Test]
-        public static void BasicValueTestWithNotification()
+        public static void BasicValueTestWithNotification(Assert assert)
         {
             SourcePropertyBinder sourceBinder = new SourcePropertyBinder(
                 new string[] { "IntProp" },
@@ -93,18 +93,18 @@ namespace Sunlight.Framework.Test.Binders
             var src = SourcePropertyBinderTests.PrepNotifiableObject();
             sourceBinder.Source = src;
 
-            Assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
-            Assert.Equal(src.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
+            assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
+            assert.Equal(src.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
 
             helper.SourceValueUpdateCalled = false;
             src.IntProp++;
 
-            Assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
-            Assert.Equal(src.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
+            assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
+            assert.Equal(src.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
         }
 
         [Test]
-        public static void PropertyPathValueNotifiableTest()
+        public static void PropertyPathValueNotifiableTest(Assert assert)
         {
             SourcePropertyBinder sourceBinder = new SourcePropertyBinder(
                 new string[] { "NotifiableProp", "IntProp" },
@@ -121,18 +121,18 @@ namespace Sunlight.Framework.Test.Binders
             var src = SourcePropertyBinderTests.PrepSimpleObject();
             sourceBinder.Source = src;
 
-            Assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
-            Assert.Equal(src.NotifiableProp.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
+            assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
+            assert.Equal(src.NotifiableProp.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
 
             helper.SourceValueUpdateCalled = false;
             src.NotifiableProp.IntProp = -1;
 
-            Assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
-            Assert.Equal(src.NotifiableProp.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
+            assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
+            assert.Equal(src.NotifiableProp.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
         }
 
         [Test]
-        public static void PropertyPathValueTest()
+        public static void PropertyPathValueTest(Assert assert)
         {
             SourcePropertyBinder sourceBinder = new SourcePropertyBinder(
                 new string[] { "SelfProp", "IntProp" },
@@ -149,15 +149,15 @@ namespace Sunlight.Framework.Test.Binders
             var src = SourcePropertyBinderTests.PrepSimpleObject();
             sourceBinder.Source = src;
 
-            Assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
-            Assert.Equal(src.SelfProp.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
+            assert.IsTrue(helper.SourceValueUpdateCalled, "SourceValueUpdate called");
+            assert.Equal(src.SelfProp.IntProp, (int)sourceBinder.Value, "SourceBinder.Value");
 
             helper.SourceValueUpdateCalled = false;
             int lastValue = src.SelfProp.IntProp;
             src.SelfProp.IntProp = -1;
 
-            Assert.IsTrue(!helper.SourceValueUpdateCalled, "SourceValueUpdate called");
-            Assert.Equal(lastValue, (int)sourceBinder.Value, "SourceBinder.Value");
+            assert.IsTrue(!helper.SourceValueUpdateCalled, "SourceValueUpdate called");
+            assert.Equal(lastValue, (int)sourceBinder.Value, "SourceBinder.Value");
         }
     }
 }

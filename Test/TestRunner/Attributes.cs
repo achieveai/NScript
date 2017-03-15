@@ -17,18 +17,18 @@ namespace SunlightUnit
     }
 
     /// <summary>
-    /// Definition for Attributes
+    /// Definition for Test suite setup Attribute.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class AsyncTestFixtureAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class TestSetupAttribute : Attribute
     {
     }
 
     /// <summary>
-    /// Definition for TestSetup Attribute.
+    /// Definition for Test case setup Attribute.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class TestSetupAttribute : Attribute
+    public class TestCaseSetupAttribute : Attribute
     {
     }
 
@@ -41,10 +41,18 @@ namespace SunlightUnit
     }
 
     /// <summary>
-    /// Definition for TestSetup Attribute.
+    /// Definition for Test Suite Teardown Attribute.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class TestTearDownAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Definition for Test Case Teardown Attribute.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class TestCaseTearDownAttribute : Attribute
     {
     }
 }

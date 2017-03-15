@@ -13,7 +13,7 @@ namespace System.Web.Html
     /// Definition for Window.
     /// </summary>
     [IgnoreNamespace]
-    public sealed class Window
+    public sealed class Window : EventTarget
     {
         /// <summary>
         /// Constructor that prevents a default instance of this class from being created.
@@ -182,7 +182,7 @@ namespace System.Web.Html
         /// <summary>
         /// Event queue for all listeners interested in OnDeviceMotion events.
         /// </summary>
-        public extern event Action<Window, ElementEvent> OnDeviceMotion;
+        public extern event Action<Window, Event> OnDeviceMotion;
 
         /// <summary>
         /// Event queue for all listeners interested in OnBeforeUnload events.
@@ -398,7 +398,7 @@ namespace System.Web.Html
         /// <param name="eventName"> The name of the event such as 'load'. </param>
         /// <param name="handler">   The handler. </param>
         /// <param name="capture">   (optional) the capture. </param>
-        public void Bind(string eventName, Action<Window, ElementEvent> handler, bool capture = false)
+        public void Bind(string eventName, Action<Window, Event> handler, bool capture = false)
         {
             EventBinder.AddEvent(this, eventName, handler, capture);
         }
@@ -409,27 +409,9 @@ namespace System.Web.Html
         /// <param name="eventName"> The name of the event such as 'load'. </param>
         /// <param name="handler">   The handler. </param>
         /// <param name="capture">   (optional) the capture. </param>
-        public void UnBind(string eventName, Action<Window, ElementEvent> handler, bool capture = false)
+        public void UnBind(string eventName, Action<Window, Event> handler, bool capture = false)
         {
             EventBinder.RemoveEvent(this, eventName, handler, capture);
-        }
-
-        /// <summary>
-        /// Un bind.
-        /// </summary>
-        /// <param name="eventName"> The name of the event such as 'load'. </param>
-        public void UnBind(string eventName)
-        {
-            EventBinder.RemoveEvent(this, eventName, true);
-            EventBinder.RemoveEvent(this, eventName, false);
-        }
-
-        /// <summary>
-        /// Unbinds all events registered through Bind.
-        /// </summary>
-        public void UnBindAll()
-        {
-            EventBinder.CleanUp(this);
         }
     }
 }

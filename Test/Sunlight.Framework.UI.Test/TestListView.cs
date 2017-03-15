@@ -33,7 +33,7 @@ namespace Sunlight.Framework.UI.Test
         /// <summary>
         /// Test case to test a unit of functionality.
         /// </summary>
-        public static void TestChildSkin()
+        public static void TestChildSkin(Assert assert)
         {
             Document document = Window.Instance.Document;
             ListView listView = new ListView(document.CreateElement("div"));
@@ -50,11 +50,11 @@ namespace Sunlight.Framework.UI.Test
             listView.InactiveIfNullContext = false;
             listView.Activate();
             var elems = listView.Element.QuerySelectorAll("[test]");
-            Assert.Equal(3, elems.Length, "number of children should be 3");
+            assert.Equal(3, elems.Length, "number of children should be 3");
 
             for (int i = 0; i < 3; i++)
             {
-                Assert.Equal(
+                assert.Equal(
                     vmAs[i].PropStr1,
                     elems[i].InnerText,
                     "Inner text for element should match property it's bound to.");

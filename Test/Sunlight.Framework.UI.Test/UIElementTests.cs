@@ -17,18 +17,18 @@ namespace Sunlight.Framework.UI.Test
     public class UIElementTests
     {
         [Test]
-        public static void TestNewUIElement()
+        public static void TestNewUIElement(Assert assert)
         {
             Document doc = Window.Instance.Document;
             var element = new UIElement(
                 doc.CreateElement("div"));
 
-            Assert.NotEqual(
+            assert.NotEqual(
                 element.Element,
                 null,
                 "element.Element != null");
 
-            Assert.Equal(
+            assert.Equal(
                 element.Element.TagName,
                 "DIV",
                 "element.Element.TagName == 'DIV'");

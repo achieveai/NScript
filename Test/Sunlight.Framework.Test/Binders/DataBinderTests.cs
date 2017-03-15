@@ -18,7 +18,7 @@ namespace Sunlight.Framework.Test.Binders
     public class DataBinderTests
     {
         [Test]
-        public static void BasicBinderSimpleObjectTest()
+        public static void BasicBinderSimpleObjectTest(Assert assert)
         {
             DataBinder dataBinder = new DataBinder(
                 new SourcePropertyBinder(
@@ -41,17 +41,17 @@ namespace Sunlight.Framework.Test.Binders
             source.IntProp = 101;
 
             dataBinder.SetTarget(target);
-            Assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
 
             dataBinder.SetSource(source);
-            Assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
 
             dataBinder.SetSource(null);
-            Assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
         }
 
         [Test]
-        public static void BasicBinderSimpleObjectTestReverseOrder()
+        public static void BasicBinderSimpleObjectTestReverseOrder(Assert assert)
         {
             DataBinder dataBinder = new DataBinder(
                 new SourcePropertyBinder(
@@ -76,14 +76,14 @@ namespace Sunlight.Framework.Test.Binders
             dataBinder.SetSource(source);
 
             dataBinder.SetTarget(target);
-            Assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
 
             dataBinder.SetSource(null);
-            Assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
         }
 
         [Test]
-        public static void BasicBinderOneWayNotifiableObjectTest()
+        public static void BasicBinderOneWayNotifiableObjectTest(Assert assert)
         {
             DataBinder dataBinder = new DataBinder(
                 new SourcePropertyBinder(
@@ -106,17 +106,17 @@ namespace Sunlight.Framework.Test.Binders
             source.IntProp = 101;
 
             dataBinder.SetTarget(target);
-            Assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
 
             dataBinder.SetSource(source);
-            Assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
 
             source.IntProp = 102;
-            Assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
         }
 
         [Test]
-        public static void BasicBinderTwoWayNotifiableObjectTest()
+        public static void BasicBinderTwoWayNotifiableObjectTest(Assert assert)
         {
             DataBinder dataBinder = new DataBinder(
                 new SourcePropertyBinder(
@@ -139,13 +139,13 @@ namespace Sunlight.Framework.Test.Binders
             source.IntProp = 101;
 
             dataBinder.SetTarget(target);
-            Assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(-1, target.IntProp, "source.IntProp == target.IntProp");
 
             dataBinder.SetSource(source);
-            Assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
 
             target.IntProp++;
-            Assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
+            assert.Equal(source.IntProp, target.IntProp, "source.IntProp == target.IntProp");
         }
     }
 }

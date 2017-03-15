@@ -19,8 +19,45 @@
         static String()
         {
             String.formatHelperRegex = new RegularExpression(@"(\{[^\}^\{]+\})", "g");
-            String.trimStartHelperRegex = new RegularExpression(@"^[\s\xA0]+");
-            String.trimEndHelperRegex = new RegularExpression(@"[\s\xA0]+$");
+        }
+
+        private static RegularExpression FormatHelperRegex
+        {
+            get
+            {
+                if (object.IsNullOrUndefined(String.formatHelperRegex))
+                {
+                    String.formatHelperRegex = new RegularExpression(@"^[\s\xA0]+");
+                }
+
+                return String.formatHelperRegex;
+            }
+        }
+
+        private static RegularExpression TrimEndHelperRegex
+        {
+            get
+            {
+                if (object.IsNullOrUndefined(String.trimEndHelperRegex))
+                {
+                    String.trimEndHelperRegex = new RegularExpression(@"^[\s\xA0]+");
+                }
+
+                return String.trimEndHelperRegex;
+            }
+        }
+
+        private static RegularExpression TrimStartHelperRegex
+        {
+            get
+            {
+                if (object.IsNullOrUndefined(String.trimStartHelperRegex))
+                {
+                    String.trimStartHelperRegex = new RegularExpression(@"^[\s\xA0]+");
+                }
+
+                return String.trimStartHelperRegex;
+            }
         }
 
         public extern String();
@@ -106,7 +143,7 @@
         public extern static bool Equals(string s1, string s2, bool ignoreCase);
 
         [Script(@"
-            return format.replace(@{[mscorlib]System.String::formatHelperRegex},
+            return format.replace(@{[mscorlib]System.String::get_FormatHelperRegex()},
                   function(str, m) {
                       var index = parseInt(m.substr(1));
                       var value = values.@{[mscorlib]System.ArrayG`1::get_Item([mscorlib]System.Int32)}(index + 1);
@@ -118,6 +155,10 @@
                   });
             ")]
         public extern static string Format(string format, params object[] values);
+        public static string Format(string format, object value)
+        {
+            return string.Format(format, new object[] { value });
+        }
 
         public extern static string FromCharCode(char ch);
 
@@ -232,13 +273,13 @@
 
         [MakeStaticUsage]
         [Script(@"
-            return this.trimLeft ? this.trimLeft() : this.replace(@{[mscorlib]System.String::trimEndHelperRegex}, '');
+            return this.trimLeft ? this.trimLeft() : this.replace(@{[mscorlib]System.String::get_TrimEndHelperRegex()}, '');
             ")]
         public extern string TrimEnd();
 
         [MakeStaticUsage]
         [Script(@"
-            return this.trimRight ? this.trimRight() : this.replace(@{[mscorlib]System.String::trimStartHelperRegex}, '');
+            return this.trimRight ? this.trimRight() : this.replace(@{[mscorlib]System.String::get_TrimStartHelperRegex()}, '');
             ")]
         public extern string TrimStart();
 

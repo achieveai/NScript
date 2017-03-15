@@ -52,4 +52,22 @@
         {
         }
     }
+
+    public class EventBasedException : Exception
+    {
+        private readonly Event _evt;
+
+        public EventBasedException(Event evt)
+            :base(evt.Type)
+        { _evt = evt; }
+
+        public EventBasedException(
+            string message,
+            Event evt)
+            :base(message)
+        { _evt = evt; }
+
+        public Event Event
+        { get { return _evt; } }
+    }
 }

@@ -21,7 +21,7 @@ namespace Sunlight.Framework.UI.Test
         /// <summary>
         /// Test case to test a unit of functionality.
         /// </summary>
-        public static void TestSimpleBinder()
+        public static void TestSimpleBinder(Assert assert)
         {
             TestViewModelA src = new TestViewModelA()
                 {
@@ -45,14 +45,14 @@ namespace Sunlight.Framework.UI.Test
                     tar1
                 });
 
-            Assert.Equal(src.PropStr1, tar1.PropStr1, "After BindDataContext values should be equal");
+            assert.Equal(src.PropStr1, tar1.PropStr1, "After BindDataContext values should be equal");
         }
 
         [Test]
         /// <summary>
         /// Test case to test a unit of functionality.
         /// </summary>
-        public static void TestAttrBinding()
+        public static void TestAttrBinding(Assert assert)
         {
             TestViewModelA src = new TestViewModelA()
                 {
@@ -78,14 +78,14 @@ namespace Sunlight.Framework.UI.Test
                     target
                 });
 
-            Assert.Equal(src.PropStr1, target.GetAttribute("tmp"), "After BindDataContext values should be equal");
+            assert.Equal(src.PropStr1, target.GetAttribute("tmp"), "After BindDataContext values should be equal");
         }
 
         [Test]
         /// <summary>
         /// Test case to test a unit of functionality.
         /// </summary>
-        public static void TestStyleBinding()
+        public static void TestStyleBinding(Assert assert)
         {
             TestViewModelA src = new TestViewModelA()
                 {
@@ -112,7 +112,7 @@ namespace Sunlight.Framework.UI.Test
                     target
                 });
 
-            Assert.Equal("t1 test", target.ClassName, "After BindDataContext values should be equal");
+            assert.Equal("t1 test", target.ClassName, "After BindDataContext values should be equal");
 
             src.PropBool1 = false;
             SkinBinderHelper.Bind(
@@ -134,14 +134,14 @@ namespace Sunlight.Framework.UI.Test
                     target
                 });
 
-            Assert.Equal("t1", target.ClassName, "After BindDataContext values should be equal");
+            assert.Equal("t1", target.ClassName, "After BindDataContext values should be equal");
         }
 
         [Test]
         /// <summary>
         /// Test case to test a unit of functionality.
         /// </summary>
-        public static void TestTextContentBinding()
+        public static void TestTextContentBinding(Assert assert)
         {
             TestViewModelA src = new TestViewModelA()
                 {
@@ -165,7 +165,7 @@ namespace Sunlight.Framework.UI.Test
                     target
                 });
 
-            Assert.Equal(src.PropStr1, target.TextContent, "After BindDataContext values should be equal");
+            assert.Equal(src.PropStr1, target.TextContent, "After BindDataContext values should be equal");
         }
 
     }

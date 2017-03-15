@@ -30,7 +30,7 @@ namespace Sunlight.Framework.Test
         }
 
         [Test]
-        public static void TestSubscribeAndRaise()
+        public static void TestSubscribeAndRaise(Assert assert)
         {
             EventBus evtBus = new EventBus();
             int x1 = 0;
@@ -40,12 +40,12 @@ namespace Sunlight.Framework.Test
             evtBus.Subscribe<Evt2>(evt => x2 = evt.X);
 
             evtBus.Raise(new Evt1() { X = 10 });
-            Assert.Equal(10, x1, "10 == x1");
-            Assert.Equal(0, x2, "0 == x2");
+            assert.Equal(10, x1, "10 == x1");
+            assert.Equal(0, x2, "0 == x2");
         }
 
         [Test]
-        public static void TestSubscribeAndRaiseOnceTime()
+        public static void TestSubscribeAndRaiseOnceTime(Assert assert)
         {
             EventBus evtBus = new EventBus();
             int x1 = 0;
@@ -56,15 +56,15 @@ namespace Sunlight.Framework.Test
             evtBus.Subscribe<Evt2>(evt => x2 = evt.X);
 
             evtBus.RaiseOneTime(new Evt1() { X = 10 });
-            Assert.Equal(10, x1, "10 == x1");
+            assert.Equal(10, x1, "10 == x1");
 
             x1 = 0;
             evtBus.Subscribe(del);
-            Assert.Equal(10, x1, "(2) 10 == x1");
+            assert.Equal(10, x1, "(2) 10 == x1");
         }
 
         [Test]
-        public static void TestSubscribeUnSubscribeAndRaise()
+        public static void TestSubscribeUnSubscribeAndRaise(Assert assert)
         {
             EventBus evtBus = new EventBus();
             int x1 = 0;
@@ -76,7 +76,7 @@ namespace Sunlight.Framework.Test
             evtBus.UnSubscribe(del);
 
             evtBus.Raise(new Evt1() { X = 10 });
-            Assert.Equal(0, x1, "0 == x1");
+            assert.Equal(0, x1, "0 == x1");
         }
     }
 }

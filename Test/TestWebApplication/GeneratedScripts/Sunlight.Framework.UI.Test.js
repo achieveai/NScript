@@ -1,5 +1,5 @@
 ﻿(function(){
-var ManualTemplateTests__noneValue, ValueIfTrue_$String$_, String__formatHelperRegex, String__trimStartHelperRegex, String__trimEndHelperRegex, LiveBinderTests__oneWayBinder, ArrayG_$Func_$Object_x_Object$_$_, ArrayG_$String$_, LiveBinderTests__twoWayBinder, LiveBinderTests__oneWayMultiBinder, LiveBinderTests__twoWayMultiBinder, ArrayG_$SkinBinderInfo$_, ArrayG_$Object$_, ArrayG_$TestViewModelB$_, Type__typeMapping, NumberDictionary_$Task$_, Queue_$Task$_, TaskScheduler__instance, List_$ListViewItem$_, StringDictionary_$Action_$UIEvent$_$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$Function$_, KeyValuePair_$String_x_Action_$UIEvent$_$_, List_$Object$_, ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, Func_$Object_x_Object$_, KeyValuePair_$Number_x_Task$_, Action_$UIEvent$_, Action_$INotifyPropertyChanged_x_String$_, KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, KeyValuePair_$String_x_Function$_, StringDictionary_$Int32$_, KeyValuePair_$String_x_Int32$_;
+var ManualTemplateTests__noneValue, ValueIfTrue_$String$_, String__formatHelperRegex, LiveBinderTests__oneWayBinder, ArrayG_$Func_$Object_x_Object$_$_, ArrayG_$String$_, LiveBinderTests__twoWayBinder, LiveBinderTests__oneWayMultiBinder, LiveBinderTests__twoWayMultiBinder, ArrayG_$SkinBinderInfo$_, ArrayG_$Object$_, ArrayG_$TestViewModelB$_, Type__typeMapping, NumberDictionary_$Task$_, Queue_$Task$_, TaskScheduler__instance, List_$ListViewItem$_, StringDictionary_$Action_$UIEvent$_$_, String__trimStartHelperRegex, String__trimEndHelperRegex, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$Function$_, KeyValuePair_$String_x_Action_$UIEvent$_$_, List_$Object$_, ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, Func_$Object_x_Object$_, KeyValuePair_$Number_x_Task$_, Action_$UIEvent$_, Action_$INotifyPropertyChanged_x_String$_, KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, KeyValuePair_$String_x_Function$_, StringDictionary_$Int32$_, KeyValuePair_$String_x_Int32$_;
 Function.typeId = "p";
 Type__typeMapping = null;
 function Type__CastType(this_, instance) {
@@ -200,7 +200,7 @@ function LiveBinderTests__Setup() {
     return Type__BoxTypeInstance(Int32, Int32__Parse(Type__CastType(String, obj)));
   }, null);
 };
-function LiveBinderTests__TestLiveBinderOnActivate() {
+function LiveBinderTests__TestLiveBinderOnActivate(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
@@ -208,11 +208,11 @@ function LiveBinderTests__TestLiveBinderOnActivate() {
   liveBinder = LiveBinder_factory(LiveBinderTests__oneWayBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  assert.QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
 };
-function LiveBinderTests__TestLiveBinderOnChange() {
+function LiveBinderTests__TestLiveBinderOnChange(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
@@ -220,13 +220,13 @@ function LiveBinderTests__TestLiveBinderOnChange() {
   liveBinder = LiveBinder_factory(LiveBinderTests__oneWayBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  assert.QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
   src.set_propStr1("testChanged");
-  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
 };
-function LiveBinderTests__TestLiveBinderMultiOnActivate() {
+function LiveBinderTests__TestLiveBinderMultiOnActivate(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
@@ -235,11 +235,11 @@ function LiveBinderTests__TestLiveBinderMultiOnActivate() {
   liveBinder = LiveBinder_factory(LiveBinderTests__oneWayMultiBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  QUnit.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  assert.QUnit.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
 };
-function LiveBinderTests__TestLiveBinderMultiOnChange() {
+function LiveBinderTests__TestLiveBinderMultiOnChange(assert) {
   var src, target, liveBinder, stmtTemp1;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
@@ -248,17 +248,17 @@ function LiveBinderTests__TestLiveBinderMultiOnChange() {
   liveBinder = LiveBinder_factory(LiveBinderTests__oneWayMultiBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  QUnit.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  assert.QUnit.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
   src.get_testVMA().set_propStr1("testChanged");
-  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes on lastElement should have flowed.");
+  assert.QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes on lastElement should have flowed.");
   src.set_testVMA((stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propStr1("ChangedTest"), stmtTemp1));
-  QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
+  assert.QUnit.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
   src.set_testVMA(null);
-  QUnit.equal(null, target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
+  assert.QUnit.equal(null, target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
 };
-function LiveBinderTests__TestTwoWayLiveBinderOnChange() {
+function LiveBinderTests__TestTwoWayLiveBinderOnChange(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
@@ -266,15 +266,15 @@ function LiveBinderTests__TestTwoWayLiveBinderOnChange() {
   liveBinder = LiveBinder_factory(LiveBinderTests__twoWayBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  assert.QUnit.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
   src.set_propStr1("testChanged");
-  QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
   target.set_propStr1("Changed Again");
-  QUnit.equal(target.get_propStr1(), src.get_propStr1(), "if liveBinder is active in twoWay changes on target should flow back.");
+  assert.QUnit.equal(target.get_propStr1(), src.get_propStr1(), "if liveBinder is active in twoWay changes on target should flow back.");
 };
-function LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters() {
+function LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters(assert) {
   var src, target, liveBinder, stmtTemp1;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
@@ -283,15 +283,15 @@ function LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters() {
   liveBinder = LiveBinder_factory(LiveBinderTests__twoWayMultiBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  QUnit.notEqual(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  assert.QUnit.notEqual(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
   src.get_testVMA().set_propInt1(2);
-  QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on lastElement should have flowed.");
+  assert.QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on lastElement should have flowed.");
   src.set_testVMA((stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propInt1(3), stmtTemp1));
-  QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
+  assert.QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
   target.set_propStr1("21");
-  QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active in twoWay changes on target should flow back.");
+  assert.QUnit.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active in twoWay changes on target should flow back.");
 };
 Type__RegisterReferenceType(LiveBinderTests, "Sunlight.Framework.UI.Test.LiveBinderTests", Object, []);
 function NScriptsTemplateTests() {
@@ -300,20 +300,20 @@ NScriptsTemplateTests.typeId = "s";
 function NScriptsTemplateTests__Setup() {
   TaskScheduler__set_Instance(TaskScheduler_factory(TestWindowTimer_factory(), 10, 10));
 };
-function NScriptsTemplateTests__Test() {
-  QUnit.notEqual(null, NScriptsTemplatesClass__get_TestTemplate1(), "Template should not be null");
-  QUnit.ok(true, "true should be true");
+function NScriptsTemplateTests__Test(assert) {
+  assert.QUnit.notEqual(null, NScriptsTemplatesClass__get_TestTemplate1(), "Template should not be null");
+  assert.ok(true, "true should be true");
 };
-function NScriptsTemplateTests__TestApplySkin() {
+function NScriptsTemplateTests__TestApplySkin(assert) {
   var element, control;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
   control.set_dataContext(TestViewModelA_factory());
   control.set_skin(NScriptsTemplatesClass__get_TestTemplate1());
   control.activate();
-  QUnit.notEqual(null, element.querySelector("[test]"), "After applying skin, skin element should be loaded");
+  assert.QUnit.notEqual(null, element.querySelector("[test]"), "After applying skin, skin element should be loaded");
 };
-function NScriptsTemplateTests__TestCssBinder() {
+function NScriptsTemplateTests__TestCssBinder(assert) {
   var element, control, vm, elem;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
@@ -322,12 +322,12 @@ function NScriptsTemplateTests__TestCssBinder() {
   control.set_skin(NScriptsTemplatesClass__get_TestTemplateVMB_CssBinding());
   control.activate();
   elem = element.querySelector("[test]");
-  QUnit.notEqual(null, elem, "After applying skin, skin element should be loaded");
-  QUnit.equal("", elem.className, "Class should not be set if PropBool1 is not set.");
+  assert.QUnit.notEqual(null, elem, "After applying skin, skin element should be loaded");
+  assert.QUnit.equal("", elem.className, "Class should not be set if PropBool1 is not set.");
   vm.set_propBool1(true);
-  QUnit.notEqual("", elem.className, "Class should be set if PropBool1 is set.");
+  assert.QUnit.notEqual("", elem.className, "Class should be set if PropBool1 is set.");
 };
-function NScriptsTemplateTests__TestStyleBinder() {
+function NScriptsTemplateTests__TestStyleBinder(assert) {
   var element, control, vm, elem;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
@@ -336,12 +336,12 @@ function NScriptsTemplateTests__TestStyleBinder() {
   control.set_skin(NScriptsTemplatesClass__get_TestTemplateVMB_StyleBinding());
   control.activate();
   elem = element.querySelector("[test]");
-  QUnit.notEqual(null, elem, "After applying skin, skin element should be loaded");
-  QUnit.equal("", elem.style.height, "Style should not be set if PropStr1 is not set.");
+  assert.QUnit.notEqual(null, elem, "After applying skin, skin element should be loaded");
+  assert.QUnit.equal("", elem.style.height, "Style should not be set if PropStr1 is not set.");
   vm.set_propStr1("10px");
-  QUnit.equal("10px", elem.style.height, "Style should be set if PropStr1 is set.");
+  assert.QUnit.equal("10px", elem.style.height, "Style should be set if PropStr1 is set.");
 };
-function NScriptsTemplateTests__TestAttrBinder() {
+function NScriptsTemplateTests__TestAttrBinder(assert) {
   var element, control, vm, elem;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
@@ -350,12 +350,12 @@ function NScriptsTemplateTests__TestAttrBinder() {
   control.set_skin(NScriptsTemplatesClass__get_TestTemplateVMB_AttrBinding());
   control.activate();
   elem = element.querySelector("[test]");
-  QUnit.notEqual(elem, null, "After applying skin, skin element should be loaded");
-  QUnit.equal(elem.getAttribute("test1"), null, "Attribute 'test' should not be set if PropStr1 is not set.");
+  assert.QUnit.notEqual(elem, null, "After applying skin, skin element should be loaded");
+  assert.QUnit.equal(elem.getAttribute("test1"), null, "Attribute 'test' should not be set if PropStr1 is not set.");
   vm.set_propStr1("TTTest");
-  QUnit.equal("TTTest", elem.getAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
+  assert.QUnit.equal("TTTest", elem.getAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
 };
-function NScriptsTemplateTests__TestPropertyBinder() {
+function NScriptsTemplateTests__TestPropertyBinder(assert) {
   var element, control, vm;
   element = window.document.createElement("div");
   control = TestSkinableWithTestUIElementPart_factory(element);
@@ -363,37 +363,37 @@ function NScriptsTemplateTests__TestPropertyBinder() {
   control.set_dataContext(vm);
   control.set_skin(NScriptsTemplatesClass__get_TestTemplateB_PropertyBinding());
   control.activate();
-  QUnit.ok(control.get_part(), "templatePart should not be null.");
-  QUnit.equal(control.get_part().get_oneWayStrictBinding(), vm.get_propStr1(), "vmPropStr1 should be equal to OnewayStrictBinding.");
+  assert.ok(control.get_part(), "templatePart should not be null.");
+  assert.QUnit.equal(control.get_part().get_oneWayStrictBinding(), vm.get_propStr1(), "vmPropStr1 should be equal to OnewayStrictBinding.");
   vm.set_propStr1("T1");
-  QUnit.equal(control.get_part().get_oneWayStrictBinding(), vm.get_propStr1(), "vmPropStr1 should be equal to OnewayStrictBinding.");
-  QUnit.equal(control.get_part().get_twoWayLooseBinding(), vm.get_propInt1(), "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+  assert.QUnit.equal(control.get_part().get_oneWayStrictBinding(), vm.get_propStr1(), "vmPropStr1 should be equal to OnewayStrictBinding.");
+  assert.QUnit.equal(control.get_part().get_twoWayLooseBinding(), vm.get_propInt1(), "TwoWayLooseBinding and bound property PropInt1 should be equal.");
   vm.set_propInt1(11);
-  QUnit.equal(control.get_part().get_twoWayLooseBinding(), vm.get_propInt1(), "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+  assert.QUnit.equal(control.get_part().get_twoWayLooseBinding(), vm.get_propInt1(), "TwoWayLooseBinding and bound property PropInt1 should be equal.");
   control.get_part().set_twoWayLooseBinding(101);
-  QUnit.equal(control.get_part().get_twoWayLooseBinding(), vm.get_propInt1(), "TwoWayLooseBinding and bound property PropInt1 should be equal.");
+  assert.QUnit.equal(control.get_part().get_twoWayLooseBinding(), vm.get_propInt1(), "TwoWayLooseBinding and bound property PropInt1 should be equal.");
 };
 Type__RegisterReferenceType(NScriptsTemplateTests, "Sunlight.Framework.UI.Test.NScriptsTemplateTests", Object, []);
 function SkinBinderHelperTests() {
 };
 SkinBinderHelperTests.typeId = "t";
-function SkinBinderHelperTests__TestSimpleBinder() {
+function SkinBinderHelperTests__TestSimpleBinder(assert) {
   var src, stmtTemp1, tar1;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1.set_propInt1(1), stmtTemp1.set_propBool1(true), stmtTemp1);
   tar1 = TestViewModelA_factory();
   SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory1(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropStr1Getter])), TestViewModelA__PropStr1Setter, 17, 0, null, null)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([tar1])));
-  QUnit.equal(src.get_propStr1(), tar1.get_propStr1(), "After BindDataContext values should be equal");
+  assert.QUnit.equal(src.get_propStr1(), tar1.get_propStr1(), "After BindDataContext values should be equal");
 };
-function SkinBinderHelperTests__TestAttrBinding() {
+function SkinBinderHelperTests__TestAttrBinding(assert) {
   var src, stmtTemp1, target;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1);
   target = window.document.createElement("div");
   SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropStr1Getter])), function SkinBinderHelperTests__TestAttrBinding_del(o1, o2, o3) {
     SkinBinderHelper__SetAttribute(o1, Type__CastType(String, o2), Type__CastType(String, o3));
   }, "tmp", 113, 0, null, null, 0)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
-  QUnit.equal(src.get_propStr1(), target.getAttribute("tmp"), "After BindDataContext values should be equal");
+  assert.QUnit.equal(src.get_propStr1(), target.getAttribute("tmp"), "After BindDataContext values should be equal");
 };
-function SkinBinderHelperTests__TestStyleBinding() {
+function SkinBinderHelperTests__TestStyleBinding(assert) {
   var src, stmtTemp1, target;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propBool1(true), stmtTemp1);
   target = window.document.createElement("div");
@@ -401,21 +401,21 @@ function SkinBinderHelperTests__TestStyleBinding() {
   SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropBool1Getter])), function SkinBinderHelperTests__TestStyleBinding_del(o1, o2, o3) {
     SkinBinderHelper__SetCssClass(o1, Type__UnBoxTypeInstance(Boolean0, o2), Type__CastType(String, o3));
   }, "test", 113, 0, null, null, 0)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
-  QUnit.equal("t1 test", target.className, "After BindDataContext values should be equal");
+  assert.QUnit.equal("t1 test", target.className, "After BindDataContext values should be equal");
   src.set_propBool1(false);
   SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropBool1Getter])), function SkinBinderHelperTests__TestStyleBinding_del2(o1, o2, o3) {
     SkinBinderHelper__SetCssClass(o1, Type__UnBoxTypeInstance(Boolean0, o2), Type__CastType(String, o3));
   }, "test", 113, 0, null, null, 0)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
-  QUnit.equal("t1", target.className, "After BindDataContext values should be equal");
+  assert.QUnit.equal("t1", target.className, "After BindDataContext values should be equal");
 };
-function SkinBinderHelperTests__TestTextContentBinding() {
+function SkinBinderHelperTests__TestTextContentBinding(assert) {
   var src, stmtTemp1, target;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1);
   target = window.document.createElement("div");
   SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory1(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropStr1Getter])), function SkinBinderHelperTests__TestTextContentBinding_del(o1, o2) {
     SkinBinderHelper__SetTextContent(o1, Type__CastType(String, o2));
   }, 17, 0, null, null)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
-  QUnit.equal(src.get_propStr1(), target.textContent, "After BindDataContext values should be equal");
+  assert.QUnit.equal(src.get_propStr1(), target.textContent, "After BindDataContext values should be equal");
 };
 Type__RegisterReferenceType(SkinBinderHelperTests, "Sunlight.Framework.UI.Test.SkinBinderHelperTests", Object, []);
 function TestListView() {
@@ -424,7 +424,7 @@ TestListView.typeId = "u";
 function TestListView__Setup() {
   TaskScheduler__set_Instance(TaskScheduler_factory(TestWindowTimer_factory(), 10, 10));
 };
-function TestListView__TestChildSkin() {
+function TestListView__TestChildSkin(assert) {
   var document, listView, vmAs, stmtTemp1, stmtTemp10, stmtTemp11, elems, i;
   document = window.document;
   listView = ListView_factory(document.createElement("div"));
@@ -434,9 +434,9 @@ function TestListView__TestChildSkin() {
   listView.set_inactiveIfNullContext(false);
   listView.activate();
   elems = listView.get_element().querySelectorAll("[test]");
-  QUnit.equal(3, elems.length, "number of children should be 3");
+  assert.QUnit.equal(3, elems.length, "number of children should be 3");
   for (i = 0; i < 3; i++)
-    QUnit.equal(vmAs.get_item(i).get_propStr1(), elems[i].innerText, "Inner text for element should match property it's bound to.");
+    assert.QUnit.equal(vmAs.get_item(i).get_propStr1(), elems[i].innerText, "Inner text for element should match property it's bound to.");
 };
 Type__RegisterReferenceType(TestListView, "Sunlight.Framework.UI.Test.TestListView", Object, []);
 function ManualTemplateTests() {
@@ -445,8 +445,8 @@ ManualTemplateTests.typeId = "v";
 ManualTemplateTests__noneValue = null;
 function ManualTemplateTests__Setup() {
 };
-function ManualTemplateTests__Test() {
-  QUnit.ok(true, "true should be true");
+function ManualTemplateTests__Test(assert) {
+  assert.ok(true, "true should be true");
 };
 function ManualTemplateTests____cctor() {
   ManualTemplateTests__noneValue = ValueIfTrue_$String$_.__ctor("none");
@@ -455,12 +455,12 @@ Type__RegisterReferenceType(ManualTemplateTests, "Sunlight.Framework.UI.Test.Man
 function UIElementTests() {
 };
 UIElementTests.typeId = "w";
-function UIElementTests__TestNewUIElement() {
+function UIElementTests__TestNewUIElement(assert) {
   var doc, element;
   doc = window.document;
   element = UIElement_factory(doc.createElement("div"));
-  QUnit.notEqual(element.get_element(), null, "element.Element != null");
-  QUnit.equal(element.get_element().tagName, "DIV", "element.Element.TagName == 'DIV'");
+  assert.QUnit.notEqual(element.get_element(), null, "element.Element != null");
+  assert.QUnit.equal(element.get_element().tagName, "DIV", "element.Element.TagName == 'DIV'");
 };
 Type__RegisterReferenceType(UIElementTests, "Sunlight.Framework.UI.Test.UIElementTests", Object, []);
 String.typeId = "n";
@@ -469,26 +469,34 @@ String__trimStartHelperRegex = null;
 String__trimEndHelperRegex = null;
 function String____cctor() {
   String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
-  String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
-  String__trimEndHelperRegex = new RegExp("[\\s\\xA0]+$");
+};
+function String__get_TrimEndHelperRegex() {
+  if (Object__IsNullOrUndefined(String__trimEndHelperRegex))
+    String__trimEndHelperRegex = new RegExp("^[\\s\\xA0]+");
+  return String__trimEndHelperRegex;
+};
+function String__get_TrimStartHelperRegex() {
+  if (Object__IsNullOrUndefined(String__trimStartHelperRegex))
+    String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
+  return String__trimStartHelperRegex;
 };
 function String__Trim(this_) {
   return String__TrimEnd(String__TrimStart(this_));
 };
 function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__trimEndHelperRegex, "");
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex, "");
 };
 function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__trimStartHelperRegex, "");
+  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex, "");
 };
 function String__get_Item(this_, index) {
   return this_.charCodeAt(index);
 };
 String__TrimEnd = function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__trimEndHelperRegex, "");
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex, "");
 };
 String__TrimStart = function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__trimStartHelperRegex, "");
+  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex, "");
 };
 Type__RegisterReferenceType(String, "System.String", Object, []);
 RegExp.typeId = "x";
@@ -3857,41 +3865,41 @@ List_$Object$_.$5ftri();
 ArrayG_$Number$_.$5ftri();
 KeyValuePair_$String_x_Int32$_.$5ftri();
 StringDictionary_$Int32$_.$5ftri();
-module("Sunlight.Framework.UI.Test.LiveBinderTests", {
-  "setup": LiveBinderTests__Setup
+QUnit.module("Sunlight.Framework.UI.Test.LiveBinderTests", {
+  "before": LiveBinderTests__Setup
 });
-test("TestLiveBinderOnActivate", 0, LiveBinderTests__TestLiveBinderOnActivate);
-test("TestLiveBinderOnChange", 0, LiveBinderTests__TestLiveBinderOnChange);
-test("TestLiveBinderMultiOnActivate", 0, LiveBinderTests__TestLiveBinderMultiOnActivate);
-test("TestLiveBinderMultiOnChange", 0, LiveBinderTests__TestLiveBinderMultiOnChange);
-test("TestTwoWayLiveBinderOnChange", 0, LiveBinderTests__TestTwoWayLiveBinderOnChange);
-test("TestTwoWayLiveBinderMultiOnChangeWithConverters", 0, LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters);
-module("Sunlight.Framework.UI.Test.NScriptsTemplateTests", {
-  "setup": NScriptsTemplateTests__Setup
+QUnit.test("TestLiveBinderOnActivate", 0, LiveBinderTests__TestLiveBinderOnActivate);
+QUnit.test("TestLiveBinderOnChange", 0, LiveBinderTests__TestLiveBinderOnChange);
+QUnit.test("TestLiveBinderMultiOnActivate", 0, LiveBinderTests__TestLiveBinderMultiOnActivate);
+QUnit.test("TestLiveBinderMultiOnChange", 0, LiveBinderTests__TestLiveBinderMultiOnChange);
+QUnit.test("TestTwoWayLiveBinderOnChange", 0, LiveBinderTests__TestTwoWayLiveBinderOnChange);
+QUnit.test("TestTwoWayLiveBinderMultiOnChangeWithConverters", 0, LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters);
+QUnit.module("Sunlight.Framework.UI.Test.NScriptsTemplateTests", {
+  "before": NScriptsTemplateTests__Setup
 });
-test("Test", 0, NScriptsTemplateTests__Test);
-test("TestApplySkin", 0, NScriptsTemplateTests__TestApplySkin);
-test("TestCssBinder", 0, NScriptsTemplateTests__TestCssBinder);
-test("TestStyleBinder", 0, NScriptsTemplateTests__TestStyleBinder);
-test("TestAttrBinder", 0, NScriptsTemplateTests__TestAttrBinder);
-test("TestPropertyBinder", 0, NScriptsTemplateTests__TestPropertyBinder);
-module("Sunlight.Framework.UI.Test.SkinBinderHelperTests", {
+QUnit.test("Test", 0, NScriptsTemplateTests__Test);
+QUnit.test("TestApplySkin", 0, NScriptsTemplateTests__TestApplySkin);
+QUnit.test("TestCssBinder", 0, NScriptsTemplateTests__TestCssBinder);
+QUnit.test("TestStyleBinder", 0, NScriptsTemplateTests__TestStyleBinder);
+QUnit.test("TestAttrBinder", 0, NScriptsTemplateTests__TestAttrBinder);
+QUnit.test("TestPropertyBinder", 0, NScriptsTemplateTests__TestPropertyBinder);
+QUnit.module("Sunlight.Framework.UI.Test.SkinBinderHelperTests", {
 });
-test("TestSimpleBinder", 0, SkinBinderHelperTests__TestSimpleBinder);
-test("TestAttrBinding", 0, SkinBinderHelperTests__TestAttrBinding);
-test("TestStyleBinding", 0, SkinBinderHelperTests__TestStyleBinding);
-test("TestTextContentBinding", 0, SkinBinderHelperTests__TestTextContentBinding);
-module("Sunlight.Framework.UI.Test.TestListView", {
-  "setup": TestListView__Setup
+QUnit.test("TestSimpleBinder", 0, SkinBinderHelperTests__TestSimpleBinder);
+QUnit.test("TestAttrBinding", 0, SkinBinderHelperTests__TestAttrBinding);
+QUnit.test("TestStyleBinding", 0, SkinBinderHelperTests__TestStyleBinding);
+QUnit.test("TestTextContentBinding", 0, SkinBinderHelperTests__TestTextContentBinding);
+QUnit.module("Sunlight.Framework.UI.Test.TestListView", {
+  "before": TestListView__Setup
 });
-test("TestChildSkin", 0, TestListView__TestChildSkin);
-module("Sunlight.Framework.UI.Test.ManualTemplateTests", {
-  "setup": ManualTemplateTests__Setup
+QUnit.test("TestChildSkin", 0, TestListView__TestChildSkin);
+QUnit.module("Sunlight.Framework.UI.Test.ManualTemplateTests", {
+  "before": ManualTemplateTests__Setup
 });
-test("Test", 0, ManualTemplateTests__Test);
-module("Sunlight.Framework.UI.Test.UIElementTests", {
+QUnit.test("Test", 0, ManualTemplateTests__Test);
+QUnit.module("Sunlight.Framework.UI.Test.UIElementTests", {
 });
-test("TestNewUIElement", 0, UIElementTests__TestNewUIElement);
+QUnit.test("TestNewUIElement", 0, UIElementTests__TestNewUIElement);
 function Test$5cTemplates$5cTestTemplate1_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {

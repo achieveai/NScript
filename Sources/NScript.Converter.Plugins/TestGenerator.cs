@@ -13,6 +13,7 @@ namespace NScript.Converter.Plugins
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
     using Mono.Cecil;
+    using System.Linq;
 
     /// <summary>
     /// Definition for TestGenerator
@@ -78,6 +79,9 @@ namespace NScript.Converter.Plugins
         /// Backing field for TestMethod
         /// </summary>
         private MethodReference testMethod;
+        private GenericInstanceType actionAssert;
+        private TypeDefinition testCaseSetupAttribute;
+        private TypeDefinition testCaseTearDownAttribute;
 
         /// <summary>
         /// Initializes the specified CLR context.
@@ -158,10 +162,15 @@ namespace NScript.Converter.Plugins
                     continue;
                 }
 
-                var moduleMehtodIdentifier = this.scopeManager.Resolve(this.ModuleMethod);
-                var testMethodIdentifier = this.scopeManager.Resolve(this.TestMethod);
+                var typeIdentifier = this.scopeManager.ResolveType(this.ModuleMethod.DeclaringType);
+                var moduleMehtodIdentifier = typeIdentifier.ToList();
+                var testMethodIdentifier = typeIdentifier.ToList();
+                moduleMehtodIdentifier.Add(this.scopeManager.Resolve(this.ModuleMethod.Resolve()));
+                testMethodIdentifier.Add(this.scopeManager.Resolve(this.TestMethod.Resolve()));
                 IList<IIdentifier> moduleTestSetupIdentifier = null;
                 IList<IIdentifier> moduleTestTeardownIdentifier = null;
+                IList<IIdentifier> testCaseSetupIdentifier = null;
+                IList<IIdentifier> testCaseCleanupIdentifier = null;
 
                 TypeConverter typeConverter = this.scopeManager.GetTypeConverter(typeDefinition);
                 foreach (var method in typeDefinition.Methods)
@@ -170,40 +179,65 @@ namespace NScript.Converter.Plugins
                     { continue; }
 
                     if (method.CustomAttributes.SelectAttribute(this.TestSetupAttribute) != null)
-                    {
-                        moduleTestSetupIdentifier = typeConverter.ResolveStaticMember(method);
-                    }
+                    { moduleTestSetupIdentifier = typeConverter.ResolveStaticMember(method); }
                     else if (method.CustomAttributes.SelectAttribute(this.TestTeardownAttribute) != null)
-                    {
-                        moduleTestTeardownIdentifier = typeConverter.ResolveStaticMember(method);
-                    }
+                    { moduleTestTeardownIdentifier = typeConverter.ResolveStaticMember(method); }
+                    else if (method.CustomAttributes.SelectAttribute(this.TestCaseSetupAttribute) != null)
+                    { testCaseSetupIdentifier = typeConverter.ResolveStaticMember(method); }
+                    else if (method.CustomAttributes.SelectAttribute(this.TestCaseTeardownAttribute) != null)
+                    { testCaseCleanupIdentifier = typeConverter.ResolveStaticMember(method); }
                 }
 
                 var testEnvironment = new InlineObjectInitializer(null, this.scopeManager.Scope);
                 if (moduleTestSetupIdentifier != null)
                 {
                     testEnvironment.AddInitializer(
-                        "setup",
+                        "before",
                         IdentifierExpression.Create(
                             null,
                             this.scopeManager.Scope,
                             moduleTestSetupIdentifier));
                 }
 
+                if (testCaseSetupIdentifier != null)
+                {
+                    testEnvironment.AddInitializer(
+                        "beforeEach",
+                        IdentifierExpression.Create(
+                            null,
+                            this.scopeManager.Scope,
+                            testCaseSetupIdentifier));
+                }
+
                 if (moduleTestTeardownIdentifier != null)
                 {
                     testEnvironment.AddInitializer(
-                        "teardown",
+                        "after",
                         IdentifierExpression.Create(
                             null,
                             this.scopeManager.Scope,
                             moduleTestTeardownIdentifier));
                 }
 
+                if (testCaseCleanupIdentifier != null)
+                {
+                    testEnvironment.AddInitializer(
+                        "afterEach",
+                        IdentifierExpression.Create(
+                            null,
+                            this.scopeManager.Scope,
+                            testCaseCleanupIdentifier));
+                }
+
                 rv.Add(
                     ExpressionStatement.CreateMethodCallExpression(
-                        new IdentifierExpression(moduleMehtodIdentifier, this.scopeManager.Scope),
-                        new StringLiteralExpression(this.scopeManager.Scope, typeDefinition.FullName),
+                        IdentifierExpression.Create(
+                            null,
+                            this.scopeManager.Scope,
+                            moduleMehtodIdentifier),
+                        new StringLiteralExpression(
+                            this.scopeManager.Scope,
+                            typeDefinition.FullName),
                         testEnvironment));
 
                 foreach (var method in typeDefinition.Methods)
@@ -215,9 +249,11 @@ namespace NScript.Converter.Plugins
                     {
                         rv.Add(
                             ExpressionStatement.CreateMethodCallExpression(
-                                new IdentifierExpression(testMethodIdentifier, this.scopeManager.Scope),
+                                IdentifierExpression.Create(
+                                    null,
+                                    this.scopeManager.Scope,
+                                    testMethodIdentifier),
                                 new StringLiteralExpression(this.scopeManager.Scope, method.Name),
-                                new NumberLiteralExpression(this.scopeManager.Scope, 0),
                                 IdentifierExpression.Create(
                                     null,
                                     this.scopeManager.Scope,
@@ -278,26 +314,6 @@ namespace NScript.Converter.Plugins
         }
 
         /// <summary>
-        /// Gets the test fixture attribute.
-        /// </summary>
-        private TypeReference AsyncTestFixtureAttribute
-        {
-            get
-            {
-                if (this.asyncTestFixtureAttribute == null)
-                {
-                    this.asyncTestFixtureAttribute =
-                        this.clrContext.GetTypeDefinition(
-                            Tuple.Create(
-                                "SunlightUnit",
-                                "SunlightUnit.AsyncTestFixtureAttribute"));
-                }
-
-                return this.asyncTestFixtureAttribute;
-            }
-        }
-
-        /// <summary>
         /// Gets the test setup attribute.
         /// </summary>
         private TypeReference TestSetupAttribute
@@ -320,6 +336,26 @@ namespace NScript.Converter.Plugins
         /// <summary>
         /// Gets the test setup attribute.
         /// </summary>
+        private TypeReference TestCaseSetupAttribute
+        {
+            get
+            {
+                if (this.testCaseSetupAttribute == null)
+                {
+                    this.testCaseSetupAttribute =
+                        this.clrContext.GetTypeDefinition(
+                            Tuple.Create(
+                                "SunlightUnit",
+                                "SunlightUnit.TestCaseSetupAttribute"));
+                }
+
+                return this.testCaseSetupAttribute;
+            }
+        }
+
+        /// <summary>
+        /// Gets the test setup attribute.
+        /// </summary>
         private TypeReference TestTeardownAttribute
         {
             get
@@ -334,6 +370,26 @@ namespace NScript.Converter.Plugins
                 }
 
                 return this.testTearDownAttribute;
+            }
+        }
+
+        /// <summary>
+        /// Gets the test setup attribute.
+        /// </summary>
+        private TypeReference TestCaseTeardownAttribute
+        {
+            get
+            {
+                if (this.testCaseTearDownAttribute == null)
+                {
+                    this.testCaseTearDownAttribute =
+                        this.clrContext.GetTypeDefinition(
+                            Tuple.Create(
+                                "SunlightUnit",
+                                "SunlightUnit.TestCaseTearDownAttribute"));
+                }
+
+                return this.testCaseTearDownAttribute;
             }
         }
 
@@ -400,6 +456,30 @@ namespace NScript.Converter.Plugins
             }
         }
 
+        private TypeReference ActionAssert
+        {
+            get
+            {
+                if (this.actionAssert == null)
+                {
+                    var actypTypeDef =
+                        this.clrContext.GetTypeDefinition(
+                            Tuple.Create(
+                                "mscorlib",
+                                "System.Action`1"));
+
+                    this.actionAssert = new GenericInstanceType(actypTypeDef);
+                    this.actionAssert.GenericArguments.Add(
+                        this.clrContext.GetTypeDefinition(
+                            Tuple.Create(
+                                "SunlightUnit",
+                                "SunlightUnit.Assert")));
+                }
+
+                return this.actionAssert;
+            }
+        }
+
         /// <summary>
         /// Gets the module method.
         /// </summary>
@@ -447,11 +527,7 @@ namespace NScript.Converter.Plugins
 
                     this.testMethod.Parameters.Add(
                         new ParameterDefinition(
-                            this.clrContext.KnownReferences.Int32));
-
-                    this.testMethod.Parameters.Add(
-                        new ParameterDefinition(
-                            this.Action));
+                            this.ActionAssert));
                 }
 
                 return this.testMethod;

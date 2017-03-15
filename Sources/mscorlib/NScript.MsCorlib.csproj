@@ -225,6 +225,8 @@
     <Compile Include="Enum.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ErrorEvent.cs" />
+    <Compile Include="Event.cs" />
     <Compile Include="EventArgs.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -232,6 +234,7 @@
     <Compile Include="EventHandler.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="EventTarget.cs" />
     <Compile Include="Exception.cs">
       <SubType>Code</SubType>
     </Compile>

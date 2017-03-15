@@ -77,7 +77,7 @@ namespace Sunlight.Framework.UI.Test
         /// <summary>
         /// Test case to test a unit of functionality.
         /// </summary>
-        public static void Test()
+        public static void Test(Assert assert)
         {
             /*
             Func<Document, SkinInstance> instanceFactory = delegate(Document document)
@@ -125,7 +125,7 @@ namespace Sunlight.Framework.UI.Test
                     null);
             };
             */
-            Assert.IsTrue(true, "true should be true");
+            assert.IsTrue(true, "true should be true");
         }
     }
 }
