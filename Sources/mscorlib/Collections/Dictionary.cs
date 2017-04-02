@@ -22,6 +22,10 @@
         [Script(@"return this[key];")]
         public extern T Get<T>(string key);
 
+        [IgnoreGenericArguments]
+        [Script(@"this[key] = value;")]
+        public extern void Set<T>(string key, T value);
+
         extern IEnumerator IEnumerable.GetEnumerator();
 
         public extern int Count { get; }

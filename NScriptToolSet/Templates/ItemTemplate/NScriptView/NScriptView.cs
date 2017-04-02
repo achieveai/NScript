@@ -15,8 +15,11 @@ namespace $rootnamespace$
     /// <summary>
     /// Definition for $safeitemrootname$
     /// </summary>
-    public class $safeitemrootname$ : UISkinnableElement
+    public class $safeitemrootname$ : UISkinableElement
     {
+        public $safeitemrootname$(System.Web.Html.Element elem)
+                : base(elem)
+        { }
 
         /// <summary>
         /// Gets the default skin.
@@ -24,7 +27,7 @@ namespace $rootnamespace$
         /// <value>
         /// The default skin.
         /// </value>
-        [Skin("$rootnamespace$.$safeitemrootname$.html:DefaultSkin")]
+        [Skin("$rootnamespace$.$safeitemrootname$:DefaultSkin")]
         public static Skin DefaultSkin
         { get { return null; } }
     }

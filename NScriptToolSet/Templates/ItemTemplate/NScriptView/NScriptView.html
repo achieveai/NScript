@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html"
       xmlns:ui="Sunlight.Framework.UI!Sunlight.Framework.UI"
-      xmlns:vm="$projectname$!$rootnamespace$">
+      xmlns:sys="mscorlib!System"
+      xmlns:v="$projectname$!$rootnamespace$">
       <!-- xmlns:v="AssemblyName!ViewNamespace" -->
       <!-- xmlns:m="AssemblyName!ModelNamespace" -->
 <head>
@@ -10,7 +11,7 @@
     </style>
 </head>
 <body>
-    <skin id="DefaultSkin" controltype="ui:UISkinableElement" datacontexttype="vm:$safeitemrootname$VM">
+    <skin id="DefaultSkin" controltype="vm:$safeitemrootname$View" datacontexttype="sys:Object">
     </skin>
 </body>
 </html>

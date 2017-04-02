@@ -746,12 +746,18 @@ namespace NScript.Converter.ExpressionsConverter
 
         private static bool IsEqualsIgnorable(TypeReference typeReference)
         {
+            if (typeReference.IsArray)
+            {
+                return true;
+            }
+
             if (typeReference is GenericParameter)
             {
                 return false;
             }
 
-            if (typeReference.Resolve().IsValueType)
+            if (!typeReference.IsArray
+                && typeReference.Resolve().IsValueType)
             {
                 return false;
             }

@@ -117,7 +117,10 @@ namespace NScript.Converter.Plugins
                     { continue; }
 
                     if (method.CustomAttributes.SelectAttribute(this.TestAttribute) != null
-                        || method.CustomAttributes.SelectAttribute(this.TestSetupAttribute) != null)
+                        || method.CustomAttributes.SelectAttribute(this.TestSetupAttribute) != null
+                        || method.CustomAttributes.SelectAttribute(this.TestCaseSetupAttribute) != null
+                        || method.CustomAttributes.SelectAttribute(this.TestCaseTeardownAttribute) != null
+                        || method.CustomAttributes.SelectAttribute(this.TestTeardownAttribute) != null)
                     {
                         rv.Add(method);
                     }

@@ -146,6 +146,10 @@
         [Script(@"return this.@{[mscorlib]System.Type::FullName} ? this.@{[mscorlib]System.Type::FullName} : this.name;")]
         public extern override string ToString();
 
+        [Script(@"return obj;")]
+        [IgnoreGenericArguments]
+        public extern static TTo AS<TFrom, TTo>(TFrom obj);
+
         [Script(@"
             this.@{[mscorlib]System.Type::IsClass} = true;
             this.@{[mscorlib]System.Type::FullName} = typeName;

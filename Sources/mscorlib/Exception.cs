@@ -25,6 +25,22 @@
         [IntrinsicProperty]
         public extern string Message
         { get; }
+
+        [IntrinsicProperty]
+        public extern string ColumnNumber
+        { get; }
+
+        [IntrinsicProperty]
+        public extern string LineNumber
+        { get; }
+
+        [IntrinsicProperty]
+        public extern string FileName
+        { get; }
+
+        [IntrinsicProperty]
+        public extern string Stack
+        { get; }
     }
 
     public class NotSupportedException : Exception

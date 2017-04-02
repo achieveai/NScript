@@ -12,8 +12,8 @@ namespace System.Web.Html
     /// <summary>
     /// Definition for File.
     /// </summary>
-    [IgnoreNamespace, ScriptName("Object")]
-    public class File
+    [IgnoreNamespace, ScriptName("File")]
+    public class File : Blob
     {
         /// <summary>
         /// Gets the file.
@@ -39,24 +39,6 @@ namespace System.Web.Html
         /// The name.
         /// </value>
         public extern string Name
-        { get; }
-
-        /// <summary>
-        /// Gets the size.
-        /// </summary>
-        /// <value>
-        /// The size.
-        /// </value>
-        public extern long Size
-        { get; }
-
-        /// <summary>
-        /// Gets the type.
-        /// </summary>
-        /// <value>
-        /// The type.
-        /// </value>
-        public extern string Type
         { get; }
     }
 }

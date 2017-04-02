@@ -217,8 +217,18 @@ namespace NScript.Converter
             }
             catch(System.Exception ex)
             {
-                System.Console.Out.WriteLine("NScript.Exe(0,0): error UNK0001: {0}", ex.Message);
+                System.Console.Out.WriteLine(
+                    "NScript.Exe(0,0): error UNK0001: {0}",
+                    ex.Message);
                 System.Console.Out.WriteLine(ex.StackTrace);
+
+                while(ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                    System.Console.WriteLine("-------------------------");
+                    System.Console.Out.WriteLine(ex.Message);
+                    System.Console.Out.WriteLine(ex.StackTrace);
+                }
             }
 
             foreach (var warning in converterContext.Warnings)

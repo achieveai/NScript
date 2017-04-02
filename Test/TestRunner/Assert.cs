@@ -36,7 +36,7 @@ namespace SunlightUnit
         /// <param name="expected">expected object</param>
         /// <param name="actual">actual object</param>
         /// <param name="message">message to be logged</param>
-        [ScriptAlias("QUnit.equal")]
+        [ScriptAlias("equal")]
         [IgnoreGenericArguments]
         public extern void Equal<T>(T actual, T expected, string message);
 
@@ -68,7 +68,7 @@ namespace SunlightUnit
         /// <param name="expected">expected object</param>
         /// <param name="actual">actual object</param>
         /// <param name="message">message to be logged</param>
-        [ScriptAlias("QUnit.notEqual")]
+        [ScriptAlias("notEqual")]
         [IgnoreGenericArguments]
         public extern void NotEqual<T>(T actual, T expected, string message);
 
@@ -82,7 +82,7 @@ namespace SunlightUnit
         /// <param name="expected">The expected value.</param>
         /// <param name="message">The message logged by the check.</param>
         /// <remarks>Prints out both actual and expected values.</remarks>
-        [ScriptAlias("QUnit.notStrictEqual")]
+        [ScriptAlias("notStrictEqual")]
         [IgnoreGenericArguments]
         public extern void NotStrictEqual<T>(T actual, T expected, string message);
 
@@ -98,7 +98,7 @@ namespace SunlightUnit
         /// <param name="expected">The expected value.</param>
         /// <param name="message">The message logged by the check.</param>
         /// <remarks>Prints out both actual and expected values.</remarks>
-        [ScriptAlias("QUnit.strictEqual")]
+        [ScriptAlias("strictEqual")]
         [IgnoreGenericArguments]
         public extern void StrictEqual<T>(T actual, T expected, string message);
 

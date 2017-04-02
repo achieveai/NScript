@@ -35,7 +35,7 @@ namespace System.Web.Html.Data
         /// <returns>
         /// The indexed item.
         /// </returns>
-        public extern object this[string key]
+        public extern string this[string key]
         {
             get;
             set;
@@ -53,7 +53,7 @@ namespace System.Web.Html.Data
         /// <returns>
         /// The item.
         /// </returns>
-        public extern object GetItem(string key);
+        public extern string GetItem(string key);
 
         /// <summary>
         /// Gets a key.
@@ -76,6 +76,6 @@ namespace System.Web.Html.Data
         /// </summary>
         /// <param name="key">   The key. </param>
         /// <param name="value"> The value. </param>
-        public extern void SetItem(string key, object value);
+        public extern void SetItem(string key, string value);
     }
 }
