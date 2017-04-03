@@ -443,7 +443,31 @@ namespace System.Web
             string url,
             Action<string, short, bool> cb,
             string contentType,
-            string data,
+            object data,
+            string acceptType = "text/*",
+            string[] headerPair = null)
+        {
+            XMLHttpRequest.PostRaw(
+                url,
+                (req, status, isError) => cb(req.ResponseText, status, isError),
+                contentType,
+                data,
+                acceptType,
+                headerPair);
+        }
+
+        /// <summary>
+        /// Post this message.
+        /// </summary>
+        /// <param name="url">         URL of the document. </param>
+        /// <param name="cb">          The cb. </param>
+        /// <param name="contentType"> Type of the content. </param>
+        /// <param name="data">        The name of the event such as 'load'. </param>
+        public static void PostRaw(
+            string url,
+            Action<XMLHttpRequest, short, bool> cb,
+            string contentType,
+            object data,
             string acceptType = "text/*",
             string[] headerPair = null)
         {
@@ -466,7 +490,7 @@ namespace System.Web
                     {
                         EventBinder.CleanUp(request);
                         if (cb != null)
-                        { cb(request.ResponseText, request.Status, request.Status >= 400); }
+                        { cb(request, request.Status, request.Status >= 400); }
                     };
 
                 request.OnError +=
@@ -495,7 +519,7 @@ namespace System.Web
         public static Promise<string> Post(
             string url,
             string contentType,
-            string data,
+            object data,
             string acceptType = "*",
             string[] headerPair = null)
         {
@@ -514,6 +538,32 @@ namespace System.Web
                             {
                                 resolve(arr);
                             }
+                        },
+                        contentType,
+                        data,
+                        acceptType,
+                        headerPair);
+                });
+        }
+
+        public static Promise<XMLHttpRequest> PostRaw(
+            string url,
+            string contentType,
+            object data,
+            string acceptType = "*",
+            string[] headerPair = null)
+        {
+            return new Promise<XMLHttpRequest>(
+                delegate(Action<XMLHttpRequest> resolve, Action<object> reject)
+                {
+                    XMLHttpRequest.PostRaw(
+                        url,
+                        (xmlHttpRequest, code, isError) =>
+                        {
+                            if (isError)
+                            { reject((int?)code); }
+                            else
+                            { resolve(xmlHttpRequest); }
                         },
                         contentType,
                         data,
