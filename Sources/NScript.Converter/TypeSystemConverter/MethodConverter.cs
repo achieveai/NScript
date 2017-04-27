@@ -1637,7 +1637,7 @@ namespace NScript.Converter.TypeSystemConverter
                     : new JST.IndexExpression(
                         null,
                         this.Scope,
-                        this.GetMethodSlotParentExpression(),
+                        this.ResolveThis(this.Scope, null),
                         new JST.IdentifierExpression(this.Resolve(fieldReference), this.Scope)),
                 new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0], this.Scope));
 
@@ -1651,7 +1651,7 @@ namespace NScript.Converter.TypeSystemConverter
                         : new JST.IndexExpression(
                             null,
                             this.Scope,
-                            this.GetMethodSlotParentExpression(),
+                            this.ResolveThis(this.Scope, null),
                             new JST.IdentifierExpression(this.Resolve(fieldReference), this.Scope)),
                     methodCallExpr));
         }

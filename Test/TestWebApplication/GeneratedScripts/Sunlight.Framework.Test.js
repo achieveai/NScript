@@ -1,5 +1,5 @@
 ﻿(function(){
-var ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, String__formatHelperRegex, String__trimStartHelperRegex, String__trimEndHelperRegex, ObservableCollection_$Int32$_, Type__typeMapping, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_;
+var ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, String__formatHelperRegex, ObservableCollection_$Int32$_, Type__typeMapping, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_;
 Function.typeId = "h";
 Type__typeMapping = null;
 function Type__AsType(this_, instance) {
@@ -120,7 +120,7 @@ Type__RegisterReferenceType(Object, "System.Object", null, []);
 function DataBinderTests() {
 };
 DataBinderTests.typeId = "j";
-function DataBinderTests__BasicBinderSimpleObjectTest() {
+function DataBinderTests__BasicBinderSimpleObjectTest(assert) {
   var dataBinder, target, source;
   dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderSimpleObjectTest_del(obj) {
     return Type__BoxTypeInstance(Int32, Type__CastType(SimpleObjectWithProperty, obj).get_intProp());
@@ -131,13 +131,13 @@ function DataBinderTests__BasicBinderSimpleObjectTest() {
   source = SourcePropertyBinderTests__PrepSimpleObject();
   source.set_intProp(101);
   dataBinder.setTarget(target);
-  QUnit.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
   dataBinder.setSource(source);
-  QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
   dataBinder.setSource(null);
-  QUnit.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
 };
-function DataBinderTests__BasicBinderSimpleObjectTestReverseOrder() {
+function DataBinderTests__BasicBinderSimpleObjectTestReverseOrder(assert) {
   var dataBinder, target, source;
   dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderSimpleObjectTestReverseOrder_del(obj) {
     return Type__BoxTypeInstance(Int32, Type__CastType(SimpleObjectWithProperty, obj).get_intProp());
@@ -149,11 +149,11 @@ function DataBinderTests__BasicBinderSimpleObjectTestReverseOrder() {
   source.set_intProp(101);
   dataBinder.setSource(source);
   dataBinder.setTarget(target);
-  QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
   dataBinder.setSource(null);
-  QUnit.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
 };
-function DataBinderTests__BasicBinderOneWayNotifiableObjectTest() {
+function DataBinderTests__BasicBinderOneWayNotifiableObjectTest(assert) {
   var dataBinder, target, source;
   dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderOneWayNotifiableObjectTest_del(obj) {
     return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
@@ -164,13 +164,13 @@ function DataBinderTests__BasicBinderOneWayNotifiableObjectTest() {
   source = SourcePropertyBinderTests__PrepNotifiableObject();
   source.set_intProp(101);
   dataBinder.setTarget(target);
-  QUnit.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
   dataBinder.setSource(source);
-  QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
   source.set_intProp(102);
-  QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
 };
-function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest() {
+function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest(assert) {
   var dataBinder, target, source, stmtTemp1;
   dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest_del(obj) {
     return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
@@ -185,11 +185,11 @@ function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest() {
   source = SourcePropertyBinderTests__PrepNotifiableObject();
   source.set_intProp(101);
   dataBinder.setTarget(target);
-  QUnit.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
   dataBinder.setSource(source);
-  QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
   target.set_intProp((stmtTemp1 = target.get_intProp()) + 1), stmtTemp1;
-  QUnit.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
 };
 Type__RegisterReferenceType(DataBinderTests, "Sunlight.Framework.Test.Binders.DataBinderTests", Object, []);
 function SourcePropertyBinderTests() {
@@ -206,7 +206,7 @@ function SourcePropertyBinderTests__PrepNotifiableObject() {
 function SourcePropertyBinderTests__PrepSimpleObject() {
   return SourcePropertyBinderTests__PrepNotifiableObject().get_objProp();
 };
-function SourcePropertyBinderTests__BasicValueTest() {
+function SourcePropertyBinderTests__BasicValueTest(assert) {
   var sourceBinder, helper, src;
   sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor([null]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__BasicValueTest_del(obj) {
     return Type__BoxTypeInstance(Int32, Type__CastType(SimpleObjectWithProperty, obj).get_intProp());
@@ -215,10 +215,10 @@ function SourcePropertyBinderTests__BasicValueTest() {
   sourceBinder.useDataBinder(helper);
   src = SourcePropertyBinderTests__PrepSimpleObject();
   sourceBinder.set_source(src);
-  QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  QUnit.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
 };
-function SourcePropertyBinderTests__BasicValueTestWithNotification() {
+function SourcePropertyBinderTests__BasicValueTestWithNotification(assert) {
   var sourceBinder, helper, src, stmtTemp1;
   sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__BasicValueTestWithNotification_del(obj) {
     return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
@@ -227,14 +227,14 @@ function SourcePropertyBinderTests__BasicValueTestWithNotification() {
   sourceBinder.useDataBinder(helper);
   src = SourcePropertyBinderTests__PrepNotifiableObject();
   sourceBinder.set_source(src);
-  QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  QUnit.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
   helper.set_sourceValueUpdateCalled(false);
   src.set_intProp((stmtTemp1 = src.get_intProp()) + 1), stmtTemp1;
-  QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  QUnit.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
 };
-function SourcePropertyBinderTests__PropertyPathValueNotifiableTest() {
+function SourcePropertyBinderTests__PropertyPathValueNotifiableTest(assert) {
   var sourceBinder, helper, src;
   sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["NotifiableProp", "IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__PropertyPathValueNotifiableTest_del(obj) {
     return Type__CastType(SimpleObjectWithProperty, obj).get_notifiableProp();
@@ -245,14 +245,14 @@ function SourcePropertyBinderTests__PropertyPathValueNotifiableTest() {
   sourceBinder.useDataBinder(helper);
   src = SourcePropertyBinderTests__PrepSimpleObject();
   sourceBinder.set_source(src);
-  QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  QUnit.equal(src.get_notifiableProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_notifiableProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
   helper.set_sourceValueUpdateCalled(false);
   src.get_notifiableProp().set_intProp( -1);
-  QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  QUnit.equal(src.get_notifiableProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_notifiableProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
 };
-function SourcePropertyBinderTests__PropertyPathValueTest() {
+function SourcePropertyBinderTests__PropertyPathValueTest(assert) {
   var sourceBinder, helper, src, lastValue;
   sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["SelfProp", "IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__PropertyPathValueTest_del(obj) {
     return Type__CastType(SimpleObjectWithProperty, obj).get_selfProp();
@@ -263,19 +263,19 @@ function SourcePropertyBinderTests__PropertyPathValueTest() {
   sourceBinder.useDataBinder(helper);
   src = SourcePropertyBinderTests__PrepSimpleObject();
   sourceBinder.set_source(src);
-  QUnit.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  QUnit.equal(src.get_selfProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_selfProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
   helper.set_sourceValueUpdateCalled(false);
   lastValue = src.get_selfProp().get_intProp();
   src.get_selfProp().set_intProp( -1);
-  QUnit.ok(!helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  QUnit.equal(lastValue, Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  assert.ok(!helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(lastValue, Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
 };
 Type__RegisterReferenceType(SourcePropertyBinderTests, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests", Object, []);
 function ContainerTests() {
 };
 ContainerTests.typeId = "l";
-function ContainerTests__TestRegisterResolve() {
+function ContainerTests__TestRegisterResolve(assert) {
   var container, x, y, t2, t1;
   container = IocContainer_factory();
   x = 1;
@@ -287,16 +287,16 @@ function ContainerTests__TestRegisterResolve() {
     return IocTestType1_factory(x, y);
   });
   t2 = container.resolve(IocTestType2);
-  QUnit.ok(t2, "t2 != null");
-  QUnit.equal(1, t2.testMethod(), "1 == t1.TestMethod()");
+  assert.ok(t2, "t2 != null");
+  assert.equal(1, t2.testMethod(), "1 == t1.TestMethod()");
   t1 = container.resolve(IocTestType1);
-  QUnit.ok(t1, "t1 != null");
-  QUnit.equal(3, t1.testMethod(), "3 == t1.TestMethod()");
+  assert.ok(t1, "t1 != null");
+  assert.equal(3, t1.testMethod(), "3 == t1.TestMethod()");
   x = 10;
   t1 = container.resolve(IocTestType1);
-  QUnit.equal(12, t1.testMethod(), "12 == t1.TestMethod()");
+  assert.equal(12, t1.testMethod(), "12 == t1.TestMethod()");
 };
-function ContainerTests__TestRegisterResolveWithAs() {
+function ContainerTests__TestRegisterResolveWithAs(assert) {
   var container, x, y, t2, t1;
   container = IocContainer_factory();
   x = 1;
@@ -308,13 +308,13 @@ function ContainerTests__TestRegisterResolveWithAs() {
     return IocTestType1_factory(x, y);
   }).as(IIocTestType1);
   t2 = container.resolve(IocTestType2);
-  QUnit.ok(t2, "t2 != null");
-  QUnit.equal(1, t2.testMethod(), "1 == t1.TestMethod()");
+  assert.ok(t2, "t2 != null");
+  assert.equal(1, t2.testMethod(), "1 == t1.TestMethod()");
   t1 = container.resolve(IIocTestType1);
-  QUnit.ok(t1, "t1 != null");
-  QUnit.equal(3, t1.V_TestMethod_b(), "3 == t1.TestMethod()");
+  assert.ok(t1, "t1 != null");
+  assert.equal(3, t1.V_TestMethod_b(), "3 == t1.TestMethod()");
 };
-function ContainerTests__TestRegisterResolveIsSingleton() {
+function ContainerTests__TestRegisterResolveIsSingleton(assert) {
   var container, x, y, t2, t1, t1_;
   container = IocContainer_factory();
   x = 1;
@@ -326,14 +326,14 @@ function ContainerTests__TestRegisterResolveIsSingleton() {
     return IocTestType1_factory(x, y);
   }).isSingleton();
   t2 = container.resolve(IocTestType2);
-  QUnit.ok(t2, "t2 != null");
-  QUnit.equal(1, t2.testMethod(), "1 == t1.TestMethod()");
+  assert.ok(t2, "t2 != null");
+  assert.equal(1, t2.testMethod(), "1 == t1.TestMethod()");
   t1 = container.resolve(IocTestType1);
   x = 10;
   t1_ = container.resolve(IocTestType1);
-  QUnit.strictEqual(t1_, t1, "t1_ === t1");
+  assert.strictEqual(t1_, t1, "t1_ === t1");
 };
-function ContainerTests__TestRegisterResolveLazy() {
+function ContainerTests__TestRegisterResolveLazy(assert) {
   var container, x, y, t1;
   container = IocContainer_factory();
   x = 1;
@@ -342,15 +342,15 @@ function ContainerTests__TestRegisterResolveLazy() {
     return IocTestType1_factory(x++, y);
   }).isSingleton();
   t1 = container.resolveLazy(IocTestType1);
-  QUnit.equal(1, x, "x === 1");
-  QUnit.equal(3, t1.get_value().testMethod(), "t1.Value.TestMethod() == 3");
-  QUnit.equal(2, x, "x === 2");
+  assert.equal(1, x, "x === 1");
+  assert.equal(3, t1.get_value().testMethod(), "t1.Value.TestMethod() == 3");
+  assert.equal(2, x, "x === 2");
 };
 Type__RegisterReferenceType(ContainerTests, "Sunlight.Framework.Test.ContainerTests", Object, []);
 function EventBusTests() {
 };
 EventBusTests.typeId = "m";
-function EventBusTests__TestSubscribeAndRaise() {
+function EventBusTests__TestSubscribeAndRaise(assert) {
   var evtBus, x1, x2, stmtTemp1;
   evtBus = EventBus_factory();
   x1 = 0;
@@ -362,10 +362,10 @@ function EventBusTests__TestSubscribeAndRaise() {
     return x2 = evt.x;
   });
   evtBus.raise(Evt1, (stmtTemp1 = Evt1_factory(), stmtTemp1.x = 10, stmtTemp1));
-  QUnit.equal(10, x1, "10 == x1");
-  QUnit.equal(0, x2, "0 == x2");
+  assert.equal(10, x1, "10 == x1");
+  assert.equal(0, x2, "0 == x2");
 };
-function EventBusTests__TestSubscribeAndRaiseOnceTime() {
+function EventBusTests__TestSubscribeAndRaiseOnceTime(assert) {
   var evtBus, x1, x2, del, stmtTemp1;
   evtBus = EventBus_factory();
   x1 = 0;
@@ -378,12 +378,12 @@ function EventBusTests__TestSubscribeAndRaiseOnceTime() {
     return x2 = evt.x;
   });
   evtBus.raiseOneTime(Evt1, (stmtTemp1 = Evt1_factory(), stmtTemp1.x = 10, stmtTemp1));
-  QUnit.equal(10, x1, "10 == x1");
+  assert.equal(10, x1, "10 == x1");
   x1 = 0;
   evtBus.subscribe(Evt1, del);
-  QUnit.equal(10, x1, "(2) 10 == x1");
+  assert.equal(10, x1, "(2) 10 == x1");
 };
-function EventBusTests__TestSubscribeUnSubscribeAndRaise() {
+function EventBusTests__TestSubscribeUnSubscribeAndRaise(assert) {
   var evtBus, x1, x2, del, stmtTemp1;
   evtBus = EventBus_factory();
   x1 = 0;
@@ -399,33 +399,33 @@ function EventBusTests__TestSubscribeUnSubscribeAndRaise() {
   });
   evtBus.unSubscribe(Evt1, del);
   evtBus.raise(Evt1, (stmtTemp1 = Evt1_factory(), stmtTemp1.x = 10, stmtTemp1));
-  QUnit.equal(0, x1, "0 == x1");
+  assert.equal(0, x1, "0 == x1");
 };
 Type__RegisterReferenceType(EventBusTests, "Sunlight.Framework.Test.EventBusTests", Object, []);
 function ObservableCollectionTests() {
 };
 ObservableCollectionTests.typeId = "n";
-function ObservableCollectionTests__TestCreateNewObservableCollection() {
+function ObservableCollectionTests__TestCreateNewObservableCollection(assert) {
   var observableCollection;
   observableCollection = ObservableCollection_$Int32$_.defaultConstructor();
-  QUnit.notEqual(null, observableCollection, "ObservableCollection should be created");
-  QUnit.equal(0, observableCollection.get_count(), "ObservableCollection's size should be 0");
+  assert.notEqual(null, observableCollection, "ObservableCollection should be created");
+  assert.equal(0, observableCollection.get_count(), "ObservableCollection's size should be 0");
 };
-function ObservableCollectionTests__TestAddItemToObservableCollection() {
+function ObservableCollectionTests__TestAddItemToObservableCollection(assert) {
   var observableCollection, eventRaised;
   observableCollection = ObservableCollection_$Int32$_.defaultConstructor();
   eventRaised = false;
   observableCollection.add_CollectionChanged(function ObservableCollectionTests__TestAddItemToObservableCollection_del(coll, evtArg) {
-    QUnit.equal(observableCollection, coll, "ObservableCollection");
-    QUnit.equal(1, evtArg.get_newItems().V_get_Count_c(), "evtArg.NewItems.Count");
-    QUnit.ok(Object__IsNullOrUndefined(evtArg.get_oldItems()), "Object.IsNullOrUndefined(evtArg.OldItems)");
-    QUnit.equal(0, evtArg.get_changeIndex(), "evtArg.changeIndex");
+    assert.equal(observableCollection, coll, "ObservableCollection");
+    assert.equal(1, evtArg.get_newItems().V_get_Count_c(), "evtArg.NewItems.Count");
+    assert.ok(Object__IsNullOrUndefined(evtArg.get_oldItems()), "Object.IsNullOrUndefined(evtArg.OldItems)");
+    assert.equal(0, evtArg.get_changeIndex(), "evtArg.changeIndex");
     eventRaised = true;
   });
   observableCollection.add(1);
-  QUnit.ok(eventRaised, "Change event raised");
+  assert.ok(eventRaised, "Change event raised");
 };
-function ObservableCollectionTests__TestRemoveItemToObservableCollection() {
+function ObservableCollectionTests__TestRemoveItemToObservableCollection(assert) {
   var observableCollection, eventRaised;
   observableCollection = ObservableCollection_$Int32$_.defaultConstructor();
   eventRaised = false;
@@ -433,25 +433,25 @@ function ObservableCollectionTests__TestRemoveItemToObservableCollection() {
   observableCollection.add(2);
   observableCollection.add(3);
   observableCollection.add_CollectionChanged(function ObservableCollectionTests__TestRemoveItemToObservableCollection_del(coll, evtArg) {
-    QUnit.equal(observableCollection, coll, "ObservableCollection");
-    QUnit.equal(2, evtArg.get_oldItems().V_get_Count_c(), "evtArg.OldItems.Count");
-    QUnit.ok(Object__IsNullOrUndefined(evtArg.get_newItems()), "Object.IsNullOrUndefined(evtArg.NewItems)");
-    QUnit.equal(1, evtArg.get_changeIndex(), "evtArg.changeIndex");
+    assert.equal(observableCollection, coll, "ObservableCollection");
+    assert.equal(2, evtArg.get_oldItems().V_get_Count_c(), "evtArg.OldItems.Count");
+    assert.ok(Object__IsNullOrUndefined(evtArg.get_newItems()), "Object.IsNullOrUndefined(evtArg.NewItems)");
+    assert.equal(1, evtArg.get_changeIndex(), "evtArg.changeIndex");
     eventRaised = true;
   });
   observableCollection.removeRangeAt(1, 2);
-  QUnit.ok(eventRaised, "Change event raised");
+  assert.ok(eventRaised, "Change event raised");
 };
 Type__RegisterReferenceType(ObservableCollectionTests, "Sunlight.Framework.Test.ObservableCollectionTests", Object, []);
 function ObservableObjectTests() {
 };
 ObservableObjectTests.typeId = "o";
-function ObservableObjectTests__TestCreateNewObservableObject() {
+function ObservableObjectTests__TestCreateNewObservableObject(assert) {
   var observableObject;
   observableObject = ObservableTestObject_factory();
-  QUnit.notEqual(null, observableObject, "ObservableObject should be created");
+  assert.notEqual(null, observableObject, "ObservableObject should be created");
 };
-function ObservableObjectTests__TestFirePropertyChanged() {
+function ObservableObjectTests__TestFirePropertyChanged(assert) {
   var observableObject, strChanged, cbCalled, cb1;
   observableObject = ObservableTestObject_factory();
   strChanged = false;
@@ -462,14 +462,14 @@ function ObservableObjectTests__TestFirePropertyChanged() {
   };
   observableObject.addPropertyChangedListener("StringProp", cb1);
   observableObject.set_stringProp("1");
-  QUnit.ok(strChanged, "change callback called");
+  assert.ok(strChanged, "change callback called");
   strChanged = false;
   cbCalled = false;
   observableObject.set_intProp(1);
-  QUnit.ok(!strChanged, "String change callback not called.");
-  QUnit.ok(!cbCalled, "Callback should not be called for different property change");
+  assert.ok(!strChanged, "String change callback not called.");
+  assert.ok(!cbCalled, "Callback should not be called for different property change");
 };
-function ObservableObjectTests__TestRemovePropertyChangeCallback() {
+function ObservableObjectTests__TestRemovePropertyChangeCallback(assert) {
   var observableObject, cbCalled, cb1;
   observableObject = ObservableTestObject_factory();
   cbCalled = false;
@@ -478,11 +478,11 @@ function ObservableObjectTests__TestRemovePropertyChangeCallback() {
   };
   observableObject.addPropertyChangedListener("StringProp", cb1);
   observableObject.set_stringProp("1");
-  QUnit.ok(cbCalled, "change callback called");
+  assert.ok(cbCalled, "change callback called");
   cbCalled = false;
   observableObject.removePropertyChangedListener("StringProp", cb1);
   observableObject.set_stringProp("2");
-  QUnit.ok(!cbCalled, "after removing change listner, callback should not be called.");
+  assert.ok(!cbCalled, "after removing change listner, callback should not be called.");
 };
 Type__RegisterReferenceType(ObservableObjectTests, "Sunlight.Framework.Test.ObservableObjectTests", Object, []);
 function ISourceDataBinder() {
@@ -903,12 +903,8 @@ ptyp_.__ctor0 = function SimpleNotifiableClass____ctor() {
 Type__RegisterReferenceType(SimpleNotifiableClass, "Sunlight.Framework.Test.Binders.SimpleNotifiableClass", ObservableObject, []);
 String.typeId = "x";
 String__formatHelperRegex = null;
-String__trimStartHelperRegex = null;
-String__trimEndHelperRegex = null;
 function String____cctor() {
   String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
-  String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
-  String__trimEndHelperRegex = new RegExp("[\\s\\xA0]+$");
 };
 Type__RegisterReferenceType(String, "System.String", Object, []);
 function ICollection() {
@@ -1925,38 +1921,38 @@ ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
 StringDictionary_$TypeRegistry$_.$5ftri();
 StringDictionary_$Function$_.$5ftri();
 StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
-module("Sunlight.Framework.Test.Binders.DataBinderTests", {
+QUnit.module("Sunlight.Framework.Test.Binders.DataBinderTests", {
 });
-test("BasicBinderSimpleObjectTest", 0, DataBinderTests__BasicBinderSimpleObjectTest);
-test("BasicBinderSimpleObjectTestReverseOrder", 0, DataBinderTests__BasicBinderSimpleObjectTestReverseOrder);
-test("BasicBinderOneWayNotifiableObjectTest", 0, DataBinderTests__BasicBinderOneWayNotifiableObjectTest);
-test("BasicBinderTwoWayNotifiableObjectTest", 0, DataBinderTests__BasicBinderTwoWayNotifiableObjectTest);
-module("Sunlight.Framework.Test.Binders.SourcePropertyBinderTests", {
+QUnit.test("BasicBinderSimpleObjectTest", DataBinderTests__BasicBinderSimpleObjectTest);
+QUnit.test("BasicBinderSimpleObjectTestReverseOrder", DataBinderTests__BasicBinderSimpleObjectTestReverseOrder);
+QUnit.test("BasicBinderOneWayNotifiableObjectTest", DataBinderTests__BasicBinderOneWayNotifiableObjectTest);
+QUnit.test("BasicBinderTwoWayNotifiableObjectTest", DataBinderTests__BasicBinderTwoWayNotifiableObjectTest);
+QUnit.module("Sunlight.Framework.Test.Binders.SourcePropertyBinderTests", {
 });
-test("BasicValueTest", 0, SourcePropertyBinderTests__BasicValueTest);
-test("BasicValueTestWithNotification", 0, SourcePropertyBinderTests__BasicValueTestWithNotification);
-test("PropertyPathValueNotifiableTest", 0, SourcePropertyBinderTests__PropertyPathValueNotifiableTest);
-test("PropertyPathValueTest", 0, SourcePropertyBinderTests__PropertyPathValueTest);
-module("Sunlight.Framework.Test.ContainerTests", {
+QUnit.test("BasicValueTest", SourcePropertyBinderTests__BasicValueTest);
+QUnit.test("BasicValueTestWithNotification", SourcePropertyBinderTests__BasicValueTestWithNotification);
+QUnit.test("PropertyPathValueNotifiableTest", SourcePropertyBinderTests__PropertyPathValueNotifiableTest);
+QUnit.test("PropertyPathValueTest", SourcePropertyBinderTests__PropertyPathValueTest);
+QUnit.module("Sunlight.Framework.Test.ContainerTests", {
 });
-test("TestRegisterResolve", 0, ContainerTests__TestRegisterResolve);
-test("TestRegisterResolveWithAs", 0, ContainerTests__TestRegisterResolveWithAs);
-test("TestRegisterResolveIsSingleton", 0, ContainerTests__TestRegisterResolveIsSingleton);
-test("TestRegisterResolveLazy", 0, ContainerTests__TestRegisterResolveLazy);
-module("Sunlight.Framework.Test.EventBusTests", {
+QUnit.test("TestRegisterResolve", ContainerTests__TestRegisterResolve);
+QUnit.test("TestRegisterResolveWithAs", ContainerTests__TestRegisterResolveWithAs);
+QUnit.test("TestRegisterResolveIsSingleton", ContainerTests__TestRegisterResolveIsSingleton);
+QUnit.test("TestRegisterResolveLazy", ContainerTests__TestRegisterResolveLazy);
+QUnit.module("Sunlight.Framework.Test.EventBusTests", {
 });
-test("TestSubscribeAndRaise", 0, EventBusTests__TestSubscribeAndRaise);
-test("TestSubscribeAndRaiseOnceTime", 0, EventBusTests__TestSubscribeAndRaiseOnceTime);
-test("TestSubscribeUnSubscribeAndRaise", 0, EventBusTests__TestSubscribeUnSubscribeAndRaise);
-module("Sunlight.Framework.Test.ObservableCollectionTests", {
+QUnit.test("TestSubscribeAndRaise", EventBusTests__TestSubscribeAndRaise);
+QUnit.test("TestSubscribeAndRaiseOnceTime", EventBusTests__TestSubscribeAndRaiseOnceTime);
+QUnit.test("TestSubscribeUnSubscribeAndRaise", EventBusTests__TestSubscribeUnSubscribeAndRaise);
+QUnit.module("Sunlight.Framework.Test.ObservableCollectionTests", {
 });
-test("TestCreateNewObservableCollection", 0, ObservableCollectionTests__TestCreateNewObservableCollection);
-test("TestAddItemToObservableCollection", 0, ObservableCollectionTests__TestAddItemToObservableCollection);
-test("TestRemoveItemToObservableCollection", 0, ObservableCollectionTests__TestRemoveItemToObservableCollection);
-module("Sunlight.Framework.Test.ObservableObjectTests", {
+QUnit.test("TestCreateNewObservableCollection", ObservableCollectionTests__TestCreateNewObservableCollection);
+QUnit.test("TestAddItemToObservableCollection", ObservableCollectionTests__TestAddItemToObservableCollection);
+QUnit.test("TestRemoveItemToObservableCollection", ObservableCollectionTests__TestRemoveItemToObservableCollection);
+QUnit.module("Sunlight.Framework.Test.ObservableObjectTests", {
 });
-test("TestCreateNewObservableObject", 0, ObservableObjectTests__TestCreateNewObservableObject);
-test("TestFirePropertyChanged", 0, ObservableObjectTests__TestFirePropertyChanged);
-test("TestRemovePropertyChangeCallback", 0, ObservableObjectTests__TestRemovePropertyChangeCallback);
+QUnit.test("TestCreateNewObservableObject", ObservableObjectTests__TestCreateNewObservableObject);
+QUnit.test("TestFirePropertyChanged", ObservableObjectTests__TestFirePropertyChanged);
+QUnit.test("TestRemovePropertyChangeCallback", ObservableObjectTests__TestRemovePropertyChangeCallback);
 })();
 //# sourceMappingURL=Sunlight.Framework.Test.map

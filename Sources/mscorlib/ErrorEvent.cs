@@ -35,7 +35,7 @@ namespace System
         public extern string Filename
         { get; }
 
-        [ScriptName("filename")]
+        [ScriptName("error")]
         public extern object Error
         { get; }
 

@@ -44,35 +44,41 @@ namespace System.Web.Html
         /// </returns>
         public extern FileReader();
 
+        [ScriptName("onabort")]
         /// <summary>
         /// Event queue for all listeners interested in OnAbort events.
         /// </summary>
-        public event Action<FileReader> OnAbort;
+        public extern Action<FileReader> OnAbort { get; set; }
 
+        [ScriptName("onerror")]
         /// <summary>
         /// Event queue for all listeners interested in OnError events.
         /// </summary>
-        public event Action<FileReader> OnError;
+        public extern Action<FileReader, ErrorEvent> OnError { get; set; }
 
+        [ScriptName("onload")]
         /// <summary>
         /// Event queue for all listeners interested in OnLoad events.
         /// </summary>
-        public event Action<FileReader> OnLoad;
+        public extern Action<FileReader> OnLoad { get; set; }
 
+        [ScriptName("onloadend")]
         /// <summary>
         /// Event queue for all listeners interested in OnLoadEnd events.
         /// </summary>
-        public event Action<FileReader> OnLoadEnd;
+        public extern Action<FileReader> OnLoadEnd { get; set; }
 
+        [ScriptName("onloadstart")]
         /// <summary>
         /// Event queue for all listeners interested in OnLoadStart events.
         /// </summary>
-        public event Action<FileReader> OnLoadStart;
+        public extern Action<FileReader> OnLoadStart { get; set; }
 
+        [ScriptName("onprogress")]
         /// <summary>
         /// Event queue for all listeners interested in OnProgress events.
         /// </summary>
-        public event Action<FileReader> OnProgress;
+        public extern Action<FileReader, ProgressEvent> OnProgress { get; set; }
 
         /// <summary>
         /// Aborts this object.
@@ -83,19 +89,19 @@ namespace System.Web.Html
         /// Reads as array buffer.
         /// </summary>
         /// <param name="file"> The file. </param>
-        public extern void ReadAsArrayBuffer(File file);
+        public extern void ReadAsArrayBuffer(Blob file);
 
         /// <summary>
         /// Reads as binary string.
         /// </summary>
         /// <param name="file"> The file. </param>
-        public extern void ReadAsBinaryString(File file);
+        public extern void ReadAsBinaryString(Blob file);
 
         /// <summary>
         /// Reads as data URL.
         /// </summary>
         /// <param name="file"> The file. </param>
-        public extern void ReadAsDataURL(File file);
+        public extern void ReadAsDataURL(Blob file);
 
         /// <summary>
         /// Gets the result.

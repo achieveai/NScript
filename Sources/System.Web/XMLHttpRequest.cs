@@ -291,7 +291,7 @@ namespace System.Web
         {
             XMLHttpRequest.GetRaw(
                 url,
-                (request, code, error) => { if (cb != null) cb(error ? null : request.ResponseText, code, error); },
+                (request, code, error) => { if (cb != null) cb(request.ResponseText, code, error); },
                 null,
                 acceptType,
                 headerPair,

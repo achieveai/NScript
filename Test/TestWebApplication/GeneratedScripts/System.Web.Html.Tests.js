@@ -97,22 +97,22 @@ function TestElement() {
 TestElement.typeId = "d";
 function TestElement__Setup() {
 };
-function TestElement__TestCreateElement() {
+function TestElement__TestCreateElement(assert) {
   var element;
   element = window.document.createElement("div");
-  QUnit.notEqual(null, element, "element should not be null.");
-  QUnit.equal("DIV", element.tagName, "TagName of element");
+  assert.notEqual(null, element, "element should not be null.");
+  assert.equal("DIV", element.tagName, "TagName of element");
 };
-function TestElement__TestAttribute() {
+function TestElement__TestAttribute(assert) {
   var element, attributes;
   element = Node__As(window.document.createElement("div"));
   element.setAttribute("_id", "test");
   attributes = element.attributes;
-  QUnit.equal(1, attributes.length, "attributes.Length");
-  QUnit.equal("_id", attributes[0].name, "attributes[0].Name");
-  QUnit.equal("test", attributes[0].value, "attributes[0].Value");
+  assert.equal(1, attributes.length, "attributes.Length");
+  assert.equal("_id", attributes[0].name, "attributes[0].Name");
+  assert.equal("test", attributes[0].value, "attributes[0].Value");
 };
-function TestElement__TestEventBinding() {
+function TestElement__TestEventBinding(assert) {
   var element, handlerCalled, eventType, handler, testEvt;
   element = window.document.createElement("div");
   element.textContent = "Foo";
@@ -127,13 +127,13 @@ function TestElement__TestEventBinding() {
   testEvt = window.document.createEvent("MouseEvent");
   testEvt.initMouseEvent("click", true, true, window, "", 0, 0, 0, 0, false, false, false, false, "", element);
   element.dispatchEvent(testEvt);
-  QUnit.ok(handlerCalled, "Handler should be called");
-  QUnit.equal("click", eventType, "EventType");
+  assert.ok(handlerCalled, "Handler should be called");
+  assert.equal("click", eventType, "EventType");
   Element__UnBind(element, "click", handler, false);
   handlerCalled = false;
   eventType = null;
   element.dispatchEvent(testEvt);
-  QUnit.ok(!handlerCalled, "Handler should not be called");
+  assert.ok(!handlerCalled, "Handler should not be called");
 };
 Type__RegisterReferenceType(TestElement, "System.Web.Html.Tests.TestElement", Object, []);
 function Node__As(this_) {
@@ -438,11 +438,11 @@ function StringDictionary(TValue, $5fcallStatiConstructor) {
 };
 StringDictionary_$Function$_ = StringDictionary(Function);
 StringDictionary_$Function$_.$5ftri();
-module("System.Web.Html.Tests.TestElement", {
-  "setup": TestElement__Setup
+QUnit.module("System.Web.Html.Tests.TestElement", {
+  "before": TestElement__Setup
 });
-test("TestCreateElement", 0, TestElement__TestCreateElement);
-test("TestAttribute", 0, TestElement__TestAttribute);
-test("TestEventBinding", 0, TestElement__TestEventBinding);
+QUnit.test("TestCreateElement", TestElement__TestCreateElement);
+QUnit.test("TestAttribute", TestElement__TestAttribute);
+QUnit.test("TestEventBinding", TestElement__TestEventBinding);
 })();
 //# sourceMappingURL=System.Web.Html.Tests.map
