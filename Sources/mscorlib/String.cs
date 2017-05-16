@@ -16,19 +16,12 @@
         [Implement]
         private static RegularExpression trimEndHelperRegex;
 
-        static String()
-        {
-            String.formatHelperRegex = new RegularExpression(@"(\{[^\}^\{]+\})", "g");
-        }
-
         private static RegularExpression FormatHelperRegex
         {
             get
             {
                 if (object.IsNullOrUndefined(String.formatHelperRegex))
-                {
-                    String.formatHelperRegex = new RegularExpression(@"^[\s\xA0]+");
-                }
+                { String.formatHelperRegex =  new RegularExpression(@"(\{[^\}^\{]+\})", "g"); }
 
                 return String.formatHelperRegex;
             }
@@ -143,10 +136,10 @@
         public extern static bool Equals(string s1, string s2, bool ignoreCase);
 
         [Script(@"
-            return format.replace(@{[mscorlib]System.String::get_FormatHelperRegex()},
+            return format.replace(@{[mscorlib]System.String::get_FormatHelperRegex()}(),
                   function(str, m) {
                       var index = parseInt(m.substr(1));
-                      var value = values.@{[mscorlib]System.ArrayG`1::get_Item([mscorlib]System.Int32)}(index + 1);
+                      var value = values.@{[mscorlib]System.ArrayG`1::get_Item([mscorlib]System.Int32)}(index);
                       if (!value) {
                           return '';
                       }
@@ -273,22 +266,20 @@
 
         [MakeStaticUsage]
         [Script(@"
-            return this.trimLeft ? this.trimLeft() : this.replace(@{[mscorlib]System.String::get_TrimEndHelperRegex()}, '');
+            return this.trimLeft ? this.trimLeft() : this.replace(@{[mscorlib]System.String::get_TrimEndHelperRegex()}(), '');
             ")]
         public extern string TrimEnd();
 
         [MakeStaticUsage]
         [Script(@"
-            return this.trimRight ? this.trimRight() : this.replace(@{[mscorlib]System.String::get_TrimStartHelperRegex()}, '');
+            return this.trimRight ? this.trimRight() : this.replace(@{[mscorlib]System.String::get_TrimStartHelperRegex()}(), '');
             ")]
         public extern string TrimStart();
 
         public char this[int index]
         {
             get
-            {
-                return this.CharCodeAt(index);
-            }
+            { return this.CharCodeAt(index); }
         }
 
         [IntrinsicProperty]
