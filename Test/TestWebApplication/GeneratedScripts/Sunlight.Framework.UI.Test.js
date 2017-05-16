@@ -1820,6 +1820,10 @@ ptyp_.internalDispose1 = function ListView__InternalDispose() {
   var items, itemCount, iItem;
   items = this.items;
   itemCount = items.get_count();
+  if (this.attachedObservableList) {
+    this.attachedObservableList.V_remove_CollectionChanged_i(Delegate__Create("observableListCollectionChanged", this));
+    this.attachedObservableList = null;
+  }
   if (itemCount > 0) {
     for (iItem = 0; iItem < itemCount; iItem++)
       items.get_item(iItem).dispose();

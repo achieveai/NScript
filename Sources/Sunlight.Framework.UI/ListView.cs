@@ -200,6 +200,12 @@ namespace Sunlight.Framework.UI
         {
             var items = this.items;
             int itemCount = items.Count;
+            if (this.attachedObservableList != null)
+            {
+                this.attachedObservableList.CollectionChanged -= ObservableListCollectionChanged;
+                this.attachedObservableList = null;
+            }
+
             if (itemCount > 0)
             {
                 for (int iItem = 0; iItem < itemCount; iItem++)

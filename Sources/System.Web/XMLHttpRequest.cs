@@ -498,7 +498,7 @@ namespace System.Web
                     {
                         EventBinder.CleanUp(request);
                         if (cb != null)
-                        { cb(null, request.Status, true); }
+                        { cb(request, request.Status, true); }
                     };
             }
 
