@@ -81,5 +81,8 @@ namespace System.Web
 
         [ScriptAlias("setInterval")]
         public extern static int SetInterval(Action callback, int interval);
+
+        [ScriptAlias("requestAnimationFrame")]
+        public extern static int RequestAnimationFrame(Action callback);
     }
 }

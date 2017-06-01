@@ -472,6 +472,10 @@ namespace System.Web.Html
         /// </summary>
         public extern event Action<Element, ElementEvent> OnPaste;
 
+        public extern event Action<Element, ElementEvent> OnTransitionEnd;
+
+        public extern event Action<Element, ElementEvent> OnTransitionStart;
+
         /// <summary>
         /// Gets the on animation start event handler.
         /// </summary>

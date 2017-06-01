@@ -1,5 +1,5 @@
 ﻿(function(){
-var ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, String__formatHelperRegex, ObservableCollection_$Int32$_, Type__typeMapping, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_;
+var ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, ObservableCollection_$Int32$_, Type__typeMapping, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_;
 Function.typeId = "h";
 Type__typeMapping = null;
 function Type__AsType(this_, instance) {
@@ -902,10 +902,6 @@ ptyp_.__ctor0 = function SimpleNotifiableClass____ctor() {
 };
 Type__RegisterReferenceType(SimpleNotifiableClass, "Sunlight.Framework.Test.Binders.SimpleNotifiableClass", ObservableObject, []);
 String.typeId = "x";
-String__formatHelperRegex = null;
-function String____cctor() {
-  String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
-};
 Type__RegisterReferenceType(String, "System.String", Object, []);
 function ICollection() {
 };
@@ -925,8 +921,6 @@ ptyp_.V_CopyTo_c = function(arg0, arg1) {
   return this.V_CopyTo(arg0, arg1);
 };
 Type__RegisterReferenceType(ArrayImpl, "System.ArrayImpl", Object, [ICollection]);
-RegExp.typeId = "z";
-Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
 function Delegate__Combine(a, b) {
   var funcs, rv;
   funcs = [];
@@ -1025,12 +1019,12 @@ function Delegate__CreateJoinedArray(array) {
 };
 function Function0() {
 };
-Function0.typeId = "ab";
+Function0.typeId = "z";
 Function0.prototype = new Function();
 Type__RegisterReferenceType(Function0, "System.MulticastDelegate", Function, []);
 function BinderTestHelper() {
 };
-BinderTestHelper.typeId = "bb";
+BinderTestHelper.typeId = "ab";
 function BinderTestHelper_factory() {
   return new BinderTestHelper();
 };
@@ -1051,7 +1045,7 @@ ptyp_.V_SourceValueUpdated_f = ptyp_.sourceValueUpdated;
 Type__RegisterReferenceType(BinderTestHelper, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests/BinderTestHelper", Object, [ISourceDataBinder]);
 function IocContainer() {
 };
-IocContainer.typeId = "cb";
+IocContainer.typeId = "bb";
 function IocContainer_factory() {
   var this_;
   this_ = new IocContainer();
@@ -1094,7 +1088,7 @@ ptyp_.__ctor = function IocContainer____ctor() {
 Type__RegisterReferenceType(IocContainer, "Sunlight.Framework.IocContainer", Object, []);
 function IocTestType2() {
 };
-IocTestType2.typeId = "db";
+IocTestType2.typeId = "cb";
 function IocTestType2_factory(x) {
   var this_;
   this_ = new IocTestType2();
@@ -1112,7 +1106,7 @@ ptyp_.testMethod = function IocTestType2__TestMethod() {
 Type__RegisterReferenceType(IocTestType2, "Sunlight.Framework.Test.IocTestType2", Object, []);
 function IocTestType1Base() {
 };
-IocTestType1Base.typeId = "eb";
+IocTestType1Base.typeId = "db";
 function IocTestType1Base_factory(x) {
   var this_;
   this_ = new IocTestType1Base();
@@ -1134,7 +1128,7 @@ IIocTestType1.typeId = "b";
 Type__RegisterInterface(IIocTestType1, "Sunlight.Framework.Test.IIocTestType1");
 function IocTestType1() {
 };
-IocTestType1.typeId = "fb";
+IocTestType1.typeId = "eb";
 function IocTestType1_factory(x, y) {
   var this_;
   this_ = new IocTestType1();
@@ -1155,7 +1149,7 @@ ptyp_.V_TestMethod_b = ptyp_.testMethod;
 Type__RegisterReferenceType(IocTestType1, "Sunlight.Framework.Test.IocTestType1", IocTestType1Base, [IIocTestType1]);
 function IocHelper() {
 };
-IocHelper.typeId = "gb";
+IocHelper.typeId = "fb";
 function IocHelper_factory(isSingleton, registerAs) {
   var this_;
   this_ = new IocHelper();
@@ -1180,7 +1174,7 @@ ptyp_.isSingleton = function IocHelper__IsSingleton() {
 Type__RegisterReferenceType(IocHelper, "Sunlight.Framework.IoC.IocHelper", Object, []);
 function EventBus() {
 };
-EventBus.typeId = "hb";
+EventBus.typeId = "gb";
 function EventBus_factory() {
   var this_;
   this_ = new EventBus();
@@ -1267,7 +1261,7 @@ ptyp_.__ctor = function EventBus____ctor() {
 Type__RegisterReferenceType(EventBus, "Sunlight.Framework.EventBus", Object, []);
 function Evt1() {
 };
-Evt1.typeId = "ib";
+Evt1.typeId = "hb";
 function Evt1_factory() {
   return new Evt1();
 };
@@ -1280,7 +1274,7 @@ Type__RegisterReferenceType(Evt1, "Sunlight.Framework.Test.EventBusTests/Evt1", 
 function Evt2(boxedValue) {
   this.boxedValue = boxedValue;
 };
-Evt2.typeId = "jb";
+Evt2.typeId = "ib";
 Evt2.getDefaultValue = function() {
   return {
     x: 0
@@ -1290,7 +1284,7 @@ Evt2.prototype = new ValueType();
 Type__RegisterStructType(Evt2, "Sunlight.Framework.Test.EventBusTests/Evt2", []);
 function ObservableTestObject() {
 };
-ObservableTestObject.typeId = "kb";
+ObservableTestObject.typeId = "jb";
 function ObservableTestObject_factory() {
   var this_;
   this_ = new ObservableTestObject();
@@ -1320,7 +1314,7 @@ ptyp_.__ctor0 = function ObservableTestObject____ctor() {
 Type__RegisterReferenceType(ObservableTestObject, "Sunlight.Framework.Test.ObservableObjectTests/ObservableTestObject", ObservableObject, []);
 function TypeRegistry() {
 };
-TypeRegistry.typeId = "lb";
+TypeRegistry.typeId = "kb";
 function TypeRegistry_factory(factory) {
   var this_;
   this_ = new TypeRegistry();
@@ -1348,7 +1342,7 @@ ptyp_.getValue = function TypeRegistry__GetValue() {
   return this.value;
 };
 Type__RegisterReferenceType(TypeRegistry, "Sunlight.Framework.TypeRegistry", Object, []);
-Error.typeId = "mb";
+Error.typeId = "lb";
 Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function ExceptionHelpers() {
 };
@@ -1368,7 +1362,7 @@ function IValueConverter() {
 };
 IValueConverter.typeId = "e";
 Type__RegisterInterface(IValueConverter, "Sunlight.Framework.Binders.IValueConverter");
-Array.typeId = "vb";
+Array.typeId = "ub";
 Type__RegisterReferenceType(Array, "System.Array", Object, [ICollection]);
 function ArrayG(T, $5fcallStatiConstructor) {
   var ArrayG$1_$T$_, T$5b$5d_$T$_, $5f_initTracker;
@@ -1379,7 +1373,7 @@ function ArrayG(T, $5fcallStatiConstructor) {
   ArrayG$1_$T$_ = ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = ArrayG;
-  ArrayG$1_$T$_.typeId = "nb$" + T.typeId + "$";
+  ArrayG$1_$T$_.typeId = "mb$" + T.typeId + "$";
   ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory1(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
@@ -1468,7 +1462,7 @@ function Func(T1, TRes, $5fcallStatiConstructor) {
   Func$2_$T1_x_TRes$_ = Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_TRes$_.genericParameters = [T1, TRes];
   Func$2_$T1_x_TRes$_.genericClosure = Func;
-  Func$2_$T1_x_TRes$_.typeId = "ob$" + T1.typeId + "_" + TRes.typeId + "$";
+  Func$2_$T1_x_TRes$_.typeId = "nb$" + T1.typeId + "_" + TRes.typeId + "$";
   Func$2_$T1_x_TRes$_.prototype = new Function0();
   Type__RegisterReferenceType(Func$2_$T1_x_TRes$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", Function0, []);
   Func$2_$T1_x_TRes$_.$5ftri = function() {
@@ -1492,7 +1486,7 @@ function Lazy(T, $5fcallStatiConstructor) {
   Lazy$1_$T$_ = Lazy[T.typeId];
   Lazy$1_$T$_.genericParameters = [T];
   Lazy$1_$T$_.genericClosure = Lazy;
-  Lazy$1_$T$_.typeId = "pb$" + T.typeId + "$";
+  Lazy$1_$T$_.typeId = "ob$" + T.typeId + "$";
   Lazy$1_$T$_.__ctor = function Sunlight_Framework_Lazy$1_factory0(factory) {
     var this_;
     this_ = new Lazy$1_$T$_();
@@ -1539,7 +1533,7 @@ function ObservableCollection(T, $5fcallStatiConstructor) {
   ObservableCollection$1_$T$_ = ObservableCollection[T.typeId];
   ObservableCollection$1_$T$_.genericParameters = [T];
   ObservableCollection$1_$T$_.genericClosure = ObservableCollection;
-  ObservableCollection$1_$T$_.typeId = "qb$" + T.typeId + "$";
+  ObservableCollection$1_$T$_.typeId = "pb$" + T.typeId + "$";
   ObservableCollection$1_$T$_.defaultConstructor = function Sunlight_Framework_Observables_ObservableCollection$1_factory0() {
     var this_;
     this_ = new ObservableCollection$1_$T$_();
@@ -1620,7 +1614,7 @@ function CollectionChangedEventArgs(T, $5fcallStatiConstructor) {
   CollectionChangedEventArgs$1_$T$_ = CollectionChangedEventArgs[T.typeId];
   CollectionChangedEventArgs$1_$T$_.genericParameters = [T];
   CollectionChangedEventArgs$1_$T$_.genericClosure = CollectionChangedEventArgs;
-  CollectionChangedEventArgs$1_$T$_.typeId = "rb$" + T.typeId + "$";
+  CollectionChangedEventArgs$1_$T$_.typeId = "qb$" + T.typeId + "$";
   CollectionChangedEventArgs$1_$T$_.__ctor = function Sunlight_Framework_Observables_CollectionChangedEventArgs$1_factory0(action, changeIndex, newItems, oldItems) {
     var this_;
     this_ = new CollectionChangedEventArgs$1_$T$_();
@@ -1687,7 +1681,7 @@ function Action(T1, T2, $5fcallStatiConstructor) {
   Action$2_$T1_x_T2$_ = Action[T1.typeId][T2.typeId];
   Action$2_$T1_x_T2$_.genericParameters = [T1, T2];
   Action$2_$T1_x_T2$_.genericClosure = Action;
-  Action$2_$T1_x_T2$_.typeId = "sb$" + T1.typeId + "_" + T2.typeId + "$";
+  Action$2_$T1_x_T2$_.typeId = "rb$" + T1.typeId + "_" + T2.typeId + "$";
   Action$2_$T1_x_T2$_.prototype = new Function0();
   Type__RegisterReferenceType(Action$2_$T1_x_T2$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", Function0, []);
   Action$2_$T1_x_T2$_.$5ftri = function() {
@@ -1715,7 +1709,7 @@ function StringDictionary(TValue, $5fcallStatiConstructor) {
   StringDictionary$1_$TValue$_ = StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "tb$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "sb$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, $5fcallStatiConstructor);
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, $5fcallStatiConstructor);
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
@@ -1801,7 +1795,7 @@ function List(T, $5fcallStatiConstructor) {
   List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
-  List$1_$T$_.typeId = "ub$" + T.typeId + "$";
+  List$1_$T$_.typeId = "tb$" + T.typeId + "$";
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory0() {
     var this_;
     this_ = new List$1_$T$_();
@@ -1874,7 +1868,7 @@ function KeyValuePair(K, V, $5fcallStatiConstructor) {
   KeyValuePair$2_$K_x_V$_ = KeyValuePair[K.typeId][V.typeId];
   KeyValuePair$2_$K_x_V$_.genericParameters = [K, V];
   KeyValuePair$2_$K_x_V$_.genericClosure = KeyValuePair;
-  KeyValuePair$2_$K_x_V$_.typeId = "wb$" + K.typeId + "_" + V.typeId + "$";
+  KeyValuePair$2_$K_x_V$_.typeId = "vb$" + K.typeId + "_" + V.typeId + "$";
   KeyValuePair$2_$K_x_V$_.getDefaultValue = function() {
     return {
       key: Type__GetDefaultValueStatic(K),
@@ -1910,7 +1904,6 @@ ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_ = ArrayG(Action_$INotifyProp
 StringDictionary_$TypeRegistry$_ = StringDictionary(TypeRegistry);
 StringDictionary_$Function$_ = StringDictionary(Function);
 StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_ = StringDictionary(Action_$INotifyPropertyChanged_x_String$_);
-String____cctor();
 ArrayG_$String$_.$5ftri();
 Func_$Object_x_Object$_.$5ftri();
 ArrayG_$Func_$Object_x_Object$_$_.$5ftri();

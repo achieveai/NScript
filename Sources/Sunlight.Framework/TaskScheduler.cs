@@ -77,6 +77,8 @@ namespace Sunlight.Framework
         void ClearTimeout(int timeoutHandle);
 
         void ClearInterval(int intervalHandle);
+
+        int RequestAnimationFrame(Action action);
     }
 
     public class WindowTimer: IWindowTimer
@@ -117,6 +119,12 @@ namespace Sunlight.Framework
                 @{[System.Web]System.Web.Globals::ClearImmediate([mscorlib]System.Int32)}(timeoutHandle);
             @{[System.Web]System.Web.Globals::ClearTimeout([mscorlib]System.Int32)}(timeoutHandle);")]
         public extern void ClearTimeout(int timeoutHandle);
+
+        [Script(
+            @"if (typeof @{[System.Web]System.Web.Globals::RequestAnimationFrame([mscorlib]System.Action)} != 'undefined')
+                return @{[System.Web]System.Web.Globals::RequestAnimationFrame([mscorlib]System.Action)}(action);
+            return @{[System.Web]System.Web.Globals::SetTimeout([mscorlib]System.Action, [mscorlib]System.Int32)}(action, 0);")]
+        public extern int RequestAnimationFrame(Action action);
 
         /// <summary>
         /// Sets an interval.
@@ -166,6 +174,11 @@ namespace Sunlight.Framework
 
         public void ClearInterval(int intervalHandle)
         {
+        }
+
+        public int RequestAnimationFrame(Action action)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -221,11 +234,41 @@ namespace Sunlight.Framework
             set { TaskScheduler.instance = value; }
         }
 
+        public TaskHandle EnqueueOnAnimationFrame(Action work, string traceId)
+        {
+            Task task = null;
+            Action cb = () =>
+             {
+                 try
+                 { task.Work(); }
+                 finally
+                 { this.tasks.Remove(task.TaskId); }
+             };
+
+            task = new Task(
+                this.nextTimerId++,
+                this.windowTimer.RequestAnimationFrame(cb),
+                NativeTimerHandleType.Timeout,
+                work);
+
+            this.tasks.Add(task.TaskId, task);
+            return new TaskHandle(task.TaskId);
+        }
+
         public TaskHandle EnqueueOnTimeout(Action work, string traceId, int timeout)
         {
-            var task = new Task(
+            Task task = null;
+            Action cb = () =>
+             {
+                 try
+                 { task.Work(); }
+                 finally
+                 { this.tasks.Remove(task.TaskId); }
+             };
+
+            task = new Task(
                 this.nextTimerId++,
-                this.windowTimer.SetTimeout(work, timeout),
+                this.windowTimer.SetTimeout(cb, timeout),
                 NativeTimerHandleType.Timeout,
                 work);
 
