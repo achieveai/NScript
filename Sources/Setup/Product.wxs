@@ -2,13 +2,13 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ProductVersion="1.0.0.0" ?>
   <?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
-  <?define V8EngineDir="$(var.SolutionDir)Sources\XwmlParser\ClearScript.V8" ?>
+  <?define V8EngineDir="$(var.SolutionDir)NScriptToolset\bin\x86" ?>
 
   <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
-		<MediaTemplate EmbedCab="yes"/>
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
+    <MediaTemplate EmbedCab="yes"/>
 
     <Property Id="USERITEMTEMPLATEDIR">
       <RegistrySearch Id="ItemTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
@@ -18,22 +18,22 @@
       <RegistrySearch Id="ProjectTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
     </Property>
          
-		<Feature Id="ProductFeature" Title="nScript" Level="1">
-			<ComponentGroupRef Id="ProductComponents" />
-		</Feature>
+    <Feature Id="ProductFeature" Title="nScript" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
   </Product>
 
   <!-- Step 1: Define the directory structure -->
   <Fragment>
-		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
         <Directory Id="BASEINSTALLFOLDER" Name="nScript">
           <Directory Id="INSTALLFOLDER" Name="$(var.ProductVersion)">
             <Directory Id="INSTALLFOLDER_BIN" Name="bin"/>
             <Directory Id="INSTALLFOLDER_LIB" Name="lib"/>
           </Directory>
         </Directory>
-			</Directory>
+      </Directory>
 
       <Directory Id="USERITEMTEMPLATEDIR">
         <Directory Id="ITEMTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
@@ -48,8 +48,8 @@
           <Directory Id="PROJECTTEMPLATE_DIR" Name="nScript" />
         </Directory>
       </Directory>
-		</Directory>
-	</Fragment>
+    </Directory>
+  </Fragment>
 
   <!-- Step 2: Add files to your installer package -->
   <Fragment>
@@ -115,9 +115,7 @@
         <File Source="$(var.ToolsetDir)\bin\ClearScript.dll" />
 
         <File Source="$(var.V8EngineDir)\ClearScriptV8-32.dll" />
-        <File Source="$(var.V8EngineDir)\ClearScriptV8-64.dll" />
         <File Source="$(var.V8EngineDir)\V8-ia32.dll" />
-        <File Source="$(var.V8EngineDir)\V8-x64.dll" />
       </Component>
 
       <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">
@@ -154,6 +152,6 @@
         <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Test.zip" />
         <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript.VSTDIR" />
       </Component>
-		</ComponentGroup>
-	</Fragment>
+    </ComponentGroup>
+  </Fragment>
 </Wix>

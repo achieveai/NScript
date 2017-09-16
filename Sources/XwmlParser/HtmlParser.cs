@@ -477,7 +477,7 @@ namespace XwmlParser
             int startPositionLine,
             int startPositionCol)
         {
-            if (capture.Length == null)
+            if (capture.Length == 0)
             { return; }
 
             int lineDelta = startPositionLine;

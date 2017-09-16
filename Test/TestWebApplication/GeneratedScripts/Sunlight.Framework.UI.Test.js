@@ -2360,10 +2360,8 @@ ptyp_.set_isSelected = function ListViewItem__set_IsSelected(value) {
   if (this.isSelected != value) {
     this.isSelected = value;
     if (this.selectionHelper)
-      if (value) {
+      if (value)
         this.selectionHelper.V_SelectItem_d(this.get_dataContext());
-        this.get_element().scrollIntoView(false);
-      }
       else
         this.selectionHelper.V_UnSelectItem_d(this.get_dataContext());
     this.firePropertyChanged("IsSelected");

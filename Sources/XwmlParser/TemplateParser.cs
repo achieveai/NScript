@@ -81,11 +81,6 @@ namespace XwmlParser
         private SkinNodeInfo rootSkinNodeInfo;
 
         /// <summary>
-        /// true if this object is template.
-        /// </summary>
-        private readonly bool isTemplate;
-
-        /// <summary>
         /// true if this object is parsed.
         /// </summary>
         private bool isParsed = false;
@@ -391,7 +386,6 @@ namespace XwmlParser
                     case NodeType.Template:
                     case NodeType.Skin:
                         throw new ApplicationException("can't declare Template or Skin in middle of other Skins or templates");
-                        break;
                     case NodeType.CssStyle:
                         throw new ApplicationException(
                             string.Format("can't have style tag in middle of a template"));

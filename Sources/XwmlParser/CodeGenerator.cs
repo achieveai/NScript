@@ -63,11 +63,6 @@ namespace XwmlParser
         /// </summary>
         private IIdentifier storageArrayIdentifier;
 
-        /// <summary>
-        /// Identifier for the HTML storage initializer.
-        /// </summary>
-        private IIdentifier htmlStorageInitializerIdentifier;
-
         private IIdentifier documentStateStorage;
 
         private IIdentifier documentStorageGetter;

@@ -59,3 +59,5 @@ Test/TestWebApplication/GeneratedScripts/System.Web.Html.Tests.map
 *.psess
 TDSparser/TDSparser/HammerJs.cs
 *.un~
+*.ide
+/NScriptToolSet/lib
