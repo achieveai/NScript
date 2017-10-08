@@ -42,14 +42,14 @@ namespace System
         {
             [Script(@"
                 var arr = this.@{[mscorlib]System.ArrayG`1::innerArray};
-                if (index < 0 || index >= arr.length) throw ""index "" + index + "" out of range"";
+                if (index < 0 || index >= arr.length) throw new @{[mscorlib]System.Exception}(""index "" + index + "" out of range"");
                 return arr[index];
                 ")]
             get;
 
             [Script(@"
                 var arr = this.@{[mscorlib]System.ArrayG`1::innerArray};
-                if (index < 0 || index >= arr.length) throw ""index "" + index + "" out of range"";
+                if (index < 0 || index >= arr.length) throw new @{[mscorlib]System.Exception}(""index "" + index + "" out of range"");
                 return arr[index] = value;
                 ")]
             set;

@@ -414,6 +414,8 @@ namespace Sunlight.Framework.UI.Helpers
                         value);
                 }
             }
+            catch
+            { }
             finally
             {
                 this.updating = false;

@@ -24,6 +24,8 @@ namespace Sunlight.Framework.Observables
         /// </summary>
         private StringDictionary<List<string>> linkedProperties = null;
 
+        public event Action<INotifyPropertyChanged, string> AnyPropertyListener;
+
         /// <summary>
         /// Add a callback listening for property changes
         /// </summary>
@@ -87,6 +89,7 @@ namespace Sunlight.Framework.Observables
         protected void ClearListeners()
         {
             this.eventHandlers = null;
+            this.AnyPropertyListener = null;
         }
 
         /// <summary>
@@ -124,6 +127,9 @@ namespace Sunlight.Framework.Observables
                     { value(this, key); }
                 }
             }
+
+            if (AnyPropertyListener != null)
+            { this.AnyPropertyListener(this, null); }
         }
 
         /// <summary>
@@ -157,6 +163,8 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
+            if (this.AnyPropertyListener != null)
+            { this.AnyPropertyListener(this, propertyName); }
         }
 
         /// <summary>
@@ -267,6 +275,13 @@ namespace Sunlight.Framework.Observables
                         }
                     }
                 }
+            }
+
+            if (this.AnyPropertyListener != null)
+            {
+                for (int iProp = 0; iProp < propertyNames.Length; iProp++)
+                { this.AnyPropertyListener(this, propertyNames[iProp]); }
+
             }
         }
     }

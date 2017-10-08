@@ -311,9 +311,29 @@
         [PreserveCase]
         public extern static int UTC(int year, int month, int day, int hours, int minutes, int seconds, int milliseconds);
 
-        public DateTime AddDays(int days)
+        public DateTime AddDays(double days)
         {
             return this + days * 86400000;
+        }
+
+        public DateTime AddHours(double hours)
+        {
+            return this + hours * 3600 * 1000;
+        }
+
+        public DateTime AddMinutes(double minutes)
+        {
+            return this + minutes * 1000 * 60;
+        }
+
+        public DateTime AddSeconds(double secs)
+        {
+            return this + secs * 1000;
+        }
+
+        public DateTime AddMilliSeconds(long ms)
+        {
+            return this + ms;
         }
 
         public DateTime AddMonths(int months)

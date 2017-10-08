@@ -776,6 +776,7 @@ ObservableObject.typeId = "v";
 ptyp_ = ObservableObject.prototype;
 ptyp_.eventHandlers = null;
 ptyp_.linkedProperties = null;
+ptyp_.anyPropertyListener = null;
 ptyp_.addPropertyChangedListener = function ObservableObject__AddPropertyChangedListener(propertyName, callback) {
   var cb;
   if (!this.eventHandlers)
@@ -845,6 +846,8 @@ ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(prope
             cb(this, propertyName);
     }
   }
+  if (this.anyPropertyListener)
+    this.anyPropertyListener(this, propertyName);
 };
 ptyp_.__ctor = function ObservableObject____ctor() {
 };
@@ -1408,14 +1411,14 @@ function ArrayG(T, $5fcallStatiConstructor) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index];
   };
   ptyp_.set_item = function ArrayG$1__set_Item(index, value) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index] = value;
   };
   ptyp_.get_innerArray = function ArrayG$1__get_InnerArray() {
@@ -1818,7 +1821,7 @@ function List(T, $5fcallStatiConstructor) {
     var arr;
     arr = this.nativeArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index];
   };
   ptyp_.removeAt = function List$1__RemoveAt(index) {

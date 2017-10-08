@@ -654,6 +654,7 @@ ObservableObject.typeId = "y";
 ptyp_ = ObservableObject.prototype;
 ptyp_.eventHandlers = null;
 ptyp_.linkedProperties = null;
+ptyp_.anyPropertyListener = null;
 ptyp_.addPropertyChangedListener = function ObservableObject__AddPropertyChangedListener(propertyName, callback) {
   var cb;
   if (!this.eventHandlers)
@@ -692,6 +693,7 @@ ptyp_.removePropertyChangedListener = function ObservableObject__RemovePropertyC
 };
 ptyp_.clearListeners = function ObservableObject__ClearListeners() {
   this.eventHandlers = null;
+  this.anyPropertyListener = null;
 };
 ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(propertyName) {
   var cb, linkedProperties, iProp;
@@ -726,6 +728,8 @@ ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(prope
             cb(this, propertyName);
     }
   }
+  if (this.anyPropertyListener)
+    this.anyPropertyListener(this, propertyName);
 };
 ptyp_.__ctor = function ObservableObject____ctor() {
 };
@@ -1105,7 +1109,7 @@ ptyp_.onSourcePropertyChanged = function LiveBinder__OnSourcePropertyChanged(obj
   this.flowValue();
 };
 ptyp_.onTargetPropertyChanged = function LiveBinder__OnTargetPropertyChanged(obj, str) {
-  var binderInfo, target, liveObjects, value;
+  var stmtTemp1, binderInfo, target, liveObjects, value;
   if (this.updating || !this.isActive)
     return;
   try {
@@ -1119,6 +1123,7 @@ ptyp_.onTargetPropertyChanged = function LiveBinder__OnTargetPropertyChanged(obj
         value = binderInfo.backwardConverter(value);
       binderInfo.propertySetter(this.liveObjects.V_get_Length() < 2 ? this.source : this.liveObjects.get_item(this.liveObjects.V_get_Length() - 2), value);
     }
+  } catch (stmtTemp1) {
   } finally {
     this.updating = false;
   }
@@ -2781,14 +2786,14 @@ function ArrayG(T, $5fcallStatiConstructor) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index];
   };
   ptyp_.set_item = function ArrayG$1__set_Item(index, value) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index] = value;
   };
   ptyp_.get_innerArray = function ArrayG$1__get_InnerArray() {
@@ -3240,14 +3245,14 @@ function List(T, $5fcallStatiConstructor) {
     var arr;
     arr = this.nativeArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index];
   };
   ptyp_.set_item = function List$1__set_Item(index, value) {
     var arr;
     arr = this.nativeArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index] = value;
   };
   ptyp_.insert = function List$1__Insert(index, item) {
