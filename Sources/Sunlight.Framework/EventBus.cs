@@ -32,14 +32,9 @@ namespace Sunlight.Framework
             }
 
             if (!eventSubscriptsion.TryGetValue(typeId, out registeredCallback))
-            {
-                registeredCallback = callback;
-                eventSubscriptsion[typeId] = registeredCallback;
-            }
+            { eventSubscriptsion[typeId] = callback; }
             else
-            {
-                registeredCallback = Delegate.Combine(registeredCallback, (Delegate)callback);
-            }
+            { eventSubscriptsion[typeId] = Delegate.Combine(registeredCallback, (Delegate)callback); }
         }
 
         public void UnSubscribe<T>(Action<T> callback)
@@ -55,9 +50,9 @@ namespace Sunlight.Framework
                 act -= callback;
 
                 if (act == null)
-                {
-                    eventSubscriptsion.Remove(typeId);
-                }
+                { eventSubscriptsion.Remove(typeId); }
+                else
+                { eventSubscriptsion[typeId] = act; }
             }
         }
 

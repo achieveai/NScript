@@ -61,3 +61,9 @@ TDSparser/TDSparser/HammerJs.cs
 *.un~
 *.ide
 /NScriptToolSet/lib
+/.vs/NScript/v15/Server/sqlite3/storage.ide-wal
+/.vs/NScript/v15/Server/sqlite3/storage.ide-shm
+/.vs/NScript/v15/Server/sqlite3/db.lock
+/.vs/NScript/v15/sqlite3/storage.ide-wal
+/.vs/NScript/v15/sqlite3/storage.ide-shm
+/.vs/NScript/v15/sqlite3/db.lock

@@ -1202,12 +1202,10 @@ ptyp_.subscribe = function EventBus__Subscribe(T, callback) {
     write: function(arg0) {
       return registeredCallback = arg0;
     }
-  })) {
-    registeredCallback = callback;
-    this.eventSubscriptsion.set_item(typeId, registeredCallback);
-  }
+  }))
+    this.eventSubscriptsion.set_item(typeId, callback);
   else
-    registeredCallback = Delegate__Combine(registeredCallback, callback);
+    this.eventSubscriptsion.set_item(typeId, Delegate__Combine(registeredCallback, callback));
 };
 ptyp_.unSubscribe = function EventBus__UnSubscribe(T, callback) {
   var typeId, registeredCallback, act;
@@ -1225,6 +1223,8 @@ ptyp_.unSubscribe = function EventBus__UnSubscribe(T, callback) {
     act = Delegate__Remove(act, callback);
     if (!act)
       this.eventSubscriptsion.remove(typeId);
+    else
+      this.eventSubscriptsion.set_item(typeId, act);
   }
 };
 ptyp_.raise = function EventBus__Raise(T, evt) {
