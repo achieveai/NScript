@@ -59,7 +59,8 @@
             char ch = str[0];
 
             if ((ch >= 'A' && ch <= 'Z') ||
-                (ch >= 'a' && ch <= 'z'))
+                (ch >= 'a' && ch <= 'z') ||
+                (ch == '_'))
             {
                 strBuilder.Append(ch);
             }
@@ -93,7 +94,7 @@
                 }
                 else if (ch == '.')
                 {
-                    strBuilder.Append("__");
+                    strBuilder.Append("$$");
                 }
                 else if (ch == '<')
                 {

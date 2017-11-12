@@ -1,8 +1,8 @@
 ﻿(function(){
-var Type__typeMapping, StringDictionary_$Function$_, ptyp_;
+var Type$$typeMapping, StringDictionary_$Function$_, ptyp_;
 Function.typeId = "b";
-Type__typeMapping = null;
-function Type__CastType(this_, instance) {
+Type$$typeMapping = null;
+function Type$$CastType(this_, instance) {
   if (this_.isInstanceOfType(instance) || instance === null || typeof instance === "undefined") {
     if (this_.isStruct)
       return instance.boxedValue;
@@ -10,32 +10,32 @@ function Type__CastType(this_, instance) {
   }
   throw "InvalidCast to " + this_.fullName;
 };
-function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
+function Type$$RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
   this_.fullName = typeName;
   this_.baseType = parentType;
   this_.interfaces = parentType ? interfaces.concat(parentType.interfaces) : interfaces;
-  if (!Type__typeMapping)
-    Type__typeMapping = {
+  if (!Type$$typeMapping)
+    Type$$typeMapping = {
     };
-  Type__typeMapping[this_.fullName] = this_;
+  Type$$typeMapping[this_.fullName] = this_;
 };
-function Type__RegisterStructType(this_, typeName, interfaces) {
+function Type$$RegisterStructType(this_, typeName, interfaces) {
   this_.isStruct = true;
   this_.fullName = typeName;
   this_.baseType = ValueType;
   this_.interfaces = interfaces;
-  if (!Type__typeMapping)
-    Type__typeMapping = {
+  if (!Type$$typeMapping)
+    Type$$typeMapping = {
     };
-  Type__typeMapping[this_.fullName] = this_;
+  Type$$typeMapping[this_.fullName] = this_;
 };
-function Type__GetDefaultValueStatic(type) {
+function Type$$GetDefaultValueStatic(type) {
   if (type.isStruct)
     return type.getDefaultValue();
   return null;
 };
-function Type__InitializeBaseInterfaces(type) {
+function Type$$InitializeBaseInterfaces(type) {
   var rv, baseType, baseInterfaces, key, interfaces;
   if (!type.baseInterfaces) {
     rv = {
@@ -43,7 +43,7 @@ function Type__InitializeBaseInterfaces(type) {
     baseType = type.baseType;
     if (baseType != null && baseType != Object) {
       if (baseType)
-        Type__InitializeBaseInterfaces(type);
+        Type$$InitializeBaseInterfaces(type);
       baseInterfaces = baseType.baseInterfaces;
       if (baseInterfaces)
         for (key in baseInterfaces)
@@ -66,114 +66,114 @@ ptyp_.fullName = null;
 ptyp_.typeId = null;
 ptyp_.baseInterfaces = null;
 ptyp_.interfaces = null;
-ptyp_.isInstanceOfType = function Type__IsInstanceOfType(instance) {
+ptyp_.isInstanceOfType = function Type$$IsInstanceOfType(instance) {
   if (instance === null || typeof instance === "undefined")
     return false;
   if (!this.isInterface)
-    return instance instanceof this || instance && instance.constructor == this;
+    return instance instanceof this || instance !== null && instance.constructor == this;
   else if (!instance.constructor.baseInterfaces)
-    Type__InitializeBaseInterfaces(instance.constructor);
+    Type$$InitializeBaseInterfaces(instance.constructor);
   return instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
 };
-ptyp_.getDefaultValue = function Type__GetDefaultValue() {
+ptyp_.getDefaultValue = function Type$$GetDefaultValue() {
   return null;
 };
-Type__RegisterReferenceType(Function, "System.Type", Object, []);
+Type$$RegisterReferenceType(Function, "System.Type", Object, []);
 Object.typeId = "c";
-function Object__IsNullOrUndefined(obj) {
+function Object$$IsNullOrUndefined(obj) {
   return obj === null || typeof obj == "undefined";
 };
-function Object__GetNewImportedExtension() {
+function Object$$GetNewImportedExtension() {
   return {
-    "toJSON": Object__NoReturn
+    "toJSON": Object$$NoReturn
   };
 };
-function Object__NoReturn() {
+function Object$$NoReturn() {
   return undefined;
 };
-Type__RegisterReferenceType(Object, "System.Object", null, []);
+Type$$RegisterReferenceType(Object, "System.Object", null, []);
 function TestElement() {
 };
 TestElement.typeId = "d";
-function TestElement__Setup() {
+function TestElement$$Setup() {
 };
-function TestElement__TestCreateElement(assert) {
+function TestElement$$TestCreateElement(assert) {
   var element;
   element = window.document.createElement("div");
   assert.notEqual(null, element, "element should not be null.");
   assert.equal("DIV", element.tagName, "TagName of element");
 };
-function TestElement__TestAttribute(assert) {
+function TestElement$$TestAttribute(assert) {
   var element, attributes;
-  element = Node__As(window.document.createElement("div"));
+  element = Node$$As(window.document.createElement("div"));
   element.setAttribute("_id", "test");
   attributes = element.attributes;
   assert.equal(1, attributes.length, "attributes.Length");
   assert.equal("_id", attributes[0].name, "attributes[0].Name");
   assert.equal("test", attributes[0].value, "attributes[0].Value");
 };
-function TestElement__TestEventBinding(assert) {
+function TestElement$$TestEventBinding(assert) {
   var element, handlerCalled, eventType, handler, testEvt;
   element = window.document.createElement("div");
   element.textContent = "Foo";
   window.document.body.appendChild(element);
   handlerCalled = false;
   eventType = null;
-  handler = function TestElement__TestEventBinding_del(elem, evt) {
+  handler = function TestElement$24$24TestEventBinding_del(elem, evt) {
     handlerCalled = true;
     eventType = evt.type;
   };
-  Element__Bind(element, "click", handler, false);
+  Element$$Bind(element, "click", handler, false);
   testEvt = window.document.createEvent("MouseEvent");
   testEvt.initMouseEvent("click", true, true, window, "", 0, 0, 0, 0, false, false, false, false, "", element);
   element.dispatchEvent(testEvt);
   assert.ok(handlerCalled, "Handler should be called");
   assert.equal("click", eventType, "EventType");
-  Element__UnBind(element, "click", handler, false);
+  Element$$UnBind(element, "click", handler, false);
   handlerCalled = false;
   eventType = null;
   element.dispatchEvent(testEvt);
   assert.ok(!handlerCalled, "Handler should not be called");
 };
-Type__RegisterReferenceType(TestElement, "System.Web.Html.Tests.TestElement", Object, []);
-function Node__As(this_) {
+Type$$RegisterReferenceType(TestElement, "System.Web.Html.Tests.TestElement", Object, []);
+function Node$$As(this_) {
   return this_;
 };
-function Element__Bind(this_, eventName, handler, capture) {
-  this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  EventBinder__AddEvent(this_, eventName, handler, capture);
+function Element$$Bind(this_, eventName, handler, capture) {
+  this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
+  EventBinder$$AddEvent(this_, eventName, handler, capture);
 };
-function Element__UnBind(this_, eventName, handler, capture) {
-  this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  EventBinder__RemoveEvent(this_, eventName, handler, capture);
+function Element$$UnBind(this_, eventName, handler, capture) {
+  this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
+  EventBinder$$RemoveEvent(this_, eventName, handler, capture);
 };
 function EventBinder() {
 };
 EventBinder.typeId = "e";
-function EventBinder__GetBinder(importedElement) {
-  if (Object__IsNullOrUndefined(importedElement.importedExtension))
+function EventBinder$$GetBinder(importedElement) {
+  if (Object$$IsNullOrUndefined(importedElement.importedExtension))
     importedElement.importedExtension = {
     };
-  if (Object__IsNullOrUndefined(importedElement.importedExtension.importedExtension))
+  if (Object$$IsNullOrUndefined(importedElement.importedExtension.importedExtension))
     importedElement.importedExtension.importedExtension = EventBinder_factory(importedElement);
-  return Type__CastType(EventBinder, importedElement.importedExtension.importedExtension);
+  return Type$$CastType(EventBinder, importedElement.importedExtension.importedExtension);
 };
-function EventBinder__AddEvent(importedElement, name, action, onCapture) {
+function EventBinder$$AddEvent(importedElement, name, action, onCapture) {
   var binder;
-  binder = EventBinder__GetBinder(importedElement);
+  binder = EventBinder$$GetBinder(importedElement);
   binder.addEvent(name, action, onCapture);
 };
-function EventBinder__RemoveEvent(importedElement, name, action, onCapture) {
+function EventBinder$$RemoveEvent(importedElement, name, action, onCapture) {
   var binder;
   if (importedElement.importedExtension === null || importedElement.importedExtension.importedExtension === null)
     return;
-  binder = EventBinder__GetBinder(importedElement);
+  binder = EventBinder$$GetBinder(importedElement);
   binder.removeEvent(name, action, onCapture);
 };
-function EventBinder__IsW3wc(element) {
+function EventBinder$$IsW3wc(element) {
   return !!element.addEventListener;
 };
-function EventBinder__GetEventType(evt) {
+function EventBinder$$GetEventType(evt) {
   return evt.type;
 };
 function EventBinder_factory(element) {
@@ -187,14 +187,14 @@ ptyp_.capturePhaseEvents = null;
 ptyp_.bubblePhaseEvents = null;
 ptyp_.target = null;
 ptyp_.disposed = false;
-ptyp_.__ctor = function EventBinder____ctor(element) {
+ptyp_.__ctor = function EventBinder$$$$ctor(element) {
   this.capturePhaseEvents = StringDictionary_$Function$_.defaultConstructor();
   this.bubblePhaseEvents = StringDictionary_$Function$_.defaultConstructor();
   this.target = element;
 };
-ptyp_.addEvent = function EventBinder__AddEvent0(name, action, onCapture) {
+ptyp_.addEvent = function EventBinder$$AddEvent0(name, action, onCapture) {
   var isW3wc, evts, elementEvent;
-  isW3wc = EventBinder__IsW3wc(this.target);
+  isW3wc = EventBinder$$IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
   evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
   if (!evts.tryGetValue(name, {
@@ -206,20 +206,20 @@ ptyp_.addEvent = function EventBinder__AddEvent0(name, action, onCapture) {
     }
   })) {
     elementEvent = action;
-    if (onCapture && EventBinder__IsW3wc(this.target))
-      this.addEventListener(name, Delegate__Create("eventHandlerCapture", this), true);
+    if (onCapture && EventBinder$$IsW3wc(this.target))
+      this.addEventListener(name, Delegate$$Create("eventHandlerCapture", this), true);
     else if (isW3wc)
-      this.addEventListener(name, Delegate__Create("eventHandlerBubble", this), false);
+      this.addEventListener(name, Delegate$$Create("eventHandlerBubble", this), false);
     else
-      this.attachEvent(name, Delegate__Create("eventHandlerIE", this));
+      this.attachEvent(name, Delegate$$Create("eventHandlerIE", this));
   }
   else
-    elementEvent = Delegate__Combine(elementEvent, action);
+    elementEvent = Delegate$$Combine(elementEvent, action);
   evts.set_item(name, elementEvent);
 };
-ptyp_.removeEvent = function EventBinder__RemoveEvent0(name, handler, onCapture) {
+ptyp_.removeEvent = function EventBinder$$RemoveEvent0(name, handler, onCapture) {
   var isW3wc, evts, elementEvent;
-  isW3wc = EventBinder__IsW3wc(this.target);
+  isW3wc = EventBinder$$IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
   evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
   if (evts.tryGetValue(name, {
@@ -230,45 +230,45 @@ ptyp_.removeEvent = function EventBinder__RemoveEvent0(name, handler, onCapture)
       return elementEvent = arg0;
     }
   })) {
-    elementEvent = Delegate__Remove(elementEvent, handler);
+    elementEvent = Delegate$$Remove(elementEvent, handler);
     if (!elementEvent) {
       evts.remove(name);
       if (onCapture)
-        this.removeEventListener(name, Delegate__Create("eventHandlerCapture", this), true);
+        this.removeEventListener(name, Delegate$$Create("eventHandlerCapture", this), true);
       else if (isW3wc)
-        this.removeEventListener(name, Delegate__Create("eventHandlerBubble", this), false);
+        this.removeEventListener(name, Delegate$$Create("eventHandlerBubble", this), false);
       else
-        this.detachEvent(name, Delegate__Create("eventHandlerIE", this));
+        this.detachEvent(name, Delegate$$Create("eventHandlerIE", this));
     }
     else
       evts.set_item(name, elementEvent);
   }
 };
-ptyp_.addEventListener = function EventBinder__AddEventListener(evtName, cb, isCapture) {
+ptyp_.addEventListener = function EventBinder$$AddEventListener(evtName, cb, isCapture) {
   this.target.addEventListener(evtName, cb, isCapture);
 };
-ptyp_.attachEvent = function EventBinder__AttachEvent(evtName, cb) {
+ptyp_.attachEvent = function EventBinder$$AttachEvent(evtName, cb) {
   this.target.atachEvent("on" + evtName, cb);
 };
-ptyp_.removeEventListener = function EventBinder__RemoveEventListener(evtName, cb, isCapture) {
+ptyp_.removeEventListener = function EventBinder$$RemoveEventListener(evtName, cb, isCapture) {
   this.target.removeEventListener(evtName, cb, isCapture);
 };
-ptyp_.detachEvent = function EventBinder__DetachEvent(evtName, cb) {
+ptyp_.detachEvent = function EventBinder$$DetachEvent(evtName, cb) {
   this.target.detachEvent("on" + evtName, cb);
 };
-ptyp_.eventHandlerIE = function EventBinder__EventHandlerIE() {
+ptyp_.eventHandlerIE = function EventBinder$$EventHandlerIE() {
   this.eventHandlerBubble(event);
 };
-ptyp_.eventHandlerCapture = function EventBinder__EventHandlerCapture(evt) {
+ptyp_.eventHandlerCapture = function EventBinder$$EventHandlerCapture(evt) {
   if (this.disposed)
     return;
-  this.capturePhaseEvents.get_item(EventBinder__GetEventType(evt))(this.target, evt);
+  this.capturePhaseEvents.get_item(EventBinder$$GetEventType(evt))(this.target, evt);
 };
-ptyp_.eventHandlerBubble = function EventBinder__EventHandlerBubble(evt) {
+ptyp_.eventHandlerBubble = function EventBinder$$EventHandlerBubble(evt) {
   var del;
   if (this.disposed)
     return;
-  if (this.bubblePhaseEvents.tryGetValue(EventBinder__GetEventType(evt), {
+  if (this.bubblePhaseEvents.tryGetValue(EventBinder$$GetEventType(evt), {
     read: function() {
       return del;
     },
@@ -278,8 +278,8 @@ ptyp_.eventHandlerBubble = function EventBinder__EventHandlerBubble(evt) {
   }))
     del(this.target, evt);
 };
-Type__RegisterReferenceType(EventBinder, "System.EventBinder", Object, []);
-function Delegate__Combine(a, b) {
+Type$$RegisterReferenceType(EventBinder, "System.EventBinder", Object, []);
+function Delegate$$Combine(a, b) {
   var funcs, rv;
   funcs = [];
   if (a != null)
@@ -293,11 +293,11 @@ function Delegate__Combine(a, b) {
     funcs.push(b);
   else
     return a;
-  rv = Delegate__CreateJoinedArray(funcs);
+  rv = Delegate$$CreateJoinedArray(funcs);
   rv.fullName = "Multicast Delegate";
   return rv;
 };
-function Delegate__Create(functionName, instance) {
+function Delegate$$Create(functionName, instance) {
   var func, fn;
   func = instance[functionName];
   fn = "__@" + functionName;
@@ -310,7 +310,7 @@ function Delegate__Create(functionName, instance) {
   }
   return instance[fn];
 };
-function Delegate__Remove(source, value) {
+function Delegate$$Remove(source, value) {
   var newArr, valArr, i, fullMatch, j, rv;
   if (source == value)
     return null;
@@ -344,11 +344,11 @@ function Delegate__Remove(source, value) {
     return newArr[0];
   else if (newArr.length == source.funcs.length)
     return source;
-  rv = Delegate__CreateJoinedArray(newArr);
+  rv = Delegate$$CreateJoinedArray(newArr);
   rv.fullName = "Multicast Delegate";
   return rv;
 };
-function Delegate__CreateJoinedArray(array) {
+function Delegate$$CreateJoinedArray(array) {
   var rv, i;
   rv = function() {
     var rv1; {
@@ -366,18 +366,18 @@ function ValueType() {
 ValueType.typeId = "f";
 ptyp_ = ValueType.prototype;
 ptyp_.boxedValue = null;
-Type__RegisterReferenceType(ValueType, "System.ValueType", Object, []);
+Type$$RegisterReferenceType(ValueType, "System.ValueType", Object, []);
 Function.getDefaultValue = function() {
   return {
   };
 };
 Error.typeId = "g";
-Type__RegisterReferenceType(Error, "System.Exception", Object, []);
-function StringDictionary(TValue, $5fcallStatiConstructor) {
-  var StringDictionary$1_$TValue$_, $5f_initTracker;
+Type$$RegisterReferenceType(Error, "System.Exception", Object, []);
+function StringDictionary(TValue, _callStatiConstructor) {
+  var StringDictionary$1_$TValue$_, __initTracker;
   if (StringDictionary[TValue.typeId])
     return StringDictionary[TValue.typeId];
-  StringDictionary[TValue.typeId] = function System__Collections__Generic__StringDictionary$10() {
+  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$10() {
   };
   StringDictionary$1_$TValue$_ = StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
@@ -392,57 +392,57 @@ function StringDictionary(TValue, $5fcallStatiConstructor) {
   ptyp_ = StringDictionary$1_$TValue$_.prototype;
   ptyp_.innerDict = null;
   ptyp_.count = 0;
-  ptyp_.__ctor = function StringDictionary$1____ctor() {
+  ptyp_.__ctor = function StringDictionary$1$$$$ctor() {
     this.innerDict = {
     };
   };
-  ptyp_.get_item = function StringDictionary$1__get_Item(index) {
+  ptyp_.get_item = function StringDictionary$1$$get_Item(index) {
     if (!(index in this.innerDict))
       throw new Error("Key not found");
     return this.innerDict[index];
   };
-  ptyp_.set_item = function StringDictionary$1__set_Item(index, value) {
+  ptyp_.set_item = function StringDictionary$1$$set_Item(index, value) {
     if (!(index in this.innerDict))
       this.count++;
     this.innerDict[index] = value;
   };
-  ptyp_.containsKey = function StringDictionary$1__ContainsKey(key) {
+  ptyp_.containsKey = function StringDictionary$1$$ContainsKey(key) {
     return key in this.innerDict;
   };
-  ptyp_.remove = function StringDictionary$1__Remove(key) {
+  ptyp_.remove = function StringDictionary$1$$Remove(key) {
     var rv;
     rv = delete this.innerDict[key];
     if (rv)
       this.count--;
     return rv;
   };
-  ptyp_.tryGetValue = function StringDictionary$1__TryGetValue(key, value) {
+  ptyp_.tryGetValue = function StringDictionary$1$$TryGetValue(key, value) {
     if (this.containsKey(key)) {
       value.write(this.get_item(key));
       return true;
     }
-    value.write(Type__GetDefaultValueStatic(TValue));
+    value.write(Type$$GetDefaultValueStatic(TValue));
     return false;
   };
-  Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, []);
-  StringDictionary$1_$TValue$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, []);
+  StringDictionary$1_$TValue$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     TValue = TValue;
     StringDictionary$1_$TValue$_ = StringDictionary(TValue, true);
   };
-  if ($5fcallStatiConstructor)
-    StringDictionary$1_$TValue$_.$5ftri();
+  if (_callStatiConstructor)
+    StringDictionary$1_$TValue$_._tri();
   return StringDictionary$1_$TValue$_;
 };
 StringDictionary_$Function$_ = StringDictionary(Function);
-StringDictionary_$Function$_.$5ftri();
+StringDictionary_$Function$_._tri();
 QUnit.module("System.Web.Html.Tests.TestElement", {
-  "before": TestElement__Setup
+  "before": TestElement$$Setup
 });
-QUnit.test("TestCreateElement", TestElement__TestCreateElement);
-QUnit.test("TestAttribute", TestElement__TestAttribute);
-QUnit.test("TestEventBinding", TestElement__TestEventBinding);
+QUnit.test("TestCreateElement", TestElement$$TestCreateElement);
+QUnit.test("TestAttribute", TestElement$$TestAttribute);
+QUnit.test("TestEventBinding", TestElement$$TestEventBinding);
 })();
 //# sourceMappingURL=System.Web.Html.Tests.map

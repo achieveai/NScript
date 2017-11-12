@@ -1,8 +1,8 @@
 ﻿(function(){
-var ManualTemplateTests__noneValue, ValueIfTrue_$String$_, LiveBinderTests__oneWayBinder, ArrayG_$Func_$Object_x_Object$_$_, ArrayG_$String$_, LiveBinderTests__twoWayBinder, LiveBinderTests__oneWayMultiBinder, LiveBinderTests__twoWayMultiBinder, ArrayG_$SkinBinderInfo$_, ArrayG_$Object$_, ArrayG_$TestViewModelB$_, Type__typeMapping, NumberDictionary_$Task$_, Queue_$Task$_, TaskScheduler__instance, List_$ListViewItem$_, StringDictionary_$Action_$UIEvent$_$_, String__trimStartHelperRegex, String__trimEndHelperRegex, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$Function$_, KeyValuePair_$String_x_Action_$UIEvent$_$_, List_$Object$_, ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, Func_$Object_x_Object$_, KeyValuePair_$Number_x_Task$_, Action_$UIEvent$_, Action_$INotifyPropertyChanged_x_String$_, KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, KeyValuePair_$String_x_Function$_, StringDictionary_$Int32$_, KeyValuePair_$String_x_Int32$_;
+var ManualTemplateTests$$noneValue, ValueIfTrue_$String$_, LiveBinderTests$$oneWayBinder, ArrayG_$Func_$Object_x_Object$_$_, ArrayG_$String$_, LiveBinderTests$$twoWayBinder, LiveBinderTests$$oneWayMultiBinder, LiveBinderTests$$twoWayMultiBinder, ArrayG_$SkinBinderInfo$_, ArrayG_$Object$_, ArrayG_$TestViewModelB$_, Type$$typeMapping, NumberDictionary_$Task$_, Queue_$Task$_, TaskScheduler$$instance, List_$ListViewItem$_, StringDictionary_$Action_$UIEvent$_$_, String$$trimStartHelperRegex, String$$trimEndHelperRegex, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$Function$_, KeyValuePair_$String_x_Action_$UIEvent$_$_, List_$Object$_, ArrayG_$Number$_, ptyp_, tmplStore, Test$5cTemplates$5cTestTemplate1_var, Test$5cTemplates$5cTestTemplateVMB_CssBinding_var, Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var, Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var, Test$5cTemplates$5cTestTemplateB_PropertyBinding_var, Test$5cTemplates$5cTestTemplateVMB1_var, Func_$Object_x_Object$_, KeyValuePair_$Number_x_Task$_, Action_$UIEvent$_, Action_$INotifyPropertyChanged_x_String$_, KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_, KeyValuePair_$String_x_Function$_, StringDictionary_$Int32$_, KeyValuePair_$String_x_Int32$_;
 Function.typeId = "p";
-Type__typeMapping = null;
-function Type__CastType(this_, instance) {
+Type$$typeMapping = null;
+function Type$$CastType(this_, instance) {
   if (this_.isInstanceOfType(instance) || instance === null || typeof instance === "undefined") {
     if (this_.isStruct)
       return instance.boxedValue;
@@ -10,34 +10,34 @@ function Type__CastType(this_, instance) {
   }
   throw "InvalidCast to " + this_.fullName;
 };
-function Type__ToString(this_) {
+function Type$$ToString(this_) {
   return this_.fullName ? this_.fullName : this_.name;
 };
-function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
+function Type$$RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
   this_.fullName = typeName;
   this_.baseType = parentType;
   this_.interfaces = parentType ? interfaces.concat(parentType.interfaces) : interfaces;
-  if (!Type__typeMapping)
-    Type__typeMapping = {
+  if (!Type$$typeMapping)
+    Type$$typeMapping = {
     };
-  Type__typeMapping[this_.fullName] = this_;
+  Type$$typeMapping[this_.fullName] = this_;
 };
-function Type__RegisterStructType(this_, typeName, interfaces) {
+function Type$$RegisterStructType(this_, typeName, interfaces) {
   this_.isStruct = true;
   this_.fullName = typeName;
   this_.baseType = ValueType;
   this_.interfaces = interfaces;
-  if (!Type__typeMapping)
-    Type__typeMapping = {
+  if (!Type$$typeMapping)
+    Type$$typeMapping = {
     };
-  Type__typeMapping[this_.fullName] = this_;
+  Type$$typeMapping[this_.fullName] = this_;
 };
-function Type__RegisterInterface(this_, typeName) {
+function Type$$RegisterInterface(this_, typeName) {
   this_.isInterface = true;
   this_.fullName = typeName;
 };
-function Type__RegisterEnum(this_, typeName, isFlag) {
+function Type$$RegisterEnum(this_, typeName, isFlag) {
   var enumStrToValueMap, valueToStr, lowerStrToValue, key;
   this_.isEnum = true;
   this_.fullName = typeName;
@@ -54,12 +54,12 @@ function Type__RegisterEnum(this_, typeName, isFlag) {
   }
   this_.enumValueToStrMap = valueToStr;
   this_.enumLowerStrToValueMap = lowerStrToValue;
-  if (!Type__typeMapping)
-    Type__typeMapping = {
+  if (!Type$$typeMapping)
+    Type$$typeMapping = {
     };
-  Type__typeMapping[this_.fullName] = this_;
+  Type$$typeMapping[this_.fullName] = this_;
 };
-function Type__BoxTypeInstance(type, instance) {
+function Type$$BoxTypeInstance(type, instance) {
   if (type.isNullable)
     return type.nullableBox(instance);
   else if (type.isStruct)
@@ -67,7 +67,7 @@ function Type__BoxTypeInstance(type, instance) {
   else
     return instance;
 };
-function Type__UnBoxTypeInstance(type, instance) {
+function Type$$UnBoxTypeInstance(type, instance) {
   if (type.isNullable && instance === null)
     return null;
   else if (type.isStruct)
@@ -75,12 +75,12 @@ function Type__UnBoxTypeInstance(type, instance) {
   else
     return instance;
 };
-function Type__GetDefaultValueStatic(type) {
+function Type$$GetDefaultValueStatic(type) {
   if (type.isStruct)
     return type.getDefaultValue();
   return null;
 };
-function Type__InitializeBaseInterfaces(type) {
+function Type$$InitializeBaseInterfaces(type) {
   var rv, baseType, baseInterfaces, key, interfaces;
   if (!type.baseInterfaces) {
     rv = {
@@ -88,7 +88,7 @@ function Type__InitializeBaseInterfaces(type) {
     baseType = type.baseType;
     if (baseType != null && baseType != Object) {
       if (baseType)
-        Type__InitializeBaseInterfaces(type);
+        Type$$InitializeBaseInterfaces(type);
       baseInterfaces = baseType.baseInterfaces;
       if (baseInterfaces)
         for (key in baseInterfaces)
@@ -118,106 +118,106 @@ ptyp_.enumStrToValueMap = null;
 ptyp_.enumLowerStrToValueMap = null;
 ptyp_.isFlagEnum = false;
 ptyp_.interfaces = null;
-ptyp_.isInstanceOfType = function Type__IsInstanceOfType(instance) {
+ptyp_.isInstanceOfType = function Type$$IsInstanceOfType(instance) {
   if (instance === null || typeof instance === "undefined")
     return false;
   if (!this.isInterface)
-    return instance instanceof this || instance && instance.constructor == this;
+    return instance instanceof this || instance !== null && instance.constructor == this;
   else if (!instance.constructor.baseInterfaces)
-    Type__InitializeBaseInterfaces(instance.constructor);
+    Type$$InitializeBaseInterfaces(instance.constructor);
   return instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
 };
-ptyp_.defaultConstructor = function Type__DefaultConstructor() {
+ptyp_.defaultConstructor = function Type$$DefaultConstructor() {
   if (this.isStruct)
     return this.getDefaultValue;
   throw "Default constructor not implemented";
 };
-ptyp_.getDefaultValue = function Type__GetDefaultValue() {
+ptyp_.getDefaultValue = function Type$$GetDefaultValue() {
   return null;
 };
-ptyp_.nullableBox = function Type__NullableBox(instance) {
+ptyp_.nullableBox = function Type$$NullableBox(instance) {
   return null;
 };
 ptyp_.toString = function() {
-  return Type__ToString(this);
+  return Type$$ToString(this);
 };
-Type__RegisterReferenceType(Function, "System.Type", Object, []);
+Type$$RegisterReferenceType(Function, "System.Type", Object, []);
 Object.typeId = "q";
-function Object__IsNullOrUndefined(obj) {
+function Object$$IsNullOrUndefined(obj) {
   return obj === null || typeof obj == "undefined";
 };
-function Object__GetNewImportedExtension() {
+function Object$$GetNewImportedExtension() {
   return {
-    "toJSON": Object__NoReturn
+    "toJSON": Object$$NoReturn
   };
 };
-function Object__NoReturn() {
+function Object$$NoReturn() {
   return undefined;
 };
-Type__RegisterReferenceType(Object, "System.Object", null, []);
+Type$$RegisterReferenceType(Object, "System.Object", null, []);
 function LiveBinderTests() {
 };
 LiveBinderTests.typeId = "r";
-LiveBinderTests__oneWayBinder = null;
-LiveBinderTests__twoWayBinder = null;
-LiveBinderTests__oneWayMultiBinder = null;
-LiveBinderTests__twoWayMultiBinder = null;
-function LiveBinderTests__Setup() {
-  LiveBinderTests__oneWayBinder = SkinBinderInfo_factory(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests__Setup_del(obj) {
-    return Type__CastType(TestViewModelA, obj).get_propStr1();
-  }])), NativeArray$1__op_Implicit(ArrayG_$String$_.__ctor(["PropStr1"])), function LiveBinderTests__Setup_del2(tar, val) {
-    Type__CastType(TestViewModelA, tar).set_propStr1(Type__CastType(String, val));
+LiveBinderTests$$oneWayBinder = null;
+LiveBinderTests$$twoWayBinder = null;
+LiveBinderTests$$oneWayMultiBinder = null;
+LiveBinderTests$$twoWayMultiBinder = null;
+function LiveBinderTests$$Setup() {
+  LiveBinderTests$$oneWayBinder = SkinBinderInfo_factory(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests$24$24Setup_del(obj) {
+    return Type$$CastType(TestViewModelA, obj).get_propStr1();
+  }])), NativeArray$1$$op_Implicit(ArrayG_$String$_.__ctor(["PropStr1"])), function LiveBinderTests$24$24Setup_del2(tar, val) {
+    Type$$CastType(TestViewModelA, tar).set_propStr1(Type$$CastType(String, val));
   }, 17, 0, 0, null, null);
-  LiveBinderTests__twoWayBinder = SkinBinderInfo_factory0(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests__Setup_del3(obj) {
-    return Type__CastType(TestViewModelA, obj).get_propStr1();
-  }])), function LiveBinderTests__Setup_del4(tar, val) {
-    Type__CastType(TestViewModelA, tar).set_propStr1(Type__CastType(String, val));
-  }, NativeArray$1__op_Implicit(ArrayG_$String$_.__ctor(["PropStr1"])), function LiveBinderTests__Setup_del5(tar, val) {
-    Type__CastType(TestViewModelA, tar).set_propStr1(Type__CastType(String, val));
-  }, function LiveBinderTests__Setup_del6(obj) {
-    return Type__CastType(TestViewModelA, obj).get_propStr1();
+  LiveBinderTests$$twoWayBinder = SkinBinderInfo_factory0(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests$24$24Setup_del3(obj) {
+    return Type$$CastType(TestViewModelA, obj).get_propStr1();
+  }])), function LiveBinderTests$24$24Setup_del4(tar, val) {
+    Type$$CastType(TestViewModelA, tar).set_propStr1(Type$$CastType(String, val));
+  }, NativeArray$1$$op_Implicit(ArrayG_$String$_.__ctor(["PropStr1"])), function LiveBinderTests$24$24Setup_del5(tar, val) {
+    Type$$CastType(TestViewModelA, tar).set_propStr1(Type$$CastType(String, val));
+  }, function LiveBinderTests$24$24Setup_del6(obj) {
+    return Type$$CastType(TestViewModelA, obj).get_propStr1();
   }, "PropStr1", 17, 0, 0, null, null, null);
-  LiveBinderTests__oneWayMultiBinder = SkinBinderInfo_factory(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests__Setup_del7(obj) {
-    return Type__CastType(TestViewModelA, obj).get_testVMA();
-  }, function LiveBinderTests__Setup_del8(obj) {
-    return Type__CastType(TestViewModelA, obj).get_propStr1();
-  }])), NativeArray$1__op_Implicit(ArrayG_$String$_.__ctor(["TestVMA", "PropStr1"])), function LiveBinderTests__Setup_del9(tar, val) {
-    Type__CastType(TestViewModelA, tar).set_propStr1(Type__CastType(String, val));
+  LiveBinderTests$$oneWayMultiBinder = SkinBinderInfo_factory(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests$24$24Setup_del7(obj) {
+    return Type$$CastType(TestViewModelA, obj).get_testVMA();
+  }, function LiveBinderTests$24$24Setup_del8(obj) {
+    return Type$$CastType(TestViewModelA, obj).get_propStr1();
+  }])), NativeArray$1$$op_Implicit(ArrayG_$String$_.__ctor(["TestVMA", "PropStr1"])), function LiveBinderTests$24$24Setup_del9(tar, val) {
+    Type$$CastType(TestViewModelA, tar).set_propStr1(Type$$CastType(String, val));
   }, 17, 0, 0, null, null);
-  LiveBinderTests__twoWayMultiBinder = SkinBinderInfo_factory0(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests__Setup_del10(obj) {
-    return Type__CastType(TestViewModelA, obj).get_testVMA();
-  }, function LiveBinderTests__Setup_del11(obj) {
-    return Type__BoxTypeInstance(Int32, Type__CastType(TestViewModelA, obj).get_propInt1());
-  }])), function LiveBinderTests__Setup_del12(tar, val) {
-    Type__CastType(TestViewModelA, tar).set_propInt1(Type__UnBoxTypeInstance(Int32, val));
-  }, NativeArray$1__op_Implicit(ArrayG_$String$_.__ctor(["TestVMA", "PropInt1"])), function LiveBinderTests__Setup_del13(tar, val) {
-    Type__CastType(TestViewModelA, tar).set_propStr1(Type__CastType(String, val));
-  }, function LiveBinderTests__Setup_del14(obj) {
-    return Type__CastType(TestViewModelA, obj).get_propStr1();
-  }, "PropStr1", 17, 0, 0, function LiveBinderTests__Setup_del15(obj) {
+  LiveBinderTests$$twoWayMultiBinder = SkinBinderInfo_factory0(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([function LiveBinderTests$24$24Setup_del10(obj) {
+    return Type$$CastType(TestViewModelA, obj).get_testVMA();
+  }, function LiveBinderTests$24$24Setup_del11(obj) {
+    return Type$$BoxTypeInstance(Int32, Type$$CastType(TestViewModelA, obj).get_propInt1());
+  }])), function LiveBinderTests$24$24Setup_del12(tar, val) {
+    Type$$CastType(TestViewModelA, tar).set_propInt1(Type$$UnBoxTypeInstance(Int32, val));
+  }, NativeArray$1$$op_Implicit(ArrayG_$String$_.__ctor(["TestVMA", "PropInt1"])), function LiveBinderTests$24$24Setup_del13(tar, val) {
+    Type$$CastType(TestViewModelA, tar).set_propStr1(Type$$CastType(String, val));
+  }, function LiveBinderTests$24$24Setup_del14(obj) {
+    return Type$$CastType(TestViewModelA, obj).get_propStr1();
+  }, "PropStr1", 17, 0, 0, function LiveBinderTests$24$24Setup_del15(obj) {
     return obj.toString();
-  }, function LiveBinderTests__Setup_del16(obj) {
-    return Type__BoxTypeInstance(Int32, Int32__Parse(Type__CastType(String, obj)));
+  }, function LiveBinderTests$24$24Setup_del16(obj) {
+    return Type$$BoxTypeInstance(Int32, Int32$$Parse(Type$$CastType(String, obj)));
   }, null);
 };
-function LiveBinderTests__TestLiveBinderOnActivate(assert) {
+function LiveBinderTests$$TestLiveBinderOnActivate(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
   src.set_propStr1("test");
-  liveBinder = LiveBinder_factory(LiveBinderTests__oneWayBinder, null);
+  liveBinder = LiveBinder_factory(LiveBinderTests$$oneWayBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
   assert.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
   assert.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
 };
-function LiveBinderTests__TestLiveBinderOnChange(assert) {
+function LiveBinderTests$$TestLiveBinderOnChange(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
   src.set_propStr1("test");
-  liveBinder = LiveBinder_factory(LiveBinderTests__oneWayBinder, null);
+  liveBinder = LiveBinder_factory(LiveBinderTests$$oneWayBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
   assert.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
@@ -226,26 +226,26 @@ function LiveBinderTests__TestLiveBinderOnChange(assert) {
   src.set_propStr1("testChanged");
   assert.equal(src.get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
 };
-function LiveBinderTests__TestLiveBinderMultiOnActivate(assert) {
+function LiveBinderTests$$TestLiveBinderMultiOnActivate(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
   src.set_testVMA(TestViewModelA_factory());
   src.get_testVMA().set_propStr1("test");
-  liveBinder = LiveBinder_factory(LiveBinderTests__oneWayMultiBinder, null);
+  liveBinder = LiveBinder_factory(LiveBinderTests$$oneWayMultiBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
   assert.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
   assert.equal(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
 };
-function LiveBinderTests__TestLiveBinderMultiOnChange(assert) {
+function LiveBinderTests$$TestLiveBinderMultiOnChange(assert) {
   var src, target, liveBinder, stmtTemp1;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
   src.set_testVMA(TestViewModelA_factory());
   src.get_testVMA().set_propStr1("test");
-  liveBinder = LiveBinder_factory(LiveBinderTests__oneWayMultiBinder, null);
+  liveBinder = LiveBinder_factory(LiveBinderTests$$oneWayMultiBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
   assert.notEqual(src.get_testVMA().get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
@@ -258,12 +258,12 @@ function LiveBinderTests__TestLiveBinderMultiOnChange(assert) {
   src.set_testVMA(null);
   assert.equal(null, target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
 };
-function LiveBinderTests__TestTwoWayLiveBinderOnChange(assert) {
+function LiveBinderTests$$TestTwoWayLiveBinderOnChange(assert) {
   var src, target, liveBinder;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
   src.set_propStr1("test");
-  liveBinder = LiveBinder_factory(LiveBinderTests__twoWayBinder, null);
+  liveBinder = LiveBinder_factory(LiveBinderTests$$twoWayBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
   assert.notEqual(src.get_propStr1(), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
@@ -274,52 +274,52 @@ function LiveBinderTests__TestTwoWayLiveBinderOnChange(assert) {
   target.set_propStr1("Changed Again");
   assert.equal(target.get_propStr1(), src.get_propStr1(), "if liveBinder is active in twoWay changes on target should flow back.");
 };
-function LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters(assert) {
+function LiveBinderTests$$TestTwoWayLiveBinderMultiOnChangeWithConverters(assert) {
   var src, target, liveBinder, stmtTemp1;
   src = TestViewModelA_factory();
   target = TestViewModelA_factory();
   src.set_testVMA(TestViewModelA_factory());
   src.get_testVMA().set_propInt1(1);
-  liveBinder = LiveBinder_factory(LiveBinderTests__twoWayMultiBinder, null);
+  liveBinder = LiveBinder_factory(LiveBinderTests$$twoWayMultiBinder, null);
   liveBinder.set_source(src);
   liveBinder.set_target(target);
-  assert.notEqual(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
+  assert.notEqual(Int32$$ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is notActive, changes should not flow");
   liveBinder.set_isActive(true);
-  assert.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
+  assert.equal(Int32$$ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes should have flowed.");
   src.get_testVMA().set_propInt1(2);
-  assert.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on lastElement should have flowed.");
+  assert.equal(Int32$$ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on lastElement should have flowed.");
   src.set_testVMA((stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propInt1(3), stmtTemp1));
-  assert.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
+  assert.equal(Int32$$ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active and changes on firstElement should have flowed.");
   target.set_propStr1("21");
-  assert.equal(Int32__ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active in twoWay changes on target should flow back.");
+  assert.equal(Int32$$ToString(src.get_testVMA().get_propInt1()), target.get_propStr1(), "if liveBinder is active in twoWay changes on target should flow back.");
 };
-Type__RegisterReferenceType(LiveBinderTests, "Sunlight.Framework.UI.Test.LiveBinderTests", Object, []);
+Type$$RegisterReferenceType(LiveBinderTests, "Sunlight.Framework.UI.Test.LiveBinderTests", Object, []);
 function NScriptsTemplateTests() {
 };
 NScriptsTemplateTests.typeId = "s";
-function NScriptsTemplateTests__Setup() {
-  TaskScheduler__set_Instance(TaskScheduler_factory(TestWindowTimer_factory(), 10, 10));
+function NScriptsTemplateTests$$Setup() {
+  TaskScheduler$$set_Instance(TaskScheduler_factory(TestWindowTimer_factory(), 10, 10));
 };
-function NScriptsTemplateTests__Test(assert) {
-  assert.notEqual(null, NScriptsTemplatesClass__get_TestTemplate1(), "Template should not be null");
+function NScriptsTemplateTests$$Test(assert) {
+  assert.notEqual(null, NScriptsTemplatesClass$$get_TestTemplate1(), "Template should not be null");
   assert.ok(true, "true should be true");
 };
-function NScriptsTemplateTests__TestApplySkin(assert) {
+function NScriptsTemplateTests$$TestApplySkin(assert) {
   var element, control;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
   control.set_dataContext(TestViewModelA_factory());
-  control.set_skin(NScriptsTemplatesClass__get_TestTemplate1());
+  control.set_skin(NScriptsTemplatesClass$$get_TestTemplate1());
   control.activate();
   assert.notEqual(null, element.querySelector("[test]"), "After applying skin, skin element should be loaded");
 };
-function NScriptsTemplateTests__TestCssBinder(assert) {
+function NScriptsTemplateTests$$TestCssBinder(assert) {
   var element, control, vm, elem;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
   vm = TestViewModelB_factory();
   control.set_dataContext(vm);
-  control.set_skin(NScriptsTemplatesClass__get_TestTemplateVMB_CssBinding());
+  control.set_skin(NScriptsTemplatesClass$$get_TestTemplateVMB_CssBinding());
   control.activate();
   elem = element.querySelector("[test]");
   assert.notEqual(null, elem, "After applying skin, skin element should be loaded");
@@ -327,13 +327,13 @@ function NScriptsTemplateTests__TestCssBinder(assert) {
   vm.set_propBool1(true);
   assert.notEqual("", elem.className, "Class should be set if PropBool1 is set.");
 };
-function NScriptsTemplateTests__TestStyleBinder(assert) {
+function NScriptsTemplateTests$$TestStyleBinder(assert) {
   var element, control, vm, elem;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
   vm = TestViewModelB_factory();
   control.set_dataContext(vm);
-  control.set_skin(NScriptsTemplatesClass__get_TestTemplateVMB_StyleBinding());
+  control.set_skin(NScriptsTemplatesClass$$get_TestTemplateVMB_StyleBinding());
   control.activate();
   elem = element.querySelector("[test]");
   assert.notEqual(null, elem, "After applying skin, skin element should be loaded");
@@ -341,13 +341,13 @@ function NScriptsTemplateTests__TestStyleBinder(assert) {
   vm.set_propStr1("10px");
   assert.equal("10px", elem.style.height, "Style should be set if PropStr1 is set.");
 };
-function NScriptsTemplateTests__TestAttrBinder(assert) {
+function NScriptsTemplateTests$$TestAttrBinder(assert) {
   var element, control, vm, elem;
   element = window.document.createElement("div");
   control = UISkinableElement_factory(element);
   vm = TestViewModelB_factory();
   control.set_dataContext(vm);
-  control.set_skin(NScriptsTemplatesClass__get_TestTemplateVMB_AttrBinding());
+  control.set_skin(NScriptsTemplatesClass$$get_TestTemplateVMB_AttrBinding());
   control.activate();
   elem = element.querySelector("[test]");
   assert.notEqual(elem, null, "After applying skin, skin element should be loaded");
@@ -355,13 +355,13 @@ function NScriptsTemplateTests__TestAttrBinder(assert) {
   vm.set_propStr1("TTTest");
   assert.equal("TTTest", elem.getAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
 };
-function NScriptsTemplateTests__TestPropertyBinder(assert) {
+function NScriptsTemplateTests$$TestPropertyBinder(assert) {
   var element, control, vm;
   element = window.document.createElement("div");
   control = TestSkinableWithTestUIElementPart_factory(element);
   vm = TestViewModelB_factory();
   control.set_dataContext(vm);
-  control.set_skin(NScriptsTemplatesClass__get_TestTemplateB_PropertyBinding());
+  control.set_skin(NScriptsTemplatesClass$$get_TestTemplateB_PropertyBinding());
   control.activate();
   assert.ok(control.get_part(), "templatePart should not be null.");
   assert.equal(control.get_part().get_oneWayStrictBinding(), vm.get_propStr1(), "vmPropStr1 should be equal to OnewayStrictBinding.");
@@ -373,62 +373,62 @@ function NScriptsTemplateTests__TestPropertyBinder(assert) {
   control.get_part().set_twoWayLooseBinding(101);
   assert.equal(control.get_part().get_twoWayLooseBinding(), vm.get_propInt1(), "TwoWayLooseBinding and bound property PropInt1 should be equal.");
 };
-Type__RegisterReferenceType(NScriptsTemplateTests, "Sunlight.Framework.UI.Test.NScriptsTemplateTests", Object, []);
+Type$$RegisterReferenceType(NScriptsTemplateTests, "Sunlight.Framework.UI.Test.NScriptsTemplateTests", Object, []);
 function SkinBinderHelperTests() {
 };
 SkinBinderHelperTests.typeId = "t";
-function SkinBinderHelperTests__TestSimpleBinder(assert) {
+function SkinBinderHelperTests$$TestSimpleBinder(assert) {
   var src, stmtTemp1, tar1;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1.set_propInt1(1), stmtTemp1.set_propBool1(true), stmtTemp1);
   tar1 = TestViewModelA_factory();
-  SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory1(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropStr1Getter])), TestViewModelA__PropStr1Setter, 17, 0, null, null)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([tar1])));
+  SkinBinderHelper$$Bind(NativeArray$1$$op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory1(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA$$PropStr1Getter])), TestViewModelA$$PropStr1Setter, 17, 0, null, null)])), src, NativeArray$1$$op_Implicit(ArrayG_$Object$_.__ctor([tar1])));
   assert.equal(src.get_propStr1(), tar1.get_propStr1(), "After BindDataContext values should be equal");
 };
-function SkinBinderHelperTests__TestAttrBinding(assert) {
+function SkinBinderHelperTests$$TestAttrBinding(assert) {
   var src, stmtTemp1, target;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1);
   target = window.document.createElement("div");
-  SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropStr1Getter])), function SkinBinderHelperTests__TestAttrBinding_del(o1, o2, o3) {
-    SkinBinderHelper__SetAttribute(o1, Type__CastType(String, o2), Type__CastType(String, o3));
-  }, "tmp", 113, 0, null, null, 0)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
+  SkinBinderHelper$$Bind(NativeArray$1$$op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA$$PropStr1Getter])), function SkinBinderHelperTests$24$24TestAttrBinding_del(o1, o2, o3) {
+    SkinBinderHelper$$SetAttribute(o1, Type$$CastType(String, o2), Type$$CastType(String, o3));
+  }, "tmp", 113, 0, null, null, 0)])), src, NativeArray$1$$op_Implicit(ArrayG_$Object$_.__ctor([target])));
   assert.equal(src.get_propStr1(), target.getAttribute("tmp"), "After BindDataContext values should be equal");
 };
-function SkinBinderHelperTests__TestStyleBinding(assert) {
+function SkinBinderHelperTests$$TestStyleBinding(assert) {
   var src, stmtTemp1, target;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propBool1(true), stmtTemp1);
   target = window.document.createElement("div");
   target.className = "t1";
-  SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropBool1Getter])), function SkinBinderHelperTests__TestStyleBinding_del(o1, o2, o3) {
-    SkinBinderHelper__SetCssClass(o1, Type__UnBoxTypeInstance(Boolean0, o2), Type__CastType(String, o3));
-  }, "test", 113, 0, null, null, 0)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
+  SkinBinderHelper$$Bind(NativeArray$1$$op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA$$PropBool1Getter])), function SkinBinderHelperTests$24$24TestStyleBinding_del(o1, o2, o3) {
+    SkinBinderHelper$$SetCssClass(o1, Type$$UnBoxTypeInstance(Boolean0, o2), Type$$CastType(String, o3));
+  }, "test", 113, 0, null, null, 0)])), src, NativeArray$1$$op_Implicit(ArrayG_$Object$_.__ctor([target])));
   assert.equal("t1 test", target.className, "After BindDataContext values should be equal");
   src.set_propBool1(false);
-  SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropBool1Getter])), function SkinBinderHelperTests__TestStyleBinding_del2(o1, o2, o3) {
-    SkinBinderHelper__SetCssClass(o1, Type__UnBoxTypeInstance(Boolean0, o2), Type__CastType(String, o3));
-  }, "test", 113, 0, null, null, 0)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
+  SkinBinderHelper$$Bind(NativeArray$1$$op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA$$PropBool1Getter])), function SkinBinderHelperTests$24$24TestStyleBinding_del2(o1, o2, o3) {
+    SkinBinderHelper$$SetCssClass(o1, Type$$UnBoxTypeInstance(Boolean0, o2), Type$$CastType(String, o3));
+  }, "test", 113, 0, null, null, 0)])), src, NativeArray$1$$op_Implicit(ArrayG_$Object$_.__ctor([target])));
   assert.equal("t1", target.className, "After BindDataContext values should be equal");
 };
-function SkinBinderHelperTests__TestTextContentBinding(assert) {
+function SkinBinderHelperTests$$TestTextContentBinding(assert) {
   var src, stmtTemp1, target;
   src = (stmtTemp1 = TestViewModelA_factory(), stmtTemp1.set_propStr1("Test"), stmtTemp1);
   target = window.document.createElement("div");
-  SkinBinderHelper__Bind(NativeArray$1__op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory1(NativeArray$1__op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA__PropStr1Getter])), function SkinBinderHelperTests__TestTextContentBinding_del(o1, o2) {
-    SkinBinderHelper__SetTextContent(o1, Type__CastType(String, o2));
-  }, 17, 0, null, null)])), src, NativeArray$1__op_Implicit(ArrayG_$Object$_.__ctor([target])));
+  SkinBinderHelper$$Bind(NativeArray$1$$op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory1(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA$$PropStr1Getter])), function SkinBinderHelperTests$24$24TestTextContentBinding_del(o1, o2) {
+    SkinBinderHelper$$SetTextContent(o1, Type$$CastType(String, o2));
+  }, 17, 0, null, null)])), src, NativeArray$1$$op_Implicit(ArrayG_$Object$_.__ctor([target])));
   assert.equal(src.get_propStr1(), target.textContent, "After BindDataContext values should be equal");
 };
-Type__RegisterReferenceType(SkinBinderHelperTests, "Sunlight.Framework.UI.Test.SkinBinderHelperTests", Object, []);
+Type$$RegisterReferenceType(SkinBinderHelperTests, "Sunlight.Framework.UI.Test.SkinBinderHelperTests", Object, []);
 function TestListView() {
 };
 TestListView.typeId = "u";
-function TestListView__Setup() {
-  TaskScheduler__set_Instance(TaskScheduler_factory(TestWindowTimer_factory(), 10, 10));
+function TestListView$$Setup() {
+  TaskScheduler$$set_Instance(TaskScheduler_factory(TestWindowTimer_factory(), 10, 10));
 };
-function TestListView__TestChildSkin(assert) {
+function TestListView$$TestChildSkin(assert) {
   var document, listView, vmAs, stmtTemp1, stmtTemp10, stmtTemp11, elems, i;
   document = window.document;
   listView = ListView_factory(document.createElement("div"));
-  listView.set_itemSkin(NScriptsTemplatesClass__get_TestTemplateVMB1());
+  listView.set_itemSkin(NScriptsTemplatesClass$$get_TestTemplateVMB1());
   vmAs = ArrayG_$TestViewModelB$_.__ctor([(stmtTemp1 = TestViewModelB_factory(), stmtTemp1.set_propStr1("StrTest"), stmtTemp1), (stmtTemp10 = TestViewModelB_factory(), stmtTemp10.set_propStr1("TestStr"), stmtTemp10), (stmtTemp11 = TestViewModelB_factory(), stmtTemp11.set_propStr1("TestTT1"), stmtTemp11)]);
   listView.set_fixedList(vmAs);
   listView.set_inactiveIfNullContext(false);
@@ -438,63 +438,63 @@ function TestListView__TestChildSkin(assert) {
   for (i = 0; i < 3; i++)
     assert.equal(vmAs.get_item(i).get_propStr1(), elems[i].innerText, "Inner text for element should match property it's bound to.");
 };
-Type__RegisterReferenceType(TestListView, "Sunlight.Framework.UI.Test.TestListView", Object, []);
+Type$$RegisterReferenceType(TestListView, "Sunlight.Framework.UI.Test.TestListView", Object, []);
 function ManualTemplateTests() {
 };
 ManualTemplateTests.typeId = "v";
-ManualTemplateTests__noneValue = null;
-function ManualTemplateTests__Setup() {
+ManualTemplateTests$$noneValue = null;
+function ManualTemplateTests$$Setup() {
 };
-function ManualTemplateTests__Test(assert) {
+function ManualTemplateTests$$Test(assert) {
   assert.ok(true, "true should be true");
 };
-function ManualTemplateTests____cctor() {
-  ManualTemplateTests__noneValue = ValueIfTrue_$String$_.__ctor("none");
+function ManualTemplateTests$$$$cctor() {
+  ManualTemplateTests$$noneValue = ValueIfTrue_$String$_.__ctor("none");
 };
-Type__RegisterReferenceType(ManualTemplateTests, "Sunlight.Framework.UI.Test.ManualTemplateTests", Object, []);
+Type$$RegisterReferenceType(ManualTemplateTests, "Sunlight.Framework.UI.Test.ManualTemplateTests", Object, []);
 function UIElementTests() {
 };
 UIElementTests.typeId = "w";
-function UIElementTests__TestNewUIElement(assert) {
+function UIElementTests$$TestNewUIElement(assert) {
   var doc, element;
   doc = window.document;
   element = UIElement_factory(doc.createElement("div"));
   assert.notEqual(element.get_element(), null, "element.Element != null");
   assert.equal(element.get_element().tagName, "DIV", "element.Element.TagName == 'DIV'");
 };
-Type__RegisterReferenceType(UIElementTests, "Sunlight.Framework.UI.Test.UIElementTests", Object, []);
+Type$$RegisterReferenceType(UIElementTests, "Sunlight.Framework.UI.Test.UIElementTests", Object, []);
 String.typeId = "n";
-String__trimStartHelperRegex = null;
-String__trimEndHelperRegex = null;
-function String__get_TrimEndHelperRegex() {
-  if (Object__IsNullOrUndefined(String__trimEndHelperRegex))
-    String__trimEndHelperRegex = new RegExp("^[\\s\\xA0]+");
-  return String__trimEndHelperRegex;
+String$$trimStartHelperRegex = null;
+String$$trimEndHelperRegex = null;
+function String$$get_TrimEndHelperRegex() {
+  if (Object$$IsNullOrUndefined(String$$trimEndHelperRegex))
+    String$$trimEndHelperRegex = new RegExp("^[\\s\\xA0]+");
+  return String$$trimEndHelperRegex;
 };
-function String__get_TrimStartHelperRegex() {
-  if (Object__IsNullOrUndefined(String__trimStartHelperRegex))
-    String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
-  return String__trimStartHelperRegex;
+function String$$get_TrimStartHelperRegex() {
+  if (Object$$IsNullOrUndefined(String$$trimStartHelperRegex))
+    String$$trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
+  return String$$trimStartHelperRegex;
 };
-function String__Trim(this_) {
-  return String__TrimEnd(String__TrimStart(this_));
+function String$$Trim(this_) {
+  return String$$TrimEnd(String$$TrimStart(this_));
 };
-function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex(), "");
+function String$$TrimEnd(this_) {
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(String$$get_TrimEndHelperRegex(), "");
 };
-function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex(), "");
+function String$$TrimStart(this_) {
+  return this_.trimRight ? this_.trimRight() : this_.replace(String$$get_TrimStartHelperRegex(), "");
 };
-function String__get_Item(this_, index) {
+function String$$get_Item(this_, index) {
   return this_.charCodeAt(index);
 };
-String__TrimEnd = function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex(), "");
+String$$TrimEnd = function String$$TrimEnd(this_) {
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(String$$get_TrimEndHelperRegex(), "");
 };
-String__TrimStart = function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex(), "");
+String$$TrimStart = function String$$TrimStart(this_) {
+  return this_.trimRight ? this_.trimRight() : this_.replace(String$$get_TrimStartHelperRegex(), "");
 };
-Type__RegisterReferenceType(String, "System.String", Object, []);
+Type$$RegisterReferenceType(String, "System.String", Object, []);
 function SkinBinderInfo() {
 };
 SkinBinderInfo.typeId = "x";
@@ -545,7 +545,7 @@ ptyp_.forwardConverter = null;
 ptyp_.backwardConverter = null;
 ptyp_.defaultValue = null;
 ptyp_.mode = 0;
-ptyp_.__ctor = function SkinBinderInfo____ctor1(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
+ptyp_.__ctor = function SkinBinderInfo$$$$ctor1(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -556,7 +556,7 @@ ptyp_.__ctor = function SkinBinderInfo____ctor1(propertyGetterPath, targetProper
   this.defaultValue = defaultValue;
   this.mode = 0;
 };
-ptyp_.__ctor0 = function SkinBinderInfo____ctor2(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
+ptyp_.__ctor0 = function SkinBinderInfo$$$$ctor2(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -569,7 +569,7 @@ ptyp_.__ctor0 = function SkinBinderInfo____ctor2(propertyGetterPath, targetPrope
   this.mode = 0;
   this.extraObjectIndex = extraObjectIndex;
 };
-ptyp_.__ctor1 = function SkinBinderInfo____ctor(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue) {
+ptyp_.__ctor1 = function SkinBinderInfo$$$$ctor(propertyGetterPath, propertyNames, targetPropertySetter, binderType, objectIndex, binderIndex, forwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -581,7 +581,7 @@ ptyp_.__ctor1 = function SkinBinderInfo____ctor(propertyGetterPath, propertyName
   this.defaultValue = defaultValue;
   this.mode = 1;
 };
-ptyp_.__ctor3 = function SkinBinderInfo____ctor3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
+ptyp_.__ctor3 = function SkinBinderInfo$$$$ctor3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -596,7 +596,7 @@ ptyp_.__ctor3 = function SkinBinderInfo____ctor3(propertyGetterPath, propertyNam
   this.mode = 1;
   this.extraObjectIndex = extraObjectIndex;
 };
-ptyp_.__ctor2 = function SkinBinderInfo____ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
+ptyp_.__ctor2 = function SkinBinderInfo$$$$ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -613,7 +613,7 @@ ptyp_.__ctor2 = function SkinBinderInfo____ctor0(propertyGetterPath, propertySet
   this.defaultValue = defaultValue;
   this.mode = 2;
 };
-ptyp_.setTargetValue = function SkinBinderInfo__SetTargetValue(target, value, extraObjectArray) {
+ptyp_.setTargetValue = function SkinBinderInfo$$SetTargetValue(target, value, extraObjectArray) {
   var binderInfo, propertySetterMode, element;
   binderInfo = this;
   propertySetterMode = binderInfo.binderType & 240;
@@ -632,22 +632,22 @@ ptyp_.setTargetValue = function SkinBinderInfo__SetTargetValue(target, value, ex
     element = target;
     if (extraObjectArray[binderInfo.extraObjectIndex] === value)
       return;
-    if (!Object__IsNullOrUndefined(extraObjectArray[binderInfo.extraObjectIndex]))
-      Element__UnBind(element, Type__CastType(String, binderInfo.targetPropertySetterArg), extraObjectArray[binderInfo.extraObjectIndex], false);
+    if (!Object$$IsNullOrUndefined(extraObjectArray[binderInfo.extraObjectIndex]))
+      Element$$UnBind(element, Type$$CastType(String, binderInfo.targetPropertySetterArg), extraObjectArray[binderInfo.extraObjectIndex], false);
     extraObjectArray[binderInfo.extraObjectIndex] = value;
-    if (!Object__IsNullOrUndefined(value))
-      Element__Bind(element, Type__CastType(String, binderInfo.targetPropertySetterArg), value, false);
+    if (!Object$$IsNullOrUndefined(value))
+      Element$$Bind(element, Type$$CastType(String, binderInfo.targetPropertySetterArg), value, false);
   }
   else if (binderInfo.targetPropertySetter)
     binderInfo.targetPropertySetter(target, value);
   else
     binderInfo.targetPropertySetterWithArg(target, value, binderInfo.targetPropertySetterArg);
 };
-Type__RegisterReferenceType(SkinBinderInfo, "Sunlight.Framework.UI.Helpers.SkinBinderInfo", Object, []);
+Type$$RegisterReferenceType(SkinBinderInfo, "Sunlight.Framework.UI.Helpers.SkinBinderInfo", Object, []);
 function INotifyPropertyChanged() {
 };
 INotifyPropertyChanged.typeId = "b";
-Type__RegisterInterface(INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
+Type$$RegisterInterface(INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
 function ObservableObject() {
 };
 ObservableObject.typeId = "y";
@@ -655,7 +655,7 @@ ptyp_ = ObservableObject.prototype;
 ptyp_.eventHandlers = null;
 ptyp_.linkedProperties = null;
 ptyp_.anyPropertyListener = null;
-ptyp_.addPropertyChangedListener = function ObservableObject__AddPropertyChangedListener(propertyName, callback) {
+ptyp_.addPropertyChangedListener = function ObservableObject$$AddPropertyChangedListener(propertyName, callback) {
   var cb;
   if (!this.eventHandlers)
     this.eventHandlers = StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_.defaultConstructor();
@@ -669,10 +669,10 @@ ptyp_.addPropertyChangedListener = function ObservableObject__AddPropertyChanged
   }))
     cb = callback;
   else
-    cb = Delegate__Combine(cb, callback);
+    cb = Delegate$$Combine(cb, callback);
   this.eventHandlers.set_item(propertyName, cb);
 };
-ptyp_.removePropertyChangedListener = function ObservableObject__RemovePropertyChangedListener(propertyName, callback) {
+ptyp_.removePropertyChangedListener = function ObservableObject$$RemovePropertyChangedListener(propertyName, callback) {
   var cb;
   if (!this.eventHandlers)
     return;
@@ -684,18 +684,18 @@ ptyp_.removePropertyChangedListener = function ObservableObject__RemovePropertyC
       return cb = arg0;
     }
   })) {
-    cb = Delegate__Remove(cb, callback);
+    cb = Delegate$$Remove(cb, callback);
     if (cb)
       this.eventHandlers.set_item(propertyName, cb);
     else
       this.eventHandlers.remove(propertyName);
   }
 };
-ptyp_.clearListeners = function ObservableObject__ClearListeners() {
+ptyp_.clearListeners = function ObservableObject$$ClearListeners() {
   this.eventHandlers = null;
   this.anyPropertyListener = null;
 };
-ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(propertyName) {
+ptyp_.firePropertyChanged = function ObservableObject$$FirePropertyChanged(propertyName) {
   var cb, linkedProperties, iProp;
   if (this.eventHandlers) {
     if (this.eventHandlers.tryGetValue(propertyName, {
@@ -731,22 +731,22 @@ ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(prope
   if (this.anyPropertyListener)
     this.anyPropertyListener(this, propertyName);
 };
-ptyp_.__ctor = function ObservableObject____ctor() {
+ptyp_.__ctor = function ObservableObject$$$$ctor() {
 };
 ptyp_.V_AddPropertyChangedListener_b = ptyp_.addPropertyChangedListener;
 ptyp_.V_RemovePropertyChangedListener_b = ptyp_.removePropertyChangedListener;
-Type__RegisterReferenceType(ObservableObject, "Sunlight.Framework.Observables.ObservableObject", Object, [INotifyPropertyChanged]);
+Type$$RegisterReferenceType(ObservableObject, "Sunlight.Framework.Observables.ObservableObject", Object, [INotifyPropertyChanged]);
 function TestViewModelA() {
 };
 TestViewModelA.typeId = "z";
-function TestViewModelA__PropStr1Getter(obj) {
-  return Type__CastType(TestViewModelA, obj).get_propStr1();
+function TestViewModelA$$PropStr1Getter(obj) {
+  return Type$$CastType(TestViewModelA, obj).get_propStr1();
 };
-function TestViewModelA__PropStr1Setter(obj, val) {
-  Type__CastType(TestViewModelA, obj).set_propStr1(Type__CastType(String, val));
+function TestViewModelA$$PropStr1Setter(obj, val) {
+  Type$$CastType(TestViewModelA, obj).set_propStr1(Type$$CastType(String, val));
 };
-function TestViewModelA__PropBool1Getter(obj) {
-  return Type__BoxTypeInstance(Boolean0, Type__CastType(TestViewModelA, obj).get_propBool1());
+function TestViewModelA$$PropBool1Getter(obj) {
+  return Type$$BoxTypeInstance(Boolean0, Type$$CastType(TestViewModelA, obj).get_propBool1());
 };
 function TestViewModelA_factory() {
   var this_;
@@ -760,58 +760,58 @@ TestViewModelA.prototype = ptyp_;
 ptyp_.str1 = null;
 ptyp_.bool1 = false;
 ptyp_.testVMA = null;
-ptyp_.get_propInt1 = function TestViewModelA__get_PropInt1() {
+ptyp_.get_propInt1 = function TestViewModelA$$get_PropInt1() {
   return this.get_int1();
 };
-ptyp_.set_propInt1 = function TestViewModelA__set_PropInt1(value) {
+ptyp_.set_propInt1 = function TestViewModelA$$set_PropInt1(value) {
   if (this.get_int1() != value) {
     this.set_int1(value);
     this.firePropertyChanged("PropInt1");
   }
 };
-ptyp_.get_propStr1 = function TestViewModelA__get_PropStr1() {
+ptyp_.get_propStr1 = function TestViewModelA$$get_PropStr1() {
   return this.str1;
 };
-ptyp_.set_propStr1 = function TestViewModelA__set_PropStr1(value) {
+ptyp_.set_propStr1 = function TestViewModelA$$set_PropStr1(value) {
   if (this.str1 !== value) {
     this.str1 = value;
     this.firePropertyChanged("PropStr1");
   }
 };
-ptyp_.get_propBool1 = function TestViewModelA__get_PropBool1() {
+ptyp_.get_propBool1 = function TestViewModelA$$get_PropBool1() {
   return this.bool1;
 };
-ptyp_.set_propBool1 = function TestViewModelA__set_PropBool1(value) {
+ptyp_.set_propBool1 = function TestViewModelA$$set_PropBool1(value) {
   if (this.bool1 != value) {
     this.bool1 = value;
     this.firePropertyChanged("PropBool1");
   }
 };
-ptyp_.get_testVMA = function TestViewModelA__get_TestVMA() {
+ptyp_.get_testVMA = function TestViewModelA$$get_TestVMA() {
   return this.testVMA;
 };
-ptyp_.set_testVMA = function TestViewModelA__set_TestVMA(value) {
+ptyp_.set_testVMA = function TestViewModelA$$set_TestVMA(value) {
   if (this.testVMA != value) {
     this.testVMA = value;
     this.firePropertyChanged("TestVMA");
   }
 };
-ptyp_.get_int1 = function TestViewModelA__get_int1() {
+ptyp_.get_int1 = function TestViewModelA$$get_int1() {
   return this.int1;
 };
-ptyp_.set_int1 = function TestViewModelA__set_int1(value) {
+ptyp_.set_int1 = function TestViewModelA$$set_int1(value) {
   return this.int1 = value;
 };
-ptyp_.__ctor0 = function TestViewModelA____ctor() {
+ptyp_.__ctor0 = function TestViewModelA$$$$ctor() {
   this.__ctor();
 };
-Type__RegisterReferenceType(TestViewModelA, "Sunlight.Framework.UI.Test.TestViewModelA", ObservableObject, []);
+Type$$RegisterReferenceType(TestViewModelA, "Sunlight.Framework.UI.Test.TestViewModelA", ObservableObject, []);
 function ValueType() {
 };
 ValueType.typeId = "ab";
 ptyp_ = ValueType.prototype;
 ptyp_.boxedValue = null;
-Type__RegisterReferenceType(ValueType, "System.ValueType", Object, []);
+Type$$RegisterReferenceType(ValueType, "System.ValueType", Object, []);
 function Int32(boxedValue) {
   this.boxedValue = boxedValue;
 };
@@ -819,55 +819,55 @@ Int32.typeId = "bb";
 Int32.getDefaultValue = function() {
   return 0;
 };
-function Int32__Parse(s) {
+function Int32$$Parse(s) {
   return parseInt(s);
 };
-function Int32__ToString0(this_, radix) {
+function Int32$$ToString0(this_, radix) {
   return this_.toString(radix);
 };
-function Int32__ToString(this_) {
-  return Int32__ToString0(this_, 10);
+function Int32$$ToString(this_) {
+  return Int32$$ToString0(this_, 10);
 };
 ptyp_ = new ValueType();
 Int32.prototype = ptyp_;
 ptyp_.toString = function() {
-  return Int32__ToString(this.boxedValue);
+  return Int32$$ToString(this.boxedValue);
 };
-Type__RegisterStructType(Int32, "System.Int32", []);
+Type$$RegisterStructType(Int32, "System.Int32", []);
 function IEnumerable() {
 };
 IEnumerable.typeId = "g";
-Type__RegisterInterface(IEnumerable, "System.Collections.IEnumerable");
+Type$$RegisterInterface(IEnumerable, "System.Collections.IEnumerable");
 function ICollection() {
 };
 ICollection.typeId = "c";
-Type__RegisterInterface(ICollection, "System.Collections.ICollection");
+Type$$RegisterInterface(ICollection, "System.Collections.ICollection");
 function IList() {
 };
 IList.typeId = "e";
-Type__RegisterInterface(IList, "System.Collections.IList");
+Type$$RegisterInterface(IList, "System.Collections.IList");
 function ArrayImpl() {
 };
 ArrayImpl.typeId = "cb";
 ptyp_ = ArrayImpl.prototype;
-ptyp_.system__Collections__IList__get_Item = function ArrayImpl__System__Collections__IList__get_Item(index) {
+ptyp_.system$$Collections$$IList$$get_Item = function ArrayImpl$$System$$Collections$$IList$$get_Item(index) {
   return this.V_GetValue(index);
 };
-ptyp_.system__Collections__IList__Clear = function ArrayImpl__System__Collections__IList__Clear() {
+ptyp_.system$$Collections$$IList$$Clear = function ArrayImpl$$System$$Collections$$IList$$Clear() {
   throw NotSupportedException_factory();
 };
-ptyp_.system__Collections__IList__RemoveAt = function ArrayImpl__System__Collections__IList__RemoveAt(index) {
+ptyp_.system$$Collections$$IList$$RemoveAt = function ArrayImpl$$System$$Collections$$IList$$RemoveAt(index) {
   throw NotSupportedException_factory();
 };
-ptyp_.system__Collections__ICollection__get_Count = function ArrayImpl__System__Collections__ICollection__get_Count() {
+ptyp_.system$$Collections$$ICollection$$get_Count = function ArrayImpl$$System$$Collections$$ICollection$$get_Count() {
   return this.V_get_Length();
 };
-ptyp_.__ctor = function ArrayImpl____ctor() {
+ptyp_.__ctor = function ArrayImpl$$$$ctor() {
 };
-ptyp_.V_get_Item_e = ptyp_.system__Collections__IList__get_Item;
-ptyp_.V_Clear_e = ptyp_.system__Collections__IList__Clear;
-ptyp_.V_RemoveAt_e = ptyp_.system__Collections__IList__RemoveAt;
-ptyp_.V_get_Count_c = ptyp_.system__Collections__ICollection__get_Count;
+ptyp_.V_get_Item_e = ptyp_.system$$Collections$$IList$$get_Item;
+ptyp_.V_Clear_e = ptyp_.system$$Collections$$IList$$Clear;
+ptyp_.V_RemoveAt_e = ptyp_.system$$Collections$$IList$$RemoveAt;
+ptyp_.V_get_Count_c = ptyp_.system$$Collections$$ICollection$$get_Count;
 ptyp_.V_Contains_e = function(arg0) {
   return this.V_Contains(arg0);
 };
@@ -880,8 +880,8 @@ ptyp_.V_GetEnumerator_g = function() {
 ptyp_.V_CopyTo_c = function(arg0, arg1) {
   return this.V_CopyTo(arg0, arg1);
 };
-Type__RegisterReferenceType(ArrayImpl, "System.ArrayImpl", Object, [IList, IEnumerable, ICollection]);
-function Delegate__Combine(a, b) {
+Type$$RegisterReferenceType(ArrayImpl, "System.ArrayImpl", Object, [IList, IEnumerable, ICollection]);
+function Delegate$$Combine(a, b) {
   var funcs, rv;
   funcs = [];
   if (a != null)
@@ -895,11 +895,11 @@ function Delegate__Combine(a, b) {
     funcs.push(b);
   else
     return a;
-  rv = Delegate__CreateJoinedArray(funcs);
+  rv = Delegate$$CreateJoinedArray(funcs);
   rv.fullName = "Multicast Delegate";
   return rv;
 };
-function Delegate__Create(functionName, instance) {
+function Delegate$$Create(functionName, instance) {
   var func, fn;
   func = instance[functionName];
   fn = "__@" + functionName;
@@ -912,7 +912,7 @@ function Delegate__Create(functionName, instance) {
   }
   return instance[fn];
 };
-function Delegate__Remove(source, value) {
+function Delegate$$Remove(source, value) {
   var newArr, valArr, i, fullMatch, j, rv;
   if (source == value)
     return null;
@@ -946,11 +946,11 @@ function Delegate__Remove(source, value) {
     return newArr[0];
   else if (newArr.length == source.funcs.length)
     return source;
-  rv = Delegate__CreateJoinedArray(newArr);
+  rv = Delegate$$CreateJoinedArray(newArr);
   rv.fullName = "Multicast Delegate";
   return rv;
 };
-function Delegate__CreateJoinedArray(array) {
+function Delegate$$CreateJoinedArray(array) {
   var rv, i;
   rv = function() {
     var rv1; {
@@ -967,7 +967,7 @@ function Function0() {
 };
 Function0.typeId = "db";
 Function0.prototype = new Function();
-Type__RegisterReferenceType(Function0, "System.MulticastDelegate", Function, []);
+Type$$RegisterReferenceType(Function0, "System.MulticastDelegate", Function, []);
 function LiveBinder() {
 };
 LiveBinder.typeId = "eb";
@@ -986,27 +986,27 @@ ptyp_.liveObjects = null;
 ptyp_.pathTraversed = 0;
 ptyp_.updating = false;
 ptyp_.extraObjectArray = null;
-ptyp_.__ctor = function LiveBinder____ctor(binderInfo, extraObjectArray) {
+ptyp_.__ctor = function LiveBinder$$$$ctor(binderInfo, extraObjectArray) {
   this.binderInfo = binderInfo;
   this.extraObjectArray = extraObjectArray;
 };
-ptyp_.set_source = function LiveBinder__set_Source(value) {
+ptyp_.set_source = function LiveBinder$$set_Source(value) {
   if (this.source !== value) {
     this.source = value;
     this.flowValue();
   }
 };
-ptyp_.set_target = function LiveBinder__set_Target(value) {
+ptyp_.set_target = function LiveBinder$$set_Target(value) {
   if (this.target !== value) {
     if (this.target !== null && this.binderInfo.mode == 2)
-      Type__CastType(INotifyPropertyChanged, this.target).V_RemovePropertyChangedListener_b(this.binderInfo.targetPropertyName, Delegate__Create("onTargetPropertyChanged", this));
+      Type$$CastType(INotifyPropertyChanged, this.target).V_RemovePropertyChangedListener_b(this.binderInfo.targetPropertyName, Delegate$$Create("onTargetPropertyChanged", this));
     this.target = value;
     if (this.target !== null && this.binderInfo.mode == 2)
-      Type__CastType(INotifyPropertyChanged, this.target).V_AddPropertyChangedListener_b(this.binderInfo.targetPropertyName, Delegate__Create("onTargetPropertyChanged", this));
+      Type$$CastType(INotifyPropertyChanged, this.target).V_AddPropertyChangedListener_b(this.binderInfo.targetPropertyName, Delegate$$Create("onTargetPropertyChanged", this));
     this.flowValue();
   }
 };
-ptyp_.set_isActive = function LiveBinder__set_IsActive(value) {
+ptyp_.set_isActive = function LiveBinder$$set_IsActive(value) {
   if (this.isActive != value) {
     this.isActive = value;
     if (this.isActive)
@@ -1015,35 +1015,35 @@ ptyp_.set_isActive = function LiveBinder__set_IsActive(value) {
       this.deactivate();
   }
 };
-ptyp_.cleanup = function LiveBinder__Cleanup() {
+ptyp_.cleanup = function LiveBinder$$Cleanup() {
   if (!this.isActive) {
     this.pathTraversed = 0;
     this.cleanRegistrations();
   }
 };
-ptyp_.activate = function LiveBinder__Activate() {
+ptyp_.activate = function LiveBinder$$Activate() {
   this.flowValue();
 };
-ptyp_.deactivate = function LiveBinder__Deactivate() {
+ptyp_.deactivate = function LiveBinder$$Deactivate() {
   this.isActive = false;
 };
-ptyp_.flowValue = function LiveBinder__FlowValue() {
+ptyp_.flowValue = function LiveBinder$$FlowValue() {
   if (this.target === null || this.updating || !this.isActive)
     return;
   if (!this.liveObjects)
     this.liveObjects = ArrayG_$Object$_.__ctor0(this.binderInfo.propertyGetterPath.length + 1);
   if (this.liveObjects.get_item(0) !== this.source) {
-    if (!Object__IsNullOrUndefined(this.liveObjects.get_item(0))) {
+    if (!Object$$IsNullOrUndefined(this.liveObjects.get_item(0))) {
       this.pathTraversed = 0;
       this.cleanRegistrations();
     }
     this.liveObjects.set_item(0, this.source);
-    if (!Object__IsNullOrUndefined(this.liveObjects.get_item(0)))
-      Type__CastType(INotifyPropertyChanged, this.liveObjects.get_item(0)).V_AddPropertyChangedListener_b(this.binderInfo.propertyNames[0], Delegate__Create("onSourcePropertyChanged", this));
+    if (!Object$$IsNullOrUndefined(this.liveObjects.get_item(0)))
+      Type$$CastType(INotifyPropertyChanged, this.liveObjects.get_item(0)).V_AddPropertyChangedListener_b(this.binderInfo.propertyNames[0], Delegate$$Create("onSourcePropertyChanged", this));
   }
   this.setTargetProperty(this.getValue());
 };
-ptyp_.setTargetProperty = function LiveBinder__SetTargetProperty(value) {
+ptyp_.setTargetProperty = function LiveBinder$$SetTargetProperty(value) {
   try {
     this.updating = true;
     this.binderInfo.setTargetValue(this.target, value, this.extraObjectArray);
@@ -1051,7 +1051,7 @@ ptyp_.setTargetProperty = function LiveBinder__SetTargetProperty(value) {
     this.updating = false;
   }
 };
-ptyp_.getValue = function LiveBinder__GetValue() {
+ptyp_.getValue = function LiveBinder$$GetValue() {
   var stmtTemp1, rv;
   try {
     rv = this.getValueInternal();
@@ -1062,7 +1062,7 @@ ptyp_.getValue = function LiveBinder__GetValue() {
     this.cleanRegistrations();
   return rv;
 };
-ptyp_.getValueInternal = function LiveBinder__GetValueInternal() {
+ptyp_.getValueInternal = function LiveBinder$$GetValueInternal() {
   var binderInfo, liveObjects, src, propertyGetterPath, iPath, pathLength, propertyNames;
   binderInfo = this.binderInfo;
   liveObjects = this.liveObjects;
@@ -1076,10 +1076,10 @@ ptyp_.getValueInternal = function LiveBinder__GetValueInternal() {
       src = propertyGetterPath[iPath - 1](src);
       if (liveObjects.get_item(iPath) !== src) {
         if (liveObjects.get_item(iPath) !== null && iPath < pathLength - 1)
-          Type__CastType(INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(propertyNames[iPath], Delegate__Create("onSourcePropertyChanged", this));
+          Type$$CastType(INotifyPropertyChanged, liveObjects.get_item(iPath)).V_RemovePropertyChangedListener_b(propertyNames[iPath], Delegate$$Create("onSourcePropertyChanged", this));
         liveObjects.set_item(iPath, src);
         if (src !== null && iPath < pathLength - 1 && src !== null)
-          Type__CastType(INotifyPropertyChanged, src).V_AddPropertyChangedListener_b(binderInfo.propertyNames[iPath], Delegate__Create("onSourcePropertyChanged", this));
+          Type$$CastType(INotifyPropertyChanged, src).V_AddPropertyChangedListener_b(binderInfo.propertyNames[iPath], Delegate$$Create("onSourcePropertyChanged", this));
       }
       ++this.pathTraversed;
     }
@@ -1090,7 +1090,7 @@ ptyp_.getValueInternal = function LiveBinder__GetValueInternal() {
   else
     return src;
 };
-ptyp_.cleanRegistrations = function LiveBinder__CleanRegistrations() {
+ptyp_.cleanRegistrations = function LiveBinder$$CleanRegistrations() {
   var liveObjects, iPath, till, item;
   liveObjects = this.liveObjects;
   if (this.pathTraversed < this.liveObjects.V_get_Length()) {
@@ -1099,16 +1099,16 @@ ptyp_.cleanRegistrations = function LiveBinder__CleanRegistrations() {
     iPath = this.binderInfo.propertyGetterPath.length - 2, till = this.pathTraversed; iPath >= till; iPath--) {
       item = liveObjects.get_item(iPath);
       if (item !== null) {
-        Type__CastType(INotifyPropertyChanged, item).V_RemovePropertyChangedListener_b(this.binderInfo.propertyNames[iPath], Delegate__Create("onSourcePropertyChanged", this));
+        Type$$CastType(INotifyPropertyChanged, item).V_RemovePropertyChangedListener_b(this.binderInfo.propertyNames[iPath], Delegate$$Create("onSourcePropertyChanged", this));
         liveObjects.set_item(iPath, null);
       }
     }
   }
 };
-ptyp_.onSourcePropertyChanged = function LiveBinder__OnSourcePropertyChanged(obj, str) {
+ptyp_.onSourcePropertyChanged = function LiveBinder$$OnSourcePropertyChanged(obj, str) {
   this.flowValue();
 };
-ptyp_.onTargetPropertyChanged = function LiveBinder__OnTargetPropertyChanged(obj, str) {
+ptyp_.onTargetPropertyChanged = function LiveBinder$$OnTargetPropertyChanged(obj, str) {
   var stmtTemp1, binderInfo, target, liveObjects, value;
   if (this.updating || !this.isActive)
     return;
@@ -1128,18 +1128,18 @@ ptyp_.onTargetPropertyChanged = function LiveBinder__OnTargetPropertyChanged(obj
     this.updating = false;
   }
 };
-Type__RegisterReferenceType(LiveBinder, "Sunlight.Framework.UI.Helpers.LiveBinder", Object, []);
+Type$$RegisterReferenceType(LiveBinder, "Sunlight.Framework.UI.Helpers.LiveBinder", Object, []);
 function TaskScheduler() {
 };
 TaskScheduler.typeId = "fb";
-TaskScheduler__instance = null;
-function TaskScheduler__get_Instance() {
-  if (!TaskScheduler__instance)
-    TaskScheduler__instance = TaskScheduler_factory(WindowTimer_factory(), 16, 25);
-  return TaskScheduler__instance;
+TaskScheduler$$instance = null;
+function TaskScheduler$$get_Instance() {
+  if (!TaskScheduler$$instance)
+    TaskScheduler$$instance = TaskScheduler_factory(WindowTimer_factory(), 16, 25);
+  return TaskScheduler$$instance;
 };
-function TaskScheduler__set_Instance(value) {
-  TaskScheduler__instance = value;
+function TaskScheduler$$set_Instance(value) {
+  TaskScheduler$$instance = value;
 };
 function TaskScheduler_factory(windowTimer, workQuanta, idleTimeout) {
   var this_;
@@ -1159,7 +1159,7 @@ ptyp_.idleTasks = null;
 ptyp_.tasks = null;
 ptyp_.timerId = 0;
 ptyp_.highPriSetup = false;
-ptyp_.__ctor = function TaskScheduler____ctor(windowTimer, workQuanta, idleTimeout) {
+ptyp_.__ctor = function TaskScheduler$$$$ctor(windowTimer, workQuanta, idleTimeout) {
   this.timerId = -1;
   this.tasks = NumberDictionary_$Task$_.defaultConstructor();
   this.windowTimer = windowTimer;
@@ -1169,7 +1169,7 @@ ptyp_.__ctor = function TaskScheduler____ctor(windowTimer, workQuanta, idleTimeo
   this.lowPriTasks = Queue_$Task$_.defaultConstructor();
   this.idleTasks = Queue_$Task$_.defaultConstructor();
 };
-ptyp_.enqueueLowPriTask = function TaskScheduler__EnqueueLowPriTask(work, traceId) {
+ptyp_.enqueueLowPriTask = function TaskScheduler$$EnqueueLowPriTask(work, traceId) {
   var task;
   task = Task_factory(this.nextTimerId++, work);
   this.idleTasks.enqueue(task);
@@ -1177,27 +1177,27 @@ ptyp_.enqueueLowPriTask = function TaskScheduler__EnqueueLowPriTask(work, traceI
   this.scheduleQuanta(false);
   return TaskHandle_factory(task.taskId);
 };
-ptyp_.runQuanta = function TaskScheduler__RunQuanta() {
+ptyp_.runQuanta = function TaskScheduler$$RunQuanta() {
   if (this.hiPriTasks.get_count() > 0)
-    this.flushQueue(this.hiPriTasks, DateTime__op_Addition(DateTime__get_Now(), this.workQuanta));
+    this.flushQueue(this.hiPriTasks, DateTime$$op_Addition(DateTime$$get_Now(), this.workQuanta));
   else if (this.idleTasks.get_count() > 0)
-    this.flushQueue(this.idleTasks, DateTime__op_Addition(DateTime__get_Now(), this.workQuanta / 2 | 0));
+    this.flushQueue(this.idleTasks, DateTime$$op_Addition(DateTime$$get_Now(), this.workQuanta / 2 | 0));
   else if (this.lowPriTasks.get_count() > 0)
-    this.flushQueue(this.lowPriTasks, DateTime__op_Addition(DateTime__get_Now(), this.workQuanta / 2 | 0));
+    this.flushQueue(this.lowPriTasks, DateTime$$op_Addition(DateTime$$get_Now(), this.workQuanta / 2 | 0));
   this.timerId = -1;
   this.scheduleQuanta(true);
 };
-ptyp_.flushQueue = function TaskScheduler__FlushQueue(taskQueue, endBy) {
+ptyp_.flushQueue = function TaskScheduler$$FlushQueue(taskQueue, endBy) {
   var task, now;
   while (taskQueue.get_count() > 0) {
     task = taskQueue.dequeue();
     this.executeTask(task);
-    now = DateTime__get_Now();
+    now = DateTime$$get_Now();
     if (endBy < now)
       return;
   }
 };
-ptyp_.executeTask = function TaskScheduler__ExecuteTask(task) {
+ptyp_.executeTask = function TaskScheduler$$ExecuteTask(task) {
   var stmtTemp1;
   if (task.state == 0) {
     try {
@@ -1211,7 +1211,7 @@ ptyp_.executeTask = function TaskScheduler__ExecuteTask(task) {
   task.state = 2;
   this.tasks.remove(task.taskId);
 };
-ptyp_.scheduleQuanta = function TaskScheduler__ScheduleQuanta(force) {
+ptyp_.scheduleQuanta = function TaskScheduler$$ScheduleQuanta(force) {
   if (force || !this.highPriSetup && this.hiPriTasks.get_count() > 0) {
     this.windowTimer.V_ClearTimeout_f(this.timerId);
     this.timerId = -1;
@@ -1220,18 +1220,18 @@ ptyp_.scheduleQuanta = function TaskScheduler__ScheduleQuanta(force) {
     return;
   if (this.hiPriTasks.get_count() > 0) {
     this.highPriSetup = true;
-    this.timerId = this.windowTimer.V_SetImmediate_f(Delegate__Create("runQuanta", this));
+    this.timerId = this.windowTimer.V_SetImmediate_f(Delegate$$Create("runQuanta", this));
   }
   else if (this.idleTasks.get_count() + this.lowPriTasks.get_count() > 0) {
     this.highPriSetup = false;
-    this.timerId = this.windowTimer.V_SetTimeout_f(Delegate__Create("runQuanta", this), this.idleTimeout);
+    this.timerId = this.windowTimer.V_SetTimeout_f(Delegate$$Create("runQuanta", this), this.idleTimeout);
   }
 };
-Type__RegisterReferenceType(TaskScheduler, "Sunlight.Framework.TaskScheduler", Object, []);
+Type$$RegisterReferenceType(TaskScheduler, "Sunlight.Framework.TaskScheduler", Object, []);
 function IWindowTimer() {
 };
 IWindowTimer.typeId = "f";
-Type__RegisterInterface(IWindowTimer, "Sunlight.Framework.IWindowTimer");
+Type$$RegisterInterface(IWindowTimer, "Sunlight.Framework.IWindowTimer");
 function TestWindowTimer() {
 };
 TestWindowTimer.typeId = "gb";
@@ -1240,44 +1240,44 @@ function TestWindowTimer_factory() {
 };
 TestWindowTimer.defaultConstructor = TestWindowTimer_factory;
 ptyp_ = TestWindowTimer.prototype;
-ptyp_.setImmediate = function TestWindowTimer__SetImmediate(action) {
+ptyp_.setImmediate = function TestWindowTimer$$SetImmediate(action) {
   action();
   return 0;
 };
-ptyp_.setTimeout = function TestWindowTimer__SetTimeout(action, timoutTime) {
+ptyp_.setTimeout = function TestWindowTimer$$SetTimeout(action, timoutTime) {
   action();
   return 0;
 };
-ptyp_.clearTimeout = function TestWindowTimer__ClearTimeout(timeoutHandle) {
+ptyp_.clearTimeout = function TestWindowTimer$$ClearTimeout(timeoutHandle) {
 };
-ptyp_.__ctor = function TestWindowTimer____ctor() {
+ptyp_.__ctor = function TestWindowTimer$$$$ctor() {
 };
 ptyp_.V_SetImmediate_f = ptyp_.setImmediate;
 ptyp_.V_SetTimeout_f = ptyp_.setTimeout;
 ptyp_.V_ClearTimeout_f = ptyp_.clearTimeout;
-Type__RegisterReferenceType(TestWindowTimer, "Sunlight.Framework.TestWindowTimer", Object, [IWindowTimer]);
+Type$$RegisterReferenceType(TestWindowTimer, "Sunlight.Framework.TestWindowTimer", Object, [IWindowTimer]);
 function NScriptsTemplatesClass() {
 };
 NScriptsTemplatesClass.typeId = "hb";
-function NScriptsTemplatesClass__get_TestTemplate1() {
+function NScriptsTemplatesClass$$get_TestTemplate1() {
   return Test$5cTemplates$5cTestTemplate1();
 };
-function NScriptsTemplatesClass__get_TestTemplateVMB1() {
+function NScriptsTemplatesClass$$get_TestTemplateVMB1() {
   return Test$5cTemplates$5cTestTemplateVMB1();
 };
-function NScriptsTemplatesClass__get_TestTemplateVMB_AttrBinding() {
+function NScriptsTemplatesClass$$get_TestTemplateVMB_AttrBinding() {
   return Test$5cTemplates$5cTestTemplateVMB_AttrBinding();
 };
-function NScriptsTemplatesClass__get_TestTemplateVMB_CssBinding() {
+function NScriptsTemplatesClass$$get_TestTemplateVMB_CssBinding() {
   return Test$5cTemplates$5cTestTemplateVMB_CssBinding();
 };
-function NScriptsTemplatesClass__get_TestTemplateVMB_StyleBinding() {
+function NScriptsTemplatesClass$$get_TestTemplateVMB_StyleBinding() {
   return Test$5cTemplates$5cTestTemplateVMB_StyleBinding();
 };
-function NScriptsTemplatesClass__get_TestTemplateB_PropertyBinding() {
+function NScriptsTemplatesClass$$get_TestTemplateB_PropertyBinding() {
   return Test$5cTemplates$5cTestTemplateB_PropertyBinding();
 };
-Type__RegisterReferenceType(NScriptsTemplatesClass, "Sunlight.Framework.UI.Test.NScriptsTemplatesClass", Object, []);
+Type$$RegisterReferenceType(NScriptsTemplatesClass, "Sunlight.Framework.UI.Test.NScriptsTemplatesClass", Object, []);
 function ExtensibleObservableObject() {
 };
 ExtensibleObservableObject.typeId = "ib";
@@ -1291,12 +1291,12 @@ ExtensibleObservableObject.defaultConstructor = ExtensibleObservableObject_facto
 ptyp_ = new ObservableObject();
 ExtensibleObservableObject.prototype = ptyp_;
 ptyp_.propertyMap = null;
-ptyp_.__ctor0 = function ExtensibleObservableObject____ctor() {
+ptyp_.__ctor0 = function ExtensibleObservableObject$$$$ctor() {
   this.__ctor();
   this.propertyMap = {
   };
 };
-Type__RegisterReferenceType(ExtensibleObservableObject, "Sunlight.Framework.Observables.ExtensibleObservableObject", ObservableObject, []);
+Type$$RegisterReferenceType(ExtensibleObservableObject, "Sunlight.Framework.Observables.ExtensibleObservableObject", ObservableObject, []);
 function ContextBindableObject() {
 };
 ContextBindableObject.typeId = "jb";
@@ -1319,61 +1319,61 @@ ptyp_.isDisposing = false;
 ptyp_.isDisposed = false;
 ptyp_.onDisposed = null;
 ptyp_.isInactiveIfNullContext = false;
-ptyp_.set_parent = function ContextBindableObject__set_Parent(value) {
+ptyp_.set_parent = function ContextBindableObject$$set_Parent(value) {
   if (this.parent != value) {
     if (this.parent) {
-      this.parent.removePropertyChangedListener("DataContext", Delegate__Create("onParentDataContextUpdated", this));
-      this.parent.removePropertyChangedListener("IsActive", Delegate__Create("onParentDataContextUpdated", this));
+      this.parent.removePropertyChangedListener("DataContext", Delegate$$Create("onParentDataContextUpdated", this));
+      this.parent.removePropertyChangedListener("IsActive", Delegate$$Create("onParentDataContextUpdated", this));
     }
     this.parent = value;
     if (!this.dataContextSetterCalled)
       if (this.parent) {
-        this.parent.addPropertyChangedListener("DataContext", Delegate__Create("onParentDataContextUpdated", this));
-        this.parent.addPropertyChangedListener("IsActive", Delegate__Create("onParentDataContextUpdated", this));
+        this.parent.addPropertyChangedListener("DataContext", Delegate$$Create("onParentDataContextUpdated", this));
+        this.parent.addPropertyChangedListener("IsActive", Delegate$$Create("onParentDataContextUpdated", this));
         this.onParentDataContextUpdated(null, null);
       }
       else
         this.setDataContext(null);
   }
 };
-ptyp_.get_dataContext = function ContextBindableObject__get_DataContext() {
+ptyp_.get_dataContext = function ContextBindableObject$$get_DataContext() {
   return this.dataContext;
 };
-ptyp_.set_dataContext = function ContextBindableObject__set_DataContext(value) {
+ptyp_.set_dataContext = function ContextBindableObject$$set_DataContext(value) {
   this.dataContextSetterCalled = true;
   this.setDataContext(value);
 };
-ptyp_.get_isActive = function ContextBindableObject__get_IsActive() {
+ptyp_.get_isActive = function ContextBindableObject$$get_IsActive() {
   return this.isActivated && !this.V_get_ActivationBlocked();
 };
-ptyp_.set_inactiveIfNullContext = function ContextBindableObject__set_InactiveIfNullContext(value) {
+ptyp_.set_inactiveIfNullContext = function ContextBindableObject$$set_InactiveIfNullContext(value) {
   this.isInactiveIfNullContext = value;
   this.fixActivation();
 };
-ptyp_.get_activationBlocked = function ContextBindableObject__get_ActivationBlocked() {
+ptyp_.get_activationBlocked = function ContextBindableObject$$get_ActivationBlocked() {
   return this.isInactiveIfNullContext && this.dataContext === null;
 };
-ptyp_.dispose = function ContextBindableObject__Dispose() {
+ptyp_.dispose = function ContextBindableObject$$Dispose() {
   if (!this.isDisposed && !this.isDisposing)
     this.V_InternalDispose();
 };
-ptyp_.activate = function ContextBindableObject__Activate() {
+ptyp_.activate = function ContextBindableObject$$Activate() {
   this.isActive = true;
   this.fixActivation();
 };
-ptyp_.deactivate = function ContextBindableObject__Deactivate() {
+ptyp_.deactivate = function ContextBindableObject$$Deactivate() {
   if (!this.isActive)
     return;
   this.isActive = false;
   this.fixActivation();
 };
-ptyp_.onBeforeFirstActivate = function ContextBindableObject__OnBeforeFirstActivate() {
+ptyp_.onBeforeFirstActivate = function ContextBindableObject$$OnBeforeFirstActivate() {
 };
-ptyp_.onActivate = function ContextBindableObject__OnActivate() {
+ptyp_.onActivate = function ContextBindableObject$$OnActivate() {
 };
-ptyp_.onDeactivate = function ContextBindableObject__OnDeactivate() {
+ptyp_.onDeactivate = function ContextBindableObject$$OnDeactivate() {
 };
-ptyp_.fixActivation = function ContextBindableObject__FixActivation() {
+ptyp_.fixActivation = function ContextBindableObject$$FixActivation() {
   if (!this.V_get_ActivationBlocked() && this.isActive) {
     if (!this.isPreActivated) {
       this.isPreActivated = true;
@@ -1391,18 +1391,18 @@ ptyp_.fixActivation = function ContextBindableObject__FixActivation() {
     this.firePropertyChanged("IsActive");
   }
 };
-ptyp_.internalDispose = function ContextBindableObject__InternalDispose() {
+ptyp_.internalDispose = function ContextBindableObject$$InternalDispose() {
   if (this.onDisposed) {
     this.set_parent(null);
     this.clearListeners();
     this.onDisposed();
   }
 };
-ptyp_.onDataContextUpdating = function ContextBindableObject__OnDataContextUpdating(newValue) {
+ptyp_.onDataContextUpdating = function ContextBindableObject$$OnDataContextUpdating(newValue) {
 };
-ptyp_.onDataContextUpdated = function ContextBindableObject__OnDataContextUpdated(oldValue) {
+ptyp_.onDataContextUpdated = function ContextBindableObject$$OnDataContextUpdated(oldValue) {
 };
-ptyp_.setDataContext = function ContextBindableObject__SetDataContext(value) {
+ptyp_.setDataContext = function ContextBindableObject$$SetDataContext(value) {
   var oldValue;
   if (this.dataContext !== value) {
     this.V_OnDataContextUpdating(value);
@@ -1413,7 +1413,7 @@ ptyp_.setDataContext = function ContextBindableObject__SetDataContext(value) {
     this.fixActivation();
   }
 };
-ptyp_.onParentDataContextUpdated = function ContextBindableObject__OnParentDataContextUpdated(sender, propertyName) {
+ptyp_.onParentDataContextUpdated = function ContextBindableObject$$OnParentDataContextUpdated(sender, propertyName) {
   if (this.parent.get_isActive() && !this.dataContextSetterCalled)
     this.setDataContext(this.parent.get_dataContext());
   if (propertyName === "IsActive" || propertyName === null)
@@ -1422,7 +1422,7 @@ ptyp_.onParentDataContextUpdated = function ContextBindableObject__OnParentDataC
     else
       this.deactivate();
 };
-ptyp_.__ctor1 = function ContextBindableObject____ctor() {
+ptyp_.__ctor1 = function ContextBindableObject$$$$ctor() {
   this.__ctor0();
   this.isInactiveIfNullContext = true;
 };
@@ -1433,7 +1433,7 @@ ptyp_.V_OnDeactivate = ptyp_.onDeactivate;
 ptyp_.V_InternalDispose = ptyp_.internalDispose;
 ptyp_.V_OnDataContextUpdating = ptyp_.onDataContextUpdating;
 ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated;
-Type__RegisterReferenceType(ContextBindableObject, "Sunlight.Framework.Binders.ContextBindableObject", ExtensibleObservableObject, []);
+Type$$RegisterReferenceType(ContextBindableObject, "Sunlight.Framework.Binders.ContextBindableObject", ExtensibleObservableObject, []);
 function UIElement() {
 };
 UIElement.typeId = "kb";
@@ -1448,29 +1448,29 @@ UIElement.prototype = ptyp_;
 ptyp_.element = null;
 ptyp_.isHidden = false;
 ptyp_.eventRegistrationDict = null;
-ptyp_.__ctor2 = function UIElement____ctor(element) {
+ptyp_.__ctor2 = function UIElement$$$$ctor(element) {
   this.__ctor1();
   this.eventRegistrationDict = StringDictionary_$Action_$UIEvent$_$_.defaultConstructor();
   this.element = element;
 };
-ptyp_.get_element = function UIElement__get_Element() {
+ptyp_.get_element = function UIElement$$get_Element() {
   return this.element;
 };
-ptyp_.get_activationBlocked0 = function UIElement__get_ActivationBlocked() {
+ptyp_.get_activationBlocked0 = function UIElement$$get_ActivationBlocked() {
   return this.get_activationBlocked() || this.isHidden;
 };
-ptyp_.internalDispose0 = function UIElement__InternalDispose() {
+ptyp_.internalDispose0 = function UIElement$$InternalDispose() {
   var stmtTemp1, kvPair;
   for (stmtTemp1 = this.eventRegistrationDict.V_GetEnumerator_g(); stmtTemp1.V_MoveNext_h(); ) {
-    kvPair = Type__UnBoxTypeInstance(KeyValuePair_$String_x_Action_$UIEvent$_$_, stmtTemp1.V_get_Current_h());
-    Element__UnBind0(this.element, KeyValuePair_$String_x_Action_$UIEvent$_$_.get_key(kvPair));
+    kvPair = Type$$UnBoxTypeInstance(KeyValuePair_$String_x_Action_$UIEvent$_$_, stmtTemp1.V_get_Current_h());
+    Element$$UnBind0(this.element, KeyValuePair_$String_x_Action_$UIEvent$_$_.get_key(kvPair));
   }
   this.eventRegistrationDict.clear();
   this.internalDispose();
 };
 ptyp_.V_get_ActivationBlocked = ptyp_.get_activationBlocked0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose0;
-Type__RegisterReferenceType(UIElement, "Sunlight.Framework.UI.UIElement", ContextBindableObject, []);
+Type$$RegisterReferenceType(UIElement, "Sunlight.Framework.UI.UIElement", ContextBindableObject, []);
 function UISkinableElement() {
 };
 UISkinableElement.typeId = "lb";
@@ -1484,10 +1484,10 @@ ptyp_ = new UIElement();
 UISkinableElement.prototype = ptyp_;
 ptyp_.skin = null;
 ptyp_.skinInstance = null;
-ptyp_.__ctor3 = function UISkinableElement____ctor(element) {
+ptyp_.__ctor3 = function UISkinableElement$$$$ctor(element) {
   this.__ctor2(element);
 };
-ptyp_.set_skin = function UISkinableElement__set_Skin(value) {
+ptyp_.set_skin = function UISkinableElement$$set_Skin(value) {
   if (this.skin != value) {
     this.skin = value;
     if (this.skin && this.get_isActive()) {
@@ -1497,10 +1497,10 @@ ptyp_.set_skin = function UISkinableElement__set_Skin(value) {
     this.firePropertyChanged("Skin");
   }
 };
-ptyp_.get_skinInstance = function UISkinableElement__get_SkinInstance() {
+ptyp_.get_skinInstance = function UISkinableElement$$get_SkinInstance() {
   return this.skinInstance;
 };
-ptyp_.set_skinInstance = function UISkinableElement__set_SkinInstance(value) {
+ptyp_.set_skinInstance = function UISkinableElement$$set_SkinInstance(value) {
   if (this.skinInstance != value) {
     if (this.skinInstance)
       this.skinInstance.dispose();
@@ -1514,32 +1514,32 @@ ptyp_.set_skinInstance = function UISkinableElement__set_SkinInstance(value) {
     this.firePropertyChanged("SkinInstance");
   }
 };
-ptyp_.applySkinInternal = function UISkinableElement__ApplySkinInternal(skin) {
+ptyp_.applySkinInternal = function UISkinableElement$$ApplySkinInternal(skin) {
 };
-ptyp_.onBeforeFirstActivate0 = function UISkinableElement__OnBeforeFirstActivate() {
+ptyp_.onBeforeFirstActivate0 = function UISkinableElement$$OnBeforeFirstActivate() {
   this.onBeforeFirstActivate();
   if (this.skin && !this.skinInstance)
     this.set_skinInstance(this.skin.createInstance());
 };
-ptyp_.onActivate0 = function UISkinableElement__OnActivate() {
+ptyp_.onActivate0 = function UISkinableElement$$OnActivate() {
   this.onActivate();
   if (this.skin && !this.skinInstance)
     this.set_skinInstance(this.skin.createInstance());
   else if (this.skinInstance)
     this.skinInstance.activate();
 };
-ptyp_.onDeactivate0 = function UISkinableElement__OnDeactivate() {
+ptyp_.onDeactivate0 = function UISkinableElement$$OnDeactivate() {
   if (this.skinInstance)
     this.skinInstance.deactivate();
   this.onDeactivate();
 };
-ptyp_.internalDispose1 = function UISkinableElement__InternalDispose() {
+ptyp_.internalDispose1 = function UISkinableElement$$InternalDispose() {
   if (this.get_skinInstance())
     this.set_skinInstance(null);
   this.set_skin(null);
   this.internalDispose0();
 };
-ptyp_.onDataContextUpdated0 = function UISkinableElement__OnDataContextUpdated(oldValue) {
+ptyp_.onDataContextUpdated0 = function UISkinableElement$$OnDataContextUpdated(oldValue) {
   this.onDataContextUpdated(oldValue);
   if (this.skinInstance)
     this.skinInstance.updateDataContext();
@@ -1550,18 +1550,18 @@ ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose1;
 ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated0;
 ptyp_.V_ApplySkinInternal = ptyp_.applySkinInternal;
-Type__RegisterReferenceType(UISkinableElement, "Sunlight.Framework.UI.UISkinableElement", UIElement, []);
-function Node__Remove(this_) {
+Type$$RegisterReferenceType(UISkinableElement, "Sunlight.Framework.UI.UISkinableElement", UIElement, []);
+function Node$$Remove(this_) {
   return this_.parentNode ? this_.parentNode.removeChild(this_) : this_;
 };
-function Element__AddClassName(this_, className) {
+function Element$$AddClassName(this_, className) {
   var index;
-  this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  if (!Object__IsNullOrUndefined(this_.classList)) {
+  this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
+  if (!Object$$IsNullOrUndefined(this_.classList)) {
     this_.classList.add(className);
     return;
   }
-  if (className === null || (className = String__Trim(className)).length == 0)
+  if (className === null || (className = String$$Trim(className)).length == 0)
     return;
   if (this_.className === null || this_.className.length == 0) {
     this_.className = className;
@@ -1569,25 +1569,25 @@ function Element__AddClassName(this_, className) {
   }
   index = 0;
   while ((index = this_.className.indexOf(className, index)) != -1) {
-    if ((index == 0 || String__get_Item(this_.className, index - 1) == 32) && (index == this_.className.length - className.length || String__get_Item(this_.className, index + className.length) == 32))
+    if ((index == 0 || String$$get_Item(this_.className, index - 1) == 32) && (index == this_.className.length - className.length || String$$get_Item(this_.className, index + className.length) == 32))
       return;
     index++;
   }
   this_.className = this_.className + " " + className;
   return;
 };
-function Element__RemoveClassName(this_, className) {
+function Element$$RemoveClassName(this_, className) {
   var index;
-  this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  if (!Object__IsNullOrUndefined(this_.classList)) {
+  this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
+  if (!Object$$IsNullOrUndefined(this_.classList)) {
     this_.classList.remove(className);
     return;
   }
-  if (className === null || (className = String__Trim(className)).length == 0 || this_.className === null || this_.className.length == 0)
+  if (className === null || (className = String$$Trim(className)).length == 0 || this_.className === null || this_.className.length == 0)
     return;
   index = 0;
   while ((index = this_.className.indexOf(className, index)) != -1) {
-    if ((index == 0 || String__get_Item(this_.className, index - 1) == 32) && (index == this_.className.length - className.length || String__get_Item(this_.className, index + className.length) == 32)) {
+    if ((index == 0 || String$$get_Item(this_.className, index - 1) == 32) && (index == this_.className.length - className.length || String$$get_Item(this_.className, index + className.length) == 32)) {
       this_.className = this_.className.substr(0, index > 0 ? index - 1 : 0) + this_.className.substring(index + className.length);
       return;
     }
@@ -1595,18 +1595,18 @@ function Element__RemoveClassName(this_, className) {
   }
   return;
 };
-function Element__Bind(this_, eventName, handler, capture) {
-  this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  EventBinder__AddEvent(this_, eventName, handler, capture);
+function Element$$Bind(this_, eventName, handler, capture) {
+  this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
+  EventBinder$$AddEvent(this_, eventName, handler, capture);
 };
-function Element__UnBind(this_, eventName, handler, capture) {
-  this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  EventBinder__RemoveEvent(this_, eventName, handler, capture);
+function Element$$UnBind(this_, eventName, handler, capture) {
+  this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
+  EventBinder$$RemoveEvent(this_, eventName, handler, capture);
 };
-function Element__UnBind0(this_, eventName) {
-  this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  EventBinder__RemoveEvent1(this_, eventName, true);
-  EventBinder__RemoveEvent1(this_, eventName, false);
+function Element$$UnBind0(this_, eventName) {
+  this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
+  EventBinder$$RemoveEvent1(this_, eventName, true);
+  EventBinder$$RemoveEvent1(this_, eventName, false);
 };
 function TestViewModelB() {
 };
@@ -1620,10 +1620,10 @@ function TestViewModelB_factory() {
 TestViewModelB.defaultConstructor = TestViewModelB_factory;
 ptyp_ = new TestViewModelA();
 TestViewModelB.prototype = ptyp_;
-ptyp_.__ctor1 = function TestViewModelB____ctor() {
+ptyp_.__ctor1 = function TestViewModelB$$$$ctor() {
   this.__ctor0();
 };
-Type__RegisterReferenceType(TestViewModelB, "Sunlight.Framework.UI.Test.TestViewModelB", TestViewModelA, []);
+Type$$RegisterReferenceType(TestViewModelB, "Sunlight.Framework.UI.Test.TestViewModelB", TestViewModelA, []);
 function TestSkinableWithTestUIElementPart() {
 };
 TestSkinableWithTestUIElementPart.typeId = "nb";
@@ -1635,15 +1635,15 @@ function TestSkinableWithTestUIElementPart_factory(element) {
 };
 ptyp_ = new UISkinableElement();
 TestSkinableWithTestUIElementPart.prototype = ptyp_;
-ptyp_.__ctor4 = function TestSkinableWithTestUIElementPart____ctor(element) {
+ptyp_.__ctor4 = function TestSkinableWithTestUIElementPart$$$$ctor(element) {
   this.__ctor3(element);
 };
-ptyp_.get_part = function TestSkinableWithTestUIElementPart__get_Part() {
+ptyp_.get_part = function TestSkinableWithTestUIElementPart$$get_Part() {
   if (this.get_skinInstance())
-    return Type__CastType(TestUIElement, this.get_skinInstance().getChildById("Part1"));
+    return Type$$CastType(TestUIElement, this.get_skinInstance().getChildById("Part1"));
   return null;
 };
-Type__RegisterReferenceType(TestSkinableWithTestUIElementPart, "Sunlight.Framework.UI.Test.TestSkinableWithTestUIElementPart", UISkinableElement, []);
+Type$$RegisterReferenceType(TestSkinableWithTestUIElementPart, "Sunlight.Framework.UI.Test.TestSkinableWithTestUIElementPart", UISkinableElement, []);
 function TestUIElement() {
 };
 TestUIElement.typeId = "ob";
@@ -1656,66 +1656,66 @@ function TestUIElement_factory(element) {
 ptyp_ = new UIElement();
 TestUIElement.prototype = ptyp_;
 ptyp_.twoWayLooseBinding = 0;
-ptyp_.__ctor3 = function TestUIElement____ctor(element) {
+ptyp_.__ctor3 = function TestUIElement$$$$ctor(element) {
   this.__ctor2(element);
 };
-ptyp_.get_oneWayStrictBinding = function TestUIElement__get_OneWayStrictBinding() {
+ptyp_.get_oneWayStrictBinding = function TestUIElement$$get_OneWayStrictBinding() {
   return this.OneWayStrictBinding;
 };
-ptyp_.set_oneWayStrictBinding = function TestUIElement__set_OneWayStrictBinding(value) {
+ptyp_.set_oneWayStrictBinding = function TestUIElement$$set_OneWayStrictBinding(value) {
   return this.OneWayStrictBinding = value;
 };
-ptyp_.get_twoWayLooseBinding = function TestUIElement__get_TwoWayLooseBinding() {
+ptyp_.get_twoWayLooseBinding = function TestUIElement$$get_TwoWayLooseBinding() {
   return this.twoWayLooseBinding;
 };
-ptyp_.set_twoWayLooseBinding = function TestUIElement__set_TwoWayLooseBinding(value) {
+ptyp_.set_twoWayLooseBinding = function TestUIElement$$set_TwoWayLooseBinding(value) {
   if (this.twoWayLooseBinding != value) {
     this.twoWayLooseBinding = value;
     this.firePropertyChanged("TwoWayLooseBinding");
   }
 };
-Type__RegisterReferenceType(TestUIElement, "Sunlight.Framework.UI.Test.TestUIElement", UIElement, []);
+Type$$RegisterReferenceType(TestUIElement, "Sunlight.Framework.UI.Test.TestUIElement", UIElement, []);
 function SkinBinderHelper() {
 };
-function SkinBinderHelper__Bind(binders, dataContext, targetElements) {
+function SkinBinderHelper$$Bind(binders, dataContext, targetElements) {
   var i, j, info;
   for (
   i = 0, j = binders.length; i < j; i++) {
     info = binders[i];
-    SkinBinderHelper__SetPropertyValue(info, dataContext, targetElements[info.objectIndex], null);
+    SkinBinderHelper$$SetPropertyValue(info, dataContext, targetElements[info.objectIndex], null);
   }
 };
-function SkinBinderHelper__SetAttribute(node, value, attrName) {
+function SkinBinderHelper$$SetAttribute(node, value, attrName) {
   if (value !== null)
     node.setAttribute(attrName, value);
   else
     node.removeAttribute(attrName);
 };
-function SkinBinderHelper__SetTextContent(element, value) {
+function SkinBinderHelper$$SetTextContent(element, value) {
   if (value !== null)
     element.textContent = value;
   else
     element.textContent = "";
 };
-function SkinBinderHelper__SetDataContext(element, value) {
+function SkinBinderHelper$$SetDataContext(element, value) {
   element.set_dataContext(value);
 };
-function SkinBinderHelper__SetCssClass(element, add, className) {
+function SkinBinderHelper$$SetCssClass(element, add, className) {
   if (add)
-    Element__AddClassName(element, className);
+    Element$$AddClassName(element, className);
   else
-    Element__RemoveClassName(element, className);
+    Element$$RemoveClassName(element, className);
 };
-function SkinBinderHelper__GetElementFromPath(element, path) {
+function SkinBinderHelper$$GetElementFromPath(element, path) {
   var iPath;
   for (iPath = 0; iPath < path.length; iPath++)
     element = element.childNodes[path[iPath]];
   return element;
 };
-function SkinBinderHelper__SetPropertyValue(binder, source, target, extraElementArray) {
+function SkinBinderHelper$$SetPropertyValue(binder, source, target, extraElementArray) {
   var stmtTemp1, stmtTemp10;
   try {
-    source = SkinBinderHelper__TraversePropertyPath(binder, source);
+    source = SkinBinderHelper$$TraversePropertyPath(binder, source);
   } catch (stmtTemp1) {
     source = binder.defaultValue;
   }
@@ -1724,11 +1724,11 @@ function SkinBinderHelper__SetPropertyValue(binder, source, target, extraElement
   } catch (stmtTemp10) {
   }
 };
-function SkinBinderHelper__TraversePropertyPath(binder, source) {
+function SkinBinderHelper$$TraversePropertyPath(binder, source) {
   var iGetter, pathLength, isStatic;
   iGetter = 0, pathLength = binder.propertyGetterPath.length;
   isStatic = (binder.binderType & 2) == 2;
-  for (; iGetter < pathLength && (isStatic && iGetter == 0 || !Object__IsNullOrUndefined(source)); iGetter++)
+  for (; iGetter < pathLength && (isStatic && iGetter == 0 || !Object$$IsNullOrUndefined(source)); iGetter++)
     source = binder.propertyGetterPath[iGetter](source);
   if (iGetter < pathLength)
     return binder.defaultValue;
@@ -1743,15 +1743,15 @@ Boolean0.typeId = "pb";
 Boolean0.getDefaultValue = function() {
   return false;
 };
-function Boolean__ToString(this_) {
+function Boolean$$ToString(this_) {
   return this_ ? "true" : "false";
 };
 ptyp_ = new ValueType();
 Boolean0.prototype = ptyp_;
 ptyp_.toString = function() {
-  return Boolean__ToString(this.boxedValue);
+  return Boolean$$ToString(this.boxedValue);
 };
-Type__RegisterStructType(Boolean0, "System.Boolean", []);
+Type$$RegisterStructType(Boolean0, "System.Boolean", []);
 function ListView() {
 };
 ListView.typeId = "qb";
@@ -1772,12 +1772,12 @@ ptyp_.itemCssClassName = null;
 ptyp_.inlineItems = false;
 ptyp_.topN = 0;
 ptyp_.selectionHelper = null;
-ptyp_.__ctor3 = function ListView____ctor(element) {
+ptyp_.__ctor3 = function ListView$$$$ctor(element) {
   this.__ctor2(element);
   this.items = List_$ListViewItem$_.defaultConstructor();
   this.topN = 1073741824;
 };
-ptyp_.set_fixedList = function ListView__set_FixedList(value) {
+ptyp_.set_fixedList = function ListView$$set_FixedList(value) {
   if (value && this.observableList)
     throw new Error("Can't set FixedList and ObservableList at the same time");
   if (this.fixedList != value) {
@@ -1786,7 +1786,7 @@ ptyp_.set_fixedList = function ListView__set_FixedList(value) {
     this.applyFixedList();
   }
 };
-ptyp_.set_itemSkin = function ListView__set_ItemSkin(value) {
+ptyp_.set_itemSkin = function ListView$$set_ItemSkin(value) {
   var items, itemCount, iItem;
   if (this.itemSkin != value) {
     this.itemSkin = value;
@@ -1799,14 +1799,14 @@ ptyp_.set_itemSkin = function ListView__set_ItemSkin(value) {
     }
   }
 };
-ptyp_.onActivate0 = function ListView__OnActivate() {
+ptyp_.onActivate0 = function ListView$$OnActivate() {
   this.onActivate();
   if (this.fixedList)
     this.applyFixedList();
   else if (this.observableList)
     this.applyObservableList();
 };
-ptyp_.onDeactivate0 = function ListView__OnDeactivate() {
+ptyp_.onDeactivate0 = function ListView$$OnDeactivate() {
   var items, itemCount, iItem;
   items = this.items;
   itemCount = items.get_count();
@@ -1815,12 +1815,12 @@ ptyp_.onDeactivate0 = function ListView__OnDeactivate() {
       items.get_item(iItem).deactivate();
   this.onDeactivate();
 };
-ptyp_.internalDispose1 = function ListView__InternalDispose() {
+ptyp_.internalDispose1 = function ListView$$InternalDispose() {
   var items, itemCount, iItem;
   items = this.items;
   itemCount = items.get_count();
   if (this.attachedObservableList) {
-    this.attachedObservableList.V_remove_CollectionChanged_i(Delegate__Create("observableListCollectionChanged", this));
+    this.attachedObservableList.V_remove_CollectionChanged_i(Delegate$$Create("observableListCollectionChanged", this));
     this.attachedObservableList = null;
   }
   if (itemCount > 0) {
@@ -1830,7 +1830,7 @@ ptyp_.internalDispose1 = function ListView__InternalDispose() {
   }
   this.internalDispose0();
 };
-ptyp_.applyFixedList = function ListView__ApplyFixedList() {
+ptyp_.applyFixedList = function ListView$$ApplyFixedList() {
   var items, itemsCount, iItem, item, fixedList, fixedListCount, iObject, listViewItem;
   items = this.items;
   itemsCount = items.get_count();
@@ -1838,7 +1838,7 @@ ptyp_.applyFixedList = function ListView__ApplyFixedList() {
     for (iItem = 0; iItem < itemsCount; iItem++) {
       item = items.get_item(iItem);
       item.dispose();
-      Node__Remove(item.get_element());
+      Node$$Remove(item.get_element());
     }
     items.clear();
     return;
@@ -1869,7 +1869,7 @@ ptyp_.applyFixedList = function ListView__ApplyFixedList() {
     this.removeChildren(fixedListCount, itemsCount - fixedListCount);
   }
 };
-ptyp_.applyObservableList = function ListView__ApplyObservableList() {
+ptyp_.applyObservableList = function ListView$$ApplyObservableList() {
   var items, itemsCount, iItem, item;
   items = this.items;
   itemsCount = items.get_count();
@@ -1877,20 +1877,20 @@ ptyp_.applyObservableList = function ListView__ApplyObservableList() {
     for (iItem = 0; iItem < itemsCount; iItem++) {
       item = items.get_item(iItem);
       item.dispose();
-      Node__Remove(item.get_element());
+      Node$$Remove(item.get_element());
     }
     items.clear();
     return;
   }
   if (this.get_isActive() && this.observableList && this.observableList != this.attachedObservableList) {
     this.attachedObservableList = this.observableList;
-    this.attachedObservableList.V_add_CollectionChanged_i(Delegate__Create("observableListCollectionChanged", this));
+    this.attachedObservableList.V_add_CollectionChanged_i(Delegate$$Create("observableListCollectionChanged", this));
     this.resetObservableItems();
   }
 };
-ptyp_.observableListCollectionChanged = function ListView__ObservableListCollectionChanged(collection, args) {
+ptyp_.observableListCollectionChanged = function ListView$$ObservableListCollectionChanged(collection, args) {
   var items, changeIndex, newItems, oldItems, itemCount, addCount, replaceCount, list, i, replaceList, replaceStartIndex;
-  Debug__Assert(collection == this.attachedObservableList);
+  Debug$$Assert(collection == this.attachedObservableList);
   items = this.items;
   changeIndex = args.V_get_ChangeIndex_j();
   if (args.V_get_Action_j() == 4)
@@ -1942,12 +1942,12 @@ ptyp_.observableListCollectionChanged = function ListView__ObservableListCollect
     throw new Error("Invalid operation");
   }
 };
-ptyp_.observableEventReplace = function ListView__ObservableEventReplace(changeIndex, listCount, list) {
+ptyp_.observableEventReplace = function ListView$$ObservableEventReplace(changeIndex, listCount, list) {
   var iObject;
   for (iObject = 0; iObject < listCount; iObject++)
     this.items.get_item(changeIndex + iObject).set_dataContext(list.V_get_Item_e(iObject));
 };
-ptyp_.observableEventAdd = function ListView__ObservableEventAdd(changeIndex, listCount, list) {
+ptyp_.observableEventAdd = function ListView$$ObservableEventAdd(changeIndex, listCount, list) {
   var insertBeforeElem, iObject, listViewItem;
   insertBeforeElem = null;
   if (changeIndex < this.items.get_count())
@@ -1976,7 +1976,7 @@ ptyp_.observableEventAdd = function ListView__ObservableEventAdd(changeIndex, li
     listViewItem.activate();
   }
 };
-ptyp_.resetObservableItems = function ListView__ResetObservableItems() {
+ptyp_.resetObservableItems = function ListView$$ResetObservableItems() {
   var observableList, itemsCount, listCount, iObject, listViewItem;
   observableList = this.observableList;
   itemsCount = this.items.get_count();
@@ -2003,22 +2003,22 @@ ptyp_.resetObservableItems = function ListView__ResetObservableItems() {
   }
   this.removeChildren(listCount, itemsCount - listCount);
 };
-ptyp_.removeChildren = function ListView__RemoveChildren(changeIndex, delCount) {
+ptyp_.removeChildren = function ListView$$RemoveChildren(changeIndex, delCount) {
   var iObject, item;
   for (iObject = delCount + changeIndex - 1; iObject >= changeIndex; iObject--) {
     item = this.items.get_item(iObject);
     this.items.removeAt(iObject);
-    Node__Remove(item.get_element());
+    Node$$Remove(item.get_element());
     item.dispose();
   }
 };
-ptyp_.createElement = function ListView__CreateElement() {
+ptyp_.createElement = function ListView$$CreateElement() {
   return this.get_element().ownerDocument.createElement(this.inlineItems ? "div" : "li");
 };
 ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose1;
-Type__RegisterReferenceType(ListView, "Sunlight.Framework.UI.ListView", UIElement, []);
+Type$$RegisterReferenceType(ListView, "Sunlight.Framework.UI.ListView", UIElement, []);
 function Task() {
 };
 Task.typeId = "rb";
@@ -2032,11 +2032,11 @@ ptyp_ = Task.prototype;
 ptyp_.state = 0;
 ptyp_.work = null;
 ptyp_.taskId = null;
-ptyp_.__ctor = function Task____ctor(taskId, work) {
+ptyp_.__ctor = function Task$$$$ctor(taskId, work) {
   this.taskId = taskId;
   this.work = work;
 };
-Type__RegisterReferenceType(Task, "Sunlight.Framework.Task", Object, []);
+Type$$RegisterReferenceType(Task, "Sunlight.Framework.Task", Object, []);
 function Skin() {
 };
 Skin.typeId = "sb";
@@ -2051,22 +2051,22 @@ ptyp_.factoryMethod = null;
 ptyp_.skinableType = null;
 ptyp_.dataContextType = null;
 ptyp_.id = null;
-ptyp_.__ctor = function Skin____ctor(skinableType, dataContextType, factoryMethod, id) {
+ptyp_.__ctor = function Skin$$$$ctor(skinableType, dataContextType, factoryMethod, id) {
   this.factoryMethod = factoryMethod;
   this.skinableType = skinableType;
   this.dataContextType = dataContextType;
   this.id = id;
 };
-ptyp_.get_id = function Skin__get_Id() {
+ptyp_.get_id = function Skin$$get_Id() {
   return this.id;
 };
-ptyp_.get_skinableType = function Skin__get_SkinableType() {
+ptyp_.get_skinableType = function Skin$$get_SkinableType() {
   return this.skinableType;
 };
-ptyp_.createInstance = function Skin__CreateInstance() {
+ptyp_.createInstance = function Skin$$CreateInstance() {
   return this.factoryMethod(this, window.document);
 };
-Type__RegisterReferenceType(Skin, "Sunlight.Framework.UI.Skin", Object, []);
+Type$$RegisterReferenceType(Skin, "Sunlight.Framework.UI.Skin", Object, []);
 function SkinInstance() {
 };
 SkinInstance.typeId = "tb";
@@ -2093,8 +2093,8 @@ ptyp_.dataContext = null;
 ptyp_.firstActivationDone = false;
 ptyp_.dataContextUpdated = false;
 ptyp_.templateParentUpdated = false;
-ptyp_.__ctor = function SkinInstance____ctor(factory, rootElement, childElements, elementsOfIntrests, binders, partIdMapping, liveBinderCount, extraObjectCount) {
-  Object__IsNullOrUndefined(rootElement);
+ptyp_.__ctor = function SkinInstance$$$$ctor(factory, rootElement, childElements, elementsOfIntrests, binders, partIdMapping, liveBinderCount, extraObjectCount) {
+  Object$$IsNullOrUndefined(rootElement);
   this.parentFactory = factory;
   this.rootElement = rootElement;
   this.binders = binders;
@@ -2110,12 +2110,12 @@ ptyp_.__ctor = function SkinInstance____ctor(factory, rootElement, childElements
   if (partIdMapping !== null)
     this.partIdMapping = StringDictionary_$Int32$_.__ctor(partIdMapping);
 };
-ptyp_.getChildById = function SkinInstance__GetChildById(id) {
+ptyp_.getChildById = function SkinInstance$$GetChildById(id) {
   if (this.partIdMapping && this.partIdMapping.containsKey(id))
     return this.elementsOfIntrest[this.partIdMapping.get_item(id)];
   return null;
 };
-ptyp_.bind = function SkinInstance__Bind(skinable) {
+ptyp_.bind = function SkinInstance$$Bind(skinable) {
   var childNodes, skinableElement;
   if (!this.rootElement || this.isDiposed)
     throw new Error("InvalidOperation, Skin already applied");
@@ -2141,7 +2141,7 @@ ptyp_.bind = function SkinInstance__Bind(skinable) {
     this.templateParentUpdated = true;
   this.updateDataContext();
 };
-ptyp_.updateDataContext = function SkinInstance__UpdateDataContext() {
+ptyp_.updateDataContext = function SkinInstance$$UpdateDataContext() {
   if (this.skinableParent)
     if (this.skinableParent.get_dataContext() !== this.dataContext) {
       this.dataContext = this.skinableParent.get_dataContext();
@@ -2156,7 +2156,7 @@ ptyp_.updateDataContext = function SkinInstance__UpdateDataContext() {
     this.dataContextUpdated = false;
   }
 };
-ptyp_.activate = function SkinInstance__Activate() {
+ptyp_.activate = function SkinInstance$$Activate() {
   var childElements, binders, childElementLength, elementsOfIntrest, binderLength, dataContext, dataContextSetter, iBinder, iLiveBinder, binder, source, liveBinder, iChild, objectIndex, childElement;
   if (!this.isActive && !this.isDiposed) {
     this.isActive = true;
@@ -2166,7 +2166,7 @@ ptyp_.activate = function SkinInstance__Activate() {
     elementsOfIntrest = this.elementsOfIntrest;
     binderLength = binders.length;
     dataContext = this.dataContext;
-    dataContextSetter = SkinBinderHelper__SetDataContext;
+    dataContextSetter = SkinBinderHelper$$SetDataContext;
     for (
     iBinder = 0, iLiveBinder = 0; iBinder < binderLength; iBinder++) {
       binder = binders[iBinder];
@@ -2192,7 +2192,7 @@ ptyp_.activate = function SkinInstance__Activate() {
       }
       if (binder.mode == 2) {
         liveBinder = this.liveBinders[iLiveBinder];
-        if (Object__IsNullOrUndefined(liveBinder)) {
+        if (Object$$IsNullOrUndefined(liveBinder)) {
           liveBinder = LiveBinder_factory(binder, this.extraObjects);
           liveBinder.set_source(source);
           liveBinder.set_target(elementsOfIntrest[binder.objectIndex]);
@@ -2205,7 +2205,7 @@ ptyp_.activate = function SkinInstance__Activate() {
         }
       }
       else {
-        SkinBinderHelper__SetPropertyValue(binder, source, elementsOfIntrest[binder.objectIndex], this.extraObjects);
+        SkinBinderHelper$$SetPropertyValue(binder, source, elementsOfIntrest[binder.objectIndex], this.extraObjects);
         if (binder.targetPropertySetter === dataContextSetter)
           this.hasDataContextBinding[binder.objectIndex] = true;
       }
@@ -2214,36 +2214,36 @@ ptyp_.activate = function SkinInstance__Activate() {
     }
     for (iChild = 0; iChild < childElementLength; iChild++) {
       objectIndex = childElements[iChild];
-      childElement = NativeArray__GetFrom(elementsOfIntrest, childElements[iChild]);
+      childElement = NativeArray$$GetFrom(elementsOfIntrest, childElements[iChild]);
       if (!this.hasDataContextBinding[objectIndex])
         childElement.set_dataContext(dataContext);
       childElement.activate();
     }
     this.firstActivationDone = true;
-    TaskScheduler__get_Instance().enqueueLowPriTask(Delegate__Create("queuedActivation", this), "SkinInstance.Activate");
+    TaskScheduler$$get_Instance().enqueueLowPriTask(Delegate$$Create("queuedActivation", this), "SkinInstance.Activate");
   }
 };
-ptyp_.deactivate = function SkinInstance__Deactivate() {
+ptyp_.deactivate = function SkinInstance$$Deactivate() {
   var childElements, childElementLength, liveBinders, liveBinderLength, iLiveBinder, iChild;
   if (this.isActive && !this.isDiposed) {
     this.isActive = false;
     childElements = this.childElements;
     childElementLength = childElements.length;
     liveBinders = this.liveBinders;
-    if (!Object__IsNullOrUndefined(liveBinders)) {
+    if (!Object$$IsNullOrUndefined(liveBinders)) {
       liveBinderLength = liveBinders.length;
       for (iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++) {
-        if (Object__IsNullOrUndefined(liveBinders[iLiveBinder]))
+        if (Object$$IsNullOrUndefined(liveBinders[iLiveBinder]))
           continue;
         liveBinders[iLiveBinder].set_isActive(false);
       }
     }
     for (iChild = 0; iChild < childElementLength; iChild++)
-      NativeArray__GetFrom(this.elementsOfIntrest, childElements[iChild]).deactivate();
-    TaskScheduler__get_Instance().enqueueLowPriTask(Delegate__Create("queuedDeactivation", this), "SkinInstance.QueuedDeactivate");
+      NativeArray$$GetFrom(this.elementsOfIntrest, childElements[iChild]).deactivate();
+    TaskScheduler$$get_Instance().enqueueLowPriTask(Delegate$$Create("queuedDeactivation", this), "SkinInstance.QueuedDeactivate");
   }
 };
-ptyp_.dispose = function SkinInstance__Dispose() {
+ptyp_.dispose = function SkinInstance$$Dispose() {
   var childNodes, iLiveBinder, liveBinder, i, j, childElement;
   if (!this.isDiposed) {
     if (this.skinableParent) {
@@ -2251,10 +2251,10 @@ ptyp_.dispose = function SkinInstance__Dispose() {
       while (childNodes.length > 0)
         this.rootElement.appendChild(childNodes[0]);
     }
-    if (!Object__IsNullOrUndefined(this.liveBinders))
+    if (!Object$$IsNullOrUndefined(this.liveBinders))
       for (iLiveBinder = 0; iLiveBinder < this.liveBinders.length; iLiveBinder++) {
         liveBinder = this.liveBinders[iLiveBinder];
-        if (Object__IsNullOrUndefined(liveBinder))
+        if (Object$$IsNullOrUndefined(liveBinder))
           continue;
         liveBinder.set_isActive(false);
         liveBinder.set_source(null);
@@ -2265,17 +2265,17 @@ ptyp_.dispose = function SkinInstance__Dispose() {
     this.isDiposed = true;
     for (
     i = 0, j = this.childElements.length; i < j; i++) {
-      childElement = NativeArray__GetFrom(this.elementsOfIntrest, this.childElements[i]);
+      childElement = NativeArray$$GetFrom(this.elementsOfIntrest, this.childElements[i]);
       childElement.deactivate();
       childElement.dispose();
     }
   }
 };
-ptyp_.queuedActivation = function SkinInstance__QueuedActivation() {
+ptyp_.queuedActivation = function SkinInstance$$QueuedActivation() {
   var binders, liveBinders, binderLength, liveBindersLength, iBinderInfo, iLivebinder, binder, liveBinder;
   binders = this.binders;
   liveBinders = this.liveBinders;
-  if (Object__IsNullOrUndefined(liveBinders))
+  if (Object$$IsNullOrUndefined(liveBinders))
     return;
   binderLength = binders.length;
   liveBindersLength = liveBinders.length;
@@ -2284,7 +2284,7 @@ ptyp_.queuedActivation = function SkinInstance__QueuedActivation() {
     binder = binders[iBinderInfo];
     if (binder.mode != 0) {
       liveBinder = liveBinders[iLivebinder];
-      if (Object__IsNullOrUndefined(liveBinder)) {
+      if (Object$$IsNullOrUndefined(liveBinder)) {
         liveBinders[iLivebinder] = liveBinder = LiveBinder_factory(binder, this.extraObjects);
         liveBinder.set_target(this.elementsOfIntrest[binder.objectIndex]);
       }
@@ -2303,48 +2303,48 @@ ptyp_.queuedActivation = function SkinInstance__QueuedActivation() {
     }
   }
 };
-ptyp_.queuedDeactivation = function SkinInstance__QueuedDeactivation() {
+ptyp_.queuedDeactivation = function SkinInstance$$QueuedDeactivation() {
   var iLiveBinder, liveBinder;
-  if (this.isActive || this.isDiposed || Object__IsNullOrUndefined(this.liveBinders))
+  if (this.isActive || this.isDiposed || Object$$IsNullOrUndefined(this.liveBinders))
     return;
   for (iLiveBinder = 0; iLiveBinder < this.liveBinders.length; iLiveBinder++) {
     liveBinder = this.liveBinders[iLiveBinder];
-    if (Object__IsNullOrUndefined(liveBinder))
+    if (Object$$IsNullOrUndefined(liveBinder))
       return;
     liveBinder.set_isActive(false);
     liveBinder.cleanup();
   }
 };
-ptyp_.updateBinderSource = function SkinInstance__UpdateBinderSource(source, sourceType) {
+ptyp_.updateBinderSource = function SkinInstance$$UpdateBinderSource(source, sourceType) {
   var liveBinders, binders, bindersLength, liveBindersLength, iBinder, iLiveBinder, binder, childElements, childElementLength, iChild, objectIndex, childElement;
   liveBinders = this.liveBinders;
   binders = this.binders;
   bindersLength = binders.length;
-  liveBindersLength = Object__IsNullOrUndefined(liveBinders) ? 0 : liveBinders.length;
+  liveBindersLength = Object$$IsNullOrUndefined(liveBinders) ? 0 : liveBinders.length;
   for (
   iBinder = 0, iLiveBinder = 0; iBinder < bindersLength; iBinder++) {
     binder = binders[iBinder];
-    if (binder.mode != 0 && iLiveBinder < liveBindersLength && !Object__IsNullOrUndefined(liveBinders[iLiveBinder])) {
+    if (binder.mode != 0 && iLiveBinder < liveBindersLength && !Object$$IsNullOrUndefined(liveBinders[iLiveBinder])) {
       if (sourceType == (binder.binderType & 7))
         liveBinders[iLiveBinder].set_source(source);
       iLiveBinder++;
     }
     else if (sourceType == (binder.binderType & 7))
-      SkinBinderHelper__SetPropertyValue(binder, source, this.elementsOfIntrest[binder.objectIndex], this.extraObjects);
+      SkinBinderHelper$$SetPropertyValue(binder, source, this.elementsOfIntrest[binder.objectIndex], this.extraObjects);
   }
   if (sourceType == 1) {
     childElements = this.childElements;
     childElementLength = childElements.length;
     for (iChild = 0; iChild < childElementLength; iChild++) {
       objectIndex = childElements[iChild];
-      childElement = NativeArray__GetFrom(this.elementsOfIntrest, childElements[iChild]);
+      childElement = NativeArray$$GetFrom(this.elementsOfIntrest, childElements[iChild]);
       if (!this.hasDataContextBinding[objectIndex])
         childElement.set_dataContext(this.dataContext);
       childElement.activate();
     }
   }
 };
-Type__RegisterReferenceType(SkinInstance, "Sunlight.Framework.UI.Helpers.SkinInstance", Object, []);
+Type$$RegisterReferenceType(SkinInstance, "Sunlight.Framework.UI.Helpers.SkinInstance", Object, []);
 function ListViewItem() {
 };
 ListViewItem.typeId = "ub";
@@ -2358,10 +2358,10 @@ ptyp_ = new UISkinableElement();
 ListViewItem.prototype = ptyp_;
 ptyp_.isSelected = false;
 ptyp_.selectionHelper = null;
-ptyp_.__ctor4 = function ListViewItem____ctor(element) {
+ptyp_.__ctor4 = function ListViewItem$$$$ctor(element) {
   this.__ctor3(element);
 };
-ptyp_.set_isSelected = function ListViewItem__set_IsSelected(value) {
+ptyp_.set_isSelected = function ListViewItem$$set_IsSelected(value) {
   if (this.isSelected != value) {
     this.isSelected = value;
     if (this.selectionHelper)
@@ -2372,44 +2372,44 @@ ptyp_.set_isSelected = function ListViewItem__set_IsSelected(value) {
     this.firePropertyChanged("IsSelected");
   }
 };
-ptyp_.set_selectionHelper = function ListViewItem__set_SelectionHelper(value) {
+ptyp_.set_selectionHelper = function ListViewItem$$set_SelectionHelper(value) {
   if (this.selectionHelper == value)
     return;
   if (this.selectionHelper)
-    this.selectionHelper.V_remove_SelectionChanged_d(Delegate__Create("onSelectionHelperSelectionChanged", this));
+    this.selectionHelper.V_remove_SelectionChanged_d(Delegate$$Create("onSelectionHelperSelectionChanged", this));
   this.selectionHelper = value;
   if (this.selectionHelper) {
-    this.selectionHelper.V_add_SelectionChanged_d(Delegate__Create("onSelectionHelperSelectionChanged", this));
+    this.selectionHelper.V_add_SelectionChanged_d(Delegate$$Create("onSelectionHelperSelectionChanged", this));
     this.onSelectionHelperSelectionChanged();
   }
 };
-ptyp_.onDataContextUpdated1 = function ListViewItem__OnDataContextUpdated(oldValue) {
+ptyp_.onDataContextUpdated1 = function ListViewItem$$OnDataContextUpdated(oldValue) {
   this.onDataContextUpdated0(oldValue);
   if (this.selectionHelper)
     this.onSelectionHelperSelectionChanged();
 };
-ptyp_.internalDispose2 = function ListViewItem__InternalDispose() {
+ptyp_.internalDispose2 = function ListViewItem$$InternalDispose() {
   if (this.selectionHelper)
-    this.selectionHelper.V_remove_SelectionChanged_d(Delegate__Create("onSelectionHelperSelectionChanged", this));
+    this.selectionHelper.V_remove_SelectionChanged_d(Delegate$$Create("onSelectionHelperSelectionChanged", this));
   this.internalDispose1();
 };
-ptyp_.onSelectionHelperSelectionChanged = function ListViewItem__OnSelectionHelperSelectionChanged() {
+ptyp_.onSelectionHelperSelectionChanged = function ListViewItem$$OnSelectionHelperSelectionChanged() {
   this.set_isSelected(this.selectionHelper.V_IsSelected_d(this.get_dataContext()));
 };
 ptyp_.V_InternalDispose = ptyp_.internalDispose2;
 ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated1;
-Type__RegisterReferenceType(ListViewItem, "Sunlight.Framework.UI.ListViewItem", UISkinableElement, []);
+Type$$RegisterReferenceType(ListViewItem, "Sunlight.Framework.UI.ListViewItem", UISkinableElement, []);
 Error.typeId = "vb";
-Type__RegisterReferenceType(Error, "System.Exception", Object, []);
+Type$$RegisterReferenceType(Error, "System.Exception", Object, []);
 function UIEvent() {
 };
 UIEvent.typeId = "wb";
-Type__RegisterReferenceType(UIEvent, "Sunlight.Framework.UI.UIEvent", Object, []);
+Type$$RegisterReferenceType(UIEvent, "Sunlight.Framework.UI.UIEvent", Object, []);
 function ISelectionHelper() {
 };
 ISelectionHelper.typeId = "d";
-Type__RegisterInterface(ISelectionHelper, "Sunlight.Framework.UI.ISelectionHelper");
-function NativeArray__GetFrom(this_, index) {
+Type$$RegisterInterface(ISelectionHelper, "Sunlight.Framework.UI.ISelectionHelper");
+function NativeArray$$GetFrom(this_, index) {
   return this_[index];
 };
 function Enum() {
@@ -2417,7 +2417,7 @@ function Enum() {
 Enum.typeId = "xb";
 ptyp_ = new ValueType();
 Enum.prototype = ptyp_;
-ptyp_.toString0 = function Enum__ToString() {
+ptyp_.toString0 = function Enum$$ToString() {
   var enumType, value, rv;
   enumType = this.constructor;
   value = this.boxedValue;
@@ -2425,7 +2425,7 @@ ptyp_.toString0 = function Enum__ToString() {
   return typeof rv === "undefined" ? value.toString() : rv;
 };
 ptyp_.toString = ptyp_.toString0;
-Type__RegisterReferenceType(Enum, "System.Enum", ValueType, []);
+Type$$RegisterReferenceType(Enum, "System.Enum", ValueType, []);
 function BinderType(boxedValue) {
   this.boxedValue = boxedValue;
 };
@@ -2448,7 +2448,7 @@ BinderType.getDefaultValue = function() {
   return 0;
 };
 BinderType.prototype = new Enum();
-Type__RegisterEnum(BinderType, "Sunlight.Framework.UI.Helpers.BinderType", true);
+Type$$RegisterEnum(BinderType, "Sunlight.Framework.UI.Helpers.BinderType", true);
 Function.getDefaultValue = function() {
   return {
   };
@@ -2461,27 +2461,27 @@ function WindowTimer_factory() {
 };
 WindowTimer.defaultConstructor = WindowTimer_factory;
 ptyp_ = WindowTimer.prototype;
-ptyp_.setImmediate = function WindowTimer__SetImmediate(action) {
+ptyp_.setImmediate = function WindowTimer$$SetImmediate(action) {
   if (typeof setImmediate != "undefined")
     return setImmediate(action);
   return setTimeout(action, 0);
 };
-ptyp_.setTimeout = function WindowTimer__SetTimeout(action, timeoutHandle) {
+ptyp_.setTimeout = function WindowTimer$$SetTimeout(action, timeoutHandle) {
   if (timeoutHandle == 0)
     return this.setImmediate(action);
   return setTimeout(action, timeoutHandle);
 };
-ptyp_.clearTimeout = function WindowTimer__ClearTimeout(timeoutHandle) {
+ptyp_.clearTimeout = function WindowTimer$$ClearTimeout(timeoutHandle) {
   if (typeof clearImmediate != "undefined")
     clearImmediate(timeoutHandle);
   clearTimeout(timeoutHandle);
 };
-ptyp_.__ctor = function WindowTimer____ctor() {
+ptyp_.__ctor = function WindowTimer$$$$ctor() {
 };
 ptyp_.V_SetImmediate_f = ptyp_.setImmediate;
 ptyp_.V_SetTimeout_f = ptyp_.setTimeout;
 ptyp_.V_ClearTimeout_f = ptyp_.clearTimeout;
-Type__RegisterReferenceType(WindowTimer, "Sunlight.Framework.WindowTimer", Object, [IWindowTimer]);
+Type$$RegisterReferenceType(WindowTimer, "Sunlight.Framework.WindowTimer", Object, [IWindowTimer]);
 function TaskHandle() {
 };
 TaskHandle.typeId = "ac";
@@ -2493,44 +2493,44 @@ function TaskHandle_factory(taskId) {
 };
 ptyp_ = TaskHandle.prototype;
 ptyp_.taskId = 0;
-ptyp_.__ctor = function TaskHandle____ctor(taskId) {
+ptyp_.__ctor = function TaskHandle$$$$ctor(taskId) {
   this.taskId = taskId;
 };
-Type__RegisterReferenceType(TaskHandle, "Sunlight.Framework.TaskHandle", Object, []);
+Type$$RegisterReferenceType(TaskHandle, "Sunlight.Framework.TaskHandle", Object, []);
 function EventBinder() {
 };
 EventBinder.typeId = "bc";
-function EventBinder__GetBinder(importedElement) {
-  if (Object__IsNullOrUndefined(importedElement.importedExtension))
+function EventBinder$$GetBinder(importedElement) {
+  if (Object$$IsNullOrUndefined(importedElement.importedExtension))
     importedElement.importedExtension = {
     };
-  if (Object__IsNullOrUndefined(importedElement.importedExtension.importedExtension))
+  if (Object$$IsNullOrUndefined(importedElement.importedExtension.importedExtension))
     importedElement.importedExtension.importedExtension = EventBinder_factory(importedElement);
-  return Type__CastType(EventBinder, importedElement.importedExtension.importedExtension);
+  return Type$$CastType(EventBinder, importedElement.importedExtension.importedExtension);
 };
-function EventBinder__AddEvent(importedElement, name, action, onCapture) {
+function EventBinder$$AddEvent(importedElement, name, action, onCapture) {
   var binder;
-  binder = EventBinder__GetBinder(importedElement);
+  binder = EventBinder$$GetBinder(importedElement);
   binder.addEvent(name, action, onCapture);
 };
-function EventBinder__RemoveEvent(importedElement, name, action, onCapture) {
+function EventBinder$$RemoveEvent(importedElement, name, action, onCapture) {
   var binder;
   if (importedElement.importedExtension === null || importedElement.importedExtension.importedExtension === null)
     return;
-  binder = EventBinder__GetBinder(importedElement);
+  binder = EventBinder$$GetBinder(importedElement);
   binder.removeEvent(name, action, onCapture);
 };
-function EventBinder__RemoveEvent1(importedElement, name, onCapture) {
+function EventBinder$$RemoveEvent1(importedElement, name, onCapture) {
   var binder;
   if (importedElement.importedExtension === null || importedElement.importedExtension.importedExtension === null)
     return;
-  binder = EventBinder__GetBinder(importedElement);
+  binder = EventBinder$$GetBinder(importedElement);
   binder.removeEvent0(name, onCapture);
 };
-function EventBinder__IsW3wc(element) {
+function EventBinder$$IsW3wc(element) {
   return !!element.addEventListener;
 };
-function EventBinder__GetEventType(evt) {
+function EventBinder$$GetEventType(evt) {
   return evt.type;
 };
 function EventBinder_factory(element) {
@@ -2544,14 +2544,14 @@ ptyp_.capturePhaseEvents = null;
 ptyp_.bubblePhaseEvents = null;
 ptyp_.target = null;
 ptyp_.disposed = false;
-ptyp_.__ctor = function EventBinder____ctor(element) {
+ptyp_.__ctor = function EventBinder$$$$ctor(element) {
   this.capturePhaseEvents = StringDictionary_$Function$_.defaultConstructor();
   this.bubblePhaseEvents = StringDictionary_$Function$_.defaultConstructor();
   this.target = element;
 };
-ptyp_.addEvent = function EventBinder__AddEvent0(name, action, onCapture) {
+ptyp_.addEvent = function EventBinder$$AddEvent0(name, action, onCapture) {
   var isW3wc, evts, elementEvent;
-  isW3wc = EventBinder__IsW3wc(this.target);
+  isW3wc = EventBinder$$IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
   evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
   if (!evts.tryGetValue(name, {
@@ -2563,20 +2563,20 @@ ptyp_.addEvent = function EventBinder__AddEvent0(name, action, onCapture) {
     }
   })) {
     elementEvent = action;
-    if (onCapture && EventBinder__IsW3wc(this.target))
-      this.addEventListener(name, Delegate__Create("eventHandlerCapture", this), true);
+    if (onCapture && EventBinder$$IsW3wc(this.target))
+      this.addEventListener(name, Delegate$$Create("eventHandlerCapture", this), true);
     else if (isW3wc)
-      this.addEventListener(name, Delegate__Create("eventHandlerBubble", this), false);
+      this.addEventListener(name, Delegate$$Create("eventHandlerBubble", this), false);
     else
-      this.attachEvent(name, Delegate__Create("eventHandlerIE", this));
+      this.attachEvent(name, Delegate$$Create("eventHandlerIE", this));
   }
   else
-    elementEvent = Delegate__Combine(elementEvent, action);
+    elementEvent = Delegate$$Combine(elementEvent, action);
   evts.set_item(name, elementEvent);
 };
-ptyp_.removeEvent = function EventBinder__RemoveEvent0(name, handler, onCapture) {
+ptyp_.removeEvent = function EventBinder$$RemoveEvent0(name, handler, onCapture) {
   var isW3wc, evts, elementEvent;
-  isW3wc = EventBinder__IsW3wc(this.target);
+  isW3wc = EventBinder$$IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
   evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
   if (evts.tryGetValue(name, {
@@ -2587,58 +2587,58 @@ ptyp_.removeEvent = function EventBinder__RemoveEvent0(name, handler, onCapture)
       return elementEvent = arg0;
     }
   })) {
-    elementEvent = Delegate__Remove(elementEvent, handler);
+    elementEvent = Delegate$$Remove(elementEvent, handler);
     if (!elementEvent) {
       evts.remove(name);
       if (onCapture)
-        this.removeEventListener(name, Delegate__Create("eventHandlerCapture", this), true);
+        this.removeEventListener(name, Delegate$$Create("eventHandlerCapture", this), true);
       else if (isW3wc)
-        this.removeEventListener(name, Delegate__Create("eventHandlerBubble", this), false);
+        this.removeEventListener(name, Delegate$$Create("eventHandlerBubble", this), false);
       else
-        this.detachEvent(name, Delegate__Create("eventHandlerIE", this));
+        this.detachEvent(name, Delegate$$Create("eventHandlerIE", this));
     }
     else
       evts.set_item(name, elementEvent);
   }
 };
-ptyp_.removeEvent0 = function EventBinder__RemoveEvent2(name, onCapture) {
+ptyp_.removeEvent0 = function EventBinder$$RemoveEvent2(name, onCapture) {
   var isW3wc, evts;
-  isW3wc = EventBinder__IsW3wc(this.target);
+  isW3wc = EventBinder$$IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
   evts = onCapture ? this.capturePhaseEvents : this.bubblePhaseEvents;
   if (evts.remove(name))
     if (onCapture)
-      this.removeEventListener(name, Delegate__Create("eventHandlerCapture", this), true);
+      this.removeEventListener(name, Delegate$$Create("eventHandlerCapture", this), true);
     else if (isW3wc)
-      this.removeEventListener(name, Delegate__Create("eventHandlerBubble", this), true);
+      this.removeEventListener(name, Delegate$$Create("eventHandlerBubble", this), true);
     else
-      this.detachEvent(name, Delegate__Create("eventHandlerIE", this));
+      this.detachEvent(name, Delegate$$Create("eventHandlerIE", this));
 };
-ptyp_.addEventListener = function EventBinder__AddEventListener(evtName, cb, isCapture) {
+ptyp_.addEventListener = function EventBinder$$AddEventListener(evtName, cb, isCapture) {
   this.target.addEventListener(evtName, cb, isCapture);
 };
-ptyp_.attachEvent = function EventBinder__AttachEvent(evtName, cb) {
+ptyp_.attachEvent = function EventBinder$$AttachEvent(evtName, cb) {
   this.target.atachEvent("on" + evtName, cb);
 };
-ptyp_.removeEventListener = function EventBinder__RemoveEventListener(evtName, cb, isCapture) {
+ptyp_.removeEventListener = function EventBinder$$RemoveEventListener(evtName, cb, isCapture) {
   this.target.removeEventListener(evtName, cb, isCapture);
 };
-ptyp_.detachEvent = function EventBinder__DetachEvent(evtName, cb) {
+ptyp_.detachEvent = function EventBinder$$DetachEvent(evtName, cb) {
   this.target.detachEvent("on" + evtName, cb);
 };
-ptyp_.eventHandlerIE = function EventBinder__EventHandlerIE() {
+ptyp_.eventHandlerIE = function EventBinder$$EventHandlerIE() {
   this.eventHandlerBubble(event);
 };
-ptyp_.eventHandlerCapture = function EventBinder__EventHandlerCapture(evt) {
+ptyp_.eventHandlerCapture = function EventBinder$$EventHandlerCapture(evt) {
   if (this.disposed)
     return;
-  this.capturePhaseEvents.get_item(EventBinder__GetEventType(evt))(this.target, evt);
+  this.capturePhaseEvents.get_item(EventBinder$$GetEventType(evt))(this.target, evt);
 };
-ptyp_.eventHandlerBubble = function EventBinder__EventHandlerBubble(evt) {
+ptyp_.eventHandlerBubble = function EventBinder$$EventHandlerBubble(evt) {
   var del;
   if (this.disposed)
     return;
-  if (this.bubblePhaseEvents.tryGetValue(EventBinder__GetEventType(evt), {
+  if (this.bubblePhaseEvents.tryGetValue(EventBinder$$GetEventType(evt), {
     read: function() {
       return del;
     },
@@ -2648,40 +2648,40 @@ ptyp_.eventHandlerBubble = function EventBinder__EventHandlerBubble(evt) {
   }))
     del(this.target, evt);
 };
-Type__RegisterReferenceType(EventBinder, "System.EventBinder", Object, []);
+Type$$RegisterReferenceType(EventBinder, "System.EventBinder", Object, []);
 RegExp.typeId = "cc";
-Type__RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
+Type$$RegisterReferenceType(RegExp, "System.RegularExpression", Object, []);
 Date.typeId = "dc";
-function DateTime__op_Addition(a, n) {
+function DateTime$$op_Addition(a, n) {
   return new Date(a.valueOf() + n);
 };
-function DateTime__get_Now() {
+function DateTime$$get_Now() {
   return new Date();
 };
-function DateTime____cctor() {
+function DateTime$$$$cctor() {
   Date.empty = new Date(0);
 };
-Type__RegisterReferenceType(Date, "System.DateTime", Object, []);
+Type$$RegisterReferenceType(Date, "System.DateTime", Object, []);
 function IEnumerator() {
 };
 IEnumerator.typeId = "h";
-Type__RegisterInterface(IEnumerator, "System.Collections.IEnumerator");
+Type$$RegisterInterface(IEnumerator, "System.Collections.IEnumerator");
 function INotifyCollectionChanged() {
 };
 INotifyCollectionChanged.typeId = "i";
-Type__RegisterInterface(INotifyCollectionChanged, "Sunlight.Framework.Observables.INotifyCollectionChanged");
-function Debug__Assert(condition) {
+Type$$RegisterInterface(INotifyCollectionChanged, "Sunlight.Framework.Observables.INotifyCollectionChanged");
+function Debug$$Assert(condition) {
 };
 function CollectionChangedEventArgs() {
 };
 CollectionChangedEventArgs.typeId = "j";
-Type__RegisterInterface(CollectionChangedEventArgs, "Sunlight.Framework.Observables.CollectionChangedEventArgs");
+Type$$RegisterInterface(CollectionChangedEventArgs, "Sunlight.Framework.Observables.CollectionChangedEventArgs");
 function IObservableCollection() {
 };
 IObservableCollection.typeId = "k";
-Type__RegisterInterface(IObservableCollection, "Sunlight.Framework.Observables.IObservableCollection");
+Type$$RegisterInterface(IObservableCollection, "Sunlight.Framework.Observables.IObservableCollection");
 Number.typeId = "m";
-Type__RegisterReferenceType(Number, "System.Number", Object, []);
+Type$$RegisterReferenceType(Number, "System.Number", Object, []);
 function NotSupportedException() {
 };
 NotSupportedException.typeId = "uc";
@@ -2694,16 +2694,16 @@ function NotSupportedException_factory() {
 NotSupportedException.defaultConstructor = NotSupportedException_factory;
 ptyp_ = new Error();
 NotSupportedException.prototype = ptyp_;
-ptyp_.__ctor = function NotSupportedException____ctor() {
+ptyp_.__ctor = function NotSupportedException$$$$ctor() {
 };
-Type__RegisterReferenceType(NotSupportedException, "System.NotSupportedException", Error, []);
+Type$$RegisterReferenceType(NotSupportedException, "System.NotSupportedException", Error, []);
 Array.typeId = "vc";
-Type__RegisterReferenceType(Array, "System.Array", Object, [IList, IEnumerable, ICollection]);
-function ValueIfTrue(T, $5fcallStatiConstructor) {
-  var ValueIfTrue$1_$T$_, $5f_initTracker;
+Type$$RegisterReferenceType(Array, "System.Array", Object, [IList, IEnumerable, ICollection]);
+function ValueIfTrue(T, _callStatiConstructor) {
+  var ValueIfTrue$1_$T$_, __initTracker;
   if (ValueIfTrue[T.typeId])
     return ValueIfTrue[T.typeId];
-  ValueIfTrue[T.typeId] = function Sunlight__Framework__UI__Test__ValueIfTrue$10() {
+  ValueIfTrue[T.typeId] = function Sunlight$$Framework$$UI$$Test$$ValueIfTrue$10() {
   };
   ValueIfTrue$1_$T$_ = ValueIfTrue[T.typeId];
   ValueIfTrue$1_$T$_.genericParameters = [T];
@@ -2716,36 +2716,36 @@ function ValueIfTrue(T, $5fcallStatiConstructor) {
     return this_;
   };
   ptyp_ = ValueIfTrue$1_$T$_.prototype;
-  ptyp_.value = Type__GetDefaultValueStatic(T);
-  ptyp_.defaultValue = Type__GetDefaultValueStatic(T);
-  ptyp_.__ctor = function ValueIfTrue$1____ctor(value) {
+  ptyp_.value = Type$$GetDefaultValueStatic(T);
+  ptyp_.defaultValue = Type$$GetDefaultValueStatic(T);
+  ptyp_.__ctor = function ValueIfTrue$1$$$$ctor(value) {
     this.value = value;
-    this.defaultValue = Type__GetDefaultValueStatic(T);
+    this.defaultValue = Type$$GetDefaultValueStatic(T);
   };
-  Type__RegisterReferenceType(ValueIfTrue$1_$T$_, "Sunlight.Framework.UI.Test.ValueIfTrue`1<" + T.fullName + ">", Object, []);
-  ValueIfTrue$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(ValueIfTrue$1_$T$_, "Sunlight.Framework.UI.Test.ValueIfTrue`1<" + T.fullName + ">", Object, []);
+  ValueIfTrue$1_$T$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T = T;
     ValueIfTrue$1_$T$_ = ValueIfTrue(T, true);
   };
-  if ($5fcallStatiConstructor)
-    ValueIfTrue$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    ValueIfTrue$1_$T$_._tri();
   return ValueIfTrue$1_$T$_;
 };
-function ArrayG(T, $5fcallStatiConstructor) {
-  var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker, T$5b$5d_$T$_, $5f_initTracker0;
+function ArrayG(T, _callStatiConstructor) {
+  var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, __initTracker, T$5b$5d_$T$_, __initTracker0;
   if (ArrayG[T.typeId])
     return ArrayG[T.typeId];
-  ArrayG[T.typeId] = function System__ArrayG$10() {
+  ArrayG[T.typeId] = function System$$ArrayG$10() {
   };
   ArrayG$1_$T$_ = ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = ArrayG;
   ArrayG$1_$T$_.typeId = "fc$" + T.typeId + "$";
-  IList$1_$T$_ = IList0(T, $5fcallStatiConstructor);
-  IEnumerable$1_$T$_ = IEnumerable0(T, $5fcallStatiConstructor);
+  IList$1_$T$_ = IList0(T, _callStatiConstructor);
+  IEnumerable$1_$T$_ = IEnumerable0(T, _callStatiConstructor);
   ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory1(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
@@ -2761,75 +2761,75 @@ function ArrayG(T, $5fcallStatiConstructor) {
   ptyp_ = new ArrayImpl();
   ArrayG$1_$T$_.prototype = ptyp_;
   ptyp_.innerArray = null;
-  ptyp_.system__Collections__Generic__IList_$T$___Insert = function ArrayG$1__System__Collections__Generic__IList_$T$___Insert(index, item) {
+  ptyp_.system$$Collections$$Generic$$IList_$T$_$$Insert = function ArrayG$1$$System$$Collections$$Generic$$IList_$T$_$$Insert(index, item) {
     throw new Error("Not Implemented.");
   };
-  ptyp_.system__Collections__Generic__IEnumerable_$T$___GetEnumerator = function ArrayG$1__System__Collections__Generic__IEnumerable_$T$___GetEnumerator() {
+  ptyp_.system$$Collections$$Generic$$IEnumerable_$T$_$$GetEnumerator = function ArrayG$1$$System$$Collections$$Generic$$IEnumerable_$T$_$$GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);
   };
-  ptyp_.__ctor0 = function ArrayG$1____ctor0(size) {
+  ptyp_.__ctor0 = function ArrayG$1$$$$ctor0(size) {
     var def, i;
     this.__ctor();
     this.innerArray = new Array(size);
-    def = Type__GetDefaultValueStatic(T);
+    def = Type$$GetDefaultValueStatic(T);
     for (i = 0; i < size; i++)
       this.innerArray[i] = def;
   };
-  ptyp_.__ctor1 = function ArrayG$1____ctor(nativeArray) {
+  ptyp_.__ctor1 = function ArrayG$1$$$$ctor(nativeArray) {
     this.__ctor();
     this.innerArray = nativeArray;
   };
-  ptyp_.get_length = function ArrayG$1__get_Length() {
+  ptyp_.get_length = function ArrayG$1$$get_Length() {
     return this.innerArray.length;
   };
-  ptyp_.get_item = function ArrayG$1__get_Item(index) {
+  ptyp_.get_item = function ArrayG$1$$get_Item(index) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
       throw new Error("index " + index + " out of range");
     return arr[index];
   };
-  ptyp_.set_item = function ArrayG$1__set_Item(index, value) {
+  ptyp_.set_item = function ArrayG$1$$set_Item(index, value) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
       throw new Error("index " + index + " out of range");
     return arr[index] = value;
   };
-  ptyp_.get_innerArray = function ArrayG$1__get_InnerArray() {
+  ptyp_.get_innerArray = function ArrayG$1$$get_InnerArray() {
     return this.innerArray;
   };
-  ptyp_.contains = function ArrayG$1__Contains(item) {
+  ptyp_.contains = function ArrayG$1$$Contains(item) {
     return this.V_IndexOf(item) >= 0;
   };
-  ptyp_.indexOf = function ArrayG$1__IndexOf(item) {
+  ptyp_.indexOf = function ArrayG$1$$IndexOf(item) {
     if (!T.isInstanceOfType(item))
       return -1;
-    return NativeArray$1__IndexOf(this.innerArray, Type__UnBoxTypeInstance(T, item), 0);
+    return NativeArray$1$$IndexOf(this.innerArray, Type$$UnBoxTypeInstance(T, item), 0);
   };
-  ptyp_.getValue = function ArrayG$1__GetValue(index) {
-    return Type__BoxTypeInstance(T, this.get_item(index));
+  ptyp_.getValue = function ArrayG$1$$GetValue(index) {
+    return Type$$BoxTypeInstance(T, this.get_item(index));
   };
-  ptyp_.copyTo = function ArrayG$1__CopyTo0(arr, index) {
+  ptyp_.copyTo = function ArrayG$1$$CopyTo0(arr, index) {
     var nativeArray, length, nativeArrDst, i;
     nativeArray = this.innerArray;
     length = nativeArray.length;
-    nativeArrDst = NativeArray$1__op_Implicit(arr);
+    nativeArrDst = NativeArray$1$$op_Implicit(arr);
     if (nativeArrDst.length < index + nativeArray.length)
       throw new Error("can't copy, dest array too small.");
     for (i = 0; i < length; i++)
       nativeArrDst[i + index] = nativeArray[i];
   };
-  ptyp_.copyTo0 = function ArrayG$1__CopyTo(array, index) {
+  ptyp_.copyTo0 = function ArrayG$1$$CopyTo(array, index) {
     var arr;
-    arr = Type__CastType(T$5b$5d_$T$_, array);
+    arr = Type$$CastType(T$5b$5d_$T$_, array);
     this.copyTo(arr, index);
   };
-  ptyp_.getEnumerator = function ArrayG$1__GetEnumerator() {
+  ptyp_.getEnumerator = function ArrayG$1$$GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);
   };
-  ptyp_["V_Insert_" + IList$1_$T$_.typeId] = ptyp_.system__Collections__Generic__IList_$T$___Insert;
-  ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.system__Collections__Generic__IEnumerable_$T$___GetEnumerator;
+  ptyp_["V_Insert_" + IList$1_$T$_.typeId] = ptyp_.system$$Collections$$Generic$$IList_$T$_$$Insert;
+  ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.system$$Collections$$Generic$$IEnumerable_$T$_$$GetEnumerator;
   ptyp_.V_get_Length = ptyp_.get_length;
   ptyp_.V_Contains = ptyp_.contains;
   ptyp_.V_GetEnumerator = ptyp_.getEnumerator;
@@ -2838,21 +2838,21 @@ function ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.V_CopyTo = ptyp_.copyTo0;
   ptyp_["V_get_Item_" + IList$1_$T$_.typeId] = ptyp_.get_item;
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
-  Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", ArrayImpl, [IList$1_$T$_, IList, ICollection, IEnumerable, IEnumerable$1_$T$_]);
-  ArrayG$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker0)
+  Type$$RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", ArrayImpl, [IList$1_$T$_, IList, ICollection, IEnumerable, IEnumerable$1_$T$_]);
+  ArrayG$1_$T$_._tri = function() {
+    if (__initTracker0)
       return;
-    $5f_initTracker0 = true;
+    __initTracker0 = true;
     T = T;
     Enumerator_$T$_ = Enumerator(T, true);
     ArrayG$1_$T$_ = ArrayG(T, true);
     T$5b$5d_$T$_ = ArrayG(T, true);
   };
-  if ($5fcallStatiConstructor)
-    ArrayG$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    ArrayG$1_$T$_._tri();
   return ArrayG$1_$T$_;
 };
-function NativeArray$1__IndexOf(this_, value, startIndex) {
+function NativeArray$1$$IndexOf(this_, value, startIndex) {
   var i;
   startIndex = startIndex < 0 ? 0 : startIndex;
   for (i = this_.length; i >= startIndex && i >= 0; --i)
@@ -2860,7 +2860,7 @@ function NativeArray$1__IndexOf(this_, value, startIndex) {
       return i;
   return -1;
 };
-function NativeArray$1__InsertAt(this_, index, value) {
+function NativeArray$1$$InsertAt(this_, index, value) {
   var i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
@@ -2868,7 +2868,7 @@ function NativeArray$1__InsertAt(this_, index, value) {
     this_[i + 1] = this_[i];
   this_[index] = value;
 };
-function NativeArray$1__RemoveAt(this_, index) {
+function NativeArray$1$$RemoveAt(this_, index) {
   var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
@@ -2877,33 +2877,33 @@ function NativeArray$1__RemoveAt(this_, index) {
     this_[i] = this_[i + 1];
   this_.pop();
 };
-function NativeArray$1__op_Implicit(n) {
+function NativeArray$1$$op_Implicit(n) {
   return n.get_innerArray();
 };
-function Func(T1, TRes, $5fcallStatiConstructor) {
-  var Func$2_$T1_x_TRes$_, $5f_initTracker;
+function Func(T1, TRes, _callStatiConstructor) {
+  var Func$2_$T1_x_TRes$_, __initTracker;
   if (Func[T1.typeId] && Func[T1.typeId][TRes.typeId])
     return Func[T1.typeId][TRes.typeId];
     Func[T1.typeId] = {
     };
-  Func[T1.typeId][TRes.typeId] = function System__Func$20() {
+  Func[T1.typeId][TRes.typeId] = function System$$Func$20() {
   };
   Func$2_$T1_x_TRes$_ = Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_TRes$_.genericParameters = [T1, TRes];
   Func$2_$T1_x_TRes$_.genericClosure = Func;
   Func$2_$T1_x_TRes$_.typeId = "gc$" + T1.typeId + "_" + TRes.typeId + "$";
   Func$2_$T1_x_TRes$_.prototype = new Function0();
-  Type__RegisterReferenceType(Func$2_$T1_x_TRes$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", Function0, []);
-  Func$2_$T1_x_TRes$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(Func$2_$T1_x_TRes$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", Function0, []);
+  Func$2_$T1_x_TRes$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T1 = T1;
     TRes = TRes;
     Func$2_$T1_x_TRes$_ = Func(T1, TRes, true);
   };
-  if ($5fcallStatiConstructor)
-    Func$2_$T1_x_TRes$_.$5ftri();
+  if (_callStatiConstructor)
+    Func$2_$T1_x_TRes$_._tri();
   return Func$2_$T1_x_TRes$_;
 };
 function ContextBindableObject() {
@@ -2928,61 +2928,61 @@ ptyp_.isDisposing = false;
 ptyp_.isDisposed = false;
 ptyp_.onDisposed = null;
 ptyp_.isInactiveIfNullContext = false;
-ptyp_.set_parent = function ContextBindableObject__set_Parent(value) {
+ptyp_.set_parent = function ContextBindableObject$$set_Parent(value) {
   if (this.parent != value) {
     if (this.parent) {
-      this.parent.removePropertyChangedListener("DataContext", Delegate__Create("onParentDataContextUpdated", this));
-      this.parent.removePropertyChangedListener("IsActive", Delegate__Create("onParentDataContextUpdated", this));
+      this.parent.removePropertyChangedListener("DataContext", Delegate$$Create("onParentDataContextUpdated", this));
+      this.parent.removePropertyChangedListener("IsActive", Delegate$$Create("onParentDataContextUpdated", this));
     }
     this.parent = value;
     if (!this.dataContextSetterCalled)
       if (this.parent) {
-        this.parent.addPropertyChangedListener("DataContext", Delegate__Create("onParentDataContextUpdated", this));
-        this.parent.addPropertyChangedListener("IsActive", Delegate__Create("onParentDataContextUpdated", this));
+        this.parent.addPropertyChangedListener("DataContext", Delegate$$Create("onParentDataContextUpdated", this));
+        this.parent.addPropertyChangedListener("IsActive", Delegate$$Create("onParentDataContextUpdated", this));
         this.onParentDataContextUpdated(null, null);
       }
       else
         this.setDataContext(null);
   }
 };
-ptyp_.get_dataContext = function ContextBindableObject__get_DataContext() {
+ptyp_.get_dataContext = function ContextBindableObject$$get_DataContext() {
   return this.dataContext;
 };
-ptyp_.set_dataContext = function ContextBindableObject__set_DataContext(value) {
+ptyp_.set_dataContext = function ContextBindableObject$$set_DataContext(value) {
   this.dataContextSetterCalled = true;
   this.setDataContext(value);
 };
-ptyp_.get_isActive = function ContextBindableObject__get_IsActive() {
+ptyp_.get_isActive = function ContextBindableObject$$get_IsActive() {
   return this.isActivated && !this.V_get_ActivationBlocked();
 };
-ptyp_.set_inactiveIfNullContext = function ContextBindableObject__set_InactiveIfNullContext(value) {
+ptyp_.set_inactiveIfNullContext = function ContextBindableObject$$set_InactiveIfNullContext(value) {
   this.isInactiveIfNullContext = value;
   this.fixActivation();
 };
-ptyp_.get_activationBlocked = function ContextBindableObject__get_ActivationBlocked() {
+ptyp_.get_activationBlocked = function ContextBindableObject$$get_ActivationBlocked() {
   return this.isInactiveIfNullContext && this.dataContext === null;
 };
-ptyp_.dispose = function ContextBindableObject__Dispose() {
+ptyp_.dispose = function ContextBindableObject$$Dispose() {
   if (!this.isDisposed && !this.isDisposing)
     this.V_InternalDispose();
 };
-ptyp_.activate = function ContextBindableObject__Activate() {
+ptyp_.activate = function ContextBindableObject$$Activate() {
   this.isActive = true;
   this.fixActivation();
 };
-ptyp_.deactivate = function ContextBindableObject__Deactivate() {
+ptyp_.deactivate = function ContextBindableObject$$Deactivate() {
   if (!this.isActive)
     return;
   this.isActive = false;
   this.fixActivation();
 };
-ptyp_.onBeforeFirstActivate = function ContextBindableObject__OnBeforeFirstActivate() {
+ptyp_.onBeforeFirstActivate = function ContextBindableObject$$OnBeforeFirstActivate() {
 };
-ptyp_.onActivate = function ContextBindableObject__OnActivate() {
+ptyp_.onActivate = function ContextBindableObject$$OnActivate() {
 };
-ptyp_.onDeactivate = function ContextBindableObject__OnDeactivate() {
+ptyp_.onDeactivate = function ContextBindableObject$$OnDeactivate() {
 };
-ptyp_.fixActivation = function ContextBindableObject__FixActivation() {
+ptyp_.fixActivation = function ContextBindableObject$$FixActivation() {
   if (!this.V_get_ActivationBlocked() && this.isActive) {
     if (!this.isPreActivated) {
       this.isPreActivated = true;
@@ -3000,18 +3000,18 @@ ptyp_.fixActivation = function ContextBindableObject__FixActivation() {
     this.firePropertyChanged("IsActive");
   }
 };
-ptyp_.internalDispose = function ContextBindableObject__InternalDispose() {
+ptyp_.internalDispose = function ContextBindableObject$$InternalDispose() {
   if (this.onDisposed) {
     this.set_parent(null);
     this.clearListeners();
     this.onDisposed();
   }
 };
-ptyp_.onDataContextUpdating = function ContextBindableObject__OnDataContextUpdating(newValue) {
+ptyp_.onDataContextUpdating = function ContextBindableObject$$OnDataContextUpdating(newValue) {
 };
-ptyp_.onDataContextUpdated = function ContextBindableObject__OnDataContextUpdated(oldValue) {
+ptyp_.onDataContextUpdated = function ContextBindableObject$$OnDataContextUpdated(oldValue) {
 };
-ptyp_.setDataContext = function ContextBindableObject__SetDataContext(value) {
+ptyp_.setDataContext = function ContextBindableObject$$SetDataContext(value) {
   var oldValue;
   if (this.dataContext !== value) {
     this.V_OnDataContextUpdating(value);
@@ -3022,7 +3022,7 @@ ptyp_.setDataContext = function ContextBindableObject__SetDataContext(value) {
     this.fixActivation();
   }
 };
-ptyp_.onParentDataContextUpdated = function ContextBindableObject__OnParentDataContextUpdated(sender, propertyName) {
+ptyp_.onParentDataContextUpdated = function ContextBindableObject$$OnParentDataContextUpdated(sender, propertyName) {
   if (this.parent.get_isActive() && !this.dataContextSetterCalled)
     this.setDataContext(this.parent.get_dataContext());
   if (propertyName === "IsActive" || propertyName === null)
@@ -3031,7 +3031,7 @@ ptyp_.onParentDataContextUpdated = function ContextBindableObject__OnParentDataC
     else
       this.deactivate();
 };
-ptyp_.__ctor1 = function ContextBindableObject____ctor() {
+ptyp_.__ctor1 = function ContextBindableObject$$$$ctor() {
   this.__ctor0();
   this.isInactiveIfNullContext = true;
 };
@@ -3042,24 +3042,24 @@ ptyp_.V_OnDeactivate = ptyp_.onDeactivate;
 ptyp_.V_InternalDispose = ptyp_.internalDispose;
 ptyp_.V_OnDataContextUpdating = ptyp_.onDataContextUpdating;
 ptyp_.V_OnDataContextUpdated = ptyp_.onDataContextUpdated;
-Type__RegisterReferenceType(ContextBindableObject, "Sunlight.Framework.Binders.ContextBindableObject", ExtensibleObservableObject, []);
+Type$$RegisterReferenceType(ContextBindableObject, "Sunlight.Framework.Binders.ContextBindableObject", ExtensibleObservableObject, []);
 function INotifyPropertyChanged() {
 };
 INotifyPropertyChanged.typeId = "b";
-Type__RegisterInterface(INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
-function NumberDictionary(TValue, $5fcallStatiConstructor) {
-  var Enumerator_$TValue$_, NumberDictionary$1_$TValue$_, KeyValuePair$2_$Number_x_TValue$_, IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_, $5f_initTracker, $5f_initTracker0;
+Type$$RegisterInterface(INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
+function NumberDictionary(TValue, _callStatiConstructor) {
+  var Enumerator_$TValue$_, NumberDictionary$1_$TValue$_, KeyValuePair$2_$Number_x_TValue$_, IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_, __initTracker, __initTracker0;
   if (NumberDictionary[TValue.typeId])
     return NumberDictionary[TValue.typeId];
-  NumberDictionary[TValue.typeId] = function System__Collections__Generic__NumberDictionary$10() {
+  NumberDictionary[TValue.typeId] = function System$$Collections$$Generic$$NumberDictionary$10() {
   };
   NumberDictionary$1_$TValue$_ = NumberDictionary[TValue.typeId];
   NumberDictionary$1_$TValue$_.genericParameters = [TValue];
   NumberDictionary$1_$TValue$_.genericClosure = NumberDictionary;
   NumberDictionary$1_$TValue$_.typeId = "hc$" + TValue.typeId + "$";
-  KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, $5fcallStatiConstructor);
-  KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, $5fcallStatiConstructor);
-  IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_ = IEnumerable0(KeyValuePair(Number, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
+  KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, _callStatiConstructor);
+  KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, _callStatiConstructor);
+  IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_ = IEnumerable0(KeyValuePair(Number, TValue, _callStatiConstructor), _callStatiConstructor);
   NumberDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_NumberDictionary$1_factory0() {
     var this_;
     this_ = new NumberDictionary$1_$TValue$_();
@@ -3069,87 +3069,87 @@ function NumberDictionary(TValue, $5fcallStatiConstructor) {
   ptyp_ = NumberDictionary$1_$TValue$_.prototype;
   ptyp_.innerDict = null;
   ptyp_.count = 0;
-  ptyp_.system__Collections__IEnumerable__GetEnumerator = function NumberDictionary$1__System__Collections__IEnumerable__GetEnumerator() {
+  ptyp_.system$$Collections$$IEnumerable$$GetEnumerator = function NumberDictionary$1$$System$$Collections$$IEnumerable$$GetEnumerator() {
     return this.getEnumerator();
   };
-  ptyp_.__ctor = function NumberDictionary$1____ctor() {
+  ptyp_.__ctor = function NumberDictionary$1$$$$ctor() {
     this.innerDict = {
     };
   };
-  ptyp_.get_item = function NumberDictionary$1__get_Item(index) {
+  ptyp_.get_item = function NumberDictionary$1$$get_Item(index) {
     if (!(index in this.innerDict))
       throw new Error("Key not found");
     return this.innerDict[index];
   };
-  ptyp_.set_item = function NumberDictionary$1__set_Item(index, value) {
+  ptyp_.set_item = function NumberDictionary$1$$set_Item(index, value) {
     this.innerDict[index] = value;
   };
-  ptyp_.get_keys = function NumberDictionary$1__get_Keys() {
+  ptyp_.get_keys = function NumberDictionary$1$$get_Keys() {
     return ArrayG_$Number$_.__ctor(this.getKeys());
   };
-  ptyp_.get_count = function NumberDictionary$1__get_Count() {
+  ptyp_.get_count = function NumberDictionary$1$$get_Count() {
     return this.count;
   };
-  ptyp_.add = function NumberDictionary$1__Add(key, value) {
+  ptyp_.add = function NumberDictionary$1$$Add(key, value) {
     if (this.containsKey(key))
       throw new Error("Key already exists");
     this.count++;
     this.set_item(key, value);
   };
-  ptyp_.containsKey = function NumberDictionary$1__ContainsKey(key) {
+  ptyp_.containsKey = function NumberDictionary$1$$ContainsKey(key) {
     return key in this.innerDict;
   };
-  ptyp_.remove = function NumberDictionary$1__Remove(key) {
+  ptyp_.remove = function NumberDictionary$1$$Remove(key) {
     var rv;
     rv = delete this.innerDict[key];
     if (rv)
       this.count--;
     return rv;
   };
-  ptyp_.copyTo = function NumberDictionary$1__CopyTo(array, index) {
+  ptyp_.copyTo = function NumberDictionary$1$$CopyTo(array, index) {
     var keys, i;
-    keys = Type__CastType(ArrayG_$Number$_, this.get_keys());
+    keys = Type$$CastType(ArrayG_$Number$_, this.get_keys());
     for (i = 0; i < keys.V_get_Length(); i++)
-      array.setValue(i + index, Type__BoxTypeInstance(KeyValuePair$2_$Number_x_TValue$_, KeyValuePair$2_$Number_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
+      array.setValue(i + index, Type$$BoxTypeInstance(KeyValuePair$2_$Number_x_TValue$_, KeyValuePair$2_$Number_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
   };
-  ptyp_.getEnumerator = function NumberDictionary$1__GetEnumerator() {
+  ptyp_.getEnumerator = function NumberDictionary$1$$GetEnumerator() {
     return Enumerator_$TValue$_.__ctor(this);
   };
-  ptyp_.getKeys = function NumberDictionary$1__GetKeys() {
+  ptyp_.getKeys = function NumberDictionary$1$$GetKeys() {
     var rv, key;
     rv = [];
     for (key in this.innerDict)
       rv.push(key);
     return rv;
   };
-  ptyp_.V_GetEnumerator_g = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_GetEnumerator_g = ptyp_.system$$Collections$$IEnumerable$$GetEnumerator;
   ptyp_.V_get_Count_c = ptyp_.get_count;
   ptyp_.V_CopyTo_c = ptyp_.copyTo;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_.typeId] = ptyp_.getEnumerator;
-  Type__RegisterReferenceType(NumberDictionary$1_$TValue$_, "System.Collections.Generic.NumberDictionary`1<" + TValue.fullName + ">", Object, [ICollection, IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_, IEnumerable]);
-  NumberDictionary$1_$TValue$_.$5ftri = function() {
-    if ($5f_initTracker0)
+  Type$$RegisterReferenceType(NumberDictionary$1_$TValue$_, "System.Collections.Generic.NumberDictionary`1<" + TValue.fullName + ">", Object, [ICollection, IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_, IEnumerable]);
+  NumberDictionary$1_$TValue$_._tri = function() {
+    if (__initTracker0)
       return;
-    $5f_initTracker0 = true;
+    __initTracker0 = true;
     Enumerator_$TValue$_ = Enumerator0(TValue, true);
     TValue = TValue;
     NumberDictionary$1_$TValue$_ = NumberDictionary(TValue, true);
   };
-  if ($5fcallStatiConstructor)
-    NumberDictionary$1_$TValue$_.$5ftri();
+  if (_callStatiConstructor)
+    NumberDictionary$1_$TValue$_._tri();
   return NumberDictionary$1_$TValue$_;
 };
-function Queue(T, $5fcallStatiConstructor) {
-  var QueueEnumerator_$T$_, Queue$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker, $5f_initTracker0;
+function Queue(T, _callStatiConstructor) {
+  var QueueEnumerator_$T$_, Queue$1_$T$_, IEnumerable$1_$T$_, __initTracker, __initTracker0;
   if (Queue[T.typeId])
     return Queue[T.typeId];
-  Queue[T.typeId] = function System__Collections__Generic__Queue$10() {
+  Queue[T.typeId] = function System$$Collections$$Generic$$Queue$10() {
   };
   Queue$1_$T$_ = Queue[T.typeId];
   Queue$1_$T$_.genericParameters = [T];
   Queue$1_$T$_.genericClosure = Queue;
   Queue$1_$T$_.typeId = "ic$" + T.typeId + "$";
-  IEnumerable$1_$T$_ = IEnumerable0(T, $5fcallStatiConstructor);
+  IEnumerable$1_$T$_ = IEnumerable0(T, _callStatiConstructor);
   Queue$1_$T$_.defaultConstructor = function System_Collections_Generic_Queue$1_factory0() {
     var this_;
     this_ = new Queue$1_$T$_();
@@ -3158,57 +3158,57 @@ function Queue(T, $5fcallStatiConstructor) {
   };
   ptyp_ = Queue$1_$T$_.prototype;
   ptyp_.nativeArray = null;
-  ptyp_.system__Collections__IEnumerable__GetEnumerator = function Queue$1__System__Collections__IEnumerable__GetEnumerator() {
+  ptyp_.system$$Collections$$IEnumerable$$GetEnumerator = function Queue$1$$System$$Collections$$IEnumerable$$GetEnumerator() {
     return this.getEnumerator();
   };
-  ptyp_.dequeue = function Queue$1__Dequeue() {
+  ptyp_.dequeue = function Queue$1$$Dequeue() {
     var rv;
     if (this.get_count() > 0) {
       rv = this.nativeArray[0];
-      NativeArray$1__RemoveAt(this.nativeArray, 0);
+      NativeArray$1$$RemoveAt(this.nativeArray, 0);
       return rv;
     }
     throw new Error("No elements in stack");
   };
-  ptyp_.enqueue = function Queue$1__Enqueue(item) {
-    NativeArray$1__InsertAt(this.nativeArray, this.nativeArray.length, item);
+  ptyp_.enqueue = function Queue$1$$Enqueue(item) {
+    NativeArray$1$$InsertAt(this.nativeArray, this.nativeArray.length, item);
   };
-  ptyp_.get_count = function Queue$1__get_Count() {
+  ptyp_.get_count = function Queue$1$$get_Count() {
     return this.nativeArray.length;
   };
-  ptyp_.getEnumerator = function Queue$1__GetEnumerator() {
+  ptyp_.getEnumerator = function Queue$1$$GetEnumerator() {
     return QueueEnumerator_$T$_.__ctor(this);
   };
-  ptyp_.__ctor = function Queue$1____ctor() {
+  ptyp_.__ctor = function Queue$1$$$$ctor() {
     this.nativeArray = new Array(0);
   };
-  ptyp_.V_GetEnumerator_g = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_GetEnumerator_g = ptyp_.system$$Collections$$IEnumerable$$GetEnumerator;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
-  Type__RegisterReferenceType(Queue$1_$T$_, "System.Collections.Generic.Queue`1<" + T.fullName + ">", Object, [IEnumerable$1_$T$_, IEnumerable]);
-  Queue$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker0)
+  Type$$RegisterReferenceType(Queue$1_$T$_, "System.Collections.Generic.Queue`1<" + T.fullName + ">", Object, [IEnumerable$1_$T$_, IEnumerable]);
+  Queue$1_$T$_._tri = function() {
+    if (__initTracker0)
       return;
-    $5f_initTracker0 = true;
+    __initTracker0 = true;
     QueueEnumerator_$T$_ = QueueEnumerator(T, true);
     T = T;
     Queue$1_$T$_ = Queue(T, true);
   };
-  if ($5fcallStatiConstructor)
-    Queue$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    Queue$1_$T$_._tri();
   return Queue$1_$T$_;
 };
-function List(T, $5fcallStatiConstructor) {
-  var ListEnumerator$1_$T$_, List$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker, $5f_initTracker0;
+function List(T, _callStatiConstructor) {
+  var ListEnumerator$1_$T$_, List$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, __initTracker, __initTracker0;
   if (List[T.typeId])
     return List[T.typeId];
-  List[T.typeId] = function System__Collections__Generic__List$10() {
+  List[T.typeId] = function System$$Collections$$Generic$$List$10() {
   };
   List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
   List$1_$T$_.typeId = "jc$" + T.typeId + "$";
-  IList$1_$T$_ = IList0(T, $5fcallStatiConstructor);
-  IEnumerable$1_$T$_ = IEnumerable0(T, $5fcallStatiConstructor);
+  IList$1_$T$_ = IList0(T, _callStatiConstructor);
+  IEnumerable$1_$T$_ = IEnumerable0(T, _callStatiConstructor);
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory0() {
     var this_;
     this_ = new List$1_$T$_();
@@ -3217,67 +3217,67 @@ function List(T, $5fcallStatiConstructor) {
   };
   ptyp_ = List$1_$T$_.prototype;
   ptyp_.nativeArray = null;
-  ptyp_.system__Collections__IList__IndexOf = function List$1__System__Collections__IList__IndexOf(value) {
+  ptyp_.system$$Collections$$IList$$IndexOf = function List$1$$System$$Collections$$IList$$IndexOf(value) {
     if (value === null && T.isInstanceOfType(value))
-      return NativeArray$1__IndexOf(this.nativeArray, Type__UnBoxTypeInstance(T, value), 0);
+      return NativeArray$1$$IndexOf(this.nativeArray, Type$$UnBoxTypeInstance(T, value), 0);
     return -1;
   };
-  ptyp_.system__Collections__ICollection__CopyTo = function List$1__System__Collections__ICollection__CopyTo(array, index) {
+  ptyp_.system$$Collections$$ICollection$$CopyTo = function List$1$$System$$Collections$$ICollection$$CopyTo(array, index) {
     var nativeArray, length, i;
     nativeArray = this.nativeArray;
     length = nativeArray.length;
     for (i = 0; i < length; i++)
-      array.setValue(i + index, Type__BoxTypeInstance(T, nativeArray[i]));
+      array.setValue(i + index, Type$$BoxTypeInstance(T, nativeArray[i]));
   };
-  ptyp_.system__Collections__IEnumerable__GetEnumerator = function List$1__System__Collections__IEnumerable__GetEnumerator() {
+  ptyp_.system$$Collections$$IEnumerable$$GetEnumerator = function List$1$$System$$Collections$$IEnumerable$$GetEnumerator() {
     return this.getEnumerator();
   };
-  ptyp_.system__Collections__IList__get_Item = function List$1__System__Collections__IList__get_Item(index) {
-    return Type__BoxTypeInstance(T, this.get_item(index));
+  ptyp_.system$$Collections$$IList$$get_Item = function List$1$$System$$Collections$$IList$$get_Item(index) {
+    return Type$$BoxTypeInstance(T, this.get_item(index));
   };
-  ptyp_.system__Collections__IList__Contains = function List$1__System__Collections__IList__Contains(value) {
-    return Type__CastType(IList, this).V_IndexOf_e(value) >= 0;
+  ptyp_.system$$Collections$$IList$$Contains = function List$1$$System$$Collections$$IList$$Contains(value) {
+    return Type$$CastType(IList, this).V_IndexOf_e(value) >= 0;
   };
-  ptyp_.__ctor = function List$1____ctor() {
+  ptyp_.__ctor = function List$1$$$$ctor() {
     this.nativeArray = new Array(0);
   };
-  ptyp_.get_item = function List$1__get_Item(index) {
+  ptyp_.get_item = function List$1$$get_Item(index) {
     var arr;
     arr = this.nativeArray;
     if (index < 0 || index >= arr.length)
       throw new Error("index " + index + " out of range");
     return arr[index];
   };
-  ptyp_.set_item = function List$1__set_Item(index, value) {
+  ptyp_.set_item = function List$1$$set_Item(index, value) {
     var arr;
     arr = this.nativeArray;
     if (index < 0 || index >= arr.length)
       throw new Error("index " + index + " out of range");
     return arr[index] = value;
   };
-  ptyp_.insert = function List$1__Insert(index, item) {
-    NativeArray$1__InsertAt(this.nativeArray, index, item);
+  ptyp_.insert = function List$1$$Insert(index, item) {
+    NativeArray$1$$InsertAt(this.nativeArray, index, item);
   };
-  ptyp_.removeAt = function List$1__RemoveAt(index) {
-    NativeArray$1__RemoveAt(this.nativeArray, index);
+  ptyp_.removeAt = function List$1$$RemoveAt(index) {
+    NativeArray$1$$RemoveAt(this.nativeArray, index);
   };
-  ptyp_.get_count = function List$1__get_Count() {
+  ptyp_.get_count = function List$1$$get_Count() {
     return this.nativeArray.length;
   };
-  ptyp_.add = function List$1__Add(item) {
+  ptyp_.add = function List$1$$Add(item) {
     this.nativeArray.push(item);
   };
-  ptyp_.clear = function List$1__Clear() {
+  ptyp_.clear = function List$1$$Clear() {
     this.nativeArray.length = 0;
   };
-  ptyp_.getEnumerator = function List$1__GetEnumerator() {
+  ptyp_.getEnumerator = function List$1$$GetEnumerator() {
     return ListEnumerator$1_$T$_.__ctor(this);
   };
-  ptyp_.V_IndexOf_e = ptyp_.system__Collections__IList__IndexOf;
-  ptyp_.V_CopyTo_c = ptyp_.system__Collections__ICollection__CopyTo;
-  ptyp_.V_GetEnumerator_g = ptyp_.system__Collections__IEnumerable__GetEnumerator;
-  ptyp_.V_get_Item_e = ptyp_.system__Collections__IList__get_Item;
-  ptyp_.V_Contains_e = ptyp_.system__Collections__IList__Contains;
+  ptyp_.V_IndexOf_e = ptyp_.system$$Collections$$IList$$IndexOf;
+  ptyp_.V_CopyTo_c = ptyp_.system$$Collections$$ICollection$$CopyTo;
+  ptyp_.V_GetEnumerator_g = ptyp_.system$$Collections$$IEnumerable$$GetEnumerator;
+  ptyp_.V_get_Item_e = ptyp_.system$$Collections$$IList$$get_Item;
+  ptyp_.V_Contains_e = ptyp_.system$$Collections$$IList$$Contains;
   ptyp_["V_get_Item_" + IList$1_$T$_.typeId] = ptyp_.get_item;
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
   ptyp_["V_Insert_" + IList$1_$T$_.typeId] = ptyp_.insert;
@@ -3285,32 +3285,32 @@ function List(T, $5fcallStatiConstructor) {
   ptyp_.V_RemoveAt_e = ptyp_.removeAt;
   ptyp_.V_get_Count_c = ptyp_.get_count;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.getEnumerator;
-  Type__RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [IList$1_$T$_, IList, ICollection, IEnumerable, IEnumerable$1_$T$_]);
-  List$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker0)
+  Type$$RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [IList$1_$T$_, IList, ICollection, IEnumerable, IEnumerable$1_$T$_]);
+  List$1_$T$_._tri = function() {
+    if (__initTracker0)
       return;
-    $5f_initTracker0 = true;
+    __initTracker0 = true;
     T = T;
     ListEnumerator$1_$T$_ = ListEnumerator(T, true);
     List$1_$T$_ = List(T, true);
   };
-  if ($5fcallStatiConstructor)
-    List$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    List$1_$T$_._tri();
   return List$1_$T$_;
 };
-function StringDictionary(TValue, $5fcallStatiConstructor) {
-  var Enumerator_$TValue$_, StringDictionary$1_$TValue$_, KeyValuePair$2_$String_x_TValue$_, IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_, $5f_initTracker, $5f_initTracker0;
+function StringDictionary(TValue, _callStatiConstructor) {
+  var Enumerator_$TValue$_, StringDictionary$1_$TValue$_, KeyValuePair$2_$String_x_TValue$_, IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_, __initTracker, __initTracker0;
   if (StringDictionary[TValue.typeId])
     return StringDictionary[TValue.typeId];
-  StringDictionary[TValue.typeId] = function System__Collections__Generic__StringDictionary$10() {
+  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$10() {
   };
   StringDictionary$1_$TValue$_ = StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = StringDictionary;
   StringDictionary$1_$TValue$_.typeId = "kc$" + TValue.typeId + "$";
-  KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, $5fcallStatiConstructor);
-  KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, $5fcallStatiConstructor);
-  IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_ = IEnumerable0(KeyValuePair(String, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
+  KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
+  KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
+  IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_ = IEnumerable0(KeyValuePair(String, TValue, _callStatiConstructor), _callStatiConstructor);
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
@@ -3326,147 +3326,147 @@ function StringDictionary(TValue, $5fcallStatiConstructor) {
   ptyp_ = StringDictionary$1_$TValue$_.prototype;
   ptyp_.innerDict = null;
   ptyp_.count = 0;
-  ptyp_.system__Collections__IEnumerable__GetEnumerator = function StringDictionary$1__System__Collections__IEnumerable__GetEnumerator() {
+  ptyp_.system$$Collections$$IEnumerable$$GetEnumerator = function StringDictionary$1$$System$$Collections$$IEnumerable$$GetEnumerator() {
     return this.getEnumerator();
   };
-  ptyp_.__ctor = function StringDictionary$1____ctor() {
+  ptyp_.__ctor = function StringDictionary$1$$$$ctor() {
     this.innerDict = {
     };
   };
-  ptyp_.__ctor0 = function StringDictionary$1____ctor0(innerDict) {
+  ptyp_.__ctor0 = function StringDictionary$1$$$$ctor0(innerDict) {
     this.innerDict = innerDict;
     this.count = this.computeCount();
   };
-  ptyp_.get_item = function StringDictionary$1__get_Item(index) {
+  ptyp_.get_item = function StringDictionary$1$$get_Item(index) {
     if (!(index in this.innerDict))
       throw new Error("Key not found");
     return this.innerDict[index];
   };
-  ptyp_.set_item = function StringDictionary$1__set_Item(index, value) {
+  ptyp_.set_item = function StringDictionary$1$$set_Item(index, value) {
     if (!(index in this.innerDict))
       this.count++;
     this.innerDict[index] = value;
   };
-  ptyp_.get_keys = function StringDictionary$1__get_Keys() {
+  ptyp_.get_keys = function StringDictionary$1$$get_Keys() {
     return ArrayG_$String$_.__ctor(this.getKeys());
   };
-  ptyp_.get_count = function StringDictionary$1__get_Count() {
+  ptyp_.get_count = function StringDictionary$1$$get_Count() {
     return this.count;
   };
-  ptyp_.containsKey = function StringDictionary$1__ContainsKey(key) {
+  ptyp_.containsKey = function StringDictionary$1$$ContainsKey(key) {
     return key in this.innerDict;
   };
-  ptyp_.remove = function StringDictionary$1__Remove(key) {
+  ptyp_.remove = function StringDictionary$1$$Remove(key) {
     var rv;
     rv = delete this.innerDict[key];
     if (rv)
       this.count--;
     return rv;
   };
-  ptyp_.tryGetValue = function StringDictionary$1__TryGetValue(key, value) {
+  ptyp_.tryGetValue = function StringDictionary$1$$TryGetValue(key, value) {
     if (this.containsKey(key)) {
       value.write(this.get_item(key));
       return true;
     }
-    value.write(Type__GetDefaultValueStatic(TValue));
+    value.write(Type$$GetDefaultValueStatic(TValue));
     return false;
   };
-  ptyp_.clear = function StringDictionary$1__Clear() {
+  ptyp_.clear = function StringDictionary$1$$Clear() {
     this.innerDict = {
     };
     this.count = 0;
   };
-  ptyp_.copyTo = function StringDictionary$1__CopyTo(array, index) {
+  ptyp_.copyTo = function StringDictionary$1$$CopyTo(array, index) {
     var keys, i;
-    keys = Type__CastType(ArrayG_$String$_, this.get_keys());
+    keys = Type$$CastType(ArrayG_$String$_, this.get_keys());
     for (i = 0; i < keys.V_get_Length(); i++)
-      array.setValue(i + index, Type__BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, KeyValuePair$2_$String_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
+      array.setValue(i + index, Type$$BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, KeyValuePair$2_$String_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
   };
-  ptyp_.getEnumerator = function StringDictionary$1__GetEnumerator() {
+  ptyp_.getEnumerator = function StringDictionary$1$$GetEnumerator() {
     return Enumerator_$TValue$_.__ctor(this);
   };
-  ptyp_.getKeys = function StringDictionary$1__GetKeys() {
+  ptyp_.getKeys = function StringDictionary$1$$GetKeys() {
     var rv, key;
     rv = [];
     for (key in this.innerDict)
       rv.push(key);
     return rv;
   };
-  ptyp_.computeCount = function StringDictionary$1__ComputeCount() {
+  ptyp_.computeCount = function StringDictionary$1$$ComputeCount() {
     var rv, key;
     rv = 0;
     for (key in this.innerDict)
       rv++;
     return rv;
   };
-  ptyp_.V_GetEnumerator_g = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+  ptyp_.V_GetEnumerator_g = ptyp_.system$$Collections$$IEnumerable$$GetEnumerator;
   ptyp_.V_get_Count_c = ptyp_.get_count;
   ptyp_.V_CopyTo_c = ptyp_.copyTo;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_.typeId] = ptyp_.getEnumerator;
-  Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [ICollection, IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_, IEnumerable]);
-  StringDictionary$1_$TValue$_.$5ftri = function() {
-    if ($5f_initTracker0)
+  Type$$RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [ICollection, IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_, IEnumerable]);
+  StringDictionary$1_$TValue$_._tri = function() {
+    if (__initTracker0)
       return;
-    $5f_initTracker0 = true;
+    __initTracker0 = true;
     TValue = TValue;
     Enumerator_$TValue$_ = Enumerator1(TValue, true);
     StringDictionary$1_$TValue$_ = StringDictionary(TValue, true);
   };
-  if ($5fcallStatiConstructor)
-    StringDictionary$1_$TValue$_.$5ftri();
+  if (_callStatiConstructor)
+    StringDictionary$1_$TValue$_._tri();
   return StringDictionary$1_$TValue$_;
 };
-function Action(T1, $5fcallStatiConstructor) {
-  var Action$1_$T1$_, $5f_initTracker;
+function Action(T1, _callStatiConstructor) {
+  var Action$1_$T1$_, __initTracker;
   if (Action[T1.typeId])
     return Action[T1.typeId];
-  Action[T1.typeId] = function System__Action$10() {
+  Action[T1.typeId] = function System$$Action$10() {
   };
   Action$1_$T1$_ = Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
   Action$1_$T1$_.genericClosure = Action;
   Action$1_$T1$_.typeId = "lc$" + T1.typeId + "$";
   Action$1_$T1$_.prototype = new Function0();
-  Type__RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", Function0, []);
-  Action$1_$T1$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(Action$1_$T1$_, "System.Action`1<" + T1.fullName + ">", Function0, []);
+  Action$1_$T1$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T1 = T1;
     Action$1_$T1$_ = Action(T1, true);
   };
-  if ($5fcallStatiConstructor)
-    Action$1_$T1$_.$5ftri();
+  if (_callStatiConstructor)
+    Action$1_$T1$_._tri();
   return Action$1_$T1$_;
 };
-function Action0(T1, T2, $5fcallStatiConstructor) {
-  var Action$2_$T1_x_T2$_, $5f_initTracker;
+function Action0(T1, T2, _callStatiConstructor) {
+  var Action$2_$T1_x_T2$_, __initTracker;
   if (Action0[T1.typeId] && Action0[T1.typeId][T2.typeId])
     return Action0[T1.typeId][T2.typeId];
     Action0[T1.typeId] = {
     };
-  Action0[T1.typeId][T2.typeId] = function System__Action$20() {
+  Action0[T1.typeId][T2.typeId] = function System$$Action$20() {
   };
   Action$2_$T1_x_T2$_ = Action0[T1.typeId][T2.typeId];
   Action$2_$T1_x_T2$_.genericParameters = [T1, T2];
   Action$2_$T1_x_T2$_.genericClosure = Action0;
   Action$2_$T1_x_T2$_.typeId = "mc$" + T1.typeId + "_" + T2.typeId + "$";
   Action$2_$T1_x_T2$_.prototype = new Function0();
-  Type__RegisterReferenceType(Action$2_$T1_x_T2$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", Function0, []);
-  Action$2_$T1_x_T2$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(Action$2_$T1_x_T2$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", Function0, []);
+  Action$2_$T1_x_T2$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T1 = T1;
     T2 = T2;
     Action$2_$T1_x_T2$_ = Action0(T1, T2, true);
   };
-  if ($5fcallStatiConstructor)
-    Action$2_$T1_x_T2$_.$5ftri();
+  if (_callStatiConstructor)
+    Action$2_$T1_x_T2$_._tri();
   return Action$2_$T1_x_T2$_;
 };
-function KeyValuePair(K, V, $5fcallStatiConstructor) {
-  var KeyValuePair$2_$K_x_V$_, $5f_initTracker;
+function KeyValuePair(K, V, _callStatiConstructor) {
+  var KeyValuePair$2_$K_x_V$_, __initTracker;
   if (KeyValuePair[K.typeId] && KeyValuePair[K.typeId][V.typeId])
     return KeyValuePair[K.typeId][V.typeId];
     KeyValuePair[K.typeId] = {
@@ -3480,46 +3480,46 @@ function KeyValuePair(K, V, $5fcallStatiConstructor) {
   KeyValuePair$2_$K_x_V$_.typeId = "nc$" + K.typeId + "_" + V.typeId + "$";
   KeyValuePair$2_$K_x_V$_.getDefaultValue = function() {
     return {
-      key: Type__GetDefaultValueStatic(K),
-      val: Type__GetDefaultValueStatic(V)
+      key: Type$$GetDefaultValueStatic(K),
+      val: Type$$GetDefaultValueStatic(V)
     };
   };
-  KeyValuePair$2_$K_x_V$_.__ctor = function KeyValuePair$2____ctor(key, value) {
+  KeyValuePair$2_$K_x_V$_.__ctor = function KeyValuePair$2$$$$ctor(key, value) {
     var this_;
     this_ = KeyValuePair$2_$K_x_V$_.getDefaultValue();
     this_.key = key;
     this_.val = value;
     return this_;
   };
-  KeyValuePair$2_$K_x_V$_.get_key = function KeyValuePair$2__get_Key(this_) {
+  KeyValuePair$2_$K_x_V$_.get_key = function KeyValuePair$2$$get_Key(this_) {
     return this_.key;
   };
   KeyValuePair$2_$K_x_V$_.prototype = new ValueType();
-  Type__RegisterStructType(KeyValuePair$2_$K_x_V$_, "System.Collections.Generic.KeyValuePair`2<" + K.fullName + "," + V.fullName + ">", []);
-  KeyValuePair$2_$K_x_V$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterStructType(KeyValuePair$2_$K_x_V$_, "System.Collections.Generic.KeyValuePair`2<" + K.fullName + "," + V.fullName + ">", []);
+  KeyValuePair$2_$K_x_V$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     KeyValuePair$2_$K_x_V$_ = KeyValuePair(K, V, true);
     K = K;
     V = V;
   };
-  if ($5fcallStatiConstructor)
-    KeyValuePair$2_$K_x_V$_.$5ftri();
+  if (_callStatiConstructor)
+    KeyValuePair$2_$K_x_V$_._tri();
   return KeyValuePair$2_$K_x_V$_;
 };
-function Enumerator0(TValue, $5fcallStatiConstructor) {
-  var KeyValuePair$2_$Number_x_TValue$_, Enumerator_$TValue$_, IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_, $5f_initTracker;
+function Enumerator0(TValue, _callStatiConstructor) {
+  var KeyValuePair$2_$Number_x_TValue$_, Enumerator_$TValue$_, IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_, __initTracker;
   if (Enumerator0[TValue.typeId])
     return Enumerator0[TValue.typeId];
-  Enumerator0[TValue.typeId] = function System__Collections__Generic__NumberDictionary$1$2fEnumerator0() {
+  Enumerator0[TValue.typeId] = function System$$Collections$$Generic$$NumberDictionary$1$2fEnumerator0() {
   };
   Enumerator_$TValue$_ = Enumerator0[TValue.typeId];
   Enumerator_$TValue$_.genericParameters = [TValue];
   Enumerator_$TValue$_.genericClosure = Enumerator0;
   Enumerator_$TValue$_.typeId = "oc$" + TValue.typeId + "$";
-  KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, $5fcallStatiConstructor);
-  IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_ = IEnumerator0(KeyValuePair(Number, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
+  KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, _callStatiConstructor);
+  IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_ = IEnumerator0(KeyValuePair(Number, TValue, _callStatiConstructor), _callStatiConstructor);
   Enumerator_$TValue$_.__ctor = function System_Collections_Generic_NumberDictionary$1$2fEnumerator_factory0(dict) {
     var this_;
     this_ = new Enumerator_$TValue$_();
@@ -3529,45 +3529,45 @@ function Enumerator0(TValue, $5fcallStatiConstructor) {
   ptyp_ = Enumerator_$TValue$_.prototype;
   ptyp_.dict = null;
   ptyp_.keys = null;
-  ptyp_.system__Collections__IEnumerator__get_Current = function Enumerator__System__Collections__IEnumerator__get_Current() {
-    return Type__BoxTypeInstance(KeyValuePair$2_$Number_x_TValue$_, this.get_current());
+  ptyp_.system$$Collections$$IEnumerator$$get_Current = function Enumerator$$System$$Collections$$IEnumerator$$get_Current() {
+    return Type$$BoxTypeInstance(KeyValuePair$2_$Number_x_TValue$_, this.get_current());
   };
-  ptyp_.__ctor = function Enumerator____ctor(dict) {
+  ptyp_.__ctor = function Enumerator$$$$ctor(dict) {
     this.dict = dict;
     this.keys = this.dict.get_keys().V_GetEnumerator_l$m$();
   };
-  ptyp_.get_current = function Enumerator__get_Current() {
+  ptyp_.get_current = function Enumerator$$get_Current() {
     return KeyValuePair$2_$Number_x_TValue$_.__ctor(this.keys.V_get_Current_o$m$(), this.dict.get_item(this.keys.V_get_Current_o$m$()));
   };
-  ptyp_.moveNext = function Enumerator__MoveNext() {
+  ptyp_.moveNext = function Enumerator$$MoveNext() {
     return this.keys.V_MoveNext_h();
   };
-  ptyp_.V_get_Current_h = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_h = ptyp_.system$$Collections$$IEnumerator$$get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_h = ptyp_.moveNext;
-  Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.NumberDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_, IEnumerator]);
-  Enumerator_$TValue$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.NumberDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_, IEnumerator]);
+  Enumerator_$TValue$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     TValue = TValue;
     Enumerator_$TValue$_ = Enumerator0(TValue, true);
   };
-  if ($5fcallStatiConstructor)
-    Enumerator_$TValue$_.$5ftri();
+  if (_callStatiConstructor)
+    Enumerator_$TValue$_._tri();
   return Enumerator_$TValue$_;
 };
-function QueueEnumerator(T, $5fcallStatiConstructor) {
-  var QueueEnumerator_$T$_, IEnumerator$1_$T$_, $5f_initTracker;
+function QueueEnumerator(T, _callStatiConstructor) {
+  var QueueEnumerator_$T$_, IEnumerator$1_$T$_, __initTracker;
   if (QueueEnumerator[T.typeId])
     return QueueEnumerator[T.typeId];
-  QueueEnumerator[T.typeId] = function System__Collections__Generic__Queue$1$2fQueueEnumerator0() {
+  QueueEnumerator[T.typeId] = function System$$Collections$$Generic$$Queue$1$2fQueueEnumerator0() {
   };
   QueueEnumerator_$T$_ = QueueEnumerator[T.typeId];
   QueueEnumerator_$T$_.genericParameters = [T];
   QueueEnumerator_$T$_.genericClosure = QueueEnumerator;
   QueueEnumerator_$T$_.typeId = "pc$" + T.typeId + "$";
-  IEnumerator$1_$T$_ = IEnumerator0(T, $5fcallStatiConstructor);
+  IEnumerator$1_$T$_ = IEnumerator0(T, _callStatiConstructor);
   QueueEnumerator_$T$_.__ctor = function System_Collections_Generic_Queue$1$2fQueueEnumerator_factory0(queue) {
     var this_;
     this_ = new QueueEnumerator_$T$_();
@@ -3577,48 +3577,48 @@ function QueueEnumerator(T, $5fcallStatiConstructor) {
   ptyp_ = QueueEnumerator_$T$_.prototype;
   ptyp_.queue = null;
   ptyp_.currentIndex = 0;
-  ptyp_.system__Collections__IEnumerator__get_Current = function QueueEnumerator__System__Collections__IEnumerator__get_Current() {
-    return Type__BoxTypeInstance(T, this.get_current());
+  ptyp_.system$$Collections$$IEnumerator$$get_Current = function QueueEnumerator$$System$$Collections$$IEnumerator$$get_Current() {
+    return Type$$BoxTypeInstance(T, this.get_current());
   };
-  ptyp_.__ctor = function QueueEnumerator____ctor(queue) {
+  ptyp_.__ctor = function QueueEnumerator$$$$ctor(queue) {
     this.queue = queue;
     this.currentIndex = -1;
   };
-  ptyp_.get_current = function QueueEnumerator__get_Current() {
+  ptyp_.get_current = function QueueEnumerator$$get_Current() {
     if (this.currentIndex < 0 || this.currentIndex >= this.queue.nativeArray.length)
       throw new Error("Out of range");
     return this.queue.nativeArray[this.currentIndex];
   };
-  ptyp_.moveNext = function QueueEnumerator__MoveNext() {
+  ptyp_.moveNext = function QueueEnumerator$$MoveNext() {
     this.currentIndex++;
     return this.currentIndex < this.queue.nativeArray.length;
   };
-  ptyp_.V_get_Current_h = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_h = ptyp_.system$$Collections$$IEnumerator$$get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_h = ptyp_.moveNext;
-  Type__RegisterReferenceType(QueueEnumerator_$T$_, "System.Collections.Generic.Queue`1/QueueEnumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, IEnumerator]);
-  QueueEnumerator_$T$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(QueueEnumerator_$T$_, "System.Collections.Generic.Queue`1/QueueEnumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, IEnumerator]);
+  QueueEnumerator_$T$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T = T;
     QueueEnumerator_$T$_ = QueueEnumerator(T, true);
   };
-  if ($5fcallStatiConstructor)
-    QueueEnumerator_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    QueueEnumerator_$T$_._tri();
   return QueueEnumerator_$T$_;
 };
-function ListEnumerator(T, $5fcallStatiConstructor) {
-  var IList$1_$T$_, ListEnumerator$1_$T$_, IEnumerator$1_$T$_, $5f_initTracker, $5f_initTracker0;
+function ListEnumerator(T, _callStatiConstructor) {
+  var IList$1_$T$_, ListEnumerator$1_$T$_, IEnumerator$1_$T$_, __initTracker, __initTracker0;
   if (ListEnumerator[T.typeId])
     return ListEnumerator[T.typeId];
-  ListEnumerator[T.typeId] = function System__Collections__Generic__ListEnumerator$10() {
+  ListEnumerator[T.typeId] = function System$$Collections$$Generic$$ListEnumerator$10() {
   };
   ListEnumerator$1_$T$_ = ListEnumerator[T.typeId];
   ListEnumerator$1_$T$_.genericParameters = [T];
   ListEnumerator$1_$T$_.genericClosure = ListEnumerator;
   ListEnumerator$1_$T$_.typeId = "qc$" + T.typeId + "$";
-  IEnumerator$1_$T$_ = IEnumerator0(T, $5fcallStatiConstructor);
+  IEnumerator$1_$T$_ = IEnumerator0(T, _callStatiConstructor);
   ListEnumerator$1_$T$_.__ctor = function System_Collections_Generic_ListEnumerator$1_factory0(list) {
     var this_;
     this_ = new ListEnumerator$1_$T$_();
@@ -3628,47 +3628,47 @@ function ListEnumerator(T, $5fcallStatiConstructor) {
   ptyp_ = ListEnumerator$1_$T$_.prototype;
   ptyp_.innerList = null;
   ptyp_.index = 0;
-  ptyp_.system__Collections__IEnumerator__get_Current = function ListEnumerator$1__System__Collections__IEnumerator__get_Current() {
-    return Type__BoxTypeInstance(T, this.get_current());
+  ptyp_.system$$Collections$$IEnumerator$$get_Current = function ListEnumerator$1$$System$$Collections$$IEnumerator$$get_Current() {
+    return Type$$BoxTypeInstance(T, this.get_current());
   };
-  ptyp_.__ctor = function ListEnumerator$1____ctor(list) {
+  ptyp_.__ctor = function ListEnumerator$1$$$$ctor(list) {
     this.index = -1;
     this.innerList = list;
   };
-  ptyp_.get_current = function ListEnumerator$1__get_Current() {
+  ptyp_.get_current = function ListEnumerator$1$$get_Current() {
     return this.innerList["V_get_Item_" + IList$1_$T$_.typeId](this.index);
   };
-  ptyp_.moveNext = function ListEnumerator$1__MoveNext() {
+  ptyp_.moveNext = function ListEnumerator$1$$MoveNext() {
     return ++this.index < this.innerList.V_get_Count_c();
   };
-  ptyp_.V_get_Current_h = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_h = ptyp_.system$$Collections$$IEnumerator$$get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_h = ptyp_.moveNext;
-  Type__RegisterReferenceType(ListEnumerator$1_$T$_, "System.Collections.Generic.ListEnumerator`1<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, IEnumerator]);
-  ListEnumerator$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker0)
+  Type$$RegisterReferenceType(ListEnumerator$1_$T$_, "System.Collections.Generic.ListEnumerator`1<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, IEnumerator]);
+  ListEnumerator$1_$T$_._tri = function() {
+    if (__initTracker0)
       return;
-    $5f_initTracker0 = true;
+    __initTracker0 = true;
     T = T;
     IList$1_$T$_ = IList0(T, true);
     ListEnumerator$1_$T$_ = ListEnumerator(T, true);
   };
-  if ($5fcallStatiConstructor)
-    ListEnumerator$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    ListEnumerator$1_$T$_._tri();
   return ListEnumerator$1_$T$_;
 };
-function Enumerator1(TValue, $5fcallStatiConstructor) {
-  var KeyValuePair$2_$String_x_TValue$_, Enumerator_$TValue$_, IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_, $5f_initTracker;
+function Enumerator1(TValue, _callStatiConstructor) {
+  var KeyValuePair$2_$String_x_TValue$_, Enumerator_$TValue$_, IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_, __initTracker;
   if (Enumerator1[TValue.typeId])
     return Enumerator1[TValue.typeId];
-  Enumerator1[TValue.typeId] = function System__Collections__Generic__StringDictionary$1$2fEnumerator0() {
+  Enumerator1[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$1$2fEnumerator0() {
   };
   Enumerator_$TValue$_ = Enumerator1[TValue.typeId];
   Enumerator_$TValue$_.genericParameters = [TValue];
   Enumerator_$TValue$_.genericClosure = Enumerator1;
   Enumerator_$TValue$_.typeId = "rc$" + TValue.typeId + "$";
-  KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, $5fcallStatiConstructor);
-  IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_ = IEnumerator0(KeyValuePair(String, TValue, $5fcallStatiConstructor), $5fcallStatiConstructor);
+  KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
+  IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_ = IEnumerator0(KeyValuePair(String, TValue, _callStatiConstructor), _callStatiConstructor);
   Enumerator_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1$2fEnumerator_factory0(dict) {
     var this_;
     this_ = new Enumerator_$TValue$_();
@@ -3678,67 +3678,67 @@ function Enumerator1(TValue, $5fcallStatiConstructor) {
   ptyp_ = Enumerator_$TValue$_.prototype;
   ptyp_.dict = null;
   ptyp_.keys = null;
-  ptyp_.system__Collections__IEnumerator__get_Current = function Enumerator__System__Collections__IEnumerator__get_Current0() {
-    return Type__BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, this.get_current());
+  ptyp_.system$$Collections$$IEnumerator$$get_Current = function Enumerator$$System$$Collections$$IEnumerator$$get_Current0() {
+    return Type$$BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, this.get_current());
   };
-  ptyp_.__ctor = function Enumerator____ctor0(dict) {
+  ptyp_.__ctor = function Enumerator$$$$ctor0(dict) {
     this.dict = dict;
     this.keys = this.dict.get_keys().V_GetEnumerator_l$n$();
   };
-  ptyp_.get_current = function Enumerator__get_Current0() {
+  ptyp_.get_current = function Enumerator$$get_Current0() {
     return KeyValuePair$2_$String_x_TValue$_.__ctor(this.keys.V_get_Current_o$n$(), this.dict.get_item(this.keys.V_get_Current_o$n$()));
   };
-  ptyp_.moveNext = function Enumerator__MoveNext0() {
+  ptyp_.moveNext = function Enumerator$$MoveNext0() {
     return this.keys.V_MoveNext_h();
   };
-  ptyp_.V_get_Current_h = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_h = ptyp_.system$$Collections$$IEnumerator$$get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_h = ptyp_.moveNext;
-  Type__RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.StringDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_, IEnumerator]);
-  Enumerator_$TValue$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(Enumerator_$TValue$_, "System.Collections.Generic.StringDictionary`1/Enumerator<" + TValue.fullName + ">", Object, [IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_, IEnumerator]);
+  Enumerator_$TValue$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     TValue = TValue;
     Enumerator_$TValue$_ = Enumerator1(TValue, true);
   };
-  if ($5fcallStatiConstructor)
-    Enumerator_$TValue$_.$5ftri();
+  if (_callStatiConstructor)
+    Enumerator_$TValue$_._tri();
   return Enumerator_$TValue$_;
 };
-function IEnumerable0(T, $5fcallStatiConstructor) {
-  var IEnumerable$1_$T$_, $5f_initTracker;
+function IEnumerable0(T, _callStatiConstructor) {
+  var IEnumerable$1_$T$_, __initTracker;
   if (IEnumerable0[T.typeId])
     return IEnumerable0[T.typeId];
-  IEnumerable0[T.typeId] = function System__Collections__Generic__IEnumerable$10() {
+  IEnumerable0[T.typeId] = function System$$Collections$$Generic$$IEnumerable$10() {
   };
   IEnumerable$1_$T$_ = IEnumerable0[T.typeId];
   IEnumerable$1_$T$_.genericParameters = [T];
   IEnumerable$1_$T$_.genericClosure = IEnumerable0;
   IEnumerable$1_$T$_.typeId = "l$" + T.typeId + "$";
-  Type__RegisterInterface(IEnumerable$1_$T$_, "System.Collections.Generic.IEnumerable`1<" + T.fullName + ">");
-  IEnumerable$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterInterface(IEnumerable$1_$T$_, "System.Collections.Generic.IEnumerable`1<" + T.fullName + ">");
+  IEnumerable$1_$T$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T = T;
     IEnumerable$1_$T$_ = IEnumerable0(T, true);
   };
-  if ($5fcallStatiConstructor)
-    IEnumerable$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    IEnumerable$1_$T$_._tri();
   return IEnumerable$1_$T$_;
 };
-function Enumerator(T, $5fcallStatiConstructor) {
-  var Enumerator_$T$_, IEnumerator$1_$T$_, $5f_initTracker;
+function Enumerator(T, _callStatiConstructor) {
+  var Enumerator_$T$_, IEnumerator$1_$T$_, __initTracker;
   if (Enumerator[T.typeId])
     return Enumerator[T.typeId];
-  Enumerator[T.typeId] = function System__ArrayG$1$2fEnumerator0() {
+  Enumerator[T.typeId] = function System$$ArrayG$1$2fEnumerator0() {
   };
   Enumerator_$T$_ = Enumerator[T.typeId];
   Enumerator_$T$_.genericParameters = [T];
   Enumerator_$T$_.genericClosure = Enumerator;
   Enumerator_$T$_.typeId = "sc$" + T.typeId + "$";
-  IEnumerator$1_$T$_ = IEnumerator0(T, $5fcallStatiConstructor);
+  IEnumerator$1_$T$_ = IEnumerator0(T, _callStatiConstructor);
   Enumerator_$T$_.__ctor = function System_ArrayG$1$2fEnumerator_factory0(array) {
     var this_;
     this_ = new Enumerator_$T$_();
@@ -3748,77 +3748,77 @@ function Enumerator(T, $5fcallStatiConstructor) {
   ptyp_ = Enumerator_$T$_.prototype;
   ptyp_.currentIndex = 0;
   ptyp_.array = null;
-  ptyp_.system__Collections__IEnumerator__get_Current = function Enumerator__System__Collections__IEnumerator__get_Current1() {
-    return Type__BoxTypeInstance(T, this.get_current());
+  ptyp_.system$$Collections$$IEnumerator$$get_Current = function Enumerator$$System$$Collections$$IEnumerator$$get_Current1() {
+    return Type$$BoxTypeInstance(T, this.get_current());
   };
-  ptyp_.__ctor = function Enumerator____ctor1(array) {
+  ptyp_.__ctor = function Enumerator$$$$ctor1(array) {
     this.currentIndex = -1;
     this.array = array;
   };
-  ptyp_.moveNext = function Enumerator__MoveNext1() {
+  ptyp_.moveNext = function Enumerator$$MoveNext1() {
     return ++this.currentIndex < this.array.V_get_Length();
   };
-  ptyp_.get_current = function Enumerator__get_Current1() {
+  ptyp_.get_current = function Enumerator$$get_Current1() {
     return this.array.get_item(this.currentIndex);
   };
-  ptyp_.V_get_Current_h = ptyp_.system__Collections__IEnumerator__get_Current;
+  ptyp_.V_get_Current_h = ptyp_.system$$Collections$$IEnumerator$$get_Current;
   ptyp_["V_get_Current_" + IEnumerator$1_$T$_.typeId] = ptyp_.get_current;
   ptyp_.V_MoveNext_h = ptyp_.moveNext;
-  Type__RegisterReferenceType(Enumerator_$T$_, "System.ArrayG`1/Enumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, IEnumerator]);
-  Enumerator_$T$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterReferenceType(Enumerator_$T$_, "System.ArrayG`1/Enumerator<" + T.fullName + ">", Object, [IEnumerator$1_$T$_, IEnumerator]);
+  Enumerator_$T$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T = T;
     Enumerator_$T$_ = Enumerator(T, true);
   };
-  if ($5fcallStatiConstructor)
-    Enumerator_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    Enumerator_$T$_._tri();
   return Enumerator_$T$_;
 };
-function IEnumerator0(T, $5fcallStatiConstructor) {
-  var IEnumerator$1_$T$_, $5f_initTracker;
+function IEnumerator0(T, _callStatiConstructor) {
+  var IEnumerator$1_$T$_, __initTracker;
   if (IEnumerator0[T.typeId])
     return IEnumerator0[T.typeId];
-  IEnumerator0[T.typeId] = function System__Collections__Generic__IEnumerator$10() {
+  IEnumerator0[T.typeId] = function System$$Collections$$Generic$$IEnumerator$10() {
   };
   IEnumerator$1_$T$_ = IEnumerator0[T.typeId];
   IEnumerator$1_$T$_.genericParameters = [T];
   IEnumerator$1_$T$_.genericClosure = IEnumerator0;
   IEnumerator$1_$T$_.typeId = "o$" + T.typeId + "$";
-  Type__RegisterInterface(IEnumerator$1_$T$_, "System.Collections.Generic.IEnumerator`1<" + T.fullName + ">");
-  IEnumerator$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker)
+  Type$$RegisterInterface(IEnumerator$1_$T$_, "System.Collections.Generic.IEnumerator`1<" + T.fullName + ">");
+  IEnumerator$1_$T$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T = T;
     IEnumerator$1_$T$_ = IEnumerator0(T, true);
   };
-  if ($5fcallStatiConstructor)
-    IEnumerator$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    IEnumerator$1_$T$_._tri();
   return IEnumerator$1_$T$_;
 };
-function IList0(T, $5fcallStatiConstructor) {
-  var IList$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
+function IList0(T, _callStatiConstructor) {
+  var IList$1_$T$_, IEnumerable$1_$T$_, __initTracker;
   if (IList0[T.typeId])
     return IList0[T.typeId];
-  IList0[T.typeId] = function System__Collections__Generic__IList$10() {
+  IList0[T.typeId] = function System$$Collections$$Generic$$IList$10() {
   };
   IList$1_$T$_ = IList0[T.typeId];
   IList$1_$T$_.genericParameters = [T];
   IList$1_$T$_.genericClosure = IList0;
   IList$1_$T$_.typeId = "tc$" + T.typeId + "$";
-  IEnumerable$1_$T$_ = IEnumerable0(T, $5fcallStatiConstructor);
-  Type__RegisterInterface(IList$1_$T$_, "System.Collections.Generic.IList`1<" + T.fullName + ">");
-  IList$1_$T$_.$5ftri = function() {
-    if ($5f_initTracker)
+  IEnumerable$1_$T$_ = IEnumerable0(T, _callStatiConstructor);
+  Type$$RegisterInterface(IList$1_$T$_, "System.Collections.Generic.IList`1<" + T.fullName + ">");
+  IList$1_$T$_._tri = function() {
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
+    __initTracker = true;
     T = T;
     IList$1_$T$_ = IList0(T, true);
   };
-  if ($5fcallStatiConstructor)
-    IList$1_$T$_.$5ftri();
+  if (_callStatiConstructor)
+    IList$1_$T$_._tri();
   return IList$1_$T$_;
 };
 ValueIfTrue_$String$_ = ValueIfTrue(String);
@@ -3844,66 +3844,66 @@ List_$Object$_ = List(Object);
 ArrayG_$Number$_ = ArrayG(Number);
 KeyValuePair_$String_x_Int32$_ = KeyValuePair(String, Int32);
 StringDictionary_$Int32$_ = StringDictionary(Int32);
-ManualTemplateTests____cctor();
-DateTime____cctor();
-ValueIfTrue_$String$_.$5ftri();
-Func_$Object_x_Object$_.$5ftri();
-ArrayG_$Func_$Object_x_Object$_$_.$5ftri();
-ArrayG_$String$_.$5ftri();
-ArrayG_$SkinBinderInfo$_.$5ftri();
-ArrayG_$Object$_.$5ftri();
-ArrayG_$TestViewModelB$_.$5ftri();
-KeyValuePair_$Number_x_Task$_.$5ftri();
-NumberDictionary_$Task$_.$5ftri();
-Queue_$Task$_.$5ftri();
-List_$ListViewItem$_.$5ftri();
-Action_$UIEvent$_.$5ftri();
-KeyValuePair_$String_x_Action_$UIEvent$_$_.$5ftri();
-StringDictionary_$Action_$UIEvent$_$_.$5ftri();
-Action_$INotifyPropertyChanged_x_String$_.$5ftri();
-KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
-StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_.$5ftri();
-KeyValuePair_$String_x_Function$_.$5ftri();
-StringDictionary_$Function$_.$5ftri();
-List_$Object$_.$5ftri();
-ArrayG_$Number$_.$5ftri();
-KeyValuePair_$String_x_Int32$_.$5ftri();
-StringDictionary_$Int32$_.$5ftri();
+ManualTemplateTests$$$$cctor();
+DateTime$$$$cctor();
+ValueIfTrue_$String$_._tri();
+Func_$Object_x_Object$_._tri();
+ArrayG_$Func_$Object_x_Object$_$_._tri();
+ArrayG_$String$_._tri();
+ArrayG_$SkinBinderInfo$_._tri();
+ArrayG_$Object$_._tri();
+ArrayG_$TestViewModelB$_._tri();
+KeyValuePair_$Number_x_Task$_._tri();
+NumberDictionary_$Task$_._tri();
+Queue_$Task$_._tri();
+List_$ListViewItem$_._tri();
+Action_$UIEvent$_._tri();
+KeyValuePair_$String_x_Action_$UIEvent$_$_._tri();
+StringDictionary_$Action_$UIEvent$_$_._tri();
+Action_$INotifyPropertyChanged_x_String$_._tri();
+KeyValuePair_$String_x_Action_$INotifyPropertyChanged_x_String$_$_._tri();
+StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_._tri();
+KeyValuePair_$String_x_Function$_._tri();
+StringDictionary_$Function$_._tri();
+List_$Object$_._tri();
+ArrayG_$Number$_._tri();
+KeyValuePair_$String_x_Int32$_._tri();
+StringDictionary_$Int32$_._tri();
 QUnit.module("Sunlight.Framework.UI.Test.LiveBinderTests", {
-  "before": LiveBinderTests__Setup
+  "before": LiveBinderTests$$Setup
 });
-QUnit.test("TestLiveBinderOnActivate", LiveBinderTests__TestLiveBinderOnActivate);
-QUnit.test("TestLiveBinderOnChange", LiveBinderTests__TestLiveBinderOnChange);
-QUnit.test("TestLiveBinderMultiOnActivate", LiveBinderTests__TestLiveBinderMultiOnActivate);
-QUnit.test("TestLiveBinderMultiOnChange", LiveBinderTests__TestLiveBinderMultiOnChange);
-QUnit.test("TestTwoWayLiveBinderOnChange", LiveBinderTests__TestTwoWayLiveBinderOnChange);
-QUnit.test("TestTwoWayLiveBinderMultiOnChangeWithConverters", LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters);
+QUnit.test("TestLiveBinderOnActivate", LiveBinderTests$$TestLiveBinderOnActivate);
+QUnit.test("TestLiveBinderOnChange", LiveBinderTests$$TestLiveBinderOnChange);
+QUnit.test("TestLiveBinderMultiOnActivate", LiveBinderTests$$TestLiveBinderMultiOnActivate);
+QUnit.test("TestLiveBinderMultiOnChange", LiveBinderTests$$TestLiveBinderMultiOnChange);
+QUnit.test("TestTwoWayLiveBinderOnChange", LiveBinderTests$$TestTwoWayLiveBinderOnChange);
+QUnit.test("TestTwoWayLiveBinderMultiOnChangeWithConverters", LiveBinderTests$$TestTwoWayLiveBinderMultiOnChangeWithConverters);
 QUnit.module("Sunlight.Framework.UI.Test.NScriptsTemplateTests", {
-  "before": NScriptsTemplateTests__Setup
+  "before": NScriptsTemplateTests$$Setup
 });
-QUnit.test("Test", NScriptsTemplateTests__Test);
-QUnit.test("TestApplySkin", NScriptsTemplateTests__TestApplySkin);
-QUnit.test("TestCssBinder", NScriptsTemplateTests__TestCssBinder);
-QUnit.test("TestStyleBinder", NScriptsTemplateTests__TestStyleBinder);
-QUnit.test("TestAttrBinder", NScriptsTemplateTests__TestAttrBinder);
-QUnit.test("TestPropertyBinder", NScriptsTemplateTests__TestPropertyBinder);
+QUnit.test("Test", NScriptsTemplateTests$$Test);
+QUnit.test("TestApplySkin", NScriptsTemplateTests$$TestApplySkin);
+QUnit.test("TestCssBinder", NScriptsTemplateTests$$TestCssBinder);
+QUnit.test("TestStyleBinder", NScriptsTemplateTests$$TestStyleBinder);
+QUnit.test("TestAttrBinder", NScriptsTemplateTests$$TestAttrBinder);
+QUnit.test("TestPropertyBinder", NScriptsTemplateTests$$TestPropertyBinder);
 QUnit.module("Sunlight.Framework.UI.Test.SkinBinderHelperTests", {
 });
-QUnit.test("TestSimpleBinder", SkinBinderHelperTests__TestSimpleBinder);
-QUnit.test("TestAttrBinding", SkinBinderHelperTests__TestAttrBinding);
-QUnit.test("TestStyleBinding", SkinBinderHelperTests__TestStyleBinding);
-QUnit.test("TestTextContentBinding", SkinBinderHelperTests__TestTextContentBinding);
+QUnit.test("TestSimpleBinder", SkinBinderHelperTests$$TestSimpleBinder);
+QUnit.test("TestAttrBinding", SkinBinderHelperTests$$TestAttrBinding);
+QUnit.test("TestStyleBinding", SkinBinderHelperTests$$TestStyleBinding);
+QUnit.test("TestTextContentBinding", SkinBinderHelperTests$$TestTextContentBinding);
 QUnit.module("Sunlight.Framework.UI.Test.TestListView", {
-  "before": TestListView__Setup
+  "before": TestListView$$Setup
 });
-QUnit.test("TestChildSkin", TestListView__TestChildSkin);
+QUnit.test("TestChildSkin", TestListView$$TestChildSkin);
 QUnit.module("Sunlight.Framework.UI.Test.ManualTemplateTests", {
-  "before": ManualTemplateTests__Setup
+  "before": ManualTemplateTests$$Setup
 });
-QUnit.test("Test", ManualTemplateTests__Test);
+QUnit.test("Test", ManualTemplateTests$$Test);
 QUnit.module("Sunlight.Framework.UI.Test.UIElementTests", {
 });
-QUnit.test("TestNewUIElement", UIElementTests__TestNewUIElement);
+QUnit.test("TestNewUIElement", UIElementTests$$TestNewUIElement);
 function Test$5cTemplates$5cTestTemplate1_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {
@@ -3932,11 +3932,11 @@ function Test$5cTemplates$5cTestTemplateVMB_CssBinding_factory(skinFactory, doc)
   if (!(domStore = DocStorageGetter(doc))[1]) {
     domStore[1] = doc.createElement("div");
     domStore[1].innerHTML = " <div test=\"id\"></div> ";
-    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [SkinBinderInfo_factory1([getter], SkinBinderHelper__SetTextContent, 17, 0, null, ""), SkinBinderInfo_factory3([getter0], ["PropBool1"], SkinBinderHelper__SetCssClass, "black", 81, 0, 0, null, false, 0)];
+    tmplStore[1] = tmplStore[1] ? tmplStore[1] : [SkinBinderInfo_factory1([getter], SkinBinderHelper$$SetTextContent, 17, 0, null, ""), SkinBinderInfo_factory3([getter0], ["PropBool1"], SkinBinderHelper$$SetCssClass, "black", 81, 0, 0, null, false, 0)];
   }
   htmlRoot = domStore[1].cloneNode(true);
   objStorage = new Array(1);
-  objStorage[0] = SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  objStorage[0] = SkinBinderHelper$$GetElementFromPath(htmlRoot, [1]);
   return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[1], null, 1, 0);
 };
 Test$5cTemplates$5cTestTemplateVMB_CssBinding_var = null;
@@ -3957,7 +3957,7 @@ function Test$5cTemplates$5cTestTemplateVMB_StyleBinding_factory(skinFactory, do
   }
   htmlRoot = domStore[2].cloneNode(true);
   objStorage = new Array(1);
-  objStorage[0] = SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  objStorage[0] = SkinBinderHelper$$GetElementFromPath(htmlRoot, [1]);
   return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[2], null, 1, 0);
 };
 Test$5cTemplates$5cTestTemplateVMB_StyleBinding_var = null;
@@ -3971,11 +3971,11 @@ function Test$5cTemplates$5cTestTemplateVMB_AttrBinding_factory(skinFactory, doc
   if (!(domStore = DocStorageGetter(doc))[3]) {
     domStore[3] = doc.createElement("div");
     domStore[3].innerHTML = " <div test=\"foo\">Test Me</div> ";
-    tmplStore[3] = tmplStore[3] ? tmplStore[3] : [SkinBinderInfo_factory3([getter], ["PropStr1"], SkinBinderHelper__SetAttribute, "test1", 113, 0, 0, null, null, 0)];
+    tmplStore[3] = tmplStore[3] ? tmplStore[3] : [SkinBinderInfo_factory3([getter], ["PropStr1"], SkinBinderHelper$$SetAttribute, "test1", 113, 0, 0, null, null, 0)];
   }
   htmlRoot = domStore[3].cloneNode(true);
   objStorage = new Array(1);
-  objStorage[0] = SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  objStorage[0] = SkinBinderHelper$$GetElementFromPath(htmlRoot, [1]);
   return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[3], null, 1, 0);
 };
 Test$5cTemplates$5cTestTemplateVMB_AttrBinding_var = null;
@@ -4008,7 +4008,7 @@ function Test$5cTemplates$5cTestTemplateB_PropertyBinding_factory(skinFactory, d
   }
   htmlRoot = domStore[4].cloneNode(true);
   objStorage = new Array(1);
-  objStorage[0] = TestUIElement_factory(SkinBinderHelper__GetElementFromPath(htmlRoot, [1]));
+  objStorage[0] = TestUIElement_factory(SkinBinderHelper$$GetElementFromPath(htmlRoot, [1]));
   return SkinInstance_factory(skinFactory, htmlRoot, [0], objStorage, tmplStore[4], {
     "Part1": 0
   }, 2, 0);
@@ -4024,11 +4024,11 @@ function Test$5cTemplates$5cTestTemplateVMB1_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[5]) {
     domStore[5] = doc.createElement("div");
     domStore[5].innerHTML = " <div test=\"test me\"></div> ";
-    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [SkinBinderInfo_factory1([getter], SkinBinderHelper__SetTextContent, 17, 0, null, "")];
+    tmplStore[5] = tmplStore[5] ? tmplStore[5] : [SkinBinderInfo_factory1([getter], SkinBinderHelper$$SetTextContent, 17, 0, null, "")];
   }
   htmlRoot = domStore[5].cloneNode(true);
   objStorage = new Array(1);
-  objStorage[0] = SkinBinderHelper__GetElementFromPath(htmlRoot, [1]);
+  objStorage[0] = SkinBinderHelper$$GetElementFromPath(htmlRoot, [1]);
   return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[5], null, 0, 0);
 };
 Test$5cTemplates$5cTestTemplateVMB1_var = null;

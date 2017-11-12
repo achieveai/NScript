@@ -116,7 +116,7 @@
             if (instance === null || typeof instance === 'undefined')
                 return false;
             if (!this.@{[mscorlib]System.Type::IsInterface})
-                return instance instanceof this || (instance && instance.constructor == this);
+                return instance instanceof this || (instance !== null && instance.constructor == this);
             else if (!instance.constructor.@{[mscorlib]System.Type::baseInterfaces})
                 @{[mscorlib]System.Type::InitializeBaseInterfaces([mscorlib]System.Type)}(instance.constructor);
 
