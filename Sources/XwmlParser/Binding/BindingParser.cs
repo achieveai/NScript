@@ -819,11 +819,15 @@ namespace XwmlParser.Binding
                             currentType,
                             castReference))
                     {
-                        throw new ApplicationException(
-                            string.Format(
-                                "Can't cast type:{0} to type:{1}",
-                                currentType,
-                                castReference));
+                        if (!currentType.IsIntegerOrEnum()
+                            || !castReference.IsIntegerOrEnum())
+                        {
+                            throw new ApplicationException(
+                                string.Format(
+                                    "Can't cast type:{0} to type:{1}",
+                                    currentType,
+                                    castReference));
+                        }
                     }
 
                     currentType = castReference;
@@ -832,7 +836,8 @@ namespace XwmlParser.Binding
 
             return new PropertySourceBindingInfo(
                 sourceType,
-                propertyReferences);
+                propertyReferences,
+                currentType);
         }
 
         private static Tuple<MemberReference, TypeReference> GetFieldOrPropertyReference(

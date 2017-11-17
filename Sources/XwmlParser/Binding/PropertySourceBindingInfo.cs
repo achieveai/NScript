@@ -17,11 +17,15 @@ namespace XwmlParser.Binding
     /// </summary>
     public class PropertySourceBindingInfo : SourceBindingInfo
     {
+        private readonly TypeReference castValueType;
+
         public PropertySourceBindingInfo(
             TypeReference sourceType,
-            List<MemberReference> propertyReferences)
+            List<MemberReference> propertyReferences,
+            TypeReference valueType = null)
         {
             this.SourceType = sourceType;
+            this.castValueType = valueType;
             this.PropertyReferencePath = new List<MemberReference>(propertyReferences);
             if (propertyReferences[0].IsStatic())
             {
@@ -33,6 +37,9 @@ namespace XwmlParser.Binding
         {
             get
             {
+                if (this.castValueType != null)
+                { return this.castValueType; }
+
                 var lastPart = this.PropertyReferencePath[this.PropertyReferencePath.Count - 1];
                 if (lastPart is PropertyReference)
                 {
