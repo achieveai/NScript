@@ -149,12 +149,12 @@ namespace System.Web
         /// <summary>
         /// Event queue for all listeners interested in OnError events.
         /// </summary>
-        public extern event Action<WebSocket, object> OnError;
+        public extern event Action<WebSocket, ErrorEvent> OnError;
 
         /// <summary>
         /// Event queue for all listeners interested in OnClose events.
         /// </summary>
-        public extern event Action<WebSocket, object> OnClose;
+        public extern event Action<WebSocket, WebSocketCloseEvent> OnClose;
 
         /// <summary>
         /// Query if this object is available.
