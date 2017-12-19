@@ -15,7 +15,13 @@ namespace NScript
         public void ProcessRequest(HttpContext context)
         {
             context.Response.ContentType = "text/plain";
-            var fileName = context.Request.Params["f"].Substring(1);
+            var fileName = context.Request.PathInfo;
+            if (string.IsNullOrEmpty(fileName))
+            { fileName = context.Request.Params["f"].Substring(1); }
+
+            if (!string.IsNullOrWhiteSpace(fileName))
+            { fileName = fileName.Substring(1); }
+
             context.Response.ContentType = "text";
 
             var dirName = Path.GetDirectoryName(context.Request.PhysicalPath);
@@ -76,7 +82,11 @@ namespace NScript
                     }
                     else
                     {
-                        return fileLongNames[i];
+                        var rv = fileLongNames[i];
+                        if (Path.GetFileName(rv) == rv)
+                        { return defaultFileToReturn; }
+
+                        return rv;
                     }
                 }
             }

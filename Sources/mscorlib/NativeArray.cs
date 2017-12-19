@@ -96,48 +96,34 @@ namespace System
         [Script(@"
             var i;
             startIndex = startIndex < 0 ? 0 : startIndex;
-            for (i = this.length; i >= startIndex && i >= 0; --i)
-            {
-              if (this[i] === value)
-                return i;
-            }
-
-            return -1;
+            return this.indexOf(value, startIndex);
             ")]
         public extern int IndexOf<T>(T value, int startIndex);
 
         [IgnoreGenericArguments]
         [Script(@"
-            var i;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            for(i = this.length-1; i >= index; i--)
-                this[i+1] = this[i];
-            this[index] = value;
+            this.splice(index, 0, value);
             ")]
         public extern void InsertAt<T>(int index, T value);
 
         [IgnoreGenericArguments]
         [Script(@"
-            var i,len;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            len = values.length;
-            for(i = this.length-1; i >= index; index--)
-                this[i+len] = this[i];
-            for(i = len -1; --i;)
-                this[index+i] = values[i];
+            values.unshift(0);
+            values.unshift(index);
+            this.splice.apply(this, values);
+            values.shift();
+            values.shift();
             ")]
         public extern void InsertRangeAt(int index, NativeArray values);
 
         [Script(@"
-            var i;
-            if (index < 0 || index > this.length)
+            if (index < 0 || index >= this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            var len = this.length - 1;
-            for(i = index; i < len; i++)
-                this[i] = this[i + 1];
-            this.pop();
+            this.splice(index, 1);
             ")]
         public extern void RemoveAt(int index);
 
@@ -226,45 +212,38 @@ namespace System
         public extern NativeArray<T> Slice(int start, int end);
 
         [Script(@"
-            var newArray = elements.@{[mscorlib]System.ArrayG`1::innerArray}.slice(0);
+            var newArray = elements.@{[mscorlib]System.ArrayG`1::innerArray};
             newArray.unshift(howMany);
             newArray.unshift(index);
-            return this.splice.apply(this, newArray);
+            var rv = this.splice.apply(this, newArray);
+            newArray.shift();
+            newArray.shift();
+            return rv;
             ")]
         public extern NativeArray<T> Splice(int index, int howMany, params T[] elements);
 
         [Script(@"
             var i;
             startIndex = startIndex < 0 ? 0 : startIndex;
-            for (i = this.length; i >= startIndex && i >= 0; --i)
-            {
-              if (this[i] === value)
-                return i;
-            }
-
-            return -1;
+            return this.indexOf(value, startIndex);
             ")]
         public extern int IndexOf(T value, int startIndex);
 
         [Script(@"
-            var i;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            for(i = this.length-1; i >= index; i--)
-                this[i+1] = this[i];
-            this[index] = value;
+            this.splice(index, 0, value);
             ")]
         public extern void InsertAt(int index, T value);
 
         [Script(@"
-            var i,len;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            len = values.length;
-            for(i = this.length-1; i >= index; index--)
-                this[i+len] = this[i];
-            for(i = len -1; --i;)
-                this[index+i] = values[i];
+            values.unshift(0);
+            values.unshift(index);
+            this.splice.apply(this, values);
+            values.shift();
+            values.shift();
             ")]
         public extern void InsertRangeAt(int index, NativeArray<T> values);
 
@@ -272,10 +251,7 @@ namespace System
             var i;
             if (index < 0 || index > this.length)
                 throw new @{[mscorlib]System.Exception}(""Index out of range"");
-            var len = this.length - 1;
-            for(i = index; i < len; i++)
-                this[i] = this[i + 1];
-            this.pop();
+            this.splice(index, 1);
             ")]
         public extern void RemoveAt(int index);
 

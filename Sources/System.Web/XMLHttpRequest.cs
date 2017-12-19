@@ -138,7 +138,7 @@ namespace System.Web
         /// <summary>
         /// The on read sate change.
         /// </summary>
-        public extern event Action<XMLHttpRequest, ProgressEvent> OnReadSateChange;
+        public extern event Action<XMLHttpRequest, ProgressEvent> OnReadyStateChange;
 
         /// <summary>
         /// Event queue for all listeners interested in OnLoad events.

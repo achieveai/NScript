@@ -2853,29 +2853,18 @@ function ArrayG(T, _callStatiConstructor) {
   return ArrayG$1_$T$_;
 };
 function NativeArray$1$$IndexOf(this_, value, startIndex) {
-  var i;
   startIndex = startIndex < 0 ? 0 : startIndex;
-  for (i = this_.length; i >= startIndex && i >= 0; --i)
-    if (this_[i] === value)
-      return i;
-  return -1;
+  return this_.indexOf(value, startIndex);
 };
 function NativeArray$1$$InsertAt(this_, index, value) {
-  var i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  for (i = this_.length - 1; i >= index; i--)
-    this_[i + 1] = this_[i];
-  this_[index] = value;
+  this_.splice(index, 0, value);
 };
 function NativeArray$1$$RemoveAt(this_, index) {
-  var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  len = this_.length - 1;
-  for (i = index; i < len; i++)
-    this_[i] = this_[i + 1];
-  this_.pop();
+  this_.splice(index, 1);
 };
 function NativeArray$1$$op_Implicit(n) {
   return n.get_innerArray();

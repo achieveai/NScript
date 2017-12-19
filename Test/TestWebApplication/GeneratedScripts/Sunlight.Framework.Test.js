@@ -1848,13 +1848,9 @@ function List(T, _callStatiConstructor) {
   return List$1_$T$_;
 };
 function NativeArray$1$$RemoveAt(this_, index) {
-  var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  len = this_.length - 1;
-  for (i = index; i < len; i++)
-    this_[i] = this_[i + 1];
-  this_.pop();
+  this_.splice(index, 1);
 };
 function NativeArray$1$$op_Implicit(n) {
   return n.get_innerArray();

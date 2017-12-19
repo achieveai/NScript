@@ -96,21 +96,9 @@ namespace System.Web
     [IgnoreNamespace, ScriptName("WebSocket")]
     public class WebSocket
     {
-        /// <summary>
-        /// Web socket.
-        /// </summary>
-        /// <param name="url"> URL of the document. </param>
-        /// <returns>
-        /// .
-        /// </returns>
         public extern WebSocket(string url);
+        public extern WebSocket(string url, string protocol);
 
-        /// <summary>
-        /// Gets the state of the ready.
-        /// </summary>
-        /// <value>
-        /// The ready state.
-        /// </value>
         public extern WebSocketReadyState ReadyState
         { get; }
 
@@ -141,19 +129,12 @@ namespace System.Web
         public extern string Protocol
         { get; }
 
-        /// <summary>
-        /// Event queue for all listeners interested in OnOpen events.
-        /// </summary>
-        public extern event Action<WebSocket, MessageEvent> OnOpen;
+        public extern event Action<WebSocket, Event> OnOpen;
 
-        /// <summary>
-        /// Event queue for all listeners interested in OnError events.
-        /// </summary>
         public extern event Action<WebSocket, ErrorEvent> OnError;
 
-        /// <summary>
-        /// Event queue for all listeners interested in OnClose events.
-        /// </summary>
+        public extern event Action<WebSocket, MessageEvent> OnMessage;
+
         public extern event Action<WebSocket, WebSocketCloseEvent> OnClose;
 
         /// <summary>

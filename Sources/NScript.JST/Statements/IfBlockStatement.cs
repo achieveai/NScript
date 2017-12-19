@@ -168,6 +168,9 @@ namespace NScript.JST
             {
                 if (ifBlock.FalseBlock == null)
                 {
+                    if (this.FalseBlock != null)
+                    { return true; }
+
                     return this.ShouldForceIfBlockEncapsulation2(ifBlock.TrueBlock);
                 }
 

@@ -260,7 +260,7 @@ namespace OwaSourceMapper
                 sb.Append("\t\"file\": \"" + this.File + "\",\n");
             }
 
-            sb.Append("\t\"sourceRoot\": \"" + Path.GetFileNameWithoutExtension(this.File) +".ashx?f=\",\n");
+            sb.Append("\t\"sourceRoot\": \"" + Path.GetFileNameWithoutExtension(this.File) + ".ashx\",\n");
 
             if (this.files.Count > 0)
             {
@@ -268,24 +268,18 @@ namespace OwaSourceMapper
                 sb.Append("\t\"sources\": [");
                 for (int i = 0; i < this.files.Count; i++)
                 {
-                    var fileName = System.IO.Path.GetFileName(this.files[i]);
-                    int tmp;
-                    if (fileMap.TryGetValue(fileName, out tmp))
-                    {
-                        fileMap[fileName] = tmp + 1;
-                        fileName = fileName + tmp + 1;
-                    }
+                    var fileName = Path.GetFullPath(this.files[i]).Replace(":", "$").Replace("\\", "/");
+                    if (fileMap.TryGetValue(fileName, out var tmp))
+                    { fileMap[fileName] = tmp + 1; fileName = fileName + tmp + 1; }
                     else
-                    {
-                        fileMap[fileName] = 1;
-                    }
+                    { fileMap[fileName] = 1; }
 
                     if (i > 0)
-                    {
-                        sb.Append(",\n\t\t");
-                    }
+                    { sb.Append(",\n\t\t"); }
+
                     sb.Append("\"" + fileName + "\"");
                 }
+
                 sb.Append("],\n");
                 sb.Append("\t\"sourcesLong\": [\"" + string.Join("\",\n\t\t\"", this.files) + "\"],\n");
             }
