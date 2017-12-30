@@ -69,9 +69,12 @@ namespace NScript.JST
                 }
 
                 string prefix = ident.SuggestedName;
+                var prefixLength = prefix.Length;
+
                 for (int i = 0; i < 1000; i++)
                 {
                     string postfix = ReadableIdentifierNamer.GetPostfix(i);
+                    var postfixLength = postfix.Length;
                     bool clash = false;
                     List<int> conflicts = this.conflictMap[identIdx];
                     if (conflicts != null) 
@@ -81,19 +84,21 @@ namespace NScript.JST
                             string name = this.assignedNames[conflictIdent];
                             if (name != null)
                             {
-                                if (postfix.Length == 0)
+                                var nameLength = name.Length;
+                                if (postfixLength == 0)
                                 {
                                     clash = name == prefix;
                                     if (clash) { break; }
                                 }
-                                else if (name.Length == prefix.Length + postfix.Length)
+                                else if (nameLength == prefixLength + postfixLength)
                                 {
                                     bool match = true;
-                                    for (int iName = prefix.Length - 1; match && iName >= 0; iName--)
-                                    { match = name[iName] == prefix[iName]; }
 
                                     for (int jPostFix = 0; match && jPostFix < postfix.Length; jPostFix++)
-                                    { match = name[name.Length - jPostFix - 1] == postfix[postfix.Length - jPostFix - 1]; }
+                                    { match = name[nameLength - jPostFix - 1] == postfix[postfixLength - jPostFix - 1]; }
+
+                                    for (int iName = prefixLength - 3; match && iName < prefixLength; iName++)
+                                    { match = name[iName] == prefix[iName]; }
 
                                     if (match)
                                     {
