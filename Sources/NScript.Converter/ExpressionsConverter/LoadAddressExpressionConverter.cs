@@ -102,7 +102,7 @@ namespace NScript.Converter.ExpressionsConverter
                                 : (JST.Expression)new JST.IndexExpression(
                                     objectBuilderFunction.Location,
                                     scope,
-                                    new JST.IdentifierExpression(objectRefIdentifier, converter.Scope),
+                                    new JST.IdentifierExpression(objectRefIdentifier, objectBuilderScope),
                                     new JST.IdentifierExpression(converter.Resolve(fieldReference.FieldReference), converter.Scope));
                         })));
 
@@ -239,7 +239,7 @@ namespace NScript.Converter.ExpressionsConverter
                         innerScope,
                         JST.BinaryOperator.Assignment,
                         expressionCreator(innerScope),
-                        new IdentifierExpression(setterArgument, converter.Scope))));
+                        new IdentifierExpression(setterArgument, innerScope))));
 
             initializer.AddInitializer(
                 converter.RuntimeManager.ReferenceManager.WriterIdentifier,

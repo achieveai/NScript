@@ -245,7 +245,10 @@ namespace NScript.JST
         {
             this.usageCount++;
 
-            this.AddUsageInternal(identifierScope);
+            if (!this.ownerScope.IsExecutionScope)
+            { this.AddUsageInternal(this.ownerScope); }
+            else
+            { this.AddUsageInternal(identifierScope); }
         }
 
         /// <summary>
@@ -256,22 +259,14 @@ namespace NScript.JST
         private bool AddUsageInternal(IdentifierScope identifierScope)
         {
             if (identifierScope == null)
-            {
-                return false;
-            }
+            { throw new Exception("Invalid operation exception"); }
             else if (identifierScope == this.ownerScope)
-            {
-                identifierScope.IdentifierUsed(this);
-                return true;
-            }
-            else if (this.AddUsageInternal(identifierScope.ParentScope))
-            {
-                identifierScope.IdentifierUsed(this);
-                return true;
-            }
+            { identifierScope.IdentifierUsed(this); return true; }
             else
             {
-                return false;
+                this.AddUsageInternal(identifierScope.ParentScope);
+                identifierScope.IdentifierUsed(this);
+                return true;
             }
         }
 

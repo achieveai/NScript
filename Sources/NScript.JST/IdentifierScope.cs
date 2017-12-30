@@ -6,6 +6,7 @@
 
 namespace NScript.JST
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
 
@@ -43,12 +44,6 @@ namespace NScript.JST
             new List<SimpleIdentifier>();
 
         /// <summary>
-        /// The conflicting scopes.
-        /// </summary>
-        private readonly List<IdentifierScope> conflictingScopes =
-            new List<IdentifierScope>();
-
-        /// <summary>
         /// backing list for ChildScopes.
         /// </summary>
         private readonly List<IdentifierScope> childScopes =
@@ -69,7 +64,7 @@ namespace NScript.JST
         /// <summary>
         /// List of names of the assigneds.
         /// </summary>
-        private Dictionary<SimpleIdentifier, string> assignedNames;
+        private Func<SimpleIdentifier, string> assignedNames;
 
         /// <summary>
         /// Backing field for ParameterIdentifiers.
@@ -214,6 +209,9 @@ namespace NScript.JST
             }
         }
 
+        public bool IsExecutionScope
+        { get { return this.isExecutionScope; } }
+
         /// <summary>
         /// Gets the parent scope.
         /// </summary>
@@ -266,15 +264,6 @@ namespace NScript.JST
         public IList<IdentifierScope> ChildScopes
         {
             get { return this.readonlyChildScopes; }
-        }
-
-        internal void AddConflictingScope(IdentifierScope scope)
-        {
-            if (!this.conflictingScopes.Contains(scope))
-            {
-                scope.conflictingScopes.Add(this);
-                this.conflictingScopes.Add(scope);
-            }
         }
 
         /// <summary>
@@ -339,7 +328,7 @@ namespace NScript.JST
 
             if (this.assignedNames != null)
             {
-                return this.assignedNames[identifier];
+                return this.assignedNames(identifier);
             }
 
             if (this.knownNameMap.TryGetValue(identifier.SuggestedName, out knownIdentifier)

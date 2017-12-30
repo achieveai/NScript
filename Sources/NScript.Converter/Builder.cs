@@ -185,9 +185,17 @@ namespace NScript.Converter
                             new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
                 }
 
-                IdentifierScope.ReadableIdentifierNamer nameInitializer = new IdentifierScope.ReadableIdentifierNamer(
-                    runtimeManager.Scope,
+                System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+
+                stopWatch.Start();
+                    new IdentifierScope.ReadableIdentifierNamer(
+                        runtimeManager.Scope);
+                stopWatch.Stop();
+                System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
+                stopWatch.Restart();
+                new IdentifierScope.ReadableIdentifierNamer(
                     runtimeManager.JSBaseObjectScopeManager.InstanceScope);
+                System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
                 JSWriter writer = new JSWriter(true, false);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();

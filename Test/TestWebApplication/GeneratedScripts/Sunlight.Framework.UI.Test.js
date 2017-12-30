@@ -399,12 +399,12 @@ function SkinBinderHelperTests$$TestStyleBinding(assert) {
   target = window.document.createElement("div");
   target.className = "t1";
   SkinBinderHelper$$Bind(NativeArray$1$$op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA$$PropBool1Getter])), function SkinBinderHelperTests$24$24TestStyleBinding_del(o1, o2, o3) {
-    SkinBinderHelper$$SetCssClass(o1, Type$$UnBoxTypeInstance(Boolean0, o2), Type$$CastType(String, o3));
+    SkinBinderHelper$$SetCssClass(o1, Type$$UnBoxTypeInstance(Boolean, o2), Type$$CastType(String, o3));
   }, "test", 113, 0, null, null, 0)])), src, NativeArray$1$$op_Implicit(ArrayG_$Object$_.__ctor([target])));
   assert.equal("t1 test", target.className, "After BindDataContext values should be equal");
   src.set_propBool1(false);
   SkinBinderHelper$$Bind(NativeArray$1$$op_Implicit(ArrayG_$SkinBinderInfo$_.__ctor([SkinBinderInfo_factory2(NativeArray$1$$op_Implicit(ArrayG_$Func_$Object_x_Object$_$_.__ctor([TestViewModelA$$PropBool1Getter])), function SkinBinderHelperTests$24$24TestStyleBinding_del2(o1, o2, o3) {
-    SkinBinderHelper$$SetCssClass(o1, Type$$UnBoxTypeInstance(Boolean0, o2), Type$$CastType(String, o3));
+    SkinBinderHelper$$SetCssClass(o1, Type$$UnBoxTypeInstance(Boolean, o2), Type$$CastType(String, o3));
   }, "test", 113, 0, null, null, 0)])), src, NativeArray$1$$op_Implicit(ArrayG_$Object$_.__ctor([target])));
   assert.equal("t1", target.className, "After BindDataContext values should be equal");
 };
@@ -545,7 +545,7 @@ ptyp_.forwardConverter = null;
 ptyp_.backwardConverter = null;
 ptyp_.defaultValue = null;
 ptyp_.mode = 0;
-ptyp_.__ctor = function SkinBinderInfo$$$$ctor1(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
+ptyp_.__ctor = function SkinBinderInfo$$$$ctor(propertyGetterPath, targetPropertySetter, binderType, objectIndex, forwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -556,7 +556,7 @@ ptyp_.__ctor = function SkinBinderInfo$$$$ctor1(propertyGetterPath, targetProper
   this.defaultValue = defaultValue;
   this.mode = 0;
 };
-ptyp_.__ctor0 = function SkinBinderInfo$$$$ctor2(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
+ptyp_.__ctor0 = function SkinBinderInfo$$$$ctor(propertyGetterPath, targetPropertySetterWithArg, targetPropertySetterArg, binderType, objectIndex, forwardConverter, defaultValue, extraObjectIndex) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -581,7 +581,7 @@ ptyp_.__ctor1 = function SkinBinderInfo$$$$ctor(propertyGetterPath, propertyName
   this.defaultValue = defaultValue;
   this.mode = 1;
 };
-ptyp_.__ctor3 = function SkinBinderInfo$$$$ctor3(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
+ptyp_.__ctor3 = function SkinBinderInfo$$$$ctor(propertyGetterPath, propertyNames, targetPropertySetter, targetPropertySetterArg, binderType, objectIndex, binderIndex, forwardConverter, defaultValue, extraObjectIndex) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -596,7 +596,7 @@ ptyp_.__ctor3 = function SkinBinderInfo$$$$ctor3(propertyGetterPath, propertyNam
   this.mode = 1;
   this.extraObjectIndex = extraObjectIndex;
 };
-ptyp_.__ctor2 = function SkinBinderInfo$$$$ctor0(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
+ptyp_.__ctor2 = function SkinBinderInfo$$$$ctor(propertyGetterPath, propertySetter, propertyNames, targetPropertySetter, targetPropertyGetter, targetPropertyName, binderType, objectIndex, binderIndex, forwardConverter, backwardConverter, defaultValue) {
   this.binderIndex = -1;
   this.extraObjectIndex = -1;
   this.propertyGetterPath = propertyGetterPath;
@@ -746,7 +746,7 @@ function TestViewModelA$$PropStr1Setter(obj, val) {
   Type$$CastType(TestViewModelA, obj).set_propStr1(Type$$CastType(String, val));
 };
 function TestViewModelA$$PropBool1Getter(obj) {
-  return Type$$BoxTypeInstance(Boolean0, Type$$CastType(TestViewModelA, obj).get_propBool1());
+  return Type$$BoxTypeInstance(Boolean, Type$$CastType(TestViewModelA, obj).get_propBool1());
 };
 function TestViewModelA_factory() {
   var this_;
@@ -1605,8 +1605,8 @@ function Element$$UnBind(this_, eventName, handler, capture) {
 };
 function Element$$UnBind0(this_, eventName) {
   this_.importedExtension = this_.importedExtension || Object$$GetNewImportedExtension();
-  EventBinder$$RemoveEvent1(this_, eventName, true);
-  EventBinder$$RemoveEvent1(this_, eventName, false);
+  EventBinder$$RemoveEvent0(this_, eventName, true);
+  EventBinder$$RemoveEvent0(this_, eventName, false);
 };
 function TestViewModelB() {
 };
@@ -1736,22 +1736,22 @@ function SkinBinderHelper$$TraversePropertyPath(binder, source) {
     source = binder.forwardConverter(source);
   return source;
 };
-function Boolean0(boxedValue) {
+function Boolean(boxedValue) {
   this.boxedValue = boxedValue;
 };
-Boolean0.typeId = "pb";
-Boolean0.getDefaultValue = function() {
+Boolean.typeId = "pb";
+Boolean.getDefaultValue = function() {
   return false;
 };
 function Boolean$$ToString(this_) {
   return this_ ? "true" : "false";
 };
 ptyp_ = new ValueType();
-Boolean0.prototype = ptyp_;
+Boolean.prototype = ptyp_;
 ptyp_.toString = function() {
   return Boolean$$ToString(this.boxedValue);
 };
-Type$$RegisterStructType(Boolean0, "System.Boolean", []);
+Type$$RegisterStructType(Boolean, "System.Boolean", []);
 function ListView() {
 };
 ListView.typeId = "qb";
@@ -2142,11 +2142,12 @@ ptyp_.bind = function SkinInstance$$Bind(skinable) {
   this.updateDataContext();
 };
 ptyp_.updateDataContext = function SkinInstance$$UpdateDataContext() {
-  if (this.skinableParent)
+  if (this.skinableParent) {
     if (this.skinableParent.get_dataContext() !== this.dataContext) {
       this.dataContext = this.skinableParent.get_dataContext();
       this.dataContextUpdated = true;
     }
+  }
   else if (this.dataContext !== null) {
     this.dataContext = null;
     this.dataContextUpdated = true;
@@ -2520,7 +2521,7 @@ function EventBinder$$RemoveEvent(importedElement, name, action, onCapture) {
   binder = EventBinder$$GetBinder(importedElement);
   binder.removeEvent(name, action, onCapture);
 };
-function EventBinder$$RemoveEvent1(importedElement, name, onCapture) {
+function EventBinder$$RemoveEvent0(importedElement, name, onCapture) {
   var binder;
   if (importedElement.importedExtension === null || importedElement.importedExtension.importedExtension === null)
     return;
@@ -2601,7 +2602,7 @@ ptyp_.removeEvent = function EventBinder$$RemoveEvent0(name, handler, onCapture)
       evts.set_item(name, elementEvent);
   }
 };
-ptyp_.removeEvent0 = function EventBinder$$RemoveEvent2(name, onCapture) {
+ptyp_.removeEvent0 = function EventBinder$$RemoveEvent1(name, onCapture) {
   var isW3wc, evts;
   isW3wc = EventBinder$$IsW3wc(this.target);
   onCapture = onCapture && isW3wc;
@@ -2703,13 +2704,13 @@ function ValueIfTrue(T, _callStatiConstructor) {
   var ValueIfTrue$1_$T$_, __initTracker;
   if (ValueIfTrue[T.typeId])
     return ValueIfTrue[T.typeId];
-  ValueIfTrue[T.typeId] = function Sunlight$$Framework$$UI$$Test$$ValueIfTrue$10() {
+  ValueIfTrue[T.typeId] = function Sunlight$$Framework$$UI$$Test$$ValueIfTrue$1() {
   };
   ValueIfTrue$1_$T$_ = ValueIfTrue[T.typeId];
   ValueIfTrue$1_$T$_.genericParameters = [T];
   ValueIfTrue$1_$T$_.genericClosure = ValueIfTrue;
   ValueIfTrue$1_$T$_.typeId = "ec$" + T.typeId + "$";
-  ValueIfTrue$1_$T$_.__ctor = function Sunlight_Framework_UI_Test_ValueIfTrue$1_factory0(value) {
+  ValueIfTrue$1_$T$_.__ctor = function Sunlight_Framework_UI_Test_ValueIfTrue$1_factory(value) {
     var this_;
     this_ = new ValueIfTrue$1_$T$_();
     this_.__ctor(value);
@@ -2738,7 +2739,7 @@ function ArrayG(T, _callStatiConstructor) {
   var Enumerator_$T$_, ArrayG$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, __initTracker, T$5b$5d_$T$_, __initTracker0;
   if (ArrayG[T.typeId])
     return ArrayG[T.typeId];
-  ArrayG[T.typeId] = function System$$ArrayG$10() {
+  ArrayG[T.typeId] = function System$$ArrayG$1() {
   };
   ArrayG$1_$T$_ = ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
@@ -2746,13 +2747,13 @@ function ArrayG(T, _callStatiConstructor) {
   ArrayG$1_$T$_.typeId = "fc$" + T.typeId + "$";
   IList$1_$T$_ = IList0(T, _callStatiConstructor);
   IEnumerable$1_$T$_ = IEnumerable0(T, _callStatiConstructor);
-  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory1(size) {
+  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
     this_.__ctor0(size);
     return this_;
   };
-  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory2(nativeArray) {
+  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory(nativeArray) {
     var this_;
     this_ = new ArrayG$1_$T$_();
     this_.__ctor1(nativeArray);
@@ -2767,7 +2768,7 @@ function ArrayG(T, _callStatiConstructor) {
   ptyp_.system$$Collections$$Generic$$IEnumerable_$T$_$$GetEnumerator = function ArrayG$1$$System$$Collections$$Generic$$IEnumerable_$T$_$$GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);
   };
-  ptyp_.__ctor0 = function ArrayG$1$$$$ctor0(size) {
+  ptyp_.__ctor0 = function ArrayG$1$$$$ctor(size) {
     var def, i;
     this.__ctor();
     this.innerArray = new Array(size);
@@ -2810,7 +2811,7 @@ function ArrayG(T, _callStatiConstructor) {
   ptyp_.getValue = function ArrayG$1$$GetValue(index) {
     return Type$$BoxTypeInstance(T, this.get_item(index));
   };
-  ptyp_.copyTo = function ArrayG$1$$CopyTo0(arr, index) {
+  ptyp_.copyTo = function ArrayG$1$$CopyTo(arr, index) {
     var nativeArray, length, nativeArrDst, i;
     nativeArray = this.innerArray;
     length = nativeArray.length;
@@ -2875,7 +2876,7 @@ function Func(T1, TRes, _callStatiConstructor) {
     return Func[T1.typeId][TRes.typeId];
     Func[T1.typeId] = {
     };
-  Func[T1.typeId][TRes.typeId] = function System$$Func$20() {
+  Func[T1.typeId][TRes.typeId] = function System$$Func$2() {
   };
   Func$2_$T1_x_TRes$_ = Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_TRes$_.genericParameters = [T1, TRes];
@@ -3040,7 +3041,7 @@ function NumberDictionary(TValue, _callStatiConstructor) {
   var Enumerator_$TValue$_, NumberDictionary$1_$TValue$_, KeyValuePair$2_$Number_x_TValue$_, IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_, __initTracker, __initTracker0;
   if (NumberDictionary[TValue.typeId])
     return NumberDictionary[TValue.typeId];
-  NumberDictionary[TValue.typeId] = function System$$Collections$$Generic$$NumberDictionary$10() {
+  NumberDictionary[TValue.typeId] = function System$$Collections$$Generic$$NumberDictionary$1() {
   };
   NumberDictionary$1_$TValue$_ = NumberDictionary[TValue.typeId];
   NumberDictionary$1_$TValue$_.genericParameters = [TValue];
@@ -3049,7 +3050,7 @@ function NumberDictionary(TValue, _callStatiConstructor) {
   KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, _callStatiConstructor);
   KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, _callStatiConstructor);
   IEnumerable$1_$KeyValuePair$2_$Number_x_TValue$_$_ = IEnumerable0(KeyValuePair(Number, TValue, _callStatiConstructor), _callStatiConstructor);
-  NumberDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_NumberDictionary$1_factory0() {
+  NumberDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_NumberDictionary$1_factory() {
     var this_;
     this_ = new NumberDictionary$1_$TValue$_();
     this_.__ctor();
@@ -3132,14 +3133,14 @@ function Queue(T, _callStatiConstructor) {
   var QueueEnumerator_$T$_, Queue$1_$T$_, IEnumerable$1_$T$_, __initTracker, __initTracker0;
   if (Queue[T.typeId])
     return Queue[T.typeId];
-  Queue[T.typeId] = function System$$Collections$$Generic$$Queue$10() {
+  Queue[T.typeId] = function System$$Collections$$Generic$$Queue$1() {
   };
   Queue$1_$T$_ = Queue[T.typeId];
   Queue$1_$T$_.genericParameters = [T];
   Queue$1_$T$_.genericClosure = Queue;
   Queue$1_$T$_.typeId = "ic$" + T.typeId + "$";
   IEnumerable$1_$T$_ = IEnumerable0(T, _callStatiConstructor);
-  Queue$1_$T$_.defaultConstructor = function System_Collections_Generic_Queue$1_factory0() {
+  Queue$1_$T$_.defaultConstructor = function System_Collections_Generic_Queue$1_factory() {
     var this_;
     this_ = new Queue$1_$T$_();
     this_.__ctor();
@@ -3190,7 +3191,7 @@ function List(T, _callStatiConstructor) {
   var ListEnumerator$1_$T$_, List$1_$T$_, IList$1_$T$_, IEnumerable$1_$T$_, __initTracker, __initTracker0;
   if (List[T.typeId])
     return List[T.typeId];
-  List[T.typeId] = function System$$Collections$$Generic$$List$10() {
+  List[T.typeId] = function System$$Collections$$Generic$$List$1() {
   };
   List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
@@ -3198,7 +3199,7 @@ function List(T, _callStatiConstructor) {
   List$1_$T$_.typeId = "jc$" + T.typeId + "$";
   IList$1_$T$_ = IList0(T, _callStatiConstructor);
   IEnumerable$1_$T$_ = IEnumerable0(T, _callStatiConstructor);
-  List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory0() {
+  List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory() {
     var this_;
     this_ = new List$1_$T$_();
     this_.__ctor();
@@ -3291,7 +3292,7 @@ function StringDictionary(TValue, _callStatiConstructor) {
   var Enumerator_$TValue$_, StringDictionary$1_$TValue$_, KeyValuePair$2_$String_x_TValue$_, IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_, __initTracker, __initTracker0;
   if (StringDictionary[TValue.typeId])
     return StringDictionary[TValue.typeId];
-  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$10() {
+  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$1() {
   };
   StringDictionary$1_$TValue$_ = StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
@@ -3300,13 +3301,13 @@ function StringDictionary(TValue, _callStatiConstructor) {
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
   IEnumerable$1_$KeyValuePair$2_$String_x_TValue$_$_ = IEnumerable0(KeyValuePair(String, TValue, _callStatiConstructor), _callStatiConstructor);
-  StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
+  StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
     this_.__ctor();
     return this_;
   };
-  StringDictionary$1_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1_factory1(innerDict) {
+  StringDictionary$1_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1_factory(innerDict) {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
     this_.__ctor0(innerDict);
@@ -3322,7 +3323,7 @@ function StringDictionary(TValue, _callStatiConstructor) {
     this.innerDict = {
     };
   };
-  ptyp_.__ctor0 = function StringDictionary$1$$$$ctor0(innerDict) {
+  ptyp_.__ctor0 = function StringDictionary$1$$$$ctor(innerDict) {
     this.innerDict = innerDict;
     this.count = this.computeCount();
   };
@@ -3409,7 +3410,7 @@ function Action(T1, _callStatiConstructor) {
   var Action$1_$T1$_, __initTracker;
   if (Action[T1.typeId])
     return Action[T1.typeId];
-  Action[T1.typeId] = function System$$Action$10() {
+  Action[T1.typeId] = function System$$Action$1() {
   };
   Action$1_$T1$_ = Action[T1.typeId];
   Action$1_$T1$_.genericParameters = [T1];
@@ -3434,7 +3435,7 @@ function Action0(T1, T2, _callStatiConstructor) {
     return Action0[T1.typeId][T2.typeId];
     Action0[T1.typeId] = {
     };
-  Action0[T1.typeId][T2.typeId] = function System$$Action$20() {
+  Action0[T1.typeId][T2.typeId] = function System$$Action$2() {
   };
   Action$2_$T1_x_T2$_ = Action0[T1.typeId][T2.typeId];
   Action$2_$T1_x_T2$_.genericParameters = [T1, T2];
@@ -3501,7 +3502,7 @@ function Enumerator0(TValue, _callStatiConstructor) {
   var KeyValuePair$2_$Number_x_TValue$_, Enumerator_$TValue$_, IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_, __initTracker;
   if (Enumerator0[TValue.typeId])
     return Enumerator0[TValue.typeId];
-  Enumerator0[TValue.typeId] = function System$$Collections$$Generic$$NumberDictionary$1$2fEnumerator0() {
+  Enumerator0[TValue.typeId] = function System$$Collections$$Generic$$NumberDictionary$1$2fEnumerator() {
   };
   Enumerator_$TValue$_ = Enumerator0[TValue.typeId];
   Enumerator_$TValue$_.genericParameters = [TValue];
@@ -3509,7 +3510,7 @@ function Enumerator0(TValue, _callStatiConstructor) {
   Enumerator_$TValue$_.typeId = "oc$" + TValue.typeId + "$";
   KeyValuePair$2_$Number_x_TValue$_ = KeyValuePair(Number, TValue, _callStatiConstructor);
   IEnumerator$1_$KeyValuePair$2_$Number_x_TValue$_$_ = IEnumerator0(KeyValuePair(Number, TValue, _callStatiConstructor), _callStatiConstructor);
-  Enumerator_$TValue$_.__ctor = function System_Collections_Generic_NumberDictionary$1$2fEnumerator_factory0(dict) {
+  Enumerator_$TValue$_.__ctor = function System_Collections_Generic_NumberDictionary$1$2fEnumerator_factory(dict) {
     var this_;
     this_ = new Enumerator_$TValue$_();
     this_.__ctor(dict);
@@ -3550,14 +3551,14 @@ function QueueEnumerator(T, _callStatiConstructor) {
   var QueueEnumerator_$T$_, IEnumerator$1_$T$_, __initTracker;
   if (QueueEnumerator[T.typeId])
     return QueueEnumerator[T.typeId];
-  QueueEnumerator[T.typeId] = function System$$Collections$$Generic$$Queue$1$2fQueueEnumerator0() {
+  QueueEnumerator[T.typeId] = function System$$Collections$$Generic$$Queue$1$2fQueueEnumerator() {
   };
   QueueEnumerator_$T$_ = QueueEnumerator[T.typeId];
   QueueEnumerator_$T$_.genericParameters = [T];
   QueueEnumerator_$T$_.genericClosure = QueueEnumerator;
   QueueEnumerator_$T$_.typeId = "pc$" + T.typeId + "$";
   IEnumerator$1_$T$_ = IEnumerator0(T, _callStatiConstructor);
-  QueueEnumerator_$T$_.__ctor = function System_Collections_Generic_Queue$1$2fQueueEnumerator_factory0(queue) {
+  QueueEnumerator_$T$_.__ctor = function System_Collections_Generic_Queue$1$2fQueueEnumerator_factory(queue) {
     var this_;
     this_ = new QueueEnumerator_$T$_();
     this_.__ctor(queue);
@@ -3601,14 +3602,14 @@ function ListEnumerator(T, _callStatiConstructor) {
   var IList$1_$T$_, ListEnumerator$1_$T$_, IEnumerator$1_$T$_, __initTracker, __initTracker0;
   if (ListEnumerator[T.typeId])
     return ListEnumerator[T.typeId];
-  ListEnumerator[T.typeId] = function System$$Collections$$Generic$$ListEnumerator$10() {
+  ListEnumerator[T.typeId] = function System$$Collections$$Generic$$ListEnumerator$1() {
   };
   ListEnumerator$1_$T$_ = ListEnumerator[T.typeId];
   ListEnumerator$1_$T$_.genericParameters = [T];
   ListEnumerator$1_$T$_.genericClosure = ListEnumerator;
   ListEnumerator$1_$T$_.typeId = "qc$" + T.typeId + "$";
   IEnumerator$1_$T$_ = IEnumerator0(T, _callStatiConstructor);
-  ListEnumerator$1_$T$_.__ctor = function System_Collections_Generic_ListEnumerator$1_factory0(list) {
+  ListEnumerator$1_$T$_.__ctor = function System_Collections_Generic_ListEnumerator$1_factory(list) {
     var this_;
     this_ = new ListEnumerator$1_$T$_();
     this_.__ctor(list);
@@ -3650,7 +3651,7 @@ function Enumerator1(TValue, _callStatiConstructor) {
   var KeyValuePair$2_$String_x_TValue$_, Enumerator_$TValue$_, IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_, __initTracker;
   if (Enumerator1[TValue.typeId])
     return Enumerator1[TValue.typeId];
-  Enumerator1[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$1$2fEnumerator0() {
+  Enumerator1[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$1$2fEnumerator() {
   };
   Enumerator_$TValue$_ = Enumerator1[TValue.typeId];
   Enumerator_$TValue$_.genericParameters = [TValue];
@@ -3658,7 +3659,7 @@ function Enumerator1(TValue, _callStatiConstructor) {
   Enumerator_$TValue$_.typeId = "rc$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
   IEnumerator$1_$KeyValuePair$2_$String_x_TValue$_$_ = IEnumerator0(KeyValuePair(String, TValue, _callStatiConstructor), _callStatiConstructor);
-  Enumerator_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1$2fEnumerator_factory0(dict) {
+  Enumerator_$TValue$_.__ctor = function System_Collections_Generic_StringDictionary$1$2fEnumerator_factory(dict) {
     var this_;
     this_ = new Enumerator_$TValue$_();
     this_.__ctor(dict);
@@ -3667,17 +3668,17 @@ function Enumerator1(TValue, _callStatiConstructor) {
   ptyp_ = Enumerator_$TValue$_.prototype;
   ptyp_.dict = null;
   ptyp_.keys = null;
-  ptyp_.system$$Collections$$IEnumerator$$get_Current = function Enumerator$$System$$Collections$$IEnumerator$$get_Current0() {
+  ptyp_.system$$Collections$$IEnumerator$$get_Current = function Enumerator$$System$$Collections$$IEnumerator$$get_Current() {
     return Type$$BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, this.get_current());
   };
-  ptyp_.__ctor = function Enumerator$$$$ctor0(dict) {
+  ptyp_.__ctor = function Enumerator$$$$ctor(dict) {
     this.dict = dict;
     this.keys = this.dict.get_keys().V_GetEnumerator_l$n$();
   };
-  ptyp_.get_current = function Enumerator$$get_Current0() {
+  ptyp_.get_current = function Enumerator$$get_Current() {
     return KeyValuePair$2_$String_x_TValue$_.__ctor(this.keys.V_get_Current_o$n$(), this.dict.get_item(this.keys.V_get_Current_o$n$()));
   };
-  ptyp_.moveNext = function Enumerator$$MoveNext0() {
+  ptyp_.moveNext = function Enumerator$$MoveNext() {
     return this.keys.V_MoveNext_h();
   };
   ptyp_.V_get_Current_h = ptyp_.system$$Collections$$IEnumerator$$get_Current;
@@ -3699,7 +3700,7 @@ function IEnumerable0(T, _callStatiConstructor) {
   var IEnumerable$1_$T$_, __initTracker;
   if (IEnumerable0[T.typeId])
     return IEnumerable0[T.typeId];
-  IEnumerable0[T.typeId] = function System$$Collections$$Generic$$IEnumerable$10() {
+  IEnumerable0[T.typeId] = function System$$Collections$$Generic$$IEnumerable$1() {
   };
   IEnumerable$1_$T$_ = IEnumerable0[T.typeId];
   IEnumerable$1_$T$_.genericParameters = [T];
@@ -3721,14 +3722,14 @@ function Enumerator(T, _callStatiConstructor) {
   var Enumerator_$T$_, IEnumerator$1_$T$_, __initTracker;
   if (Enumerator[T.typeId])
     return Enumerator[T.typeId];
-  Enumerator[T.typeId] = function System$$ArrayG$1$2fEnumerator0() {
+  Enumerator[T.typeId] = function System$$ArrayG$1$2fEnumerator() {
   };
   Enumerator_$T$_ = Enumerator[T.typeId];
   Enumerator_$T$_.genericParameters = [T];
   Enumerator_$T$_.genericClosure = Enumerator;
   Enumerator_$T$_.typeId = "sc$" + T.typeId + "$";
   IEnumerator$1_$T$_ = IEnumerator0(T, _callStatiConstructor);
-  Enumerator_$T$_.__ctor = function System_ArrayG$1$2fEnumerator_factory0(array) {
+  Enumerator_$T$_.__ctor = function System_ArrayG$1$2fEnumerator_factory(array) {
     var this_;
     this_ = new Enumerator_$T$_();
     this_.__ctor(array);
@@ -3737,17 +3738,17 @@ function Enumerator(T, _callStatiConstructor) {
   ptyp_ = Enumerator_$T$_.prototype;
   ptyp_.currentIndex = 0;
   ptyp_.array = null;
-  ptyp_.system$$Collections$$IEnumerator$$get_Current = function Enumerator$$System$$Collections$$IEnumerator$$get_Current1() {
+  ptyp_.system$$Collections$$IEnumerator$$get_Current = function Enumerator$$System$$Collections$$IEnumerator$$get_Current() {
     return Type$$BoxTypeInstance(T, this.get_current());
   };
-  ptyp_.__ctor = function Enumerator$$$$ctor1(array) {
+  ptyp_.__ctor = function Enumerator$$$$ctor(array) {
     this.currentIndex = -1;
     this.array = array;
   };
-  ptyp_.moveNext = function Enumerator$$MoveNext1() {
+  ptyp_.moveNext = function Enumerator$$MoveNext() {
     return ++this.currentIndex < this.array.V_get_Length();
   };
-  ptyp_.get_current = function Enumerator$$get_Current1() {
+  ptyp_.get_current = function Enumerator$$get_Current() {
     return this.array.get_item(this.currentIndex);
   };
   ptyp_.V_get_Current_h = ptyp_.system$$Collections$$IEnumerator$$get_Current;
@@ -3769,7 +3770,7 @@ function IEnumerator0(T, _callStatiConstructor) {
   var IEnumerator$1_$T$_, __initTracker;
   if (IEnumerator0[T.typeId])
     return IEnumerator0[T.typeId];
-  IEnumerator0[T.typeId] = function System$$Collections$$Generic$$IEnumerator$10() {
+  IEnumerator0[T.typeId] = function System$$Collections$$Generic$$IEnumerator$1() {
   };
   IEnumerator$1_$T$_ = IEnumerator0[T.typeId];
   IEnumerator$1_$T$_.genericParameters = [T];
@@ -3791,7 +3792,7 @@ function IList0(T, _callStatiConstructor) {
   var IList$1_$T$_, IEnumerable$1_$T$_, __initTracker;
   if (IList0[T.typeId])
     return IList0[T.typeId];
-  IList0[T.typeId] = function System$$Collections$$Generic$$IList$10() {
+  IList0[T.typeId] = function System$$Collections$$Generic$$IList$1() {
   };
   IList$1_$T$_ = IList0[T.typeId];
   IList$1_$T$_.genericParameters = [T];

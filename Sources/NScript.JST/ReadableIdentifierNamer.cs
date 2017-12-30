@@ -19,37 +19,32 @@ namespace NScript.JST
         /// </summary>
         public class ReadableIdentifierNamer
         {
-            Dictionary<SimpleIdentifier, List<SimpleIdentifier>> identifierMap
-                = new Dictionary<SimpleIdentifier, List<SimpleIdentifier>>();
-
-            Dictionary<SimpleIdentifier, string> assignedNames
-                = new Dictionary<SimpleIdentifier, string>();
+            Dictionary<SimpleIdentifier, int> identifierMapping = new Dictionary<SimpleIdentifier, int>();
+            List<SimpleIdentifier> identifiers = new List<SimpleIdentifier>();
+            List<List<int>> conflictMap = new List<List<int>>();
+            string[] assignedNames = null;
 
             static string[][] intToSuffix =
                 new string[10][];
 
             const string CharMap = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-            public ReadableIdentifierNamer(
-                params IdentifierScope[] rootScopes)
+            public ReadableIdentifierNamer(IdentifierScope rootScopes)
             {
                 this.ProcessScopes(
                     rootScopes,
                     this.CollectSimpleIdentifiers);
 
+                this.assignedNames = new string[this.identifiers.Count];
                 this.ProcessScopes(
                     rootScopes,
                     this.AssignNames);
             }
 
-            public string GetAssignedName(SimpleIdentifier identifier)
-            {
-                return this.assignedNames[identifier];
-            }
-
             private void AssignNames(IdentifierScope scope)
             {
-                scope.assignedNames = this.assignedNames;
+                scope.assignedNames = (si) => this.assignedNames[identifierMapping[si]];
+
                 if (scope.paramaterIdentifiers != null)
                 {
                     foreach (var ident in scope.paramaterIdentifiers)
@@ -66,9 +61,10 @@ namespace NScript.JST
 
             private void AssignName(IdentifierScope scope, SimpleIdentifier ident)
             {
+                var identIdx = identifierMapping[ident];
                 if (ident.ShouldEnforceSuggestion)
                 {
-                    this.assignedNames.Add(ident, ident.SuggestedName);
+                    this.assignedNames[identIdx] = ident.SuggestedName;
                     return;
                 }
 
@@ -77,13 +73,13 @@ namespace NScript.JST
                 {
                     string postfix = ReadableIdentifierNamer.GetPostfix(i);
                     bool clash = false;
-                    List<SimpleIdentifier> conflicts = null;
-                    if (this.identifierMap.TryGetValue(ident, out conflicts))
+                    List<int> conflicts = this.conflictMap[identIdx];
+                    if (conflicts != null) 
                     {
                         foreach (var conflictIdent in conflicts)
                         {
-                            string name;
-                            if (this.assignedNames.TryGetValue(conflictIdent, out name))
+                            string name = this.assignedNames[conflictIdent];
+                            if (name != null)
                             {
                                 if (postfix.Length == 0)
                                 {
@@ -111,7 +107,7 @@ namespace NScript.JST
 
                     if (!clash)
                     {
-                        this.assignedNames.Add(ident, prefix + postfix);
+                        this.assignedNames[identIdx] = prefix + postfix;
                         return;
                     }
                 }
@@ -123,77 +119,86 @@ namespace NScript.JST
                 {
                     foreach(var ident in scope.paramaterIdentifiers)
                     {
-                        this.AddIdentifierConflicts(scope, ident);
+                        var identIdx = this.GetIdentifierIndex(ident);
+                        // this.AddIdentifierConflicts(scope, ident);
+                        for (int j = 0; j < scope.usedIdentifiers.Count; j++)
+                        {
+                            var jId = scope.usedIdentifiers[j];
+                            if (ident == jId)
+                            { continue; }
+
+                            this.AddConflictIdentifiers(identIdx, jId);
+                        }
                     }
                 }
 
-                foreach (var ident in scope.scopedIdentifiers)
+                if (scope.IsExecutionScope)
                 {
-                    this.AddIdentifierConflicts(scope, ident);
+                    for (int i = 0; i < scope.scopedIdentifiers.Count; i++)
+                    {
+                        var iId = scope.scopedIdentifiers[i];
+                        var identIdx = this.GetIdentifierIndex(iId);
+
+                        for (int j = 0; j < scope.usedIdentifiers.Count; j++)
+                        {
+                            var jId = scope.usedIdentifiers[j];
+                            if (iId == jId)
+                            { continue; }
+
+                            this.AddConflictIdentifiers(identIdx, jId);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var ident in scope.scopedIdentifiers)
+                    {
+                        this.AddIdentifierConflicts(
+                            scope,
+                            this.GetIdentifierIndex(ident));
+                    }
                 }
             }
 
-            private void AddIdentifierConflicts(IdentifierScope scope, SimpleIdentifier ident)
+            private void AddIdentifierConflicts(IdentifierScope scope, int identIdx)
             {
                 var currentScope = scope;
                 while(currentScope != null)
                 {
-                    this.AddConflict(currentScope, ident);
-
-                    for (int iConflict = 0; iConflict < currentScope.conflictingScopes.Count; iConflict++)
-                    {
-                        var conflictScope = currentScope.conflictingScopes[iConflict];
-                        this.AddConflict(conflictScope, ident);
-                    }
-
+                    this.AddConflict(currentScope, identIdx);
                     currentScope = currentScope.parentScope;
                 }
             }
 
-            private void AddConflict(IdentifierScope scope, SimpleIdentifier ident)
+            private void AddConflict(IdentifierScope scope, int identIdx)
             {
-                if (scope.paramaterIdentifiers != null)
-                {
-                    for (int iIdent = 0;
-                        iIdent < scope.paramaterIdentifiers.Count;
-                        iIdent++)
-                    {
-                        var matchIdent = scope.paramaterIdentifiers[iIdent];
-                        if (matchIdent != ident
-                            && CanConflict(matchIdent.SuggestedName, ident.SuggestedName))
-                        {
-                            this.AddConflictIdentifiers(ident, matchIdent);
-                        }
-                    }
-                }
+                if (scope.isExecutionScope)
+                { throw new InvalidOperationException(); }
 
                 for (int iIdent = 0;
                     iIdent < scope.scopedIdentifiers.Count;
                     iIdent++)
                 {
                     var matchIdent = scope.scopedIdentifiers[iIdent];
-                    if (matchIdent != ident
-                        && CanConflict(matchIdent.SuggestedName, ident.SuggestedName))
-                    {
-                        this.AddConflictIdentifiers(ident, matchIdent);
-                    }
+                    this.AddConflictIdentifiers(identIdx, matchIdent);
                 }
             }
 
-            private void AddConflictIdentifiers(SimpleIdentifier left, SimpleIdentifier right)
+            private void AddConflictIdentifiers(int leftIdx, SimpleIdentifier right)
             {
-                List<SimpleIdentifier> identifiers;
-                if (CanConflict(left.SuggestedName, right.SuggestedName))
+                if (CanConflict(this.identifiers[leftIdx].SuggestedName, right.SuggestedName))
                 {
-                    if (!this.identifierMap.TryGetValue(left, out identifiers))
+                    List<int> identifiers = this.conflictMap[leftIdx];
+                    if (identifiers == null)
                     {
-                        identifiers = new List<SimpleIdentifier>();
-                        this.identifierMap.Add(left, identifiers);
+                        identifiers = new List<int>();
+                        this.conflictMap[leftIdx] = identifiers;
                     }
 
-                    identifiers.Add(right);
+                    identifiers.Add(this.GetIdentifierIndex(right));
                 }
 
+                /*
                 if (CanConflict(right.SuggestedName, left.SuggestedName))
                 {
                     if (!this.identifierMap.TryGetValue(right, out identifiers))
@@ -204,6 +209,19 @@ namespace NScript.JST
 
                     identifiers.Add(left);
                 }
+                */
+            }
+
+            private int GetIdentifierIndex(SimpleIdentifier identifier)
+            {
+                int rv;
+                if (this.identifierMapping.TryGetValue(identifier, out rv))
+                { return rv; }
+
+                this.identifierMapping[identifier] = rv = this.identifierMapping.Count;
+                this.conflictMap.Add(null);
+                this.identifiers.Add(identifier);
+                return rv;
             }
 
             private static bool CanConflict(string left, string right)
@@ -214,7 +232,7 @@ namespace NScript.JST
                 if (maxLen > minLength + 2)
                 { return false; }
 
-                for (int idx = minLength - 2; idx >= 0; idx--)
+                for (int idx = minLength - 1; idx >= 0; idx--)
                 {
                     if (left[idx] != right[idx])
                     { return false; }
@@ -224,11 +242,12 @@ namespace NScript.JST
             }
 
             private void ProcessScopes(
-                IList<IdentifierScope> scopes,
+                IdentifierScope scope,
                 Action<IdentifierScope> processor)
             {
                 HashSet<IdentifierScope> processedScopes = new HashSet<IdentifierScope>();
-                Queue<IdentifierScope> processingQueue = new Queue<IdentifierScope>(scopes);
+                Queue<IdentifierScope> processingQueue = new Queue<IdentifierScope>();
+                processingQueue.Enqueue(scope);
 
                 while(processingQueue.Count > 0)
                 {
@@ -242,7 +261,6 @@ namespace NScript.JST
                     processor(scopeToProcess);
 
                     scopeToProcess.childScopes.ForEach(c => processingQueue.Enqueue(c));
-                    scopeToProcess.conflictingScopes.ForEach(c => processingQueue.Enqueue(c));
                 }
             }
 

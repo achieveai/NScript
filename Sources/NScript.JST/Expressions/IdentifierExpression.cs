@@ -30,11 +30,6 @@ namespace NScript.JST
             Location loc = null)
             : base(loc, scope)
         {
-            if (identifier.SuggestedName == "get_fullHeight")
-            {
-                if (identifier.SuggestedName != null) ;
-            }
-
             this.identifier = identifier;
             this.identifier.AddUsage(this.Scope);
         }

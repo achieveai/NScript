@@ -1371,19 +1371,19 @@ function ArrayG(T, _callStatiConstructor) {
   var ArrayG$1_$T$_, T$5b$5d_$T$_, __initTracker;
   if (ArrayG[T.typeId])
     return ArrayG[T.typeId];
-  ArrayG[T.typeId] = function System$$ArrayG$10() {
+  ArrayG[T.typeId] = function System$$ArrayG$1() {
   };
   ArrayG$1_$T$_ = ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = ArrayG;
   ArrayG$1_$T$_.typeId = "mb$" + T.typeId + "$";
-  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory1(size) {
+  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
     this_.__ctor0(size);
     return this_;
   };
-  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory2(nativeArray) {
+  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory(nativeArray) {
     var this_;
     this_ = new ArrayG$1_$T$_();
     this_.__ctor1(nativeArray);
@@ -1392,7 +1392,7 @@ function ArrayG(T, _callStatiConstructor) {
   ptyp_ = new ArrayImpl();
   ArrayG$1_$T$_.prototype = ptyp_;
   ptyp_.innerArray = null;
-  ptyp_.__ctor0 = function ArrayG$1$$$$ctor0(size) {
+  ptyp_.__ctor0 = function ArrayG$1$$$$ctor(size) {
     var def, i;
     this.__ctor();
     this.innerArray = new Array(size);
@@ -1424,7 +1424,7 @@ function ArrayG(T, _callStatiConstructor) {
   ptyp_.get_innerArray = function ArrayG$1$$get_InnerArray() {
     return this.innerArray;
   };
-  ptyp_.copyTo = function ArrayG$1$$CopyTo0(arr, index) {
+  ptyp_.copyTo = function ArrayG$1$$CopyTo(arr, index) {
     var nativeArray, length, nativeArrDst, i;
     nativeArray = this.innerArray;
     length = nativeArray.length;
@@ -1460,7 +1460,7 @@ function Func(T1, TRes, _callStatiConstructor) {
     return Func[T1.typeId][TRes.typeId];
     Func[T1.typeId] = {
     };
-  Func[T1.typeId][TRes.typeId] = function System$$Func$20() {
+  Func[T1.typeId][TRes.typeId] = function System$$Func$2() {
   };
   Func$2_$T1_x_TRes$_ = Func[T1.typeId][TRes.typeId];
   Func$2_$T1_x_TRes$_.genericParameters = [T1, TRes];
@@ -1484,13 +1484,13 @@ function Lazy(T, _callStatiConstructor) {
   var Lazy$1_$T$_, __initTracker;
   if (Lazy[T.typeId])
     return Lazy[T.typeId];
-  Lazy[T.typeId] = function Sunlight$$Framework$$Lazy$10() {
+  Lazy[T.typeId] = function Sunlight$$Framework$$Lazy$1() {
   };
   Lazy$1_$T$_ = Lazy[T.typeId];
   Lazy$1_$T$_.genericParameters = [T];
   Lazy$1_$T$_.genericClosure = Lazy;
   Lazy$1_$T$_.typeId = "ob$" + T.typeId + "$";
-  Lazy$1_$T$_.__ctor = function Sunlight_Framework_Lazy$1_factory0(factory) {
+  Lazy$1_$T$_.__ctor = function Sunlight_Framework_Lazy$1_factory(factory) {
     var this_;
     this_ = new Lazy$1_$T$_();
     this_.__ctor(factory);
@@ -1531,13 +1531,13 @@ function ObservableCollection(T, _callStatiConstructor) {
   var List$1_$T$_, ArrayG$1_$T$_, CollectionChangedEventArgs$1_$T$_, ObservableCollection$1_$T$_, __initTracker, __initTracker0;
   if (ObservableCollection[T.typeId])
     return ObservableCollection[T.typeId];
-  ObservableCollection[T.typeId] = function Sunlight$$Framework$$Observables$$ObservableCollection$10() {
+  ObservableCollection[T.typeId] = function Sunlight$$Framework$$Observables$$ObservableCollection$1() {
   };
   ObservableCollection$1_$T$_ = ObservableCollection[T.typeId];
   ObservableCollection$1_$T$_.genericParameters = [T];
   ObservableCollection$1_$T$_.genericClosure = ObservableCollection;
   ObservableCollection$1_$T$_.typeId = "pb$" + T.typeId + "$";
-  ObservableCollection$1_$T$_.defaultConstructor = function Sunlight_Framework_Observables_ObservableCollection$1_factory0() {
+  ObservableCollection$1_$T$_.defaultConstructor = function Sunlight_Framework_Observables_ObservableCollection$1_factory() {
     var this_;
     this_ = new ObservableCollection$1_$T$_();
     this_.__ctor0();
@@ -1612,13 +1612,13 @@ function CollectionChangedEventArgs(T, _callStatiConstructor) {
   var CollectionChangedEventArgs$1_$T$_, __initTracker;
   if (CollectionChangedEventArgs[T.typeId])
     return CollectionChangedEventArgs[T.typeId];
-  CollectionChangedEventArgs[T.typeId] = function Sunlight$$Framework$$Observables$$CollectionChangedEventArgs$10() {
+  CollectionChangedEventArgs[T.typeId] = function Sunlight$$Framework$$Observables$$CollectionChangedEventArgs$1() {
   };
   CollectionChangedEventArgs$1_$T$_ = CollectionChangedEventArgs[T.typeId];
   CollectionChangedEventArgs$1_$T$_.genericParameters = [T];
   CollectionChangedEventArgs$1_$T$_.genericClosure = CollectionChangedEventArgs;
   CollectionChangedEventArgs$1_$T$_.typeId = "qb$" + T.typeId + "$";
-  CollectionChangedEventArgs$1_$T$_.__ctor = function Sunlight_Framework_Observables_CollectionChangedEventArgs$1_factory0(action, changeIndex, newItems, oldItems) {
+  CollectionChangedEventArgs$1_$T$_.__ctor = function Sunlight_Framework_Observables_CollectionChangedEventArgs$1_factory(action, changeIndex, newItems, oldItems) {
     var this_;
     this_ = new CollectionChangedEventArgs$1_$T$_();
     this_.__ctor(action, changeIndex, newItems, oldItems);
@@ -1679,7 +1679,7 @@ function Action(T1, T2, _callStatiConstructor) {
     return Action[T1.typeId][T2.typeId];
     Action[T1.typeId] = {
     };
-  Action[T1.typeId][T2.typeId] = function System$$Action$20() {
+  Action[T1.typeId][T2.typeId] = function System$$Action$2() {
   };
   Action$2_$T1_x_T2$_ = Action[T1.typeId][T2.typeId];
   Action$2_$T1_x_T2$_.genericParameters = [T1, T2];
@@ -1707,7 +1707,7 @@ function StringDictionary(TValue, _callStatiConstructor) {
   var StringDictionary$1_$TValue$_, KeyValuePair$2_$String_x_TValue$_, __initTracker;
   if (StringDictionary[TValue.typeId])
     return StringDictionary[TValue.typeId];
-  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$10() {
+  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$1() {
   };
   StringDictionary$1_$TValue$_ = StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
@@ -1715,7 +1715,7 @@ function StringDictionary(TValue, _callStatiConstructor) {
   StringDictionary$1_$TValue$_.typeId = "sb$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
-  StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
+  StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
     this_.__ctor();
@@ -1793,13 +1793,13 @@ function List(T, _callStatiConstructor) {
   var List$1_$T$_, __initTracker;
   if (List[T.typeId])
     return List[T.typeId];
-  List[T.typeId] = function System$$Collections$$Generic$$List$10() {
+  List[T.typeId] = function System$$Collections$$Generic$$List$1() {
   };
   List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
   List$1_$T$_.typeId = "tb$" + T.typeId + "$";
-  List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory0() {
+  List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory() {
     var this_;
     this_ = new List$1_$T$_();
     this_.__ctor();

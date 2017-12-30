@@ -662,7 +662,9 @@ namespace NScript.Converter.TypeSystemConverter
                 throw new ArgumentException("paramDef");
             }
 
-            Statement rv = this.GenerateLocalTypeRefInitCall(typeReference);
+            Statement rv = this.GenerateLocalTypeRefInitCall(
+                typeReference,
+                this.Scope);
 
             if (rv == null)
             {
@@ -1415,7 +1417,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         protected Statement GenerateLocalTypeRefInitCall(
             TypeReference typeReference,
-            IdentifierScope scope = null)
+            IdentifierScope scope)
         {
             if (this.hasTypeRefInit)
             {
@@ -1684,7 +1686,10 @@ namespace NScript.Converter.TypeSystemConverter
             if (this.hasTypeRefInit)
             {
                 List<Statement> initializerStatements = new List<Statement>();
-                initializerStatements.Add(this.GenerateLocalTypeRefInitCall(this.localTypeReference));
+                initializerStatements.Add(
+                    this.GenerateLocalTypeRefInitCall(
+                        this.localTypeReference,
+                        this.Scope));
 
                 IfBlockStatement ifBlockStatement = new IfBlockStatement(
                     null,

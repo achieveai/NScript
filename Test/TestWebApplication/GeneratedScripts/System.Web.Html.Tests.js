@@ -377,13 +377,13 @@ function StringDictionary(TValue, _callStatiConstructor) {
   var StringDictionary$1_$TValue$_, __initTracker;
   if (StringDictionary[TValue.typeId])
     return StringDictionary[TValue.typeId];
-  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$10() {
+  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$1() {
   };
   StringDictionary$1_$TValue$_ = StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = StringDictionary;
   StringDictionary$1_$TValue$_.typeId = "h$" + TValue.typeId + "$";
-  StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory0() {
+  StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory() {
     var this_;
     this_ = new StringDictionary$1_$TValue$_();
     this_.__ctor();
