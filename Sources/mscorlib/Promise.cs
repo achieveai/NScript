@@ -20,10 +20,8 @@ using System.Runtime.CompilerServices;
         public static extern Promise<T> Resolve<T>(Promise<T> value);
 
         public static extern Promise<T> Reject<T>(T value);
-        public static extern Promise<NativeArray<T>> All<T>(NativeArray<T> values);
-        public static extern Promise<NativeArray<T>> All<T>(NativeArray<Promise<T>> values);
-        public static extern Promise<NativeArray<T>> All<T>(params T[] values);
-        public static extern Promise<NativeArray<T>> All<T>(params Promise<T>[] values);
+        public static extern Promise<NativeArray> All(NativeArray<Promise> values);
+        public static extern Promise<NativeArray> All(params Promise[] values);
         public static extern Promise Race(NativeArray<Promise> promises);
         public static extern Promise Race(params Promise[] promises);
 
@@ -89,6 +87,11 @@ using System.Runtime.CompilerServices;
 
         public extern Promise(
             Action<Action<Promise<T>>, Action<Promise>> callback);
+
+        public static extern Promise<NativeArray<T>> All(NativeArray<T> values);
+        public static extern Promise<NativeArray<T>> All(NativeArray<Promise<T>> values);
+        public static extern Promise<NativeArray<T>> All(params T[] values);
+        public static extern Promise<NativeArray<T>> All(params Promise<T>[] values);
 
         public extern Promise Then(Action<T> onFulfilled);
 

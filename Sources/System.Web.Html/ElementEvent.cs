@@ -148,5 +148,11 @@ namespace System.Web.Html
         /// </value>
         public extern Element ToElement
         { get; }
+
+        public extern Number ClientX
+        { get; }
+
+        public extern Number ClientY
+        { get; }
     }
 }

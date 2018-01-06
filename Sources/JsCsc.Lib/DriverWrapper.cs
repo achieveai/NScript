@@ -32,6 +32,9 @@ namespace JsCsc.Lib
 
         public void Compile(string[] args)
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var errorStream = Console.Error;
             var messageStream = Console.Out;
             var printer = new StreamReportPrinter(errorStream);
@@ -113,6 +116,9 @@ namespace JsCsc.Lib
                 }
                 catch { }
             }
+
+            stopWatch.Stop();
+            System.Console.WriteLine("TimeTaken: {0}ms", stopWatch.ElapsedMilliseconds);
         }
 
         private void OnResolveComplete(AssemblyDefinition assemblyDefinition)

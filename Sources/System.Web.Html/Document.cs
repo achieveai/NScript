@@ -129,6 +129,28 @@ using System.Runtime.CompilerServices;
         { get; }
 
         /// <summary>
+        /// Adds a listener for the specified event.
+        /// </summary>
+        /// <param name="eventName"> The name of the event such as 'load'. </param>
+        /// <param name="listener">  The listener to be invoked in response to the event. </param>
+        public extern void AddEventListener(string eventName, Action<ElementEvent> listener);
+
+        /// <summary>
+        /// Adds a listener for the specified event.
+        /// </summary>
+        /// <param name="eventName">  The name of the event such as 'load'. </param>
+        /// <param name="listener">   The listener to be invoked in response to the event. </param>
+        /// <param name="useCapture"> Whether the listener wants to initiate capturing the event. </param>
+        public extern void AddEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
+
+        /// <summary>
+        /// Attaches the event.
+        /// </summary>
+        /// <param name="eventName"> Name of the event. </param>
+        /// <param name="handler">   The handler. </param>
+        public extern void AttachEvent(string eventName, Action handler);
+
+        /// <summary>
         /// Closes this object.
         /// </summary>
         public extern void Close();
@@ -179,6 +201,21 @@ using System.Runtime.CompilerServices;
         /// </returns>
         public extern Element CreateTextNode(string tagName);
 
+        public void DeleteCookie(string cookieName, string path = "/", string domain = null)
+        {
+            this.Cookie = cookieName + "=;path=" +
+                ((!string.IsNullOrEmpty(path)) ? path : "/") +
+                ((!string.IsNullOrEmpty(domain)) ? ";domain=" + domain : string.Empty) +
+                ";expires=" + new DateTime(0).ToGMTString();
+        }
+
+        /// <summary>
+        /// Detaches the event.
+        /// </summary>
+        /// <param name="eventName"> Name of the event. </param>
+        /// <param name="handler">   The handler. </param>
+        public extern void DetachEvent(string eventName, Action handler);
+
         /// <summary>
         /// Dispatch event.
         /// </summary>
@@ -214,6 +251,29 @@ using System.Runtime.CompilerServices;
         /// </summary>
         public extern void Focus();
 
+        public StringDictionary<string> GetCookies()
+        {
+            var rv = new StringDictionary<string>();
+
+            var cookieParts = this.Cookie.Split(';');
+            for (int iPart = cookieParts.Length - 1; iPart >= 0; iPart--)
+            {
+                var singleCookieParts = cookieParts[iPart].Split('=');
+                if (singleCookieParts.Length <= 1)
+                { continue; }
+
+                var cookieName = singleCookieParts[0];
+                var cookieValue = singleCookieParts[1];
+
+                if (cookieName[0] == ' ')
+                { cookieName = cookieName.Substring(1); }
+
+                rv[cookieName] = cookieValue;
+            }
+
+            return rv;
+        }
+
         /// <summary>
         /// Gets an element by identifier.
         /// </summary>
@@ -222,6 +282,36 @@ using System.Runtime.CompilerServices;
         /// The element by identifier.
         /// </returns>
         public extern Element GetElementById(string id);
+
+        /// <summary>
+        /// Gets the elements by class name internal.
+        /// </summary>
+        /// <param name="className"> Name of the class. </param>
+        /// <returns>
+        /// The elements by class name internal.
+        /// </returns>
+        [ScriptName("getElementsByClassName")]
+        public extern NativeArray<Element> GetElementsByClassName(string className);
+
+        /// <summary>
+        /// Gets the elements by name internal.
+        /// </summary>
+        /// <param name="name"> The name. </param>
+        /// <returns>
+        /// The elements by name internal.
+        /// </returns>
+        [ScriptName("getElementsByName")]
+        public extern NativeArray<Element> GetElementsByName(string name);
+
+        /// <summary>
+        /// Gets the elements by tag name internal.
+        /// </summary>
+        /// <param name="tagName"> Name of the tag. </param>
+        /// <returns>
+        /// The elements by tag name internal.
+        /// </returns>
+        [ScriptName("getElementsByTagName")]
+        public extern NativeArray<Element> GetElementsByTagName(string tagName);
 
         /// <summary>
         /// Query if this object has focus.
@@ -291,33 +381,14 @@ using System.Runtime.CompilerServices;
         public extern Element QuerySelector(string selector);
 
         /// <summary>
-        /// Adds a listener for the specified event.
+        /// Queries a selector all internal.
         /// </summary>
-        /// <param name="eventName"> The name of the event such as 'load'. </param>
-        /// <param name="listener">  The listener to be invoked in response to the event. </param>
-        public extern void AddEventListener(string eventName, Action<ElementEvent> listener);
-
-        /// <summary>
-        /// Adds a listener for the specified event.
-        /// </summary>
-        /// <param name="eventName">  The name of the event such as 'load'. </param>
-        /// <param name="listener">   The listener to be invoked in response to the event. </param>
-        /// <param name="useCapture"> Whether the listener wants to initiate capturing the event. </param>
-        public extern void AddEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
-
-        /// <summary>
-        /// Attaches the event.
-        /// </summary>
-        /// <param name="eventName"> Name of the event. </param>
-        /// <param name="handler">   The handler. </param>
-        public extern void AttachEvent(string eventName, Action handler);
-
-        /// <summary>
-        /// Detaches the event.
-        /// </summary>
-        /// <param name="eventName"> Name of the event. </param>
-        /// <param name="handler">   The handler. </param>
-        public extern void DetachEvent(string eventName, Action handler);
+        /// <param name="selector"> The selector. </param>
+        /// <returns>
+        /// The selector all internal.
+        /// </returns>
+        [ScriptName("querySelectorAll")]
+        public extern NativeArray<Element> QuerySelectorAll(string selector);
 
         /// <summary>
         /// Removes a listener for the specified event.
@@ -334,87 +405,12 @@ using System.Runtime.CompilerServices;
         /// <param name="useCapture"> Whether the listener wants to initiate capturing the event. </param>
         public extern void RemoveEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
 
-        /// <summary>
-        /// Writes.
-        /// </summary>
-        /// <param name="text"> The string to write. </param>
-        public extern void Write(string text);
-
-        /// <summary>
-        /// Writelns.
-        /// </summary>
-        /// <param name="text"> The text. </param>
-        public extern void Writeln(string text);
-
-        /// <summary>
-        /// Gets the elements by class name internal.
-        /// </summary>
-        /// <param name="className"> Name of the class. </param>
-        /// <returns>
-        /// The elements by class name internal.
-        /// </returns>
-        [ScriptName("getElementsByClassName")]
-        public extern NativeArray<Element> GetElementsByClassName(string className);
-
-        /// <summary>
-        /// Gets the elements by name internal.
-        /// </summary>
-        /// <param name="name"> The name. </param>
-        /// <returns>
-        /// The elements by name internal.
-        /// </returns>
-        [ScriptName("getElementsByName")]
-        public extern NativeArray<Element> GetElementsByName(string name);
-
-        /// <summary>
-        /// Gets the elements by tag name internal.
-        /// </summary>
-        /// <param name="tagName"> Name of the tag. </param>
-        /// <returns>
-        /// The elements by tag name internal.
-        /// </returns>
-        [ScriptName("getElementsByTagName")]
-        public extern NativeArray<Element> GetElementsByTagName(string tagName);
-
-        /// <summary>
-        /// Queries a selector all internal.
-        /// </summary>
-        /// <param name="selector"> The selector. </param>
-        /// <returns>
-        /// The selector all internal.
-        /// </returns>
-        [ScriptName("querySelectorAll")]
-        public extern NativeArray<Element> QuerySelectorAll(string selector);
-
-        public StringDictionary<string> GetCookies()
-        {
-            var rv = new StringDictionary<string>();
-
-            var cookieParts = this.Cookie.Split(';');
-            for (int iPart = cookieParts.Length - 1; iPart >= 0; iPart--)
-            {
-                var singleCookieParts = cookieParts[iPart].Split('=');
-                if (singleCookieParts.Length <= 1)
-                { continue; }
-
-                var cookieName = singleCookieParts[0];
-                var cookieValue = singleCookieParts[1];
-
-                if (cookieName[0] == ' ')
-                { cookieName = cookieName.Substring(1); }
-
-                rv[cookieName] = cookieValue;
-            }
-
-            return rv;
-        }
-
         public void SetCookie(
-            string cookieName,
-            string value,
-            float days = 0,
-            string path = "/",
-            string domain = null)
+                    string cookieName,
+                    string value,
+                    float days = 0,
+                    string path = "/",
+                    string domain = null)
         {
             string expires;
             if (days > 0)
@@ -431,12 +427,16 @@ using System.Runtime.CompilerServices;
                 + (!string.IsNullOrEmpty(domain) ? ";domain=" + domain : string.Empty);
         }
 
-        public void DeleteCookie(string cookieName, string path = "/", string domain = null)
-        {
-            this.Cookie = cookieName + "=;path=" +
-                ((!string.IsNullOrEmpty(path)) ? path : "/") +
-                ((!string.IsNullOrEmpty(domain)) ? ";domain=" + domain : string.Empty) +
-                ";expires=" + new DateTime(0).ToGMTString();
-        }
+        /// <summary>
+        /// Writes.
+        /// </summary>
+        /// <param name="text"> The string to write. </param>
+        public extern void Write(string text);
+
+        /// <summary>
+        /// Writelns.
+        /// </summary>
+        /// <param name="text"> The text. </param>
+        public extern void Writeln(string text);
     }
 }

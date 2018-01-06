@@ -194,8 +194,27 @@ namespace System.Web.Html
         /// <summary>
         /// The current style.
         /// </summary>
-        public extern Style CurrentStyle
+        [ScriptName("currentStyle")]
+        private extern Style CurrentStyleInternal
         { get; }
+
+        public Style CurrentStyle
+        {
+            get
+            {
+                var win = Window.Instance;
+                Style rv;
+                if (win.HasGetComputedStyle)
+                { rv = win.GetComputedStyle(this); }
+                else
+                { rv = this.CurrentStyleInternal; }
+
+                if (object.IsNullOrUndefined(rv))
+                { return null; }
+
+                return rv;
+            }
+        }
 
         /// <summary>
         /// Gets a list of class.
@@ -442,6 +461,14 @@ namespace System.Web.Html
         /// The on touch start event handler.
         /// </value>
         public extern event Action<Element, ElementEvent> OnTouchStart;
+
+        /// <summary>
+        /// Gets the on touch cancel event handler.
+        /// </summary>
+        /// <value>
+        /// The on touch cancel event handler.
+        /// </value>
+        public extern event Action<Element, ElementEvent> OnTouchCancel;
 
         /// <summary>
         /// Gets the on touch end event handler.

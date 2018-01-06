@@ -8,6 +8,8 @@ namespace NScript
     {
         private static void Main(string[] args)
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
             ParseOptions parseOptions = ParseOptions.ParseArgs(args);
 
             if (parseOptions == null)
@@ -44,6 +46,9 @@ namespace NScript
                 plugins.ToArray());
 
             builder.Execute();
+
+            stopWatch.Stop();
+            System.Console.WriteLine("TimeTaken: {0}ms", stopWatch.ElapsedMilliseconds);
             System.Environment.Exit(0);
         }
     }

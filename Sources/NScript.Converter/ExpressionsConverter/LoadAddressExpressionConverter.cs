@@ -102,8 +102,8 @@ namespace NScript.Converter.ExpressionsConverter
                                 : (JST.Expression)new JST.IndexExpression(
                                     objectBuilderFunction.Location,
                                     scope,
-                                    new JST.IdentifierExpression(objectRefIdentifier, objectBuilderScope),
-                                    new JST.IdentifierExpression(converter.Resolve(fieldReference.FieldReference), converter.Scope));
+                                    new JST.IdentifierExpression(objectRefIdentifier, scope),
+                                    new JST.IdentifierExpression(converter.Resolve(fieldReference.FieldReference), scope));
                         })));
 
             JST.Expression objectRefExpression;

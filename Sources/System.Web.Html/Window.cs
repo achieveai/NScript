@@ -351,6 +351,14 @@ namespace System.Web.Html
         public extern Performance Performance
         { get; }
 
+        [ScriptName("getComputedStyle")]
+        public extern bool HasGetComputedStyle
+        { get; }
+
+        public extern Style GetComputedStyle(Element elem);
+
+        public extern Style GetComputedStyle(Element elem, string pseudoElem);
+
         /// <summary>
         /// Opens the given document.
         /// </summary>
