@@ -179,19 +179,15 @@ namespace Sunlight.Framework.UI
             {
                 this.ApplyObservableList();
             }
+
+            foreach (var item in this.items)
+            { item.Activate(); }
         }
 
         protected override void OnDeactivate()
         {
-            var items = this.items;
-            int itemCount = items.Count;
-            if (itemCount > 0)
-            {
-                for (int iItem = 0; iItem < itemCount; iItem++)
-                {
-                    items[iItem].Deactivate();
-                }
-            }
+            foreach (var item in this.items)
+            { item.Deactivate(); }
 
             base.OnDeactivate();
         }
@@ -226,11 +222,7 @@ namespace Sunlight.Framework.UI
             if (this.fixedList == null)
             {
                 for (int iItem = 0; iItem < itemsCount; iItem++)
-                {
-                    var item = items[iItem];
-                    item.Dispose();
-                    item.Element.Remove();
-                }
+                { RemoveChild(items[iItem]); }
 
                 items.Clear();
                 return;
@@ -276,7 +268,7 @@ namespace Sunlight.Framework.UI
 
                     listViewItem.DataContext = fixedList[iObject];
                     listViewItem.SelectionHelper = this.selectionHelper;
-                    listViewItem.Activate();
+                    ActivateChild(listViewItem);
                 }
 
                 this.RemoveChildren(fixedListCount, itemsCount - fixedListCount);
@@ -291,9 +283,7 @@ namespace Sunlight.Framework.UI
             {
                 for (int iItem = 0; iItem < itemsCount; iItem++)
                 {
-                    var item = items[iItem];
-                    item.Dispose();
-                    item.Element.Remove();
+                    RemoveChild(items[iItem]);
                 }
 
                 items.Clear();
@@ -474,7 +464,7 @@ namespace Sunlight.Framework.UI
 
                 listViewItem.DataContext = list[iObject];
                 listViewItem.SelectionHelper = this.selectionHelper;
-                listViewItem.Activate();
+                ActivateChild(listViewItem);
             }
         }
 
@@ -519,7 +509,7 @@ namespace Sunlight.Framework.UI
 
                 listViewItem.DataContext = observableList[iObject];
                 listViewItem.SelectionHelper = this.selectionHelper;
-                listViewItem.Activate();
+                ActivateChild(listViewItem);
             }
 
             this.RemoveChildren(listCount, itemsCount - listCount);
@@ -530,10 +520,22 @@ namespace Sunlight.Framework.UI
             for (int iObject = delCount + changeIndex - 1; iObject >= changeIndex; iObject--)
             {
                 var item = items[iObject];
+                RemoveChild(items[iObject]);
                 items.RemoveAt(iObject);
-                item.Element.Remove();
-                item.Dispose();
             }
+        }
+
+        private void ActivateChild(ListViewItem lvi)
+        {
+            if (this.IsActive)
+            { lvi.Activate(); }
+        }
+
+        private void RemoveChild(ListViewItem lvi)
+        {
+            lvi.Dispose();
+            lvi.Element.Remove();
+            lvi.DataContext = null;
         }
 
         private Element CreateElement()

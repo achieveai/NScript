@@ -263,7 +263,7 @@ namespace System
         public extern void Sort(Func<T, T, int> sortFunction);
 
         public static implicit operator NativeArray<T>(T[] n)
-        { return ((ArrayG<T>)(object)n).InnerArray; }
+        { return n == null ? null : ((ArrayG<T>)(object)n).InnerArray; }
 
         [ScriptName("shift")]
         private extern void ShiftImpl();

@@ -1441,7 +1441,9 @@ namespace NScript.CLR
                 ByReferenceType refType = typeReference as ByReferenceType;
                 if (refType != null)
                 {
-                    return new TypeReference[] { arrayType.ElementType };
+                    // Throw exception to figure why we are here.
+                    // return new TypeReference[] { refType.ElementType };
+                    throw new NotImplementedException();
                 }
 
                 GenericInstanceType giType = typeReference as GenericInstanceType;
@@ -1453,19 +1455,25 @@ namespace NScript.CLR
                 OptionalModifierType optmodType = typeReference as OptionalModifierType;
                 if (optmodType != null)
                 {
-                    return new TypeReference[] { arrayType.ElementType };
+                    // Throw exception to figure why we are here.
+                    // return new TypeReference[] { optmodType.ElementType };
+                    throw new NotImplementedException();
                 }
 
                 RequiredModifierType reqmodType = typeReference as RequiredModifierType;
                 if (reqmodType != null)
                 {
-                    return new TypeReference[] { arrayType.ElementType };
+                    // Throw exception to figure why we are here.
+                    // return new TypeReference[] { reqmodType.ElementType };
+                    throw new NotImplementedException();
                 }
 
                 PointerType ptrType = typeReference as PointerType;
                 if (ptrType != null)
                 {
-                    return new TypeReference[] { arrayType.ElementType };
+                    // Throw exception to figure why we are here.
+                    // return new TypeReference[] { ptrType.ElementType };
+                    throw new NotImplementedException();
                 }
             }
 

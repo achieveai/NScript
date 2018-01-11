@@ -111,6 +111,16 @@ using System.Collections.Generic;
         }
 
         /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="items">  List that stores the items in the collection. </param>
+        public ObservableCollection(ObservableCollection<T> items)
+        {
+            this.items = new List<T>();
+            this.items.AddRange(items.items);
+        }
+
+        /// <summary>
         /// Occurs when an item in the collection changes, or the entire collection changes.
         /// </summary>
         public event Action<INotifyCollectionChanged<T>, CollectionChangedEventArgs<T>> CollectionChanged;
@@ -215,7 +225,7 @@ using System.Collections.Generic;
         /// </summary>
         /// <param name="insertIndex">Index of the insert.</param>
         /// <param name="itemsToAdd">The items to add.</param>
-        public void InsertRangeAt(int insertIndex, List<T> itemsToAdd)
+        public void InsertRangeAt(int insertIndex, IList<T> itemsToAdd)
         {
             ExceptionHelpers.ThrowOnArgumentNull(itemsToAdd, "itemsToAdd");
             ExceptionHelpers.ThrowOnOutOfRange(insertIndex, 0, this.Count, "insertIndex");
@@ -297,7 +307,7 @@ using System.Collections.Generic;
         /// Adds the range.
         /// </summary>
         /// <param name="objArray">The obj array.</param>
-        public void AddRange(List<T> objArray)
+        public void AddRange(IList<T> objArray)
         {
             this.CheckReentrancy();
             this.items.AddRange(objArray);

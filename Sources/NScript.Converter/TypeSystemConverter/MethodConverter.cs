@@ -648,6 +648,13 @@ namespace NScript.Converter.TypeSystemConverter
         {
             GenericParameterType? typeScope = typeReference.GetGenericTypeScope();
 
+            // Convert ByRef type to normal type. There is not need to keep it
+            // as ByRef type, we do not ever care about byRef part of the type.
+            // at least not while referencing the type.
+            ByReferenceType byRefType = typeReference as ByReferenceType;
+            if (byRefType != null)
+            { typeReference = byRefType.ElementType; }
+
             if (typeScope.HasValue
                 && typeScope.Value == GenericParameterType.Method)
             {
@@ -661,7 +668,6 @@ namespace NScript.Converter.TypeSystemConverter
                 // // if the type being resolve does not require any generic parameters, there is no point in going forward.
                 // if (!requiresGenericParameter)
                 // { return typeConverter.Resolve(typeReference); }
-
                 if (!hasGenericArguments)
                 {
                     throw new ApplicationException(

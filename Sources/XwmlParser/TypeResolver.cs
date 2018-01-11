@@ -62,6 +62,45 @@ namespace XwmlParser
             string[] split1 = fullName.Split('!');
             if (split1.Length != 2)
             {
+                switch (fullName)
+                {
+                    case "char":
+                        return this.context.KnownReferences.Char;
+                    case "byte":
+                        return this.context.KnownReferences.Byte;
+                    case "sbyte":
+                        return this.context.KnownReferences.SByte;
+                    case "short":
+                        return this.context.KnownReferences.Short;
+                    case "ushort":
+                        return this.context.KnownReferences.UShort;
+                    case "int":
+                        return this.context.KnownReferences.Int32;
+                    case "uint":
+                        return this.context.KnownReferences.UInt32;
+                    case "long":
+                        return this.context.KnownReferences.Int64;
+                    case "ulong":
+                        return this.context.KnownReferences.UInt64;
+                    case "float":
+                        return this.context.KnownReferences.Single;
+                    case "double":
+                        return this.context.KnownReferences.Double;
+                    case "string":
+                        return this.context.KnownReferences.String;
+                    default:
+                        if (fullName.EndsWith("?"))
+                        {
+                            var structType = GetTypeReference(fullName.Substring(0, fullName.Length - 1));
+                            if (structType.IsValueType)
+                            {
+                                var genericType = new GenericInstanceType(this.context.KnownReferences.NullableType);
+                                genericType.GenericArguments.Add(structType);
+                                return genericType;
+                            }
+                        }
+                        break;
+                }
                 throw new ApplicationException(
                     string.Format("Invalid TypeName: {0}", fullName));
             }
