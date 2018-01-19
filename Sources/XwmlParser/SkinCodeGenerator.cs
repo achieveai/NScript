@@ -9,8 +9,10 @@ namespace XwmlParser
     using HtmlAgilityPack;
     using Mono.Cecil;
     using NScript.CLR;
+    using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
+    using NScript.Utils;
     using System;
     using System.Collections.Generic;
     using XwmlParser.NodeInfos;
@@ -217,8 +219,23 @@ namespace XwmlParser
         {
             foreach (var childNode in nodeInfo.ChildNodes)
             {
-                childNode.GenerateCode(this);
-                this.IterateChildNodes(childNode);
+                try
+                {
+                    childNode.GenerateCode(this);
+                    this.IterateChildNodes(childNode);
+                } catch (Exception ex)
+                {
+                    if (ex is ApplicationException)
+                    { throw; }
+
+                    throw new ConverterLocationException(
+                        new Location(
+                            this.Parser.HtmlParser.ResourceName,
+                            childNode.Node.Line,
+                            childNode.Node.LinePosition),
+                        "Unknown error generating code",
+                        ex);
+                }
             }
         }
 
