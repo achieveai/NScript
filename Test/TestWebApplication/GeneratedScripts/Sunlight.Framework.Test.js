@@ -1853,7 +1853,7 @@ function NativeArray$1$$RemoveAt(this_, index) {
   this_.splice(index, 1);
 };
 function NativeArray$1$$op_Implicit(n) {
-  return n.get_innerArray();
+  return n ? n.get_innerArray() : null;
 };
 function KeyValuePair(K, V, _callStatiConstructor) {
   var KeyValuePair$2_$K_x_V$_, __initTracker;

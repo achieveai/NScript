@@ -102,6 +102,7 @@ namespace System.Web.Html
         /// <value>
         /// true if on line, false if not.
         /// </value>
+        [ScriptName("online")]
         public extern bool OnLine
         { get; }
 

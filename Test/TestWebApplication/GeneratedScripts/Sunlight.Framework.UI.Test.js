@@ -1800,19 +1800,23 @@ ptyp_.set_itemSkin = function ListView$$set_ItemSkin(value) {
   }
 };
 ptyp_.onActivate0 = function ListView$$OnActivate() {
+  var stmtTemp1, item;
   this.onActivate();
   if (this.fixedList)
     this.applyFixedList();
   else if (this.observableList)
     this.applyObservableList();
+  for (stmtTemp1 = this.items.V_GetEnumerator_g(); stmtTemp1.V_MoveNext_h(); ) {
+    item = stmtTemp1.V_get_Current_h();
+    item.activate();
+  }
 };
 ptyp_.onDeactivate0 = function ListView$$OnDeactivate() {
-  var items, itemCount, iItem;
-  items = this.items;
-  itemCount = items.get_count();
-  if (itemCount > 0)
-    for (iItem = 0; iItem < itemCount; iItem++)
-      items.get_item(iItem).deactivate();
+  var stmtTemp1, item;
+  for (stmtTemp1 = this.items.V_GetEnumerator_g(); stmtTemp1.V_MoveNext_h(); ) {
+    item = stmtTemp1.V_get_Current_h();
+    item.deactivate();
+  }
   this.onDeactivate();
 };
 ptyp_.internalDispose1 = function ListView$$InternalDispose() {
@@ -1831,15 +1835,12 @@ ptyp_.internalDispose1 = function ListView$$InternalDispose() {
   this.internalDispose0();
 };
 ptyp_.applyFixedList = function ListView$$ApplyFixedList() {
-  var items, itemsCount, iItem, item, fixedList, fixedListCount, iObject, listViewItem;
+  var items, itemsCount, iItem, fixedList, fixedListCount, iObject, listViewItem;
   items = this.items;
   itemsCount = items.get_count();
   if (!this.fixedList) {
-    for (iItem = 0; iItem < itemsCount; iItem++) {
-      item = items.get_item(iItem);
-      item.dispose();
-      Node$$Remove(item.get_element());
-    }
+    for (iItem = 0; iItem < itemsCount; iItem++)
+      this.removeChild(items.get_item(iItem));
     items.clear();
     return;
   }
@@ -1864,21 +1865,18 @@ ptyp_.applyFixedList = function ListView$$ApplyFixedList() {
       }
       listViewItem.set_dataContext(fixedList.V_get_Item_e(iObject));
       listViewItem.set_selectionHelper(this.selectionHelper);
-      listViewItem.activate();
+      this.activateChild(listViewItem);
     }
     this.removeChildren(fixedListCount, itemsCount - fixedListCount);
   }
 };
 ptyp_.applyObservableList = function ListView$$ApplyObservableList() {
-  var items, itemsCount, iItem, item;
+  var items, itemsCount, iItem;
   items = this.items;
   itemsCount = items.get_count();
   if (!this.observableList) {
-    for (iItem = 0; iItem < itemsCount; iItem++) {
-      item = items.get_item(iItem);
-      item.dispose();
-      Node$$Remove(item.get_element());
-    }
+    for (iItem = 0; iItem < itemsCount; iItem++)
+      this.removeChild(items.get_item(iItem));
     items.clear();
     return;
   }
@@ -1973,7 +1971,7 @@ ptyp_.observableEventAdd = function ListView$$ObservableEventAdd(changeIndex, li
     }
     listViewItem.set_dataContext(list.V_get_Item_e(iObject));
     listViewItem.set_selectionHelper(this.selectionHelper);
-    listViewItem.activate();
+    this.activateChild(listViewItem);
   }
 };
 ptyp_.resetObservableItems = function ListView$$ResetObservableItems() {
@@ -1999,7 +1997,7 @@ ptyp_.resetObservableItems = function ListView$$ResetObservableItems() {
     }
     listViewItem.set_dataContext(observableList.V_get_Item_k(iObject));
     listViewItem.set_selectionHelper(this.selectionHelper);
-    listViewItem.activate();
+    this.activateChild(listViewItem);
   }
   this.removeChildren(listCount, itemsCount - listCount);
 };
@@ -2007,10 +2005,18 @@ ptyp_.removeChildren = function ListView$$RemoveChildren(changeIndex, delCount) 
   var iObject, item;
   for (iObject = delCount + changeIndex - 1; iObject >= changeIndex; iObject--) {
     item = this.items.get_item(iObject);
+    this.removeChild(this.items.get_item(iObject));
     this.items.removeAt(iObject);
-    Node$$Remove(item.get_element());
-    item.dispose();
   }
+};
+ptyp_.activateChild = function ListView$$ActivateChild(lvi) {
+  if (this.get_isActive())
+    lvi.activate();
+};
+ptyp_.removeChild = function ListView$$RemoveChild(lvi) {
+  lvi.dispose();
+  Node$$Remove(lvi.get_element());
+  lvi.set_dataContext(null);
 };
 ptyp_.createElement = function ListView$$CreateElement() {
   return this.get_element().ownerDocument.createElement(this.inlineItems ? "div" : "li");
@@ -2868,7 +2874,7 @@ function NativeArray$1$$RemoveAt(this_, index) {
   this_.splice(index, 1);
 };
 function NativeArray$1$$op_Implicit(n) {
-  return n.get_innerArray();
+  return n ? n.get_innerArray() : null;
 };
 function Func(T1, TRes, _callStatiConstructor) {
   var Func$2_$T1_x_TRes$_, __initTracker;
