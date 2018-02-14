@@ -114,15 +114,6 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
-        /// Gets source element.
-        /// </summary>
-        /// <value>
-        /// The source element.
-        /// </value>
-        public new extern Element SrcElement
-        { get; }
-
-        /// <summary>
         /// Gets target for the.
         /// </summary>
         /// <value>

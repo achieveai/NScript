@@ -47,7 +47,7 @@
             return 0;
         }
 
-        [Script("return this === obj2;")]
+        [Script("return obj1 === obj2;")]
         public extern static bool ReferenceEquals(object obj1, object obj2);
 
         [Script("return obj === null || typeof obj == \"undefined\";")]
