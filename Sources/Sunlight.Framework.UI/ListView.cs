@@ -215,6 +215,11 @@ namespace Sunlight.Framework.UI
             base.InternalDispose();
         }
 
+        protected virtual ListViewItem CreateListViewItem()
+        {
+            return new ListViewItem(this.CreateElement());
+        }
+
         private void ApplyFixedList()
         {
             var items = this.items;
@@ -245,7 +250,7 @@ namespace Sunlight.Framework.UI
                     }
                     else
                     {
-                        listViewItem = new ListViewItem(this.CreateElement());
+                        listViewItem = this.CreateListViewItem();
 
                         if (this.itemCssClassName != null)
                         {
