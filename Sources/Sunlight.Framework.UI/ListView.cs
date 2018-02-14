@@ -427,8 +427,7 @@ namespace Sunlight.Framework.UI
 
             for (int iObject = 0; iObject < listCount; iObject++)
             {
-                ListViewItem listViewItem = new ListViewItem(
-                        this.CreateElement());
+                ListViewItem listViewItem = this.CreateListViewItem();
                 if (this.itemCssClassName != null)
                 {
                     listViewItem.Element.ClassName = this.itemCssClassName;
@@ -491,7 +490,7 @@ namespace Sunlight.Framework.UI
                 }
                 else
                 {
-                    listViewItem = new ListViewItem(this.CreateElement());
+                    listViewItem = this.CreateListViewItem();
                     if (this.itemCssClassName != null)
                     {
                         listViewItem.Element.ClassName = this.itemCssClassName;
