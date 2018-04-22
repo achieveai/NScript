@@ -2095,7 +2095,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         private bool HasWrappedField()
         {
-            return this.context.IsPsudoType(this.typeConverter.TypeDefinition) && this.typeConverter.TypeDefinition.HasFields;
+            return this.context.IsPsudoType(this.typeConverter.TypeDefinition)
+                && this.typeConverter.TypeDefinition.Fields.Count(_ => !_.IsStatic && !_.HasConstant) > 0;
         }
     }
 }

@@ -192,15 +192,14 @@ namespace NScript.Converter.ExpressionsConverter
             TypeReference t2)
         {
             if (t1.IsSame(t2))
-            {
-                return false;
-            }
+            { return false; }
 
             if ((t1.IsDouble() || t1.IsIntegerOrEnum())
                 && t2.IsIntegerOrEnum())
-            {
-                return false;
-            }
+            { return false; }
+
+            if (t1.IsDouble() && t2.IsDouble())
+            { return false; }
 
             if (t1.IsGenericInstance && t1.Resolve().IsSameDefinition(context.ClrKnownReferences.NullableType))
             {
