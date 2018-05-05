@@ -72,23 +72,23 @@
 
         public extern string LocaleFormat(string format);
 
-        [IntrinsicOperator]
-        public extern static bool operator ==(DateTime a, DateTime b);
+        public static bool operator ==(DateTime a, DateTime b)
+        { return a - b == 0; }
 
-        [IntrinsicOperator]
-        public extern static bool operator >(DateTime a, DateTime b);
+        public  static bool operator >(DateTime a, DateTime b)
+        { return a - b > 0; }
 
-        [IntrinsicOperator]
-        public extern static bool operator >=(DateTime a, DateTime b);
+        public static bool operator >=(DateTime a, DateTime b)
+        { return a - b >= 0; }
 
-        [IntrinsicOperator]
-        public extern static bool operator !=(DateTime a, DateTime b);
+        public static bool operator !=(DateTime a, DateTime b)
+        { return a - b != 0; }
 
-        [IntrinsicOperator]
-        public extern static bool operator <(DateTime a, DateTime b);
+        public static bool operator <(DateTime a, DateTime b)
+        { return a - b < 0; } 
 
-        [IntrinsicOperator]
-        public extern static bool operator <=(DateTime a, DateTime b);
+        public static bool operator <=(DateTime a, DateTime b)
+        { return a - b <= 0; } 
 
         [IntrinsicOperator]
         public extern static long operator -(DateTime a, DateTime b);
