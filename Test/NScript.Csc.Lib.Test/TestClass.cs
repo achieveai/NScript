@@ -14,13 +14,13 @@ namespace NScript.Csc.Lib.Test
     public class TestClass
     {
         [Test]
-        public void TestSimpleBinaryExpression()
+        public void TestWriteLine()
         {
             const string code = @"
 class Test {
-    public int TestMethod(int i)
+    public void TestMethod(System.Text.StringBuilder sb, int i)
     {
-        return i + 10 << 1;
+        sb.Append(i);
     }
 }";
             var visitMap = GetVisitMap(code);
@@ -45,6 +45,33 @@ StatementList: SyntaxKind:ClassDeclaration
         }
 
         [Test]
+        public void TestSimpleBinaryExpression()
+        {
+            const string code = @"
+class Test {
+    public int TestMethod(int i)
+    {
+        return i + 10 << 1;
+    }
+}";
+            var visitMap = GetVisitMap(code);
+            // TODO: Add your test code here
+            Assert.AreEqual(
+@"Block: SyntaxKind:Block
+  ReturnStatement: SyntaxKind:ReturnStatement
+    BinaryOperator: SyntaxKind:LeftShiftExpression Operator: IntLeftShift
+      BinaryOperator: SyntaxKind:AddExpression Operator: IntAddition
+        Parameter: SyntaxKind:IdentifierName, ParameterRef: int
+        Literal: SyntaxKind:NumericLiteralExpression Val: 10
+      Literal: SyntaxKind:NumericLiteralExpression Val: 1
+Block: SyntaxKind:ClassDeclaration
+  ExpressionStatement: SyntaxKind:ClassDeclaration
+    Call: SyntaxKind:ClassDeclaration
+      object.Object(), IsVirt:False Start Args",
+            visitMap);
+        }
+
+        [Test]
         public void TestStaticBinaryExpression()
         {
             const string code = @"
@@ -54,19 +81,19 @@ static class Test {
         return i + 10 << 1;
     }
 }";
+            var result = @"
+Block: SyntaxKind:Block
+  ReturnStatement: SyntaxKind:ReturnStatement
+    BinaryOperator: SyntaxKind:LeftShiftExpression Operator: IntLeftShift
+      BinaryOperator: SyntaxKind:AddExpression Operator: IntAddition
+        Parameter: SyntaxKind:IdentifierName, ParameterRef: int
+        Literal: SyntaxKind:NumericLiteralExpression Val: 10
+      Literal: SyntaxKind:NumericLiteralExpression Val: 1";
             var visitMap = GetVisitMap(code);
             // TODO: Add your test code here
             Assert.AreEqual(
-@"StatementList: SyntaxKind:MethodDeclaration
-  Block: SyntaxKind:Block
-    SequencePoint: SyntaxKind:ReturnStatement
-      ReturnStatement: SyntaxKind:ReturnStatement
-        BinaryOperator: SyntaxKind:LeftShiftExpression Operator: IntLeftShift
-          BinaryOperator: SyntaxKind:AddExpression Operator: IntAddition
-            Parameter: SyntaxKind:IdentifierName, ParameterRef: int
-            Literal: SyntaxKind:NumericLiteralExpression Val: 10
-          Literal: SyntaxKind:NumericLiteralExpression Val: 1",
-            visitMap);
+                result,
+                visitMap);
         }
 
         [Test]
@@ -86,7 +113,25 @@ static class Test {
     }
 }";
 
-            const string result = @"";
+            const string result = @"Block: SyntaxKind:Block
+  LocalDeclaration: SyntaxKind:LocalDeclarationStatement Name: sum
+    Literal: SyntaxKind:NumericLiteralExpression Val: 0
+  ForStatement: SyntaxKind:ForStatement
+    LocalDeclaration: SyntaxKind:VariableDeclarator Name: l
+      Literal: SyntaxKind:NumericLiteralExpression Val: 0
+    BinaryOperator: SyntaxKind:LessThanExpression Operator: IntLessThan
+      Local: SyntaxKind:IdentifierName
+      Parameter: SyntaxKind:IdentifierName, ParameterRef: int
+    ExpressionStatement: SyntaxKind:PreIncrementExpression
+      IncrementOperator: SyntaxKind:PreIncrementExpression
+        Parameter: SyntaxKind:IdentifierName, ParameterRef: int
+    Block: SyntaxKind:Block
+      ExpressionStatement: SyntaxKind:ExpressionStatement
+        CompoundAssignmentOperator: SyntaxKind:AddAssignmentExpression
+          Local: SyntaxKind:IdentifierName
+          Local: SyntaxKind:IdentifierName
+  ReturnStatement: SyntaxKind:ReturnStatement
+    Local: SyntaxKind:IdentifierName";
 
             var visitMap = GetVisitMap(code);
 
@@ -111,7 +156,9 @@ static class Test {
 
             var model = compilation.GetSemanticModel(tree, true);
 
-            return SerializationHelper.ExpressionVisitMap(compilation, model).Trim();
+            return SerializationHelper.ExpressionVisitMap(
+                compilation,
+                model).Trim();
         }
     }
 }

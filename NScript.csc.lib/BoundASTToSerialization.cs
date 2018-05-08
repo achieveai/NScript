@@ -206,7 +206,13 @@ namespace NScript.Csc.Lib
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitIncrementOperator(node, arg);
+            var rv = new UnaryExpression
+            {
+                Expression = this.Visit(node.Operand, arg) as ExpressionSer,
+                Operator = (int)node.OperatorKind,
+                Location = node.Syntax.GetSerLoc(),
+                IsLifted = node.ResultConversion.IsBoxing
+            };
             arg.Depth--;
             return rv;
         }
@@ -310,7 +316,15 @@ namespace NScript.Csc.Lib
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitCompoundAssignmentOperator(node, arg);
+            var rv = new BinaryExpression
+            {
+                Left = this.Visit(node.Left, arg) as ExpressionSer,
+                Right = this.Visit(node.Right, arg) as ExpressionSer,
+                IsLifted = node.LeftConversion.IsBoxing,
+                Operator = (int)node.Operator.Kind,
+                Location = node.Syntax.GetSerLoc()
+            };
+
             arg.Depth--;
             return rv;
         }
@@ -593,12 +607,21 @@ namespace NScript.Csc.Lib
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            foreach (var statement in node.Statements)
-            { this.Visit(statement, arg); }
+            switch (node.Syntax.Kind())
+            {
+                case SyntaxKind.ClassDeclaration:
+                case SyntaxKind.Block:
+                    foreach (var statement in node.Statements)
+                    { this.Visit(statement, arg); }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
 
             arg.Depth--;
             return null;
         }
+
         public override AstBase VisitScope(BoundScope node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
@@ -624,21 +647,41 @@ namespace NScript.Csc.Lib
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
             { Write("  "); }
 
-            WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitLocalDeclaration(node, arg);
+            WriteLine("{0}: SyntaxKind:{1} Name: {2}", node.Kind, node.Syntax.Kind(), node.LocalSymbol);
+
+            AstBase rv = null;
+            if (node.InitializerOpt != null)
+            { rv = this.Visit(node.InitializerOpt, arg); }
+
             arg.Depth--;
             return rv;
         }
+
         public override AstBase VisitMultipleLocalDeclarations(BoundMultipleLocalDeclarations node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitMultipleLocalDeclarations(node, arg);
+            var rv = new StatementListSer
+            {
+                Statements = node
+                    .LocalDeclarations
+                    .Select(_ =>
+                    {
+                        var decl = this.Visit(_, arg);
+                        return (StatementSer)(
+                            new StatementExpressionSer
+                            {
+                                Expression = decl as ExpressionSer
+                            });
+                    })
+                    .ToList()
+            };
             arg.Depth--;
             return rv;
         }
+
         public override AstBase VisitLocalFunctionStatement(BoundLocalFunctionStatement node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
@@ -649,13 +692,18 @@ namespace NScript.Csc.Lib
             arg.Depth--;
             return rv;
         }
+
         public override AstBase VisitSequence(BoundSequence node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitSequence(node, arg);
+            AstBase rv = null;
+            foreach (var sideEffect in node.SideEffects)
+            {
+                 base.Visit(sideEffect, arg);
+            }
             arg.Depth--;
             return rv;
         }
@@ -839,7 +887,14 @@ namespace NScript.Csc.Lib
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitForStatement(node, arg);
+            AstBase rv = new ForStatement
+            {
+                Initializer = this.Visit(node.Initializer, arg) as StatementSer,
+                Condition = this.Visit(node.Condition, arg) as ExpressionSer,
+                Iterator = this.Visit(node.Increment, arg) as StatementSer,
+                Location = node.Syntax.GetSerLoc(),
+                Loop = this.Visit(node.Body, arg) as StatementSer
+            };
             arg.Depth--;
             return rv;
         }
@@ -971,7 +1026,15 @@ namespace NScript.Csc.Lib
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitLocal(node, arg);
+            var rv = new LocalVariableRefExpression
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                LocalVariable = new LocalVariableSer
+                {
+                    Name = node.LocalSymbol.Name,
+                    // Type = node.Type
+                }
+            };
             arg.Depth--;
             return rv;
         }
@@ -1000,7 +1063,7 @@ namespace NScript.Csc.Lib
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
             { Write("  "); }
 
-            WriteLine("{0}: SyntaxKind:{1}, ParameterRef: {2}", node.Kind, node.Syntax.Kind(), node.ParameterSymbol);
+            WriteLine("{0}: SyntaxKind:{1}, ParameterRef: {2}", node.Kind, node.Syntax.Kind(), node.ParameterSymbol.Name);
             var rv = new ParameterReferenceExpression
             {
                 Location = node.Syntax.Location.GetSerLoc(),
