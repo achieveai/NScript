@@ -9,6 +9,7 @@ namespace JsCsc.Lib.Serialization
     using System;
     using System.Collections.Generic;
     using ProtoBuf;
+    //  MaxId = 208;
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class ModuleSpecSer
@@ -77,6 +78,26 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class PropertySpecSer
+    {
+        public TypeSpecSer DeclaringType { get; set; }
+
+        public TypeSpecSer MemberType { get; set; }
+
+        public string Name { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class EventSpecSer
+    {
+        public TypeSpecSer DeclaringType { get; set; }
+
+        public TypeSpecSer MemberType { get; set; }
+
+        public string Name { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class MethodSpecSer
     {
         public TypeSpecSer DeclaringType { get; set; }
@@ -102,6 +123,10 @@ namespace JsCsc.Lib.Serialization
         public Dictionary<int, MethodSpecSer> Methods { get; set; }
 
         public Dictionary<int, FieldSpecSer> Fields { get; set; }
+
+        public Dictionary<int, PropertySpecSer> Properties { get; set; }
+
+        public Dictionary<int, EventSpecSer> Events { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -324,6 +349,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(113, typeof(NewExpression))]
     [ProtoInclude(124, typeof(ConstructorInitializerExpression))]
     [ProtoInclude(127, typeof(UserCastExpression))]
+    [ProtoInclude(208, typeof(UserDefinedBinaryOrUnaryOpExpression))]
     public class MethodCallExpression
         : ExpressionSer
     {
@@ -332,6 +358,16 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Instance { get; set; }
 
         public List<MethodCallArg> Arguments { get; set; }
+    }
+
+    public class UserDefinedBinaryOrUnaryOpExpression
+        : MethodCallExpression
+    {
+        public int Operator
+        { get; set; }
+
+        public bool IsLifted
+        { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -404,6 +440,8 @@ namespace JsCsc.Lib.Serialization
         public int Setter { get; set; }
 
         public ExpressionSer Instance { get; set; }
+
+        public int Property { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]

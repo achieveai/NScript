@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using JsCsc.Lib.Serialization;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using NUnit.Framework;
@@ -13,134 +14,18 @@ namespace NScript.Csc.Lib.Test
     [TestFixture]
     public class TestClass
     {
-        [Test]
-        public void TestWriteLine()
-        {
-            const string code = @"
-class Test {
-    public void TestMethod(System.Text.StringBuilder sb, int i)
-    {
-        sb.Append(i);
-    }
-}";
-            var visitMap = GetVisitMap(code);
-            // TODO: Add your test code here
-            Assert.AreEqual(
-@"StatementList: SyntaxKind:MethodDeclaration
-  Block: SyntaxKind:Block
-    SequencePoint: SyntaxKind:ReturnStatement
-      ReturnStatement: SyntaxKind:ReturnStatement
-        BinaryOperator: SyntaxKind:LeftShiftExpression Operator: IntLeftShift
-          BinaryOperator: SyntaxKind:AddExpression Operator: IntAddition
-            Parameter: SyntaxKind:IdentifierName, ParameterRef: int
-            Literal: SyntaxKind:NumericLiteralExpression Val: 10
-          Literal: SyntaxKind:NumericLiteralExpression Val: 1
-StatementList: SyntaxKind:ClassDeclaration
-  Block: SyntaxKind:ClassDeclaration
-    ExpressionStatement: SyntaxKind:ClassDeclaration
-      Call: SyntaxKind:ClassDeclaration
-        object.Object(), IsVirt:False Start Args
-    ReturnStatement: SyntaxKind:ClassDeclaration",
-            visitMap);
-        }
-
-        [Test]
-        public void TestSimpleBinaryExpression()
-        {
-            const string code = @"
-class Test {
-    public int TestMethod(int i)
-    {
-        return i + 10 << 1;
-    }
-}";
-            var visitMap = GetVisitMap(code);
-            // TODO: Add your test code here
-            Assert.AreEqual(
-@"Block: SyntaxKind:Block
-  ReturnStatement: SyntaxKind:ReturnStatement
-    BinaryOperator: SyntaxKind:LeftShiftExpression Operator: IntLeftShift
-      BinaryOperator: SyntaxKind:AddExpression Operator: IntAddition
-        Parameter: SyntaxKind:IdentifierName, ParameterRef: int
-        Literal: SyntaxKind:NumericLiteralExpression Val: 10
-      Literal: SyntaxKind:NumericLiteralExpression Val: 1
-Block: SyntaxKind:ClassDeclaration
-  ExpressionStatement: SyntaxKind:ClassDeclaration
-    Call: SyntaxKind:ClassDeclaration
-      object.Object(), IsVirt:False Start Args",
-            visitMap);
-        }
-
-        [Test]
-        public void TestStaticBinaryExpression()
-        {
-            const string code = @"
-static class Test {
-    public static int TestMethod(int i)
-    {
-        return i + 10 << 1;
-    }
-}";
-            var result = @"
-Block: SyntaxKind:Block
-  ReturnStatement: SyntaxKind:ReturnStatement
-    BinaryOperator: SyntaxKind:LeftShiftExpression Operator: IntLeftShift
-      BinaryOperator: SyntaxKind:AddExpression Operator: IntAddition
-        Parameter: SyntaxKind:IdentifierName, ParameterRef: int
-        Literal: SyntaxKind:NumericLiteralExpression Val: 10
-      Literal: SyntaxKind:NumericLiteralExpression Val: 1";
-            var visitMap = GetVisitMap(code);
-            // TODO: Add your test code here
-            Assert.AreEqual(
-                result,
-                visitMap);
-        }
-
-        [Test]
-        public void TestForloop()
-        {
-            const string code = @"
-static class Test {
-    public static int TestMethod(int i)
-    {
-        int sum = 0;
-        for(int l = 0; l < i; ++i)
-        {
-            sum += l;
-        }
-
-        return sum;
+        const string code = @"
+using System;
+public static class TestClass {
+    public static void TestWriteLine(string str, int i) {
+        Console.WriteLine(str, i);
     }
 }";
 
-            const string result = @"Block: SyntaxKind:Block
-  LocalDeclaration: SyntaxKind:LocalDeclarationStatement Name: sum
-    Literal: SyntaxKind:NumericLiteralExpression Val: 0
-  ForStatement: SyntaxKind:ForStatement
-    LocalDeclaration: SyntaxKind:VariableDeclarator Name: l
-      Literal: SyntaxKind:NumericLiteralExpression Val: 0
-    BinaryOperator: SyntaxKind:LessThanExpression Operator: IntLessThan
-      Local: SyntaxKind:IdentifierName
-      Parameter: SyntaxKind:IdentifierName, ParameterRef: int
-    ExpressionStatement: SyntaxKind:PreIncrementExpression
-      IncrementOperator: SyntaxKind:PreIncrementExpression
-        Parameter: SyntaxKind:IdentifierName, ParameterRef: int
-    Block: SyntaxKind:Block
-      ExpressionStatement: SyntaxKind:ExpressionStatement
-        CompoundAssignmentOperator: SyntaxKind:AddAssignmentExpression
-          Local: SyntaxKind:IdentifierName
-          Local: SyntaxKind:IdentifierName
-  ReturnStatement: SyntaxKind:ReturnStatement
-    Local: SyntaxKind:IdentifierName";
+        private Dictionary<IMethodSymbol, MethodBody> compilationResults;
 
-            var visitMap = GetVisitMap(code);
-
-            Assert.AreEqual(
-                result.Trim(),
-                visitMap);
-        }
-
-        private static string GetVisitMap(string code)
+        [SetUp]
+        public void Setup()
         {
             var tree = CSharpSyntaxTree.ParseText(
                 code,
@@ -156,9 +41,33 @@ static class Test {
 
             var model = compilation.GetSemanticModel(tree, true);
 
-            return SerializationHelper.ExpressionVisitMap(
-                compilation,
-                model).Trim();
+            compilationResults = SerializationHelper.ExpressionVisitMap(
+                compilation);
+        }
+
+        [Test]
+        public void TestWriteLine()
+        {
+            var body = this.GetVisitMap("TestWriteLine");
+
+            Assert.AreEqual(
+                1,
+                body.Body.Statements.Count);
+
+            Assert.IsAssignableFrom<StatementExpressionSer>(
+                body.Body.Statements[0]);
+        }
+
+        private MethodBody GetVisitMap(
+            string methodName,
+            int parameterCount = -1)
+        {
+            return compilationResults
+                .Where(_ => _.Key.Name == methodName)
+                .Where(_ => parameterCount == -1
+                || _.Key.Parameters.Length == parameterCount)
+                .Select(_ => _.Value)
+                .First();
         }
     }
 }

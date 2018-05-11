@@ -14,27 +14,29 @@
 
     public class SerializationHelper
     {
-        public static string ExpressionVisitMap(
-            CSharpCompilation compilation,
-            SemanticModel model)
+        public static Dictionary<IMethodSymbol, MethodBody> ExpressionVisitMap(
+            CSharpCompilation compilation)
         {
             var context = new SerializationContext(
-                model,
                 new SymbolSerializer());
 
-            var serializer = new BoundAstToSerialization();
-            var dict = new Dictionary<IMethodSymbol, AstBase>();
-            compilation.OnBoundExpressionGenerated = (bsl) =>
+            var serializer = new BoundAstToAstBase();
+            var rv = new Dictionary<IMethodSymbol, MethodBody>();
+            compilation.OnBoundExpressionGenerated = (methodSymbol, bsl) =>
             {
                 // dict[model.GetDeclaredSymbol((MethodDeclarationSyntax)bsl.Syntax)]
                 //     = serializer.SerializeMethodBody(bsl, context);
-                serializer.Visit(bsl, context);
+                rv.Add(
+                    methodSymbol,
+                    serializer.GetMethodBody(
+                        methodSymbol,
+                        bsl,
+                        context));
             };
 
-            compilation.Emit(
-                new MemoryStream());
+            compilation.Emit(new MemoryStream());
 
-            return serializer.sb.ToString();
+            return rv;
         }
     }
 }
