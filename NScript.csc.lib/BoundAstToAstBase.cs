@@ -83,7 +83,7 @@
                 ? null
                 : node
                 .Statements
-                .Select(_ => (StatementSer)this.Visit(_, arg))
+                .Select(_ => this.VisitToStatement(_, arg))
                 .ToList();
 
             return rv;
@@ -102,11 +102,35 @@
         public override AstBase VisitArgListOperator(BoundArgListOperator node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitArrayAccess(BoundArrayAccess node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new ElementAccessExpression
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                Left = (ExpressionSer)this.Visit(node.Expression, arg),
+                Arguments = node
+                    .Indices
+                .Select(_ => new MethodCallArg
+                    {
+                        IsByRef = false,
+                        Value = (ExpressionSer)this.Visit(_, arg)
+                    })
+                .ToList()
+            };
+
         public override AstBase VisitArrayCreation(BoundArrayCreation node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new ArrayCreationExpression
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                ArrayType = arg.SymbolSerializer.GetTypeSpecId(node.Type),
+                ElementType = arg.SymbolSerializer.GetTypeSpecId(((IArrayTypeSymbol)node.Type).ElementType),
+                Initializers = node.InitializerOpt?
+                    .Initializers
+                    .Select(_ => (ExpressionSer)this.Visit(_, arg))
+                    .ToList()
+            };
+
         public override AstBase VisitArrayInitialization(BoundArrayInitialization node, SerializationContext arg)
             {throw new NotImplementedException(); }
+
         public override AstBase VisitArrayLength(BoundArrayLength node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitAsOperator(BoundAsOperator node, SerializationContext arg)
@@ -125,7 +149,9 @@
         public override AstBase VisitAwaitExpression(BoundAwaitExpression node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitBadExpression(BoundBadExpression node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+        {
+            return null;
+        }
         public override AstBase VisitBadStatement(BoundBadStatement node, SerializationContext arg)
             {throw new NotImplementedException(); }
 
@@ -143,12 +169,14 @@
                 return UserDefinedBinaryOperator(
                     node,
                     arg,
+                    node.MethodOpt,
                     node.OperatorKind & (BinaryOperatorKind.OpMask | BinaryOperatorKind.Logical),
                     IsLifted(node.OperatorKind));
             }
 
             var nscriptOp = GetNScriptOperator(op);
             if (typeMask <= BinaryOperatorKind.Bool
+                || typeMask == BinaryOperatorKind.Enum
                 || nscriptOp == CLR.AST.BinaryOperator.Equals
                 || nscriptOp == CLR.AST.BinaryOperator.NotEquals
                 || (nscriptOp == CLR.AST.BinaryOperator.Plus
@@ -174,13 +202,14 @@
         private AstBase UserDefinedBinaryOperator(
             BoundBinaryOperator node,
             SerializationContext arg,
+            IMethodSymbol methodSymbol,
             BinaryOperatorKind binaryOperator,
             bool isLifted)
             => new UserDefinedBinaryOrUnaryOpExpression
                {
-                   Method = arg.SymbolSerializer.GetMethodSpecId(node.MethodOpt),
+                   Method = arg.SymbolSerializer.GetMethodSpecId(methodSymbol),
                    Arguments = this.ToArgs(
-                       node.MethodOpt,
+                       methodSymbol,
                        new List<BoundExpression> { node.Left, node.Right },
                         arg),
                    Location = node.Syntax.Location.GetSerLoc(),
@@ -195,7 +224,7 @@
                     ? null
                     : node
                     .Statements
-                    .Select(_ => (StatementSer)this.Visit(_, arg))
+                    .Select(_ => this.VisitToStatement(_, arg))
                     .ToList(),
             };
 
@@ -223,7 +252,39 @@
         public override AstBase VisitComplexConditionalReceiver(BoundComplexConditionalReceiver node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitCompoundAssignmentOperator(BoundCompoundAssignmentOperator node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+        {
+            var op = node.Operator.Kind;
+            bool isLifted = IsLifted(op);
+            bool isChecked = IsChecked(op);
+            var typeMask = op & BinaryOperatorKind.TypeMask;
+            if (typeMask == BinaryOperatorKind.UserDefined)
+            { throw new NotImplementedException(); }
+
+            var nscriptOp = GetNScriptOperator(op) + 1;
+            if (typeMask <= BinaryOperatorKind.Bool
+                || typeMask == BinaryOperatorKind.Enum
+                || nscriptOp == CLR.AST.BinaryOperator.Equals
+                || nscriptOp == CLR.AST.BinaryOperator.NotEquals
+                || (nscriptOp == CLR.AST.BinaryOperator.Plus
+                    && (typeMask == BinaryOperatorKind.String
+                        || typeMask == BinaryOperatorKind.StringAndObject
+                        || typeMask == BinaryOperatorKind.ObjectAndString)))
+            {
+                return new BinaryExpression
+                {
+                    IsLifted = isLifted,
+                    Left = (ExpressionSer)this.Visit(node.Left, arg),
+                    Right = (ExpressionSer)this.Visit(node.Right, arg),
+                    Operator = (int)nscriptOp,
+                    Location = node.Syntax.Location.GetSerLoc()
+                };
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public override AstBase VisitConditionalAccess(BoundConditionalAccess node, SerializationContext arg)
             => new ConditionalExpression
             {
@@ -254,6 +315,22 @@
         {
             switch (node.ConversionKind)
             {
+                case ConversionKind.MethodGroup:
+                    {
+                        var innerNode = (BoundMethodGroup)node.Operand;
+
+                        if (innerNode.Methods.Length != 1)
+                        { throw new NotImplementedException(); }
+
+                        return new MethodExpression
+                        {
+                            Location = node.Syntax.Location.GetSerLoc(),
+                            Method = arg.SymbolSerializer.GetMethodSpecId(innerNode.Methods[0]),
+                            Instance = innerNode.ReceiverOpt != null
+                            ? (ExpressionSer)this.Visit(innerNode.ReceiverOpt, arg)
+                            : null
+                        };
+                    }
                 case ConversionKind.Boxing:
                     return new BoxCastExpression
                     { Expression = (ExpressionSer)this.Visit(node.Operand, arg) };
@@ -271,6 +348,20 @@
                     };
                 case ConversionKind.ExplicitReference:
                     return this.Visit(node.Operand, arg);
+                case ConversionKind.Unboxing:
+                    return new TypeCastExpression
+                    {
+                        Expression = (ExpressionSer)this.Visit(node.Operand, arg),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.Type),
+                        IsUnbox = true
+                    };
+                case ConversionKind.ImplicitUserDefined:
+                case ConversionKind.ExplicitUserDefined:
+                    return new MethodCallExpression
+                    {
+                        Method = arg.SymbolSerializer.GetMethodSpecId(node.SymbolOpt),
+                        Arguments = new List<MethodCallArg> { new MethodCallArg { Value = (ExpressionSer)this.Visit(node.Operand, arg) } },
+                    };
                 case ConversionKind.NoConversion:
                 case ConversionKind.Identity:
                 case ConversionKind.ImplicitNumeric:
@@ -281,15 +372,18 @@
                 case ConversionKind.ExplicitTuple:
                 case ConversionKind.ImplicitNullable:
                 case ConversionKind.DefaultOrNullLiteral:
+                    return new DefaultValueExpr
+                    {
+                        Location = node.Syntax.Location.GetSerLoc(),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
+                    };
                 case ConversionKind.PointerToVoid:
                 case ConversionKind.NullToPointer:
                 case ConversionKind.ImplicitDynamic:
                 case ConversionKind.ExplicitDynamic:
                 case ConversionKind.ImplicitConstant:
                 case ConversionKind.AnonymousFunction:
-                case ConversionKind.MethodGroup:
                 case ConversionKind.ExplicitNullable:
-                case ConversionKind.Unboxing:
                 case ConversionKind.PointerToPointer:
                 case ConversionKind.IntegerToPointer:
                 case ConversionKind.PointerToInteger:
@@ -299,8 +393,6 @@
                 case ConversionKind.StackAllocToPointerType:
                 case ConversionKind.StackAllocToSpanType:
                 case ConversionKind.PinnedObjectToPointer:
-                case ConversionKind.ImplicitUserDefined:
-                case ConversionKind.ExplicitUserDefined:
                 default:
                     throw new NotImplementedException();
             }
@@ -358,7 +450,7 @@
             => new FieldExpression
             {
                 Field = arg.SymbolSerializer.GetFieldSpecId(node.FieldSymbol),
-                Instance = node.FieldSymbol.IsStatic
+                Instance = !node.FieldSymbol.IsStatic
                     ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
                     : null
             };
@@ -373,9 +465,21 @@
         public override AstBase VisitForEachDeconstructStep(BoundForEachDeconstructStep node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitForEachStatement(BoundForEachStatement node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new ForEachStatement {
+                LocalVariableName = node.IterationVariables[0].Name,
+                Collection = (ExpressionSer)this.Visit(node.Expression, arg),
+                Loop = this.VisitToStatement(node.Body, arg)
+            };
+
         public override AstBase VisitForStatement(BoundForStatement node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new ForStatement
+            {
+                Initializer = this.VisitToStatement(node.Initializer, arg),
+                Condition = (ExpressionSer)this.Visit(node.Condition, arg),
+                Iterator = this.VisitToStatement(node.Increment, arg),
+                Loop = (StatementSer)this.Visit(node.Body, arg)
+            };
+
         public override AstBase VisitGlobalStatementInitializer(BoundGlobalStatementInitializer node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitGotoStatement(BoundGotoStatement node, SerializationContext arg)
@@ -388,16 +492,22 @@
             => new IfStatement
             {
                 Condition = (ExpressionSer)this.Visit(node.Condition,arg),
-                TrueStatement = (StatementSer)this.Visit(node.Consequence, arg),
+                TrueStatement = this.VisitToStatement(node.Consequence, arg),
                 FalseStatement = node.AlternativeOpt == null
                     ? null
-                    : (StatementSer)this.Visit(node.AlternativeOpt, arg)
+                    : this.VisitToStatement(node.AlternativeOpt, arg)
             };
 
         public override AstBase VisitImplicitReceiver(BoundImplicitReceiver node, SerializationContext arg)
             {throw new NotImplementedException(); }
+
         public override AstBase VisitIncrementOperator(BoundIncrementOperator node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => this.ConvertUnaryOperator(
+                node.Operand,
+                node.MethodOpt,
+                node.OperatorKind,
+                arg);
+
         public override AstBase VisitIndexerAccess(BoundIndexerAccess node, SerializationContext arg)
             => new IndexExpression
             {
@@ -416,7 +526,12 @@
         public override AstBase VisitInterpolatedString(BoundInterpolatedString node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitIsOperator(BoundIsOperator node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new IsExpression
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                Expression = (ExpressionSer)this.Visit(node.Operand, arg),
+                Type = arg.SymbolSerializer.GetTypeSpecId((ITypeSymbol)node.TargetType.ExpressionSymbol)
+            };
         public override AstBase VisitIsPatternExpression(BoundIsPatternExpression node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitLabel(BoundLabel node, SerializationContext arg)
@@ -435,9 +550,35 @@
         }
 
         public override AstBase VisitLocal(BoundLocal node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new LocalVariableRefExpression
+            {
+                LocalVariable = new LocalVariableSer
+                    {
+                        Name = node.LocalSymbol.MetadataName,
+                        Location = node.Syntax.Location.GetSerLoc(),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.LocalSymbol.Type),
+                        BlockId = this.id,
+                    },
+                Location = node.Syntax.Location.GetSerLoc()
+            };
+
         public override AstBase VisitLocalDeclaration(BoundLocalDeclaration node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new BinaryExpression
+            {
+                Operator = (int)CLR.AST.BinaryOperator.Assignment,
+                Left = new LocalVariableRefExpression
+                {
+                    LocalVariable = new LocalVariableSer
+                    {
+                        Name = node.LocalSymbol.MetadataName,
+                        Location = node.Syntax.Location.GetSerLoc(),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.LocalSymbol.Type),
+                        BlockId = this.id,
+                    }
+                },
+                Right = (ExpressionSer)this.Visit(node.InitializerOpt, arg)
+            };
+
         public override AstBase VisitLocalFunctionStatement(BoundLocalFunctionStatement node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitLockStatement(BoundLockStatement node, SerializationContext arg)
@@ -531,7 +672,15 @@
         public override AstBase VisitPreviousSubmissionReference(BoundPreviousSubmissionReference node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitPropertyAccess(BoundPropertyAccess node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new PropertyExpression
+            {
+                Property = arg.SymbolSerializer.GetPropertySpecId(node.PropertySymbol),
+                Getter = arg.SymbolSerializer.GetMethodSpecId(node.PropertySymbol.GetMethod),
+                Instance = node.ReceiverOpt != null ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg) : null,
+                IsNotVirtual = node.SuppressVirtualCalls,
+                Location = node.Syntax.Location.GetSerLoc()
+            };
+
         public override AstBase VisitPropertyEqualsValue(BoundPropertyEqualsValue node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitPropertyGroup(BoundPropertyGroup node, SerializationContext arg)
@@ -608,14 +757,28 @@
         public override AstBase VisitTypeExpression(BoundTypeExpression node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitTypeOfOperator(BoundTypeOfOperator node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => new TypeOfExpression
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                Type = arg.SymbolSerializer.GetTypeSpecId((ITypeSymbol)node.SourceType.ExpressionSymbol)
+            };
         public override AstBase VisitTypeOrInstanceInitializers(BoundTypeOrInstanceInitializers node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitTypeOrValueExpression(BoundTypeOrValueExpression node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitUnaryOperator(BoundUnaryOperator node, SerializationContext arg)
+            => this.ConvertUnaryOperator(
+                node.Operand,
+                node.MethodOpt,
+                node.OperatorKind,
+                arg);
+
+        private AstBase ConvertUnaryOperator(
+            BoundExpression node,
+            IMethodSymbol methodOpt,
+            UnaryOperatorKind op,
+            SerializationContext arg)
         {
-            var op = node.OperatorKind;
             bool isLifted = IsLifted(op);
             bool isChecked = IsChecked(op);
             var typeMask = op & UnaryOperatorKind.TypeMask;
@@ -624,13 +787,13 @@
             {
                 return new UserDefinedBinaryOrUnaryOpExpression
                 {
-                    Method = arg.SymbolSerializer.GetMethodSpecId(node.MethodOpt),
+                    Method = arg.SymbolSerializer.GetMethodSpecId(methodOpt),
                     IsLifted = isLifted,
                     Operator = (int)nscriptOp,
                     Location = node.Syntax.Location.GetSerLoc(),
                     Arguments = ToArgs(
-                        node.MethodOpt,
-                        new BoundExpression[] { node.Operand},
+                        methodOpt,
+                        new BoundExpression[] { node},
                         arg)
                 };
             }
@@ -640,7 +803,7 @@
                 return new UnaryExpression
                 {
                     IsLifted = isLifted,
-                    Expression = (ExpressionSer)this.Visit(node.Operand, arg),
+                    Expression = (ExpressionSer)this.Visit(node, arg),
                     Operator = (int)nscriptOp,
                     Location = node.Syntax.Location.GetSerLoc()
                 };
@@ -826,6 +989,19 @@
                 default:
                     return 0;
             }
+        }
+
+        private StatementSer VisitToStatement(BoundNode node, SerializationContext arg)
+        {
+            var ser = this.Visit(node, arg);
+            var expressionSer = ser as ExpressionSer;
+            if (expressionSer != null)
+            {
+                return new StatementExpressionSer
+                { Expression = expressionSer };
+            }
+
+            return (StatementSer)ser;
         }
     }
 }

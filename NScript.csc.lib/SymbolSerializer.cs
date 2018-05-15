@@ -172,6 +172,9 @@ namespace NScript.Csc.Lib
 
         private TypeSpecSer Serialize(ITypeSymbol type)
         {
+            if (type.MetadataName == string.Empty)
+            { return null; }
+
             if (type.Kind == SymbolKind.ArrayType)
             {
                 return new ArrayTypeSer

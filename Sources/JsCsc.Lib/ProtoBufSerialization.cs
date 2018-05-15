@@ -441,6 +441,8 @@ namespace JsCsc.Lib.Serialization
 
         public ExpressionSer Instance { get; set; }
 
+        public bool IsNotVirtual { get; set; }
+
         public int Property { get; set; }
     }
 
