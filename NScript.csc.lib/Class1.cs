@@ -11,6 +11,7 @@
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
+    using Microsoft.CodeAnalysis.Emit;
 
     public class SerializationHelper
     {
@@ -34,7 +35,26 @@
                         context));
             };
 
-            compilation.Emit(new MemoryStream());
+            var emitOptions = new EmitOptions(
+                false,
+                DebugInformationFormat.Pdb,
+                null,
+                null,
+                512,
+                0,
+                false,
+                SubsystemVersion.None,
+                "4",
+                false,
+                true);
+
+            compilation.Emit(
+                new MemoryStream(),
+                null,
+                null,
+                null,
+                null,
+                emitOptions);
 
             return rv;
         }

@@ -7,6 +7,7 @@
     using NUnit.Framework;
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -35,9 +36,38 @@
                         _))
                 .ToArray();
 
+            var compilerOptions = new CSharpCompilationOptions(
+                OutputKind.DynamicallyLinkedLibrary,
+                false,
+                null,
+                null,
+                null,
+                null,
+                OptimizationLevel.Debug,
+                false,
+                true,
+                null,
+                Path.Combine(Path.Combine(nscriptGitPath, resources.directory), resources.keyFile),
+                default(ImmutableArray<byte>),
+                null,
+                Platform.AnyCpu,
+                ReportDiagnostic.Warn,
+                4,
+                null,
+                false,
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                MetadataImportOptions.Public);
+
             var compilation = CSharpCompilation.Create(
                 "TestCompilation",
-                syntaxTrees: trees);
+                syntaxTrees: trees,
+                options: compilerOptions);
 
             _compilationResults = SerializationHelper.ExpressionVisitMap(
                 compilation);
