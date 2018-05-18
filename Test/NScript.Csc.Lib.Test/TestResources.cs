@@ -1,9 +1,15 @@
 ﻿namespace NScript.Csc.Lib.Test
 {
+    using JsCsc.Lib.Serialization;
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp;
     using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
 
     public static class TestResources
     {
+        public const string nscriptGitPath = @"E:\repos\cs2jsc";
         public static readonly Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile)>
             sources = new Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile)>()
             {
@@ -307,52 +313,21 @@
                         @"Runtime\CompilerServices\DynamicAttribute.cs"
                     },
                     @"Sources\System.Core",
-                    new string[] {"mscorlib.dll"},
+                    new string[] {"mscorlib"},
                     @"Sources\mscorlib\mscorlibKey.snk"
                 ),
 
                 ["microsoft.csharp"] = (
                     "microsoft.csharp.dll",
                     new string[] {
-                        @"DelegateBlocks.cs",
-                        @"DupInstructionBlocks.cs",
-                        @"ExceptionHandlerSamples.cs",
-                        @"ForLoopBlocks.cs",
-                        @"FuncRegressions.cs",
-                        @"GenericCollections.cs",
-                        @"GenericSamples.cs",
-                        @"IfBlocks.cs",
-                        @"BasicBlockTestFunctions.cs",
-                        @"BasicStatements.cs",
-                        @"EnumTypes.cs",
-                        @"InlineComplexStatements.cs",
-                        @"JsScriptImport.cs",
-                        @"LoopTests.cs",
-                        @"MathAlgorithms.cs",
-                        @"NumberOperations.cs",
-                        @"ScriptSharpCompat.cs",
-                        @"SimpleInterfaceTest.cs",
-                        @"SimpleTypes.cs",
-                        @"StructClass.cs",
-                        @"SwitchTest.cs",
-                        @"TestArithmetics.cs",
-                        @"TestControlFlow.cs",
-                        @"TestDelegates.cs",
-                        @"TestGeneric.cs",
-                        @"TestInheritence.cs",
-                        @"TestInitializers.cs",
-                        @"TestPsudoType.cs",
-                        @"TestReferenceClass.cs",
-                        @"TestCompilerGeneratedStuff.cs",
-                        @"WhileLoopBlocks.cs",
-                        @"YieldReturnTests.cs",
-                        @"Properties\AssemblyInfo.cs",
-                        @"Class1.cs",
-                        @"ConstructorTests.cs",
-                        @"NullableTests.cs"
+                        @"RuntimeBinder\Binder.cs",
+                        @"RuntimeBinder\CSharpArgumentInfo.cs",
+                        @"RuntimeBinder\CSharpBinderFlags.cs",
+                        @"RuntimeBinder\RuntimeBInderException.cs",
+                        @"RuntimeBinder\RuntimeBinderInternalCompilerException.cs",
                     },
                     @"Sources\Microsoft.CSharp",
-                    new string[] { "mscorlib.dll", "system.core.dll" },
+                    new string[] { "mscorlib", "system.core" },
                     @"Sources\mscorlib\mscorlibKey.snk"
                 ),
 
@@ -398,9 +373,72 @@
                         @"NullableTests.cs"
                     },
                     @"Test\RealScript",
-                    new string[] { "mscorlib.dll", "system.core.dll", "microsoft.csharp.dll" },
+                    new string[] { "mscorlib", "system.core", "microsoft.csharp" },
                     (string)null
                 ),
             };
+
+        public static readonly Dictionary<string, Dictionary<IMethodSymbol, MethodBody>> moduleMethodBodyMap
+            = new Dictionary<string, Dictionary<IMethodSymbol, MethodBody>>();
+
+        public static Dictionary<IMethodSymbol, MethodBody> MscorlibMethods
+            => GetMethodMaps("mscorlib");
+
+        public static Dictionary<IMethodSymbol, MethodBody> RealScriptMethods
+            => GetMethodMaps("realScript");
+
+        private static Dictionary<IMethodSymbol, MethodBody> GetMethodMaps(
+            string moduleName)
+        {
+            if (moduleMethodBodyMap.TryGetValue(moduleName, out var rv))
+            { return rv; }
+
+            var resources = sources[moduleName];
+            string runtimeMetadataVersion = null;
+            if (resources.refs.Select(_ => GetMethodMaps(_)).Count() == 0)
+            { runtimeMetadataVersion = "4"; }
+
+            var trees = resources
+                .files
+                .Select(_ =>
+                    Path.Combine(
+                        Path.GetFullPath(Path.Combine(nscriptGitPath,resources.directory)),
+                        _))
+                .Select(_ =>
+                    CSharpSyntaxTree.ParseText(
+                        File.ReadAllText(_),
+                        CSharpParseOptions.Default,
+                        _))
+                .ToArray();
+
+            var compilerOptions = new CSharpCompilationOptions(
+                outputKind: OutputKind.DynamicallyLinkedLibrary,
+                optimizationLevel: OptimizationLevel.Debug,
+                allowUnsafe: true,
+                cryptoKeyFile: resources.keyFile != null
+                    ? Path.Combine(
+                        Path.Combine(
+                            nscriptGitPath,
+                            resources.directory),
+                        resources.keyFile)
+                    : null,
+                platform: Platform.AnyCpu,
+                generalDiagnosticOption: ReportDiagnostic.Warn,
+                warningLevel: 4);
+
+            var compilation = CSharpCompilation.Create(
+                "TestCompilation",
+                syntaxTrees: trees,
+                options: compilerOptions);
+
+            rv = SerializationHelper.ExpressionVisitMap(
+                compilation,
+                Path.GetTempPath(),
+                resources.outName,
+                runtimeMetadataVersion);
+
+            moduleMethodBodyMap[moduleName] = rv;
+            return rv;
+        }
     }
 }

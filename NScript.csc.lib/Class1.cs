@@ -16,7 +16,10 @@
     public class SerializationHelper
     {
         public static Dictionary<IMethodSymbol, MethodBody> ExpressionVisitMap(
-            CSharpCompilation compilation)
+            CSharpCompilation compilation,
+            string outputPath,
+            string moduleName,
+            string runtimeMetadataVersion = null)
         {
             var context = new SerializationContext(
                 new SymbolSerializer());
@@ -36,25 +39,38 @@
             };
 
             var emitOptions = new EmitOptions(
-                false,
-                DebugInformationFormat.Pdb,
-                null,
-                null,
-                512,
-                0,
-                false,
-                SubsystemVersion.None,
-                "4",
-                false,
-                true);
+                debugInformationFormat: DebugInformationFormat.Pdb,
+                fileAlignment: 512,
+                subsystemVersion: SubsystemVersion.None,
+                runtimeMetadataVersion: runtimeMetadataVersion,
+                tolerateErrors: false,
+                includePrivateMembers: true);
 
-            compilation.Emit(
-                new MemoryStream(),
-                null,
-                null,
-                null,
-                null,
-                emitOptions);
+            var outputStream = File.Open(
+                Path.Combine(outputPath, moduleName),
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite);
+
+            var outputPdbStream = File.Open(
+                Path.Combine(outputPath, Path.GetFileNameWithoutExtension(moduleName) + ".pdb"),
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite);
+
+            try
+            {
+                compilation.Emit(
+                    outputStream,
+                    outputPdbStream,
+                    null,
+                    null,
+                    null,
+                    emitOptions);
+            }
+            finally
+            {
+                outputStream.Close();
+                outputPdbStream.Close();
+            }
 
             return rv;
         }

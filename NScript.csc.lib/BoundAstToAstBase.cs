@@ -14,6 +14,7 @@
         : BoundAstToNotImplemented<SerializationContext, AstBase>
     {
         private int id = 0;
+        private LinkedList<(int id, BoundNode nodeBlock)> scopeBlockStack = new LinkedList<(int, BoundNode)>();
 
         public MethodBody GetMethodBody(
             IMethodSymbol methodSymbol,
@@ -68,13 +69,18 @@
             };
         }
 
-        public ParameterBlock Visit(BoundBlock node, SerializationContext arg, IMethodSymbol methodSymbol)
+        public ParameterBlock Visit(
+            BoundBlock node,
+            SerializationContext arg,
+            IMethodSymbol methodSymbol)
         {
             var rv = new ParameterBlock
             {
                 Location = node.Syntax.GetSerLoc(),
                 Id = ++this.id
             };
+
+            this.scopeBlockStack.AddFirst((rv.Id, node));
 
             // Expression can be null for static field initializer constructors.
             rv.IsMethodOwned = true;
@@ -86,6 +92,7 @@
                 .Select(_ => this.VisitToStatement(_, arg))
                 .ToList();
 
+            this.scopeBlockStack.RemoveFirst();
             return rv;
         }
 
@@ -219,14 +226,37 @@
                };
 
         public override AstBase VisitBlock(BoundBlock node, SerializationContext arg)
-            => new BlockSer {
-                Statements = node.Statements == null
-                    ? null
-                    : node
-                    .Statements
-                    .Select(_ => this.VisitToStatement(_, arg))
-                    .ToList(),
-            };
+        {
+            if (node.Locals.Length > 0 && node.Statements != null)
+            {
+                this.scopeBlockStack.AddFirst((++this.id, node));
+                try
+                {
+                    return new ExplicitBlockSer
+                    {
+                        Id = this.id,
+                        Statements = node
+                            .Statements
+                            .Select(_ => this.VisitToStatement(_, arg))
+                            .ToList()
+                    };
+                }
+                finally
+                { this.scopeBlockStack.RemoveFirst(); }
+            }
+            else
+            {
+                return new BlockSer
+                {
+                    Statements = node.Statements == null
+                        ? null
+                        : node
+                        .Statements
+                        .Select(_ => this.VisitToStatement(_, arg))
+                        .ToList(),
+                };
+            }
+        }
 
         public override AstBase VisitBreakStatement(BoundBreakStatement node, SerializationContext arg)
             {throw new NotImplementedException(); }
@@ -315,6 +345,8 @@
         {
             switch (node.ConversionKind)
             {
+                case ConversionKind.AnonymousFunction:
+                    return this.VisitLambda((BoundLambda)node.Operand, arg);
                 case ConversionKind.MethodGroup:
                     {
                         var innerNode = (BoundMethodGroup)node.Operand;
@@ -382,7 +414,6 @@
                 case ConversionKind.ImplicitDynamic:
                 case ConversionKind.ExplicitDynamic:
                 case ConversionKind.ImplicitConstant:
-                case ConversionKind.AnonymousFunction:
                 case ConversionKind.ExplicitNullable:
                 case ConversionKind.PointerToPointer:
                 case ConversionKind.IntegerToPointer:
@@ -541,7 +572,19 @@
         public override AstBase VisitLabelStatement(BoundLabelStatement node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitLambda(BoundLambda node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+        {
+            var parameterBlock = this.Visit(
+                node.Body,
+                arg,
+                node.Symbol);
+
+            return new AnonymousMethodBodyExpr
+            {
+                Block = parameterBlock,
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
+            };
+        }
+
         public override AstBase VisitLiteral(BoundLiteral node, SerializationContext arg)
         {
             var rv = GetConstLiteral(node.ConstantValue);

@@ -28,8 +28,6 @@ namespace JsCsc.Lib
 
         private LinkedList<Tuple<int, ExplicitBlock>> scopeBlockStack = new LinkedList<Tuple<int, ExplicitBlock>>();
 
-        private LinkedList<Tuple<int, Ast.ParameterBlock>> parameterBlockStack = new LinkedList<Tuple<int, Ast.ParameterBlock>>();
-
         private Dictionary<TypeSpec, int> typeDict = new Dictionary<TypeSpec, int>();
         private Dictionary<MethodSpec, int> methodDict = new Dictionary<MethodSpec, int>();
         private Dictionary<FieldSpec, int> fieldDict = new Dictionary<FieldSpec, int>();

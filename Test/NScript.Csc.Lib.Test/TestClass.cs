@@ -42,7 +42,9 @@ public static class TestClass {
             var model = compilation.GetSemanticModel(tree, true);
 
             compilationResults = SerializationHelper.ExpressionVisitMap(
-                compilation);
+                compilation,
+                System.IO.Path.GetTempPath(),
+                "testcode");
         }
 
         [Test]

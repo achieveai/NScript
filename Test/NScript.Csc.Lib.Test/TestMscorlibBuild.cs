@@ -21,56 +21,7 @@
         [SetUp]
         public void Setup()
         {
-            var resources = TestResources.sources["mscorlib"];
-            const string nscriptGitPath = @"E:\repos\cs2jsc";
-            var trees = resources
-                .files
-                .Select(_ =>
-                    Path.Combine(
-                        Path.GetFullPath(Path.Combine(nscriptGitPath,resources.directory)),
-                        _))
-                .Select(_ =>
-                    CSharpSyntaxTree.ParseText(
-                        File.ReadAllText(_),
-                        CSharpParseOptions.Default,
-                        _))
-                .ToArray();
-
-            var compilerOptions = new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                false,
-                null,
-                null,
-                null,
-                null,
-                OptimizationLevel.Debug,
-                false,
-                true,
-                null,
-                Path.Combine(Path.Combine(nscriptGitPath, resources.directory), resources.keyFile),
-                default(ImmutableArray<byte>),
-                null,
-                Platform.AnyCpu,
-                ReportDiagnostic.Warn,
-                4,
-                null,
-                false,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                MetadataImportOptions.Public);
-
-            var compilation = CSharpCompilation.Create(
-                "TestCompilation",
-                syntaxTrees: trees,
-                options: compilerOptions);
-
-            _compilationResults = SerializationHelper.ExpressionVisitMap(
-                compilation);
+            _compilationResults = TestResources.RealScriptMethods;
         }
 
         [Test]
