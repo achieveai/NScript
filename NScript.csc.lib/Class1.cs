@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection.Metadata;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -38,6 +39,11 @@
                         context));
             };
 
+            var astResource = new ResourceDescription(
+                "$$AstInfo$$",
+                () => ToAstStream(context, rv),
+                true);
+
             var emitOptions = new EmitOptions(
                 debugInformationFormat: DebugInformationFormat.Pdb,
                 fileAlignment: 512,
@@ -58,21 +64,39 @@
 
             try
             {
-                compilation.Emit(
+                var result = compilation.Emit(
                     outputStream,
-                    outputPdbStream,
-                    null,
-                    null,
-                    null,
-                    emitOptions);
+                    pdbStream: outputPdbStream,
+                    options: emitOptions,
+                    manifestResources: new ResourceDescription[] { astResource });
+
+                if (result.Success)
+                { return rv; }
+                else
+                {
+                    return null;
+                }
             }
             finally
             {
                 outputStream.Close();
                 outputPdbStream.Close();
             }
+        }
 
-            return rv;
+        private static Stream ToAstStream(
+            SerializationContext context,
+            Dictionary<IMethodSymbol, MethodBody> methodMaps)
+        {
+            var memStream = new MemoryStream();
+            var fullAst = new FullAst
+            {
+                Methods = new LinkedList<MethodBody>(methodMaps.Values),
+                TypeInfo = context.SymbolSerializer.GetTypesInfo()
+            };
+
+            ProtoBuf.Serializer.Serialize(memStream, fullAst);
+            return memStream;
         }
     }
 }

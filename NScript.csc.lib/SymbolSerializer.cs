@@ -45,6 +45,28 @@ namespace NScript.Csc.Lib
         private ConcurrentDictionary<ITypeSymbol, TypeSpecSer> typeSerMap
             = new ConcurrentDictionary<ITypeSymbol, TypeSpecSer>();
 
+        public TypeInfoSer GetTypesInfo()
+        {
+            var rv = new TypeInfoSer();
+            rv.Types = typeTokenMap
+                .Select(_ => (_.Value, typeSerMap[_.Key]))
+                .ToDictionary(_ => _.Value, _ => _.Item2);
+            rv.Fields = fieldTokenMap
+                .Select(_ => (_.Value, fieldSerMap[_.Key]))
+                .ToDictionary(_ => _.Value, _ => _.Item2);
+            rv.Properties = propertyTokenMap
+                .Select(_ => (_.Value, propertySerMap[_.Key]))
+                .ToDictionary(_ => _.Value, _ => _.Item2);
+            rv.Events = eventTokenMap
+                .Select(_ => (_.Value, eventSerMap[_.Key]))
+                .ToDictionary(_ => _.Value, _ => _.Item2);
+            rv.Methods = methodTokenMap
+                .Select(_ => (_.Value, methodSerMap[_.Key]))
+                .ToDictionary(_ => _.Value, _ => _.Item2);
+
+            return rv;
+        }
+
         public int GetMethodSpecId(IMethodSymbol method)
         {
             if (methodTokenMap.TryGetValue(method, out var rv))
@@ -108,65 +130,69 @@ namespace NScript.Csc.Lib
         private void AddTypeSpecId(ITypeSymbol type)
         {
             var ser = this.Serialize(type);
-            if (!typeTokenMap.ContainsKey(type))
+            if (typeTokenMap.ContainsKey(type)) { return; }
+
+            lock(typeTokenMap)
             {
-                lock(typeTokenMap)
-                {
-                    typeSerMap[type] = ser;
-                    typeTokenMap[type] = typeTokenMap.Count;
-                }
+                if (typeTokenMap.ContainsKey(type)) { return; }
+
+                typeSerMap[type] = ser;
+                typeTokenMap[type] = typeTokenMap.Count;
             }
         }
 
         private void AddMethodSpecId(IMethodSymbol method)
         {
             var ser = this.Serialize(method);
-            if (!methodTokenMap.ContainsKey(method))
+            if (methodTokenMap.ContainsKey(method)) { return; }
+            lock(methodTokenMap)
             {
-                lock(methodTokenMap)
-                {
-                    methodSerMap[method] = ser;
-                    methodTokenMap[method] = methodTokenMap.Count;
-                }
+                if (methodTokenMap.ContainsKey(method)) { return; }
+
+                methodSerMap[method] = ser;
+                methodTokenMap[method] = methodTokenMap.Count;
             }
         }
 
         private void AddFieldSpecId(IFieldSymbol field)
         {
             var ser = this.Serialize(field);
-            if (!fieldTokenMap.ContainsKey(field))
+            if (fieldTokenMap.ContainsKey(field)) { return; }
+
+            lock(fieldTokenMap)
             {
-                lock(fieldTokenMap)
-                {
-                    fieldSerMap[field] = ser;
-                    fieldTokenMap[field] = fieldTokenMap.Count;
-                }
+                if (fieldTokenMap.ContainsKey(field)) { return; }
+
+                fieldSerMap[field] = ser;
+                fieldTokenMap[field] = fieldTokenMap.Count;
             }
         }
 
         private void AddPropertySpecId(IPropertySymbol property)
         {
             var ser = this.Serialize(property);
-            if (!propertyTokenMap.ContainsKey(property))
+            if (propertyTokenMap.ContainsKey(property)) { return; }
+
+            lock(propertyTokenMap)
             {
-                lock(propertyTokenMap)
-                {
-                    propertySerMap[property] = ser;
-                    propertyTokenMap[property] = fieldTokenMap.Count;
-                }
+                if (propertyTokenMap.ContainsKey(property)) { return; }
+
+                propertySerMap[property] = ser;
+                propertyTokenMap[property] = propertyTokenMap.Count;
             }
         }
 
         private void AddEventSpecId(IEventSymbol evt)
         {
             var ser = this.Serialize(evt);
-            if (!eventTokenMap.ContainsKey(evt))
+            if (eventTokenMap.ContainsKey(evt)) { return; }
+
+            lock(eventTokenMap)
             {
-                lock(eventTokenMap)
-                {
-                    eventSerMap[evt] = ser;
-                    eventTokenMap[evt] = fieldTokenMap.Count;
-                }
+                if (eventTokenMap.ContainsKey(evt)) { return; }
+
+                eventSerMap[evt] = ser;
+                eventTokenMap[evt] = eventTokenMap.Count;
             }
         }
 

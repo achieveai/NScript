@@ -261,20 +261,53 @@
         public override AstBase VisitBreakStatement(BoundBreakStatement node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitCall(BoundCall node, SerializationContext arg)
-            // TODO: validate Method has full TypeInfo, e.g. generic arguments
-            => new MethodCallExpression
+        // TODO: validate Method has full TypeInfo, e.g. generic arguments
+        {
+            bool isStatic = node.Method.ContainingSymbol.IsStatic
+                || node.Method.IsStatic;
+
+            return new MethodCallExpression
             {
                 Method = arg.SymbolSerializer.GetMethodSpecId(
                     node.Method),
                 Arguments = this.ToArgs(node.Method, node.Arguments, arg),
                 Location = node.Syntax.Location.GetSerLoc(),
-                Instance = !node.Method.IsStatic
+                Instance = !isStatic
                     ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
                     : null
             };
+        }
 
         public override AstBase VisitCatchBlock(BoundCatchBlock node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+        {
+            this.scopeBlockStack.AddFirst((++this.id, node));
+            try
+            {
+                return new CatchBlock
+                {
+                    Block = new ExplicitBlockSer
+                    {
+                        Id = this.id,
+                        Statements = node
+                        .Body
+                        .Statements
+                        .Select(_ => this.VisitToStatement(_, arg))
+                        .ToList()
+                    },
+                    CatchType = node.ExceptionTypeOpt != null
+                        ? arg.SymbolSerializer.GetTypeSpecId(node.ExceptionTypeOpt)
+                        : (int?)null,
+                    LocalVariable = node.ExceptionSourceOpt != null
+                        ? ((LocalVariableRefExpression)this.VisitLocal((BoundLocal)node.ExceptionSourceOpt, arg)).LocalVariable
+                        : null
+                };
+            }
+            finally
+            {
+                this.scopeBlockStack.RemoveFirst();
+            }
+        }
+
         public override AstBase VisitCollectionElementInitializer(BoundCollectionElementInitializer node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitCollectionInitializerExpression(BoundCollectionInitializerExpression node, SerializationContext arg)
@@ -769,11 +802,63 @@
         public override AstBase VisitStringInsert(BoundStringInsert node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitSwitchLabel(BoundSwitchLabel node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            =>
+                 node.ExpressionOpt != null
+                    ? (ExpressionSer)this.Visit(node.ExpressionOpt, arg)
+                    : (ExpressionSer)GetConstLiteral(node.ConstantValueOpt);
         public override AstBase VisitSwitchSection(BoundSwitchSection node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitSwitchStatement(BoundSwitchStatement node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+        {
+            var switchSections = new List<SwitchSectionSer>();
+            foreach (var section in node.SwitchSections)
+            {
+                var caseLabels = new List<SwitchCaseLabel>();
+                foreach (var label in section.SwitchLabels)
+                {
+                    if (label.ConstantValueOpt == null && label.ExpressionOpt == null)
+                    { caseLabels.Add(new SwitchCaseLabel()); }
+                    else
+                    {
+                        caseLabels.Add(
+                            new SwitchCaseLabel
+                            { LabelValue = (ExpressionSer)this.VisitSwitchLabel(label, arg) });
+                    }
+                }
+
+                StatementSer blockSer = null;
+                if (section.Statements != null)
+                {
+                    if (section.Statements.Length > 1)
+                    {
+                        blockSer = new BlockSer
+                        {
+                            Statements = section.Statements == null
+                                        ? null
+                                        : section
+                                        .Statements
+                                        .Select(_ => this.VisitToStatement(_, arg))
+                                        .ToList()
+                        };
+                    }
+                    else
+                    { blockSer = this.VisitToStatement(section.Statements[0], arg); }
+                }
+
+                switchSections.Add(
+                    new SwitchSectionSer
+                    {
+                        Labels = caseLabels,
+                        Block = blockSer
+                    });
+            }
+
+            return new SwitchStatement
+                {
+                    Blocks = switchSections,
+                    SwitchExpression = (ExpressionSer)this.Visit(node.Expression, arg)
+                };
+        }
 
         public override AstBase VisitThisReference(BoundThisReference node, SerializationContext arg)
             => new ThisExpression { Location = node.Syntax.Location.GetSerLoc() };
@@ -790,7 +875,29 @@
                     : null
             };
         public override AstBase VisitTryStatement(BoundTryStatement node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+        {
+            var tryCatchBlock = node.CatchBlocks.Length > 0
+                ? new TryCatchBlock
+                {
+                    TryBlock = (StatementSer)this.Visit(node.TryBlock, arg),
+                    CatchBlocks = node.CatchBlocks
+                    .Select(_ => (CatchBlock)this.Visit(_, arg))
+                    .ToList()
+                }
+                : null;
+
+            if (node.FinallyBlockOpt != null)
+            {
+                return new TryFinallyBlockSer
+                {
+                    TryBlock = tryCatchBlock ?? (StatementSer)this.Visit(node.TryBlock, arg),
+                    FinallyBlock = this.VisitToStatement(node.FinallyBlockOpt, arg)
+                };
+            }
+
+            return tryCatchBlock;
+        }
+
         public override AstBase VisitTupleBinaryOperator(BoundTupleBinaryOperator node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitTupleLiteral(BoundTupleLiteral node, SerializationContext arg)

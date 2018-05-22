@@ -373,7 +373,7 @@
                         @"NullableTests.cs"
                     },
                     @"Test\RealScript",
-                    new string[] { "mscorlib", "system.core", "microsoft.csharp" },
+                    new string[] { "mscorlib" },
                     (string)null
                 ),
             };
@@ -408,23 +408,35 @@
                     CSharpSyntaxTree.ParseText(
                         File.ReadAllText(_),
                         CSharpParseOptions.Default,
-                        _))
+                        _,
+                        System.Text.Encoding.UTF8))
                 .ToArray();
 
             var compilerOptions = new CSharpCompilationOptions(
                 outputKind: OutputKind.DynamicallyLinkedLibrary,
                 optimizationLevel: OptimizationLevel.Debug,
                 allowUnsafe: true,
-                cryptoKeyFile: resources.keyFile != null
-                    ? Path.Combine(
-                        Path.Combine(
-                            nscriptGitPath,
-                            resources.directory),
-                        resources.keyFile)
-                    : null,
+                delaySign: resources.keyFile != null,
+                cryptoKeyFile: null,
                 platform: Platform.AnyCpu,
                 generalDiagnosticOption: ReportDiagnostic.Warn,
-                warningLevel: 4);
+                warningLevel: 4,
+                concurrentBuild: false,
+                specificDiagnosticOptions: new Dictionary<string, ReportDiagnostic>
+                {
+                    ["0824"] = ReportDiagnostic.Suppress,
+                    ["0169"] = ReportDiagnostic.Suppress,
+                    ["0649"] = ReportDiagnostic.Suppress,
+                    ["0626"] = ReportDiagnostic.Suppress,
+                    ["0414"] = ReportDiagnostic.Suppress,
+                    ["0660"] = ReportDiagnostic.Suppress,
+                    ["0661"] = ReportDiagnostic.Suppress,
+                    ["3001"] = ReportDiagnostic.Suppress,
+                    ["3002"] = ReportDiagnostic.Suppress,
+                    ["1701"] = ReportDiagnostic.Suppress,
+                    ["1701"] = ReportDiagnostic.Suppress,
+                    ["2008"] = ReportDiagnostic.Suppress,
+                });
 
             var compilation = CSharpCompilation.Create(
                 "TestCompilation",
