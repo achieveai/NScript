@@ -236,6 +236,8 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(177, typeof(AnonymousMethodBodyExpr))]
     [ProtoInclude(178, typeof(AnonymousMethodExpr))]
     [ProtoInclude(176, typeof(IteratorBlock))]
+    [ProtoInclude(208, typeof(NullableToNormal))]
+    [ProtoInclude(209, typeof(EventExpression))]
     public class ExpressionSer
         : AstBase
     {
@@ -447,6 +449,16 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class EventExpression : ExpressionSer
+    {
+        public ExpressionSer Instance { get; set; }
+
+        public bool IsNotVirtual { get; set; }
+
+        public int Event { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class IndexExpression
         : PropertyExpression
     {
@@ -519,6 +531,12 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
 
         public bool IsUnbox { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class NullableToNormal : ExpressionSer
+    {
+        public ExpressionSer Expression { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]

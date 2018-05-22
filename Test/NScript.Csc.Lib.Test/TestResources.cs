@@ -310,7 +310,7 @@
                         @"Linq\Expressions\TypeBinaryExpression.cs",
                         @"Linq\Expressions\UnaryExpression.cs",
                         @"Runtime\CompilerServices\CallSite.cs",
-                        @"Runtime\CompilerServices\DynamicAttribute.cs"
+                        @"Runtime\CompilerServices\DynamicAttribute.cs",
                     },
                     @"Sources\System.Core",
                     new string[] {"mscorlib"},
@@ -373,7 +373,7 @@
                         @"NullableTests.cs"
                     },
                     @"Test\RealScript",
-                    new string[] { "mscorlib" },
+                    new string[] { "mscorlib", "system.core", "microsoft.csharp" },
                     (string)null
                 ),
             };
@@ -439,9 +439,14 @@
                 });
 
             var compilation = CSharpCompilation.Create(
-                "TestCompilation",
+                resources.outName,
                 syntaxTrees: trees,
-                options: compilerOptions);
+                options: compilerOptions,
+                references: resources
+                    .refs
+                    .Select(_ => Path.Combine(Path.GetTempPath(), _ + ".dll"))
+                    .Select(_ => MetadataReference.CreateFromFile(_))
+                    .ToList());
 
             rv = SerializationHelper.ExpressionVisitMap(
                 compilation,

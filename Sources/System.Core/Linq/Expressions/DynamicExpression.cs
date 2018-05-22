@@ -19,7 +19,7 @@ namespace System.Linq.Expressions
 		/// <returns>The <see cref="P:System.Linq.Expressions.DynamicExpression.Type" /> that represents the static type of the expression.</returns>
 		public extern override Type Type
 		{
-			get;
+            get;
 		}
 
 		/// <summary>Returns the node type of this expression. Extension nodes should return <see cref="F:System.Linq.Expressions.ExpressionType.Extension" /> when overriding this method.</summary>
