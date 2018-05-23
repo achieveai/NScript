@@ -880,6 +880,7 @@
 
         public override AstBase VisitSwitchSection(BoundSwitchSection node, SerializationContext arg)
             {throw new NotImplementedException(); }
+
         public override AstBase VisitSwitchStatement(BoundSwitchStatement node, SerializationContext arg)
         {
             var switchSections = new List<SwitchSectionSer>();

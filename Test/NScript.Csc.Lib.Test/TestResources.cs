@@ -10,8 +10,8 @@
     public static class TestResources
     {
         public const string nscriptGitPath = @"E:\repos\cs2jsc";
-        public static readonly Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile)>
-            sources = new Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile)>()
+        public static readonly Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile, bool isDebug)>
+            sources = new Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile, bool isDebug)>()
             {
                 ["mscorlib"] = (
                     "mscorlib.dll",
@@ -243,7 +243,8 @@
                         @"Xml\XmlText.cs"},
                     @"Sources\mscorlib",
                     new string[0],
-                    @"Sources\mscorlib\mscorlibKey.snk"
+                    @"Sources\mscorlib\mscorlibKey.snk",
+                    true
                 ),
 
                 ["system.core"] = (
@@ -314,7 +315,8 @@
                     },
                     @"Sources\System.Core",
                     new string[] {"mscorlib"},
-                    @"Sources\mscorlib\mscorlibKey.snk"
+                    @"Sources\mscorlib\mscorlibKey.snk",
+                    true
                 ),
 
                 ["microsoft.csharp"] = (
@@ -328,7 +330,8 @@
                     },
                     @"Sources\Microsoft.CSharp",
                     new string[] { "mscorlib", "system.core" },
-                    @"Sources\mscorlib\mscorlibKey.snk"
+                    @"Sources\mscorlib\mscorlibKey.snk",
+                    true
                 ),
 
                 ["realScript"] = (
@@ -374,7 +377,55 @@
                     },
                     @"Test\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
-                    (string)null
+                    (string)null,
+                    false
+                ),
+
+                ["realScript.debug"] = (
+                    "realScript.debug.dll",
+                    new string[]
+                    {
+                        @"DelegateBlocks.cs",
+                        @"DupInstructionBlocks.cs",
+                        @"ExceptionHandlerSamples.cs",
+                        @"ForLoopBlocks.cs",
+                        @"FuncRegressions.cs",
+                        @"GenericCollections.cs",
+                        @"GenericSamples.cs",
+                        @"IfBlocks.cs",
+                        @"BasicBlockTestFunctions.cs",
+                        @"BasicStatements.cs",
+                        @"EnumTypes.cs",
+                        @"InlineComplexStatements.cs",
+                        @"JsScriptImport.cs",
+                        @"LoopTests.cs",
+                        @"MathAlgorithms.cs",
+                        @"NumberOperations.cs",
+                        @"ScriptSharpCompat.cs",
+                        @"SimpleInterfaceTest.cs",
+                        @"SimpleTypes.cs",
+                        @"StructClass.cs",
+                        @"SwitchTest.cs",
+                        @"TestArithmetics.cs",
+                        @"TestControlFlow.cs",
+                        @"TestDelegates.cs",
+                        @"TestGeneric.cs",
+                        @"TestInheritence.cs",
+                        @"TestInitializers.cs",
+                        @"TestPsudoType.cs",
+                        @"TestReferenceClass.cs",
+                        @"TestCompilerGeneratedStuff.cs",
+                        @"WhileLoopBlocks.cs",
+                        @"YieldReturnTests.cs",
+                        @"Properties\AssemblyInfo.cs",
+                        @"Class1.cs",
+                        @"ConstructorTests.cs",
+                        @"NullableTests.cs"
+                    },
+                    @"Test\RealScript",
+                    new string[] { "mscorlib", "system.core", "microsoft.csharp" },
+                    (string)null,
+                    true
                 ),
             };
 
@@ -387,6 +438,15 @@
         public static Dictionary<IMethodSymbol, MethodBody> RealScriptMethods
             => GetMethodMaps("realScript");
 
+        public static Dictionary<IMethodSymbol, MethodBody> RealScriptDebugMethods
+            => GetMethodMaps("realScript.debug");
+
+        public static void CompileAll()
+        {
+            var tmp = RealScriptDebugMethods;
+            tmp = RealScriptMethods;
+        }
+
         private static Dictionary<IMethodSymbol, MethodBody> GetMethodMaps(
             string moduleName)
         {
@@ -396,7 +456,7 @@
             var resources = sources[moduleName];
             string runtimeMetadataVersion = null;
             if (resources.refs.Select(_ => GetMethodMaps(_)).Count() == 0)
-            { runtimeMetadataVersion = "4"; }
+            { runtimeMetadataVersion = "v4.100.0"; }
 
             var trees = resources
                 .files
@@ -414,7 +474,9 @@
 
             var compilerOptions = new CSharpCompilationOptions(
                 outputKind: OutputKind.DynamicallyLinkedLibrary,
-                optimizationLevel: OptimizationLevel.Debug,
+                optimizationLevel: resources.isDebug
+                    ? OptimizationLevel.Debug
+                    : OptimizationLevel.Release,
                 allowUnsafe: true,
                 delaySign: resources.keyFile != null,
                 cryptoKeyFile: null,
@@ -439,7 +501,7 @@
                 });
 
             var compilation = CSharpCompilation.Create(
-                resources.outName,
+                Path.GetFileNameWithoutExtension(resources.outName),
                 syntaxTrees: trees,
                 options: compilerOptions,
                 references: resources

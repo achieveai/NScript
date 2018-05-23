@@ -245,25 +245,6 @@
         private void MapLocations()
         {
             Location lastLocation = null;
-
-            foreach (var instruction in this.implementation.Instructions)
-            {
-                if (instruction.SequencePoint != null)
-                {
-                    SequencePoint sequencePoint = instruction.SequencePoint;
-                    lastLocation = 
-                        new Location(
-                            sequencePoint.Document.Url,
-                            sequencePoint.StartLine,
-                            sequencePoint.StartColumn,
-                            sequencePoint.EndLine,
-                            sequencePoint.EndColumn);
-                }
-
-                this.locations.Add(
-                    instruction,
-                    lastLocation);
-            }
         }
 
         /// <summary>

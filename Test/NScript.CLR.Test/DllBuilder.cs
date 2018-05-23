@@ -125,7 +125,7 @@ namespace NScript.CLR.Test
             }
         }
 
-        private void LoadAst(string assemblyFullFileName)
+        public void LoadAst(string assemblyFullFileName)
         {
             string assemblyFileName = Path.GetFileName(assemblyFullFileName);
             assemblyFileName = assemblyFileName.ToLowerInvariant();
@@ -143,7 +143,7 @@ namespace NScript.CLR.Test
                 throw new InvalidOperationException();
             }
 
-            JArray jsonAstArray = null;
+            // JArray jsonAstArray = null;
             FullAst fullAst = null;
             foreach (var resource in module.Resources)
             {

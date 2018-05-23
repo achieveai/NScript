@@ -41,7 +41,7 @@
         /// <summary>
         /// Loads the assemblies.
         /// </summary>
-        public static void LoadAssemblies()
+        public static void LoadAssemblies(bool isRoslyn = true)
         {
             if (TestAssemblyLoader.IsLoaded)
             {
@@ -49,17 +49,39 @@
             }
 
             TestAssemblyLoader.IsLoaded = true;
-
             TestAssemblyLoader.DllBuilder = new DllBuilder();
-            TestAssemblyLoader.LoadMcsCorlibAssemblies();
-            TestAssemblyLoader.LoadSystemCoreAssembly();
-            TestAssemblyLoader.LoadMicrosoftCSharpAssembly();
-            TestAssemblyLoader.LoadMcsAssemblies();
 
+            if (isRoslyn)
+            {
+                LoadRoslynAssemblies(Path.GetTempPath());
+            }
+            else
+            {
+
+                TestAssemblyLoader.LoadMcsCorlibAssemblies();
+                TestAssemblyLoader.LoadSystemCoreAssembly();
+                TestAssemblyLoader.LoadMicrosoftCSharpAssembly();
+                TestAssemblyLoader.LoadMcsAssemblies();
+
+                TestAssemblyLoader.Context = new ClrContext();
+                TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"mscorlib.dll"));
+                TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.dll"));
+                TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.Debug.dll"));
+            }
+        }
+
+        public static void LoadRoslynAssemblies(string basePath)
+        {
+            Csc.Lib.Test.TestResources.CompileAll();
             TestAssemblyLoader.Context = new ClrContext();
-            TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"mscorlib.dll"));
-            TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.dll"));
-            TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.Debug.dll"));
+            TestAssemblyLoader.DllBuilder.LoadAst(Path.Combine(basePath, @"mscorlib.dll"));
+            TestAssemblyLoader.Context.LoadAssembly(Path.Combine(basePath, @"mscorlib.dll"));
+
+            TestAssemblyLoader.DllBuilder.LoadAst(Path.Combine(basePath, @"realScript.dll"));
+            TestAssemblyLoader.Context.LoadAssembly(Path.Combine(basePath, @"realScript.dll"));
+
+            TestAssemblyLoader.DllBuilder.LoadAst(Path.Combine(basePath, @"realScript.Debug.dll"));
+            TestAssemblyLoader.Context.LoadAssembly(Path.Combine(basePath, @"realScript.Debug.dll"));
         }
 
         /// <summary>

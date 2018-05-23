@@ -2012,7 +2012,7 @@ namespace NScript.CLR
 
             foreach (var iface in typeDefinition.Interfaces)
             {
-                yield return iface;
+                yield return iface.InterfaceType;
             }
 
             yield break;
@@ -2040,10 +2040,10 @@ namespace NScript.CLR
 
             foreach (var iface in typeDefinition.Interfaces)
             {
-                var fixedIface = iface.FixGenericTypeArguments(typeReference);
+                var fixedIface = iface.InterfaceType.FixGenericTypeArguments(typeReference);
                 if (!returnedInterfaces.Contains(fixedIface))
                 {
-                    yield return iface;
+                    yield return iface.InterfaceType;
                 }
             }
 

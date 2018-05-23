@@ -142,9 +142,7 @@ namespace JsCsc.Lib
                 MethodDefinition tmpMethodDefinition = rvDef.Resolve();
                 this._activeContext = this.GetTypeNameMaps(tmpMethodDefinition);
 
-                rv = new MethodReference();
-                rv.Name = name;
-                rv.DeclaringType = declaringType;
+                rv = new MethodReference(name, declaringType);
 
                 for (int iArity = 0; iArity < arity; iArity++)
                 {
@@ -294,9 +292,7 @@ namespace JsCsc.Lib
                 MethodDefinition tmpMethodDefinition = rvDef.Resolve();
                 this._activeContext = this.GetTypeNameMaps(tmpMethodDefinition);
 
-                rv = new MethodReference();
-                rv.Name = name;
-                rv.DeclaringType = declaringType;
+                rv = new MethodReference(name, declaringType);
 
                 for (int iArity = 0; iArity < arity; iArity++)
                 {

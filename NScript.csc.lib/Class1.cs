@@ -40,7 +40,7 @@
             };
 
             var astResource = new ResourceDescription(
-                "$$AstInfo$$",
+                "$$BstInfo$$",
                 () => ToAstStream(context, rv),
                 true);
 
@@ -88,14 +88,15 @@
             SerializationContext context,
             Dictionary<IMethodSymbol, MethodBody> methodMaps)
         {
-            var memStream = new MemoryStream();
             var fullAst = new FullAst
             {
                 Methods = new LinkedList<MethodBody>(methodMaps.Values),
                 TypeInfo = context.SymbolSerializer.GetTypesInfo()
             };
 
+            var memStream = new MemoryStream();
             ProtoBuf.Serializer.Serialize(memStream, fullAst);
+            memStream.Position = 0;
             return memStream;
         }
     }

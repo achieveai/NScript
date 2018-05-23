@@ -88,9 +88,7 @@
             }
 
             LocalVariable returnValue = new LocalVariable(
-                new VariableDefinition(
-                    addedVariableName,
-                    typeReference),
+                new VariableDefinition(typeReference),
                 this);
 
             this.localVariables.Add(returnValue);

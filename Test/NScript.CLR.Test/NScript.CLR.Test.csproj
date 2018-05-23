@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NScript.CLR.Test</RootNamespace>
     <AssemblyName>NScript.CLR.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -38,7 +38,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\Dependencies\Mono.Cecil.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -66,11 +67,20 @@
       <HintPath>..\..\packages\protobuf-net.2.3.7\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Collections.Immutable.1.4.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Reflection.Metadata, Version=1.4.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reflection.Metadata.1.5.0\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ValueTuple.4.4.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="XmlUnit.Xunit">
@@ -108,6 +118,10 @@
     <Compile Include="TypeHelpersTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NScript.csc.lib\NScript.csc.lib.csproj">
+      <Project>{76a3ddec-2f19-4473-abce-0c2914731793}</Project>
+      <Name>NScript.csc.lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Sources\JsCsc.Lib\JsCsc.Lib.csproj">
       <Project>{65fdb136-49ee-4316-95c5-aee4c1a5da83}</Project>
       <Name>JsCsc.Lib</Name>
@@ -119,6 +133,10 @@
     <ProjectReference Include="..\..\Sources\NScript.Utils\NScript.Utils.csproj">
       <Project>{030B10DD-4861-4BE1-B0D6-DB43587E603F}</Project>
       <Name>NScript.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj">
+      <Project>{8edf4429-251a-416d-bb68-93f227191bcf}</Project>
+      <Name>NScript.Csc.Lib.Test</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

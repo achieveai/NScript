@@ -14,7 +14,7 @@
         public readonly IList<IlInstruction> Instructions;
         public readonly IList<Block> Blocks;
         public readonly IDictionary<IlInstruction, InstructionBlock> InstructionToBlock;
-        public readonly Scope ExecutionScope;
+        public readonly MethodBody ExecutionScope;
         public readonly MethodDefinition MethodDefinition;
         private readonly Dictionary<VariableDefinition, List<Tuple<IlInstruction, IlInstruction>>> variableRange;
         private InlineDelegateInfo inlineDelegateInfo = null;
@@ -42,7 +42,7 @@
             this.ClrContext = clrContext;
             this.MethodDefinition = methodDefinition;
             this.ExecutionScope = methodDefinition != null
-                ? methodDefinition.Body.Scope
+                ? methodDefinition.Body
                 : null;
             this.LabelToInstruction = labelToInstruction;
             this.IdToBlock = idToBlock;

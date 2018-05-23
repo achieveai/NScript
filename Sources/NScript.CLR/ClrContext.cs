@@ -254,11 +254,17 @@ namespace NScript.CLR
 
                 if (typeName.Item2.StartsWith("!!"))
                 {
-                    return new GenericParameter(typeParameterNumber, GenericParameterType.Method, moduleDefinition);
+                    return new GenericParameter(
+                        typeParameterNumber,
+                        GenericParameterType.Method,
+                        moduleDefinition);
                 }
                 else
                 {
-                    return new GenericParameter(typeParameterNumber, GenericParameterType.Method, moduleDefinition);
+                    return new GenericParameter(
+                        typeParameterNumber,
+                        GenericParameterType.Method,
+                        moduleDefinition);
                 }
             }
 
