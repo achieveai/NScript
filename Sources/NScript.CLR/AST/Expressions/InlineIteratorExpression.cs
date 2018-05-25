@@ -6,10 +6,8 @@
 
 namespace NScript.CLR.AST
 {
-    using System;
-    using System.Collections.Generic;
-using NScript.Utils;
-using Mono.Cecil;
+    using NScript.Utils;
+    using Mono.Cecil;
 
     /// <summary>
     /// Definition for InlineIteratorExpression

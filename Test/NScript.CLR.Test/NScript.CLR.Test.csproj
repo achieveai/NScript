@@ -97,6 +97,7 @@
     <Compile Include="BlockTests\InlineInitializaitons.cs" />
     <Compile Include="BlockTests\LoopBuilderTestFixture.cs" />
     <Compile Include="BlockTests\SwitchBlockBuilderTestFixture.cs" />
+    <Compile Include="ClrAstToStringVisitor.cs" />
     <Compile Include="CstTests\BasicStatementAstTestFixture.cs" />
     <Compile Include="CstTests\DelegateBlockTests.cs" />
     <Compile Include="CstTests\DupInstructionTests.cs" />
