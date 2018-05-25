@@ -180,6 +180,7 @@ using Mono.Cecil;
 
         private MethodReference initializeArrayReference;
         private MethodReference arrayLengthGetter;
+        private TypeReference typedReference;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClrKnownReferences"/> class.
@@ -459,6 +460,20 @@ using Mono.Cecil;
                 }
 
                 return this.stringReference;
+            }
+        }
+
+        public TypeReference TypedReference
+        {
+            get
+            {
+                if (this.typedReference == null)
+                {
+                    this.typedReference =
+                        this.MSCorlibModule.TypeSystem.TypedReference;
+                }
+
+                return this.typedReference;
             }
         }
 

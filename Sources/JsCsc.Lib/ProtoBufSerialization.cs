@@ -9,7 +9,7 @@ namespace JsCsc.Lib.Serialization
     using System;
     using System.Collections.Generic;
     using ProtoBuf;
-    //  MaxId = 208;
+    //  MaxId = 209;
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class ModuleSpecSer
@@ -21,6 +21,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(100, typeof(GenericParamSer))]
     [ProtoInclude(101, typeof(ArrayTypeSer))]
     [ProtoInclude(102, typeof(GenericInstanceTypeSer))]
+    [ProtoInclude(209, typeof(PointerTypeSer))]
     public class TypeSpecSer
     {
         public string Name { get; set; }
@@ -48,6 +49,13 @@ namespace JsCsc.Lib.Serialization
         : TypeSpecSer
     {
         public TypeSpecSer ElementType { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class PointerTypeSer
+        : TypeSpecSer
+    {
+        public TypeSpecSer PointedAtType { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]

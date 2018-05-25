@@ -21,6 +21,9 @@
             BoundNode boundNode,
             SerializationContext arg)
         {
+            if (methodSymbol.Name == "CastType")
+            { }
+
             var methodId = arg
                 .SymbolSerializer
                 .GetMethodSpecId(methodSymbol);
@@ -132,7 +135,12 @@
                 Initializers = node.InitializerOpt?
                     .Initializers
                     .Select(_ => (ExpressionSer)this.Visit(_, arg))
-                    .ToList()
+                    .ToList(),
+                Arguments = node.InitializerOpt != null
+                    ? null
+                    : node.Bounds
+                        .Select(_ => (ExpressionSer)this.Visit(_, arg))
+                        .ToList()
             };
 
         public override AstBase VisitArrayInitialization(BoundArrayInitialization node, SerializationContext arg)
@@ -397,6 +405,8 @@
                 case ConversionKind.ImplicitReference:
                     return this.Visit(node.Operand, arg);
 
+                case ConversionKind.ExplicitReference:
+                    // return this.Visit(node.Operand, arg);
                 case ConversionKind.ExplicitEnumeration: // Cast to enum from int/short, use cast b'cause we may be using string for enum
                 case ConversionKind.ImplicitEnumeration: // Converts int/short to Enum, use cast b'cause we may be using string for enum
                 case ConversionKind.ExplicitNumeric:
@@ -406,8 +416,6 @@
                         Expression = (ExpressionSer)this.Visit(node.Operand, arg),
                         Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
                     };
-                case ConversionKind.ExplicitReference:
-                    return this.Visit(node.Operand, arg);
                 case ConversionKind.ExplicitNullable:
                     return new NullableToNormal
                     {

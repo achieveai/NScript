@@ -292,7 +292,8 @@ namespace JsCsc.Lib
                 MethodDefinition tmpMethodDefinition = rvDef.Resolve();
                 this._activeContext = this.GetTypeNameMaps(tmpMethodDefinition);
 
-                rv = new MethodReference(name, declaringType);
+                returningType = this.DeserializeType(methodSpec.ReturnType);
+                rv = new MethodReference(name, returningType, declaringType);
 
                 for (int iArity = 0; iArity < arity; iArity++)
                 {
@@ -304,9 +305,6 @@ namespace JsCsc.Lib
                     rv.GenericParameters.Add(genericParam);
                     this._activeContext[genericParam.Name] = genericParam;
                 }
-
-                returningType = this.DeserializeType(methodSpec.ReturnType);
-                rv.ReturnType = returningType;
 
                 for (int iParam = 0; argsArray != null && iParam < argsArray.Count; iParam++)
                 {
@@ -470,15 +468,27 @@ namespace JsCsc.Lib
 
             ModuleDefinition moduleDef = this.GetModuleDefinition(typeSpec.Module);
 
+            var arrayTypeSer = typeSpec as Serialization.ArrayTypeSer;
+            if (arrayTypeSer != null)
+            {
+                return new ArrayType(
+                    this.DeserializeType(
+                        arrayTypeSer.ElementType));
+            }
+
+            var pointerTypeSer = typeSpec as Serialization.PointerTypeSer;
+            if (pointerTypeSer != null)
+            { return new PointerType(this.DeserializeType(pointerTypeSer.PointedAtType)); }
+
             if (moduleDef == null)
             { return this._context.KnownReferences.Void; }
 
             string name = typeSpec.Name;
             int arity = typeSpec.Arity;
 
-            if (typeSpec is Serialization.GenericParamSer)
+            var genericParamSpec = typeSpec as Serialization.GenericParamSer;
+            if (genericParamSpec != null)
             {
-                var genericParamSpec = (Serialization.GenericParamSer)typeSpec;
                 bool isMethodOwned = genericParamSpec.IsMethodOwned;
                 int position = genericParamSpec.Position;
                 string genericParamName = genericParamSpec.Name;
@@ -560,8 +570,6 @@ namespace JsCsc.Lib
             }
 
             this.FixSystemType(ref rv);
-
-            rv.IsValueType = rv.Resolve().IsValueType;
 
             return rv;
         }
@@ -684,6 +692,7 @@ namespace JsCsc.Lib
             MemberReferenceDeserializer.AddToMap(rv, knownReferences.TypeType);
             MemberReferenceDeserializer.AddToMap(rv, knownReferences.Boolean);
             MemberReferenceDeserializer.AddToMap(rv, knownReferences.String);
+            MemberReferenceDeserializer.AddToMap(rv, knownReferences.TypedReference);
 
             return rv;
         }

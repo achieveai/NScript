@@ -137,7 +137,7 @@ namespace NScript.Csc.Lib
                 if (typeTokenMap.ContainsKey(type)) { return; }
 
                 typeSerMap[type] = ser;
-                typeTokenMap[type] = typeTokenMap.Count;
+                typeTokenMap[type] = typeTokenMap.Count + 1;
             }
         }
 
@@ -150,7 +150,7 @@ namespace NScript.Csc.Lib
                 if (methodTokenMap.ContainsKey(method)) { return; }
 
                 methodSerMap[method] = ser;
-                methodTokenMap[method] = methodTokenMap.Count;
+                methodTokenMap[method] = methodTokenMap.Count + 1;
             }
         }
 
@@ -164,7 +164,7 @@ namespace NScript.Csc.Lib
                 if (fieldTokenMap.ContainsKey(field)) { return; }
 
                 fieldSerMap[field] = ser;
-                fieldTokenMap[field] = fieldTokenMap.Count;
+                fieldTokenMap[field] = fieldTokenMap.Count + 1;
             }
         }
 
@@ -178,7 +178,7 @@ namespace NScript.Csc.Lib
                 if (propertyTokenMap.ContainsKey(property)) { return; }
 
                 propertySerMap[property] = ser;
-                propertyTokenMap[property] = propertyTokenMap.Count;
+                propertyTokenMap[property] = propertyTokenMap.Count + 1;
             }
         }
 
@@ -192,19 +192,22 @@ namespace NScript.Csc.Lib
                 if (eventTokenMap.ContainsKey(evt)) { return; }
 
                 eventSerMap[evt] = ser;
-                eventTokenMap[evt] = eventTokenMap.Count;
+                eventTokenMap[evt] = eventTokenMap.Count + 1;
             }
         }
 
         private TypeSpecSer Serialize(ITypeSymbol type)
         {
-            if (type.MetadataName == string.Empty)
-            { return null; }
-
             if (type.Kind == SymbolKind.ArrayType)
             {
                 return new ArrayTypeSer
                 { ElementType = GetTypeSpecSer(((IArrayTypeSymbol)type).ElementType) };
+            }
+
+            if (type.Kind == SymbolKind.PointerType)
+            {
+                return new PointerTypeSer
+                { PointedAtType = GetTypeSpecSer(((IPointerTypeSymbol)type).PointedAtType) };
             }
 
             var moduleSpec = new ModuleSpecSer { Name = type.ContainingModule.Name };
@@ -220,20 +223,61 @@ namespace NScript.Csc.Lib
                 };
             }
 
+            if (type.Kind != SymbolKind.NamedType)
+            { throw new NotSupportedException(); }
+
+            NamedTypeSymbol namedTypeSymbol = (NamedTypeSymbol)type;
+
+            if (namedTypeSymbol.IsNestedType())
+            { }
+
+            var name = type.MetadataName;
+            var @namespace = namedTypeSymbol.IsNestedType()
+                ? null
+                : ((NamespaceSymbol)type.ContainingNamespace).QualifiedName;
+            var nestedParent = type.ContainingType == null
+                ? null
+                : GetTypeSpecSer(type.ContainingType);
+            if (namedTypeSymbol.Arity > 0)
+            {
+                return new GenericInstanceTypeSer
+                {
+                    Name = type.MetadataName,
+                    Namespace = @namespace,
+                    Module = moduleSpec,
+                    Arity = namedTypeSymbol.Arity,
+                    NestedParent = nestedParent,
+                    TypeParams =
+                        namedTypeSymbol
+                            .TypeSubstitution?
+                            .SubstituteTypes(
+                                namedTypeSymbol
+                                    .TypeParameters
+                                    .CastArray<TypeSymbol>())
+                            .Select(_ => this.GetTypeSpecSer(_.Type))
+                            .ToList()
+                        ?? namedTypeSymbol
+                            .TypeParameters
+                            .Select(_ => this.GetTypeSpecSer(_))
+                            .ToList()
+                };
+            }
+
             return new TypeSpecSer
             {
                 Name = type.MetadataName,
-                Namespace = type.ContainingNamespace.Name,
+                Namespace = @namespace,
                 Module = moduleSpec,
-                Arity = 0,
-                NestedParent = type.ContainingType == null
-                    ? null
-                    : GetTypeSpecSer(type.ContainingType)
+                Arity = namedTypeSymbol.Arity,
+                NestedParent = nestedParent
             };
         }
 
         private MethodSpecSer Serialize(IMethodSymbol method)
         {
+            if (method.Name == ".ctor" && ((NamedTypeSymbol)method.ContainingType).IsNestedType() )
+            { }
+
             var returnType =
                 method.ReturnsVoid
                 ? null
