@@ -1,0 +1,13 @@
+﻿ParamBlock(RealScript.TestReferenceClass trc1, RealScript.TestReferenceClass dest) ExplicitBlock {
+  Assignment l:False rt:RealScript.TestReferenceClass
+    PropertyReference
+      dest
+      .Property
+  ,
+    RealScript.TestReferenceClass
+      PropertyReference
+        trc1
+        .Property
+    ??
+      trc1;
+}

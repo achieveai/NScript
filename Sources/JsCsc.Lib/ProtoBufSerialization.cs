@@ -928,6 +928,8 @@ namespace JsCsc.Lib.Serialization
         public StatementSer Iterator { get; set; }
 
         new public StatementSer Loop { get; set; }
+
+        public int BlockId { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]

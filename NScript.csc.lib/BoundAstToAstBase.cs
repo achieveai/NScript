@@ -3,6 +3,7 @@
     using JsCsc.Lib.Serialization;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Symbols;
     using Mono.Cecil;
     using System;
     using System.Collections.Generic;
@@ -21,7 +22,7 @@
             BoundNode boundNode,
             SerializationContext arg)
         {
-            if (methodSymbol.Name == "CastType")
+            if (methodSymbol.Name == "PostfixPropertyInConditionOperation")
             { }
 
             var methodId = arg
@@ -241,35 +242,20 @@
 
         public override AstBase VisitBlock(BoundBlock node, SerializationContext arg)
         {
-            if (node.Locals.Length > 0 && node.Statements != null)
+            this.scopeBlockStack.AddFirst((++this.id, node));
+            try
             {
-                this.scopeBlockStack.AddFirst((++this.id, node));
-                try
+                return new ExplicitBlockSer
                 {
-                    return new ExplicitBlockSer
-                    {
-                        Id = this.id,
-                        Statements = node
-                            .Statements
-                            .Select(_ => this.VisitToStatement(_, arg))
-                            .ToList()
-                    };
-                }
-                finally
-                { this.scopeBlockStack.RemoveFirst(); }
-            }
-            else
-            {
-                return new BlockSer
-                {
-                    Statements = node.Statements == null
-                        ? null
-                        : node
+                    Id = this.id,
+                    Statements = node
                         .Statements
                         .Select(_ => this.VisitToStatement(_, arg))
-                        .ToList(),
+                        .ToList()
                 };
             }
+            finally
+            { this.scopeBlockStack.RemoveFirst(); }
         }
 
         public override AstBase VisitBreakStatement(BoundBreakStatement node, SerializationContext arg)
@@ -577,20 +563,27 @@
         public override AstBase VisitForEachDeconstructStep(BoundForEachDeconstructStep node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitForEachStatement(BoundForEachStatement node, SerializationContext arg)
-            => new ForEachStatement {
-                LocalVariableName = node.IterationVariables[0].Name,
-                Collection = (ExpressionSer)this.Visit(node.Expression, arg),
-                Loop = this.VisitToStatement(node.Body, arg)
-            };
+            => this.WrapInBlock(
+                node,
+                id =>
+                    new ForEachStatement {
+                        LocalVariableName = node.IterationVariables[0].Name,
+                        Collection = (ExpressionSer)this.Visit(node.Expression, arg),
+                        Loop = this.VisitToStatement(node.Body, arg)
+                    });
 
         public override AstBase VisitForStatement(BoundForStatement node, SerializationContext arg)
-            => new ForStatement
-            {
-                Initializer = this.VisitToStatement(node.Initializer, arg),
-                Condition = (ExpressionSer)this.Visit(node.Condition, arg),
-                Iterator = this.VisitToStatement(node.Increment, arg),
-                Loop = (StatementSer)this.Visit(node.Body, arg)
-            };
+            => this.WrapInBlock(
+                node,
+                id =>
+                    new ForStatement
+                    {
+                        BlockId = id,
+                        Initializer = this.VisitToStatement(node.Initializer, arg),
+                        Condition = (ExpressionSer)this.Visit(node.Condition, arg),
+                        Iterator = this.VisitToStatement(node.Increment, arg),
+                        Loop = (StatementSer)this.Visit(node.Body, arg)
+                    });
 
         public override AstBase VisitGlobalStatementInitializer(BoundGlobalStatementInitializer node, SerializationContext arg)
             {throw new NotImplementedException(); }
@@ -676,13 +669,7 @@
         public override AstBase VisitLocal(BoundLocal node, SerializationContext arg)
             => new LocalVariableRefExpression
             {
-                LocalVariable = new LocalVariableSer
-                    {
-                        Name = node.LocalSymbol.MetadataName,
-                        Location = node.Syntax.Location.GetSerLoc(),
-                        Type = arg.SymbolSerializer.GetTypeSpecId(node.LocalSymbol.Type),
-                        BlockId = this.id,
-                    },
+                LocalVariable = this.GetLocalVariable(node.LocalSymbol, arg),
                 Location = node.Syntax.Location.GetSerLoc()
             };
 
@@ -692,16 +679,34 @@
                 Operator = (int)CLR.AST.BinaryOperator.Assignment,
                 Left = new LocalVariableRefExpression
                 {
-                    LocalVariable = new LocalVariableSer
-                    {
-                        Name = node.LocalSymbol.MetadataName,
-                        Location = node.Syntax.Location.GetSerLoc(),
-                        Type = arg.SymbolSerializer.GetTypeSpecId(node.LocalSymbol.Type),
-                        BlockId = this.id,
-                    }
+                    Location = node.Syntax.Location.GetSerLoc(),
+                    LocalVariable = this.GetLocalVariable(node.LocalSymbol, arg)
                 },
                 Right = (ExpressionSer)this.Visit(node.InitializerOpt, arg)
             };
+
+        private LocalVariableSer GetLocalVariable(LocalSymbol localSymbol, SerializationContext arg)
+        {
+            int id = -1;
+            foreach (var node in this.scopeBlockStack)
+            {
+                if (node.nodeBlock.Syntax == localSymbol.ScopeDesignatorOpt)
+                {
+                    id = node.id;
+                    break;
+                }
+            }
+
+            if (id == -1)
+            { throw new InvalidOperationException(); }
+
+            return new LocalVariableSer
+            {
+                Name = localSymbol.MetadataName,
+                Type = arg.SymbolSerializer.GetTypeSpecId(localSymbol.Type),
+                BlockId = id
+            };
+        }
 
         public override AstBase VisitLocalFunctionStatement(BoundLocalFunctionStatement node, SerializationContext arg)
             {throw new NotImplementedException(); }
@@ -1247,6 +1252,15 @@
                 default:
                     return 0;
             }
+        }
+
+        private T WrapInBlock<T>(BoundNode node, Func<int, T> func) where T : StatementSer
+        {
+            this.scopeBlockStack.AddFirst((++this.id, node));
+            try
+            { return func(this.id); }
+            finally
+            { this.scopeBlockStack.RemoveFirst(); }
         }
 
         private StatementSer VisitToStatement(BoundNode node, SerializationContext arg)

@@ -1,0 +1,10 @@
+﻿ParamBlock(RealScript.TestReferenceClass trc1, System.Int32 i2) ExplicitBlock {
+  MulAssignment l:False rt:System.Int32
+    PropertyReference
+      PropertyReference
+        trc1
+        .Property
+      .IntProperty
+  ,
+    i2;
+}

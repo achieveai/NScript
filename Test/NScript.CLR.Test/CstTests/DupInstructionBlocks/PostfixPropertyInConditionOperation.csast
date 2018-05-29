@@ -1,0 +1,27 @@
+﻿ParamBlock(RealScript.TestReferenceClass referenceClass) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    returnValue
+  ,
+    I32 0;
+  While(
+    Equals l:False rt:System.Boolean
+      I32 0
+    ,
+      PostIncrement, is:False
+        PropertyReference
+          referenceClass
+          .IntProperty
+  ) {
+    ScopeBlock() {
+      Assignment l:False rt:System.Int32
+        returnValue
+      ,
+        Mul l:False rt:System.Int32
+          I32 2
+        ,
+          returnValue;
+    }
+  }
+  return
+    returnValue
+}

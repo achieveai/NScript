@@ -1,0 +1,12 @@
+﻿ParamBlock(System.Int32 i1, System.Int32 i2, RealScript.Class1 cl1) ExplicitBlock {
+  PlusAssignment l:False rt:System.Int32
+    i1
+  ,
+    i2;
+  MethodReference
+    cl1
+    .Func2(
+    i1,
+    i2
+  );
+}

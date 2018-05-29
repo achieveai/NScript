@@ -1,0 +1,14 @@
+﻿ParamBlock(RealScript.TestReferenceClass trc1) ExplicitBlock {
+  return
+    LessThan l:False rt:System.Boolean
+      PreIncrement, is:False
+        FieldReference
+          trc1
+          .intField
+    ,
+      FieldReference
+        FieldReference
+          trc1
+          .objField
+        .intField
+}
