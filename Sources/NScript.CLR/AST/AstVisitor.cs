@@ -10,6 +10,9 @@
     {
         public R Visit(Node node, A arg)
         {
+            if (node == null)
+            { return this.VisitNull(arg); }
+
             switch(node)
             {
                 case AnonymousMethodBodyExpression n:
@@ -55,6 +58,8 @@
                 case VirtualMethodReferenceExpression n:
                     return this.VisitExpression(n, arg);
                 case MethodReferenceExpression n:
+                    return this.VisitExpression(n, arg);
+                case InlineArrayInitialization n:
                     return this.VisitExpression(n, arg);
                 case NewArrayExpression n:
                     return this.VisitExpression(n, arg);
@@ -135,6 +140,8 @@
             throw new NotImplementedException();
         }
 
+        public abstract R VisitNull(A arg);
+        public abstract R VisitExpression(InlineArrayInitialization node, A arg);
         public abstract R VisitExpression(AnonymousMethodBodyExpression node, A arg);
         public abstract R VisitExpression(AnonymousNewExpression node, A arg);
         public abstract R VisitExpression(ArrayElementExpression node, A arg);

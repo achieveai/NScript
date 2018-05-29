@@ -1,0 +1,14 @@
+﻿ParamBlock(System.Int32 i) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    rv
+  ,
+    Plus l:False rt:System.Int32
+      i
+    ,
+      I32 10;
+  static? MethodReference TestSimpleAndComparision(
+    rv
+  );
+  return
+    rv
+}

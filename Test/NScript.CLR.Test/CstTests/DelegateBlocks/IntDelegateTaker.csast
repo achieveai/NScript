@@ -1,0 +1,10 @@
+﻿ParamBlock(System.String str, RealScript.IntFunction func, RealScript.DelegateBlocks this) ExplicitBlock {
+  return
+    virtual
+      func
+      .System.Int32 RealScript.IntFunction::Invoke(System.Int32)(
+      PropertyReference
+        str
+        .Length
+    )
+}

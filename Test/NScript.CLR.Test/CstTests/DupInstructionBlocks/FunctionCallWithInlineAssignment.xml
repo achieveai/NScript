@@ -1,53 +1,17 @@
-﻿<RootBlock type="ParameterBlock">
-  <statements>
-    <Elem0 type="ReturnStatement">
-      <returnExpression type="MethodCallExpression">
-        <methodReference type="MethodReferenceExpression">
-          <leftExpression type="VariableReference">
-            <variable type="ParameterVariable">
-              <name>cl1</name>
-              <parameterType type="ParameterAttributes">None</parameterType>
-            </variable>
-          </leftExpression>
-          <methodName>Func2</methodName>
-        </methodReference>
-        <parameters>
-          <Elem0 type="BinaryExpression">
-            <operator type="BinaryOperator">Assignment</operator>
-            <left type="VariableReference">
-              <variable type="ParameterVariable">
-                <name>i</name>
-                <parameterType type="ParameterAttributes">None</parameterType>
-              </variable>
-            </left>
-            <right type="MethodCallExpression">
-              <methodReference type="MethodReferenceExpression">
-                <leftExpression type="VariableReference">
-                  <variable type="ParameterVariable">
-                    <name>cl1</name>
-                    <parameterType type="ParameterAttributes">None</parameterType>
-                  </variable>
-                </leftExpression>
-                <methodName>Foo1</methodName>
-              </methodReference>
-              <parameters />
-            </right>
-          </Elem0>
-          <Elem1 type="BinaryExpression">
-            <operator type="BinaryOperator">Plus</operator>
-            <left type="VariableReference">
-              <variable type="ParameterVariable">
-                <name>i</name>
-                <parameterType type="ParameterAttributes">None</parameterType>
-              </variable>
-            </left>
-            <right type="IntLiteral">
-              <value>10</value>
-              <size type="IntSize">I32</size>
-            </right>
-          </Elem1>
-        </parameters>
-      </returnExpression>
-    </Elem0>
-  </statements>
-</RootBlock>
+﻿ParamBlock(System.Int32 i, RealScript.Class1 cl1) ExplicitBlock {
+  return
+    MethodReference
+      cl1
+      .Func2(
+      Assignment l:False rt:System.Int32
+        i
+      ,
+        MethodReference
+          cl1
+          .Foo1(),
+      Plus l:False rt:System.Int32
+        i
+      ,
+        I32 10
+    )
+}

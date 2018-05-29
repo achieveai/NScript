@@ -1,0 +1,4 @@
+﻿ParamBlock() ExplicitBlock {
+  return
+    I32 10
+}

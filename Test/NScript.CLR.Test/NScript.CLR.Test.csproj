@@ -213,22 +213,22 @@
     <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleWhileLoopRelease.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstInt.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstInt.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLong.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLong.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLargeLong.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLargeLong.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstUInt.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstUInt.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\SimpleConditional.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\SimpleConditional.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\SetVariableSimple.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\SetVariableSimple.csast" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="BlockTests\DupInstructionTemplates\Tmp.xml">
@@ -281,7 +281,7 @@
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineFieldPrePostfixAssignment.xml" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrefix.xml" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\RegressionPreIncrementInCompare.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgumentMcs.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.csast" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfBlockMcs.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlockMcs.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlockMcs.xml" />
@@ -295,10 +295,6 @@
     <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturnMcs.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueRelease.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegateMcs.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegateMcs.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegateMcs.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegateMcs.xml" />
     <Content Include="Test.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreakDebug.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinue.xml" />
@@ -314,23 +310,23 @@
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyInlineEquals.xml" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyInConditionOperationDebug.xml" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyInConditionOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixSecondOrderPropertyOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixOperation.xml">
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixSecondOrderPropertyOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixOperation.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\DelegateBlocks\IntDelegateTaker.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegate.xml">
+    <EmbeddedResource Include="CstTests\DelegateBlocks\IntDelegateTaker.csast" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegate.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegate.xml">
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegate.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\BasicStatements\PassArrayElementByRef.xml">
+    <EmbeddedResource Include="CstTests\BasicStatements\PassArrayElementByRef.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\BasicStatements\PassVariableByRef.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\PassObjectFieldByRef.xml">
+    <EmbeddedResource Include="CstTests\BasicStatements\PassVariableByRef.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\PassObjectFieldByRef.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CstTests\InlineInitializations\CallMethodWithInlineSettersElement.xml" />
@@ -339,21 +335,21 @@
     <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArray.xml" />
     <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopPadded.xml" />
     <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBasic.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegate.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegate.xml" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegate.csast" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegate.csast" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhilePaddedLoop.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhilePaddedLoop.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoop.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhileLoop.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnIntArray.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnObjectArray.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnArrayElement.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\SetArrayElement.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\AsType.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\CastType.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\CheckType.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnIntArray.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnObjectArray.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnArrayElement.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\SetArrayElement.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\AsType.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\CastType.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\CheckType.csast" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfBlock.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlock.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlock.xml" />
@@ -368,7 +364,6 @@
     <EmbeddedResource Include="BlockTests\InlineInitialization\VarArgs.xml" />
     <EmbeddedResource Include="BlockTests\InlineInitialization\ReturnInlineSettersElement.xml" />
     <EmbeddedResource Include="BlockTests\InlineInitialization\CallMethodWithInlineSettersElement.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.xml" />
     <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixOperation.xml" />
     <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyOperation.xml" />
     <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixSecondOrderPropertyOperation.xml" />
@@ -385,9 +380,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <Content Include="CstTests\BasicStatements\ComplexCondition.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleCompare.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleAndComparision.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\TestFourPartCondition.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleCompare.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleAndComparision.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestFourPartCondition.csast" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

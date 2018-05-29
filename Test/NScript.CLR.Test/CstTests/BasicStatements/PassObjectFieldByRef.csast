@@ -1,0 +1,9 @@
+﻿ParamBlock(RealScript.TestReferenceClass cl) ExplicitBlock {
+  static? MethodReference AccessRefArgument(
+    I32 10,
+    ref/out
+      FieldReference
+        cl
+        .intField
+  );
+}

@@ -1,0 +1,17 @@
+﻿ParamBlock(System.Int32 j, RealScript.DelegateBlocks this) ExplicitBlock {
+  return
+    (RealScript.IntFunction)
+      ParamBlock(System.Int32 i, RealScript.DelegateBlocks this) 
+      ExplicitBlock {
+        return
+          Plus l:False rt:System.Int32
+            Plus l:False rt:System.Int32
+              i
+            ,
+              j
+          ,
+            FieldReference
+              this
+              .intVariable
+      }
+}

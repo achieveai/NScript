@@ -78,7 +78,7 @@
 
         private static string GetName(VariableDefinition variableDefinition)
         {
-            return string.Format("v_{0}", variableDefinition.Index);
+            return variableDefinition.ToString();
         }
     }
 }

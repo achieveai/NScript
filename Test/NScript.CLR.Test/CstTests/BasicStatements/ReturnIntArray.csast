@@ -1,0 +1,6 @@
+﻿ParamBlock() ExplicitBlock {
+  return
+    new System.Int32[
+      I32 10
+    ]
+}

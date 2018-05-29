@@ -1,0 +1,5 @@
+﻿ParamBlock(System.Object obj) ExplicitBlock {
+  return
+    RealScript.TestReferenceClass AsType
+      obj
+}

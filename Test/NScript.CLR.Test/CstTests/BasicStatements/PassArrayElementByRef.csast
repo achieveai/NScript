@@ -1,0 +1,9 @@
+﻿ParamBlock(System.Int32[] intArray) ExplicitBlock {
+  static? MethodReference AccessRefArgument(
+    I32 10,
+    ref/out
+      intArray[
+        I32 10
+      ]
+  );
+}

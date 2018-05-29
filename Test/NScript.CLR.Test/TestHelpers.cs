@@ -188,21 +188,34 @@
             string manifestFileName,
             params Node[] nodes)
         {
-            string xmlString = TestHelpers.ReadResourceFile(manifestFileName);
+            string xmlString = TestHelpers.ReadResourceFile(manifestFileName).Trim();
 
             for (int nodeIndex = 0; nodeIndex < nodes.Length; nodeIndex++)
             {
-                string str = TestHelpers.Serialize(
-                    nodes[nodeIndex],
-                    Path.GetFileNameWithoutExtension(manifestFileName).EndsWith("Mcs")
-                        ? 2
-                        : 1);
+                string str = new ClrAstToStringVisitor().Visit(nodes[nodeIndex], 0).Trim();
 
                 if (string.IsNullOrWhiteSpace(xmlString))
                 {
                     Debug.Write(str);
                 }
 
+                try
+                {
+                    Assert.AreEqual(
+                        xmlString,
+                        str);
+                }
+                catch
+                {
+                    Debug.WriteLine("Expected");
+                    Debug.WriteLine(xmlString);
+                    Debug.WriteLine("*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*--*-*-*-*-*-*-*-*-*-");
+                    Debug.WriteLine("Actual");
+                    Debug.WriteLine(str);
+
+                    throw;
+                }
+                /*
                 try
                 {
                     XmlInput xmlInput1 = new XmlInput(xmlString);
@@ -230,6 +243,7 @@
 
                     throw;
                 }
+                */
             }
         }
 
@@ -249,6 +263,7 @@
             }
             catch
             {
+                /*
                 if (isMcs
                     && !Path.GetFileNameWithoutExtension(manifestFileName).EndsWith("Mcs"))
                 {
@@ -269,6 +284,7 @@
                         serializer.AddValue("RootBlock", rootBlock);
                     }
                 }
+                */
 
                 throw;
             }

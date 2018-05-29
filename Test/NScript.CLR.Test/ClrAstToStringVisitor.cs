@@ -1,5 +1,6 @@
 ﻿namespace NScript.CLR.Test
 {
+    using Mono.Cecil;
     using NScript.CLR.AST;
     using System;
     using System.Linq;
@@ -22,22 +23,8 @@
 
         public override string VisitExpression(ArrayElementExpression node, int arg)
         {
-            var rv = GetSpaces(arg) + $"new {node.ResultType}[";
-            if (node.Index != null)
-            {
-                rv += this.Visit(node.Index, arg + 1) + GetSpaces(arg) + "]";
-            }
-            else
-            { rv += "]"; }
-
-            if (node.Array != null)
-            {
-                rv += "{";
-                rv += this.Visit(node.Array, arg + 1);
-                rv += GetSpaces(arg) + "}";
-            }
-
-            return rv;
+            return this.Visit(node.Array, arg) + "["
+                + this.Visit(node.Index, arg + 1) + GetSpaces(arg) + "]";
         }
 
         public override string VisitExpression(BaseVariableReference node, int arg)
@@ -54,7 +41,7 @@
 
         public override string VisitExpression(BooleanLiteral node, int arg)
         {
-            return GetSpaces(arg) + node.Value;
+            return GetSpaces(arg) + "bool " + node.Value;
         }
 
         public override string VisitExpression(BoxExpression node, int arg)
@@ -66,7 +53,7 @@
 
         public override string VisitExpression(CharLiteral node, int arg)
         {
-            return GetSpaces(arg) + node.Value;
+            return GetSpaces(arg) + "char " + node.Value;
         }
 
         public override string VisitExpression(ConditionalOperatorExpression node, int arg)
@@ -95,7 +82,7 @@
 
         public override string VisitExpression(DoubleLiteral node, int arg)
         {
-            return GetSpaces(arg) + node.Value;
+            return GetSpaces(arg) + (node.IsSingle ? "float " : "double " ) + node.Value;
         }
 
         public override string VisitExpression(DynamicIndexAccessor node, int arg)
@@ -116,9 +103,11 @@
 
         public override string VisitExpression(FieldReferenceExpression node, int arg)
         {
-            return GetSpaces(arg) + "FieldReference"
-                + this.Visit(node.LeftExpression, arg + 1)
-                + GetSpaces(arg) + "." + node.FieldReference.Name;
+            return node.LeftExpression == null
+                ? GetSpaces(arg) + "static? FieldReference " + node.FieldReference.Name
+                : GetSpaces(arg) + "FieldReference"
+                    + this.Visit(node.LeftExpression, arg + 1)
+                    + GetSpaces(arg + 1) + "." + node.FieldReference.Name;
         }
 
         public override string VisitExpression(InitObjectWithDefaultValue node, int arg)
@@ -162,32 +151,34 @@
 
         public override string VisitExpression(IntLiteral node, int arg)
         {
-            return GetSpaces(arg) + node.Value;
+            return GetSpaces(arg) + node.Size + " " + node.Value;
         }
 
         public override string VisitExpression(LoadAddressExpression node, int arg)
         {
-            return GetSpaces(arg) + node.ResultType
+            return GetSpaces(arg) + "ref/out"
                 + this.Visit(node.NestedExpression, arg + 1);
         }
 
         public override string VisitExpression(MemberReferenceExpression node, int arg)
         {
-            return GetSpaces(arg) + node.ResultType
-                + this.Visit(node.LeftExpression, arg + 1) + "."
-                + GetSpaces(arg + 1) +  node.MemberReference;
+            return node.LeftExpression == null
+                ? GetSpaces(arg) + "static? MemberReference " + node.MemberReference.Name
+                : GetSpaces(arg) + "MemberReference"
+                    + this.Visit(node.LeftExpression, arg + 1)
+                    + GetSpaces(arg + 1) + "." + node.MemberReference.Name;
         }
 
         public override string VisitExpression(MethodCallExpression node, int arg)
         {
-            var rv = GetSpaces(arg) + this.Visit(node.MethodReference, arg + 1) + "(";
-            if (node.Parameters.Count > 0)
-            {
-                foreach (var par in node.Parameters)
-                { rv += this.Visit(par, arg + 1) + ","; }
+            var rv = this.Visit(node.MethodReference, arg) + "("
+                + string.Join(",",
+                    Enumerable.Range(0, node.Parameters.Count)
+                        .Select(_ => this.Visit(node.Parameters[_] , arg + 1))
+                        .ToArray());
 
-                rv += GetSpaces(arg + 1) + ")";
-            }
+            if (node.Parameters.Count > 0)
+            { rv += GetSpaces(arg) + ")"; }
             else
             { rv += ")"; }
 
@@ -196,13 +187,17 @@
 
         public override string VisitExpression(MethodReferenceExpression node, int arg)
         {
-            return GetSpaces(arg)
-                + this.Visit(node.LeftExpression, arg + 1)
-                + GetSpaces(arg) + "." + node.MethodReference;
+            return node.LeftExpression == null
+                ? GetSpaces(arg) + "static? MethodReference " + node.MethodReference.Name
+                : GetSpaces(arg) + "MethodReference"
+                    + this.Visit(node.LeftExpression, arg + 1)
+                    + GetSpaces(arg + 1) + "." + node.MethodReference.Name;
         }
 
         public override string VisitExpression(NewArrayExpression node, int arg)
-        { return GetSpaces(arg) + "new " + node.ResultType.GetElementType() + "[" + node.Size + "]"; }
+        { return GetSpaces(arg) + "new " + node.ResultType.GetElementType() + "["
+                + this.Visit(node.Size, arg + 1)
+                + GetSpaces(arg) + "]"; }
 
         public override string VisitExpression(NewObjectExpression node, int arg)
         {
@@ -235,14 +230,16 @@
 
         public override string VisitExpression(PropertyReferenceExpression node, int arg)
         {
-            return GetSpaces(arg) + node.ResultType
-                + this.Visit(node.LeftExpression, arg + 1) + "."
-                + GetSpaces(arg + 1) +  node.PropertyReference;
+            return node.LeftExpression == null
+                ? GetSpaces(arg) + "static? PropertyReference " + node.PropertyReference.Name
+                : GetSpaces(arg) + "PropertyReference"
+                    + this.Visit(node.LeftExpression, arg + 1)
+                    + GetSpaces(arg + 1) + "." + node.PropertyReference.Name;
         }
 
         public override string VisitExpression(StringLiteral node, int arg)
         {
-            return GetSpaces(arg) + node.String;
+            return GetSpaces(arg) + "string \"" + node.String + '"';
         }
 
         public override string VisitExpression(ToNullable node, int arg)
@@ -269,7 +266,7 @@
 
         public override string VisitExpression(UIntLiteral node, int arg)
         {
-            return GetSpaces(arg) + node.Value;
+            return GetSpaces(arg) + "U" + node.Size + " " + node.Value;
         }
 
         public override string VisitExpression(UnaryExpression node, int arg)
@@ -300,8 +297,11 @@
         {
             return GetSpaces(arg) + "virtual"
                 + this.Visit(node.LeftExpression, arg + 1)
-                + GetSpaces(arg) + "." + node.MethodReference;
+                + GetSpaces(arg + 1) + "." + node.MethodReference;
         }
+
+        public override string VisitNull(int arg)
+        { return string.Empty; }
 
         public override string VisitStatement(BreakStatement node, int arg)
         {
@@ -324,14 +324,14 @@
                 + this.Visit(node.Condition, arg + 1)
                 + GetSpaces(arg) + ") {"
                 + this.Visit(node.LoopBlock, arg + 1)
-                + "}";
+                + GetSpaces(arg) + "}";
         }
 
         public override string VisitStatement(ExplicitBlock node, int arg)
         {
             return GetSpaces(arg) + "ExplicitBlock {"
                 + string.Concat(node.Statements.Select(_ => this.Visit(_, arg + 1)).ToArray())
-                + "}";
+                + GetSpaces(arg, true) + "}";
         }
 
         public override string VisitStatement(ExpressionStatement node, int arg)
@@ -344,7 +344,7 @@
                 + this.Visit(node.Collection, arg + 1)
                 + GetSpaces(arg) + ") {"
                 + this.Visit(node.Scope, arg + 1)
-                + "}";
+                + GetSpaces(arg) + "}";
         }
 
         public override string VisitStatement(ForLoop node, int arg)
@@ -364,12 +364,14 @@
             if (node.IsCatchBlock)
             {
                 return GetSpaces(arg) + $"catch({node.CatchType} {node.CatchVariable?.Variable.Name}) {{"
-                    + this.Visit(node.Block, arg + 1);
+                    + this.Visit(node.Block, arg + 1)
+                    + GetSpaces(arg) + "}";
             }
             else
             {
                 return GetSpaces(arg) + "finally {"
-                    + this.Visit(node.Block, arg + 1);
+                    + this.Visit(node.Block, arg + 1)
+                    + GetSpaces(arg) + "}";
             }
         }
 
@@ -400,7 +402,7 @@
             return GetSpaces(arg) + "ParamBlock("
                 + string.Join(
                     ", ",
-                    node.Parameters.Select(_ => $"{_.ParameterType} {_.Type} {_.ParameterReference.Name}")) + ")"
+                    node.Parameters.Select(_ => $"{ToString(_.ParameterType)}{_.Type} {_.ParameterReference.Name}")) + ") "
                 + this.VisitStatement((ExplicitBlock)node, arg);
         }
 
@@ -420,7 +422,7 @@
             return GetSpaces(arg) + "ScopeBlock("
                 + string.Join(", ", node.LocalVariables.Select(_ => _.Name).ToList()) + ") {"
                 + string.Concat(node.Statements.Select(_ => this.Visit(_, arg + 1)).ToArray())
-                + "}";
+                + GetSpaces(arg) + "}";
         }
 
         public override string VisitStatement(SwitchStatement node, int arg)
@@ -467,7 +469,7 @@
                 + this.Visit(node.Condition, arg + 1)
                 + GetSpaces(arg) + ") {"
                 + this.Visit(node.LoopBlock, arg + 1)
-                + "}";
+                + GetSpaces(arg) + "}";
         }
 
         public override string VisitStatement(YieldStatement node, int arg)
@@ -479,7 +481,34 @@
                 + this.Visit(node.YieldValue, arg + 1);
         }
 
-        private string GetSpaces(int i)
-            => i == 0 ? string.Empty : "\r\n" + string.Join("", Enumerable.Range(0, i).Select(_ => "  ").ToArray());
+        private static string GetSpaces(int i, bool forceNewLine = false)
+            => i == 0 && !forceNewLine ? string.Empty : "\r\n" + string.Join("", Enumerable.Range(0, i).Select(_ => "  ").ToArray());
+
+        public static string ToString(ParameterAttributes attrs)
+        {
+            if (attrs == ParameterAttributes.None)
+            { return string.Empty; }
+            else if (attrs == (ParameterAttributes.In | ParameterAttributes.Out))
+            { return "ref "; }
+            else if (attrs == ParameterAttributes.Out)
+            { return "out "; }
+            else
+            {
+                return attrs.ToString() + " ";
+            }
+        }
+
+        public override string VisitExpression(InlineArrayInitialization node, int arg)
+        {
+            return GetSpaces(arg) + $"{node.ElementType}["
+                + (node.SizeExpression != null ? (this.Visit(node.SizeExpression, arg + 1) + GetSpaces(arg)) : string.Empty) + "]"
+                + GetSpaces(arg) + "{"
+                + string.Join(
+                    ",",
+                    node.ElementInitValues
+                        .Select(_ => this.Visit(_, arg + 1))
+                        .ToList())
+                + GetSpaces(arg) + "}";
+        }
     }
 }

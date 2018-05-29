@@ -1,0 +1,6 @@
+﻿ParamBlock() ExplicitBlock {
+  return
+    new RealScript.TestReferenceClass[
+      I32 10
+    ]
+}
