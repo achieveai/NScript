@@ -1,0 +1,29 @@
+﻿ParamBlock(System.Int32 arg) ExplicitBlock {
+  try
+    ScopeBlock() {
+      if (
+        Equals l:False rt:System.Boolean
+          arg
+        ,
+          I32 0
+      )
+        ScopeBlock() {
+          return
+            static? MethodReference GetMoreStatic(
+              arg
+            )
+        }
+    }
+  finally {
+    ScopeBlock() {
+      static? MethodReference GetMoreStatic(
+        arg
+      );
+    }
+  }
+  return
+    Minus l:False rt:System.Int32
+      arg
+    ,
+      I32 1
+}

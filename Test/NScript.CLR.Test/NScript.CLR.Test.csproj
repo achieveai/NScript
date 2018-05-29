@@ -242,13 +242,11 @@
     <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnRetail.xml" />
     <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnly.xml" />
     <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnlyRetail.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallySimple.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturn.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturnRetail.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchSimple.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturn.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturnDebug.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchFinallySimple.xml" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallySimple.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturn.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchSimple.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturn.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchFinallySimple.csast" />
     <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitchValues.xml" />
     <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitchValuesDebug.xml" />
     <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithFor.xml" />
@@ -291,8 +289,6 @@
     <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueMcs.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2Mcs.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturnMcs.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturnMcs.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueRelease.xml" />
     <Content Include="Test.xml" />
