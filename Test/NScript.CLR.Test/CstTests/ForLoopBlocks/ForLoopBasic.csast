@@ -1,1 +1,26 @@
-﻿
+﻿ParamBlock(System.Int32 i) ExplicitBlock {
+  for(
+    Assignment l:False rt:System.Int32
+      j
+    ,
+      I32 0;
+  ;
+    LessThan l:False rt:System.Boolean
+      j
+    ,
+      i
+  ;
+    PreIncrement, is:False
+      j;
+  )
+  ExplicitBlock {
+    ScopeBlock() {
+      Assignment l:False rt:System.Int32
+        static? FieldReference staticBar
+      ,
+        static? MethodReference GetMoreStatic(
+          i
+        );
+    }
+  }
+}

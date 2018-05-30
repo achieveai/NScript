@@ -77,11 +77,6 @@
             {
                 string str = new ClrAstToStringVisitor().Visit(nodes[nodeIndex], 0).Trim();
 
-                if (string.IsNullOrWhiteSpace(xmlString))
-                {
-                    Debug.Write(str);
-                }
-
                 try
                 {
                     Assert.AreEqual(

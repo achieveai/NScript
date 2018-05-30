@@ -269,6 +269,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForEachLoopArr.csast" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBreak.csast" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopContinue.csast" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -25,9 +25,12 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoop", true,  "ForEachLoop.csast")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopPadded", true,  "ForLoopPadded.csast")]
         [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopBasic", true,  "ForLoopBasic.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopWithContinue", true,  "ForLoopContinue.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopWithBreak", true,  "ForLoopBreak.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopPadded", true,  "ForLoopPadded.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoop", true,  "ForEachLoop.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoopArr", true,  "ForEachLoopArr.csast")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
