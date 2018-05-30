@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using NScript.CLR;
 using NScript.CLR.AST;
-using NScript.CLR.Decompiler;
 using NScript.Converter.StatementsConverter;
 using NScript.JSParser;
 using NScript.JST;
@@ -2078,13 +2077,7 @@ namespace NScript.Converter.TypeSystemConverter
                 return rv;
             }
 
-            var executionBlock = new MethodExecutionBlock(
-                context.ClrContext,
-                methodDefinition);
-
-            TopLevelBlock csAst = executionBlock.ToAST();
-
-            return csAst.RootBlock;
+            return null;
         }
 
         /// <summary>

@@ -53,6 +53,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -141,58 +144,6 @@
     <Compile Include="AST\Variable.cs" />
     <Compile Include="ClrContext.cs" />
     <Compile Include="ClrKnownReferences.cs" />
-    <Compile Include="Decompiler\Blocks\BasicBlock.cs" />
-    <Compile Include="Decompiler\Blocks\BasicBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\BasicStatementBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\Block.cs" />
-    <Compile Include="Decompiler\Blocks\BlockContext.cs" />
-    <Compile Include="Decompiler\Blocks\ConditionalBlock.cs" />
-    <Compile Include="Decompiler\Blocks\ConditionalStatement.cs" />
-    <Compile Include="Decompiler\Blocks\ConditionalStatementBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\ConditionalValueAssignmentBlock.cs" />
-    <Compile Include="Decompiler\Blocks\ConditionalValueBlock.cs" />
-    <Compile Include="Decompiler\Blocks\DoWhileBlock.cs" />
-    <Compile Include="Decompiler\Blocks\DoWhileLoopBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\ExceptionHandlerBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\ForBlock.cs" />
-    <Compile Include="Decompiler\Blocks\ForBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\ForEachBlock.cs" />
-    <Compile Include="Decompiler\Blocks\ForEachBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\IfElseBlock.cs" />
-    <Compile Include="Decompiler\Blocks\IfElseBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\InlineAssignmentBlock.cs" />
-    <Compile Include="Decompiler\Blocks\InlineAssignmentBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\InlineDelagateBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\InlineDelegateBlock.cs" />
-    <Compile Include="Decompiler\Blocks\InlineNumberArrayCreateBlock.cs" />
-    <Compile Include="Decompiler\Blocks\InlineObjectArrayCreateBlock.cs" />
-    <Compile Include="Decompiler\Blocks\InlineObjectArrayCreateBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\InlinePropertyInitializerBlock.cs" />
-    <Compile Include="Decompiler\Blocks\InlinePropertyInitializerBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\InstructionBlock.cs" />
-    <Compile Include="Decompiler\Blocks\InstructionBlockCollection.cs" />
-    <Compile Include="Decompiler\Blocks\JumpBlock.cs" />
-    <Compile Include="Decompiler\Blocks\JumpBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\NullConditionalBlock.cs" />
-    <Compile Include="Decompiler\Blocks\NullConditionalBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\OpAssignmentBlock.cs" />
-    <Compile Include="Decompiler\Blocks\OpAssignmentBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\PostfixBlock.cs" />
-    <Compile Include="Decompiler\Blocks\PostfixBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\SerialBlock.cs" />
-    <Compile Include="Decompiler\Blocks\SpecialBranch.cs" />
-    <Compile Include="Decompiler\Blocks\StackedBlock.cs" />
-    <Compile Include="Decompiler\Blocks\SwitchBlock.cs" />
-    <Compile Include="Decompiler\Blocks\SwitchBlockBuilder.cs" />
-    <Compile Include="Decompiler\Blocks\WhileBlock.cs" />
-    <Compile Include="Decompiler\Enums.cs" />
-    <Compile Include="Decompiler\Blocks\ExceptionHandlerBlock.cs" />
-    <Compile Include="Decompiler\IlInstruction.cs" />
-    <Compile Include="Decompiler\InlineDelegateInfo.cs" />
-    <Compile Include="Decompiler\MethodExecutionBlock.cs" />
-    <Compile Include="Decompiler\OpCodeHelper.cs" />
-    <Compile Include="Decompiler\Blocks\RootBlock.cs" />
-    <Compile Include="Decompiler\VariableResolver.cs" />
     <Compile Include="TypeHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -202,7 +153,12 @@
       <Name>NScript.Utils</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Decompiler\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

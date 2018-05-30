@@ -3,8 +3,6 @@
     using System;
     using System.Xml;
     using NScript.CLR.AST;
-    using NScript.CLR.Decompiler;
-    using NScript.CLR.Decompiler.Blocks;
     using NScript.Utils;
     using NUnit.Framework;
     using Mono.Cecil;
@@ -16,111 +14,6 @@
 
     internal static class TestHelpers
     {
-        public static void RunBlockInfoTest(
-            string className,
-            string methodName,
-            bool isDebug,
-            string templateName,
-            params Action<RootBlock>[] processors)
-        {
-            MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
-                className,
-                methodName,
-                isDebug);
-
-            MethodExecutionBlock executionBlock = new MethodExecutionBlock(
-                TestAssemblyLoader.Context,
-                methodDefinition);
-
-            RootBlock rootBlock = RootBlock.Create(
-                executionBlock.Instructions,
-                executionBlock.LabelInstructionMap,
-                executionBlock.Method,
-                executionBlock.Context);
-
-            rootBlock.ProccessThroughPipeline(processors);
-
-            BlockTests.BlockInfo.CheckUsingTemplate(
-                templateName,
-                rootBlock);
-        }
-
-        public static void TestILBlocks(
-            string testVerificationDataFile,
-            string className,
-            string methodName,
-            bool isDebug,
-            params Action<RootBlock>[] processors)
-        {
-            MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
-                className,
-                methodName,
-                isDebug);
-
-            MethodExecutionBlock executionBlock = new MethodExecutionBlock(
-                TestAssemblyLoader.Context,
-                methodDefinition);
-
-            RootBlock rootBlock;
-            if (processors.Length > 0)
-            {
-                rootBlock = RootBlock.Create(
-                    executionBlock.Instructions,
-                    executionBlock.LabelInstructionMap,
-                    methodDefinition,
-                    TestAssemblyLoader.Context);
-                rootBlock.ProccessThroughPipeline(processors);
-            }
-            else
-            {
-                rootBlock = executionBlock.GetRootBlock();
-            }
-
-            BlockTests.BlockInfo.CheckUsingTemplate(testVerificationDataFile, rootBlock);
-        }
-
-        /// <summary>
-        /// Tests the print IL blocks.
-        /// </summary>
-        /// <param name="testVerificationDataFile">The test verification data file.</param>
-        /// <param name="className">Name of the class.</param>
-        /// <param name="methodName">Name of the method.</param>
-        /// <param name="isDebug">if set to <c>true</c> [is debug].</param>
-        /// <param name="processors">The processors.</param>
-        public static void TestPrintILBlocks(
-            string testVerificationDataFile,
-            string className,
-            string methodName,
-            bool isDebug,
-            params Action<RootBlock>[] processors)
-        {
-            MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
-                className,
-                methodName,
-                isDebug);
-
-            MethodExecutionBlock executionBlock = new MethodExecutionBlock(
-                TestAssemblyLoader.Context,
-                methodDefinition);
-
-            RootBlock rootBlock;
-            if (processors.Length > 0)
-            {
-                rootBlock = RootBlock.Create(
-                    executionBlock.Instructions,
-                    executionBlock.LabelInstructionMap,
-                    methodDefinition,
-                    TestAssemblyLoader.Context);
-                rootBlock.ProccessThroughPipeline(processors);
-            }
-            else
-            {
-                rootBlock = executionBlock.GetRootBlock();
-            }
-
-            Debug.Write(TestHelpers.Serialize(rootBlock));
-        }
-
         /// <summary>
         /// Gets the AST.
         /// </summary>
@@ -131,24 +24,14 @@
         public static TopLevelBlock GetAST(
             string className,
             string methodName,
-            bool isDebug,
-            bool isMcs = false)
+            bool isDebug)
         {
             MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
                 className,
                 methodName,
                 isDebug);
 
-            if (isMcs)
-            {
-                return TestAssemblyLoader.DllBuilder.GetTopLevelBlock(methodDefinition);
-            }
-
-            MethodExecutionBlock executionBlock = new MethodExecutionBlock(
-                TestAssemblyLoader.Context,
-                methodDefinition);
-
-            return executionBlock.ToAST();
+            return TestAssemblyLoader.DllBuilder.GetTopLevelBlock(methodDefinition);
         }
 
         /// <summary>
@@ -164,7 +47,7 @@
             return new TopLevelBlock[]
             {
                 TestHelpers.GetAST(className, methodName, true),
-                TestHelpers.GetAST(className, methodName, false)
+                null
             };
         }
 
@@ -175,7 +58,7 @@
             return new TopLevelBlock[]
             {
                 TestHelpers.GetAST(className, methodName, true),
-                TestHelpers.GetAST(className, methodName, false)
+                null
             };
         }
 
@@ -254,12 +137,15 @@
             bool isDebug,
             bool isMcs)
         {
-            var rootBlock = TestHelpers.GetAST(className, methodName, isDebug, isMcs).RootBlock;
+            var rootBlock = TestHelpers.GetAST(
+                className,
+                methodName,
+                isDebug).RootBlock;
             try
             {
                 TestHelpers.Test(
                     manifestFileName,
-                    TestHelpers.GetAST(className, methodName, isDebug, isMcs).RootBlock);
+                    TestHelpers.GetAST(className, methodName, isDebug).RootBlock);
             }
             catch
             {
@@ -307,16 +193,6 @@
             serializer.AddValue("RootBlock", node);
             writer.Close();
             return stringStream.ToString();
-        }
-
-        /// <summary>
-        /// Serializes the specified block.
-        /// </summary>
-        /// <param name="block">The block.</param>
-        /// <returns>string with info about the root block.</returns>
-        public static string Serialize(RootBlock block)
-        {
-            return BlockTests.BlockInfo.PrintInfo(block);
         }
 
         private static string ReadResourceFile(string fileName)

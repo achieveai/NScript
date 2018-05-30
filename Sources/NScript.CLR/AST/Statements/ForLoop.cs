@@ -8,6 +8,7 @@ namespace NScript.CLR.AST
 {
     using NScript.Utils;
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for ForLoop
@@ -49,8 +50,9 @@ namespace NScript.CLR.AST
             Expression condition,
             Statement initializeStatement,
             Statement incrementStatement,
-            ScopeBlock loop)
-            : base(context, location)
+            ScopeBlock loop,
+            List<(LocalVariable localVariable, bool isUsed)> variables)
+            : base(context, location, variables)
         {
             this.condition = condition;
             this.initializeStatement = initializeStatement;

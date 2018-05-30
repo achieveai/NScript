@@ -567,6 +567,7 @@
                 node,
                 id =>
                     new ForEachStatement {
+                        BlockId = id,
                         LocalVariableName = node.IterationVariables[0].Name,
                         Collection = (ExpressionSer)this.Visit(node.Expression, arg),
                         Loop = this.VisitToStatement(node.Body, arg)

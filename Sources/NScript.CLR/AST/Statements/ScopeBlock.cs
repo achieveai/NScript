@@ -36,9 +36,22 @@
         /// <param name="location">The location.</param>
         public ScopeBlock(
             ClrContext context,
-            Location location)
+            Location location,
+            List<(LocalVariable localVariable, bool isUsed)> variables)
             : base(context, location)
         {
+            if (variables != null)
+            {
+                variables.ForEach(_ =>
+                {
+                    _.localVariable.DefiningScope = this;
+                    localVariables.Add(_.localVariable);
+
+                    if (_.isUsed)
+                    { usedVariables.Add(_.localVariable); }
+                });
+            }
+
             this.readonlyLocalVariables = new ReadOnlyCollection<LocalVariable>(this.localVariables);
         }
 
@@ -100,8 +113,7 @@
         /// Moves the variables.
         /// </summary>
         /// <param name="scopeBlock">The scope block.</param>
-        public void MoveVariablesFrom(
-            ScopeBlock scopeBlock)
+        public void MoveVariablesFrom(ScopeBlock scopeBlock)
         {
             for (int iVariable = scopeBlock.localVariables.Count - 1; iVariable >= 0; iVariable--)
             {

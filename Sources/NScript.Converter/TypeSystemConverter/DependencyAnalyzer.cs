@@ -358,9 +358,9 @@ namespace NScript.Converter.TypeSystemConverter
 
                 if (typeDefinition.Interfaces != null)
                 {
-                    foreach (var typeReference in typeDefinition.Interfaces)
+                    foreach (var ifaceImpl in typeDefinition.Interfaces)
                     {
-                        this.AddTypeDependency(typeReferences, typeReference);
+                        this.AddTypeDependency(typeReferences, ifaceImpl.InterfaceType);
                     }
                 }
             }

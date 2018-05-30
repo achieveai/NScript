@@ -26,14 +26,45 @@ namespace NScript.CLR.AST
 
         public ParameterBlock(
             ClrContext context,
-            Location location)
-            : base(context, location)
+            Location location,
+            List<(LocalVariable variable, bool isUsed)> variables,
+            (List<Variable> escapingVars, List<ParameterVariable> paras, ThisVariable thisVar)
+                paramBlockVariables)
+            : base(context, location, variables)
         {
             this.readonlyVariables =
                 new ReadOnlyCollection<ParameterVariable>(this.parameterVariables);
 
             this.readonlyEscapingVariables =
                 new ReadOnlyCollection<Variable>(this.escapingVariables);
+
+            if (paramBlockVariables.escapingVars != null)
+            { paramBlockVariables.escapingVars.ForEach(_ => this.escapingVariables.Add(_)); }
+
+            if (paramBlockVariables.paras != null)
+            {
+                foreach (var _ in paramBlockVariables.paras)
+                {
+                    if (_.DefiningScope != null)
+                    { throw new System.InvalidOperationException(); }
+
+                    _.DefiningScope = this;
+                    this.paramMaps.Add(_.Name, _);
+
+                    this.parameterVariables.Add(_);
+                }
+            }
+
+            if (paramBlockVariables.thisVar != null)
+            {
+                if (thisVariable.DefiningScope != null)
+                { throw new System.InvalidOperationException(); }
+
+                this.thisVariable = paramBlockVariables.thisVar;
+                this.thisVariable.DefiningScope = this;
+                this.paramMaps.Add(thisVariable.Name, thisVariable);
+                this.parameterVariables.Add(thisVariable);
+            }
         }
 
         public IList<ParameterVariable> Parameters
@@ -52,46 +83,6 @@ namespace NScript.CLR.AST
         public ThisVariable GetThisParameter()
         {
             return this.thisVariable;
-        }
-
-        public void AddEscapingVariable(Variable rv)
-        {
-            for (int iVar = 0; iVar < this.escapingVariables.Count; iVar++)
-            {
-                if (this.escapingVariables[iVar] == rv)
-                {
-                    return;
-                }
-            }
-
-            rv.SetHoisted();
-            this.escapingVariables.Add(rv);
-        }
-
-        public void AddParameter(ParameterDefinition paramDef)
-        {
-            var parameterVariable =
-                new ParameterVariable(
-                    paramDef,
-                    this);
-
-            this.paramMaps.Add(paramDef.Name, parameterVariable);
-
-            this.parameterVariables.Add(parameterVariable);
-        }
-
-        public void AddThisParameter(ParameterDefinition paramDef)
-        {
-            var thisVariable =
-                new ThisVariable(
-                    paramDef,
-                    this);
-
-            this.paramMaps.Add(thisVariable.Name, thisVariable);
-
-            this.parameterVariables.Add(thisVariable);
-
-            this.thisVariable = thisVariable;
         }
 
         public override void ProcessThroughPipeline(IAstProcessor processor)

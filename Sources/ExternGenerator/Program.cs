@@ -118,7 +118,7 @@ namespace ExternGenerator
             foreach (var iface in typeDef.Interfaces)
             {
                 sb.Append(extended ? ", " : " : ")
-                    .Write(iface);
+                    .Write(iface.InterfaceType);
                 extended = true;
             }
 

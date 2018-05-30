@@ -1992,14 +1992,18 @@ namespace NScript.Converter.TypeSystemConverter
                     // Only add the types that we are tracking. Anything extra is not needed
                     // and may generate undefined reference exception.
                     if (!this.isSelectiveInit
-                        || this.RuntimeManager.DependencyAnalyzer.TypeToTypeReferences.ContainsKey(implementation.Resolve()))
+                        || this.RuntimeManager
+                            .DependencyAnalyzer
+                            .TypeToTypeReferences
+                            .ContainsKey(
+                                implementation.InterfaceType.Resolve()))
                     {
                         interfaceExpressions.Add(
                             IdentifierExpression.Create(
                                 null,
                                 this.Scope,
                                 this.Resolve(
-                                    implementation)));
+                                    implementation.InterfaceType)));
                     }
                 }
             }

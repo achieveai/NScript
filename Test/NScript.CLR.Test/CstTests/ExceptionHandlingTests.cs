@@ -39,17 +39,5 @@ namespace NScript.CLR.Test.CstTests
                 isDebug,
                 true);
         }
-
-        [Test]
-        [Timeout(20000)]
-        public void TestMaker()
-        {
-            var rootBlock = TestHelpers.GetAST(
-                TestClassNameStr,
-                "TryCatchFinallySimple",
-                true).RootBlock;
-
-            Debug.Write(TestHelpers.Serialize(rootBlock));
-        }
-    }
+   }
 }

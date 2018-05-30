@@ -161,7 +161,6 @@ namespace NScript.Converter
             this.methodConverterPlugins = methodConverterPlugins ?? new List<IMethodConverterPlugin>();
             this.typeConverterPlugins = typeConverterPlugins ?? new List<ITypeConverterPlugin>();
 
-            JObjectToCsAst toAst = new JObjectToCsAst(clrContext);
             foreach (var module in clrContext.Modules)
             {
                 JArray jsonAstArray = null;
@@ -169,21 +168,7 @@ namespace NScript.Converter
                 FullAst fullAst = null;
                 foreach (var resource in module.Resources)
                 {
-                    if (resource.Name == "$$AstInfo$$")
-                    {
-                        // EmbeddedResource embededResource = (EmbeddedResource)resource;
-
-                        // stopWatch.Restart();
-                        // using (var stream = embededResource.GetResourceStream())
-                        // // using (var unzipStream = new GZipStream(stream, CompressionMode.Decompress))
-                        // {
-                        //     JsonTextReader reader = new JsonTextReader(new StreamReader(stream));
-                        //     jsonAstArray = JArray.Load(reader);
-                        // }
-                        // stopWatch.Stop();
-                        // jsonCost += stopWatch.Elapsed.TotalSeconds;
-                    }
-                    else if (resource.Name == "$$BstInfo$$")
+                    if (resource.Name == "$$BstInfo$$")
                     {
                         EmbeddedResource embededResource = (EmbeddedResource)resource;
 

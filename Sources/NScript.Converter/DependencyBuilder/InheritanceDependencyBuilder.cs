@@ -68,7 +68,7 @@ namespace NScript.Converter.DependencyBuilder
                 InheritanceDependencyBuilder.OrderTypes(
                     typeDefinitions,
                     visited,
-                    (TypeDefinition)inface.Resolve());
+                    (TypeDefinition)inface.InterfaceType.Resolve());
             }
 
             typeDefinitions.Add(typeDefinition);

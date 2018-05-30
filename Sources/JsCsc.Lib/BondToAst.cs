@@ -10,10 +10,9 @@ namespace JsCsc.Lib
     using System;
     using System.Collections.Generic;
     using Mono.Cecil;
-    using NScript.CLR;
     using NScript.CLR.AST;
-    using Newtonsoft.Json.Linq;
     using NScript.Utils;
+    using System.Linq;
 
     /// <summary>
     /// Definition for BondToAst
@@ -25,7 +24,7 @@ namespace JsCsc.Lib
         private MethodDefinition _currentMethod;
         private string _currentMethodFileName;
         private MemberReferenceDeserializer _memberReferenceDeserializer;
-        private LinkedList<Tuple<int, ScopeBlock>> scopeBlockStack = new LinkedList<Tuple<int, ScopeBlock>>();
+        private LinkedList<(int id, VariableCollector collector)> scopeBlockStack = new LinkedList<(int, VariableCollector)>();
         private Serialization.TypeInfoSer _typeInfo;
 
         public BondToAst(
@@ -532,59 +531,45 @@ namespace JsCsc.Lib
 
         private Node ParseForStatement(Serialization.ForStatement jObject)
         {
-            return new ForLoop(
-                this._clrContext,
-                this.LocFromJObject(jObject),
-                this.ParseExpression(jObject.Condition),
-                this.ParseStatement(jObject.Initializer),
-                this.ParseStatement(jObject.Iterator),
-                this.GetScopeBlock(jObject.Loop));
+            var variableCollector = new VariableCollector(jObject.BlockId);
+            this.scopeBlockStack.AddFirst((jObject.BlockId, variableCollector));
+            try
+            {
+                return new ForLoop(
+                    this._clrContext,
+                    this.LocFromJObject(jObject),
+                    this.ParseExpression(jObject.Condition),
+                    this.ParseStatement(jObject.Initializer),
+                    this.ParseStatement(jObject.Iterator),
+                    this.GetScopeBlock(jObject.Loop),
+                    variableCollector.GetCapturedVariables());
+            }finally
+            { this.scopeBlockStack.RemoveFirst(); }
         }
 
         private Node ParseForEachStatement(Serialization.ForEachStatement jObject)
         {
-            string localVariableName = jObject.LocalVariableName;
-            var iterator = this.ParseExpression(jObject.Collection);
-            var body = this.GetScopeBlock(jObject.Loop);
-
-            LocalVariable localVariable = null;
-            foreach (var tmpVar in body.LocalVariables)
-            {
-                if (tmpVar.Name == localVariableName)
+            return WrapVariableCollection(
+                (vc) =>
                 {
-                    localVariable = tmpVar;
-                    break;
-                }
-            }
+                    var iterator = this.ParseExpression(jObject.Collection);
+                    var body = this.GetScopeBlock(jObject.Loop);
+                    var variables = vc.GetCapturedVariables();
+                    var localVariable = variables
+                        .Where(_ => _.variable.Name == jObject.LocalVariableName)
+                        .Select(_ => _.variable)
+                        .FirstOrDefault();
 
-            ScopeBlock loopBlock = body.Statements[0] as ScopeBlock;
-            if (body is ForLoop
-                || body is ForEachLoop)
-            { loopBlock = body; }
-
-            if (loopBlock == null)
-            {
-                loopBlock = new ScopeBlock(
-                    this._clrContext,
-                    body.Statements[0].Location);
-
-                loopBlock.AddStatement(
-                    body.Statements[0]);
-            }
-
-            var rv = new ForEachLoop(
-                this._clrContext,
-                this.LocFromJObject(jObject),
-                localVariable,
-                iterator,
-                loopBlock);
-
-            if (body != null)
-            {
-                rv.MoveVariablesFrom(body);
-            }
-
-            return rv;
+                    return new ForEachLoop(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        localVariable,
+                        iterator,
+                        body,
+                        vc.GetCapturedVariables());
+                },
+                jObject.BlockId,
+                false);
         }
 
         private Node ParseSwitchStatement(Serialization.SwitchStatement jObject)
@@ -627,96 +612,95 @@ namespace JsCsc.Lib
 
         private Node ParseScopeBlock(Serialization.ExplicitBlockSer jObject)
         {
-            ScopeBlock rv = new ScopeBlock(
-                this._clrContext,
-                this.LocFromJObject(jObject));
-
-            this.scopeBlockStack.AddFirst(
-                Tuple.Create(
-                    jObject.Id,
-                    rv));
-
-            if (jObject.Statements != null)
-            {
-                foreach (var statement in this.ParseStatements(jObject.Statements))
-                { rv.AddStatement(statement); }
-            }
-
-            this.scopeBlockStack.RemoveFirst();
-
-            if (rv.Statements.Count == 1)
-            {
-                Statement singleStatement = rv.Statements[0];
-                ForEachLoop feLoop = singleStatement as ForEachLoop;
-                if (feLoop != null)
+            return WrapVariableCollection(
+                (vc) =>
                 {
-                    feLoop.MoveVariablesFrom(rv);
-                    return feLoop;
-                }
+                    var statements = new List<Statement>();
+                    if (jObject.Statements != null)
+                    {
+                        foreach (var statement in this.ParseStatements(jObject.Statements))
+                        { statements.Add(statement); }
+                    }
+                    var rv = new ScopeBlock(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        vc.GetCapturedVariables());
 
-                ForLoop forLoop = singleStatement as ForLoop;
-                if (forLoop != null)
-                {
-                    forLoop.MoveVariablesFrom(rv);
-                    return forLoop;
-                }
-            }
+                    statements.ForEach(_ => rv.AddStatement(_));
 
-            return rv;
+                    if (rv.Statements.Count == 1)
+                    {
+                        Statement singleStatement = rv.Statements[0];
+                        ForEachLoop feLoop = singleStatement as ForEachLoop;
+                        if (feLoop != null)
+                        {
+                            feLoop.MoveVariablesFrom(rv);
+                            return feLoop;
+                        }
+
+                        ForLoop forLoop = singleStatement as ForLoop;
+                        if (forLoop != null)
+                        {
+                            forLoop.MoveVariablesFrom(rv);
+                            return forLoop;
+                        }
+                    }
+
+                    return rv;
+                },
+                jObject.Id,
+                false);
         }
 
         private Node ParseParameterBlock(Serialization.ParameterBlock jObject)
         {
-            ParameterBlock rv = new ParameterBlock(
-                this._clrContext,
-                this.LocFromJObject(jObject));
-
-            var parameterArray = jObject.Parameters;
-
-            for (int iParam = 0; parameterArray != null && iParam < parameterArray.Count; iParam++)
-            {
-                var paramObj = parameterArray[iParam];
-                ParameterAttributes attr = (ParameterAttributes)paramObj.Modifier;
-
-                var parameterType =
-                        this.DeserializeType(paramObj.Type);
-
-                if ((attr & ParameterAttributes.Out) != 0)
+            return WrapVariableCollection(
+                (vc) =>
                 {
-                    parameterType = new ByReferenceType(parameterType);
-                }
+                    var statements = new List<Statement>();
+                    if (jObject.Statements != null)
+                    {
+                        foreach (var statement in this.ParseStatements(jObject.Statements))
+                        { statements.Add(statement); }
+                    }
 
-                rv.AddParameter(
-                    new ParameterDefinition(
-                        paramObj.Name,
-                        attr,
-                        parameterType));
-            }
+                    ParameterBlock rv = new ParameterBlock(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        vc.GetCapturedVariables(),
+                        vc.GetParamBlockVariables());
 
-            if (jObject.IsMethodOwned
-                && this._currentMethod.HasThis)
-            {
-                rv.AddThisParameter(
-                    new ParameterDefinition(
-                        "this",
-                        ParameterAttributes.None,
-                        this._currentMethod.DeclaringType));
-            }
+                    statements.ForEach(_ => rv.AddStatement(_));
 
-            this.scopeBlockStack.AddFirst(
-                Tuple.Create<int, ScopeBlock>(
-                    jObject.Id,
-                    rv));
+                    return rv;
+                },
+                jObject.Id,
+                true,
+                jObject.IsMethodOwned
+                        && this._currentMethod.HasThis
+                        ?  new ParameterDefinition(
+                            "this",
+                            ParameterAttributes.None,
+                            this._currentMethod.DeclaringType)
+                        : null,
+                jObject.Parameters
+                    .Select(paramObj =>
+                    {
+                        ParameterAttributes attr = (ParameterAttributes)paramObj.Modifier;
 
-            if (jObject.Statements != null)
-            {
-                foreach (var statement in this.ParseStatements(jObject.Statements))
-                { rv.AddStatement(statement); }
-            }
+                        var parameterType =
+                                this.DeserializeType(paramObj.Type);
 
-            this.scopeBlockStack.RemoveFirst();
+                        if ((attr & ParameterAttributes.Out) != 0)
+                        { parameterType = new ByReferenceType(parameterType); }
 
-            return rv;
+                        return new ParameterDefinition(
+                            paramObj.Name,
+                            attr,
+                            parameterType);
+                    })
+                    .ToList()
+                );
         }
 
         private Node ParseTryFinally(Serialization.TryFinallyBlockSer jObject)
@@ -744,7 +728,8 @@ namespace JsCsc.Lib
             {
                 tryScopeBlock = new ScopeBlock(
                     this._clrContext,
-                    tryBlock.Location);
+                    tryBlock.Location,
+                    null);
                 tryScopeBlock.AddStatement(tryBlock);
             }
 
@@ -766,31 +751,28 @@ namespace JsCsc.Lib
             {
                 var handlerObj = handlersArray[iHandler];
 
-                ScopeBlock handlerScopeBlock = this.GetScopeBlock(handlerObj.Block);
+                var handlerBlock = WrapVariableCollection(
+                    (vc) =>
+                    {
+                        ScopeBlock handlerScopeBlock = this.GetScopeBlock(handlerObj.Block);
+                        LocalVariable exceptionVariable =
+                            this.ParseLocalVariable(handlerObj.LocalVariable);
 
-                // Push the scope on scopeStack so that our variable gets correct
-                // scopeBlock assigned.
-                this.scopeBlockStack.AddFirst(
-                    Tuple.Create(
-                        handlerObj.Block.Id,
-                        handlerScopeBlock));
-
-                LocalVariable exceptionVariable =
-                    this.ParseLocalVariable(handlerObj.LocalVariable);
-                this.scopeBlockStack.RemoveFirst();
-
-                HandlerBlock handlerBlock = new HandlerBlock(
-                    this._clrContext,
-                    this.LocFromJObject(handlerObj),
-                    this.DeserializeType(handlerObj.CatchType ?? 0)
-                        ?? this._clrContext.KnownReferences.Exception,
-                    exceptionVariable != null
-                        ? new VariableReference(
-                                this._clrContext,
-                                null,
-                                exceptionVariable)
-                        : null,
-                    handlerScopeBlock);
+                        return new HandlerBlock(
+                            this._clrContext,
+                            this.LocFromJObject(handlerObj),
+                            this.DeserializeType(handlerObj.CatchType ?? 0)
+                                ?? this._clrContext.KnownReferences.Exception,
+                            exceptionVariable != null
+                                ? new VariableReference(
+                                        this._clrContext,
+                                        null,
+                                        exceptionVariable)
+                                : null,
+                            handlerScopeBlock);
+                    },
+                    handlerObj.Block.Id,
+                    false);
 
                 if (iHandler == 0)
                 {
@@ -977,15 +959,14 @@ namespace JsCsc.Lib
 
         private Node ParseThisExpr(Serialization.ThisExpression jObject)
         {
-            var thisVar = ((ParameterBlock)this.scopeBlockStack.Last.Value.Item2).GetThisParameter();
+            var thisVar = this.scopeBlockStack.Last.Value.collector.ThisVariable;
             var node = this.scopeBlockStack.Last.Previous;
+
             while (node != null)
             {
-                ParameterBlock paramBlock = node.Value.Item2 as ParameterBlock;
-                if (paramBlock != null)
-                {
-                    paramBlock.AddEscapingVariable(thisVar);
-                }
+                var paramBlock = node.Value.collector;
+                if (paramBlock.IsParamBlock)
+                { paramBlock.AddEscapingVariable(thisVar); }
 
                 node = node.Previous;
             }
@@ -1018,15 +999,13 @@ namespace JsCsc.Lib
 
         private Node ParseBaseExpr(Serialization.BaseThisExpression jObject)
         {
-            var thisVariable = ((ParameterBlock)this.scopeBlockStack.Last.Value.Item2).GetThisParameter();
+            var thisVariable = this.scopeBlockStack.Last.Value.Item2.ThisVariable;
             var node = this.scopeBlockStack.Last.Previous;
             while (node != null)
             {
-                ParameterBlock paramBlock = node.Value.Item2 as ParameterBlock;
-                if (paramBlock != null)
-                {
-                    paramBlock.AddEscapingVariable(thisVariable);
-                }
+                var collector = node.Value.Item2;
+                if (collector.IsParamBlock)
+                { collector.AddEscapingVariable(thisVariable); }
 
                 node = node.Previous;
             }
@@ -1346,28 +1325,21 @@ namespace JsCsc.Lib
         private ParameterVariable ParseArgumentVariable(Serialization.ParameterSer jObject)
         {
             if (jObject == null)
-            {
-                return null;
-            }
+            { return null; }
 
-            List<ParameterBlock> parameterBlocks = null;
+            List<VariableCollector> parameterBlocks = null;
 
             foreach (var node in this.scopeBlockStack)
             {
-                ParameterBlock parameterBlock =
-                    node.Item2 as ParameterBlock;
-
-                if (parameterBlock != null)
+                if (node.collector.IsParamBlock)
                 {
                     ParameterVariable rv;
-                    if (parameterBlock.GetParameterVariable(jObject.Name, out rv))
+                    if (node.collector.GetParameterVariable(jObject.Name, out rv))
                     {
                         if (parameterBlocks != null)
                         {
                             for (int iParamBlock = 0; iParamBlock < parameterBlocks.Count; iParamBlock++)
-                            {
-                                parameterBlocks[iParamBlock].AddEscapingVariable(rv);
-                            }
+                            { parameterBlocks[iParamBlock].AddEscapingVariable(rv); }
                         }
 
                         return rv;
@@ -1376,10 +1348,10 @@ namespace JsCsc.Lib
                     {
                         if (parameterBlocks == null)
                         {
-                            parameterBlocks = new List<ParameterBlock>();
+                            parameterBlocks = new List<VariableCollector>();
                         }
 
-                        parameterBlocks.Add(parameterBlock);
+                        parameterBlocks.Add(node.collector);
                     }
                 }
             }
@@ -1398,14 +1370,14 @@ namespace JsCsc.Lib
             var name = jObject.Name;
             var blockId = jObject.BlockId;
 
-            List<ParameterBlock> parameterBlocks = null;
+            List<VariableCollector> parameterBlocks = null;
 
             foreach (var node in this.scopeBlockStack)
             {
                 if (node.Item1 == blockId)
                 {
-                    LocalVariable rv = node.Item2.ResolveVariable(
-                        name);
+                    LocalVariable rv = node.Item2.ResolveVariable(name);
+
                     if (rv == null)
                     {
                         rv = node.Item2.CreateVariable(
@@ -1423,14 +1395,14 @@ namespace JsCsc.Lib
 
                     return rv;
                 }
-                else if (node.Item2 is ParameterBlock)
+                else if (node.Item2.IsParamBlock)
                 {
                     if (parameterBlocks == null)
                     {
-                        parameterBlocks = new List<ParameterBlock>();
+                        parameterBlocks = new List<VariableCollector>();
                     }
 
-                    parameterBlocks.Add((ParameterBlock)node.Item2);
+                    parameterBlocks.Add(node.Item2);
                 }
             }
 
@@ -1468,13 +1440,12 @@ namespace JsCsc.Lib
             }
 
             if (statement is ScopeBlock)
-            {
-                return (ScopeBlock)statement;
-            }
+            { return (ScopeBlock)statement; }
 
             var rv = new ScopeBlock(
                 this._clrContext,
-                statement.Location);
+                statement.Location,
+                null);
 
             rv.AddStatement(statement);
 
@@ -1858,6 +1829,29 @@ namespace JsCsc.Lib
                     (a) => this.ParseVariableInitializers((Serialization.VariableBlockDeclaration)a));
 
             return parserMap;
+        }
+
+        private T WrapVariableCollection<T>(
+            Func<VariableCollector, T> func,
+            int blockId,
+            bool isParamBlock,
+            ParameterDefinition thisParameter = null,
+            List<ParameterDefinition> paramDefinitions = null)
+        {
+            // Let's skip creating nested collector with same Id.
+            if (this.scopeBlockStack.Count > 0 && this.scopeBlockStack.First.Value.id == blockId)
+            { return func(this.scopeBlockStack.First.Value.collector); }
+
+            var vc = new VariableCollector(
+                blockId,
+                isParamBlock,
+                thisParameter,
+                paramDefinitions);
+            this.scopeBlockStack.AddFirst((blockId, vc));
+            try
+            { return func(vc); }
+            finally
+            { this.scopeBlockStack.RemoveFirst(); }
         }
     }
 }

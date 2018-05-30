@@ -941,6 +941,8 @@ namespace JsCsc.Lib.Serialization
         public string LocalVariableName { get; set; }
 
         new public StatementSer Loop { get; set; }
+
+        public int BlockId { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
