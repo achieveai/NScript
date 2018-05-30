@@ -188,16 +188,11 @@
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrefix.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\RegressionPreIncrementInCompare.csast" />
     <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.csast" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlockMcs.xml" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrePostifixAssignment.csast" />
     <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueMcs.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2Mcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.xml" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.csast" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueRelease.xml" />
     <Content Include="Test.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreakDebug.xml" />
@@ -252,14 +247,10 @@
     <EmbeddedResource Include="CstTests\BasicStatements\AsType.csast" />
     <EmbeddedResource Include="CstTests\BasicStatements\CastType.csast" />
     <EmbeddedResource Include="CstTests\BasicStatements\CheckType.csast" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfBlock.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlock.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlock.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlock.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockRelease.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockDebug.xml">
+    <EmbeddedResource Include="CstTests\IfBlocks\IfBlock.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlock.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlock.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlock.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <Content Include="CstTests\BasicStatements\ComplexCondition.xml" />

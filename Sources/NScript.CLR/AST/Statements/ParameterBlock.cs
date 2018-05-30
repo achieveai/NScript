@@ -57,7 +57,7 @@ namespace NScript.CLR.AST
 
             if (paramBlockVariables.thisVar != null)
             {
-                if (thisVariable.DefiningScope != null)
+                if (paramBlockVariables.thisVar.DefiningScope != null)
                 { throw new System.InvalidOperationException(); }
 
                 this.thisVariable = paramBlockVariables.thisVar;
