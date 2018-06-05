@@ -5,12 +5,15 @@
     ScopeBlock() {
       static? MethodReference Format(
         string "k:{0}, v:{1}",
-        PropertyReference
-          kvPair
-          .Key,
-        PropertyReference
-          kvPair
-          .Value
+        System.Object[]
+        {
+          PropertyReference
+            kvPair
+            .Key,
+          PropertyReference
+            kvPair
+            .Value
+        }
       );
     }
   }

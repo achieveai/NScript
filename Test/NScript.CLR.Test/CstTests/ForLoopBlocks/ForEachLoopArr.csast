@@ -5,19 +5,22 @@
     ScopeBlock() {
       static? MethodReference Format(
         string "k:{0}, v:{1}",
-        Box(
-          FieldReference
-            kvPair
-            .instanceFoo
-        ),
-        Box(
-          MethodReference
-            kvPair
-            .Func1(
-            I32 10,
-            I32 11
+        System.Object[]
+        {
+          Box(
+            FieldReference
+              kvPair
+              .instanceFoo
+          ),
+          Box(
+            MethodReference
+              kvPair
+              .Func1(
+              I32 10,
+              I32 11
+            )
           )
-        )
+        }
       );
     }
   }
