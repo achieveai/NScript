@@ -1,0 +1,63 @@
+﻿ParamBlock(System.String[] array) ExplicitBlock {
+  Assignment l:False rt:System.String
+    rv
+  ,
+    string "[";
+  for(
+    Assignment l:False rt:System.Int32
+      i
+    ,
+      I32 0;
+  ;
+    LessThan l:False rt:System.Boolean
+      i
+    ,
+      PropertyReference
+        array
+        .Length
+  ;
+    PreIncrement, is:False
+      i;
+  )
+  ExplicitBlock {
+    ScopeBlock() {
+      if (
+        GreaterThan l:False rt:System.Boolean
+          i
+        ,
+          I32 0
+      )
+        ScopeBlock() {
+          Assignment l:False rt:System.String
+            rv
+          ,
+            Plus l:False rt:System.String
+              Plus l:False rt:System.String
+                rv
+              ,
+                string ","
+            ,
+              array[
+                i
+              ];
+        }
+      else 
+        ScopeBlock() {
+          Assignment l:False rt:System.String
+            rv
+          ,
+            Plus l:False rt:System.String
+              rv
+            ,
+              array[
+                i
+              ];
+        }
+    }
+  }
+  return
+    Plus l:False rt:System.String
+      rv
+    ,
+      string "]"
+}

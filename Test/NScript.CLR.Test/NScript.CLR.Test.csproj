@@ -150,38 +150,30 @@
     <EmbeddedResource Include="CstTests\BasicStatements\SetVariableSimple.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitch.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitchRetail.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunctionRetail.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunction.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturn.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnRetail.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnly.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnlyRetail.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitch.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunction.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturn.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnly.csast" />
     <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallySimple.csast" />
     <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturn.csast" />
     <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchSimple.csast" />
     <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturn.csast" />
     <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchFinallySimple.csast" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithFor.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithForRetail.xml" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithFor.csast" />
     <EmbeddedResource Include="CstTests\ForLoopBlocks\ForEachLoop.csast" />
     <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineConstIntArray.csast" />
-    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlock.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlockRetail.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops2.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\TwoConsicutivePreIncrements.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoopRelease.xml" />
-    <EmbeddedResource Include="CstTests\NumberOperations\IntDivide.xml" />
-    <EmbeddedResource Include="CstTests\NumberOperations\DoubleDivide.xml">
+    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlock.csast" />
+    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops.csast" />
+    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops2.csast" />
+    <EmbeddedResource Include="CstTests\Regressions\TwoConsicutivePreIncrements.csast" />
+    <EmbeddedResource Include="CstTests\NumberOperations\IntDivide.csast" />
+    <EmbeddedResource Include="CstTests\NumberOperations\DoubleDivide.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoop.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegressionRelease.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\RegressionContinousSwitch2.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\RegressionContinousSwitch2.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\FieldPrefix.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineFieldPrePostfixAssignment.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrefix.csast" />
@@ -189,14 +181,10 @@
     <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrePostifixAssignment.csast" />
     <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.csast" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueMcs.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2Mcs.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.csast" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueRelease.xml" />
     <Content Include="Test.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreakDebug.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinue.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreak.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinue.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreak.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineOpAssignment.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\NullCheckAssignment.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyOnPropertyOpAssignmentOperation.csast" />
@@ -233,10 +221,10 @@
     <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBasic.csast" />
     <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegate.csast" />
     <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegate.csast" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhilePaddedLoop.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhilePaddedLoop.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoop.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhileLoop.xml">
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhilePaddedLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhilePaddedLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhileLoop.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CstTests\BasicStatements\ReturnIntArray.csast" />

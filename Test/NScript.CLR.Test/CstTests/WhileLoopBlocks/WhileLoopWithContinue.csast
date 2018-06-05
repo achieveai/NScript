@@ -1,0 +1,44 @@
+﻿ParamBlock(System.Int32 i, RealScript.WhileLoopBlocks this) ExplicitBlock {
+  While(
+    GreaterThan l:False rt:System.Boolean
+      i
+    ,
+      I32 100
+  ) {
+    ScopeBlock() {
+      if (
+        Equals l:False rt:System.Boolean
+          Mod l:False rt:System.Int32
+            i
+          ,
+            I32 22
+        ,
+          I32 0
+      )
+        ScopeBlock() {
+          return
+        }
+      if (
+        Equals l:False rt:System.Boolean
+          Mod l:False rt:System.Int32
+            i
+          ,
+            I32 13
+        ,
+          I32 0
+      )
+        ScopeBlock() {
+          continue
+        }
+      static? MethodReference GetMoreStatic(
+        i
+      );
+    }
+  }
+  static? MethodReference GetMoreStatic(
+    Plus l:False rt:System.Int32
+      i
+    ,
+      I32 19
+  );
+}

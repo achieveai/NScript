@@ -652,6 +652,15 @@ namespace JsCsc.Lib
                 false);
         }
 
+        private Node ParseBlock(Serialization.BlockSer jObject)
+        {
+            return new ExplicitBlock(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                jObject.Statements.Select(_ => this.ParseStatement(_))
+                    .ToArray());
+        }
+
         private Node ParseParameterBlock(Serialization.ParameterBlock jObject)
         {
             return WrapVariableCollection(
@@ -1722,6 +1731,9 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.ExplicitBlockSer),
 					(a) => this.ParseScopeBlock((Serialization.ExplicitBlockSer)a));
+            parserMap.Add(
+					typeof(Serialization.BlockSer),
+					(a) => this.ParseBlock((Serialization.BlockSer)a));
             parserMap.Add(
 					typeof(Serialization.ParameterBlock),
 					(a) => this.ParseParameterBlock((Serialization.ParameterBlock)a));

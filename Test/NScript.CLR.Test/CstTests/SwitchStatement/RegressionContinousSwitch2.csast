@@ -1,0 +1,45 @@
+﻿ParamBlock(System.Int32 arg) ExplicitBlock {
+  static? MethodReference WriteLine(
+    string "Testing switch..."
+  );
+  switch(
+    arg
+  ) {
+  case 
+    I32 2
+      ExplicitBlock {
+        static? MethodReference WriteLine(
+          string "2"
+        );
+        break
+      }
+  case 
+    I32 3
+      ExplicitBlock {
+        static? MethodReference WriteLine(
+          string "3"
+        );
+        return
+      }
+  case 
+    I32 4
+  case 
+    I32 5
+      ExplicitBlock {
+        static? MethodReference WriteLine(
+          string "4 or 5"
+        );
+        break
+      }
+  default
+      ExplicitBlock {
+        static? MethodReference WriteLine(
+          string "default"
+        );
+        break
+      }
+  }
+  static? MethodReference WriteLine(
+    string "after"
+  );
+}

@@ -1198,16 +1198,32 @@
 
                     if (parameter.IsParams)
                     {
+                        if (nodes.Count <= _)
+                        {
+                            return new MethodCallArg
+                            {
+                                Value = new ArrayCreationExpression
+                                {
+                                    ArrayType = arg.SymbolSerializer.GetTypeSpecId(parameter.Type),
+                                    ElementType = arg.SymbolSerializer.GetTypeSpecId(
+                                        ((IArrayTypeSymbol)parameter.Type).ElementType),
+                                    Initializers = null,
+                                    Arguments =  new List<ExpressionSer>()
+                                        { new IntLiteralExpression { Value = 0 } }
+                                }
+                            };
+                        }
+
                         return new MethodCallArg
                         {
                             Value = new ArrayCreationExpression
                             {
                                 ArrayType = arg.SymbolSerializer.GetTypeSpecId(parameter.Type),
                                 ElementType = arg.SymbolSerializer.GetTypeSpecId(
-                                ((IArrayTypeSymbol)parameter.Type).ElementType),
+                                    ((IArrayTypeSymbol)parameter.Type).ElementType),
                                 Initializers = nodes.Skip(_)
-                                .Select(_a => (ExpressionSer)this.Visit(_a, arg))
-                                .ToList()
+                                    .Select(_a => (ExpressionSer)this.Visit(_a, arg))
+                                    .ToList()
                             }
                         };
                     }
@@ -1260,7 +1276,7 @@
                 case UnaryOperatorKind.PrefixIncrement:
                     return CLR.AST.UnaryOperator.PreIncrement;
                 case UnaryOperatorKind.PrefixDecrement:
-                    return CLR.AST.UnaryOperator.PreIncrement;
+                    return CLR.AST.UnaryOperator.PreDecrement;
                 case UnaryOperatorKind.UnaryPlus:
                     return CLR.AST.UnaryOperator.UnaryPlus;
                 case UnaryOperatorKind.UnaryMinus:

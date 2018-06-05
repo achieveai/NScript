@@ -25,12 +25,10 @@ namespace NScript.CLR.Test.CstTests
 
         [Test]
         [TestCase(true, "IfElseInForBlock")]
-        [TestCase(false, "IfElseInForBlockRetail")]
-        [Timeout(80)]
         public void TestIfElseInForBlock(bool isDebug, string fileName)
         {
             TestHelpers.Test(
-                RegressionTests.ResourceFileNamepace + fileName + ".xml",
+                RegressionTests.ResourceFileNamepace + fileName + ".csast",
                 TestHelpers.GetAST(
                     RegressionTests.TestClassNameStr,
                     "IfElseInForBlock",
@@ -39,11 +37,10 @@ namespace NScript.CLR.Test.CstTests
 
         [Test]
         [TestCase(false, "NestedWhileLoops")]
-        [Timeout(80)]
         public void TestNestedWhileLoops(bool isDebug, string fileName)
         {
             TestHelpers.Test(
-                RegressionTests.ResourceFileNamepace + fileName + ".xml",
+                RegressionTests.ResourceFileNamepace + fileName + ".csast",
                 TestHelpers.GetAST(
                     RegressionTests.TestClassNameStr,
                     "NestedWhileLoops",
@@ -52,11 +49,10 @@ namespace NScript.CLR.Test.CstTests
 
         [Test]
         [TestCase(false, "NestedWhileLoops2")]
-        [Timeout(80)]
         public void TestNestedWhileLoops2(bool isDebug, string fileName)
         {
             TestHelpers.Test(
-                RegressionTests.ResourceFileNamepace + fileName + ".xml",
+                RegressionTests.ResourceFileNamepace + fileName + ".csast",
                 TestHelpers.GetAST(
                     RegressionTests.TestClassNameStr,
                     "NestedWhileLoops2",
@@ -69,7 +65,7 @@ namespace NScript.CLR.Test.CstTests
         public void TestPrePostIncrement(bool isDebug, string fileName)
         {
             TestHelpers.Test(
-                RegressionTests.ResourceFileNamepace + fileName + ".xml",
+                RegressionTests.ResourceFileNamepace + fileName + ".csast",
                 TestHelpers.GetAST(
                     RegressionTests.TestClassNameStr,
                     "TwoConsicutivePreIncrements",

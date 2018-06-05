@@ -434,10 +434,13 @@
                     node
                         .CaseBlocks
                         .Select(_ =>
-                            string.Concat(
+                        {
+                            return string.Concat(
                                 _.Key
                                     .Select(_k => GetSpaces(arg) + (_k == null ? "default" : ("case " + this.Visit(_k, arg + 1))))
-                                    .ToArray()))
+                                    .ToArray()) +
+                                this.Visit(_.Value, arg + 2);
+                        })
                         .ToArray())
                 + GetSpaces(arg) + "}";
         }

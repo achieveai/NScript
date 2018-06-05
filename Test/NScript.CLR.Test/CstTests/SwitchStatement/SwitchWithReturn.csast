@@ -1,0 +1,63 @@
+﻿ParamBlock(System.Int32 i, RealScript.SwitchTest this) ExplicitBlock {
+  static? MethodReference Format(
+    string "{}",
+    new System.Object[
+      I32 0
+    ]
+  );
+  switch(
+    i
+  ) {
+  case 
+    I32 10
+      ExplicitBlock {
+        static? MethodReference Format(
+          string "Ten",
+          new System.Object[
+            I32 0
+          ]
+        );
+        return
+      }
+  case 
+    I32 2
+  case 
+    I32 16
+  case 
+    I32 32
+      ExplicitBlock {
+        static? MethodReference Format(
+          string "Power Of Two",
+          new System.Object[
+            I32 0
+          ]
+        );
+        break
+      }
+  case 
+    I32 103
+      ExplicitBlock {
+        static? MethodReference Format(
+          string "Contigous Test 4",
+          new System.Object[
+            I32 0
+          ]
+        );
+        return
+      }
+  default
+      ExplicitBlock {
+        static? MethodReference Format(
+          string "Default",
+          new System.Object[
+            I32 0
+          ]
+        );
+        break
+      }
+  }
+  static? MethodReference Format(
+    string "{0}",
+    string "done with NoDefault stuff"
+  );
+}

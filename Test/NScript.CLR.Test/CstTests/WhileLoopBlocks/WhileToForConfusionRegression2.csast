@@ -1,0 +1,115 @@
+﻿ParamBlock(System.Int32[] array, System.Int32 startIndex, System.Int32 endIndex) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    randomPoint
+  ,
+    Plus l:False rt:System.Int32
+      startIndex
+    ,
+      static? MethodReference Random(
+        Minus l:False rt:System.Int32
+          endIndex
+        ,
+          startIndex
+      );
+  Assignment l:False rt:System.Int32
+    randomPointValue
+  ,
+    array[
+      randomPoint
+    ];
+  initializers: 
+    Assignment l:False rt:System.Int32
+      i
+    ,
+      startIndex
+    Assignment l:False rt:System.Int32
+      j
+    ,
+      Minus l:False rt:System.Int32
+        endIndex
+      ,
+        I32 2
+  While(
+    LessThan l:False rt:System.Boolean
+      i
+    ,
+      j
+  ) {
+    ScopeBlock() {
+      While(
+        LogicalAnd l:False rt:System.Boolean
+          LessThanOrEqual l:False rt:System.Boolean
+            array[
+              i
+            ]
+          ,
+            randomPointValue
+        ,
+          LessThan l:False rt:System.Boolean
+            i
+          ,
+            Minus l:False rt:System.Int32
+              endIndex
+            ,
+              I32 2
+      ) {
+        ScopeBlock() {
+          PreIncrement, is:False
+            i;
+        }
+      }
+      While(
+        LogicalAnd l:False rt:System.Boolean
+          GreaterThanOrEqual l:False rt:System.Boolean
+            array[
+              j
+            ]
+          ,
+            randomPointValue
+        ,
+          GreaterThan l:False rt:System.Boolean
+            j
+          ,
+            startIndex
+      ) {
+        ScopeBlock() {
+          PreDecrement, is:False
+            j;
+        }
+      }
+      if (
+        LessThan l:False rt:System.Boolean
+          i
+        ,
+          j
+      )
+        ScopeBlock(tmp) {
+          Assignment l:False rt:System.Int32
+            tmp
+          ,
+            array[
+              i
+            ];
+          Assignment l:False rt:System.Int32
+            array[
+              i
+            ]
+          ,
+            array[
+              j
+            ];
+          Assignment l:False rt:System.Int32
+            array[
+              j
+            ]
+          ,
+            tmp;
+        }
+    }
+  }
+  static? MethodReference QSort(
+    array,
+    startIndex,
+    i
+  );
+}
