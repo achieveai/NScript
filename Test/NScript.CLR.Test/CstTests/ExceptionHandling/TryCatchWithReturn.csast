@@ -15,7 +15,7 @@
         }
     }
   catch(System.Exception ex) {
-    ScopeBlock(ex) {
+    ScopeBlock() {
       static? MethodReference GetMoreStatic(
         arg
       );

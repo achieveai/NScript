@@ -769,14 +769,68 @@
                 Left = (ExpressionSer)this.Visit(node.LeftOperand, arg),
                 Right = (ExpressionSer)this.Visit(node.RightOperand, arg)
             };
+
         public override AstBase VisitObjectCreationExpression(BoundObjectCreationExpression node, SerializationContext arg)
-            => new NewExpression
+        {
+            var location = node.Syntax.Location.GetSerLoc();
+            var type = arg.SymbolSerializer.GetTypeSpecId(node.Type);
+            var method = arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
+            var arguments = ToArgs(node.Constructor, node.Arguments, arg);
+
+            if (node.InitializerExpressionOpt == null)
             {
-                Location = node.Syntax.Location.GetSerLoc(),
-                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type),
-                Method = arg.SymbolSerializer.GetMethodSpecId(node.Constructor),
-                Arguments = ToArgs(node.Constructor, node.Arguments, arg)
+                return new NewExpression
+                {
+                    Location = location,
+                    Type = type,
+                    Method = method,
+                    Arguments = arguments
+                };
+            }
+
+            return new NewInitializerExpression
+            {
+                Location = location,
+                Type = type,
+                Method = method,
+                Arguments = arguments,
+                Initializers = ((BoundObjectInitializerExpression)node.InitializerExpressionOpt)
+                    .Initializers
+                    .Select(_ =>
+                    {
+                        if (_.Kind == BoundKind.AssignmentOperator)
+                        {
+                            var assignOp = (BoundAssignmentOperator)_;
+                            var initializerMember = (BoundObjectInitializerMember)assignOp.Left;
+                            var rv = new ObjectInitilaizer()
+                            {
+                                Location = _.Syntax.Location.GetSerLoc(),
+                                Value = (ExpressionSer)this.Visit(assignOp.Right, arg)
+                            };
+
+                            if (initializerMember.MemberSymbol.Kind == SymbolKind.Field)
+                            {
+                                rv.Field = arg.SymbolSerializer.GetFieldSpecId(
+                                    (FieldSymbol)initializerMember.MemberSymbol);
+                            }
+                            else 
+                            {
+                                var propertySymbol = (PropertySymbol)initializerMember.MemberSymbol;
+                                rv.Proeprty = arg.SymbolSerializer.GetPropertySpecId(propertySymbol);
+                                rv.Setter = arg.SymbolSerializer.GetMethodSpecId(propertySymbol.SetMethod);
+                            }
+
+                            return rv;
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    })
+                    .ToList()
             };
+        }
+
         public override AstBase VisitObjectInitializerExpression(BoundObjectInitializerExpression node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitObjectInitializerMember(BoundObjectInitializerMember node, SerializationContext arg)
@@ -1137,10 +1191,27 @@
             SerializationContext arg)
         {
             return Enumerable
-                .Range(0, Math.Max(method.Parameters.Length, nodes.Count))
+                .Range(0, method.Parameters.Length)
                 .Select(_ =>
                 {
-                    if (nodes.Count > _ && method.Parameters.Length > _)
+                    var parameter = method.Parameters[_];
+
+                    if (parameter.IsParams)
+                    {
+                        return new MethodCallArg
+                        {
+                            Value = new ArrayCreationExpression
+                            {
+                                ArrayType = arg.SymbolSerializer.GetTypeSpecId(parameter.Type),
+                                ElementType = arg.SymbolSerializer.GetTypeSpecId(
+                                ((IArrayTypeSymbol)parameter.Type).ElementType),
+                                Initializers = nodes.Skip(_)
+                                .Select(_a => (ExpressionSer)this.Visit(_a, arg))
+                                .ToList()
+                            }
+                        };
+                    }
+                    else if (nodes.Count > _)
                     {
                         return new MethodCallArg
                         {
@@ -1148,15 +1219,10 @@
                             Value = (ExpressionSer)this.Visit(nodes[_], arg)
                         };
                     }
-                    else if (nodes.Count <= _)
-                    {
-                        return new MethodCallArg
-                        { Value = new NullExpression { } };
-                    }
                     else
                     {
                         return new MethodCallArg
-                        { Value = (ExpressionSer)this.Visit(nodes[_], arg) };
+                        { Value = new NullExpression { } };
                     }
                 })
                 .ToList();

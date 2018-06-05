@@ -2,6 +2,7 @@
 {
     using Mono.Cecil;
     using NScript.Utils;
+    using System;
 
     /// <summary>
     /// Variable references.
@@ -24,6 +25,9 @@
             Variable variable)
             : base(context, location)
         {
+            if (variable == null)
+            { throw new ArgumentNullException(); }
+
             this.variable = variable;
         }
 

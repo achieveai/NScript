@@ -102,7 +102,6 @@
     <Compile Include="CstTests\NumberOperationTests.cs" />
     <Compile Include="CstTests\RegressionTests.cs" />
     <Compile Include="CstTests\SwitchStatementTests.cs" />
-    <Compile Include="CstTests\TestFixture.cs" />
     <Compile Include="CstTests\WhileLoopBlockAstTests.cs" />
     <Compile Include="DllBuilder.cs" />
     <Compile Include="TestAssemblyLoader.cs" />
@@ -167,7 +166,7 @@
     <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithFor.xml" />
     <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithForRetail.xml" />
     <EmbeddedResource Include="CstTests\ForLoopBlocks\ForEachLoop.csast" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineConstIntArray.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineConstIntArray.csast" />
     <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlock.xml" />
     <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlockRetail.xml" />
     <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops.xml" />
@@ -189,7 +188,7 @@
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\RegressionPreIncrementInCompare.csast" />
     <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.csast" />
     <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrePostifixAssignment.csast" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.csast" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueMcs.xml" />
     <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2Mcs.xml" />
     <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.csast" />
@@ -226,10 +225,10 @@
     <EmbeddedResource Include="CstTests\BasicStatements\PassObjectFieldByRef.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\InlineInitializations\CallMethodWithInlineSettersElement.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineSettersElement.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\TestVarArgs.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArray.xml" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\CallMethodWithInlineSettersElement.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineSettersElement.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\TestVarArgs.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArray.csast" />
     <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopPadded.csast" />
     <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBasic.csast" />
     <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegate.csast" />

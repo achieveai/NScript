@@ -406,6 +406,8 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Value { get; set; }
 
         public MethodCallExpression MethodCall { get; set; }
+
+        public int? Proeprty { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]

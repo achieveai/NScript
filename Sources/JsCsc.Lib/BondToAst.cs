@@ -683,23 +683,25 @@ namespace JsCsc.Lib
                             ParameterAttributes.None,
                             this._currentMethod.DeclaringType)
                         : null,
-                jObject.Parameters
-                    .Select(paramObj =>
-                    {
-                        ParameterAttributes attr = (ParameterAttributes)paramObj.Modifier;
+                jObject.Parameters != null
+                    ? jObject.Parameters
+                        .Select(paramObj =>
+                        {
+                            ParameterAttributes attr = (ParameterAttributes)paramObj.Modifier;
 
-                        var parameterType =
-                                this.DeserializeType(paramObj.Type);
+                            var parameterType =
+                                    this.DeserializeType(paramObj.Type);
 
-                        if ((attr & ParameterAttributes.Out) != 0)
-                        { parameterType = new ByReferenceType(parameterType); }
+                            if ((attr & ParameterAttributes.Out) != 0)
+                            { parameterType = new ByReferenceType(parameterType); }
 
-                        return new ParameterDefinition(
-                            paramObj.Name,
-                            attr,
-                            parameterType);
-                    })
-                    .ToList()
+                            return new ParameterDefinition(
+                                paramObj.Name,
+                                attr,
+                                parameterType);
+                        })
+                        .ToList()
+                    : null
                 );
         }
 

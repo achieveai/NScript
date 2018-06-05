@@ -36,14 +36,17 @@ namespace JsCsc.Lib
             _isParamBlock = isParamBlock;
             BlockId = blockId;
 
-            if (parameters != null)
+            if (_isParamBlock)
             {
                 ThisVariable = thisParameter != null
                     ? new ThisVariable(
                         thisParameter,
                         null)
                     : null;
+            }
 
+            if (parameters != null)
+            {
                 this.parameters = parameters
                     .Select(_ => new ParameterVariable(
                         _,
