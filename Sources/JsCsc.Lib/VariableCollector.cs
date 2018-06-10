@@ -112,6 +112,7 @@ namespace JsCsc.Lib
             { throw new System.InvalidOperationException(); }
 
             escapingVariable.Add(variable);
+            variable.SetHoisted();
         }
 
         public List<(LocalVariable variable, bool isUSed)> GetCapturedVariables()

@@ -41,6 +41,17 @@ namespace NScript.CLR.AST
             if (paramBlockVariables.escapingVars != null)
             { paramBlockVariables.escapingVars.ForEach(_ => this.escapingVariables.Add(_)); }
 
+            if (paramBlockVariables.thisVar != null)
+            {
+                if (paramBlockVariables.thisVar.DefiningScope != null)
+                { throw new System.InvalidOperationException(); }
+
+                this.thisVariable = paramBlockVariables.thisVar;
+                this.thisVariable.DefiningScope = this;
+                this.paramMaps.Add(thisVariable.Name, thisVariable);
+                this.parameterVariables.Add(thisVariable);
+            }
+
             if (paramBlockVariables.paras != null)
             {
                 foreach (var _ in paramBlockVariables.paras)
@@ -53,17 +64,6 @@ namespace NScript.CLR.AST
 
                     this.parameterVariables.Add(_);
                 }
-            }
-
-            if (paramBlockVariables.thisVar != null)
-            {
-                if (paramBlockVariables.thisVar.DefiningScope != null)
-                { throw new System.InvalidOperationException(); }
-
-                this.thisVariable = paramBlockVariables.thisVar;
-                this.thisVariable.DefiningScope = this;
-                this.paramMaps.Add(thisVariable.Name, thisVariable);
-                this.parameterVariables.Add(thisVariable);
             }
         }
 

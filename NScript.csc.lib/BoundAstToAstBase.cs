@@ -22,7 +22,7 @@
             BoundNode boundNode,
             SerializationContext arg)
         {
-            if (methodSymbol.Name == "PostfixPropertyInConditionOperation")
+            if (methodSymbol.Name == "InstanceReferencingDelegate")
             { }
 
             var methodId = arg

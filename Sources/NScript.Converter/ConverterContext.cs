@@ -19,6 +19,7 @@ namespace NScript.Converter
     using Newtonsoft.Json.Linq;
     using NScript.Utils;
     using FullAst = JsCsc.Lib.Serialization.FullAst;
+    using System.Linq;
 
     /// <summary>
     /// Definition for ConverterContext.
@@ -1076,8 +1077,9 @@ namespace NScript.Converter
                         // method.Body.CodeSize == 0 for extern constructor.
                         else if (
                             method.Body != null
-                            && ((method.Body.CodeSize != 7
-                                && method.Body.Instructions.Count != 3)
+                            && (method.Body.Instructions
+                                    .Where(_ => _.OpCode.Code != Mono.Cecil.Cil.Code.Nop)
+                                    .Count() != 3
                                 || typeDefinition.IsValueType))
                         {
                             hasConstructor = true;

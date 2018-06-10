@@ -1044,7 +1044,7 @@ namespace NScript.Converter.TypeSystemConverter
                     RuntimeManager.Scope,
                     string.Format(
                         "{0}_del{1}",
-                        GetMethodName(methodDefinition).SuggestedName,
+                        GetMethodName(methodDefinition).OriginalSuggestedName,
                         delegateCount++ == 0
                             ? string.Empty
                             : delegateCount.ToString()),

@@ -662,7 +662,13 @@ namespace JsCsc.Lib
         }
 
         private Node ParseParameterBlock(Serialization.ParameterBlock jObject)
+            => this.ParseParameterBlock(jObject, false);
+
+        private Node ParseParameterBlock(Serialization.ParameterBlock jObject, bool isDelegate)
         {
+            if (this._currentMethod.Name == "InstanceReferencingDelegate")
+            { }
+
             return WrapVariableCollection(
                 (vc) =>
                 {
@@ -686,6 +692,7 @@ namespace JsCsc.Lib
                 jObject.Id,
                 true,
                 jObject.IsMethodOwned
+                        && !isDelegate
                         && this._currentMethod.HasThis
                         ?  new ParameterDefinition(
                             "this",
@@ -971,13 +978,15 @@ namespace JsCsc.Lib
         private Node ParseThisExpr(Serialization.ThisExpression jObject)
         {
             var thisVar = this.scopeBlockStack.Last.Value.collector.ThisVariable;
-            var node = this.scopeBlockStack.Last.Previous;
+            var node = this.scopeBlockStack.Last;
 
             while (node != null)
             {
                 var paramBlock = node.Value.collector;
                 if (paramBlock.IsParamBlock)
-                { paramBlock.AddEscapingVariable(thisVar); }
+                {
+                    paramBlock.AddEscapingVariable(thisVar);
+                }
 
                 node = node.Previous;
             }
@@ -1327,7 +1336,7 @@ namespace JsCsc.Lib
             return new AnonymousMethodBodyExpression(
                 this._clrContext,
                 this.LocFromJObject(jObject),
-                (ParameterBlock)this.ParseParameterBlock(jObject.Block),
+                (ParameterBlock)this.ParseParameterBlock(jObject.Block, true),
                 jObject.Type != 0
                     ? this.DeserializeType(jObject.Type)
                     : this._clrContext.KnownReferences.MulticastDelegate);

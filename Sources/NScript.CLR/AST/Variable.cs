@@ -97,7 +97,7 @@ namespace NScript.CLR.AST
         /// <summary>
         /// Sets the hoisted flag.
         /// </summary>
-        internal void SetHoisted()
+        public void SetHoisted()
         {
             this.isHoisted = true;
         }
