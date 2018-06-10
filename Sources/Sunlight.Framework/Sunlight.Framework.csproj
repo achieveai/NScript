@@ -60,6 +60,7 @@
     <Compile Include="IoC\IocContainer.cs" />
     <Compile Include="IoC\IocHelper.cs" />
     <Compile Include="Lazy.cs" />
+    <Compile Include="LazyAsync.cs" />
     <Compile Include="Observables\AttachedProperty.cs" />
     <Compile Include="Observables\CollectionChangedAction.cs" />
     <Compile Include="Observables\CollectionChangedEventArgs.cs" />
