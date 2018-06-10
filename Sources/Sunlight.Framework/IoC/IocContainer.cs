@@ -159,7 +159,7 @@ namespace Sunlight.Framework
             }
         }
 
-        public Lazy<T> ResolveLazyOrNull<T>() where T : class
+        public Lazy<T> TryResolveLazy<T>() where T : class
         {
             TypeRegistry typeRegistry = null;
             if (this.factoryMap.TryGetValue(typeof(T).TypeId, out typeRegistry))
