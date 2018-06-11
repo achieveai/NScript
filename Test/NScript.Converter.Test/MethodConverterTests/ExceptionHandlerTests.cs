@@ -26,23 +26,6 @@ namespace NScript.Converter.Test.MethodConverterTests
 
         [Test]
         [TestCase(TestClassNameStr, "TryFinallySimple", "TryFinallySimple.js", TestType.All)]
-        [TestCase(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturn.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturnRetail.js", TestType.Retail)]
-        [TestCase(TestClassNameStr, "TryCatchSimple", "TryCatchSimple.js", TestType.All)]
-        [TestCase(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturn.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturnRetail.js", TestType.Retail)]
-        [TestCase(TestClassNameStr, "TryCatchFinallySimple", "TryCatchFinallySimple.js", TestType.All)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                className,
-                methodName,
-                testType);
-        }
-
-        [Test]
-        [TestCase(TestClassNameStr, "TryFinallySimple", "TryFinallySimple.js", TestType.All)]
         [TestCase(TestClassNameStr, "TryFinallyWithReturn", "TryFinallyWithReturnMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "TryCatchSimple", "TryCatchSimple.js", TestType.All)]
         [TestCase(TestClassNameStr, "TryCatchWithReturn", "TryCatchWithReturnMcs.js", TestType.All)]

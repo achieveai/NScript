@@ -25,30 +25,12 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        // [TestCase(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
+        [TestCase(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
+        [TestCase(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
         [TestCase(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GenericMethodCall3", "GenericMethodCall3.js", TestType.All)]
-        // [TestCase("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
-        // [TestCase("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCall.js", TestType.Debug)]
-        // [TestCase("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallRetail.js", TestType.Retail)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                className,
-                methodName,
-                testType);
-        }
-
-        [Test]
-        // [TestCase(TestClassNameStr, "NewGenericObject", "NewGenericObject.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "NewGenericObject2", "NewGenericObject2.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
-        // [TestCase("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
-        // [TestCase("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All)]
+        [TestCase("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All)]
+        [TestCase("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All)]
         [TestCase("GenericRegressions", "TestGenericMethodCalls", "GenericMethodCalls.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {

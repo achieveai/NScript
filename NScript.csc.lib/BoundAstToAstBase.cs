@@ -267,16 +267,23 @@
             bool isStatic = node.Method.ContainingSymbol.IsStatic
                 || node.Method.IsStatic;
 
-            return new MethodCallExpression
-            {
-                Method = arg.SymbolSerializer.GetMethodSpecId(
-                    node.Method),
-                Arguments = this.ToArgs(node.Method, node.Arguments, arg),
-                Location = node.Syntax.Location.GetSerLoc(),
-                Instance = !isStatic
-                    ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
-                    : null
-            };
+            return node.Method.MethodKind == MethodKind.DelegateInvoke
+                ? (AstBase)new DelegateInvocationExpression
+                    {
+                        Arguments = this.ToArgs(node.Method, node.Arguments, arg),
+                        Location = node.Syntax.Location.GetSerLoc(),
+                        Instance = (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
+                    }
+                : new MethodCallExpression
+                    {
+                        Method = arg.SymbolSerializer.GetMethodSpecId(
+                            node.Method),
+                        Arguments = this.ToArgs(node.Method, node.Arguments, arg),
+                        Location = node.Syntax.Location.GetSerLoc(),
+                        Instance = !isStatic
+                            ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
+                            : null
+                    };
         }
 
         public override AstBase VisitCatchBlock(BoundCatchBlock node, SerializationContext arg)
@@ -544,14 +551,26 @@
             => new StatementExpressionSer { Expression = (ExpressionSer)this.Visit(node.Expression, arg) };
 
         public override AstBase VisitFieldAccess(BoundFieldAccess node, SerializationContext arg)
-            // TODO: validate FieldSymbol has full TypeInfo, e.g. generic arguments
-            => new FieldExpression
+        // TODO: validate FieldSymbol has full TypeInfo, e.g. generic arguments
+        {
+            AstBase rv = null;
+            if (node.FieldSymbol.IsConst)
+            { rv = GetConstantValue(node.FieldSymbol.ConstantValue); }
+            else
             {
-                Field = arg.SymbolSerializer.GetFieldSpecId(node.FieldSymbol),
-                Instance = !node.FieldSymbol.IsStatic
-                    ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
-                    : null
-            };
+                rv = new FieldExpression
+                {
+                    Field = arg.SymbolSerializer.GetFieldSpecId(node.FieldSymbol),
+                    Instance = !node.FieldSymbol.IsStatic
+                      ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
+                      : null
+                };
+            }
+
+            rv.Location = node.Syntax.GetSerLoc();
+            return rv;
+        }
+
         public override AstBase VisitFieldEqualsValue(BoundFieldEqualsValue node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitFieldInfo(BoundFieldInfo node, SerializationContext arg)
@@ -1180,6 +1199,66 @@
                     return new DecimalLiteralExpression
                     { Value = constValue.DecimalValue };
                 case ConstantValueTypeDiscriminator.DateTime:
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public static AstBase GetConstantValue(object constValue)
+        {
+            if (constValue == null)
+            { return new NullExpression { }; }
+
+            switch (constValue)
+            {
+                case byte i:
+                    return new ByteLiteralExpression
+                    { Value = i };
+
+                case sbyte i:
+                    return new SByteLiteralExpression
+                    { Value = i };
+
+                case char i:
+                    return new CharLiteralExpression
+                    { Value = i };
+
+                case short i:
+                    return new ShortLiteralExpression
+                    { Value = i };
+
+                case ushort i:
+                    return new UShortLiteralExpression
+                    { Value = i };
+
+                case int i:
+                    return new IntLiteralExpression
+                    { Value = i };
+
+                case uint i:
+                    return new UIntLiteralExpression
+                    { Value = i };
+
+                case long i:
+                    return new LongLiteralExpression
+                    { Value = i };
+
+                case ulong i:
+                    return new ULongLiteralExpression
+                    { Value = i };
+
+                case float i:
+                    return new FloatLiteralExpression
+                    { Value = i };
+
+                case double i:
+                    return new DoubleLiteralExpression
+                    { Value = i };
+
+                case string i:
+                    return new StringLiteralExpression
+                    { Value = i };
+
                 default:
                     throw new NotImplementedException();
             }

@@ -402,13 +402,7 @@
     <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallySimple.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallyWithReturn.js" />
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallyWithReturnRetail.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchSimple.js" />
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchWithReturn.js" />
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchWithReturnRetail.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchFinallySimple.js" />

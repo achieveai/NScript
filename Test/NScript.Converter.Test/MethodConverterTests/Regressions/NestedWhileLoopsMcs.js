@@ -1,4 +1,4 @@
-﻿function RealScript__FuncRegressions__NestedWhileLoops(array) {
+﻿function FuncRegressions__NestedWhileLoops(array) {
   var randomValue, i, j, tmp;
   randomValue = 11;
   i = 0, j = 10;

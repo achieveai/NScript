@@ -1,3 +1,3 @@
-﻿function RealScript__GenericSamples__NewGenericObject() {
-  return RealScript_List_$GenericSamples$_.defaultConstructor();
+﻿function GenericSamples__NewGenericObject() {
+  return List_$GenericSamples$_.defaultConstructor();
 }

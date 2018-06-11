@@ -30,21 +30,6 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase(TestClassNameStr, "ReturnInlineSettersElement", "ReturnInlineSettersElement.js", TestType.All)]
         [TestCase(TestClassNameStr, "CallMethodWithInlineSettersElement", "CallMethodWithInlineSettersElement.js", TestType.All)]
         [TestCase(TestClassNameStr, "ReturnInlineConstIntArray", "ReturnInlineConstIntArray.js", TestType.All)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                TestClassNameStr,
-                methodName,
-                testType);
-        }
-
-        [Test]
-        // [TestCase(TestClassNameStr, "ReturnInlineObjectArray", "ReturnInlineObjectArray.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "TestVarArgs", "VarArgs.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "ReturnInlineSettersElement", "ReturnInlineSettersElement.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "CallMethodWithInlineSettersElement", "CallMethodWithInlineSettersElement.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "ReturnInlineConstIntArray", "ReturnInlineConstIntArray.js", TestType.All)]
         [TestCase(TestClassNameStr, "ReturnInlineObjectArrayWithPropInit", "ReturnInlineObjectArrayWithPropInit.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {

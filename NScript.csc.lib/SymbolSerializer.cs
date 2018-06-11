@@ -275,18 +275,20 @@ namespace NScript.Csc.Lib
 
         private MethodSpecSer Serialize(IMethodSymbol method)
         {
-            if (method.Name == ".ctor" && ((NamedTypeSymbol)method.ContainingType).IsNestedType() )
+            if (method.Name == "get_Item"
+                && ((NamedTypeSymbol)method.ContainingType).MetadataName == "List`1")
             { }
 
+            var methodDef = method.OriginalDefinition;
             var returnType =
                 method.ReturnsVoid
                 ? null
-                : this.GetTypeSpecSer(method.ReturnType);
+                : this.GetTypeSpecSer(methodDef.ReturnType);
 
             var declaringType = this.GetTypeSpecSer(method.ContainingType);
 
             var name = method.MetadataName;
-            var parameters = method
+            var parameters = methodDef
                 .Parameters
                 .Select(_ =>
                 {

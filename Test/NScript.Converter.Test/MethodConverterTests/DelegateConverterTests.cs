@@ -25,10 +25,10 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        //[TestCase(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegateMcs.js", TestType.All)]
-        //[TestCase(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegateMcs.js", TestType.All)]
-        //[TestCase(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegateMcs.js", TestType.All)]
-        //[TestCase(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegateMcs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegateMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {

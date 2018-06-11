@@ -776,6 +776,16 @@ namespace JsCsc.Lib
                         LocalVariable exceptionVariable =
                             this.ParseLocalVariable(handlerObj.LocalVariable);
 
+                        if (exceptionVariable != null)
+                        {
+                            ScopeBlock tmpBlock = new ScopeBlock(
+                                this._clrContext,
+                                null,
+                                new List<(LocalVariable localVariable, bool isUsed)> { (exceptionVariable, true) });
+
+                            handlerScopeBlock.MoveVariablesFrom(tmpBlock);
+                        }
+
                         return new HandlerBlock(
                             this._clrContext,
                             this.LocFromJObject(handlerObj),
