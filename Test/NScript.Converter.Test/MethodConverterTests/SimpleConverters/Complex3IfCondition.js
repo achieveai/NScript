@@ -1,4 +1,4 @@
-﻿function RealScript__BasicBlockTestFunctions__Complex3IfCondition(i1, i2) {
+﻿function BasicBlockTestFunctions__Complex3IfCondition(i1, i2) {
   var b, returnValue;
   b = false;
   returnValue = 0;

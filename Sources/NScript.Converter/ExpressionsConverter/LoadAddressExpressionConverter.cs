@@ -161,8 +161,8 @@ namespace NScript.Converter.ExpressionsConverter
                         (scope) => (JST.Expression)new JST.IndexExpression(
                             objectBuilderFunction.Location,
                             scope,
-                            new JST.IdentifierExpression(arrayRefIdentifier, converter.Scope),
-                            new JST.IdentifierExpression(arrayIndexIdentifier, converter.Scope),
+                            new JST.IdentifierExpression(arrayRefIdentifier, objectBuilderScope),
+                            new JST.IdentifierExpression(arrayIndexIdentifier, objectBuilderScope),
                             true))));
 
             JST.Expression arrayRefExpression = ExpressionConverterBase.Convert(

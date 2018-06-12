@@ -332,7 +332,7 @@ namespace NScript.Csc.Lib
             {
                 Name = field.MetadataName,
                 DeclaringType = this.GetTypeSpecSer(field.ContainingType),
-                MemberType = this.GetTypeSpecSer(field.Type)
+                MemberType = this.GetTypeSpecSer(field.OriginalDefinition.Type)
             };
 
         private PropertySpecSer Serialize(IPropertySymbol property)
@@ -340,7 +340,7 @@ namespace NScript.Csc.Lib
             {
                 Name = property.MetadataName,
                 DeclaringType = this.GetTypeSpecSer(property.ContainingType),
-                MemberType = this.GetTypeSpecSer(property.Type),
+                MemberType = this.GetTypeSpecSer(property.OriginalDefinition.Type),
             };
 
         private EventSpecSer Serialize(IEventSymbol evt)
@@ -348,7 +348,7 @@ namespace NScript.Csc.Lib
             {
                 Name = evt.MetadataName,
                 DeclaringType = this.GetTypeSpecSer(evt.ContainingType),
-                MemberType = this.GetTypeSpecSer(evt.Type)
+                MemberType = this.GetTypeSpecSer(evt.OriginalDefinition.Type)
             };
     }
 }

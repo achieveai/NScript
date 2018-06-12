@@ -27,27 +27,6 @@ namespace NScript.Converter.Test.MethodConverterTests
         [Test]
         [TestCase(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
         [TestCase(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunctionRetail.js", TestType.Retail)]
-        [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]
-        [TestCase(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnly.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnlyRetail.js", TestType.Retail)]
-        [TestCase(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForDebug.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForRetail.js", TestType.Retail)]
-        [TestCase(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValues.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValuesRetail.js", TestType.Retail)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                className,
-                methodName,
-                testType);
-        }
-
-        [Test]
-        [TestCase(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
-        [TestCase(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
         [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
         [TestCase(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]
         [TestCase(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnlyRetail.js", TestType.Retail)]

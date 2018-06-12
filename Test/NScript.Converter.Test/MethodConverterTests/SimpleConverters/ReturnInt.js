@@ -1,3 +1,3 @@
-﻿function RealScript__BasicStatements__ReturnInt() {
+﻿function BasicStatements__ReturnInt() {
   return 10;
 }

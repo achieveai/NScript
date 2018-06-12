@@ -990,7 +990,8 @@ namespace JsCsc.Lib
             var thisVar = this.scopeBlockStack.Last.Value.collector.ThisVariable;
             var node = this.scopeBlockStack.Last;
 
-            while (node != null)
+            while (node != null
+                && node.Previous != null)
             {
                 var paramBlock = node.Value.collector;
                 if (paramBlock.IsParamBlock)
@@ -1186,11 +1187,11 @@ namespace JsCsc.Lib
 
         private Node ParsePropertyExpr(Serialization.PropertyExpression jObject)
         {
-            MethodReference getter = jObject.Getter != 0
+            MethodReference getter = jObject.Getter >= 0
                 ? this.DeserializeMethod(jObject.Getter)
                 : null;
 
-            MethodReference setter = jObject.Setter != 0
+            MethodReference setter = jObject.Setter >= 0
                 ? this.DeserializeMethod(jObject.Setter)
                 : null;
 

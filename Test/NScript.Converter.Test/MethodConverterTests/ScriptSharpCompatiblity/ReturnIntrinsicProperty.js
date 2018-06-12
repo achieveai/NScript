@@ -1,3 +1,3 @@
-﻿function RealScript__ScriptSharpCompat__ReturnIntrinsicProperty(str) {
+﻿function ScriptSharpCompat__ReturnIntrinsicProperty(str) {
   return str.length;
 }

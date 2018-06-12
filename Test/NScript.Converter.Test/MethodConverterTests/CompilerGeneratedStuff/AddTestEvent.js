@@ -1,3 +1,3 @@
-﻿function RealScript__TestCompilerGeneratedStuff__add_testEvent(value) {
-  this.testEvent = System__Delegate__Combine(this.testEvent, value);
+﻿function TestCompilerGeneratedStuff__add_testEvent(value) {
+  this.testEvent = Delegate__Combine(this.testEvent, value);
 }

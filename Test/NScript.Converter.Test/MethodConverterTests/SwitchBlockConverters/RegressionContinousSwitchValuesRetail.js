@@ -1,4 +1,4 @@
-function RealScript__SwitchTest__RegressionContinousSwitchValues(action, changeIndex, newItems, oldItems) {
+function SwitchTest__RegressionContinousSwitchValues(action, changeIndex, newItems, oldItems) {
   this.action = action;
   this.changeIndex = changeIndex;
   switch(action) {

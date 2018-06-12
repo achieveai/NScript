@@ -1,4 +1,4 @@
-﻿function RealScript__SwitchTest__RegressSwitchWithFor(action, changeIndex, newItems, oldItems) {
+﻿function SwitchTest__RegressSwitchWithFor(action, changeIndex, newItems, oldItems) {
   var index;
   if (this.newItems === newItems)
     return;
@@ -8,7 +8,7 @@
       return;
     }
     case 1: {
-      RealScript__Class1__GetMoreStatic(action);
+      Class1__GetMoreStatic(action);
       this.simpleIntSwitch(oldItems.V_get_Length());
       return;
     }
@@ -21,7 +21,7 @@
       return;
     }
     case 4: {
-      RealScript__Class1__GetMoreStatic(this.newItems.V_get_Length());
+      Class1__GetMoreStatic(this.newItems.V_get_Length());
       for (index = 0; index < this.newItems.V_get_Length(); ++index)
         this.oldItems.set_item(index, newItems.get_item(index));
       break;

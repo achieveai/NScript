@@ -1,3 +1,3 @@
-﻿function RealScript__StructClass2__GetScriptedInt(this_) {
+﻿function StructClass2__GetScriptedInt(this_) {
   return this_.i + 10;
 }

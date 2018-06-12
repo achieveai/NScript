@@ -1,3 +1,3 @@
-﻿function RealScript__TestCompilerGeneratedStuff__set_IntProperty(value) {
+﻿function TestCompilerGeneratedStuff__set_IntProperty(value) {
   return this.IntProperty = value;
 }
