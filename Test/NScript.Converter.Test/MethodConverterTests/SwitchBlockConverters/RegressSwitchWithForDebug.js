@@ -1,6 +1,6 @@
 ﻿function SwitchTest__RegressSwitchWithFor(action, changeIndex, newItems, oldItems) {
   var index;
-  if (this.newItems === newItems)
+  if (this.newItems == newItems)
     return;
   switch(action) {
     case 0: {
@@ -14,7 +14,7 @@
     }
     case 2: {
       for (index = 0; index < newItems.V_get_Length(); ++index) {
-        if (this.oldItems !== null)
+        if (this.oldItems)
           this.oldItems.set_item(changeIndex + index, newItems.get_item(index));
         this.newItems.set_item(changeIndex + index, newItems.get_item(index));
       }

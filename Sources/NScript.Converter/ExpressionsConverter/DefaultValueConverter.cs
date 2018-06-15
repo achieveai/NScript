@@ -67,7 +67,7 @@ namespace NScript.Converter.ExpressionsConverter
 
             if (typeDefinition != null)
             {
-                if (!typeDefinition.IsValueType
+                if (!typeDefinition.IsValueOrEnum()
                     || typeDefinition.IsSameDefinition(
                         runtimeScopeManager.Context.ClrKnownReferences.NullableType))
                 {
@@ -115,7 +115,7 @@ namespace NScript.Converter.ExpressionsConverter
                 bool? isValueType = null;
                 foreach (var constraint in genericParameter.Constraints)
                 {
-                    if (constraint.IsValueType)
+                    if (constraint.IsValueOrEnum())
                     {
                         isValueType = true;
                         break;
@@ -157,7 +157,7 @@ namespace NScript.Converter.ExpressionsConverter
 
             if (typeDefinition != null
                 && typeDefinition.BaseType != null
-                && typeDefinition.BaseType.IsValueType
+                && typeDefinition.BaseType.IsValueOrEnum()
                     || typeDefinition.BaseType.IsEnum())
             {
                 return true;

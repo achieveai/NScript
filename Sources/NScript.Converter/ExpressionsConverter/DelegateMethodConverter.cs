@@ -10,6 +10,7 @@ namespace NScript.Converter.ExpressionsConverter
     using NScript.CLR.AST;
     using NScript.Converter.TypeSystemConverter;
     using Mono.Cecil;
+    using NScript.CLR;
 
     /// <summary>
     /// Definition for DelegateMethodConverter
@@ -113,11 +114,21 @@ namespace NScript.Converter.ExpressionsConverter
                     converter.Scope));
 
             if (!isVirtualCall
-                && expression.Method.MethodReference.DeclaringType.Resolve().IsValueType)
+                && expression.Method.MethodReference.DeclaringType.IsValueOrEnum())
             {
-                objectExpression = ExpressionConverterBase.Convert(
-                    converter,
-                    ((BoxExpression)expression.Method.LeftExpression).BoxedExpression);
+                switch (expression.Method.LeftExpression)
+                {
+                    case BoxExpression boxExpr:
+                        objectExpression = ExpressionConverterBase.Convert(
+                            converter,
+                            boxExpr.BoxedExpression);
+                        break;
+                    default:
+                        objectExpression = ExpressionConverterBase.Convert(
+                            converter,
+                            expression.Method.LeftExpression);
+                        break;
+                }
 
                 delegateConverterArgs.Add(objectExpression);
                 delegateConverterArgs.Add(

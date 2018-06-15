@@ -546,11 +546,12 @@ namespace JsCsc.Lib
                 rv = rv.Resolve();
             }
 
+            var typeDef = rv.Resolve();
             if (typeSpec is Serialization.GenericInstanceTypeSer)
             {
                 var genericInstanceSpec = typeSpec as Serialization.GenericInstanceTypeSer;
                 var typeParamArray = genericInstanceSpec.TypeParams;
-                GenericInstanceType type = new GenericInstanceType(rv.Resolve());
+                GenericInstanceType type = new GenericInstanceType(typeDef);
                 for (int iTypeParam = 0; iTypeParam < typeParamArray.Count; iTypeParam++)
                 { type.GenericArguments.Add(this.DeserializeType(typeParamArray[iTypeParam])); }
 
@@ -570,6 +571,9 @@ namespace JsCsc.Lib
             }
 
             this.FixSystemType(ref rv);
+
+            if (rv != typeDef)
+            { rv.IsValueType = typeDef.IsValueType; }
 
             return rv;
         }

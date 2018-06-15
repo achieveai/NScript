@@ -1080,7 +1080,7 @@ namespace NScript.Converter
                             && (method.Body.Instructions
                                     .Where(_ => _.OpCode.Code != Mono.Cecil.Cil.Code.Nop)
                                     .Count() != 3
-                                || typeDefinition.IsValueType))
+                                || typeDefinition.IsValueOrEnum()))
                         {
                             hasConstructor = true;
                             bool isExtern = this.IsExtern(method);
@@ -1123,7 +1123,7 @@ namespace NScript.Converter
                         hasPublicFields = true;
                     }
 
-                    if (field.FieldType.IsValueType
+                    if (field.FieldType.IsValueOrEnum()
                         && !field.FieldType.IsSameDefinition(this.ClrKnownReferences.NullableType))
                     {
                         hasNonNullableStructField = true;
@@ -1136,7 +1136,7 @@ namespace NScript.Converter
                     if (baseType != null
                         && baseKind != TypeKind.Extended
                         && baseKind != TypeKind.Imported
-                        && !typeDefinition.IsValueType)
+                        && !typeDefinition.IsValueOrEnum())
                     {
                         throw new InvalidDataException(
                             string.Format(
@@ -1156,7 +1156,7 @@ namespace NScript.Converter
                         && baseKind != TypeKind.Imported
                         && baseKind != TypeKind.Extended
                         && baseKind != TypeKind.JSONType
-                        && !typeDefinition.IsValueType)
+                        && !typeDefinition.IsValueOrEnum())
                     {
                         throw new ApplicationException(
                             string.Format(

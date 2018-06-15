@@ -4,10 +4,10 @@
   try {
     while (tmp_.V_MoveNext_g()) {
       kvPair = tmp_.V_get_Current_h$c$d_e$$();
-      Console__WriteLine(String__Concat(Collections_Generic_KeyValuePair_$String_x_String$_.get_key(kvPair), " -> ", System_Int32.box(System_Collections_Generic_KeyValuePair_$String_x_String$_.get_value(kvPair))));
+      Console__WriteLine(KeyValuePair_$String_x_Int32$_.get_key(kvPair) + " -> " + Type__BoxTypeInstance(Int32, KeyValuePair_$String_x_Int32$_.get_value(kvPair)));
     }
   } finally {
-    if (tmp_ !== null)
+    if (tmp_)
       tmp_.V_Dispose_f();
   }
 }

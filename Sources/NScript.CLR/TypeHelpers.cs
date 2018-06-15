@@ -1613,6 +1613,14 @@ namespace NScript.CLR
             }
         }
 
+        public static bool IsValueOrEnum(this TypeReference type)
+        {
+            if (type == null)
+            { return false; }
+
+            return type.IsValueType || type.FullName == "System.Enum";
+        }
+
         /// <summary>
         /// Determines whether the specified type is generic.
         /// </summary>

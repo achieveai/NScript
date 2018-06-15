@@ -8,5 +8,6 @@
     returnValue = i1 + i2;
   else if (b)
     returnValue = i2 - i1;
-  return returnValue + i2;
+  returnValue += i2;
+  return returnValue;
 }

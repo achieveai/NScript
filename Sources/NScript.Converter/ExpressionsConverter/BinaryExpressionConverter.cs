@@ -757,7 +757,7 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             if (!typeReference.IsArray
-                && typeReference.Resolve().IsValueType)
+                && typeReference.IsValueOrEnum())
             {
                 return false;
             }
@@ -777,7 +777,7 @@ namespace NScript.Converter.ExpressionsConverter
             TypeReference typeReference,
             BinaryOperator binaryOperator)
         {
-            if (typeReference.IsValueType
+            if (typeReference.IsValueOrEnum()
                 && !typeReference.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType))
             {
                 return binaryOperator == BinaryOperator.Equals

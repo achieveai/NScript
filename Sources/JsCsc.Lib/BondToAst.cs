@@ -48,6 +48,9 @@ namespace JsCsc.Lib
         {
             MethodDefinition method = this.DeserializeMethod(jObject.MethodId).Resolve();
 
+            if (method.Name == "TestEventCheck")
+            { }
+
             return new Tuple<MethodDefinition, Func<TopLevelBlock>>(
                 method,
                 () =>
@@ -988,10 +991,9 @@ namespace JsCsc.Lib
         private Node ParseThisExpr(Serialization.ThisExpression jObject)
         {
             var thisVar = this.scopeBlockStack.Last.Value.collector.ThisVariable;
-            var node = this.scopeBlockStack.Last;
+            var node = this.scopeBlockStack.Last.Previous;
 
-            while (node != null
-                && node.Previous != null)
+            while (node != null)
             {
                 var paramBlock = node.Value.collector;
                 if (paramBlock.IsParamBlock)
@@ -1138,7 +1140,8 @@ namespace JsCsc.Lib
                     methodReference);
             }
 
-            bool isVirtual = methodReference.Resolve().IsVirtual
+            var methodDef = methodReference.Resolve();
+            bool isVirtual = methodDef.IsVirtual
                 && !(instance is BaseVariableReference);
 
             if (isVirtual)
@@ -1586,7 +1589,8 @@ namespace JsCsc.Lib
             }
 
             if (methodDef.IsConstructor
-                || !methodDef.IsVirtual)
+                || !methodDef.IsVirtual
+                || methodDef.DeclaringType.IsValueType)
             {
                 return new MethodReferenceExpression(
                     this._clrContext,
@@ -1600,7 +1604,12 @@ namespace JsCsc.Lib
                     this._clrContext,
                     loc,
                     methodRef,
-                    instanceExpression);
+                    instanceExpression.ResultType.IsValueType ?
+                        new BoxExpression(
+                            this._clrContext,
+                            instanceExpression.Location,
+                            instanceExpression)
+                        : instanceExpression);
             }
         }
 

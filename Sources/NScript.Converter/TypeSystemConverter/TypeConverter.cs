@@ -302,7 +302,7 @@ namespace NScript.Converter.TypeSystemConverter
                     selectiveInit);
             }
 
-            if (typeDefinition.IsValueType)
+            if (typeDefinition.IsValueOrEnum())
             {
                 return new StructTypeConverter(
                     runtimeScopeManager,
@@ -936,7 +936,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             MethodConverter converter = this.GetMethodConverter(method);
             if ((converter == null || !converter.IsGlobalStaticImplementation
-                && !this.typeDefinition.IsValueType))
+                && !this.typeDefinition.IsValueOrEnum()))
             {
                 return new IndexExpression(
                         null,

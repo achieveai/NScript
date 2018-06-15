@@ -875,7 +875,7 @@ namespace NScript.Converter.TypeSystemConverter
             MethodReference methodReference,
             IList<JST.Expression> arguments)
         {
-            if (methodReference.Resolve().DeclaringType.IsValueType)
+            if (methodReference.Resolve().DeclaringType.IsValueOrEnum())
             {
                 // Currently only struct method calls are converted to static method calls.
                 // In future calls to all methods may become static call.

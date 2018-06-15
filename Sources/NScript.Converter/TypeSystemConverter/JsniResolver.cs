@@ -294,7 +294,7 @@ namespace NScript.Converter.TypeSystemConverter
                                 this.converter.ResolveStaticMember(method));
                         }
                         else if (method.IsVirtual &&
-                            !typeDefinition.IsValueType)
+                            !typeDefinition.IsValueOrEnum())
                         {
                             // If the type is struct type, then there is no point
                             // in calling virtual method, since there are no more

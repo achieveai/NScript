@@ -391,7 +391,12 @@
                 case ConversionKind.AnonymousFunction:
                     return this.VisitLambda((BoundLambda)node.Operand, arg);
                 case ConversionKind.MethodGroup:
-                    return this.VisitMethodGroup((BoundMethodGroup)node.Operand, arg);
+                    return new DelegateCreationExpression
+                    {
+                        Method = (ExpressionSer)this.VisitMethodGroup((BoundMethodGroup)node.Operand, arg),
+                        Location = node.Syntax.GetSerLoc(),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
+                    };
                 case ConversionKind.Boxing:
                     return new BoxCastExpression
                     { Expression = (ExpressionSer)this.Visit(node.Operand, arg) };

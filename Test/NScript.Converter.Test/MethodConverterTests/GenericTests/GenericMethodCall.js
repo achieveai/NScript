@@ -1,3 +1,3 @@
 ﻿function GenericSamples__GenericMethodCall(bar, foo) {
-  return TestGeneric_TestSubClass_$Int32$_.foo(Boolean, foo, foo);
+  return TestSubClass_$Int32$_.foo(Booleana, foo, foo);
 }

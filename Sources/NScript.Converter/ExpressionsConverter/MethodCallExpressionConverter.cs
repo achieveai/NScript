@@ -86,6 +86,8 @@ namespace NScript.Converter.ExpressionsConverter
                     ? virtualRefExpression.LeftExpression as BoxExpression
                     : null;
 
+            var methodDefinition = methodReferenceExpression?.MethodReference.Resolve();
+
             if (boxedExpression != null)
             {
                 TypeReference resultTypeReference =
@@ -154,8 +156,8 @@ namespace NScript.Converter.ExpressionsConverter
                 {
                     // Let's generate static method for the method that we want to call.
                     // Value type methods are all implemented as static methods.
-                    if (methodReferenceExpression.MethodReference.Resolve().IsVirtual
-                        && methodReferenceExpression.MethodReference.DeclaringType.IsValueType
+                    if (methodDefinition.IsVirtual
+                        && methodReferenceExpression.MethodReference.DeclaringType.IsValueOrEnum()
                         && methodReferenceExpression.LeftExpression is LoadAddressExpression)
                     {
                         thisExpression =
@@ -278,7 +280,7 @@ namespace NScript.Converter.ExpressionsConverter
             bool isExtendedOrPsudo = runtimeManager.Context.IsExtended(declaringTypeDefinition)
                 || runtimeManager.Context.IsPsudoType(declaringTypeDefinition);
             if (methodReference.HasThis
-                && !((methodReference.DeclaringType.IsValueType
+                && !((methodReference.DeclaringType.IsValueOrEnum()
                         || runtimeManager.ImplementInstanceAsStatic)
                     && (!isExtendedOrPsudo
                         || runtimeManager.Context.IsImplemented(methodDefinition)))
