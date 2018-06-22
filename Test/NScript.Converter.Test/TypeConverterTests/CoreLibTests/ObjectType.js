@@ -12,7 +12,7 @@ function Object__GetHashCode(this_) {
   return 0;
 };
 function Object__ReferenceEquals(obj1, obj2) {
-  return this === obj2;
+  return obj1 === obj2;
 };
 function Object__IsNullOrUndefined(obj) {
   return obj === null || typeof obj == "undefined";
@@ -25,7 +25,7 @@ function Object__GetNewImportedExtension() {
 function Object__NoReturn() {
   return undefined;
 };
-Object.defaultConstructor = function Object_factory() {
+Object.defaultConstructor = function System_Object_factory() {
   return new Object();
 };
 Object__GetType = function Object__GetType(this_) {
