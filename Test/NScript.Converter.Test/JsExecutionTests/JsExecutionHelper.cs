@@ -14,7 +14,7 @@ namespace NScript.Converter.Test.JsExecutionTests
     using NScript.Converter.TypeSystemConverter;
     using NUnit.Framework;
     using Mono.Cecil;
-    using Noesis.Javascript;
+    // using Noesis.Javascript;
 
     /// <summary>
     /// Definition for JsExecutionHelper
@@ -75,18 +75,18 @@ namespace NScript.Converter.Test.JsExecutionTests
         {
             JsConsole jsConsole = new JsConsole();
             // Jint.JintEngine engine = new Jint.JintEngine(Jint.Options.Ecmascript3);
-            using (JavascriptContext engine = new JavascriptContext())
-            {
-                string script = JsExecutionHelper.GetScript(
-                    isDebug,
-                    isMcs,
-                    entryPoint);
-                System.Diagnostics.Debug.WriteLine("==================== Script generated ====================");
-                System.Diagnostics.Debug.WriteLine(script);
-                // engine.SetDebugMode(true);
-                engine.SetParameter("console", jsConsole);
-                engine.Run(script);
-            }
+            // using (JavascriptContext engine = new JavascriptContext())
+            // {
+            //     string script = JsExecutionHelper.GetScript(
+            //         isDebug,
+            //         isMcs,
+            //         entryPoint);
+            //     System.Diagnostics.Debug.WriteLine("==================== Script generated ====================");
+            //     System.Diagnostics.Debug.WriteLine(script);
+            //     // engine.SetDebugMode(true);
+            //     engine.SetParameter("console", jsConsole);
+            //     engine.Run(script);
+            // }
 
             string outputContent = "NScript.Converter.Test.JsExecutionTests.Results." + output + ".txt";
             outputContent = ConverterTestHelpers.GetResourceString(outputContent);

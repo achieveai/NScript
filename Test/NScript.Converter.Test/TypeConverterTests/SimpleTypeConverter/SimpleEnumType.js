@@ -1,18 +1,17 @@
-function RealScript_SimpleEnumType(boxedValue) {
+function SimpleEnumType(boxedValue) {
   this.boxedValue = boxedValue;
 };
-RealScript_SimpleEnumType.typeId = "b";
-RealScript__SimpleEnumType__One = 1;
-RealScript__SimpleEnumType__Two = 2;
-RealScript__SimpleEnumType__Three = 3;
-RealScript_SimpleEnumType.enumStrToValueMap = {
+SimpleEnumType.typeId = "b";
+SimpleEnumType__One = 1;
+SimpleEnumType__Two = 2;
+SimpleEnumType__Three = 3;
+SimpleEnumType.enumStrToValueMap = {
   "One": 1,
   "Two": 2,
   "Three": 3
 };
-RealScript_SimpleEnumType.getDefaultValue = function() {
+SimpleEnumType.getDefaultValue = function() {
   return 0;
 };
-RealScript_SimpleEnumType.prototype = new System_Enum();
-System__Type__RegisterEnum(RealScript_SimpleEnumType, "RealScript.SimpleEnumType", false);
-
+SimpleEnumType.prototype = new Enum();
+Type__RegisterEnum(SimpleEnumType, "RealScript.SimpleEnumType", false);

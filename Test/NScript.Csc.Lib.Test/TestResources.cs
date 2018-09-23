@@ -9,7 +9,7 @@
 
     public static class TestResources
     {
-        public const string nscriptGitPath = @"E:\repos\cs2jsc";
+        public const string nscriptGitPath = @"C:\repos\cs2jsc";
         public static readonly Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile, bool isDebug)>
             sources = new Dictionary<string, (string outName, string[] files, string directory, string[] refs, string keyFile, bool isDebug)>()
             {
@@ -458,11 +458,26 @@
             if (resources.refs.Select(_ => GetMethodMaps(_)).Count() == 0)
             { runtimeMetadataVersion = "v4.100.0"; }
 
+            var baseGitPath = typeof(TestResources)
+                .Assembly
+                .Location;
+            baseGitPath =
+                baseGitPath.Substring(
+                    0,
+                    baseGitPath.LastIndexOf(
+                        typeof(TestResources)
+                            .Assembly
+                            .GetName()
+                            .Name))
+                + "..\\";
+
+            baseGitPath = nscriptGitPath;
+
             var trees = resources
                 .files
                 .Select(_ =>
                     Path.Combine(
-                        Path.GetFullPath(Path.Combine(nscriptGitPath,resources.directory)),
+                        Path.GetFullPath(Path.Combine(baseGitPath,resources.directory)),
                         _))
                 .Select(_ =>
                     CSharpSyntaxTree.ParseText(

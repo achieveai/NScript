@@ -33,23 +33,13 @@ namespace NScript.Converter.Test.TypeConverterTests
         /// Tests the type of the simple static.
         /// </summary>
         [Test]
-        public void TestGenericType()
+        [TestCase(TestType.Debug)]
+        // [TestCase(TestType.Retail)]
+        public void TestGenericTypeMcs(TestType testType)
         {
             TypeConverterHelper.RunTest(
                 GenericTypeConverterTest.TestFilesNSStr + "GenericListType.js",
-                TestType.All,
-                "List`1");
-        }
-
-        /// <summary>
-        /// Tests the type of the simple static.
-        /// </summary>
-        [Test]
-        public void TestGenericTypeMcs()
-        {
-            TypeConverterHelper.RunTest(
-                GenericTypeConverterTest.TestFilesNSStr + "GenericListType.js",
-                TestType.All,
+                testType,
                 true,
                 "List`1");
         }

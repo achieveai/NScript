@@ -1,4 +1,4 @@
-﻿ParamBlock(System.Int32 action, System.Int32 changeIndex, System.Object[] newItems, System.Object[] oldItems, RealScript.SwitchTest this) ExplicitBlock {
+﻿ParamBlock(RealScript.SwitchTest this, System.Int32 action, System.Int32 changeIndex, System.Object[] newItems, System.Object[] oldItems) ExplicitBlock {
   if (
     Equals l:False rt:System.Boolean
       FieldReference

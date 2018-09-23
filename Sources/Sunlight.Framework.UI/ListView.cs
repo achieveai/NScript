@@ -327,9 +327,9 @@ namespace Sunlight.Framework.UI
             switch (args.Action)
             {
                 case CollectionChangedAction.Add:
-                    if (changeIndex + itemCount + this.items.Count > this.topN)
+                    if (changeIndex + itemCount + items.Count > this.topN)
                     {
-                        if (this.items.Count >= this.topN)
+                        if (items.Count >= this.topN)
                         {
                             this.ObservableEventReplace(
                                 changeIndex,
@@ -338,10 +338,10 @@ namespace Sunlight.Framework.UI
                         }
                         else
                         {
-                            int addCount = this.topN - this.items.Count;
+                            int addCount = this.topN - items.Count;
                             this.ObservableEventAdd(
                                 changeIndex,
-                                this.topN - this.items.Count,
+                                this.topN - items.Count,
                                 newItems);
 
                             int replaceCount = this.topN - changeIndex - addCount;
@@ -389,7 +389,7 @@ namespace Sunlight.Framework.UI
                         {
                             this.RemoveChildren(
                                 changeIndex + replaceCount,
-                                this.items.Count - changeIndex - replaceCount);
+                                items.Count - changeIndex - replaceCount);
                         }
 
                         throw new Exception("Not Tested");

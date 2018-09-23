@@ -1,22 +1,25 @@
-function RealScript_InheritDerivedInterface() {
+function InheritDerivedInterface() {
 };
-RealScript_InheritDerivedInterface.typeId = "b";
-function RealScript__InheritDerivedInterface_factory() {
-  return new RealScript_InheritDerivedInterface();
+InheritDerivedInterface.typeId = "b";
+function InheritDerivedInterface_factory() {
+  var this_;
+  this_ = new InheritDerivedInterface();
+  this_.__ctor();
+  return this_;
 };
-RealScript_InheritDerivedInterface.defaultConstructor = RealScript__InheritDerivedInterface_factory;
-ptyp_ = RealScript_InheritDerivedInterface.prototype;
-ptyp_.getInt = function RealScript__InheritDerivedInterface__GetInt(i) {
+InheritDerivedInterface.defaultConstructor = InheritDerivedInterface_factory;
+ptyp_ = InheritDerivedInterface.prototype;
+ptyp_.getInt = function InheritDerivedInterface__GetInt(i) {
   return i + 2;
 };
-ptyp_.getStr = function RealScript__InheritDerivedInterface__GetStr(i) {
-  return System__Int32__ToString(i);
+ptyp_.getStr = function InheritDerivedInterface__GetStr(i) {
+  return Int32__ToString(i);
 };
-ptyp_.__ctor = function RealScript__InheritDerivedInterface____ctor() {
+ptyp_.__ctor = function InheritDerivedInterface____ctor() {
 };
 ptyp_.V_GetStr_c = function(arg0) {
   return this.V_GetStr(arg0);
 };
 ptyp_.V_GetInt_d = ptyp_.getInt;
 ptyp_.V_GetStr = ptyp_.getStr;
-System__Type__RegisterReferenceType(RealScript_InheritDerivedInterface, "RealScript.InheritDerivedInterface", Object, [RealScript_SimpleInheritedInterface, RealScript_SimpleInterface]);
+Type__RegisterReferenceType(InheritDerivedInterface, "RealScript.InheritDerivedInterface", Object, [SimpleInheritedInterface, SimpleInterface]);

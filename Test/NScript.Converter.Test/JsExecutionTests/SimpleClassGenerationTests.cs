@@ -57,15 +57,15 @@ namespace NScript.Converter.Test.JsExecutionTests
         }
 
         [Test]
-        // [TestCase(TestType.All, "FactorialCalculator", "Main")]
-        // [TestCase(TestType.All, "GetMin", "RunTest")]
-        // [TestCase(TestType.All, "QuickSort", "RunTest")]
-        // [TestCase(TestType.All, "TestArithmetics", "Main")]
-        // [TestCase(TestType.All, "TestControlFlow", "Main")]
-        // [TestCase(TestType.All, "TestInitializer", "Main")]
-        // [TestCase(TestType.All, "TestDelegates", "Main")]
+        [TestCase(TestType.All, "FactorialCalculator", "Main")]
+        [TestCase(TestType.All, "GetMin", "RunTest")]
+        [TestCase(TestType.All, "QuickSort", "RunTest")]
+        [TestCase(TestType.All, "TestArithmetics", "Main")]
+        [TestCase(TestType.All, "TestControlFlow", "Main")]
+        [TestCase(TestType.All, "TestInitializer", "Main")]
+        [TestCase(TestType.All, "TestDelegates", "Main")]
         [TestCase(TestType.All, "TestGenerics", "Main")]
-        // [TestCase(TestType.All, "NullableTests", "Main")]
+        [TestCase(TestType.All, "NullableTests", "Main")]
         public void TestMcs(
                 TestType testType,
                 string className,

@@ -1,20 +1,20 @@
-function RealScript_VirtualOverride() {
+function VirtualOverride() {
 };
-RealScript_VirtualOverride.typeId = "b";
-function RealScript__VirtualOverride_factory() {
+VirtualOverride.typeId = "b";
+function VirtualOverride_factory() {
   var this_;
-  this_ = new RealScript_VirtualOverride();
+  this_ = new VirtualOverride();
   this_.__ctora();
   return this_;
 };
-RealScript_VirtualOverride.defaultConstructor = RealScript__VirtualOverride_factory;
-ptyp_ = new RealScript_VirtualBase();
-RealScript_VirtualOverride.prototype = ptyp_;
-ptyp_.getInt = function RealScript__VirtualOverride__GetInt(i) {
+VirtualOverride.defaultConstructor = VirtualOverride_factory;
+ptyp_ = new VirtualBase();
+VirtualOverride.prototype = ptyp_;
+ptyp_.getInt = function VirtualOverride__GetInt(i) {
   return i / 2 | 0;
 };
-ptyp_.__ctora = function RealScript__VirtualOverride____ctor() {
+ptyp_.__ctora = function VirtualOverride____ctor() {
   this.__ctor();
 };
 ptyp_.V_GetInt = ptyp_.getInt;
-System__Type__RegisterReferenceType(RealScript_VirtualOverride, "RealScript.VirtualOverride", RealScript_VirtualBase, []);
+Type__RegisterReferenceType(VirtualOverride, "RealScript.VirtualOverride", VirtualBase, []);

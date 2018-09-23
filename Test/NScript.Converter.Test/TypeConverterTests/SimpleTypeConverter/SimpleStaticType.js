@@ -1,6 +1,6 @@
-function RealScript_SimpleStaticType() {
+function SimpleStaticType() {
 };
-RealScript__SimpleStaticType__intField = 0;
-function RealScript__SimpleStaticType__GetField() {
-  return RealScript__SimpleStaticType__intField;
+SimpleStaticType__intField = 0;
+function SimpleStaticType__GetField() {
+  return SimpleStaticType__intField;
 };

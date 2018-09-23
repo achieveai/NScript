@@ -1,4 +1,4 @@
-﻿ParamBlock(System.Int32 candidate, System.Int32[] primes, RealScript.WhileLoopBlocks this) ExplicitBlock {
+﻿ParamBlock(RealScript.WhileLoopBlocks this, System.Int32 candidate, System.Int32[] primes) ExplicitBlock {
   Assignment l:False rt:System.Int32
     i
   ,

@@ -1,4 +1,4 @@
-﻿ParamBlock(System.Int32 i, RealScript.SwitchTest this) ExplicitBlock {
+﻿ParamBlock(RealScript.SwitchTest this, System.Int32 i) ExplicitBlock {
   static? MethodReference Format(
     string "{}",
     new System.Object[

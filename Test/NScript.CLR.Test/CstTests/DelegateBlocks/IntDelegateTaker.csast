@@ -1,8 +1,6 @@
-﻿ParamBlock(System.String str, RealScript.IntFunction func, RealScript.DelegateBlocks this) ExplicitBlock {
+﻿ParamBlock(RealScript.DelegateBlocks this, System.String str, RealScript.IntFunction func) ExplicitBlock {
   return
-    virtual
-      func
-      .System.Int32 RealScript.IntFunction::Invoke(System.Int32)(
+    func(
       PropertyReference
         str
         .Length

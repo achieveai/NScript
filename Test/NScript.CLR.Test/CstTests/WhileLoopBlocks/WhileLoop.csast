@@ -1,4 +1,4 @@
-﻿ParamBlock(System.Int32 i, RealScript.WhileLoopBlocks this) ExplicitBlock {
+﻿ParamBlock(RealScript.WhileLoopBlocks this, System.Int32 i) ExplicitBlock {
   While(
     GreaterThan l:False rt:System.Boolean
       i

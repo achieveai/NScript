@@ -1,15 +1,18 @@
-function RealScript_VirtualBase() {
+function VirtualBase() {
 };
-RealScript_VirtualBase.typeId = "b";
-function RealScript__VirtualBase_factory() {
-  return new RealScript_VirtualBase();
+VirtualBase.typeId = "b";
+function VirtualBase_factory() {
+  var this_;
+  this_ = new VirtualBase();
+  this_.__ctor();
+  return this_;
 };
-RealScript_VirtualBase.defaultConstructor = RealScript__VirtualBase_factory;
-ptyp_ = RealScript_VirtualBase.prototype;
-ptyp_.getInt = function RealScript__VirtualBase__GetInt(i) {
+VirtualBase.defaultConstructor = VirtualBase_factory;
+ptyp_ = VirtualBase.prototype;
+ptyp_.getInt = function VirtualBase__GetInt(i) {
   return i * 2;
 };
-ptyp_.__ctor = function RealScript__VirtualBase____ctor() {
+ptyp_.__ctor = function VirtualBase____ctor() {
 };
 ptyp_.V_GetInt = ptyp_.getInt;
-System__Type__RegisterReferenceType(RealScript_VirtualBase, "RealScript.VirtualBase", Object, []);
+Type__RegisterReferenceType(VirtualBase, "RealScript.VirtualBase", Object, []);

@@ -1494,6 +1494,8 @@ ptyp_.set_skin = function UISkinableElement$$set_Skin(value) {
       this.get_element().setAttribute("skin-id", this.skin.get_id());
       this.set_skinInstance(this.skin.createInstance());
     }
+    else if (!this.skin)
+      this.set_skinInstance(null);
     this.firePropertyChanged("Skin");
   }
 };
@@ -1834,6 +1836,9 @@ ptyp_.internalDispose1 = function ListView$$InternalDispose() {
   }
   this.internalDispose0();
 };
+ptyp_.createListViewItem = function ListView$$CreateListViewItem() {
+  return ListViewItem_factory(this.createElement());
+};
 ptyp_.applyFixedList = function ListView$$ApplyFixedList() {
   var items, itemsCount, iItem, fixedList, fixedListCount, iObject, listViewItem;
   items = this.items;
@@ -1853,7 +1858,7 @@ ptyp_.applyFixedList = function ListView$$ApplyFixedList() {
         listViewItem.set_isSelected(this.selectionHelper ? this.selectionHelper.V_IsSelected_d(listViewItem.get_dataContext()) : false);
       }
       else {
-        listViewItem = ListViewItem_factory(this.createElement());
+        listViewItem = this.V_CreateListViewItem();
         if (this.itemCssClassName !== null)
           listViewItem.get_element().className = this.itemCssClassName;
         if (!this.inlineItems)
@@ -1951,7 +1956,7 @@ ptyp_.observableEventAdd = function ListView$$ObservableEventAdd(changeIndex, li
   if (changeIndex < this.items.get_count())
     insertBeforeElem = this.items.get_item(changeIndex).get_element();
   for (iObject = 0; iObject < listCount; iObject++) {
-    listViewItem = ListViewItem_factory(this.createElement());
+    listViewItem = this.V_CreateListViewItem();
     if (this.itemCssClassName !== null)
       listViewItem.get_element().className = this.itemCssClassName;
     listViewItem.set_skin(this.itemSkin);
@@ -1985,7 +1990,7 @@ ptyp_.resetObservableItems = function ListView$$ResetObservableItems() {
       listViewItem.set_isSelected(this.selectionHelper ? this.selectionHelper.V_IsSelected_d(listViewItem.get_dataContext()) : false);
     }
     else {
-      listViewItem = ListViewItem_factory(this.createElement());
+      listViewItem = this.V_CreateListViewItem();
       if (this.itemCssClassName !== null)
         listViewItem.get_element().className = this.itemCssClassName;
       if (!this.inlineItems)
@@ -2024,6 +2029,7 @@ ptyp_.createElement = function ListView$$CreateElement() {
 ptyp_.V_OnActivate = ptyp_.onActivate0;
 ptyp_.V_OnDeactivate = ptyp_.onDeactivate0;
 ptyp_.V_InternalDispose = ptyp_.internalDispose1;
+ptyp_.V_CreateListViewItem = ptyp_.createListViewItem;
 Type$$RegisterReferenceType(ListView, "Sunlight.Framework.UI.ListView", UIElement, []);
 function Task() {
 };
