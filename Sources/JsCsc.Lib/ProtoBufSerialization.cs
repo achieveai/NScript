@@ -88,21 +88,17 @@ namespace JsCsc.Lib.Serialization
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class PropertySpecSer
     {
-        public TypeSpecSer DeclaringType { get; set; }
+        public int? Setter { get; set; }
 
-        public TypeSpecSer MemberType { get; set; }
-
-        public string Name { get; set; }
+        public int? Getter { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class EventSpecSer
     {
-        public TypeSpecSer DeclaringType { get; set; }
+        public int? AddOn { get; set; }
 
-        public TypeSpecSer MemberType { get; set; }
-
-        public string Name { get; set; }
+        public int? RemoveOn { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -430,6 +426,8 @@ namespace JsCsc.Lib.Serialization
     {
         public int Method { get; set; }
 
+        public List<int> GenericParameters { get; set; }
+
         public ExpressionSer Instance { get; set; }
     }
 
@@ -447,10 +445,6 @@ namespace JsCsc.Lib.Serialization
     public class PropertyExpression
         : ExpressionSer
     {
-        public int Getter { get; set; }
-
-        public int Setter { get; set; }
-
         public ExpressionSer Instance { get; set; }
 
         public bool IsNotVirtual { get; set; }

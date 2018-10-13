@@ -2,7 +2,8 @@
   return
     System.Int32 CastType
       Div l:False rt:System.Double
-        x
+        System.Double CastType
+          x
       ,
         y
 }

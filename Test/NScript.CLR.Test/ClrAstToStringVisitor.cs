@@ -237,6 +237,15 @@
                     + GetSpaces(arg + 1) + "." + node.PropertyReference.Name;
         }
 
+        public override string VisitExpression(EventReferenceExpression node, int arg)
+        {
+            return node.LeftExpression == null
+                ? GetSpaces(arg) + "static? EventReference " + node.EventReference.Name
+                : GetSpaces(arg) + "PropertyReference"
+                    + this.Visit(node.LeftExpression, arg + 1)
+                    + GetSpaces(arg + 1) + "." + node.EventReference.Name;
+        }
+
         public override string VisitExpression(StringLiteral node, int arg)
         {
             return GetSpaces(arg) + "string \"" + node.String + '"';

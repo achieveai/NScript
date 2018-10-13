@@ -254,7 +254,7 @@ namespace NScript.Csc.Lib
                                 namedTypeSymbol
                                     .TypeParameters
                                     .CastArray<TypeSymbol>())
-                            .Select(_ => this.GetTypeSpecSer(_.Type))
+                            .Select(_ => this.GetTypeSpecSer(_.TypeSymbol))
                             .ToList()
                         ?? namedTypeSymbol
                             .TypeParameters
@@ -338,17 +338,23 @@ namespace NScript.Csc.Lib
         private PropertySpecSer Serialize(IPropertySymbol property)
             => new PropertySpecSer
             {
-                Name = property.MetadataName,
-                DeclaringType = this.GetTypeSpecSer(property.ContainingType),
-                MemberType = this.GetTypeSpecSer(property.OriginalDefinition.Type),
+                Setter = property.SetMethod != null
+                    ? (int?)this.GetMethodSpecId(property.SetMethod)
+                    : null,
+                Getter = property.GetMethod != null
+                    ? (int?)this.GetMethodSpecId(property.GetMethod)
+                    : null,
             };
 
         private EventSpecSer Serialize(IEventSymbol evt)
             => new EventSpecSer
             {
-                Name = evt.MetadataName,
-                DeclaringType = this.GetTypeSpecSer(evt.ContainingType),
-                MemberType = this.GetTypeSpecSer(evt.OriginalDefinition.Type)
+                AddOn = evt.AddMethod != null
+                    ? (int?)this.GetMethodSpecId(evt.AddMethod)
+                    : null,
+                RemoveOn = evt.AddMethod != null
+                    ? (int?)this.GetMethodSpecId(evt.RemoveMethod)
+                    : null,
             };
     }
 }

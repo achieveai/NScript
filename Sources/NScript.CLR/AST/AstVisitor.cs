@@ -71,6 +71,8 @@
                     return this.VisitExpression(n, arg);
                 case PropertyReferenceExpression n:
                     return this.VisitExpression(n, arg);
+                case EventReferenceExpression n:
+                    return this.VisitExpression(n, arg);
                 case StringLiteral n:
                     return this.VisitExpression(n, arg);
                 case ToNullable n:
@@ -171,6 +173,7 @@
         public abstract R VisitExpression(NullConditional node, A arg);
         public abstract R VisitExpression(NullLiteral node, A arg);
         public abstract R VisitExpression(PropertyReferenceExpression node, A arg);
+        public abstract R VisitExpression(EventReferenceExpression node, A arg);
         public abstract R VisitExpression(StringLiteral node, A arg);
         public abstract R VisitExpression(ToNullable node, A arg);
         public abstract R VisitExpression(TypeCheckExpression node, A arg);

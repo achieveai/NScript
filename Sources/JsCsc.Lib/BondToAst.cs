@@ -296,21 +296,24 @@ namespace JsCsc.Lib
                 TypeCheckType.CastType);
         }
 
-        private Node ParseToNullable(Serialization.WrapExpression jObject)
-        {
-            return new ToNullable(
+        private Node ParseNullableToNormal(Serialization.NullableToNormal jObject)
+            => new FromNullable(
                 this._clrContext,
                 this.LocFromJObject(jObject),
                 this.ParseExpression(jObject.Expression));
-        }
+
+        private Node ParseToNullable(Serialization.WrapExpression jObject)
+            => new ToNullable(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                this.ParseExpression(jObject.Expression));
 
         private Node ParseFromNullable(Serialization.UnwrapExpression jObject)
-        {
-            return new FromNullable(
+            => new FromNullable(
                 this._clrContext,
                 this.LocFromJObject(jObject),
                 this.ParseExpression(jObject.Expression));
-        }
+
 
         private Node ParseConstant(Serialization.ByteConstantExpression jObject)
         {
@@ -1128,6 +1131,19 @@ namespace JsCsc.Lib
         {
             var methodReference = this.DeserializeMethod(jObject.Method);
 
+            if (jObject.GenericParameters != null && jObject.GenericParameters.Count > 0)
+            {
+                var typeReferences = jObject.GenericParameters
+                    .Select(_ => this.DeserializeType(_))
+                    .ToList();
+
+                var genericMethodReference = new GenericInstanceMethod(methodReference);
+                foreach (var typeReference in typeReferences)
+                { genericMethodReference.GenericArguments.Add(typeReference); }
+
+                methodReference = genericMethodReference;
+            }
+
             var instance = this.ParseExpression(jObject.Instance);
 
             var location = this.LocFromJObject(jObject);
@@ -1190,17 +1206,7 @@ namespace JsCsc.Lib
 
         private Node ParsePropertyExpr(Serialization.PropertyExpression jObject)
         {
-            MethodReference getter = jObject.Getter >= 0
-                ? this.DeserializeMethod(jObject.Getter)
-                : null;
-
-            MethodReference setter = jObject.Setter >= 0
-                ? this.DeserializeMethod(jObject.Setter)
-                : null;
-
-            PropertyReference propertyReference = new InternalPropertyReference(
-                getter,
-                setter);
+            PropertyReference propertyReference = this.DeserializeProperty(jObject.Property);
 
             var instance = this.ParseExpression(jObject.Instance);
 
@@ -1224,6 +1230,29 @@ namespace JsCsc.Lib
                 propertyReference,
                 instance,
                 args);
+        }
+
+        private Node ParseEventExpr(Serialization.EventExpression jObject)
+        {
+            EventReference eventReference = this.DeserializeEvent(jObject.Event);
+
+            var instance = this.ParseExpression(jObject.Instance);
+
+            var location = this.LocFromJObject(jObject);
+
+            if (instance == null)
+            {
+                return new EventReferenceExpression(
+                    this._clrContext,
+                    location,
+                    eventReference);
+            }
+
+            return new EventReferenceExpression(
+                this._clrContext,
+                location,
+                eventReference,
+                instance);
         }
 
         private Node ParseDynamicIndexBinder(Serialization.DynamicIndexBinderExpression jObject)
@@ -1574,6 +1603,42 @@ namespace JsCsc.Lib
                 : this._memberReferenceDeserializer.DeserializeField(tmp);
         }
 
+        private PropertyReference DeserializeProperty(int jObject)
+        {
+            if (jObject == 0) { return null; }
+            var tmp = this._typeInfo.Properties[jObject];
+
+            var getter = tmp.Getter != null
+                ? this.DeserializeMethod(tmp.Getter.Value)
+                : null;
+
+            var setter = tmp.Setter != null
+                ? this.DeserializeMethod(tmp.Setter.Value)
+                : null;
+
+            return new NScript.CLR.AST.InternalPropertyReference(
+                getter,
+                setter);
+        }
+
+        private EventReference DeserializeEvent(int jObject)
+        {
+            if (jObject == 0) { return null; }
+            var tmp = this._typeInfo.Events[jObject];
+
+            var addOnMethod = tmp.AddOn != null
+                ? this.DeserializeMethod(tmp.AddOn.Value)
+                : null;
+
+            var removeOnMethod = tmp.RemoveOn != null
+                ? this.DeserializeMethod(tmp.RemoveOn.Value)
+                : null;
+
+            return new NScript.CLR.AST.InternalEventReference(
+                addOnMethod,
+                removeOnMethod);
+        }
+
         private MethodReferenceExpression GetMethodReferenceExpression(
             Expression instanceExpression,
             MethodReference methodRef,
@@ -1590,6 +1655,7 @@ namespace JsCsc.Lib
 
             if (methodDef.IsConstructor
                 || !methodDef.IsVirtual
+                || instanceExpression is BaseVariableReference
                 || methodDef.DeclaringType.IsValueType)
             {
                 return new MethodReferenceExpression(
@@ -1827,6 +1893,9 @@ namespace JsCsc.Lib
 					typeof(Serialization.PropertyExpression),
 					(a) => this.ParsePropertyExpr((Serialization.PropertyExpression)a));
             parserMap.Add(
+					typeof(Serialization.EventExpression),
+					(a) => this.ParseEventExpr((Serialization.EventExpression)a));
+            parserMap.Add(
 					typeof(Serialization.IndexExpression),
 					(a) => this.ParsePropertyExpr((Serialization.IndexExpression)a));
             parserMap.Add(
@@ -1853,6 +1922,9 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.WrapExpression),
 					(a) => this.ParseToNullable((Serialization.WrapExpression)a));
+            parserMap.Add(
+					typeof(Serialization.NullableToNormal),
+					(a) => this.ParseNullableToNormal((Serialization.NullableToNormal)a));
             parserMap.Add(
 					typeof(Serialization.UnwrapExpression),
 					(a) => this.ParseFromNullable((Serialization.UnwrapExpression)a));

@@ -6,6 +6,7 @@
 
 namespace JsCsc.Lib
 {
+    using JsCsc.Lib.Serialization;
     using Mono.Cecil;
     using Newtonsoft.Json.Linq;
     using NScript.CLR;

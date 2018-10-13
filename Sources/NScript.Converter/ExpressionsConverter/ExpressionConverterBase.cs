@@ -206,6 +206,11 @@ namespace NScript.Converter.ExpressionsConverter
                     PropertyReferenceConverter.Convert));
 
             returnValue.Add(
+                typeof (EventReferenceExpression),
+                ExpressionConverterBase.SimplifyConverter<EventReferenceExpression>(
+                    EventReferenceConverter.Convert));
+
+            returnValue.Add(
                 typeof (LoadAddressExpression),
                 ExpressionConverterBase.SimplifyConverter<LoadAddressExpression>(
                     LoadAddressExpressionConverter.Convert));

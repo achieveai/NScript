@@ -22,7 +22,7 @@
             BoundNode boundNode,
             SerializationContext arg)
         {
-            if (methodSymbol.Name == "InstanceReferencingDelegate")
+            if (methodSymbol.Name == ".ctor" && methodSymbol.ContainingType.Name.StartsWith("MyList"))
             { }
 
             var methodId = arg
@@ -446,9 +446,14 @@
                     // Should we return this as typeCast Expression in case of interface?
                     return this.Visit(node.Operand, arg);
                 case ConversionKind.NoConversion:
-                case ConversionKind.ImplicitNumeric:
                 case ConversionKind.ImplicitNullable:
                     return this.Visit(node.Operand, arg);
+                case ConversionKind.ImplicitNumeric:
+                    return new TypeCastExpression
+                    {
+                        Expression = (ExpressionSer)this.Visit(node.Operand, arg),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
+                    };
                 case ConversionKind.ImplicitThrow:
                 case ConversionKind.ImplicitTupleLiteral:
                 case ConversionKind.ImplicitTuple:
@@ -642,8 +647,6 @@
             => new IndexExpression
             {
                 Property = arg.SymbolSerializer.GetPropertySpecId(node.Indexer),
-                Getter = node.Indexer.GetMethod != null ? arg.SymbolSerializer.GetMethodSpecId(node.Indexer.GetMethod) : -1,
-                Setter = node.Indexer.SetMethod != null ? arg.SymbolSerializer.GetMethodSpecId(node.Indexer.SetMethod) : -1,
                 Instance = node.ReceiverOpt != null ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg) : null,
                 Arguments = ToArgs(
                     node.Indexer.GetMethod,
@@ -728,7 +731,7 @@
             return new LocalVariableSer
             {
                 Name = localSymbol.MetadataName,
-                Type = arg.SymbolSerializer.GetTypeSpecId(localSymbol.Type),
+                Type = arg.SymbolSerializer.GetTypeSpecId(localSymbol.Type.TypeSymbol),
                 BlockId = id
             };
         }
@@ -752,6 +755,11 @@
             {
                 Location = node.Syntax.Location.GetSerLoc(),
                 Method = arg.SymbolSerializer.GetMethodSpecId(node.Methods[0]),
+                GenericParameters = node.TypeArgumentsOpt != null
+                    ? node.TypeArgumentsOpt
+                        .Select(_ => arg.SymbolSerializer.GetTypeSpecId(_.TypeSymbol))
+                        .ToList()
+                    : null,
                 Instance = !node.Methods[0].IsStatic
                     ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
                     : null
@@ -881,7 +889,7 @@
                     {
                         Name = node.ParameterSymbol.MetadataName,
                         BlockId = 0,
-                        Type = arg.SymbolSerializer.GetTypeSpecId(node.ParameterSymbol.Type),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.ParameterSymbol.Type.TypeSymbol),
                         Modifier = (int)attrs
                     }
                 };
@@ -907,7 +915,6 @@
             => new PropertyExpression
             {
                 Property = arg.SymbolSerializer.GetPropertySpecId(node.PropertySymbol),
-                Getter = arg.SymbolSerializer.GetMethodSpecId(node.PropertySymbol.GetMethod),
                 Instance = !node.PropertySymbol.IsStatic ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg) : null,
                 IsNotVirtual = node.SuppressVirtualCalls,
                 Location = node.Syntax.Location.GetSerLoc()

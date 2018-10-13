@@ -29,8 +29,6 @@
             var rv = new Dictionary<IMethodSymbol, MethodBody>();
             compilation.OnBoundExpressionGenerated = (methodSymbol, bsl) =>
             {
-                // dict[model.GetDeclaredSymbol((MethodDeclarationSyntax)bsl.Syntax)]
-                //     = serializer.SerializeMethodBody(bsl, context);
                 rv.Add(
                     methodSymbol,
                     serializer.GetMethodBody(

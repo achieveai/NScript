@@ -69,6 +69,7 @@
     <Compile Include="AST\Expressions\DelegateMethodExpression.cs" />
     <Compile Include="AST\Expressions\DynamicIndexAccessor.cs" />
     <Compile Include="AST\Expressions\DynamicMemberAccessor.cs" />
+    <Compile Include="AST\Expressions\EventReferenceExpression.cs" />
     <Compile Include="AST\Expressions\InitObjectWithDefaultValue.cs" />
     <Compile Include="AST\Expressions\InlineArrayInitialization.cs" />
     <Compile Include="AST\Expressions\InlineDelegateExpression.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="AST\Expressions\TypeReferenceExpression.cs" />
     <Compile Include="AST\Expressions\UnboxExpression.cs" />
     <Compile Include="AST\InlineDelegateClass.cs" />
+    <Compile Include="AST\InternalEventReference.cs" />
     <Compile Include="AST\InternalPropertyRefernce.cs" />
     <Compile Include="AST\Processors\IntiObjectSimplifier.cs" />
     <Compile Include="AST\Expressions\AnonymousMethodBodyExpression.cs" />

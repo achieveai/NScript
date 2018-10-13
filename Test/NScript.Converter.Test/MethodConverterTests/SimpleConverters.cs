@@ -25,6 +25,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase("ReturnInt", "ReturnInt.js", TestType.All)]
         [TestCase("AddIntArgs", "AddIntArgs.js", TestType.All)]
         [TestCase("AddIntArgToConst", "AddIntArgToConst.js", TestType.All)]
+        [TestCase("IntDivideInts", "IntDivideInts.js", TestType.All)]
         [TestCase("ReturnMethodCall", "ReturnMethodCall.js", TestType.All)]
         [TestCase("ReturnMethodCallWith1Arg", "ReturnMethodCallWith1Arg.js", TestType.All)]
         [TestCase("ReturnNewObject", "ReturnNewObject.js", TestType.All)]

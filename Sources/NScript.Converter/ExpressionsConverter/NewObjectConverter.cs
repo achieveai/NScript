@@ -39,6 +39,18 @@ namespace NScript.Converter.ExpressionsConverter
             if (!methodConverter.RuntimeManager.Context.IsExtended(typeDef)
                 && !methodConverter.RuntimeManager.Context.IsPsudoType(typeDef))
             {
+                if (methodReference.Parameters.Count == 0
+                    && typeDef.IsValueType)
+                {
+                    // Let's use default constructor when there are 0 constructor parameters.
+                    return DefaultValueConverter.GetDefaultValue(
+                        methodConverter,
+                        methodConverter.RuntimeManager,
+                        methodConverter.Scope,
+                        methodReference.DeclaringType,
+                        newObjectExpression.Location);
+                }
+
                 // Call into factory methods that will create and return the type.
                 return new JST.MethodCallExpression(
                     newObjectExpression.Location,

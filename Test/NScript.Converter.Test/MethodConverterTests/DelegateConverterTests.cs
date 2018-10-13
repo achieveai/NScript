@@ -30,6 +30,10 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegateMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegateMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
+        [TestCase(TestClassNameStr, "AddEvent", "AddEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "RemoveEvent", "RemoveEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CallEvent", "CallEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ClearEvent", "ClearEvent.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

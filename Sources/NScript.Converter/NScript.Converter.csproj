@@ -67,6 +67,7 @@
     <Compile Include="ExpressionsConverter\ConditionalOperatorConverter.cs" />
     <Compile Include="ExpressionsConverter\DefaultValueConverter.cs" />
     <Compile Include="ExpressionsConverter\DelegateMethodConverter.cs" />
+    <Compile Include="ExpressionsConverter\EventReferenceConverter.cs" />
     <Compile Include="ExpressionsConverter\ExpressionConverterBase.cs" />
     <Compile Include="ExpressionsConverter\InlineDelegateExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\InlineNewObjectArrayConverter.cs" />

@@ -6,16 +6,19 @@
     RealScript.InlineComplexStatements[]
     {
       RealScript.InlineComplexStatements(
-        I32 10,
+        System.Double CastType
+          I32 10,
         ),
       RealScript.InlineComplexStatements(
         double 10.2,
         ),
       RealScript.InlineComplexStatements(
-        I32 1,
+        System.Double CastType
+          I32 1,
         ),
       RealScript.InlineComplexStatements(
-        I32 15,
+        System.Double CastType
+          I32 15,
         )
     }
   );
