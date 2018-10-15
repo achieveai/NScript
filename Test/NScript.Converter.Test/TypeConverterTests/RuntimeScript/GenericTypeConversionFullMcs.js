@@ -112,10 +112,10 @@ ptyp_.__ctora = function GenericSamplesList____ctor(count) {
   this.__ctor();
 };
 ptyp_.insertAta = function GenericSamplesList__InsertAt(elem, index) {
-  this.V_InsertAt(elem, index);
+  this.insertAt(elem, index);
 };
 ptyp_.removeAta = function GenericSamplesList__RemoveAt(index) {
-  this.V_RemoveAt(index);
+  this.removeAt(index);
 };
 ptyp_.V_RemoveAt = ptyp_.removeAta;
 ptyp_.V_InsertAt = ptyp_.insertAta;
@@ -148,5 +148,3 @@ ptyp_.foob = function TestGeneric__Foob(T, U, bar, foo) {
 ptyp_.__ctor = function TestGeneric____ctor() {
 };
 Type__RegisterReferenceType(TestGeneric, "RealScript.TestGeneric", Object, []);
-
-

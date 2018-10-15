@@ -20,19 +20,20 @@
         public MethodBody GetMethodBody(
             IMethodSymbol methodSymbol,
             BoundNode boundNode,
+            BoundStatementList initializers,
             SerializationContext arg)
         {
-            if (methodSymbol.Name == ".ctor" && methodSymbol.ContainingType.Name.StartsWith("MyList"))
+            if (methodSymbol.Name == "ReturnInt" && methodSymbol.ContainingType.Name.StartsWith("BasicStatements"))
             { }
 
             var methodId = arg
                 .SymbolSerializer
                 .GetMethodSpecId(methodSymbol);
 
-            var parameterBlock = 
+            var parameterBlock =
                 boundNode == null
                 ? null
-                : this.Visit((BoundBlock)boundNode, arg, methodSymbol);
+                : this.Visit((BoundBlock)boundNode, arg, methodSymbol, initializers);
 
             // TODO: Make note of [Script] Attribute in case of empty body.
             var rv = new MethodBody
@@ -76,7 +77,8 @@
         public ParameterBlock Visit(
             BoundBlock node,
             SerializationContext arg,
-            IMethodSymbol methodSymbol)
+            IMethodSymbol methodSymbol,
+            BoundStatementList parentBlockWithInitializers)
         {
             var rv = new ParameterBlock
             {
@@ -89,12 +91,29 @@
             // Expression can be null for static field initializer constructors.
             rv.IsMethodOwned = true;
             rv.Parameters = methodSymbol.Parameters.Select(_ => this.Visit(_, arg)).ToList();
-            rv.Statements = node.Statements == null
+            IEnumerable<BoundStatement> statements = null;
+
+            if (parentBlockWithInitializers != null)
+            {
+                statements = parentBlockWithInitializers
+                    .Statements
+                    .Where(_ => _ != node);
+            }
+
+            if (node != null)
+            {
+                if (statements != null)
+                { statements = statements.Concat(node.Statements); }
+                else
+                { statements = node.Statements; }
+            }
+
+            rv.Statements = statements == null
                 ? null
-                : node
-                .Statements
-                .Select(_ => this.VisitToStatement(_, arg))
-                .ToList();
+                : statements
+                    .Where(_ => !(_ is BoundSequencePointWithSpan))
+                    .Select(_ => this.VisitToStatement(_, arg))
+                    .ToList();
 
             this.scopeBlockStack.RemoveFirst();
             return rv;
@@ -678,7 +697,8 @@
             var parameterBlock = this.Visit(
                 node.Body,
                 arg,
-                node.Symbol);
+                node.Symbol,
+                null);
 
             return new AnonymousMethodBodyExpr
             {

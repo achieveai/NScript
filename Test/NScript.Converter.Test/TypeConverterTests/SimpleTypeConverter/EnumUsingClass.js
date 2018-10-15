@@ -18,5 +18,6 @@ ptyp_.getStrVoid = function EnumUsingClass__GetStrVoid() {
   return this.getStr(this.testValue2);
 };
 ptyp_.__ctor = function EnumUsingClass____ctor() {
+  this.testValue2 = 1;
 };
 Type__RegisterReferenceType(EnumUsingClass, "RealScript.EnumUsingClass", Object, []);

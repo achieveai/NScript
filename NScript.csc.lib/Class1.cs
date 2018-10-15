@@ -27,13 +27,14 @@
 
             var serializer = new BoundAstToAstBase();
             var rv = new Dictionary<IMethodSymbol, MethodBody>();
-            compilation.OnBoundExpressionGenerated = (methodSymbol, bsl) =>
+            compilation.OnBoundExpressionGenerated = (methodSymbol, bsl, initializers) =>
             {
                 rv.Add(
                     methodSymbol,
                     serializer.GetMethodBody(
                         methodSymbol,
                         bsl,
+                        initializers,
                         context));
             };
 
