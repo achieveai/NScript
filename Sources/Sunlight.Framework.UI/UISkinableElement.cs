@@ -39,11 +39,17 @@ namespace Sunlight.Framework.UI
                 if (this.skin != value)
                 {
                     this.skin = value;
-                    if (this.skin != null
-                        && this.IsActive)
+                    if (this.skin != null)
                     {
-                        this.Element.SetAttribute("skin-id", this.skin.Id);
-                        this.SkinInstance = this.skin.CreateInstance();
+                        if (this.IsActive)
+                        {
+                            this.Element.SetAttribute("skin-id", this.skin.Id);
+                            this.SkinInstance = this.skin.CreateInstance();
+                        }
+                        else
+                        {
+                            this.SkinInstance = null;
+                        }
                     }
                     else if (this.skin == null)
                     { this.SkinInstance = null; }

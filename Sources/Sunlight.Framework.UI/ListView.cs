@@ -391,8 +391,6 @@ namespace Sunlight.Framework.UI
                                 changeIndex + replaceCount,
                                 items.Count - changeIndex - replaceCount);
                         }
-
-                        throw new Exception("Not Tested");
                     }
                     break;
                 case CollectionChangedAction.Replace:

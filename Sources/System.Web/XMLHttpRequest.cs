@@ -204,7 +204,7 @@ namespace System.Web
                         {
                             if (isError)
                             {
-                                reject((int?)code);
+                                reject(Type.AS<int, object>(code));
                             }
                             else
                             {
@@ -264,7 +264,7 @@ namespace System.Web
                         {
                             if (isError)
                             {
-                                reject((int?)code);
+                                reject(Type.AS<int, object>(code));
                             }
                             else
                             {
@@ -323,7 +323,7 @@ namespace System.Web
                         {
                             if (isError)
                             {
-                                reject((int?)code);
+                                reject(Type.AS<int, object>(code));
                             }
                             else
                             {
@@ -418,7 +418,7 @@ namespace System.Web
                         {
                             if (isError)
                             {
-                                reject((int?)code);
+                                reject(Type.AS<int, object>(code));
                             }
                             else
                             {
@@ -532,7 +532,7 @@ namespace System.Web
                         {
                             if (isError)
                             {
-                                reject((int?)code);
+                                reject(Type.AS<int, object>(code));
                             }
                             else
                             {
@@ -561,7 +561,7 @@ namespace System.Web
                         (xmlHttpRequest, code, isError) =>
                         {
                             if (isError)
-                            { reject((int?)code); }
+                            { reject(Type.AS<int, object>(code)); }
                             else
                             { resolve(xmlHttpRequest); }
                         },

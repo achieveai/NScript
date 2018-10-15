@@ -192,6 +192,8 @@ using System.Runtime.CompilerServices;
         /// </returns>
         public extern MutableEvent CreateEvent(string eventType);
 
+        public extern Selection GetSelection();
+
         /// <summary>
         /// Creates a text node.
         /// </summary>

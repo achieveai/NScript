@@ -85,7 +85,7 @@ namespace Sunlight.Framework.UI.Helpers
         {
             get
             {
-                return this.liveObjects != null
+                return !object.IsNullOrUndefined(this.liveObjects)
                     ? this.liveObjects[0]
                     : null;
             }
@@ -117,7 +117,7 @@ namespace Sunlight.Framework.UI.Helpers
             {
                 if (this.target != value)
                 {
-                    if (this.target != null
+                    if (!object.IsNullOrUndefined(this.target)
                         && this.binderInfo.Mode == Binders.DataBindingMode.TwoWay)
                     {
                         ((INotifyPropertyChanged)this.target).RemovePropertyChangedListener(
@@ -127,7 +127,7 @@ namespace Sunlight.Framework.UI.Helpers
 
                     this.target = value;
 
-                    if (this.target != null
+                    if (!object.IsNullOrUndefined(this.target)
                         && this.binderInfo.Mode == Binders.DataBindingMode.TwoWay)
                     {
                         ((INotifyPropertyChanged)this.target).AddPropertyChangedListener(
@@ -354,7 +354,7 @@ namespace Sunlight.Framework.UI.Helpers
                     iPath >= till; iPath--)
                 {
                     var item = liveObjects[iPath];
-                    if (item != null)
+                    if (!object.IsNullOrUndefined(item))
                     {
                         ((INotifyPropertyChanged)item).RemovePropertyChangedListener(
                             this.binderInfo.PropertyNames[iPath],
@@ -398,11 +398,11 @@ namespace Sunlight.Framework.UI.Helpers
                 var liveObjects = this.liveObjects;
                 this.updating = true;
                 if (target == obj
-                    && this.source != null
-                    && (liveObjects.Length < 2 || liveObjects[liveObjects.Length - 2] != null))
+                    && !object.IsNullOrUndefined(this.source)
+                    && (liveObjects.Length < 2 || !object.IsNullOrUndefined(liveObjects[liveObjects.Length - 2])))
                 {
                     object value = binderInfo.TargetPropertyGetter(target);
-                    if (binderInfo.BackwardConverter != null)
+                    if (!object.IsNullOrUndefined(binderInfo.BackwardConverter))
                     {
                         value = binderInfo.BackwardConverter(value);
                     }
