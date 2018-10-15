@@ -39,14 +39,14 @@
     <Reference Include="Accessibility">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\Dependencies\Mono.Cecil.dll</HintPath>
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\Dependencies\Mono.Cecil.Mdb.dll</HintPath>
+    <Reference Include="Mono.Cecil.Private.Mdb">
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.Mdb.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\Dependencies\Mono.Cecil.Pdb.dll</HintPath>
+    <Reference Include="Mono.Cecil.Private.Pdb">
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
