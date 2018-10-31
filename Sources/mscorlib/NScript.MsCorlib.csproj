@@ -10,9 +10,6 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <AssemblyName>mscorlib</AssemblyName>
-    <DefaultClientScript>JScript</DefaultClientScript>
-    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
-    <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>Library</OutputType>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
@@ -35,7 +32,6 @@
     <AssemblyOriginatorKeyFile>mscorlibKey.snk</AssemblyOriginatorKeyFile>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
-    <VSFrameworkOverride>Silverlight</VSFrameworkOverride>
     <ProductVersion>9.0.30729</ProductVersion>
     <FileAlignment>512</FileAlignment>
     <RootNamespace>System</RootNamespace>

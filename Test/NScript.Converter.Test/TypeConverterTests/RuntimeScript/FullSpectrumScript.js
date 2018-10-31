@@ -183,7 +183,9 @@ function SimpleStaticType__GetField() {
 function StaticConstructorType() {
 };
 StaticConstructorType__tempValue = 0;
+StaticConstructorType__Str = null;
 function StaticConstructorType____cctor() {
+  StaticConstructorType__Str = Int32__ToString(SimpleStaticType__GetField());
   StaticConstructorType__tempValue = Class1__GetMoreStatic(10);
 };
 function StaticConstructorType__get_Value() {
@@ -210,6 +212,10 @@ function EnumUsingClass() {
 };
 EnumUsingClass.typeId = "m";
 EnumUsingClass__TestValue = 2;
+EnumUsingClass__Str = null;
+function EnumUsingClass____cctor() {
+  EnumUsingClass__Str = Int32__ToString(SimpleStaticType__GetField());
+};
 function EnumUsingClass_factory() {
   var this_;
   this_ = new EnumUsingClass();
@@ -230,3 +236,4 @@ ptyp_.__ctor = function EnumUsingClass____ctor() {
 };
 Type__RegisterReferenceType(EnumUsingClass, "RealScript.EnumUsingClass", Object, []);
 StaticConstructorType____cctor();
+EnumUsingClass____cctor();

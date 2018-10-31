@@ -248,15 +248,12 @@ namespace NScript.Csc.Lib
                     Arity = namedTypeSymbol.Arity,
                     NestedParent = nestedParent,
                     TypeParams =
-                        namedTypeSymbol
-                            .TypeSubstitution?
-                            .SubstituteTypes(
-                                namedTypeSymbol
-                                    .TypeParameters
-                                    .CastArray<TypeSymbol>())
+                    namedTypeSymbol.TypeArgumentsNoUseSiteDiagnostics != null
+                        ?  namedTypeSymbol
+                            .TypeArgumentsNoUseSiteDiagnostics
                             .Select(_ => this.GetTypeSpecSer(_.TypeSymbol))
                             .ToList()
-                        ?? namedTypeSymbol
+                        : namedTypeSymbol
                             .TypeParameters
                             .Select(_ => this.GetTypeSpecSer(_))
                             .ToList()

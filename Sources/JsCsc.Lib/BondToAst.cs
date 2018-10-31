@@ -48,7 +48,7 @@ namespace JsCsc.Lib
         {
             MethodDefinition method = this.DeserializeMethod(jObject.MethodId).Resolve();
 
-            if (method.Name == "TestEventCheck")
+            if (method.Name == "GenericMethodCall3")
             { }
 
             return new Tuple<MethodDefinition, Func<TopLevelBlock>>(

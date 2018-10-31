@@ -26,9 +26,9 @@ ptyp_.genericMethodCall2 = function GenericSamples__GenericMethodCall2(T, U, bar
   return TestSubClass_$T$_.foo(Booleana, foo, foo);
 };
 ptyp_.genericMethodCall3 = function GenericSamples__GenericMethodCall3(T, U, bar, foo) {
-  var TestSubClass2_$U_x_T$_;
-  TestSubClass2_$U_x_T$_ = TestSubClass2(U, U, true);
-  return TestSubClass2_$U_x_T$_.foo(Booleana, bar, foo, true);
+  var TestSubClass2_$T_x_U$_;
+  TestSubClass2_$T_x_U$_ = TestSubClass2(T, U, true);
+  return TestSubClass2_$T_x_U$_.foo(Booleana, bar, foo, true);
 };
 ptyp_.getDefaultValue = function GenericSamples__GetDefaultValue(T) {
   return Type__GetDefaultValueStatic(T);

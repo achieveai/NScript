@@ -574,6 +574,7 @@
                 @"LoopTests.cs",
                 @"MathAlgorithms.cs",
                 @"NumberOperations.cs",
+                @"NewLanguageFeatures.cs",
                 @"ScriptSharpCompat.cs",
                 @"SimpleInterfaceTest.cs",
                 @"SimpleTypes.cs",

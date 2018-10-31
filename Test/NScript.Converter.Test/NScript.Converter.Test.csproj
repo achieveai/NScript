@@ -100,6 +100,7 @@
     <Compile Include="MethodConverterTests\ForLoopConverterTests.cs" />
     <Compile Include="MethodConverterTests\GenericTests.cs" />
     <Compile Include="MethodConverterTests\InlineInitializationTests.cs" />
+    <Compile Include="MethodConverterTests\NewFeatureConverters.cs" />
     <Compile Include="MethodConverterTests\NumberOperationTests.cs" />
     <Compile Include="MethodConverterTests\RegressionTests.cs" />
     <Compile Include="MethodConverterTests\ScriptImportTests.cs" />
@@ -514,6 +515,9 @@
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\CallEvent.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\ClearEvent.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\RemoveEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\AddNum.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InlineProp.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\NameofField.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

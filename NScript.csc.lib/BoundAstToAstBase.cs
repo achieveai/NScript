@@ -23,7 +23,7 @@
             BoundStatementList initializers,
             SerializationContext arg)
         {
-            if (methodSymbol.Name == "ReturnInt" && methodSymbol.ContainingType.Name.StartsWith("BasicStatements"))
+            if (methodSymbol.Name == "GenericMethodCall3")
             { }
 
             var methodId = arg
@@ -802,7 +802,8 @@
         }
 
         public override AstBase VisitNameOfOperator(BoundNameOfOperator node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+            => (ExpressionSer)GetConstLiteral(node.ConstantValueOpt);
+
         public override AstBase VisitNamespaceExpression(BoundNamespaceExpression node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitNewT(BoundNewT node, SerializationContext arg)
