@@ -126,69 +126,62 @@
         public override AstBase VisitAddressOfOperator(BoundAddressOfOperator node, SerializationContext arg)
             { throw new NotImplementedException(); }
         public override AstBase VisitAnonymousObjectCreationExpression(BoundAnonymousObjectCreationExpression node, SerializationContext arg)
-        //    => new NewAnonymoustype
-        //    {
-        //        Location = node.Syntax.Location.GetSerLoc(),
-        //        // Initializers = ((BoundObjectInitializerExpression)node.InitializerExpressionOpt)
-        //        //     .Initializers
-        //        //     .Select(_ =>
-        //        //     {
-        //        //         if (_.Kind == BoundKind.AssignmentOperator)
-        //        //         {
-        //        //             var assignOp = (BoundAssignmentOperator)_;
-        //        //             var initializerMember = (BoundObjectInitializerMember)assignOp.Left;
-        //        //             return new {
-        //        //                 key = initializerMember.Display,
-        //        //                 val = (ExpressionSer)this.Visit(assignOp.Right, arg)
-        //        //             };
-        //        //         }
-        //        //         else
-        //        //         {
-        //        //             return null;
-        //        //         }
-        //        //     })
-        //        //     .Where(_ => _ != null)
-        //        //     .ToDictionary(_ => (string)_.key, _ => _.val)
-        //    };
-        {
-            var location = node.Syntax.Location.GetSerLoc();
-            var type = arg.SymbolSerializer.GetTypeSpecId(node.Type);
-            var method = arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
-            var arguments = ToArgs(node.Constructor, node.Arguments, arg);
-
-            return new NewInitializerExpression
+            => new NewAnonymoustype
             {
-                Location = location,
-                Type = type,
-                Method = method,
-                Arguments = arguments,
+                Location = node.Syntax.Location.GetSerLoc(),
                 Initializers = Enumerable
                     .Range(0, node.Declarations.Length)
                     .Select(_ =>
                     {
                         var property = node.Declarations[_];
                         var expr = node.Arguments[0];
-                        var rv = new ObjectInitilaizer()
-                        {
-                            Location = expr.Syntax.Location.GetSerLoc(),
-                            Value = (ExpressionSer)this.Visit(expr, arg)
+                        return new {
+                            key = property.Property.Name,
+                            val = (ExpressionSer)this.Visit(expr, arg)
                         };
-
-                        var propertySymbol = property.Property;
-                        rv.Property = arg.SymbolSerializer.GetPropertySpecId(propertySymbol);
-                        rv.Setter = propertySymbol.SetMethod != null
-                            ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.SetMethod)
-                            : 0;
-
-                        rv.Getter = propertySymbol.GetMethod != null
-                            ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.GetMethod)
-                            : 0;
-
-                        return rv;
                     })
-                    .ToList()
+                    .Where(_ => _ != null)
+                    .ToDictionary(_ => _.key, _ => _.val)
             };
-        }
+        //{
+        //    var location = node.Syntax.Location.GetSerLoc();
+        //    var type = arg.SymbolSerializer.GetTypeSpecId(node.Type);
+        //    var method = arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
+        //    var arguments = ToArgs(node.Constructor, node.Arguments, arg);
+
+        //    return new NewInitializerExpression
+        //    {
+        //        Location = location,
+        //        Type = type,
+        //        Method = method,
+        //        Arguments = arguments,
+        //        Initializers = Enumerable
+        //            .Range(0, node.Declarations.Length)
+        //            .Select(_ =>
+        //            {
+        //                var property = node.Declarations[_];
+        //                var expr = node.Arguments[0];
+        //                var rv = new ObjectInitilaizer()
+        //                {
+        //                    Location = expr.Syntax.Location.GetSerLoc(),
+        //                    Value = (ExpressionSer)this.Visit(expr, arg)
+        //                };
+
+        //                var propertySymbol = property.Property;
+        //                rv.Property = arg.SymbolSerializer.GetPropertySpecId(propertySymbol);
+        //                rv.Setter = propertySymbol.SetMethod != null
+        //                    ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.SetMethod)
+        //                    : 0;
+
+        //                rv.Getter = propertySymbol.GetMethod != null
+        //                    ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.GetMethod)
+        //                    : 0;
+
+        //                return rv;
+        //            })
+        //            .ToList()
+        //    };
+        //}
         public override AstBase VisitAnonymousPropertyDeclaration(BoundAnonymousPropertyDeclaration node, SerializationContext arg)
             { throw new NotImplementedException(); }
         public override AstBase VisitArgList(BoundArgList node, SerializationContext arg)
