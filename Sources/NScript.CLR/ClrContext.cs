@@ -102,7 +102,7 @@ namespace NScript.CLR
         /// Loads the assembly.
         /// </summary>
         /// <param name="assemblyPath">The assembly path.</param>
-        public void LoadAssembly(string assemblyPath, bool loadSymbols = true)
+        public void LoadAssembly(string assemblyPath, bool loadSymbols = false)
         {
             string directoryName = System.IO.Path.GetDirectoryName(assemblyPath);
             if (!directoriesToLookAt.Contains(directoryName))

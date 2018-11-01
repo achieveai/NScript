@@ -210,6 +210,16 @@ namespace NScript.Csc.Lib
                 { PointedAtType = GetTypeSpecSer(((IPointerTypeSymbol)type).PointedAtType) };
             }
 
+            if (type.ContainingModule == null)
+            {
+                return new TypeSpecSer
+                {
+                    Name = "dynamic",
+                    Namespace = null,
+                    Module = null
+                };
+            }
+
             var moduleSpec = new ModuleSpecSer { Name = type.ContainingModule.Name };
             if (type.Kind == SymbolKind.TypeParameter)
             {

@@ -1,11 +1,11 @@
 ﻿(function(){
-var ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, ObservableCollection_$Int32$_, Type$$typeMapping, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_;
+var ObservableCollection_$Int32$_, ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, Type__typeMapping, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_;
 Function.typeId = "h";
-Type$$typeMapping = null;
-function Type$$AsType(this_, instance) {
+Type__typeMapping = null;
+function Type__AsType(this_, instance) {
   return this_.isInstanceOfType(instance) ? instance : null;
 };
-function Type$$CastType(this_, instance) {
+function Type__CastType(this_, instance) {
   if (this_.isInstanceOfType(instance) || instance === null || typeof instance === "undefined") {
     if (this_.isStruct)
       return instance.boxedValue;
@@ -13,31 +13,31 @@ function Type$$CastType(this_, instance) {
   }
   throw "InvalidCast to " + this_.fullName;
 };
-function Type$$RegisterReferenceType(this_, typeName, parentType, interfaces) {
+function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
   this_.fullName = typeName;
   this_.baseType = parentType;
   this_.interfaces = parentType ? interfaces.concat(parentType.interfaces) : interfaces;
-  if (!Type$$typeMapping)
-    Type$$typeMapping = {
+  if (!Type__typeMapping)
+    Type__typeMapping = {
     };
-  Type$$typeMapping[this_.fullName] = this_;
+  Type__typeMapping[this_.fullName] = this_;
 };
-function Type$$RegisterStructType(this_, typeName, interfaces) {
+function Type__RegisterStructType(this_, typeName, interfaces) {
   this_.isStruct = true;
   this_.fullName = typeName;
   this_.baseType = ValueType;
   this_.interfaces = interfaces;
-  if (!Type$$typeMapping)
-    Type$$typeMapping = {
+  if (!Type__typeMapping)
+    Type__typeMapping = {
     };
-  Type$$typeMapping[this_.fullName] = this_;
+  Type__typeMapping[this_.fullName] = this_;
 };
-function Type$$RegisterInterface(this_, typeName) {
+function Type__RegisterInterface(this_, typeName) {
   this_.isInterface = true;
   this_.fullName = typeName;
 };
-function Type$$BoxTypeInstance(type, instance) {
+function Type__BoxTypeInstance(type, instance) {
   if (type.isNullable)
     return type.nullableBox(instance);
   else if (type.isStruct)
@@ -45,7 +45,7 @@ function Type$$BoxTypeInstance(type, instance) {
   else
     return instance;
 };
-function Type$$UnBoxTypeInstance(type, instance) {
+function Type__UnBoxTypeInstance(type, instance) {
   if (type.isNullable && instance === null)
     return null;
   else if (type.isStruct)
@@ -53,12 +53,12 @@ function Type$$UnBoxTypeInstance(type, instance) {
   else
     return instance;
 };
-function Type$$GetDefaultValueStatic(type) {
+function Type__GetDefaultValueStatic(type) {
   if (type.isStruct)
     return type.getDefaultValue();
   return null;
 };
-function Type$$InitializeBaseInterfaces(type) {
+function Type__InitializeBaseInterfaces(type) {
   var rv, baseType, baseInterfaces, key, interfaces;
   if (!type.baseInterfaces) {
     rv = {
@@ -66,7 +66,7 @@ function Type$$InitializeBaseInterfaces(type) {
     baseType = type.baseType;
     if (baseType != null && baseType != Object) {
       if (baseType)
-        Type$$InitializeBaseInterfaces(type);
+        Type__InitializeBaseInterfaces(type);
       baseInterfaces = baseType.baseInterfaces;
       if (baseInterfaces)
         for (key in baseInterfaces)
@@ -91,199 +91,44 @@ ptyp_.typeId = null;
 ptyp_.baseInterfaces = null;
 ptyp_.boxedValue = null;
 ptyp_.interfaces = null;
-ptyp_.isInstanceOfType = function Type$$IsInstanceOfType(instance) {
+ptyp_.isInstanceOfType = function Type__IsInstanceOfType(instance) {
   if (instance === null || typeof instance === "undefined")
     return false;
   if (!this.isInterface)
     return instance instanceof this || instance !== null && instance.constructor == this;
   else if (!instance.constructor.baseInterfaces)
-    Type$$InitializeBaseInterfaces(instance.constructor);
+    Type__InitializeBaseInterfaces(instance.constructor);
   return instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];
 };
-ptyp_.defaultConstructor = function Type$$DefaultConstructor() {
+ptyp_.defaultConstructor = function Type__DefaultConstructor() {
   if (this.isStruct)
     return this.getDefaultValue;
   throw "Default constructor not implemented";
 };
-ptyp_.getDefaultValue = function Type$$GetDefaultValue() {
+ptyp_.getDefaultValue = function Type__GetDefaultValue() {
   return null;
 };
-ptyp_.nullableBox = function Type$$NullableBox(instance) {
+ptyp_.nullableBox = function Type__NullableBox(instance) {
   return null;
 };
-Type$$RegisterReferenceType(Function, "System.Type", Object, []);
+Type__RegisterReferenceType(Function, "System.Type", Object, []);
 Object.typeId = "i";
-function Object$$IsNullOrUndefined(obj) {
+function Object__IsNullOrUndefined(obj) {
   return obj === null || typeof obj == "undefined";
 };
-Type$$RegisterReferenceType(Object, "System.Object", null, []);
-function DataBinderTests() {
-};
-DataBinderTests.typeId = "j";
-function DataBinderTests$$BasicBinderSimpleObjectTest(assert) {
-  var dataBinder, target, source;
-  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests$24$24BasicBinderSimpleObjectTest_del(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleObjectWithProperty, obj).get_intProp());
-  }]), null), TargetBinder_factory("IntProp", null, function DataBinderTests$24$24BasicBinderSimpleObjectTest_del2(obj, value) {
-    Type$$CastType(SimpleNotifiableClass, obj).set_intProp(Type$$UnBoxTypeInstance(Int32, value));
-  }, Type$$BoxTypeInstance(Int32, -1)), 1, null);
-  target = SourcePropertyBinderTests$$PrepNotifiableObject();
-  source = SourcePropertyBinderTests$$PrepSimpleObject();
-  source.set_intProp(101);
-  dataBinder.setTarget(target);
-  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
-  dataBinder.setSource(source);
-  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
-  dataBinder.setSource(null);
-  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
-};
-function DataBinderTests$$BasicBinderSimpleObjectTestReverseOrder(assert) {
-  var dataBinder, target, source;
-  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests$24$24BasicBinderSimpleObjectTestReverseOrder_del(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleObjectWithProperty, obj).get_intProp());
-  }]), null), TargetBinder_factory("IntProp", null, function DataBinderTests$24$24BasicBinderSimpleObjectTestReverseOrder_del2(obj, value) {
-    Type$$CastType(SimpleNotifiableClass, obj).set_intProp(Type$$UnBoxTypeInstance(Int32, value));
-  }, Type$$BoxTypeInstance(Int32, -1)), 1, null);
-  target = SourcePropertyBinderTests$$PrepNotifiableObject();
-  source = SourcePropertyBinderTests$$PrepSimpleObject();
-  source.set_intProp(101);
-  dataBinder.setSource(source);
-  dataBinder.setTarget(target);
-  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
-  dataBinder.setSource(null);
-  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
-};
-function DataBinderTests$$BasicBinderOneWayNotifiableObjectTest(assert) {
-  var dataBinder, target, source;
-  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests$24$24BasicBinderOneWayNotifiableObjectTest_del(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleNotifiableClass, obj).get_intProp());
-  }]), null), TargetBinder_factory("IntProp", null, function DataBinderTests$24$24BasicBinderOneWayNotifiableObjectTest_del2(obj, value) {
-    Type$$CastType(SimpleNotifiableClass, obj).set_intProp(Type$$UnBoxTypeInstance(Int32, value));
-  }, Type$$BoxTypeInstance(Int32, -1)), 1, null);
-  target = SourcePropertyBinderTests$$PrepNotifiableObject();
-  source = SourcePropertyBinderTests$$PrepNotifiableObject();
-  source.set_intProp(101);
-  dataBinder.setTarget(target);
-  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
-  dataBinder.setSource(source);
-  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
-  source.set_intProp(102);
-  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
-};
-function DataBinderTests$$BasicBinderTwoWayNotifiableObjectTest(assert) {
-  var dataBinder, target, source, stmtTemp1;
-  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests$24$24BasicBinderTwoWayNotifiableObjectTest_del(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleNotifiableClass, obj).get_intProp());
-  }]), function DataBinderTests$24$24BasicBinderTwoWayNotifiableObjectTest_del2(obj, value) {
-    Type$$CastType(SimpleNotifiableClass, obj).set_intProp(Type$$UnBoxTypeInstance(Int32, value));
-  }), TargetBinder_factory("IntProp", function DataBinderTests$24$24BasicBinderTwoWayNotifiableObjectTest_del3(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleNotifiableClass, obj).get_intProp());
-  }, function DataBinderTests$24$24BasicBinderTwoWayNotifiableObjectTest_del4(obj, value) {
-    Type$$CastType(SimpleNotifiableClass, obj).set_intProp(Type$$UnBoxTypeInstance(Int32, value));
-  }, Type$$BoxTypeInstance(Int32, -1)), 2, null);
-  target = SourcePropertyBinderTests$$PrepNotifiableObject();
-  source = SourcePropertyBinderTests$$PrepNotifiableObject();
-  source.set_intProp(101);
-  dataBinder.setTarget(target);
-  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
-  dataBinder.setSource(source);
-  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
-  target.set_intProp((stmtTemp1 = target.get_intProp()) + 1), stmtTemp1;
-  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
-};
-Type$$RegisterReferenceType(DataBinderTests, "Sunlight.Framework.Test.Binders.DataBinderTests", Object, []);
-function SourcePropertyBinderTests() {
-};
-SourcePropertyBinderTests.typeId = "k";
-function SourcePropertyBinderTests$$PrepNotifiableObject() {
-  var rv, stmtTemp1, stmtTemp10, stmtTemp11;
-  rv = (stmtTemp1 = SimpleNotifiableClass_factory(), stmtTemp1.set_intProp(10), stmtTemp1.set_strProp("Ten"), stmtTemp1.set_objProp((stmtTemp11 = SimpleObjectWithProperty_factory(), stmtTemp11.set_intProp(11), stmtTemp11.set_stringProp("Eleven"), stmtTemp11)), stmtTemp1);
-  rv.set_selfProp(rv);
-  rv.get_objProp().set_selfProp(rv.get_objProp());
-  rv.get_objProp().set_notifiableProp(rv);
-  return rv;
-};
-function SourcePropertyBinderTests$$PrepSimpleObject() {
-  return SourcePropertyBinderTests$$PrepNotifiableObject().get_objProp();
-};
-function SourcePropertyBinderTests$$BasicValueTest(assert) {
-  var sourceBinder, helper, src;
-  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor([null]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests$24$24BasicValueTest_del(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleObjectWithProperty, obj).get_intProp());
-  }]), null);
-  helper = BinderTestHelper_factory();
-  sourceBinder.useDataBinder(helper);
-  src = SourcePropertyBinderTests$$PrepSimpleObject();
-  sourceBinder.set_source(src);
-  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  assert.equal(src.get_intProp(), Type$$UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
-};
-function SourcePropertyBinderTests$$BasicValueTestWithNotification(assert) {
-  var sourceBinder, helper, src, stmtTemp1;
-  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests$24$24BasicValueTestWithNotification_del(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleNotifiableClass, obj).get_intProp());
-  }]), null);
-  helper = BinderTestHelper_factory();
-  sourceBinder.useDataBinder(helper);
-  src = SourcePropertyBinderTests$$PrepNotifiableObject();
-  sourceBinder.set_source(src);
-  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  assert.equal(src.get_intProp(), Type$$UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
-  helper.set_sourceValueUpdateCalled(false);
-  src.set_intProp((stmtTemp1 = src.get_intProp()) + 1), stmtTemp1;
-  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  assert.equal(src.get_intProp(), Type$$UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
-};
-function SourcePropertyBinderTests$$PropertyPathValueNotifiableTest(assert) {
-  var sourceBinder, helper, src;
-  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["NotifiableProp", "IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests$24$24PropertyPathValueNotifiableTest_del(obj) {
-    return Type$$CastType(SimpleObjectWithProperty, obj).get_notifiableProp();
-  }, function SourcePropertyBinderTests$24$24PropertyPathValueNotifiableTest_del2(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleNotifiableClass, obj).get_intProp());
-  }]), null);
-  helper = BinderTestHelper_factory();
-  sourceBinder.useDataBinder(helper);
-  src = SourcePropertyBinderTests$$PrepSimpleObject();
-  sourceBinder.set_source(src);
-  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  assert.equal(src.get_notifiableProp().get_intProp(), Type$$UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
-  helper.set_sourceValueUpdateCalled(false);
-  src.get_notifiableProp().set_intProp( -1);
-  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  assert.equal(src.get_notifiableProp().get_intProp(), Type$$UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
-};
-function SourcePropertyBinderTests$$PropertyPathValueTest(assert) {
-  var sourceBinder, helper, src, lastValue;
-  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["SelfProp", "IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests$24$24PropertyPathValueTest_del(obj) {
-    return Type$$CastType(SimpleObjectWithProperty, obj).get_selfProp();
-  }, function SourcePropertyBinderTests$24$24PropertyPathValueTest_del2(obj) {
-    return Type$$BoxTypeInstance(Int32, Type$$CastType(SimpleObjectWithProperty, obj).get_intProp());
-  }]), null);
-  helper = BinderTestHelper_factory();
-  sourceBinder.useDataBinder(helper);
-  src = SourcePropertyBinderTests$$PrepSimpleObject();
-  sourceBinder.set_source(src);
-  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  assert.equal(src.get_selfProp().get_intProp(), Type$$UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
-  helper.set_sourceValueUpdateCalled(false);
-  lastValue = src.get_selfProp().get_intProp();
-  src.get_selfProp().set_intProp( -1);
-  assert.ok(!helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
-  assert.equal(lastValue, Type$$UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
-};
-Type$$RegisterReferenceType(SourcePropertyBinderTests, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests", Object, []);
+Type__RegisterReferenceType(Object, "System.Object", null, []);
 function ContainerTests() {
 };
-ContainerTests.typeId = "l";
-function ContainerTests$$TestRegisterResolve(assert) {
+ContainerTests.typeId = "j";
+function ContainerTests__TestRegisterResolve(assert) {
   var container, x, y, t2, t1;
   container = IocContainer_factory();
   x = 1;
   y = 2;
-  container.register(IocTestType2, function ContainerTests$24$24TestRegisterResolve_del() {
+  container.register(IocTestType2, function ContainerTests__TestRegisterResolve_del() {
     return IocTestType2_factory(x);
   });
-  container.register(IocTestType1, function ContainerTests$24$24TestRegisterResolve_del2() {
+  container.register(IocTestType1, function ContainerTests__TestRegisterResolve_del2() {
     return IocTestType1_factory(x, y);
   });
   t2 = container.resolve(IocTestType2);
@@ -296,15 +141,15 @@ function ContainerTests$$TestRegisterResolve(assert) {
   t1 = container.resolve(IocTestType1);
   assert.equal(12, t1.testMethod(), "12 == t1.TestMethod()");
 };
-function ContainerTests$$TestRegisterResolveWithAs(assert) {
+function ContainerTests__TestRegisterResolveWithAs(assert) {
   var container, x, y, t2, t1;
   container = IocContainer_factory();
   x = 1;
   y = 2;
-  container.register(IocTestType2, function ContainerTests$24$24TestRegisterResolveWithAs_del() {
+  container.register(IocTestType2, function ContainerTests__TestRegisterResolveWithAs_del() {
     return IocTestType2_factory(x);
   });
-  container.register(IocTestType1, function ContainerTests$24$24TestRegisterResolveWithAs_del2() {
+  container.register(IocTestType1, function ContainerTests__TestRegisterResolveWithAs_del2() {
     return IocTestType1_factory(x, y);
   }).as(IIocTestType1);
   t2 = container.resolve(IocTestType2);
@@ -314,15 +159,15 @@ function ContainerTests$$TestRegisterResolveWithAs(assert) {
   assert.ok(t1, "t1 != null");
   assert.equal(3, t1.V_TestMethod_b(), "3 == t1.TestMethod()");
 };
-function ContainerTests$$TestRegisterResolveIsSingleton(assert) {
+function ContainerTests__TestRegisterResolveIsSingleton(assert) {
   var container, x, y, t2, t1, t1_;
   container = IocContainer_factory();
   x = 1;
   y = 2;
-  container.register(IocTestType2, function ContainerTests$24$24TestRegisterResolveIsSingleton_del() {
+  container.register(IocTestType2, function ContainerTests__TestRegisterResolveIsSingleton_del() {
     return IocTestType2_factory(x);
   });
-  container.register(IocTestType1, function ContainerTests$24$24TestRegisterResolveIsSingleton_del2() {
+  container.register(IocTestType1, function ContainerTests__TestRegisterResolveIsSingleton_del2() {
     return IocTestType1_factory(x, y);
   }).isSingleton();
   t2 = container.resolve(IocTestType2);
@@ -333,12 +178,12 @@ function ContainerTests$$TestRegisterResolveIsSingleton(assert) {
   t1_ = container.resolve(IocTestType1);
   assert.strictEqual(t1_, t1, "t1_ === t1");
 };
-function ContainerTests$$TestRegisterResolveLazy(assert) {
+function ContainerTests__TestRegisterResolveLazy(assert) {
   var container, x, y, t1;
   container = IocContainer_factory();
   x = 1;
   y = 2;
-  container.register(IocTestType1, function ContainerTests$24$24TestRegisterResolveLazy_del() {
+  container.register(IocTestType1, function ContainerTests__TestRegisterResolveLazy_del() {
     return IocTestType1_factory(x++, y);
   }).isSingleton();
   t1 = container.resolveLazy(IocTestType1);
@@ -346,36 +191,40 @@ function ContainerTests$$TestRegisterResolveLazy(assert) {
   assert.equal(3, t1.get_value().testMethod(), "t1.Value.TestMethod() == 3");
   assert.equal(2, x, "x === 2");
 };
-Type$$RegisterReferenceType(ContainerTests, "Sunlight.Framework.Test.ContainerTests", Object, []);
+Type__RegisterReferenceType(ContainerTests, "Sunlight.Framework.Test.ContainerTests", Object, []);
 function EventBusTests() {
 };
-EventBusTests.typeId = "m";
-function EventBusTests$$TestSubscribeAndRaise(assert) {
+EventBusTests.typeId = "k";
+function EventBusTests__TestSubscribeAndRaise(assert) {
   var evtBus, x1, x2, stmtTemp1;
   evtBus = EventBus_factory();
   x1 = 0;
   x2 = 0;
-  evtBus.subscribe(Evt1, function EventBusTests$24$24TestSubscribeAndRaise_del(evt) {
-    return x1 = evt.x;
+  evtBus.subscribe(Evt1, function EventBusTests__TestSubscribeAndRaise_del(evt) {
+    x1 = evt.x;
+    return;
   });
-  evtBus.subscribe(Evt2, function EventBusTests$24$24TestSubscribeAndRaise_del2(evt) {
-    return x2 = evt.x;
+  evtBus.subscribe(Evt2, function EventBusTests__TestSubscribeAndRaise_del2(evt) {
+    x2 = evt.x;
+    return;
   });
   evtBus.raise(Evt1, (stmtTemp1 = Evt1_factory(), stmtTemp1.x = 10, stmtTemp1));
   assert.equal(10, x1, "10 == x1");
   assert.equal(0, x2, "0 == x2");
 };
-function EventBusTests$$TestSubscribeAndRaiseOnceTime(assert) {
+function EventBusTests__TestSubscribeAndRaiseOnceTime(assert) {
   var evtBus, x1, x2, del, stmtTemp1;
   evtBus = EventBus_factory();
   x1 = 0;
   x2 = 0;
-  del = function EventBusTests$24$24TestSubscribeAndRaiseOnceTime_del(evt) {
+  del = function EventBusTests__TestSubscribeAndRaiseOnceTime_del(evt) {
     x1 = evt.x;
+    return;
   };
   evtBus.subscribe(Evt1, del);
-  evtBus.subscribe(Evt2, function EventBusTests$24$24TestSubscribeAndRaiseOnceTime_del2(evt) {
-    return x2 = evt.x;
+  evtBus.subscribe(Evt2, function EventBusTests__TestSubscribeAndRaiseOnceTime_del2(evt) {
+    x2 = evt.x;
+    return;
   });
   evtBus.raiseOneTime(Evt1, (stmtTemp1 = Evt1_factory(), stmtTemp1.x = 10, stmtTemp1));
   assert.equal(10, x1, "10 == x1");
@@ -383,82 +232,88 @@ function EventBusTests$$TestSubscribeAndRaiseOnceTime(assert) {
   evtBus.subscribe(Evt1, del);
   assert.equal(10, x1, "(2) 10 == x1");
 };
-function EventBusTests$$TestSubscribeUnSubscribeAndRaise(assert) {
+function EventBusTests__TestSubscribeUnSubscribeAndRaise(assert) {
   var evtBus, x1, x2, del, stmtTemp1;
   evtBus = EventBus_factory();
   x1 = 0;
   x2 = 0;
-  del = function EventBusTests$24$24TestSubscribeUnSubscribeAndRaise_del(evt) {
+  del = function EventBusTests__TestSubscribeUnSubscribeAndRaise_del(evt) {
     x1 = evt.x;
+    return;
   };
-  evtBus.subscribe(Evt2, function EventBusTests$24$24TestSubscribeUnSubscribeAndRaise_del2(evt) {
-    return x2 = evt.x;
+  evtBus.subscribe(Evt2, function EventBusTests__TestSubscribeUnSubscribeAndRaise_del2(evt) {
+    x2 = evt.x;
+    return;
   });
-  evtBus.subscribe(Evt1, function EventBusTests$24$24TestSubscribeUnSubscribeAndRaise_del3(evt) {
-    return x2 = evt.x;
+  evtBus.subscribe(Evt1, function EventBusTests__TestSubscribeUnSubscribeAndRaise_del3(evt) {
+    x2 = evt.x;
+    return;
   });
   evtBus.unSubscribe(Evt1, del);
   evtBus.raise(Evt1, (stmtTemp1 = Evt1_factory(), stmtTemp1.x = 10, stmtTemp1));
   assert.equal(0, x1, "0 == x1");
 };
-Type$$RegisterReferenceType(EventBusTests, "Sunlight.Framework.Test.EventBusTests", Object, []);
+Type__RegisterReferenceType(EventBusTests, "Sunlight.Framework.Test.EventBusTests", Object, []);
 function ObservableCollectionTests() {
 };
-ObservableCollectionTests.typeId = "n";
-function ObservableCollectionTests$$TestCreateNewObservableCollection(assert) {
+ObservableCollectionTests.typeId = "l";
+function ObservableCollectionTests__TestCreateNewObservableCollection(assert) {
   var observableCollection;
   observableCollection = ObservableCollection_$Int32$_.defaultConstructor();
   assert.notEqual(null, observableCollection, "ObservableCollection should be created");
   assert.equal(0, observableCollection.get_count(), "ObservableCollection's size should be 0");
 };
-function ObservableCollectionTests$$TestAddItemToObservableCollection(assert) {
+function ObservableCollectionTests__TestAddItemToObservableCollection(assert) {
   var observableCollection, eventRaised;
   observableCollection = ObservableCollection_$Int32$_.defaultConstructor();
   eventRaised = false;
-  observableCollection.add_CollectionChanged(function ObservableCollectionTests$24$24TestAddItemToObservableCollection_del(coll, evtArg) {
+  observableCollection.add_CollectionChanged(function ObservableCollectionTests__TestAddItemToObservableCollection_del(coll, evtArg) {
     assert.equal(observableCollection, coll, "ObservableCollection");
     assert.equal(1, evtArg.get_newItems().V_get_Count_c(), "evtArg.NewItems.Count");
-    assert.ok(Object$$IsNullOrUndefined(evtArg.get_oldItems()), "Object.IsNullOrUndefined(evtArg.OldItems)");
+    assert.ok(Object__IsNullOrUndefined(evtArg.get_oldItems()), "Object.IsNullOrUndefined(evtArg.OldItems)");
     assert.equal(0, evtArg.get_changeIndex(), "evtArg.changeIndex");
     eventRaised = true;
+    return;
   });
   observableCollection.add(1);
   assert.ok(eventRaised, "Change event raised");
 };
-function ObservableCollectionTests$$TestRemoveItemToObservableCollection(assert) {
+function ObservableCollectionTests__TestRemoveItemToObservableCollection(assert) {
   var observableCollection, eventRaised;
   observableCollection = ObservableCollection_$Int32$_.defaultConstructor();
   eventRaised = false;
   observableCollection.add(1);
   observableCollection.add(2);
   observableCollection.add(3);
-  observableCollection.add_CollectionChanged(function ObservableCollectionTests$24$24TestRemoveItemToObservableCollection_del(coll, evtArg) {
+  observableCollection.add_CollectionChanged(function ObservableCollectionTests__TestRemoveItemToObservableCollection_del(coll, evtArg) {
     assert.equal(observableCollection, coll, "ObservableCollection");
     assert.equal(2, evtArg.get_oldItems().V_get_Count_c(), "evtArg.OldItems.Count");
-    assert.ok(Object$$IsNullOrUndefined(evtArg.get_newItems()), "Object.IsNullOrUndefined(evtArg.NewItems)");
+    assert.ok(Object__IsNullOrUndefined(evtArg.get_newItems()), "Object.IsNullOrUndefined(evtArg.NewItems)");
     assert.equal(1, evtArg.get_changeIndex(), "evtArg.changeIndex");
     eventRaised = true;
+    return;
   });
   observableCollection.removeRangeAt(1, 2);
   assert.ok(eventRaised, "Change event raised");
 };
-Type$$RegisterReferenceType(ObservableCollectionTests, "Sunlight.Framework.Test.ObservableCollectionTests", Object, []);
+Type__RegisterReferenceType(ObservableCollectionTests, "Sunlight.Framework.Test.ObservableCollectionTests", Object, []);
 function ObservableObjectTests() {
 };
-ObservableObjectTests.typeId = "o";
-function ObservableObjectTests$$TestCreateNewObservableObject(assert) {
+ObservableObjectTests.typeId = "m";
+function ObservableObjectTests__TestCreateNewObservableObject(assert) {
   var observableObject;
   observableObject = ObservableTestObject_factory();
   assert.notEqual(null, observableObject, "ObservableObject should be created");
 };
-function ObservableObjectTests$$TestFirePropertyChanged(assert) {
+function ObservableObjectTests__TestFirePropertyChanged(assert) {
   var observableObject, strChanged, cbCalled, cb1;
   observableObject = ObservableTestObject_factory();
   strChanged = false;
   cbCalled = false;
-  cb1 = function ObservableObjectTests$24$24TestFirePropertyChanged_del(sender, propName) {
+  cb1 = function ObservableObjectTests__TestFirePropertyChanged_del(sender, propName) {
     strChanged = propName === "StringProp" && sender == observableObject;
     cbCalled = true;
+    return;
   };
   observableObject.addPropertyChangedListener("StringProp", cb1);
   observableObject.set_stringProp("1");
@@ -469,12 +324,13 @@ function ObservableObjectTests$$TestFirePropertyChanged(assert) {
   assert.ok(!strChanged, "String change callback not called.");
   assert.ok(!cbCalled, "Callback should not be called for different property change");
 };
-function ObservableObjectTests$$TestRemovePropertyChangeCallback(assert) {
+function ObservableObjectTests__TestRemovePropertyChangeCallback(assert) {
   var observableObject, cbCalled, cb1;
   observableObject = ObservableTestObject_factory();
   cbCalled = false;
-  cb1 = function ObservableObjectTests$24$24TestRemovePropertyChangeCallback_del(sender, propName) {
-    return cbCalled = true;
+  cb1 = function ObservableObjectTests__TestRemovePropertyChangeCallback_del(sender, propName) {
+    cbCalled = true;
+    return;
   };
   observableObject.addPropertyChangedListener("StringProp", cb1);
   observableObject.set_stringProp("1");
@@ -484,18 +340,590 @@ function ObservableObjectTests$$TestRemovePropertyChangeCallback(assert) {
   observableObject.set_stringProp("2");
   assert.ok(!cbCalled, "after removing change listner, callback should not be called.");
 };
-Type$$RegisterReferenceType(ObservableObjectTests, "Sunlight.Framework.Test.ObservableObjectTests", Object, []);
+Type__RegisterReferenceType(ObservableObjectTests, "Sunlight.Framework.Test.ObservableObjectTests", Object, []);
+function DataBinderTests() {
+};
+DataBinderTests.typeId = "n";
+function DataBinderTests__BasicBinderSimpleObjectTest(assert) {
+  var dataBinder, target, source;
+  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderSimpleObjectTest_del(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleObjectWithProperty, obj).get_intProp());
+  }]), null), TargetBinder_factory("IntProp", null, function DataBinderTests__BasicBinderSimpleObjectTest_del2(obj, value) {
+    Type__CastType(SimpleNotifiableClass, obj).set_intProp(Type__UnBoxTypeInstance(Int32, value));
+    return;
+  }, Type__BoxTypeInstance(Int32, -1)), 1, null);
+  target = SourcePropertyBinderTests__PrepNotifiableObject();
+  source = SourcePropertyBinderTests__PrepSimpleObject();
+  source.set_intProp(101);
+  dataBinder.setTarget(target);
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  dataBinder.setSource(source);
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  dataBinder.setSource(null);
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+};
+function DataBinderTests__BasicBinderSimpleObjectTestReverseOrder(assert) {
+  var dataBinder, target, source;
+  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderSimpleObjectTestReverseOrder_del(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleObjectWithProperty, obj).get_intProp());
+  }]), null), TargetBinder_factory("IntProp", null, function DataBinderTests__BasicBinderSimpleObjectTestReverseOrder_del2(obj, value) {
+    Type__CastType(SimpleNotifiableClass, obj).set_intProp(Type__UnBoxTypeInstance(Int32, value));
+    return;
+  }, Type__BoxTypeInstance(Int32, -1)), 1, null);
+  target = SourcePropertyBinderTests__PrepNotifiableObject();
+  source = SourcePropertyBinderTests__PrepSimpleObject();
+  source.set_intProp(101);
+  dataBinder.setSource(source);
+  dataBinder.setTarget(target);
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  dataBinder.setSource(null);
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+};
+function DataBinderTests__BasicBinderOneWayNotifiableObjectTest(assert) {
+  var dataBinder, target, source;
+  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderOneWayNotifiableObjectTest_del(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
+  }]), null), TargetBinder_factory("IntProp", null, function DataBinderTests__BasicBinderOneWayNotifiableObjectTest_del2(obj, value) {
+    Type__CastType(SimpleNotifiableClass, obj).set_intProp(Type__UnBoxTypeInstance(Int32, value));
+    return;
+  }, Type__BoxTypeInstance(Int32, -1)), 1, null);
+  target = SourcePropertyBinderTests__PrepNotifiableObject();
+  source = SourcePropertyBinderTests__PrepNotifiableObject();
+  source.set_intProp(101);
+  dataBinder.setTarget(target);
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  dataBinder.setSource(source);
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  source.set_intProp(102);
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+};
+function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest(assert) {
+  var dataBinder, target, source, stmtTemp1;
+  dataBinder = DataBinder_factory(SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest_del(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
+  }]), function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest_del2(obj, value) {
+    Type__CastType(SimpleNotifiableClass, obj).set_intProp(Type__UnBoxTypeInstance(Int32, value));
+    return;
+  }), TargetBinder_factory("IntProp", function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest_del3(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
+  }, function DataBinderTests__BasicBinderTwoWayNotifiableObjectTest_del4(obj, value) {
+    Type__CastType(SimpleNotifiableClass, obj).set_intProp(Type__UnBoxTypeInstance(Int32, value));
+    return;
+  }, Type__BoxTypeInstance(Int32, -1)), 2, null);
+  target = SourcePropertyBinderTests__PrepNotifiableObject();
+  source = SourcePropertyBinderTests__PrepNotifiableObject();
+  source.set_intProp(101);
+  dataBinder.setTarget(target);
+  assert.equal( -1, target.get_intProp(), "source.IntProp == target.IntProp");
+  dataBinder.setSource(source);
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+  target.set_intProp((stmtTemp1 = target.get_intProp()) + 1), stmtTemp1;
+  assert.equal(source.get_intProp(), target.get_intProp(), "source.IntProp == target.IntProp");
+};
+Type__RegisterReferenceType(DataBinderTests, "Sunlight.Framework.Test.Binders.DataBinderTests", Object, []);
+function SourcePropertyBinderTests() {
+};
+SourcePropertyBinderTests.typeId = "o";
+function SourcePropertyBinderTests__PrepNotifiableObject() {
+  var rv, stmtTemp1, stmtTemp10, stmtTemp11;
+  rv = (stmtTemp1 = SimpleNotifiableClass_factory(), stmtTemp1.set_intProp(10), stmtTemp1.set_strProp("Ten"), stmtTemp1.set_objProp((stmtTemp11 = SimpleObjectWithProperty_factory(), stmtTemp11.set_intProp(11), stmtTemp11.set_stringProp("Eleven"), stmtTemp11)), stmtTemp1);
+  rv.set_selfProp(rv);
+  rv.get_objProp().set_selfProp(rv.get_objProp());
+  rv.get_objProp().set_notifiableProp(rv);
+  return rv;
+};
+function SourcePropertyBinderTests__PrepSimpleObject() {
+  return SourcePropertyBinderTests__PrepNotifiableObject().get_objProp();
+};
+function SourcePropertyBinderTests__BasicValueTest(assert) {
+  var sourceBinder, helper, src;
+  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor([null]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__BasicValueTest_del(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleObjectWithProperty, obj).get_intProp());
+  }]), null);
+  helper = BinderTestHelper_factory();
+  sourceBinder.useDataBinder(helper);
+  src = SourcePropertyBinderTests__PrepSimpleObject();
+  sourceBinder.set_source(src);
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+};
+function SourcePropertyBinderTests__BasicValueTestWithNotification(assert) {
+  var sourceBinder, helper, src, stmtTemp1;
+  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__BasicValueTestWithNotification_del(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
+  }]), null);
+  helper = BinderTestHelper_factory();
+  sourceBinder.useDataBinder(helper);
+  src = SourcePropertyBinderTests__PrepNotifiableObject();
+  sourceBinder.set_source(src);
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  helper.set_sourceValueUpdateCalled(false);
+  src.set_intProp((stmtTemp1 = src.get_intProp()) + 1), stmtTemp1;
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+};
+function SourcePropertyBinderTests__PropertyPathValueNotifiableTest(assert) {
+  var sourceBinder, helper, src;
+  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["NotifiableProp", "IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__PropertyPathValueNotifiableTest_del(obj) {
+    return Type__CastType(SimpleObjectWithProperty, obj).get_notifiableProp();
+  }, function SourcePropertyBinderTests__PropertyPathValueNotifiableTest_del2(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleNotifiableClass, obj).get_intProp());
+  }]), null);
+  helper = BinderTestHelper_factory();
+  sourceBinder.useDataBinder(helper);
+  src = SourcePropertyBinderTests__PrepSimpleObject();
+  sourceBinder.set_source(src);
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_notifiableProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  helper.set_sourceValueUpdateCalled(false);
+  src.get_notifiableProp().set_intProp( -1);
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_notifiableProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+};
+function SourcePropertyBinderTests__PropertyPathValueTest(assert) {
+  var sourceBinder, helper, src, lastValue;
+  sourceBinder = SourcePropertyBinder_factory(ArrayG_$String$_.__ctor(["SelfProp", "IntProp"]), ArrayG_$Func_$Object_x_Object$_$_.__ctor([function SourcePropertyBinderTests__PropertyPathValueTest_del(obj) {
+    return Type__CastType(SimpleObjectWithProperty, obj).get_selfProp();
+  }, function SourcePropertyBinderTests__PropertyPathValueTest_del2(obj) {
+    return Type__BoxTypeInstance(Int32, Type__CastType(SimpleObjectWithProperty, obj).get_intProp());
+  }]), null);
+  helper = BinderTestHelper_factory();
+  sourceBinder.useDataBinder(helper);
+  src = SourcePropertyBinderTests__PrepSimpleObject();
+  sourceBinder.set_source(src);
+  assert.ok(helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(src.get_selfProp().get_intProp(), Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+  helper.set_sourceValueUpdateCalled(false);
+  lastValue = src.get_selfProp().get_intProp();
+  src.get_selfProp().set_intProp( -1);
+  assert.ok(!helper.get_sourceValueUpdateCalled(), "SourceValueUpdate called");
+  assert.equal(lastValue, Type__UnBoxTypeInstance(Int32, sourceBinder.get_value()), "SourceBinder.Value");
+};
+Type__RegisterReferenceType(SourcePropertyBinderTests, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests", Object, []);
+function IocContainer() {
+};
+IocContainer.typeId = "p";
+function IocContainer_factory() {
+  var this_;
+  this_ = new IocContainer();
+  this_.__ctor();
+  return this_;
+};
+IocContainer.defaultConstructor = IocContainer_factory;
+ptyp_ = IocContainer.prototype;
+ptyp_.factoryMap = null;
+ptyp_.asyncFactoryMap = null;
+ptyp_.resolutionCount = 0;
+ptyp_.register = function IocContainer__Register(T, factory) {
+  var this_, typeRegistry;
+  this_ = this;
+  typeRegistry = TypeRegistry_factory(factory);
+  this_.factoryMap.set_item(T.typeId, typeRegistry);
+  return IocHelper_factory(function IocContainer__Register_del() {
+    typeRegistry.set_isStatic(true);
+    return;
+  }, function IocContainer__Register_del2(type) {
+    this_.factoryMap.set_item(type.typeId, typeRegistry);
+    return;
+  });
+};
+ptyp_.resolve = function IocContainer__Resolve(T) {
+  var rv;
+  rv = this.tryResolve(T);
+  if (rv === null)
+    throw new Error("type not registreed");
+  return rv;
+};
+ptyp_.tryResolve = function IocContainer__TryResolve(T) {
+  var typeRegistry;
+  if (this.resolutionCount > 100)
+    throw new Error("Ioc has cycles, use ResolveLazy<T> to break cycle");
+  this.resolutionCount++;
+  try {
+    typeRegistry = null;
+    if (this.factoryMap.tryGetValue(T.typeId, {
+      read: function() {
+        return typeRegistry;
+      },
+      write: function(arg0) {
+        return typeRegistry = arg0;
+      }
+    }))
+      return typeRegistry.getValue(this);
+    return null;
+  } finally {
+    this.resolutionCount--;
+  }
+};
+ptyp_.resolveLazy = function IocContainer__ResolveLazy(T) {
+  var this_, Lazy_$T$_;
+  Lazy_$T$_ = Lazy(T, true);
+  this_ = this;
+  return Lazy_$T$_.__ctor(function IocContainer__ResolveLazy_del() {
+    return this_.factoryMap.get_item(T.typeId).getValue(this_);
+  });
+};
+ptyp_.__ctor = function IocContainer____ctor() {
+  this.factoryMap = StringDictionary_$TypeRegistry$_.defaultConstructor();
+  this.asyncFactoryMap = StringDictionary_$TypeRegistry$_.defaultConstructor();
+  this.resolutionCount = 0;
+};
+Type__RegisterReferenceType(IocContainer, "Sunlight.Framework.IocContainer", Object, []);
+function IocTestType2() {
+};
+IocTestType2.typeId = "q";
+function IocTestType2_factory(x) {
+  var this_;
+  this_ = new IocTestType2();
+  this_.__ctor(x);
+  return this_;
+};
+ptyp_ = IocTestType2.prototype;
+ptyp_.x = 0;
+ptyp_.__ctor = function IocTestType2____ctor(x) {
+  this.x = x;
+};
+ptyp_.testMethod = function IocTestType2__TestMethod() {
+  return this.x;
+};
+Type__RegisterReferenceType(IocTestType2, "Sunlight.Framework.Test.IocTestType2", Object, []);
+function IocTestType1Base() {
+};
+IocTestType1Base.typeId = "r";
+function IocTestType1Base_factory(x) {
+  var this_;
+  this_ = new IocTestType1Base();
+  this_.__ctor(x);
+  return this_;
+};
+ptyp_ = IocTestType1Base.prototype;
+ptyp_.x = 0;
+ptyp_.__ctor = function IocTestType1Base____ctor(x) {
+  this.x = x;
+};
+ptyp_.testMethodBase = function IocTestType1Base__TestMethodBase() {
+  return this.x;
+};
+Type__RegisterReferenceType(IocTestType1Base, "Sunlight.Framework.Test.IocTestType1Base", Object, []);
+function IIocTestType1() {
+};
+IIocTestType1.typeId = "b";
+Type__RegisterInterface(IIocTestType1, "Sunlight.Framework.Test.IIocTestType1");
+function IocTestType1() {
+};
+IocTestType1.typeId = "s";
+function IocTestType1_factory(x, y) {
+  var this_;
+  this_ = new IocTestType1();
+  this_.__ctor0(x, y);
+  return this_;
+};
+ptyp_ = new IocTestType1Base();
+IocTestType1.prototype = ptyp_;
+ptyp_.y = 0;
+ptyp_.__ctor0 = function IocTestType1____ctor(x, y) {
+  this.__ctor(x);
+  this.y = y;
+};
+ptyp_.testMethod = function IocTestType1__TestMethod() {
+  return this.y + this.testMethodBase();
+};
+ptyp_.V_TestMethod_b = ptyp_.testMethod;
+Type__RegisterReferenceType(IocTestType1, "Sunlight.Framework.Test.IocTestType1", IocTestType1Base, [IIocTestType1]);
+function IocHelper() {
+};
+IocHelper.typeId = "t";
+function IocHelper_factory(isSingleton, registerAs) {
+  var this_;
+  this_ = new IocHelper();
+  this_.__ctor(isSingleton, registerAs);
+  return this_;
+};
+ptyp_ = IocHelper.prototype;
+ptyp_.isSingleton0 = null;
+ptyp_.registerAs = null;
+ptyp_.__ctor = function IocHelper____ctor(isSingleton, registerAs) { {
+    this.registerAs = registerAs;
+    this.isSingleton0 = isSingleton;
+  }
+};
+ptyp_.as = function IocHelper__As(T) {
+  this.registerAs(T);
+  return this;
+};
+ptyp_.isSingleton = function IocHelper__IsSingleton() {
+  this.isSingleton0();
+  return this;
+};
+Type__RegisterReferenceType(IocHelper, "Sunlight.Framework.IoC.IocHelper", Object, []);
+function EventBus() {
+};
+EventBus.typeId = "u";
+function EventBus_factory() {
+  var this_;
+  this_ = new EventBus();
+  this_.__ctor();
+  return this_;
+};
+EventBus.defaultConstructor = EventBus_factory;
+ptyp_ = EventBus.prototype;
+ptyp_.eventSubscriptsion = null;
+ptyp_.oneTimeValues = null;
+ptyp_.subscribe = function EventBus__Subscribe(T, callback) {
+  var registeredCallback, typeId, evt;
+  ExceptionHelpers__ThrowOnArgumentNull(callback, "callback");
+  registeredCallback;
+  typeId = T.typeId;
+  evt = this.oneTimeValues[typeId];
+  if (!Object__IsNullOrUndefined(evt))
+    callback(Type__UnBoxTypeInstance(T, evt));
+  if (!this.eventSubscriptsion.tryGetValue(typeId, {
+    read: function() {
+      return registeredCallback;
+    },
+    write: function(arg0) {
+      return registeredCallback = arg0;
+    }
+  }))
+    this.eventSubscriptsion.set_item(typeId, callback);
+  else
+    this.eventSubscriptsion.set_item(typeId, Delegate__Combine(registeredCallback, callback));
+};
+ptyp_.unSubscribe = function EventBus__UnSubscribe(T, callback) {
+  var registeredCallback, typeId, act;
+  ExceptionHelpers__ThrowOnArgumentNull(callback, "callback");
+  registeredCallback;
+  typeId = T.typeId;
+  if (this.eventSubscriptsion.tryGetValue(typeId, {
+    read: function() {
+      return registeredCallback;
+    },
+    write: function(arg0) {
+      return registeredCallback = arg0;
+    }
+  })) {
+    act = registeredCallback;
+    act = Delegate__Remove(act, callback);
+    if (!act)
+      this.eventSubscriptsion.remove(typeId);
+    else
+      this.eventSubscriptsion.set_item(typeId, act);
+  }
+};
+ptyp_.raise = function EventBus__Raise(T, evt) {
+  var registeredCallback, type, typeId;
+  ExceptionHelpers__ThrowOnArgumentNull(Type__BoxTypeInstance(T, evt), "evt");
+  registeredCallback;
+  type = T;
+  do {
+    typeId = type.typeId;
+    if (this.eventSubscriptsion.tryGetValue(typeId, {
+      read: function() {
+        return registeredCallback;
+      },
+      write: function(arg0) {
+        return registeredCallback = arg0;
+      }
+    }))
+      registeredCallback(evt);
+    type = type.baseType;
+  } while (type);
+};
+ptyp_.raiseOneTime = function EventBus__RaiseOneTime(T, evt) {
+  var typeId, alreadyRegistered;
+  ExceptionHelpers__ThrowOnArgumentNull(Type__BoxTypeInstance(T, evt), "evt");
+  typeId = T.typeId;
+  alreadyRegistered = this.oneTimeValues[typeId];
+  if (!Object__IsNullOrUndefined(alreadyRegistered))
+    throw new Error("Event " + T.name + " already raised");
+  this.oneTimeValues[typeId] = Type__BoxTypeInstance(T, evt);
+  this.raise(T, evt);
+  this.eventSubscriptsion.remove(typeId);
+};
+ptyp_.__ctor = function EventBus____ctor() {
+  this.eventSubscriptsion = StringDictionary_$Function$_.defaultConstructor();
+  this.oneTimeValues = {
+  };
+};
+Type__RegisterReferenceType(EventBus, "Sunlight.Framework.EventBus", Object, []);
+function Evt1() {
+};
+Evt1.typeId = "v";
+function Evt1_factory() {
+  return new Evt1();
+};
+Evt1.defaultConstructor = Evt1_factory;
+ptyp_ = Evt1.prototype;
+ptyp_.x = 0;
+ptyp_.__ctor = function Evt1____ctor() {
+};
+Type__RegisterReferenceType(Evt1, "Sunlight.Framework.Test.EventBusTests/Evt1", Object, []);
+function ValueType() {
+};
+ValueType.typeId = "w";
+ptyp_ = ValueType.prototype;
+ptyp_.boxedValue = null;
+Type__RegisterReferenceType(ValueType, "System.ValueType", Object, []);
+function Evt2(boxedValue) {
+  this.boxedValue = boxedValue;
+};
+Evt2.typeId = "x";
+Evt2.getDefaultValue = function() {
+  return {
+    x: 0
+  };
+};
+Evt2.prototype = new ValueType();
+Type__RegisterStructType(Evt2, "Sunlight.Framework.Test.EventBusTests/Evt2", []);
+function Int32(boxedValue) {
+  this.boxedValue = boxedValue;
+};
+Int32.typeId = "y";
+Int32.getDefaultValue = function() {
+  return 0;
+};
+Int32.prototype = new ValueType();
+Type__RegisterStructType(Int32, "System.Int32", []);
+function INotifyPropertyChanged() {
+};
+INotifyPropertyChanged.typeId = "d";
+Type__RegisterInterface(INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
+function ObservableObject() {
+};
+ObservableObject.typeId = "z";
+ptyp_ = ObservableObject.prototype;
+ptyp_.eventHandlers = null;
+ptyp_.linkedProperties = null;
+ptyp_.anyPropertyListener = null;
+ptyp_.addPropertyChangedListener = function ObservableObject__AddPropertyChangedListener(propertyName, callback) {
+  var cb;
+  cb;
+  if (!this.eventHandlers)
+    this.eventHandlers = StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_.defaultConstructor();
+  if (!this.eventHandlers.tryGetValue(propertyName, {
+    read: function() {
+      return cb;
+    },
+    write: function(arg0) {
+      return cb = arg0;
+    }
+  }))
+    cb = callback;
+  else
+    cb = Delegate__Combine(cb, callback);
+  this.eventHandlers.set_item(propertyName, cb);
+};
+ptyp_.removePropertyChangedListener = function ObservableObject__RemovePropertyChangedListener(propertyName, callback) {
+  var cb;
+  if (!this.eventHandlers)
+    return;
+  cb;
+  if (this.eventHandlers.tryGetValue(propertyName, {
+    read: function() {
+      return cb;
+    },
+    write: function(arg0) {
+      return cb = arg0;
+    }
+  })) {
+    cb = Delegate__Remove(cb, callback);
+    if (cb)
+      this.eventHandlers.set_item(propertyName, cb);
+    else
+      this.eventHandlers.remove(propertyName);
+  }
+};
+ptyp_.firePropertyChanged = function ObservableObject__FirePropertyChanged(propertyName) {
+  var cb, linkedProperties, iProp;
+  if (this.eventHandlers) {
+    cb;
+    if (this.eventHandlers.tryGetValue(propertyName, {
+      read: function() {
+        return cb;
+      },
+      write: function(arg0) {
+        return cb = arg0;
+      }
+    }))
+      cb(this, propertyName);
+    if (this.linkedProperties) {
+      linkedProperties;
+      if (this.linkedProperties.tryGetValue(propertyName, {
+        read: function() {
+          return linkedProperties;
+        },
+        write: function(arg0) {
+          return linkedProperties = arg0;
+        }
+      }))
+        for (iProp = 0; iProp < linkedProperties.get_count(); iProp++)
+          if (this.eventHandlers.tryGetValue(linkedProperties.get_item(iProp), {
+            read: function() {
+              return cb;
+            },
+            write: function(arg0) {
+              return cb = arg0;
+            }
+          }))
+            cb(this, propertyName);
+    }
+  }
+  if (this.anyPropertyListener)
+    this.anyPropertyListener(this, propertyName);
+};
+ptyp_.__ctor = function ObservableObject____ctor() {
+  this.eventHandlers = null;
+  this.linkedProperties = null;
+};
+ptyp_.V_AddPropertyChangedListener_d = ptyp_.addPropertyChangedListener;
+ptyp_.V_RemovePropertyChangedListener_d = ptyp_.removePropertyChangedListener;
+Type__RegisterReferenceType(ObservableObject, "Sunlight.Framework.Observables.ObservableObject", Object, [INotifyPropertyChanged]);
+function ICollection() {
+};
+ICollection.typeId = "c";
+Type__RegisterInterface(ICollection, "System.Collections.ICollection");
+function ObservableTestObject() {
+};
+ObservableTestObject.typeId = "ab";
+function ObservableTestObject_factory() {
+  var this_;
+  this_ = new ObservableTestObject();
+  this_.__ctor0();
+  return this_;
+};
+ObservableTestObject.defaultConstructor = ObservableTestObject_factory;
+ptyp_ = new ObservableObject();
+ObservableTestObject.prototype = ptyp_;
+ptyp_.strField = null;
+ptyp_.intProp = 0;
+ptyp_.set_intProp = function ObservableTestObject__set_IntProp(value) {
+  if (value != this.intProp) {
+    this.intProp = value;
+    this.firePropertyChanged("IntProp");
+  }
+};
+ptyp_.set_stringProp = function ObservableTestObject__set_StringProp(value) {
+  if (value !== this.strField) {
+    this.strField = value;
+    this.firePropertyChanged("StringProp");
+  }
+};
+ptyp_.__ctor0 = function ObservableTestObject____ctor() {
+  this.__ctor();
+};
+Type__RegisterReferenceType(ObservableTestObject, "Sunlight.Framework.Test.ObservableObjectTests/ObservableTestObject", ObservableObject, []);
 function ISourceDataBinder() {
 };
 ISourceDataBinder.typeId = "f";
-Type$$RegisterInterface(ISourceDataBinder, "Sunlight.Framework.Binders.ISourceDataBinder");
+Type__RegisterInterface(ISourceDataBinder, "Sunlight.Framework.Binders.ISourceDataBinder");
 function ITargetDataBinder() {
 };
 ITargetDataBinder.typeId = "g";
-Type$$RegisterInterface(ITargetDataBinder, "Sunlight.Framework.Binders.ITargetDataBinder");
+Type__RegisterInterface(ITargetDataBinder, "Sunlight.Framework.Binders.ITargetDataBinder");
 function DataBinder() {
 };
-DataBinder.typeId = "p";
+DataBinder.typeId = "bb";
 function DataBinder_factory(sourceBinder, targetBinder, dataBindingMode, converter) {
   var this_;
   this_ = new DataBinder();
@@ -508,28 +936,30 @@ ptyp_.targetBinder = null;
 ptyp_.converter = null;
 ptyp_.bindingMode = 0;
 ptyp_.firstBindingSuccessful = false;
-ptyp_.__ctor = function DataBinder$$$$ctor(sourceBinder, targetBinder, dataBindingMode, converter) {
-  this.sourceBinder = sourceBinder;
-  this.targetBinder = targetBinder;
-  this.bindingMode = dataBindingMode;
-  this.converter = converter;
-  this.targetBinder.useDataBinder(this);
-  this.sourceBinder.useDataBinder(this);
+ptyp_.__ctor = function DataBinder____ctor(sourceBinder, targetBinder, dataBindingMode, converter) {
+  this.firstBindingSuccessful = false; {
+    this.sourceBinder = sourceBinder;
+    this.targetBinder = targetBinder;
+    this.bindingMode = dataBindingMode;
+    this.converter = converter;
+    this.targetBinder.useDataBinder(this);
+    this.sourceBinder.useDataBinder(this);
+  }
 };
-ptyp_.setTarget = function DataBinder$$SetTarget(target) {
+ptyp_.setTarget = function DataBinder__SetTarget(target) {
   this.targetBinder.set_target(target);
   this.applyBinding();
 };
-ptyp_.setSource = function DataBinder$$SetSource(source) {
+ptyp_.setSource = function DataBinder__SetSource(source) {
   this.sourceBinder.set_source(source);
 };
-ptyp_.sourceValueUpdated = function DataBinder$$SourceValueUpdated() {
+ptyp_.sourceValueUpdated = function DataBinder__SourceValueUpdated() {
   this.applyBinding();
 };
-ptyp_.targetValueUpdated = function DataBinder$$TargetValueUpdated() {
+ptyp_.targetValueUpdated = function DataBinder__TargetValueUpdated() {
   this.applyBackBinding();
 };
-ptyp_.applyBinding = function DataBinder$$ApplyBinding() {
+ptyp_.applyBinding = function DataBinder__ApplyBinding() {
   if (this.targetBinder.get_isActive()) {
     if (this.bindingMode == 0) {
       if (!this.firstBindingSuccessful)
@@ -551,17 +981,17 @@ ptyp_.applyBinding = function DataBinder$$ApplyBinding() {
       this.targetBinder.setDefault();
   }
 };
-ptyp_.applyBackBinding = function DataBinder$$ApplyBackBinding() {
+ptyp_.applyBackBinding = function DataBinder__ApplyBackBinding() {
   if (!this.targetBinder.get_isWriteOnly())
     if (this.sourceBinder.get_isActive())
       this.sourceBinder.set_value(this.targetBinder.get_value());
 };
 ptyp_.V_SourceValueUpdated_f = ptyp_.sourceValueUpdated;
 ptyp_.V_TargetValueUpdated_g = ptyp_.targetValueUpdated;
-Type$$RegisterReferenceType(DataBinder, "Sunlight.Framework.Binders.DataBinder", Object, [ISourceDataBinder, ITargetDataBinder]);
+Type__RegisterReferenceType(DataBinder, "Sunlight.Framework.Binders.DataBinder", Object, [ISourceDataBinder, ITargetDataBinder]);
 function SourcePropertyBinder() {
 };
-SourcePropertyBinder.typeId = "q";
+SourcePropertyBinder.typeId = "cb";
 function SourcePropertyBinder_factory(propertyPartNames, propertyGetterChain, propertySetter) {
   var this_;
   this_ = new SourcePropertyBinder();
@@ -578,37 +1008,38 @@ ptyp_.propertySetter = null;
 ptyp_.dataBinderBase = null;
 ptyp_.value = null;
 ptyp_.isActive = false;
-ptyp_.__ctor = function SourcePropertyBinder$$$$ctor(propertyPartNames, propertyGetterChain, propertySetter) {
-  var i;
-  this.propertyPartNames = propertyPartNames;
-  this.chainLength = this.propertyPartNames.V_get_Length();
-  this.propertyGetterChain = propertyGetterChain;
-  this.propertySetter = propertySetter;
-  this.objectChain = ArrayG_$Object$_.__ctor0(this.chainLength);
-  this.changeRegistrations = ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_.__ctor0(this.chainLength);
-  for (i = this.chainLength - 1; i >= 0; i--)
-    this.changeRegistrations.set_item(i, this.getChangeTrackerAt(i));
+ptyp_.__ctor = function SourcePropertyBinder____ctor(propertyPartNames, propertyGetterChain, propertySetter) {
+  var i; {
+    this.propertyPartNames = propertyPartNames;
+    this.chainLength = this.propertyPartNames.V_get_Length();
+    this.propertyGetterChain = propertyGetterChain;
+    this.propertySetter = propertySetter;
+    this.objectChain = ArrayG_$Object$_.__ctor0(this.chainLength);
+    this.changeRegistrations = ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_.__ctor0(this.chainLength);
+    for (i = this.chainLength - 1; i >= 0; i--)
+      this.changeRegistrations.set_item(i, this.getChangeTrackerAt(i));
+  }
 };
-ptyp_.set_source = function SourcePropertyBinder$$set_Source(value) {
+ptyp_.set_source = function SourcePropertyBinder__set_Source(value) {
   if (this.objectChain.get_item(0) !== value) {
     this.setObjectChainElementValue(0, value);
     this.calculateValueFrom(0);
   }
 };
-ptyp_.get_value = function SourcePropertyBinder$$get_Value() {
+ptyp_.get_value = function SourcePropertyBinder__get_Value() {
   return this.value;
 };
-ptyp_.set_value = function SourcePropertyBinder$$set_Value(value) {
+ptyp_.set_value = function SourcePropertyBinder__set_Value(value) {
   if (this.isActive && this.propertySetter)
     this.propertySetter(this.objectChain.get_item(this.objectChain.V_get_Length() - 1), value);
 };
-ptyp_.get_isActive = function SourcePropertyBinder$$get_IsActive() {
+ptyp_.get_isActive = function SourcePropertyBinder__get_IsActive() {
   return this.isActive;
 };
-ptyp_.useDataBinder = function SourcePropertyBinder$$UseDataBinder(dataBinderBase) {
+ptyp_.useDataBinder = function SourcePropertyBinder__UseDataBinder(dataBinderBase) {
   this.dataBinderBase = dataBinderBase;
 };
-ptyp_.calculateValueFrom = function SourcePropertyBinder$$CalculateValueFrom(index) {
+ptyp_.calculateValueFrom = function SourcePropertyBinder__CalculateValueFrom(index) {
   var i, j, nextValue;
   for (i = index; i < this.chainLength; i++)
     if (this.objectChain.get_item(i) === null) {
@@ -634,76 +1065,66 @@ ptyp_.calculateValueFrom = function SourcePropertyBinder$$CalculateValueFrom(ind
       }
     }
 };
-ptyp_.setObjectChainElementValue = function SourcePropertyBinder$$SetObjectChainElementValue(index, value) {
+ptyp_.setObjectChainElementValue = function SourcePropertyBinder__SetObjectChainElementValue(index, value) {
   var oldValue, newNotifiableValue;
   if (index > this.chainLength)
     return;
-  oldValue = Type$$AsType(INotifyPropertyChanged, this.objectChain.get_item(index));
+  oldValue = Type__AsType(INotifyPropertyChanged, this.objectChain.get_item(index));
   if (oldValue)
     oldValue.V_RemovePropertyChangedListener_d(this.propertyPartNames.get_item(index), this.changeRegistrations.get_item(index));
   this.objectChain.set_item(index, value);
-  newNotifiableValue = Type$$AsType(INotifyPropertyChanged, value);
+  newNotifiableValue = Type__AsType(INotifyPropertyChanged, value);
   if (newNotifiableValue)
     newNotifiableValue.V_AddPropertyChangedListener_d(this.propertyPartNames.get_item(index), this.changeRegistrations.get_item(index));
 };
-ptyp_.getChangeTrackerAt = function SourcePropertyBinder$$GetChangeTrackerAt(index) {
+ptyp_.getChangeTrackerAt = function SourcePropertyBinder__GetChangeTrackerAt(index) {
   var this_;
   this_ = this;
-  return function SourcePropertyBinder$24$24GetChangeTrackerAt_del(sender, prop) {
+  return function SourcePropertyBinder__GetChangeTrackerAt_del(sender, prop) {
     this_.calculateValueFrom(index);
+    return;
   };
 };
-Type$$RegisterReferenceType(SourcePropertyBinder, "Sunlight.Framework.Binders.SourcePropertyBinder", Object, []);
-function ValueType() {
-};
-ValueType.typeId = "r";
-ptyp_ = ValueType.prototype;
-ptyp_.boxedValue = null;
-Type$$RegisterReferenceType(ValueType, "System.ValueType", Object, []);
-function Int32(boxedValue) {
-  this.boxedValue = boxedValue;
-};
-Int32.typeId = "s";
-Int32.getDefaultValue = function() {
-  return 0;
-};
-Int32.prototype = new ValueType();
-Type$$RegisterStructType(Int32, "System.Int32", []);
+Type__RegisterReferenceType(SourcePropertyBinder, "Sunlight.Framework.Binders.SourcePropertyBinder", Object, []);
 function SimpleObjectWithProperty() {
 };
-SimpleObjectWithProperty.typeId = "t";
+SimpleObjectWithProperty.typeId = "db";
 function SimpleObjectWithProperty_factory() {
   return new SimpleObjectWithProperty();
 };
 SimpleObjectWithProperty.defaultConstructor = SimpleObjectWithProperty_factory;
 ptyp_ = SimpleObjectWithProperty.prototype;
-ptyp_.set_stringProp = function SimpleObjectWithProperty$$set_StringProp(value) {
-  return this.StringProp = value;
+ptyp_._$StringProp$_k__BackingField = null;
+ptyp_._$IntProp$_k__BackingField = 0;
+ptyp_._$SelfProp$_k__BackingField = null;
+ptyp_._$NotifiableProp$_k__BackingField = null;
+ptyp_.set_stringProp = function SimpleObjectWithProperty__set_StringProp(value) {
+  this._$StringProp$_k__BackingField = value;
 };
-ptyp_.get_intProp = function SimpleObjectWithProperty$$get_IntProp() {
-  return this.IntProp;
+ptyp_.get_intProp = function SimpleObjectWithProperty__get_IntProp() {
+  return this._$IntProp$_k__BackingField;
 };
-ptyp_.set_intProp = function SimpleObjectWithProperty$$set_IntProp(value) {
-  return this.IntProp = value;
+ptyp_.set_intProp = function SimpleObjectWithProperty__set_IntProp(value) {
+  this._$IntProp$_k__BackingField = value;
 };
-ptyp_.get_selfProp = function SimpleObjectWithProperty$$get_SelfProp() {
-  return this.SelfProp;
+ptyp_.get_selfProp = function SimpleObjectWithProperty__get_SelfProp() {
+  return this._$SelfProp$_k__BackingField;
 };
-ptyp_.set_selfProp = function SimpleObjectWithProperty$$set_SelfProp(value) {
-  return this.SelfProp = value;
+ptyp_.set_selfProp = function SimpleObjectWithProperty__set_SelfProp(value) {
+  this._$SelfProp$_k__BackingField = value;
 };
-ptyp_.get_notifiableProp = function SimpleObjectWithProperty$$get_NotifiableProp() {
-  return this.NotifiableProp;
+ptyp_.get_notifiableProp = function SimpleObjectWithProperty__get_NotifiableProp() {
+  return this._$NotifiableProp$_k__BackingField;
 };
-ptyp_.set_notifiableProp = function SimpleObjectWithProperty$$set_NotifiableProp(value) {
-  return this.NotifiableProp = value;
+ptyp_.set_notifiableProp = function SimpleObjectWithProperty__set_NotifiableProp(value) {
+  this._$NotifiableProp$_k__BackingField = value;
 };
-ptyp_.__ctor = function SimpleObjectWithProperty$$$$ctor() {
+ptyp_.__ctor = function SimpleObjectWithProperty____ctor() {
 };
-Type$$RegisterReferenceType(SimpleObjectWithProperty, "Sunlight.Framework.Test.Binders.SimpleObjectWithProperty", Object, []);
+Type__RegisterReferenceType(SimpleObjectWithProperty, "Sunlight.Framework.Test.Binders.SimpleObjectWithProperty", Object, []);
 function TargetBinder() {
 };
-TargetBinder.typeId = "u";
+TargetBinder.typeId = "eb";
 function TargetBinder_factory(propertyName, getter, setter, defaultValue) {
   var this_;
   this_ = new TargetBinder();
@@ -718,145 +1139,58 @@ ptyp_.setter = null;
 ptyp_.propertyName = null;
 ptyp_.defaultValue = null;
 ptyp_.dataBinder = null;
-ptyp_.__ctor = function TargetBinder$$$$ctor(propertyName, getter, setter, defaultValue) {
-  this.propertyName = propertyName;
-  this.getter = getter;
-  this.setter = setter;
-  this.defaultValue = defaultValue;
+ptyp_.__ctor = function TargetBinder____ctor(propertyName, getter, setter, defaultValue) { {
+    this.propertyName = propertyName;
+    this.getter = getter;
+    this.setter = setter;
+    this.defaultValue = defaultValue;
+  }
 };
-ptyp_.get_value = function TargetBinder$$get_Value() {
+ptyp_.get_value = function TargetBinder__get_Value() {
   return this.value;
 };
-ptyp_.set_value = function TargetBinder$$set_Value(value) {
+ptyp_.set_value = function TargetBinder__set_Value(value) {
   if (this.value !== value && this.setter) {
     this.value = value;
     if (this.get_isActive())
       this.setter(this.target, this.value);
   }
 };
-ptyp_.get_isWriteOnly = function TargetBinder$$get_IsWriteOnly() {
+ptyp_.get_isWriteOnly = function TargetBinder__get_IsWriteOnly() {
   return !this.getter;
 };
-ptyp_.get_isActive = function TargetBinder$$get_IsActive() {
+ptyp_.get_isActive = function TargetBinder__get_IsActive() {
   return this.target;
 };
-ptyp_.set_target = function TargetBinder$$set_Target(value) {
+ptyp_.set_target = function TargetBinder__set_Target(value) {
   if (this.target != value) {
     if (this.target)
-      this.target.V_RemovePropertyChangedListener_d(this.propertyName, Delegate$$Create("onTargetUpdated", this));
+      this.target.V_RemovePropertyChangedListener_d(this.propertyName, Delegate__Create("onTargetUpdated", this));
     this.target = value;
     this.value = null;
     if (this.target) {
-      this.target.V_AddPropertyChangedListener_d(this.propertyName, Delegate$$Create("onTargetUpdated", this));
+      this.target.V_AddPropertyChangedListener_d(this.propertyName, Delegate__Create("onTargetUpdated", this));
       if (this.getter)
         this.value = this.getter(this.target);
     }
   }
 };
-ptyp_.setDefault = function TargetBinder$$SetDefault() {
+ptyp_.setDefault = function TargetBinder__SetDefault() {
   this.set_value(this.defaultValue);
 };
-ptyp_.useDataBinder = function TargetBinder$$UseDataBinder(dataBinder) {
+ptyp_.useDataBinder = function TargetBinder__UseDataBinder(dataBinder) {
   this.dataBinder = dataBinder;
 };
-ptyp_.onTargetUpdated = function TargetBinder$$OnTargetUpdated(sender, propertyName) {
+ptyp_.onTargetUpdated = function TargetBinder__OnTargetUpdated(sender, propertyName) {
   if (this.dataBinder && this.getter) {
     this.value = this.getter(this.target);
     this.dataBinder.V_TargetValueUpdated_g();
   }
 };
-Type$$RegisterReferenceType(TargetBinder, "Sunlight.Framework.Binders.TargetBinder", Object, []);
-function INotifyPropertyChanged() {
-};
-INotifyPropertyChanged.typeId = "d";
-Type$$RegisterInterface(INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
-function ObservableObject() {
-};
-ObservableObject.typeId = "v";
-ptyp_ = ObservableObject.prototype;
-ptyp_.eventHandlers = null;
-ptyp_.linkedProperties = null;
-ptyp_.anyPropertyListener = null;
-ptyp_.addPropertyChangedListener = function ObservableObject$$AddPropertyChangedListener(propertyName, callback) {
-  var cb;
-  if (!this.eventHandlers)
-    this.eventHandlers = StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_.defaultConstructor();
-  if (!this.eventHandlers.tryGetValue(propertyName, {
-    read: function() {
-      return cb;
-    },
-    write: function(arg0) {
-      return cb = arg0;
-    }
-  }))
-    cb = callback;
-  else
-    cb = Delegate$$Combine(cb, callback);
-  this.eventHandlers.set_item(propertyName, cb);
-};
-ptyp_.removePropertyChangedListener = function ObservableObject$$RemovePropertyChangedListener(propertyName, callback) {
-  var cb;
-  if (!this.eventHandlers)
-    return;
-  if (this.eventHandlers.tryGetValue(propertyName, {
-    read: function() {
-      return cb;
-    },
-    write: function(arg0) {
-      return cb = arg0;
-    }
-  })) {
-    cb = Delegate$$Remove(cb, callback);
-    if (cb)
-      this.eventHandlers.set_item(propertyName, cb);
-    else
-      this.eventHandlers.remove(propertyName);
-  }
-};
-ptyp_.firePropertyChanged = function ObservableObject$$FirePropertyChanged(propertyName) {
-  var cb, linkedProperties, iProp;
-  if (this.eventHandlers) {
-    if (this.eventHandlers.tryGetValue(propertyName, {
-      read: function() {
-        return cb;
-      },
-      write: function(arg0) {
-        return cb = arg0;
-      }
-    }))
-      cb(this, propertyName);
-    if (this.linkedProperties) {
-      if (this.linkedProperties.tryGetValue(propertyName, {
-        read: function() {
-          return linkedProperties;
-        },
-        write: function(arg0) {
-          return linkedProperties = arg0;
-        }
-      }))
-        for (iProp = 0; iProp < linkedProperties.get_count(); iProp++)
-          if (this.eventHandlers.tryGetValue(linkedProperties.get_item(iProp), {
-            read: function() {
-              return cb;
-            },
-            write: function(arg0) {
-              return cb = arg0;
-            }
-          }))
-            cb(this, propertyName);
-    }
-  }
-  if (this.anyPropertyListener)
-    this.anyPropertyListener(this, propertyName);
-};
-ptyp_.__ctor = function ObservableObject$$$$ctor() {
-};
-ptyp_.V_AddPropertyChangedListener_d = ptyp_.addPropertyChangedListener;
-ptyp_.V_RemovePropertyChangedListener_d = ptyp_.removePropertyChangedListener;
-Type$$RegisterReferenceType(ObservableObject, "Sunlight.Framework.Observables.ObservableObject", Object, [INotifyPropertyChanged]);
+Type__RegisterReferenceType(TargetBinder, "Sunlight.Framework.Binders.TargetBinder", Object, []);
 function SimpleNotifiableClass() {
 };
-SimpleNotifiableClass.typeId = "w";
+SimpleNotifiableClass.typeId = "fb";
 function SimpleNotifiableClass_factory() {
   var this_;
   this_ = new SimpleNotifiableClass();
@@ -870,61 +1204,57 @@ ptyp_.strField = null;
 ptyp_.intField = 0;
 ptyp_.selfField = null;
 ptyp_.objField = null;
-ptyp_.set_strProp = function SimpleNotifiableClass$$set_StrProp(value) {
+ptyp_.set_strProp = function SimpleNotifiableClass__set_StrProp(value) {
   if (this.strField !== value) {
     this.strField = value;
     this.firePropertyChanged("StrProp");
   }
 };
-ptyp_.get_intProp = function SimpleNotifiableClass$$get_IntProp() {
+ptyp_.get_intProp = function SimpleNotifiableClass__get_IntProp() {
   return this.intField;
 };
-ptyp_.set_intProp = function SimpleNotifiableClass$$set_IntProp(value) {
+ptyp_.set_intProp = function SimpleNotifiableClass__set_IntProp(value) {
   if (this.intField != value) {
     this.intField = value;
     this.firePropertyChanged("IntProp");
   }
 };
-ptyp_.set_selfProp = function SimpleNotifiableClass$$set_SelfProp(value) {
+ptyp_.set_selfProp = function SimpleNotifiableClass__set_SelfProp(value) {
   if (this.selfField != value) {
     this.selfField = value;
     this.firePropertyChanged("SelfProp");
   }
 };
-ptyp_.get_objProp = function SimpleNotifiableClass$$get_ObjProp() {
+ptyp_.get_objProp = function SimpleNotifiableClass__get_ObjProp() {
   return this.objField;
 };
-ptyp_.set_objProp = function SimpleNotifiableClass$$set_ObjProp(value) {
+ptyp_.set_objProp = function SimpleNotifiableClass__set_ObjProp(value) {
   if (this.objField != value) {
     this.objField = value;
     this.firePropertyChanged("ObjProp");
   }
 };
-ptyp_.__ctor0 = function SimpleNotifiableClass$$$$ctor() {
+ptyp_.__ctor0 = function SimpleNotifiableClass____ctor() {
   this.__ctor();
 };
-Type$$RegisterReferenceType(SimpleNotifiableClass, "Sunlight.Framework.Test.Binders.SimpleNotifiableClass", ObservableObject, []);
-String.typeId = "x";
-Type$$RegisterReferenceType(String, "System.String", Object, []);
-function ICollection() {
-};
-ICollection.typeId = "c";
-Type$$RegisterInterface(ICollection, "System.Collections.ICollection");
+Type__RegisterReferenceType(SimpleNotifiableClass, "Sunlight.Framework.Test.Binders.SimpleNotifiableClass", ObservableObject, []);
+String.typeId = "gb";
+Type__RegisterReferenceType(String, "System.String", Object, []);
 function ArrayImpl() {
 };
-ArrayImpl.typeId = "y";
+ArrayImpl.typeId = "hb";
 ptyp_ = ArrayImpl.prototype;
-ptyp_.system$$Collections$$ICollection$$get_Count = function ArrayImpl$$System$$Collections$$ICollection$$get_Count() {
+ptyp_.__ctor = function ArrayImpl____ctor() {
+};
+ptyp_.system__Collections__ICollection__get_Count = function ArrayImpl__System__Collections__ICollection__get_Count() {
   return this.V_get_Length();
 };
-ptyp_.__ctor = function ArrayImpl$$$$ctor() {
-};
-ptyp_.V_get_Count_c = ptyp_.system$$Collections$$ICollection$$get_Count;
+ptyp_.V_get_Count_c = ptyp_.system__Collections__ICollection__get_Count;
 ptyp_.V_CopyTo_c = function(arg0, arg1) {
   return this.V_CopyTo(arg0, arg1);
 };
-Type$$RegisterReferenceType(ArrayImpl, "System.ArrayImpl", Object, [ICollection]);
-function Delegate$$Combine(a, b) {
+Type__RegisterReferenceType(ArrayImpl, "System.ArrayImpl", Object, [ICollection]);
+function Delegate__Combine(a, b) {
   var funcs, rv;
   funcs = [];
   if (a != null)
@@ -938,11 +1268,11 @@ function Delegate$$Combine(a, b) {
     funcs.push(b);
   else
     return a;
-  rv = Delegate$$CreateJoinedArray(funcs);
+  rv = Delegate__CreateJoinedArray(funcs);
   rv.fullName = "Multicast Delegate";
   return rv;
 };
-function Delegate$$Create(functionName, instance) {
+function Delegate__Create(functionName, instance) {
   var func, fn;
   func = instance[functionName];
   fn = "__@" + functionName;
@@ -955,21 +1285,7 @@ function Delegate$$Create(functionName, instance) {
   }
   return instance[fn];
 };
-function Delegate$$CreateGeneric(functionName, instanceOrType, f, genericArguments) {
-  var fn, i;
-  fn = "__@" + functionName;
-  for (i = 0; i < genericArguments.length; ++i)
-    fn = fn + "_@" + genericArguments[i].typeId + "@";
-  if (!(fn in instanceOrType)) {
-    instanceOrType[fn] = function() {
-        return f.apply(instanceOrType, genericArguments.concat(Array.prototype.slice.call(arguments)));
-    };
-    instanceOrType[fn].fullName = instanceOrType.constructor.toString() + "::" + functionName;
-    instanceOrType[fn].isDelegate = true;
-  }
-  return instanceOrType[fn];
-};
-function Delegate$$Remove(source, value) {
+function Delegate__Remove(source, value) {
   var newArr, valArr, i, fullMatch, j, rv;
   if (source == value)
     return null;
@@ -1003,11 +1319,11 @@ function Delegate$$Remove(source, value) {
     return newArr[0];
   else if (newArr.length == source.funcs.length)
     return source;
-  rv = Delegate$$CreateJoinedArray(newArr);
+  rv = Delegate__CreateJoinedArray(newArr);
   rv.fullName = "Multicast Delegate";
   return rv;
 };
-function Delegate$$CreateJoinedArray(array) {
+function Delegate__CreateJoinedArray(array) {
   var rv, i;
   rv = function() {
     var rv1; {
@@ -1022,299 +1338,31 @@ function Delegate$$CreateJoinedArray(array) {
 };
 function Function0() {
 };
-Function0.typeId = "z";
+Function0.typeId = "ib";
 Function0.prototype = new Function();
-Type$$RegisterReferenceType(Function0, "System.MulticastDelegate", Function, []);
+Type__RegisterReferenceType(Function0, "System.MulticastDelegate", Function, []);
 function BinderTestHelper() {
 };
-BinderTestHelper.typeId = "ab";
+BinderTestHelper.typeId = "jb";
 function BinderTestHelper_factory() {
   return new BinderTestHelper();
 };
 BinderTestHelper.defaultConstructor = BinderTestHelper_factory;
 ptyp_ = BinderTestHelper.prototype;
-ptyp_.get_sourceValueUpdateCalled = function BinderTestHelper$$get_SourceValueUpdateCalled() {
-  return this.SourceValueUpdateCalled;
+ptyp_._$SourceValueUpdateCalled$_k__BackingField = false;
+ptyp_.get_sourceValueUpdateCalled = function BinderTestHelper__get_SourceValueUpdateCalled() {
+  return this._$SourceValueUpdateCalled$_k__BackingField;
 };
-ptyp_.set_sourceValueUpdateCalled = function BinderTestHelper$$set_SourceValueUpdateCalled(value) {
-  return this.SourceValueUpdateCalled = value;
+ptyp_.set_sourceValueUpdateCalled = function BinderTestHelper__set_SourceValueUpdateCalled(value) {
+  this._$SourceValueUpdateCalled$_k__BackingField = value;
 };
-ptyp_.sourceValueUpdated = function BinderTestHelper$$SourceValueUpdated() {
+ptyp_.sourceValueUpdated = function BinderTestHelper__SourceValueUpdated() {
   this.set_sourceValueUpdateCalled(true);
 };
-ptyp_.__ctor = function BinderTestHelper$$$$ctor() {
+ptyp_.__ctor = function BinderTestHelper____ctor() {
 };
 ptyp_.V_SourceValueUpdated_f = ptyp_.sourceValueUpdated;
-Type$$RegisterReferenceType(BinderTestHelper, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests/BinderTestHelper", Object, [ISourceDataBinder]);
-function IocContainer() {
-};
-IocContainer.typeId = "bb";
-function IocContainer_factory() {
-  var this_;
-  this_ = new IocContainer();
-  this_.__ctor();
-  return this_;
-};
-IocContainer.defaultConstructor = IocContainer_factory;
-ptyp_ = IocContainer.prototype;
-ptyp_.factoryMap = null;
-ptyp_.resolutionCount = 0;
-ptyp_.register = function IocContainer$$Register(T, factory) {
-  var this_, typeRegistry;
-  this_ = this;
-  typeRegistry = TypeRegistry_factory(factory);
-  this_.factoryMap.set_item(T.typeId, typeRegistry);
-  return IocHelper_factory(function IocContainer$24$24Register_del() {
-    typeRegistry.set_isStatic(true);
-  }, function IocContainer$24$24Register_del2(type) {
-    this_.factoryMap.set_item(type.typeId, typeRegistry);
-  });
-};
-ptyp_.resolve = function IocContainer$$Resolve(T) {
-  if (this.resolutionCount > 100)
-    throw new Error("Ioc has cycles, use ResolveLazy<T> to break cycle");
-  this.resolutionCount++;
-  try {
-    return this.factoryMap.get_item(T.typeId).getValue();
-  } finally {
-    this.resolutionCount--;
-  }
-};
-ptyp_.resolveLazy = function IocContainer$$ResolveLazy(T) {
-  var Lazy_$T$_;
-  Lazy_$T$_ = Lazy(T, true);
-  return Lazy_$T$_.__ctor(Delegate$$CreateGeneric("getValue", this.factoryMap.get_item(T.typeId), this.factoryMap.get_item(T.typeId).getValue, [T]));
-};
-ptyp_.__ctor = function IocContainer$$$$ctor() {
-  this.factoryMap = StringDictionary_$TypeRegistry$_.defaultConstructor();
-};
-Type$$RegisterReferenceType(IocContainer, "Sunlight.Framework.IocContainer", Object, []);
-function IocTestType2() {
-};
-IocTestType2.typeId = "cb";
-function IocTestType2_factory(x) {
-  var this_;
-  this_ = new IocTestType2();
-  this_.__ctor(x);
-  return this_;
-};
-ptyp_ = IocTestType2.prototype;
-ptyp_.x = 0;
-ptyp_.__ctor = function IocTestType2$$$$ctor(x) {
-  this.x = x;
-};
-ptyp_.testMethod = function IocTestType2$$TestMethod() {
-  return this.x;
-};
-Type$$RegisterReferenceType(IocTestType2, "Sunlight.Framework.Test.IocTestType2", Object, []);
-function IocTestType1Base() {
-};
-IocTestType1Base.typeId = "db";
-function IocTestType1Base_factory(x) {
-  var this_;
-  this_ = new IocTestType1Base();
-  this_.__ctor(x);
-  return this_;
-};
-ptyp_ = IocTestType1Base.prototype;
-ptyp_.x = 0;
-ptyp_.__ctor = function IocTestType1Base$$$$ctor(x) {
-  this.x = x;
-};
-ptyp_.testMethodBase = function IocTestType1Base$$TestMethodBase() {
-  return this.x;
-};
-Type$$RegisterReferenceType(IocTestType1Base, "Sunlight.Framework.Test.IocTestType1Base", Object, []);
-function IIocTestType1() {
-};
-IIocTestType1.typeId = "b";
-Type$$RegisterInterface(IIocTestType1, "Sunlight.Framework.Test.IIocTestType1");
-function IocTestType1() {
-};
-IocTestType1.typeId = "eb";
-function IocTestType1_factory(x, y) {
-  var this_;
-  this_ = new IocTestType1();
-  this_.__ctor0(x, y);
-  return this_;
-};
-ptyp_ = new IocTestType1Base();
-IocTestType1.prototype = ptyp_;
-ptyp_.y = 0;
-ptyp_.__ctor0 = function IocTestType1$$$$ctor(x, y) {
-  this.__ctor(x);
-  this.y = y;
-};
-ptyp_.testMethod = function IocTestType1$$TestMethod() {
-  return this.y + this.testMethodBase();
-};
-ptyp_.V_TestMethod_b = ptyp_.testMethod;
-Type$$RegisterReferenceType(IocTestType1, "Sunlight.Framework.Test.IocTestType1", IocTestType1Base, [IIocTestType1]);
-function IocHelper() {
-};
-IocHelper.typeId = "fb";
-function IocHelper_factory(isSingleton, registerAs) {
-  var this_;
-  this_ = new IocHelper();
-  this_.__ctor(isSingleton, registerAs);
-  return this_;
-};
-ptyp_ = IocHelper.prototype;
-ptyp_.isSingleton0 = null;
-ptyp_.registerAs = null;
-ptyp_.__ctor = function IocHelper$$$$ctor(isSingleton, registerAs) {
-  this.registerAs = registerAs;
-  this.isSingleton0 = isSingleton;
-};
-ptyp_.as = function IocHelper$$As(T) {
-  this.registerAs(T);
-  return this;
-};
-ptyp_.isSingleton = function IocHelper$$IsSingleton() {
-  this.isSingleton0();
-  return this;
-};
-Type$$RegisterReferenceType(IocHelper, "Sunlight.Framework.IoC.IocHelper", Object, []);
-function EventBus() {
-};
-EventBus.typeId = "gb";
-function EventBus_factory() {
-  var this_;
-  this_ = new EventBus();
-  this_.__ctor();
-  return this_;
-};
-EventBus.defaultConstructor = EventBus_factory;
-ptyp_ = EventBus.prototype;
-ptyp_.eventSubscriptsion = null;
-ptyp_.oneTimeValues = null;
-ptyp_.subscribe = function EventBus$$Subscribe(T, callback) {
-  var typeId, evt, registeredCallback;
-  ExceptionHelpers$$ThrowOnArgumentNull(callback, "callback");
-  typeId = T.typeId;
-  evt = this.oneTimeValues[typeId];
-  if (!Object$$IsNullOrUndefined(evt))
-    callback(Type$$UnBoxTypeInstance(T, evt));
-  if (!this.eventSubscriptsion.tryGetValue(typeId, {
-    read: function() {
-      return registeredCallback;
-    },
-    write: function(arg0) {
-      return registeredCallback = arg0;
-    }
-  }))
-    this.eventSubscriptsion.set_item(typeId, callback);
-  else
-    this.eventSubscriptsion.set_item(typeId, Delegate$$Combine(registeredCallback, callback));
-};
-ptyp_.unSubscribe = function EventBus$$UnSubscribe(T, callback) {
-  var typeId, registeredCallback, act;
-  ExceptionHelpers$$ThrowOnArgumentNull(callback, "callback");
-  typeId = T.typeId;
-  if (this.eventSubscriptsion.tryGetValue(typeId, {
-    read: function() {
-      return registeredCallback;
-    },
-    write: function(arg0) {
-      return registeredCallback = arg0;
-    }
-  })) {
-    act = registeredCallback;
-    act = Delegate$$Remove(act, callback);
-    if (!act)
-      this.eventSubscriptsion.remove(typeId);
-    else
-      this.eventSubscriptsion.set_item(typeId, act);
-  }
-};
-ptyp_.raise = function EventBus$$Raise(T, evt) {
-  var type, typeId, registeredCallback;
-  ExceptionHelpers$$ThrowOnArgumentNull(Type$$BoxTypeInstance(T, evt), "evt");
-  type = T;
-  do {
-    typeId = type.typeId;
-    if (this.eventSubscriptsion.tryGetValue(typeId, {
-      read: function() {
-        return registeredCallback;
-      },
-      write: function(arg0) {
-        return registeredCallback = arg0;
-      }
-    }))
-      registeredCallback(evt);
-    type = type.baseType;
-  } while (type);
-};
-ptyp_.raiseOneTime = function EventBus$$RaiseOneTime(T, evt) {
-  var typeId, alreadyRegistered;
-  ExceptionHelpers$$ThrowOnArgumentNull(Type$$BoxTypeInstance(T, evt), "evt");
-  typeId = T.typeId;
-  alreadyRegistered = this.oneTimeValues[typeId];
-  if (!Object$$IsNullOrUndefined(alreadyRegistered))
-    throw new Error("Event " + T.name + " already raised");
-  this.oneTimeValues[typeId] = Type$$BoxTypeInstance(T, evt);
-  this.raise(T, evt);
-  this.eventSubscriptsion.remove(typeId);
-};
-ptyp_.__ctor = function EventBus$$$$ctor() {
-  this.eventSubscriptsion = StringDictionary_$Function$_.defaultConstructor();
-  this.oneTimeValues = {
-  };
-};
-Type$$RegisterReferenceType(EventBus, "Sunlight.Framework.EventBus", Object, []);
-function Evt1() {
-};
-Evt1.typeId = "hb";
-function Evt1_factory() {
-  return new Evt1();
-};
-Evt1.defaultConstructor = Evt1_factory;
-ptyp_ = Evt1.prototype;
-ptyp_.x = 0;
-ptyp_.__ctor = function Evt1$$$$ctor() {
-};
-Type$$RegisterReferenceType(Evt1, "Sunlight.Framework.Test.EventBusTests/Evt1", Object, []);
-function Evt2(boxedValue) {
-  this.boxedValue = boxedValue;
-};
-Evt2.typeId = "ib";
-Evt2.getDefaultValue = function() {
-  return {
-    x: 0
-  };
-};
-Evt2.prototype = new ValueType();
-Type$$RegisterStructType(Evt2, "Sunlight.Framework.Test.EventBusTests/Evt2", []);
-function ObservableTestObject() {
-};
-ObservableTestObject.typeId = "jb";
-function ObservableTestObject_factory() {
-  var this_;
-  this_ = new ObservableTestObject();
-  this_.__ctor0();
-  return this_;
-};
-ObservableTestObject.defaultConstructor = ObservableTestObject_factory;
-ptyp_ = new ObservableObject();
-ObservableTestObject.prototype = ptyp_;
-ptyp_.strField = null;
-ptyp_.intProp = 0;
-ptyp_.set_intProp = function ObservableTestObject$$set_IntProp(value) {
-  if (value != this.intProp) {
-    this.intProp = value;
-    this.firePropertyChanged("IntProp");
-  }
-};
-ptyp_.set_stringProp = function ObservableTestObject$$set_StringProp(value) {
-  if (value !== this.strField) {
-    this.strField = value;
-    this.firePropertyChanged("StringProp");
-  }
-};
-ptyp_.__ctor0 = function ObservableTestObject$$$$ctor() {
-  this.__ctor();
-};
-Type$$RegisterReferenceType(ObservableTestObject, "Sunlight.Framework.Test.ObservableObjectTests/ObservableTestObject", ObservableObject, []);
+Type__RegisterReferenceType(BinderTestHelper, "Sunlight.Framework.Test.Binders.SourcePropertyBinderTests/BinderTestHelper", Object, [ISourceDataBinder]);
 function TypeRegistry() {
 };
 TypeRegistry.typeId = "kb";
@@ -1329,31 +1377,31 @@ ptyp_.factory = null;
 ptyp_.isCreated = false;
 ptyp_.isStatic = false;
 ptyp_.value = null;
-ptyp_.__ctor = function TypeRegistry$$$$ctor(factory) {
+ptyp_.__ctor = function TypeRegistry____ctor(factory) {
   this.factory = factory;
 };
-ptyp_.set_isStatic = function TypeRegistry$$set_IsStatic(value) {
+ptyp_.set_isStatic = function TypeRegistry__set_IsStatic(value) {
   this.isStatic = value;
 };
-ptyp_.getValue = function TypeRegistry$$GetValue() {
+ptyp_.getValue = function TypeRegistry__GetValue(ioc) {
   if (!this.isStatic)
-    return this.factory();
+    return this.factory(ioc);
   if (!this.isCreated) {
-    this.value = this.factory();
+    this.value = this.factory(ioc);
     this.isCreated = true;
   }
   return this.value;
 };
-Type$$RegisterReferenceType(TypeRegistry, "Sunlight.Framework.TypeRegistry", Object, []);
+Type__RegisterReferenceType(TypeRegistry, "Sunlight.Framework.TypeRegistry", Object, []);
 Error.typeId = "lb";
-Type$$RegisterReferenceType(Error, "System.Exception", Object, []);
+Type__RegisterReferenceType(Error, "System.Exception", Object, []);
 function ExceptionHelpers() {
 };
-function ExceptionHelpers$$ThrowOnOutOfRange(value, minValue, maxValue, argumentName) {
+function ExceptionHelpers__ThrowOnOutOfRange(value, minValue, maxValue, argumentName) {
   if (value < minValue || value > maxValue)
     throw new Error("Out of range exception: " + argumentName);
 };
-function ExceptionHelpers$$ThrowOnArgumentNull(value, argumentName) {
+function ExceptionHelpers__ThrowOnArgumentNull(value, argumentName) {
   if (value === null)
     throw new Error("ArgumentNull: " + argumentName);
 };
@@ -1364,132 +1412,19 @@ Function.getDefaultValue = function() {
 function IValueConverter() {
 };
 IValueConverter.typeId = "e";
-Type$$RegisterInterface(IValueConverter, "Sunlight.Framework.Binders.IValueConverter");
+Type__RegisterInterface(IValueConverter, "Sunlight.Framework.Binders.IValueConverter");
 Array.typeId = "ub";
-Type$$RegisterReferenceType(Array, "System.Array", Object, [ICollection]);
-function ArrayG(T, _callStatiConstructor) {
-  var ArrayG$1_$T$_, T$5b$5d_$T$_, __initTracker;
-  if (ArrayG[T.typeId])
-    return ArrayG[T.typeId];
-  ArrayG[T.typeId] = function System$$ArrayG$1() {
-  };
-  ArrayG$1_$T$_ = ArrayG[T.typeId];
-  ArrayG$1_$T$_.genericParameters = [T];
-  ArrayG$1_$T$_.genericClosure = ArrayG;
-  ArrayG$1_$T$_.typeId = "mb$" + T.typeId + "$";
-  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory(size) {
-    var this_;
-    this_ = new ArrayG$1_$T$_();
-    this_.__ctor0(size);
-    return this_;
-  };
-  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory(nativeArray) {
-    var this_;
-    this_ = new ArrayG$1_$T$_();
-    this_.__ctor1(nativeArray);
-    return this_;
-  };
-  ptyp_ = new ArrayImpl();
-  ArrayG$1_$T$_.prototype = ptyp_;
-  ptyp_.innerArray = null;
-  ptyp_.__ctor0 = function ArrayG$1$$$$ctor(size) {
-    var def, i;
-    this.__ctor();
-    this.innerArray = new Array(size);
-    def = Type$$GetDefaultValueStatic(T);
-    for (i = 0; i < size; i++)
-      this.innerArray[i] = def;
-  };
-  ptyp_.__ctor1 = function ArrayG$1$$$$ctor(nativeArray) {
-    this.__ctor();
-    this.innerArray = nativeArray;
-  };
-  ptyp_.get_length = function ArrayG$1$$get_Length() {
-    return this.innerArray.length;
-  };
-  ptyp_.get_item = function ArrayG$1$$get_Item(index) {
-    var arr;
-    arr = this.innerArray;
-    if (index < 0 || index >= arr.length)
-      throw new Error("index " + index + " out of range");
-    return arr[index];
-  };
-  ptyp_.set_item = function ArrayG$1$$set_Item(index, value) {
-    var arr;
-    arr = this.innerArray;
-    if (index < 0 || index >= arr.length)
-      throw new Error("index " + index + " out of range");
-    return arr[index] = value;
-  };
-  ptyp_.get_innerArray = function ArrayG$1$$get_InnerArray() {
-    return this.innerArray;
-  };
-  ptyp_.copyTo = function ArrayG$1$$CopyTo(arr, index) {
-    var nativeArray, length, nativeArrDst, i;
-    nativeArray = this.innerArray;
-    length = nativeArray.length;
-    nativeArrDst = NativeArray$1$$op_Implicit(arr);
-    if (nativeArrDst.length < index + nativeArray.length)
-      throw new Error("can't copy, dest array too small.");
-    for (i = 0; i < length; i++)
-      nativeArrDst[i + index] = nativeArray[i];
-  };
-  ptyp_.copyTo0 = function ArrayG$1$$CopyTo(array, index) {
-    var arr;
-    arr = Type$$CastType(T$5b$5d_$T$_, array);
-    this.copyTo(arr, index);
-  };
-  ptyp_.V_get_Length = ptyp_.get_length;
-  ptyp_.V_CopyTo = ptyp_.copyTo0;
-  Type$$RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", ArrayImpl, [ICollection]);
-  ArrayG$1_$T$_._tri = function() {
-    if (__initTracker)
-      return;
-    __initTracker = true;
-    T = T;
-    ArrayG$1_$T$_ = ArrayG(T, true);
-    T$5b$5d_$T$_ = ArrayG(T, true);
-  };
-  if (_callStatiConstructor)
-    ArrayG$1_$T$_._tri();
-  return ArrayG$1_$T$_;
-};
-function Func(T1, TRes, _callStatiConstructor) {
-  var Func$2_$T1_x_TRes$_, __initTracker;
-  if (Func[T1.typeId] && Func[T1.typeId][TRes.typeId])
-    return Func[T1.typeId][TRes.typeId];
-    Func[T1.typeId] = {
-    };
-  Func[T1.typeId][TRes.typeId] = function System$$Func$2() {
-  };
-  Func$2_$T1_x_TRes$_ = Func[T1.typeId][TRes.typeId];
-  Func$2_$T1_x_TRes$_.genericParameters = [T1, TRes];
-  Func$2_$T1_x_TRes$_.genericClosure = Func;
-  Func$2_$T1_x_TRes$_.typeId = "nb$" + T1.typeId + "_" + TRes.typeId + "$";
-  Func$2_$T1_x_TRes$_.prototype = new Function0();
-  Type$$RegisterReferenceType(Func$2_$T1_x_TRes$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", Function0, []);
-  Func$2_$T1_x_TRes$_._tri = function() {
-    if (__initTracker)
-      return;
-    __initTracker = true;
-    T1 = T1;
-    TRes = TRes;
-    Func$2_$T1_x_TRes$_ = Func(T1, TRes, true);
-  };
-  if (_callStatiConstructor)
-    Func$2_$T1_x_TRes$_._tri();
-  return Func$2_$T1_x_TRes$_;
-};
+Type__RegisterReferenceType(Array, "System.Array", Object, [ICollection]);
 function Lazy(T, _callStatiConstructor) {
   var Lazy$1_$T$_, __initTracker;
   if (Lazy[T.typeId])
     return Lazy[T.typeId];
-  Lazy[T.typeId] = function Sunlight$$Framework$$Lazy$1() {
+  Lazy[T.typeId] = function Sunlight__Framework__Lazy$1() {
   };
   Lazy$1_$T$_ = Lazy[T.typeId];
   Lazy$1_$T$_.genericParameters = [T];
   Lazy$1_$T$_.genericClosure = Lazy;
-  Lazy$1_$T$_.typeId = "ob$" + T.typeId + "$";
+  Lazy$1_$T$_.typeId = "mb$" + T.typeId + "$";
   Lazy$1_$T$_.__ctor = function Sunlight_Framework_Lazy$1_factory(factory) {
     var this_;
     this_ = new Lazy$1_$T$_();
@@ -1498,13 +1433,14 @@ function Lazy(T, _callStatiConstructor) {
   };
   ptyp_ = Lazy$1_$T$_.prototype;
   ptyp_.factory = null;
-  ptyp_.value = Type$$GetDefaultValueStatic(T);
+  ptyp_.value = Type__GetDefaultValueStatic(T);
   ptyp_.createdCallbacks = null;
-  ptyp_.__ctor = function Lazy$1$$$$ctor(factory) {
-    ExceptionHelpers$$ThrowOnArgumentNull(factory, "factory");
-    this.factory = factory;
+  ptyp_.__ctor = function Lazy$1____ctor(factory) { {
+      ExceptionHelpers__ThrowOnArgumentNull(factory, "factory");
+      this.factory = factory;
+    }
   };
-  ptyp_.get_value = function Lazy$1$$get_Value() {
+  ptyp_.get_value = function Lazy$1__get_Value() {
     if (this.factory) {
       this.value = this.factory();
       this.factory = null;
@@ -1515,7 +1451,7 @@ function Lazy(T, _callStatiConstructor) {
     }
     return this.value;
   };
-  Type$$RegisterReferenceType(Lazy$1_$T$_, "Sunlight.Framework.Lazy`1<" + T.fullName + ">", Object, []);
+  Type__RegisterReferenceType(Lazy$1_$T$_, "Sunlight.Framework.Lazy`1<" + T.fullName + ">", Object, []);
   Lazy$1_$T$_._tri = function() {
     if (__initTracker)
       return;
@@ -1531,12 +1467,12 @@ function ObservableCollection(T, _callStatiConstructor) {
   var List$1_$T$_, ArrayG$1_$T$_, CollectionChangedEventArgs$1_$T$_, ObservableCollection$1_$T$_, __initTracker, __initTracker0;
   if (ObservableCollection[T.typeId])
     return ObservableCollection[T.typeId];
-  ObservableCollection[T.typeId] = function Sunlight$$Framework$$Observables$$ObservableCollection$1() {
+  ObservableCollection[T.typeId] = function Sunlight__Framework__Observables__ObservableCollection$1() {
   };
   ObservableCollection$1_$T$_ = ObservableCollection[T.typeId];
   ObservableCollection$1_$T$_.genericParameters = [T];
   ObservableCollection$1_$T$_.genericClosure = ObservableCollection;
-  ObservableCollection$1_$T$_.typeId = "pb$" + T.typeId + "$";
+  ObservableCollection$1_$T$_.typeId = "nb$" + T.typeId + "$";
   ObservableCollection$1_$T$_.defaultConstructor = function Sunlight_Framework_Observables_ObservableCollection$1_factory() {
     var this_;
     this_ = new ObservableCollection$1_$T$_();
@@ -1548,26 +1484,26 @@ function ObservableCollection(T, _callStatiConstructor) {
   ptyp_.busy = false;
   ptyp_.items = null;
   ptyp_.collectionChanged = null;
-  ptyp_.__ctor0 = function ObservableCollection$1$$$$ctor() {
+  ptyp_.__ctor0 = function ObservableCollection$1____ctor() {
     this.__ctor();
     this.items = List$1_$T$_.defaultConstructor();
   };
-  ptyp_.add_CollectionChanged = function ObservableCollection$1$$add_CollectionChanged(value) {
-    this.collectionChanged = Delegate$$Combine(this.collectionChanged, value);
+  ptyp_.add_CollectionChanged = function ObservableCollection$1__add_CollectionChanged(value) {
+    this.collectionChanged = Delegate__Combine(this.collectionChanged, value);
   };
-  ptyp_.get_count = function ObservableCollection$1$$get_Count() {
+  ptyp_.get_count = function ObservableCollection$1__get_Count() {
     return this.items.get_count();
   };
-  ptyp_.add = function ObservableCollection$1$$Add(o) {
+  ptyp_.add = function ObservableCollection$1__Add(o) {
     this.checkReentrancy();
     this.items.add(o);
     this.onCollectionChanged(0, this.get_count() - 1, ArrayG$1_$T$_.__ctor([o]), null);
     this.firePropertyChanged("Count");
   };
-  ptyp_.removeRangeAt = function ObservableCollection$1$$RemoveRangeAt(removeIndex, count) {
+  ptyp_.removeRangeAt = function ObservableCollection$1__RemoveRangeAt(removeIndex, count) {
     var itemsToRemove, index;
-    ExceptionHelpers$$ThrowOnOutOfRange(count, 1, this.items.get_count(), "count");
-    ExceptionHelpers$$ThrowOnOutOfRange(removeIndex, 0, this.items.get_count() - count, "removeIndex");
+    ExceptionHelpers__ThrowOnOutOfRange(count, 1, this.items.get_count(), "count");
+    ExceptionHelpers__ThrowOnOutOfRange(removeIndex, 0, this.items.get_count() - count, "removeIndex");
     this.checkReentrancy();
     itemsToRemove = List$1_$T$_.defaultConstructor();
     for (index = count - 1; index >= 0; index--) {
@@ -1577,11 +1513,11 @@ function ObservableCollection(T, _callStatiConstructor) {
     this.onCollectionChanged(1, removeIndex, null, itemsToRemove);
     this.firePropertyChanged("Count");
   };
-  ptyp_.checkReentrancy = function ObservableCollection$1$$CheckReentrancy() {
+  ptyp_.checkReentrancy = function ObservableCollection$1__CheckReentrancy() {
     if (this.busy)
       throw Error.createError("InvalidOperationException", null);
   };
-  ptyp_.onCollectionChanged = function ObservableCollection$1$$OnCollectionChanged(action, index, newItems, oldItems) {
+  ptyp_.onCollectionChanged = function ObservableCollection$1__OnCollectionChanged(action, index, newItems, oldItems) {
     var collectionChangedArgs;
     if (this.collectionChanged) {
       this.busy = true;
@@ -1593,7 +1529,7 @@ function ObservableCollection(T, _callStatiConstructor) {
       }
     }
   };
-  Type$$RegisterReferenceType(ObservableCollection$1_$T$_, "Sunlight.Framework.Observables.ObservableCollection`1<" + T.fullName + ">", ObservableObject, [INotifyPropertyChanged]);
+  Type__RegisterReferenceType(ObservableCollection$1_$T$_, "Sunlight.Framework.Observables.ObservableCollection`1<" + T.fullName + ">", ObservableObject, [INotifyPropertyChanged]);
   ObservableCollection$1_$T$_._tri = function() {
     if (__initTracker0)
       return;
@@ -1612,12 +1548,12 @@ function CollectionChangedEventArgs(T, _callStatiConstructor) {
   var CollectionChangedEventArgs$1_$T$_, __initTracker;
   if (CollectionChangedEventArgs[T.typeId])
     return CollectionChangedEventArgs[T.typeId];
-  CollectionChangedEventArgs[T.typeId] = function Sunlight$$Framework$$Observables$$CollectionChangedEventArgs$1() {
+  CollectionChangedEventArgs[T.typeId] = function Sunlight__Framework__Observables__CollectionChangedEventArgs$1() {
   };
   CollectionChangedEventArgs$1_$T$_ = CollectionChangedEventArgs[T.typeId];
   CollectionChangedEventArgs$1_$T$_.genericParameters = [T];
   CollectionChangedEventArgs$1_$T$_.genericClosure = CollectionChangedEventArgs;
-  CollectionChangedEventArgs$1_$T$_.typeId = "qb$" + T.typeId + "$";
+  CollectionChangedEventArgs$1_$T$_.typeId = "ob$" + T.typeId + "$";
   CollectionChangedEventArgs$1_$T$_.__ctor = function Sunlight_Framework_Observables_CollectionChangedEventArgs$1_factory(action, changeIndex, newItems, oldItems) {
     var this_;
     this_ = new CollectionChangedEventArgs$1_$T$_();
@@ -1629,39 +1565,40 @@ function CollectionChangedEventArgs(T, _callStatiConstructor) {
   ptyp_.changeIndex = 0;
   ptyp_.newItems = null;
   ptyp_.oldItems = null;
-  ptyp_.__ctor = function CollectionChangedEventArgs$1$$$$ctor(action, changeIndex, newItems, oldItems) {
-    this.action = action;
-    this.changeIndex = changeIndex;
-    switch(action) {
-      case 0: {
-        this.newItems = newItems;
-        break;
-      }
-      case 1: {
-        this.oldItems = oldItems;
-        break;
-      }
-      case 2: {
-        this.newItems = newItems;
-        this.oldItems = oldItems;
-        break;
-      }
-      case 4: {
-        this.changeIndex = -1;
-        break;
+  ptyp_.__ctor = function CollectionChangedEventArgs$1____ctor(action, changeIndex, newItems, oldItems) { {
+      this.action = action;
+      this.changeIndex = changeIndex;
+      switch(action) {
+        case 0: {
+          this.newItems = newItems;
+          break;
+        }
+        case 1: {
+          this.oldItems = oldItems;
+          break;
+        }
+        case 2: {
+          this.newItems = newItems;
+          this.oldItems = oldItems;
+          break;
+        }
+        case 4: {
+          this.changeIndex = -1;
+          break;
+        }
       }
     }
   };
-  ptyp_.get_changeIndex = function CollectionChangedEventArgs$1$$get_ChangeIndex() {
+  ptyp_.get_changeIndex = function CollectionChangedEventArgs$1__get_ChangeIndex() {
     return this.changeIndex;
   };
-  ptyp_.get_newItems = function CollectionChangedEventArgs$1$$get_NewItems() {
+  ptyp_.get_newItems = function CollectionChangedEventArgs$1__get_NewItems() {
     return this.newItems;
   };
-  ptyp_.get_oldItems = function CollectionChangedEventArgs$1$$get_OldItems() {
+  ptyp_.get_oldItems = function CollectionChangedEventArgs$1__get_OldItems() {
     return this.oldItems;
   };
-  Type$$RegisterReferenceType(CollectionChangedEventArgs$1_$T$_, "Sunlight.Framework.Observables.CollectionChangedEventArgs`1<" + T.fullName + ">", Object, []);
+  Type__RegisterReferenceType(CollectionChangedEventArgs$1_$T$_, "Sunlight.Framework.Observables.CollectionChangedEventArgs`1<" + T.fullName + ">", Object, []);
   CollectionChangedEventArgs$1_$T$_._tri = function() {
     if (__initTracker)
       return;
@@ -1673,46 +1610,130 @@ function CollectionChangedEventArgs(T, _callStatiConstructor) {
     CollectionChangedEventArgs$1_$T$_._tri();
   return CollectionChangedEventArgs$1_$T$_;
 };
-function Action(T1, T2, _callStatiConstructor) {
-  var Action$2_$T1_x_T2$_, __initTracker;
-  if (Action[T1.typeId] && Action[T1.typeId][T2.typeId])
-    return Action[T1.typeId][T2.typeId];
-    Action[T1.typeId] = {
-    };
-  Action[T1.typeId][T2.typeId] = function System$$Action$2() {
+function ArrayG(T, _callStatiConstructor) {
+  var ArrayG$1_$T$_, T$5b$5d_$T$_, __initTracker;
+  if (ArrayG[T.typeId])
+    return ArrayG[T.typeId];
+  ArrayG[T.typeId] = function System__ArrayG$1() {
   };
-  Action$2_$T1_x_T2$_ = Action[T1.typeId][T2.typeId];
-  Action$2_$T1_x_T2$_.genericParameters = [T1, T2];
-  Action$2_$T1_x_T2$_.genericClosure = Action;
-  Action$2_$T1_x_T2$_.typeId = "rb$" + T1.typeId + "_" + T2.typeId + "$";
-  Action$2_$T1_x_T2$_.prototype = new Function0();
-  Type$$RegisterReferenceType(Action$2_$T1_x_T2$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", Function0, []);
-  Action$2_$T1_x_T2$_._tri = function() {
+  ArrayG$1_$T$_ = ArrayG[T.typeId];
+  ArrayG$1_$T$_.genericParameters = [T];
+  ArrayG$1_$T$_.genericClosure = ArrayG;
+  ArrayG$1_$T$_.typeId = "pb$" + T.typeId + "$";
+  ArrayG$1_$T$_.__ctor0 = function System_ArrayG$1_factory(size) {
+    var this_;
+    this_ = new ArrayG$1_$T$_();
+    this_.__ctor0(size);
+    return this_;
+  };
+  ArrayG$1_$T$_.__ctor = function System_ArrayG$1_factory(nativeArray) {
+    var this_;
+    this_ = new ArrayG$1_$T$_();
+    this_.__ctor1(nativeArray);
+    return this_;
+  };
+  ptyp_ = new ArrayImpl();
+  ArrayG$1_$T$_.prototype = ptyp_;
+  ptyp_.innerArray = null;
+  ptyp_.__ctor0 = function ArrayG$1____ctor(size) {
+    var def, i;
+    this.__ctor(); {
+      this.innerArray = new Array(size);
+      def = Type__GetDefaultValueStatic(T);
+      for (i = 0; i < size; i++)
+        this.innerArray[i] = def;
+    }
+  };
+  ptyp_.__ctor1 = function ArrayG$1____ctor(nativeArray) {
+    this.__ctor();
+    this.innerArray = nativeArray;
+  };
+  ptyp_.get_length = function ArrayG$1__get_Length() {
+    return this.innerArray.length;
+  };
+  ptyp_.get_item = function ArrayG$1__get_Item(index) {
+    var arr;
+    arr = this.innerArray;
+    if (index < 0 || index >= arr.length)
+      throw new Error("index " + index + " out of range");
+    return arr[index];
+  };
+  ptyp_.set_item = function ArrayG$1__set_Item(index, value) {
+    var arr;
+    arr = this.innerArray;
+    if (index < 0 || index >= arr.length)
+      throw new Error("index " + index + " out of range");
+    return arr[index] = value;
+  };
+  ptyp_.get_innerArray = function ArrayG$1__get_InnerArray() {
+    return this.innerArray;
+  };
+  ptyp_.copyTo = function ArrayG$1__CopyTo(arr, index) {
+    var nativeArray, length, nativeArrDst, i;
+    nativeArray = this.innerArray;
+    length = nativeArray.length;
+    nativeArrDst = NativeArray$1__op_Implicit(arr);
+    if (nativeArrDst.length < index + nativeArray.length)
+      throw new Error("can't copy, dest array too small.");
+    for (i = 0; i < length; i++)
+      nativeArrDst[i + index] = nativeArray[i];
+  };
+  ptyp_.copyTo0 = function ArrayG$1__CopyTo(array, index) {
+    var arr;
+    arr = Type__CastType(T$5b$5d_$T$_, array);
+    this.copyTo(arr, index);
+  };
+  ptyp_.V_get_Length = ptyp_.get_length;
+  ptyp_.V_CopyTo = ptyp_.copyTo0;
+  Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", ArrayImpl, [ICollection]);
+  ArrayG$1_$T$_._tri = function() {
+    if (__initTracker)
+      return;
+    __initTracker = true;
+    T = T;
+    ArrayG$1_$T$_ = ArrayG(T, true);
+    T$5b$5d_$T$_ = ArrayG(T, true);
+  };
+  if (_callStatiConstructor)
+    ArrayG$1_$T$_._tri();
+  return ArrayG$1_$T$_;
+};
+function Func(T1, TRes, _callStatiConstructor) {
+  var Func$2_$T1_x_TRes$_, __initTracker;
+  if (Func[T1.typeId] && Func[T1.typeId][TRes.typeId])
+    return Func[T1.typeId][TRes.typeId];
+    Func[T1.typeId] = {
+    };
+  Func[T1.typeId][TRes.typeId] = function System__Func$2() {
+  };
+  Func$2_$T1_x_TRes$_ = Func[T1.typeId][TRes.typeId];
+  Func$2_$T1_x_TRes$_.genericParameters = [T1, TRes];
+  Func$2_$T1_x_TRes$_.genericClosure = Func;
+  Func$2_$T1_x_TRes$_.typeId = "qb$" + T1.typeId + "_" + TRes.typeId + "$";
+  Func$2_$T1_x_TRes$_.prototype = new Function0();
+  Type__RegisterReferenceType(Func$2_$T1_x_TRes$_, "System.Func`2<" + T1.fullName + "," + TRes.fullName + ">", Function0, []);
+  Func$2_$T1_x_TRes$_._tri = function() {
     if (__initTracker)
       return;
     __initTracker = true;
     T1 = T1;
-    T2 = T2;
-    Action$2_$T1_x_T2$_ = Action(T1, T2, true);
+    TRes = TRes;
+    Func$2_$T1_x_TRes$_ = Func(T1, TRes, true);
   };
   if (_callStatiConstructor)
-    Action$2_$T1_x_T2$_._tri();
-  return Action$2_$T1_x_T2$_;
+    Func$2_$T1_x_TRes$_._tri();
+  return Func$2_$T1_x_TRes$_;
 };
-function INotifyPropertyChanged() {
-};
-INotifyPropertyChanged.typeId = "d";
-Type$$RegisterInterface(INotifyPropertyChanged, "Sunlight.Framework.Observables.INotifyPropertyChanged");
 function StringDictionary(TValue, _callStatiConstructor) {
   var StringDictionary$1_$TValue$_, KeyValuePair$2_$String_x_TValue$_, __initTracker;
   if (StringDictionary[TValue.typeId])
     return StringDictionary[TValue.typeId];
-  StringDictionary[TValue.typeId] = function System$$Collections$$Generic$$StringDictionary$1() {
+  StringDictionary[TValue.typeId] = function System__Collections__Generic__StringDictionary$1() {
   };
   StringDictionary$1_$TValue$_ = StringDictionary[TValue.typeId];
   StringDictionary$1_$TValue$_.genericParameters = [TValue];
   StringDictionary$1_$TValue$_.genericClosure = StringDictionary;
-  StringDictionary$1_$TValue$_.typeId = "sb$" + TValue.typeId + "$";
+  StringDictionary$1_$TValue$_.typeId = "rb$" + TValue.typeId + "$";
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
   KeyValuePair$2_$String_x_TValue$_ = KeyValuePair(String, TValue, _callStatiConstructor);
   StringDictionary$1_$TValue$_.defaultConstructor = function System_Collections_Generic_StringDictionary$1_factory() {
@@ -1724,51 +1745,52 @@ function StringDictionary(TValue, _callStatiConstructor) {
   ptyp_ = StringDictionary$1_$TValue$_.prototype;
   ptyp_.innerDict = null;
   ptyp_.count = 0;
-  ptyp_.__ctor = function StringDictionary$1$$$$ctor() {
+  ptyp_.__ctor = function StringDictionary$1____ctor() {
+    this.count = 0;
     this.innerDict = {
     };
   };
-  ptyp_.get_item = function StringDictionary$1$$get_Item(index) {
+  ptyp_.get_item = function StringDictionary$1__get_Item(index) {
     if (!(index in this.innerDict))
       throw new Error("Key not found");
     return this.innerDict[index];
   };
-  ptyp_.set_item = function StringDictionary$1$$set_Item(index, value) {
+  ptyp_.set_item = function StringDictionary$1__set_Item(index, value) {
     if (!(index in this.innerDict))
       this.count++;
     this.innerDict[index] = value;
   };
-  ptyp_.get_keys = function StringDictionary$1$$get_Keys() {
+  ptyp_.get_keys = function StringDictionary$1__get_Keys() {
     return ArrayG_$String$_.__ctor(this.getKeys());
   };
-  ptyp_.get_count = function StringDictionary$1$$get_Count() {
+  ptyp_.get_count = function StringDictionary$1__get_Count() {
     return this.count;
   };
-  ptyp_.containsKey = function StringDictionary$1$$ContainsKey(key) {
+  ptyp_.containsKey = function StringDictionary$1__ContainsKey(key) {
     return key in this.innerDict;
   };
-  ptyp_.remove = function StringDictionary$1$$Remove(key) {
+  ptyp_.remove = function StringDictionary$1__Remove(key) {
     var rv;
     rv = delete this.innerDict[key];
     if (rv)
       this.count--;
     return rv;
   };
-  ptyp_.tryGetValue = function StringDictionary$1$$TryGetValue(key, value) {
+  ptyp_.tryGetValue = function StringDictionary$1__TryGetValue(key, value) {
     if (this.containsKey(key)) {
       value.write(this.get_item(key));
       return true;
     }
-    value.write(Type$$GetDefaultValueStatic(TValue));
+    value.write(Type__GetDefaultValueStatic(TValue));
     return false;
   };
-  ptyp_.copyTo = function StringDictionary$1$$CopyTo(array, index) {
+  ptyp_.copyTo = function StringDictionary$1__CopyTo(array, index) {
     var keys, i;
-    keys = Type$$CastType(ArrayG_$String$_, this.get_keys());
+    keys = Type__CastType(ArrayG_$String$_, this.get_keys());
     for (i = 0; i < keys.V_get_Length(); i++)
-      array.setValue(i + index, Type$$BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, KeyValuePair$2_$String_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
+      array.setValue(i + index, Type__BoxTypeInstance(KeyValuePair$2_$String_x_TValue$_, KeyValuePair$2_$String_x_TValue$_.__ctor(keys.get_item(i), this.get_item(keys.get_item(i)))));
   };
-  ptyp_.getKeys = function StringDictionary$1$$GetKeys() {
+  ptyp_.getKeys = function StringDictionary$1__GetKeys() {
     var rv, key;
     rv = [];
     for (key in this.innerDict)
@@ -1777,7 +1799,7 @@ function StringDictionary(TValue, _callStatiConstructor) {
   };
   ptyp_.V_get_Count_c = ptyp_.get_count;
   ptyp_.V_CopyTo_c = ptyp_.copyTo;
-  Type$$RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [ICollection]);
+  Type__RegisterReferenceType(StringDictionary$1_$TValue$_, "System.Collections.Generic.StringDictionary`1<" + TValue.fullName + ">", Object, [ICollection]);
   StringDictionary$1_$TValue$_._tri = function() {
     if (__initTracker)
       return;
@@ -1793,12 +1815,12 @@ function List(T, _callStatiConstructor) {
   var List$1_$T$_, __initTracker;
   if (List[T.typeId])
     return List[T.typeId];
-  List[T.typeId] = function System$$Collections$$Generic$$List$1() {
+  List[T.typeId] = function System__Collections__Generic__List$1() {
   };
   List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
-  List$1_$T$_.typeId = "tb$" + T.typeId + "$";
+  List$1_$T$_.typeId = "sb$" + T.typeId + "$";
   List$1_$T$_.defaultConstructor = function System_Collections_Generic_List$1_factory() {
     var this_;
     this_ = new List$1_$T$_();
@@ -1807,35 +1829,35 @@ function List(T, _callStatiConstructor) {
   };
   ptyp_ = List$1_$T$_.prototype;
   ptyp_.nativeArray = null;
-  ptyp_.system$$Collections$$ICollection$$CopyTo = function List$1$$System$$Collections$$ICollection$$CopyTo(array, index) {
-    var nativeArray, length, i;
-    nativeArray = this.nativeArray;
-    length = nativeArray.length;
-    for (i = 0; i < length; i++)
-      array.setValue(i + index, Type$$BoxTypeInstance(T, nativeArray[i]));
-  };
-  ptyp_.__ctor = function List$1$$$$ctor() {
+  ptyp_.__ctor = function List$1____ctor() {
     this.nativeArray = new Array(0);
   };
-  ptyp_.get_item = function List$1$$get_Item(index) {
+  ptyp_.get_item = function List$1__get_Item(index) {
     var arr;
     arr = this.nativeArray;
     if (index < 0 || index >= arr.length)
       throw new Error("index " + index + " out of range");
     return arr[index];
   };
-  ptyp_.removeAt = function List$1$$RemoveAt(index) {
-    NativeArray$1$$RemoveAt(this.nativeArray, index);
+  ptyp_.removeAt = function List$1__RemoveAt(index) {
+    NativeArray$1__RemoveAt(this.nativeArray, index);
   };
-  ptyp_.get_count = function List$1$$get_Count() {
+  ptyp_.get_count = function List$1__get_Count() {
     return this.nativeArray.length;
   };
-  ptyp_.add = function List$1$$Add(item) {
+  ptyp_.add = function List$1__Add(item) {
     this.nativeArray.push(item);
   };
-  ptyp_.V_CopyTo_c = ptyp_.system$$Collections$$ICollection$$CopyTo;
+  ptyp_.system__Collections__ICollection__CopyTo = function List$1__System__Collections__ICollection__CopyTo(array, index) {
+    var nativeArray, length, i;
+    nativeArray = this.nativeArray;
+    length = nativeArray.length;
+    for (i = 0; i < length; i++)
+      array.setValue(i + index, Type__BoxTypeInstance(T, nativeArray[i]));
+  };
+  ptyp_.V_CopyTo_c = ptyp_.system__Collections__ICollection__CopyTo;
   ptyp_.V_get_Count_c = ptyp_.get_count;
-  Type$$RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [ICollection]);
+  Type__RegisterReferenceType(List$1_$T$_, "System.Collections.Generic.List`1<" + T.fullName + ">", Object, [ICollection]);
   List$1_$T$_._tri = function() {
     if (__initTracker)
       return;
@@ -1847,13 +1869,39 @@ function List(T, _callStatiConstructor) {
     List$1_$T$_._tri();
   return List$1_$T$_;
 };
-function NativeArray$1$$RemoveAt(this_, index) {
+function Action(T1, T2, _callStatiConstructor) {
+  var Action$2_$T1_x_T2$_, __initTracker;
+  if (Action[T1.typeId] && Action[T1.typeId][T2.typeId])
+    return Action[T1.typeId][T2.typeId];
+    Action[T1.typeId] = {
+    };
+  Action[T1.typeId][T2.typeId] = function System__Action$2() {
+  };
+  Action$2_$T1_x_T2$_ = Action[T1.typeId][T2.typeId];
+  Action$2_$T1_x_T2$_.genericParameters = [T1, T2];
+  Action$2_$T1_x_T2$_.genericClosure = Action;
+  Action$2_$T1_x_T2$_.typeId = "tb$" + T1.typeId + "_" + T2.typeId + "$";
+  Action$2_$T1_x_T2$_.prototype = new Function0();
+  Type__RegisterReferenceType(Action$2_$T1_x_T2$_, "System.Action`2<" + T1.fullName + "," + T2.fullName + ">", Function0, []);
+  Action$2_$T1_x_T2$_._tri = function() {
+    if (__initTracker)
+      return;
+    __initTracker = true;
+    T1 = T1;
+    T2 = T2;
+    Action$2_$T1_x_T2$_ = Action(T1, T2, true);
+  };
+  if (_callStatiConstructor)
+    Action$2_$T1_x_T2$_._tri();
+  return Action$2_$T1_x_T2$_;
+};
+function NativeArray$1__RemoveAt(this_, index) {
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
   this_.splice(index, 1);
 };
-function NativeArray$1$$op_Implicit(n) {
-  return n ? n.get_innerArray() : null;
+function NativeArray$1__op_Implicit(n) {
+  return !n ? null : n.get_innerArray();
 };
 function KeyValuePair(K, V, _callStatiConstructor) {
   var KeyValuePair$2_$K_x_V$_, __initTracker;
@@ -1870,11 +1918,11 @@ function KeyValuePair(K, V, _callStatiConstructor) {
   KeyValuePair$2_$K_x_V$_.typeId = "vb$" + K.typeId + "_" + V.typeId + "$";
   KeyValuePair$2_$K_x_V$_.getDefaultValue = function() {
     return {
-      key: Type$$GetDefaultValueStatic(K),
-      val: Type$$GetDefaultValueStatic(V)
+      key: Type__GetDefaultValueStatic(K),
+      val: Type__GetDefaultValueStatic(V)
     };
   };
-  KeyValuePair$2_$K_x_V$_.__ctor = function KeyValuePair$2$$$$ctor(key, value) {
+  KeyValuePair$2_$K_x_V$_.__ctor = function KeyValuePair$2____ctor(key, value) {
     var this_;
     this_ = KeyValuePair$2_$K_x_V$_.getDefaultValue();
     this_.key = key;
@@ -1882,7 +1930,7 @@ function KeyValuePair(K, V, _callStatiConstructor) {
     return this_;
   };
   KeyValuePair$2_$K_x_V$_.prototype = new ValueType();
-  Type$$RegisterStructType(KeyValuePair$2_$K_x_V$_, "System.Collections.Generic.KeyValuePair`2<" + K.fullName + "," + V.fullName + ">", []);
+  Type__RegisterStructType(KeyValuePair$2_$K_x_V$_, "System.Collections.Generic.KeyValuePair`2<" + K.fullName + "," + V.fullName + ">", []);
   KeyValuePair$2_$K_x_V$_._tri = function() {
     if (__initTracker)
       return;
@@ -1893,58 +1941,58 @@ function KeyValuePair(K, V, _callStatiConstructor) {
     KeyValuePair$2_$K_x_V$_._tri();
   return KeyValuePair$2_$K_x_V$_;
 };
+ObservableCollection_$Int32$_ = ObservableCollection(Int32);
 ArrayG_$String$_ = ArrayG(String);
 Func_$Object_x_Object$_ = Func(Object, Object);
 ArrayG_$Func_$Object_x_Object$_$_ = ArrayG(Func_$Object_x_Object$_);
-ObservableCollection_$Int32$_ = ObservableCollection(Int32);
-ArrayG_$Object$_ = ArrayG(Object);
-Action_$INotifyPropertyChanged_x_String$_ = Action(INotifyPropertyChanged, String);
-ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_ = ArrayG(Action_$INotifyPropertyChanged_x_String$_);
 StringDictionary_$TypeRegistry$_ = StringDictionary(TypeRegistry);
 StringDictionary_$Function$_ = StringDictionary(Function);
+Action_$INotifyPropertyChanged_x_String$_ = Action(INotifyPropertyChanged, String);
 StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_ = StringDictionary(Action_$INotifyPropertyChanged_x_String$_);
+ArrayG_$Object$_ = ArrayG(Object);
+ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_ = ArrayG(Action_$INotifyPropertyChanged_x_String$_);
+ObservableCollection_$Int32$_._tri();
 ArrayG_$String$_._tri();
 Func_$Object_x_Object$_._tri();
 ArrayG_$Func_$Object_x_Object$_$_._tri();
-ObservableCollection_$Int32$_._tri();
-ArrayG_$Object$_._tri();
-Action_$INotifyPropertyChanged_x_String$_._tri();
-ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_._tri();
 StringDictionary_$TypeRegistry$_._tri();
 StringDictionary_$Function$_._tri();
+Action_$INotifyPropertyChanged_x_String$_._tri();
 StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_._tri();
-QUnit.module("Sunlight.Framework.Test.Binders.DataBinderTests", {
-});
-QUnit.test("BasicBinderSimpleObjectTest", DataBinderTests$$BasicBinderSimpleObjectTest);
-QUnit.test("BasicBinderSimpleObjectTestReverseOrder", DataBinderTests$$BasicBinderSimpleObjectTestReverseOrder);
-QUnit.test("BasicBinderOneWayNotifiableObjectTest", DataBinderTests$$BasicBinderOneWayNotifiableObjectTest);
-QUnit.test("BasicBinderTwoWayNotifiableObjectTest", DataBinderTests$$BasicBinderTwoWayNotifiableObjectTest);
-QUnit.module("Sunlight.Framework.Test.Binders.SourcePropertyBinderTests", {
-});
-QUnit.test("BasicValueTest", SourcePropertyBinderTests$$BasicValueTest);
-QUnit.test("BasicValueTestWithNotification", SourcePropertyBinderTests$$BasicValueTestWithNotification);
-QUnit.test("PropertyPathValueNotifiableTest", SourcePropertyBinderTests$$PropertyPathValueNotifiableTest);
-QUnit.test("PropertyPathValueTest", SourcePropertyBinderTests$$PropertyPathValueTest);
+ArrayG_$Object$_._tri();
+ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_._tri();
 QUnit.module("Sunlight.Framework.Test.ContainerTests", {
 });
-QUnit.test("TestRegisterResolve", ContainerTests$$TestRegisterResolve);
-QUnit.test("TestRegisterResolveWithAs", ContainerTests$$TestRegisterResolveWithAs);
-QUnit.test("TestRegisterResolveIsSingleton", ContainerTests$$TestRegisterResolveIsSingleton);
-QUnit.test("TestRegisterResolveLazy", ContainerTests$$TestRegisterResolveLazy);
+QUnit.test("TestRegisterResolve", ContainerTests__TestRegisterResolve);
+QUnit.test("TestRegisterResolveWithAs", ContainerTests__TestRegisterResolveWithAs);
+QUnit.test("TestRegisterResolveIsSingleton", ContainerTests__TestRegisterResolveIsSingleton);
+QUnit.test("TestRegisterResolveLazy", ContainerTests__TestRegisterResolveLazy);
 QUnit.module("Sunlight.Framework.Test.EventBusTests", {
 });
-QUnit.test("TestSubscribeAndRaise", EventBusTests$$TestSubscribeAndRaise);
-QUnit.test("TestSubscribeAndRaiseOnceTime", EventBusTests$$TestSubscribeAndRaiseOnceTime);
-QUnit.test("TestSubscribeUnSubscribeAndRaise", EventBusTests$$TestSubscribeUnSubscribeAndRaise);
+QUnit.test("TestSubscribeAndRaise", EventBusTests__TestSubscribeAndRaise);
+QUnit.test("TestSubscribeAndRaiseOnceTime", EventBusTests__TestSubscribeAndRaiseOnceTime);
+QUnit.test("TestSubscribeUnSubscribeAndRaise", EventBusTests__TestSubscribeUnSubscribeAndRaise);
 QUnit.module("Sunlight.Framework.Test.ObservableCollectionTests", {
 });
-QUnit.test("TestCreateNewObservableCollection", ObservableCollectionTests$$TestCreateNewObservableCollection);
-QUnit.test("TestAddItemToObservableCollection", ObservableCollectionTests$$TestAddItemToObservableCollection);
-QUnit.test("TestRemoveItemToObservableCollection", ObservableCollectionTests$$TestRemoveItemToObservableCollection);
+QUnit.test("TestCreateNewObservableCollection", ObservableCollectionTests__TestCreateNewObservableCollection);
+QUnit.test("TestAddItemToObservableCollection", ObservableCollectionTests__TestAddItemToObservableCollection);
+QUnit.test("TestRemoveItemToObservableCollection", ObservableCollectionTests__TestRemoveItemToObservableCollection);
 QUnit.module("Sunlight.Framework.Test.ObservableObjectTests", {
 });
-QUnit.test("TestCreateNewObservableObject", ObservableObjectTests$$TestCreateNewObservableObject);
-QUnit.test("TestFirePropertyChanged", ObservableObjectTests$$TestFirePropertyChanged);
-QUnit.test("TestRemovePropertyChangeCallback", ObservableObjectTests$$TestRemovePropertyChangeCallback);
+QUnit.test("TestCreateNewObservableObject", ObservableObjectTests__TestCreateNewObservableObject);
+QUnit.test("TestFirePropertyChanged", ObservableObjectTests__TestFirePropertyChanged);
+QUnit.test("TestRemovePropertyChangeCallback", ObservableObjectTests__TestRemovePropertyChangeCallback);
+QUnit.module("Sunlight.Framework.Test.Binders.DataBinderTests", {
+});
+QUnit.test("BasicBinderSimpleObjectTest", DataBinderTests__BasicBinderSimpleObjectTest);
+QUnit.test("BasicBinderSimpleObjectTestReverseOrder", DataBinderTests__BasicBinderSimpleObjectTestReverseOrder);
+QUnit.test("BasicBinderOneWayNotifiableObjectTest", DataBinderTests__BasicBinderOneWayNotifiableObjectTest);
+QUnit.test("BasicBinderTwoWayNotifiableObjectTest", DataBinderTests__BasicBinderTwoWayNotifiableObjectTest);
+QUnit.module("Sunlight.Framework.Test.Binders.SourcePropertyBinderTests", {
+});
+QUnit.test("BasicValueTest", SourcePropertyBinderTests__BasicValueTest);
+QUnit.test("BasicValueTestWithNotification", SourcePropertyBinderTests__BasicValueTestWithNotification);
+QUnit.test("PropertyPathValueNotifiableTest", SourcePropertyBinderTests__PropertyPathValueNotifiableTest);
+QUnit.test("PropertyPathValueTest", SourcePropertyBinderTests__PropertyPathValueTest);
 })();
 //# sourceMappingURL=Sunlight.Framework.Test.map

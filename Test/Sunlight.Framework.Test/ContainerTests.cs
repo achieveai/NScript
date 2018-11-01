@@ -72,8 +72,8 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType2>(delegate { return new IocTestType2(x); });
-            container.Register<IocTestType1>(delegate { return new IocTestType1(x, y); });
+            container.Register<IocTestType2>(() => new IocTestType2(x));
+            container.Register<IocTestType1>(() => new IocTestType1(x, y));
 
             var t2 = container.Resolve<IocTestType2>();
 
@@ -98,8 +98,8 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType2>(delegate { return new IocTestType2(x); });
-            container.Register<IocTestType1>(delegate { return new IocTestType1(x, y); })
+            container.Register<IocTestType2>(() => new IocTestType2(x));
+            container.Register<IocTestType1>(() => new IocTestType1(x, y))
                 .As<IIocTestType1>();
 
             var t2 = container.Resolve<IocTestType2>();
@@ -121,8 +121,8 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType2>(delegate { return new IocTestType2(x); });
-            container.Register<IocTestType1>(delegate { return new IocTestType1(x, y); })
+            container.Register<IocTestType2>(() => new IocTestType2(x));
+            container.Register<IocTestType1>(() => new IocTestType1(x, y))
                 .IsSingleton();
 
             var t2 = container.Resolve<IocTestType2>();
@@ -145,7 +145,7 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType1>(delegate { return new IocTestType1(x++, y); })
+            container.Register<IocTestType1>(() => new IocTestType1(x++, y))
                 .IsSingleton();
 
             var t1 = container.ResolveLazy<IocTestType1>();

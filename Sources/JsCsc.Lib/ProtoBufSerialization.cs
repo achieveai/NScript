@@ -9,7 +9,7 @@ namespace JsCsc.Lib.Serialization
     using System;
     using System.Collections.Generic;
     using ProtoBuf;
-    //  MaxId = 209;
+    //  MaxId = 211;
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class ModuleSpecSer
@@ -242,6 +242,8 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(176, typeof(IteratorBlock))]
     [ProtoInclude(208, typeof(NullableToNormal))]
     [ProtoInclude(209, typeof(EventExpression))]
+    [ProtoInclude(210, typeof(DynamicMemberExpression))]
+    [ProtoInclude(211, typeof(DynamicMethodInvocationExpression))]
     public class ExpressionSer
         : AstBase
     {
@@ -397,13 +399,15 @@ namespace JsCsc.Lib.Serialization
     {
         public int? Setter { get; set; }
 
+        public int? Getter { get; set; }
+
         public int? Field { get; set; }
 
         public ExpressionSer Value { get; set; }
 
         public MethodCallExpression MethodCall { get; set; }
 
-        public int? Proeprty { get; set; }
+        public int? Property { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -470,6 +474,15 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class DynamicMemberExpression
+        : ExpressionSer
+    {
+        public string MemberName { get; set; }
+
+        public ExpressionSer Instance { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class DynamicIndexBinderExpression
         : ExpressionSer
     {
@@ -487,6 +500,14 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Instance { get; set; }
 
         public ExpressionSer Value { get; set; }
+    }
+
+    public class DynamicMethodInvocationExpression
+        : ExpressionSer
+    {
+        public ExpressionSer Method { get; set; }
+
+        public List<MethodCallArg> Arguments { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -1045,6 +1066,8 @@ namespace JsCsc.Lib.Serialization
         public string FileName { get; set; }
 
         public ParameterBlock Body { get; set; }
+
+        public LocationSer ScriptBlockLocation { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
