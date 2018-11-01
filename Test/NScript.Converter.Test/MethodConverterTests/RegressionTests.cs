@@ -33,6 +33,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase(TestClassNameStr, "CollapsingForInIfRegression", "CollapsingForInIfRegression.js", TestType.All)]
         [TestCase(TestClassNameStr, "RegressionWithLastIndexOfString", "RegressionWithLastIndexOfString.js", TestType.All)]
         [TestCase(TestClassNameStr, "OddNativeArrayPushBehavior", "OddNativeArrayPushBehavior.js", TestType.All)]
+        [TestCase(TestClassNameStr, "DeclarationWithOut", "DeclarationWithOut.js", TestType.All)]
         [TestCase("BasicStatements", "RegressionFlagsOr", "RegressionFlagsOr.js", TestType.All)]
         [TestCase("BasicStatements", "RegressionFlagsOrWithNullable", "RegressionFlagsOrNullable.js", TestType.All)]
         [TestCase("BasicStatements", "RegressionFlagsOrAssign", "RegressionFlagsOrAssign.js", TestType.All)]

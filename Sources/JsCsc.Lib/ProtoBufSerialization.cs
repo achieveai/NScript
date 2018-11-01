@@ -245,7 +245,6 @@ namespace JsCsc.Lib.Serialization
     public class ExpressionSer
         : AstBase
     {
-        
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -344,6 +343,7 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class MethodCallArg
+        : AstBase
     {
         public bool IsByRef { get; set; }
 
@@ -949,6 +949,7 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class SwitchSectionSer
+        : AstBase
     {
         public List<SwitchCaseLabel> Labels { get; set; }
 

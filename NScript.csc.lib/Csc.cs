@@ -7,6 +7,7 @@
 namespace NScript.Csc.Lib
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using Microsoft.CodeAnalysis;
@@ -87,18 +88,20 @@ namespace NScript.Csc.Lib
         {
             var (resources, tmp) = SerializationHelper.InjectIntoCompilation((CSharpCompilation)compilation);
 
-            this.Arguments.ManifestResources = this
-                .Arguments
-                .ManifestResources
-                .Concat(resources)
-                .Concat(new[] { this.GetResourceFilePaths() })
-                .AsImmutable();
+            this.Arguments.ManifestResources =
+                this
+                    .GetResourceFilePaths()
+                    .Concat(resources)
+                    .AsImmutable();
 
         }
 
-
-        private ResourceDescription GetResourceFilePaths()
+        private IEnumerable<ResourceDescription> GetResourceFilePaths()
         {
+            const string htmlString = ".html",
+                cssString = ".css",
+                xhtmlString = ".xhtml";
+
             var jObject = new JObject();
             foreach (var res in this.Arguments.ManifestResources)
             {
@@ -109,17 +112,51 @@ namespace NScript.Csc.Lib
             }
 
             var resourceInfoStream = new MemoryStream();
-            TextWriter txtWriter = new StreamWriter(resourceInfoStream);
+            var txtWriter = new StreamWriter(resourceInfoStream);
             var writer = new JsonTextWriter(txtWriter);
             jObject.WriteTo(writer);
             writer.Flush();
             txtWriter.Flush();
             resourceInfoStream.Position = 0;
 
-            return new ResourceDescription(
-                "$$ResInfo$$",
-                () => resourceInfoStream,
-                false);
+            var rv = this.Arguments.ManifestResources
+                .Select(_ =>
+                {
+                    var fileName = _.FileName;
+                    if (string.IsNullOrEmpty(fileName)
+                        || (!string.Equals(
+                                Path.GetExtension(fileName),
+                                htmlString,
+                                StringComparison.InvariantCultureIgnoreCase)
+                            && !string.Equals(
+                                Path.GetExtension(fileName),
+                                cssString,
+                                StringComparison.InvariantCultureIgnoreCase)
+                            && !string.Equals(
+                                Path.GetExtension(fileName),
+                                xhtmlString,
+                                StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        return _;
+                    }
+
+                    return new ResourceDescription(
+                        _.ResourceName,
+                        null,
+                        () => _.DataProvider(),
+                        _.IsPublic,
+                        false,
+                        false);
+                })
+                .Concat(new[]
+                {
+                    new ResourceDescription(
+                        "$$ResInfo$$",
+                        () => resourceInfoStream,
+                        false)
+                });
+
+            return rv;
         }
     }
 }

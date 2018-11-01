@@ -220,6 +220,11 @@ namespace JsCsc.Lib
                 BinaryOperator.Assignment);
         }
 
+        private Node ParseUserDefinedOperators(Serialization.UserDefinedBinaryOrUnaryOpExpression jObject)
+        {
+            return ParseMethodCall(jObject);
+        }
+
         private Node ParseMethodCall(Serialization.MethodCallExpression jObject)
         {
             Expression instance = this.ParseExpression(jObject.Instance);
@@ -1730,6 +1735,9 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.AssignExpression),
 					(a) => this.ParseAssignment((Serialization.AssignExpression)a));
+            parserMap.Add(
+                    typeof(Serialization.UserDefinedBinaryOrUnaryOpExpression),
+                    (a) => this.ParseUserDefinedOperators((Serialization.UserDefinedBinaryOrUnaryOpExpression)a));
             parserMap.Add(
 					typeof(Serialization.MethodCallExpression),
 					(a) => this.ParseMethodCall((Serialization.MethodCallExpression)a));

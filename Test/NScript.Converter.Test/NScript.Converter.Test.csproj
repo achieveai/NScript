@@ -518,6 +518,7 @@
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\AddNum.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InlineProp.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\NameofField.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\DeclarationWithOut.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

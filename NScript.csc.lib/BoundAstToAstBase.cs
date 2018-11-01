@@ -90,9 +90,12 @@
 
             // Expression can be null for static field initializer constructors.
             rv.IsMethodOwned = true;
-            rv.Parameters = methodSymbol.Parameters.Select(_ => this.Visit(_, arg)).ToList();
-            IEnumerable<BoundStatement> statements = null;
+            rv.Parameters = methodSymbol
+                .Parameters
+                .Select(_ => this.Visit(_, arg))
+                .ToList();
 
+            IEnumerable<BoundStatement> statements = null;
             if (parentBlockWithInitializers != null)
             {
                 statements = parentBlockWithInitializers
@@ -113,6 +116,7 @@
                 : statements
                     .Where(_ => !(_ is BoundSequencePointWithSpan))
                     .Select(_ => this.VisitToStatement(_, arg))
+                    .Where(_ => _ != null)
                     .ToList();
 
             this.scopeBlockStack.RemoveFirst();
@@ -270,6 +274,7 @@
                     Statements = node
                         .Statements
                         .Select(_ => this.VisitToStatement(_, arg))
+                        .Where(_ => _ != null)
                         .ToList()
                 };
             }
@@ -319,6 +324,7 @@
                         .Body
                         .Statements
                         .Select(_ => this.VisitToStatement(_, arg))
+                        .Where(_ => _ != null)
                         .ToList()
                     },
                     CatchType = node.ExceptionTypeOpt != null
@@ -722,16 +728,22 @@
             };
 
         public override AstBase VisitLocalDeclaration(BoundLocalDeclaration node, SerializationContext arg)
-            => new BinaryExpression
-            {
-                Operator = (int)CLR.AST.BinaryOperator.Assignment,
-                Left = new LocalVariableRefExpression
+            => node.InitializerOpt == null
+                ? (ExpressionSer)new LocalVariableRefExpression
                 {
                     Location = node.Syntax.Location.GetSerLoc(),
                     LocalVariable = this.GetLocalVariable(node.LocalSymbol, arg)
-                },
-                Right = (ExpressionSer)this.Visit(node.InitializerOpt, arg)
-            };
+                }
+                : new BinaryExpression
+                {
+                    Operator = (int)CLR.AST.BinaryOperator.Assignment,
+                    Left = new LocalVariableRefExpression
+                    {
+                        Location = node.Syntax.Location.GetSerLoc(),
+                        LocalVariable = this.GetLocalVariable(node.LocalSymbol, arg)
+                    },
+                    Right = (ExpressionSer)this.Visit(node.InitializerOpt, arg)
+                };
 
         private LocalVariableSer GetLocalVariable(LocalSymbol localSymbol, SerializationContext arg)
         {
@@ -987,6 +999,7 @@
                 Statements = node
                     .Statements
                     .Select(_ => this.VisitToStatement(_, arg))
+                    .Where(_ => _ != null)
                     .ToList()
             };
 
@@ -1031,6 +1044,7 @@
                                         : section
                                         .Statements
                                         .Select(_ => this.VisitToStatement(_, arg))
+                                        .Where(_ => _ != null)
                                         .ToList()
                         };
                     }
@@ -1343,7 +1357,9 @@
                     {
                         return new MethodCallArg
                         {
-                            IsByRef = (method.Parameters[_].RefKind & RefKind.Ref) != 0,
+                            IsByRef = parameter.RefKind == RefKind.Ref
+                                || parameter.RefKind == RefKind.Out
+                                || parameter.RefKind == RefKind.RefReadOnly,
                             Value = (ExpressionSer)this.Visit(nodes[_], arg)
                         };
                     }
