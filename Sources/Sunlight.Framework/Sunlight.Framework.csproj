@@ -65,6 +65,7 @@
     <Compile Include="Observables\CollectionChangedAction.cs" />
     <Compile Include="Observables\CollectionChangedEventArgs.cs" />
     <Compile Include="Observables\ExtensibleObservableObject.cs" />
+    <Compile Include="Observables\HeaderInjectableTransformer.cs" />
     <Compile Include="Observables\INotifyCollectionChanged.cs" />
     <Compile Include="Observables\INotifyPropertyChanged.cs" />
     <Compile Include="Observables\ObservableCollection.cs" />

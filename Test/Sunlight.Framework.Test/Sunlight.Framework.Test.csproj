@@ -49,6 +49,7 @@
     <Compile Include="ObservableCollectionTests.cs" />
     <Compile Include="ObservableObjectTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestInjectableTransformation.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\sources\mscorlib\NScript.MsCorlib.csproj">

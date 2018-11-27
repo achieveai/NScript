@@ -199,7 +199,7 @@ using System.Collections.Generic;
             ExceptionHelpers.ThrowOnArgumentNull(itemsToAdd, "itemsToAdd");
             ExceptionHelpers.ThrowOnOutOfRange(insertIndex, 0, this.Count, "insertIndex");
 
-            if (insertIndex == 0)
+            if (insertIndex == this.items.Count)
             {
                 this.AddRange(itemsToAdd);
                 return;
@@ -230,7 +230,7 @@ using System.Collections.Generic;
             ExceptionHelpers.ThrowOnArgumentNull(itemsToAdd, "itemsToAdd");
             ExceptionHelpers.ThrowOnOutOfRange(insertIndex, 0, this.Count, "insertIndex");
 
-            if (insertIndex == 0)
+            if (insertIndex == this.items.Count)
             {
                 this.AddRange(itemsToAdd);
                 return;
