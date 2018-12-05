@@ -9,187 +9,141 @@ namespace Sunlight.Framework.Observables
     using System;
     using System.Collections.Generic;
 
-    public class ListViewItemModel<I, H>
+    public class InjectedElement<I, H>
     {
         private H _header = default(H);
         private I _item = default(I);
 
-        public H Header { get { return _header; } set { _header = value; } }
-        public I Item { get { return _item; } set { _item = value; } }
-
-        //public ListViewItemModel(I item, H header) {
-        //    this.Item = item;
-        //    this.Header = header;
-        //    //this.
-        //}
-        //public Number GenerateHeader(int first, int second)
-        //{
-        //    if (first % 100 == second % 100)
-        //    { return null; }
-
-        //    return 100 * (second % 100);
-        //}
+        public H Header
+        {
+            get { return _header; }
+            set { _header = value; }
+        }
+        public I Item
+        {
+            get { return _item; }
+            set { _item = value; }
+        }
     }
 
-    /// <summary>
-    /// Represents a dynamic data collection that provides notifications
-    /// when items get added, removed, or when the entire list is refreshed.
-    /// </summary>
+    // <summary>
+    // Represents a dynamic data collection that groups the data and provides notifications
+    // when items get added, removed, or when the entire list is refreshed.
+    // </summary>
 
     public class HeaderInjectableTransformer<T, H> where H : class
     {
-        private ObservableCollection<T> _inputCollection;
-        private ObservableCollection<ListViewItemModel<T, H>> _transformedCollection;
+        private ObservableCollection<T> _inputCollection = new ObservableCollection<T>();
+        private ObservableCollection<InjectedElement<T, H>> _transformedCollection = new ObservableCollection<InjectedElement<T, H>>();
+        private List<int> _allHeaderIndexes = new List<int>();
         private Func<T, T, H> _headerDelegate;
-        private List<int> _allHeaderIndexes;
-
-        public ObservableCollection<T> InputCollection
-        {
-            get { return this._inputCollection; }
-            set { this._inputCollection = value; }
-        }
-
-        public ObservableCollection<ListViewItemModel<T, H>> TransformedCollection
-        {
-            get { return this._transformedCollection; }
-            set { this._transformedCollection = value; }
-        }
 
         public HeaderInjectableTransformer(
             ObservableCollection<T> inputCollection,
-            Func<T, T, H> headerDelegate
-            )
+            Func<T, T, H> headerDelegate)
         {
-            this.InputCollection = new ObservableCollection<T>();
-            this.InputCollection = inputCollection.Clone();
+            this._inputCollection = inputCollection.Clone();
             this._headerDelegate = headerDelegate;
             this._inputCollection.CollectionChanged += this.OnSourceChanged;
             this.BuildCollection();
         }
 
+        public ObservableCollection<T> InputCollection
+        {
+            get { return this._inputCollection; }
+
+            set
+            {
+                if (this._inputCollection == value)
+                { return; }
+
+                if (this._inputCollection != null)
+                {
+                    this._inputCollection.CollectionChanged -= this.OnSourceChanged;
+                    this._inputCollection = value;
+                    this._inputCollection.CollectionChanged += this.OnSourceChanged;
+                    this._transformedCollection.Clear();
+                    this._allHeaderIndexes.Clear();
+                    this.BuildCollection();
+                }
+            }
+        }
+
+        public ObservableCollection<InjectedElement<T, H>> TransformedCollection
+        {
+            get { return this._transformedCollection; }
+        }
+
         private void BuildCollection()
         {
-            this._transformedCollection = new ObservableCollection<ListViewItemModel<T, H>>();
+            var transformedCollection = new ObservableCollection<InjectedElement<T, H>>();
+            var allHeaderIndexes = new List<int>();
 
-            this._allHeaderIndexes = new List<int>();
-
-            for (int idx = 0; idx < this.InputCollection.Count; idx++)
+            for (int idx = 0; idx < this._inputCollection.Count; idx++)
             {
-                T item = InputCollection[idx];
+                T item = this._inputCollection[idx];
                 H header;
 
                 if (idx != 0)
                 {
-                    header = _headerDelegate(InputCollection[idx - 1], item);
+                    header = _headerDelegate(
+                        this._inputCollection[idx - 1],
+                        item);
                 }
                 else
                 {
-                    header = _headerDelegate(default(T), item);
+                    header = _headerDelegate(
+                        default(T),
+                        item);
                 }
 
                 if (header != null)
                 {
-                    ListViewItemModel<T, H> headerEntry = new ListViewItemModel<T, H>();
+                    InjectedElement<T, H> headerEntry = new InjectedElement<T, H>();
                     headerEntry.Header = header;
-                    this.TransformedCollection.Add(headerEntry);
-                    this._allHeaderIndexes.Add(this.TransformedCollection.Count - 1);
+                    transformedCollection.Add(headerEntry);
+                    allHeaderIndexes.Add(transformedCollection.Count - 1);
                 }
 
-                ListViewItemModel<T, H> eachItem = new ListViewItemModel<T, H>();
+                InjectedElement<T, H> eachItem = new InjectedElement<T, H>();
                 eachItem.Item = item;
-                this.TransformedCollection.Add(eachItem);
+                transformedCollection.Add(eachItem);
             }
+
+            this._transformedCollection = transformedCollection;
+            this._allHeaderIndexes = allHeaderIndexes;
         }
 
         public void OnSourceChanged(
             INotifyCollectionChanged<T> obj1,
             CollectionChangedEventArgs<T> obj2)
         {
-            int changeIndex = obj2.ChangeIndex;
-            IList<T> changeList = obj2.NewItems;
-
-            //int type = 0;
-            //if (changeList[0] is int) {
-            //    type = 1;
-            //}
-            //if (changeList[0] is Number)
-            //{
-            //    type = 2;
-            //}
-
-            //if (changeList[0] is String)
-            //{
-            //    type = 3;
-            //}
-
-            //if (changeList[0] is Object)
-            //{
-            //    type = 4;
-            //}
-
-            //if (type != 0) {
-
-            //}
-
             if (obj2.Action == CollectionChangedAction.Add)
             {
-                InsertNewItems(changeList, changeIndex);
-                if (TransformedCollection != null)
-                {
-                }
+                this.InsertElements(obj2.NewItems, obj2.ChangeIndex);
             }
-            //switch (obj2.Action)
-            //{
-            //    case CollectionChangedAction.Add:
-            //        var newItems = obj2.NewItems;
-            //        //var oldItems = obj2.OldItems;
-            //        //var listToInsert = GetInsertedHeaderList(obj2.NewItems[0], newItems);
-            //        //// TODO: Take care of headers at the end and start of the list
-            //        //this.TransformedCollection.InsertRangeAt(
-            //        //    this.GetOutPosition(obj2.ChangeIndex),
-            //        //    listToInsert);
-            //        //////for (int idx = 0; idx < obj2.NewItems.Count; idx++)
-            //        //////{
-            //        //////    ListViewItemModel<T, H> eachNewItem = new ListViewItemModel<T, H>();
-            //        //////    eachNewItem.Item = obj2.NewItems[idx];
-            //        //////    this.TransformedCollection.InsertAt(
-            //        //////        3,
-            //        //////        eachNewItem);
-            //        //////}
-            //        break;
-            //    case CollectionChangedAction.Remove:
-            //        //// TODO: Fix headers at boundaries.
-            //        //this.TransformedCollection.RemoveRangeAt(
-            //        //    this.GetOutPosition(obj2.ChangeIndex),
-            //        //    this.GetOutPosition(obj2.ChangeIndex + obj2.OldItems.Count)
-            //        //        - this.GetOutPosition(obj2.ChangeIndex));
-            //        break;
-            //    case CollectionChangedAction.Replace:
-            //        //for (int idx = 0; idx < obj2.NewItems.Count; idx++)
-            //        //{
-            //        //    ListViewItemModel<T, H> eachNewItem = new ListViewItemModel<T, H>();
-            //        //    eachNewItem.Item = obj2.NewItems[idx];
-            //        //    this.TransformedCollection[idx + obj2.ChangeIndex] =
-            //        //        eachNewItem;
-            //        //}
-            //        break;
-            //    case CollectionChangedAction.Reset:
-            //        //this.BuildCollection();
-            //        break;
-            //}
+            else if (obj2.Action == CollectionChangedAction.Remove)
+            {
+                this.RemoveElements(obj2.OldItems, obj2.ChangeIndex);
+            }
+            else if (obj2.Action == CollectionChangedAction.Replace)
+            {
+                this.ReplaceElements(obj2.NewItems, obj2.ChangeIndex);
+            }
         }
 
-        private void InsertNewItems(IList<T> changeList, int changeIndex)
+        private void InsertElements(IList<T> changeList, int changeIndex)
         {
             bool addedBefore, addedAfter;
-            var positionTuple = GetOutPosition(changeIndex);
-            var outPosition = positionTuple.ElementIndex;
-            var outHeaderPosition = positionTuple.HeaderIndex;
-            var outHead = TransformedCollection[outPosition];
-            if (outHead.Header == default(H))
+            var startIndexTuple = this.GetTransformedIndexes(changeIndex - 1);
+            var insertIndex = startIndexTuple.ElementIndex + 1;
+            var startHeaderIndex = startIndexTuple.HeaderIndex;
+
+            if (insertIndex < this._transformedCollection.Count
+                && this._transformedCollection[insertIndex].Item != null)
             {
-                this.TransformedCollection.InsertRangeAt(
-                    outPosition+1,
+                this._transformedCollection.InsertRangeAt(
+                    insertIndex,
                     GetInsertedHeaderList(
                         changeList,
                         false,
@@ -198,85 +152,230 @@ namespace Sunlight.Framework.Observables
                         false,
                         0).Items);
 
-                moveHeaderIndexes(outHeaderPosition,
+                this.MoveHeaderIndexes(
+                    startHeaderIndex,
+                    insertIndex,
                     changeList.Count);
+
+                return;
             }
-            else
-            {
-                List<T> wrappedList = WrapNeighbours(
+
+            List<T> wrappedList = WrapNeighbours(
                 changeList,
                 changeIndex,
+                true,
                 out addedBefore,
                 out addedAfter);
 
-                bool showFirstHead = changeIndex == 0;
-                var tupleReturn = GetInsertedHeaderList(
-                    wrappedList,
-                    showFirstHead,
-                    false,
-                    addedBefore,
-                    addedAfter,
-                    outPosition-1);
+            bool showFirstHead = changeIndex == 0;
+            var tupleReturn = GetInsertedHeaderList(
+                wrappedList,
+                showFirstHead,
+                false,
+                addedBefore,
+                addedAfter,
+                insertIndex);
 
-                var listToInsert = tupleReturn.Items;
-                var headersInserted = tupleReturn.HeaderIndexes;
+            var elementsToAdd = tupleReturn.Items;
+            var headersToAdd = tupleReturn.HeaderIndexes;
+            this.RemoveExistingHeaders(
+                insertIndex,
+                startHeaderIndex,
+                1);
 
-                this.TransformedCollection.RemoveAt(outPosition);
-                this.TransformedCollection.InsertRangeAt(
-                  outPosition,
-                  listToInsert);
+            this._transformedCollection.InsertRangeAt(
+                insertIndex,
+                elementsToAdd);
 
-                this._allHeaderIndexes.RemoveAt(outHeaderPosition);
-                this._allHeaderIndexes.InsertRange(
-                    outHeaderPosition,
-                    headersInserted);
+            this.MoveHeaderIndexes(
+                startHeaderIndex,
+                insertIndex,
+                elementsToAdd.Count - 1);
 
-                int endHeadersOffset = outHeaderPosition + headersInserted.Count - 1;
-                this.moveHeaderIndexes(endHeadersOffset
-                    ,listToInsert.Count - 1);
+            this._allHeaderIndexes.InsertRange(
+                startHeaderIndex,
+                headersToAdd);
 
-                if (this._transformedCollection!=null) {
+            return;
+        }
 
-                }
+        private void RemoveElements(IList<T> changeList, int changeIndex)
+        {
+            bool addedBefore, addedAfter;
+            var startIndexTuple = this.GetTransformedIndexes(changeIndex - 1);
+            var insertIndex = startIndexTuple.ElementIndex + 1;
+            var startHeaderIndex = startIndexTuple.HeaderIndex;
+            var endIndexTuple = this.GetTransformedIndexes(changeIndex + changeList.Count);
+            var endElementIndex = endIndexTuple.ElementIndex - 1;
+            var endHeaderIndex = endIndexTuple.HeaderIndex;
+
+            List<T> wrappedList = WrapNeighbours(
+                changeList,
+                changeIndex,
+                false,
+                out addedBefore,
+                out addedAfter);
+
+            bool showFirstHead = changeIndex == 0;
+            var tupleReturn = GetInsertedHeaderList(
+                wrappedList,
+                showFirstHead,
+                false,
+                addedBefore,
+                addedAfter,
+                insertIndex);
+
+            var elementsToAdd = tupleReturn.Items;
+            var headersToAdd = tupleReturn.HeaderIndexes;
+            var countItemsRemoved = endElementIndex - insertIndex + 1;
+
+            this._transformedCollection.RemoveRangeAt(
+                insertIndex,
+                countItemsRemoved);
+
+            for (int ridx = startHeaderIndex; ridx < endHeaderIndex; ridx++)
+            {
+                this._allHeaderIndexes.RemoveAt(startHeaderIndex);
             }
+
+            this._transformedCollection.InsertRangeAt(
+                insertIndex,
+                elementsToAdd);
+
+            this.MoveHeaderIndexes(
+                startHeaderIndex,
+                insertIndex,
+                headersToAdd.Count - countItemsRemoved);
+
+            this._allHeaderIndexes.InsertRange(
+                startHeaderIndex,
+                headersToAdd);
+
+            return;
+        }
+
+        private void ReplaceElements(IList<T> changeList, int changeIndex)
+        {
+            bool addedBefore, addedAfter;
+            var startIndexTuple = this.GetTransformedIndexes(changeIndex);
+            var startElementIndex = startIndexTuple.ElementIndex;
+            var startHeaderIndex = startIndexTuple.HeaderIndex;
+
+            int insertionPoint;
+            bool headerOnLeft;
+            if (this._transformedCollection[startElementIndex - 1].Item == null)
+            {
+                insertionPoint = startElementIndex - 1;
+                startHeaderIndex = startHeaderIndex - 1;
+                headerOnLeft = true;
+            }
+            else if (startElementIndex + 1 >= this._transformedCollection.Count
+                || this._transformedCollection[startElementIndex + 1].Item == null)
+            {
+                insertionPoint = startElementIndex;
+                headerOnLeft = false;
+            }
+            else
+            {
+                this._transformedCollection.RemoveAt(startElementIndex);
+                this._transformedCollection.InsertRangeAt(
+                    startElementIndex,
+                    GetInsertedHeaderList(
+                        changeList,
+                        false,
+                        true,
+                        false,
+                        false,
+                        0).Items);
+                return;
+            }
+
+            List<T> wrappedList = WrapNeighbours(
+                changeList,
+                changeIndex,
+                true,
+                out addedBefore,
+                out addedAfter);
+
+            bool showFirstHead = changeIndex == 0;
+            var tupleReturn = GetInsertedHeaderList(
+                wrappedList,
+                showFirstHead,
+                false,
+                addedBefore,
+                addedAfter,
+                insertionPoint);
+
+            var elementsToAdd = tupleReturn.Items;
+            var headersToAdd = tupleReturn.HeaderIndexes;
+            int removalCount = !headerOnLeft
+                && startElementIndex == this._transformedCollection.Count - 1
+                ? 1 : 2;
+
+            this.RemoveExistingHeaders(
+                insertionPoint,
+                startHeaderIndex,
+                removalCount);
+
+            this._transformedCollection.InsertRangeAt(
+                    insertionPoint,
+                    elementsToAdd);
+
+            this.MoveHeaderIndexes(
+                startHeaderIndex,
+                insertionPoint,
+                elementsToAdd.Count - 2);
+
+            this._allHeaderIndexes.InsertRange(
+                startHeaderIndex,
+                headersToAdd);
+
+            return;
         }
 
         private List<T> WrapNeighbours(
             IList<T> changeList,
             int changeIdx,
+            bool addChangeList,
             out bool addedBefore,
             out bool addedAfter)
         {
             List<T> wrappedList = new List<T>();
             addedBefore = changeIdx - 1 > 0;
-            addedAfter = changeIdx + changeList.Count < _inputCollection.Count;
 
             if (addedBefore)
             {
-                wrappedList.Add(_inputCollection[changeIdx - 1]);
+                wrappedList.Add(this._inputCollection[changeIdx - 1]);
             }
 
-            wrappedList.AddRange(changeList);
+            if (addChangeList)
+            {
+                wrappedList.AddRange(changeList);
+            }
+
+            var endIndex = addChangeList
+                    ? changeIdx + changeList.Count
+                    : changeIdx;
+            addedAfter = endIndex < this._inputCollection.Count;
 
             if (addedAfter)
             {
-                wrappedList.Add(_inputCollection[changeIdx + changeList.Count]);
+                wrappedList.Add(this._inputCollection[endIndex]);
             }
 
             return wrappedList;
         }
 
-        private TupleReturn GetInsertedHeaderList(
+        private ElementsTuple GetInsertedHeaderList(
             IList<T> items,
             bool showFirstHead,
             bool skipCompare,
             bool addedBefore,
             bool addedAfter,
-            int headerOffset)
+            int insertionCount)
         {
-            var rv = new List<ListViewItemModel<T, H>>();
+            var rv = new List<InjectedElement<T, H>>();
             var headerIdx = new List<int>();
-            int insertionCount = headerOffset;
 
             for (int idx = 0; idx < items.Count; idx++)
             {
@@ -291,17 +390,17 @@ namespace Sunlight.Framework.Observables
 
                         if (header != default(H))
                         {
-                            ListViewItemModel<T, H> headerEntry = new ListViewItemModel<T, H>();
+                            InjectedElement<T, H> headerEntry = new InjectedElement<T, H>();
                             headerEntry.Header = header;
                             rv.Add(headerEntry);
-                            insertionCount++;
                             headerIdx.Add(insertionCount);
+                            insertionCount++;
                         }
                     }
 
                     if (!(addedAfter && idx == items.Count - 1))
                     {
-                        ListViewItemModel<T, H> eachItem = new ListViewItemModel<T, H>();
+                        InjectedElement<T, H> eachItem = new InjectedElement<T, H>();
                         eachItem.Item = item;
                         insertionCount++;
                         rv.Add(eachItem);
@@ -315,14 +414,14 @@ namespace Sunlight.Framework.Observables
                         {
                             header = _headerDelegate(default(T), item);
 
-                            ListViewItemModel<T, H> headerEntry = new ListViewItemModel<T, H>();
+                            InjectedElement<T, H> headerEntry = new InjectedElement<T, H>();
                             headerEntry.Header = header;
                             rv.Add(headerEntry);
-                            insertionCount++;
                             headerIdx.Add(insertionCount);
+                            insertionCount++;
                         }
 
-                        ListViewItemModel<T, H> eachItem = new ListViewItemModel<T, H>();
+                        InjectedElement<T, H> eachItem = new InjectedElement<T, H>();
                         eachItem.Item = item;
                         rv.Add(eachItem);
                         insertionCount++;
@@ -330,91 +429,114 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
-            return new TupleReturn(headerIdx, rv);
+            return new ElementsTuple(rv, headerIdx);
         }
 
-        /// <summary>
-        /// replace rangeat - obs coll
-        /// </summary>
-        /// <param name="inIndex"></param>
-        /// <returns></returns>
-
-        private OutIndexTuple GetOutPosition(int inIndex)
+        private TransformedIndexTuple GetTransformedIndexes(int inIndex)
         {
-            if (inIndex == 0) {
-                return new OutIndexTuple(0, 0);
-            }
-
-            if (_allHeaderIndexes.Count == 0)
-            {
-                return new OutIndexTuple(0, 0); // doubleCheck
-            }
-            else {
-
-            }
-
-            int outIdx = 0;
+            int elementIdx = 0;
             int headerCount = 0;
+            bool headersExhausted = true;
             for (int idx = 0; idx < _allHeaderIndexes.Count; idx++)
             {
                 var headIdx = _allHeaderIndexes[idx];
-                if (headIdx > inIndex)
+                elementIdx = inIndex + idx;
+                if (elementIdx < headIdx)
                 {
-                    outIdx = idx + inIndex;//1 for going before next header
                     headerCount = idx;
+                    headersExhausted = false;
                     break;
                 }
-                // _outHeaderIndex[i] == _inHeaderIndex[i] + i
             }
-            return new OutIndexTuple(outIdx, headerCount);
 
+            if (headersExhausted)
+            {
+                headerCount = this._allHeaderIndexes.Count;
+                elementIdx = inIndex + headerCount;
+            }
+
+            return new TransformedIndexTuple(elementIdx, headerCount);
         }
 
-        private void moveHeaderIndexes(int offset,int itemsInsertedCount) {
-            //Can i use linq for this to change it to a one liner lambda function?
+        private void MoveHeaderIndexes(int offset, int insertionIndex, int itemsInsertedCount)
+        {
+            if (insertionIndex >= _allHeaderIndexes[_allHeaderIndexes.Count - 1])
+            {
+                return;
+            }
+
             for (int hid = 0; hid < this._allHeaderIndexes.Count; hid++)
             {
-                if (hid > offset)
+                if (hid >= offset)
                 {
                     _allHeaderIndexes[hid] = _allHeaderIndexes[hid] + itemsInsertedCount;
                 }
             }
         }
 
-        private struct OutIndexTuple
+        private void RemoveExistingHeaders(int startElementIndex, int startHeaderIndex, int count)
         {
-            private readonly int _elementIndex;
-            private readonly int _headerIndex;
-
-            public int ElementIndex
-            { get { return _elementIndex; } }
-
-            public int HeaderIndex
-            { get { return _headerIndex; } }
-
-            public OutIndexTuple(int elementIndex, int headerIndex)
+            if (startElementIndex > this._transformedCollection.Count - 1)
             {
-                this._elementIndex = elementIndex;
-                this._headerIndex = headerIndex;
+                return;
+            }
+            else
+            {
+                this._transformedCollection.RemoveRangeAt(
+                    startElementIndex,
+                    count);
+                this._allHeaderIndexes.RemoveAt(startHeaderIndex);
             }
         }
 
-        private struct TupleReturn
+        private struct TransformedIndexTuple
+        {
+            private readonly int _elementIndex;
+            private readonly int _headerCount;
+
+            public TransformedIndexTuple(
+                int elementIndex,
+                int headerCount)
+            {
+                this._elementIndex = elementIndex;
+                this._headerCount = headerCount;
+            }
+
+            public int ElementIndex
+            {
+                get { return _elementIndex; }
+            }
+
+            public int HeaderIndex
+            {
+                get { return _headerCount; }
+            }
+
+        }
+
+        private struct ElementsTuple
         {
             private readonly List<int> _headerIndexes;
-            private readonly List<ListViewItemModel<T, H>> _items;
+            private readonly List<InjectedElement<T, H>> _items;
+
+            public ElementsTuple(
+                List<InjectedElement<T, H>> items,
+                List<int> headerIndexes)
+            {
+                this._items = items;
+                this._headerIndexes = headerIndexes;
+            }
 
             public List<int> HeaderIndexes
-            { get { return _headerIndexes; } }
-
-            public List<ListViewItemModel<T, H>> Items
-            { get { return _items; } }
-
-            public TupleReturn(List<int> headerIndexes, List<ListViewItemModel<T, H>> items)
             {
-                this._headerIndexes = headerIndexes;
-                this._items = items;
+                get { return _headerIndexes; }
             }
+
+            public List<InjectedElement<T, H>> Items
+            {
+                get { return _items; }
+            }
+
         }
     }
 }
