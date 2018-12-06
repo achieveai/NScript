@@ -322,9 +322,10 @@ namespace Sunlight.Framework.Observables
 
             var elementsToAdd = tupleReturn.Items;
             var headersToAdd = tupleReturn.HeaderIndexes;
-            int removalCount = !headerOnLeft
-                && startElementIndex == this._transformedCollection.Count - 1
-                ? 1 : 2;
+            int removalCount =
+                !headerOnLeft && startElementIndex == this._transformedCollection.Count - 1
+                    ? 1
+                    : 2;
 
             this.RemoveExistingHeaders(
                 insertionPoint,
@@ -332,8 +333,8 @@ namespace Sunlight.Framework.Observables
                 removalCount);
 
             this._transformedCollection.InsertRangeAt(
-                    insertionPoint,
-                    elementsToAdd);
+                insertionPoint,
+                elementsToAdd);
 
             this.MoveHeaderIndexes(
                 startHeaderIndex,
