@@ -210,6 +210,16 @@ namespace System.Collections.Generic
         }
 
         /// <summary>
+        /// Removes at described by index.
+        /// </summary>
+        /// <param name="index"> Zero-based index of the. </param>
+        public void RemoveRangeAt(int index, int count)
+        {
+            while (count-- > 0)
+            { this.nativeArray.RemoveAt(index); }
+        }
+
+        /// <summary>
         /// Gets the number of. 
         /// </summary>
         /// <value>

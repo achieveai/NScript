@@ -59,6 +59,10 @@ namespace Sunlight.Framework.Observables
 
                 if (this._inputCollection != null)
                 {
+                    // TODO: Break operations into
+                    // Remove (if applicable, i.e. new list is null or is smaller than previous list).
+                    // Replace Elements
+                    // Add, if new list is bigger than older list or older list was null.
                     this._inputCollection.CollectionChanged -= this.OnSourceChanged;
                     this._inputCollection = value;
                     this._inputCollection.CollectionChanged += this.OnSourceChanged;
@@ -76,6 +80,7 @@ namespace Sunlight.Framework.Observables
 
         private void BuildCollection()
         {
+            // Use OnSourceAdd method instead.
             var transformedCollection = new ObservableCollection<InjectedElement<T, H>>();
             var allHeaderIndexes = new List<int>();
 
@@ -142,6 +147,8 @@ namespace Sunlight.Framework.Observables
             if (insertIndex < this._transformedCollection.Count
                 && this._transformedCollection[insertIndex].Item != null)
             {
+                // If there is not header at insertion point,
+                // Then the new list can't have header between any items.
                 this._transformedCollection.InsertRangeAt(
                     insertIndex,
                     GetInsertedHeaderList(
@@ -201,6 +208,9 @@ namespace Sunlight.Framework.Observables
 
         private void RemoveElements(IList<T> changeList, int changeIndex)
         {
+            // TODO:If the range that's being removed doesn't
+            // have headers (check from header indexes) then no new headers will be created either.
+
             bool addedBefore, addedAfter;
             var startIndexTuple = this.GetTransformedIndexes(changeIndex - 1);
             var insertIndex = startIndexTuple.ElementIndex + 1;
@@ -209,6 +219,8 @@ namespace Sunlight.Framework.Observables
             var endElementIndex = endIndexTuple.ElementIndex - 1;
             var endHeaderIndex = endIndexTuple.HeaderIndex;
 
+
+            // Remove ItemsCount(changeList.Count) + previous Item (if Header) + #headers in the range.
             List<T> wrappedList = WrapNeighbours(
                 changeList,
                 changeIndex,
@@ -233,10 +245,9 @@ namespace Sunlight.Framework.Observables
                 insertIndex,
                 countItemsRemoved);
 
-            for (int ridx = startHeaderIndex; ridx < endHeaderIndex; ridx++)
-            {
-                this._allHeaderIndexes.RemoveAt(startHeaderIndex);
-            }
+            this._allHeaderIndexes.RemoveRangeAt(
+                startHeaderIndex,
+                endHeaderIndex - startHeaderIndex);
 
             this._transformedCollection.InsertRangeAt(
                 insertIndex,
@@ -256,6 +267,9 @@ namespace Sunlight.Framework.Observables
 
         private void ReplaceElements(IList<T> changeList, int changeIndex)
         {
+            // TODO: If there are no headers around or inside replace range, then
+            // Just replace, else assume headers can be anywhere (incl the edges)
+
             bool addedBefore, addedAfter;
             var startIndexTuple = this.GetTransformedIndexes(changeIndex);
             var startElementIndex = startIndexTuple.ElementIndex;
@@ -465,15 +479,13 @@ namespace Sunlight.Framework.Observables
                 return;
             }
 
-            for (int hid = 0; hid < this._allHeaderIndexes.Count; hid++)
+            for (int hid = offset; hid < this._allHeaderIndexes.Count; hid++)
             {
-                if (hid >= offset)
-                {
-                    _allHeaderIndexes[hid] = _allHeaderIndexes[hid] + itemsInsertedCount;
-                }
+                _allHeaderIndexes[hid] = _allHeaderIndexes[hid] + itemsInsertedCount;
             }
         }
 
+        // TODO: Rename the method to mean what it does.
         private void RemoveExistingHeaders(int startElementIndex, int startHeaderIndex, int count)
         {
             if (startElementIndex > this._transformedCollection.Count - 1)

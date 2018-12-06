@@ -419,6 +419,14 @@ using System.Collections.Generic;
             this.FirePropertyChanged("Count");
         }
 
+        public void ReplaceRangeAt(int replaceIndex, IList<T> list)
+        {
+            if (replaceIndex + list.Count > this.Count)
+            { throw new Exception("Can't replace, size mismatch"); }
+
+            // TODO: complete method.
+        }
+
         /// <summary>
         /// Clones this instance.
         /// </summary>
