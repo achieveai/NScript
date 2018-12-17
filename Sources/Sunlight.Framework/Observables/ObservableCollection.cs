@@ -421,10 +421,61 @@ using System.Collections.Generic;
 
         public void ReplaceRangeAt(int replaceIndex, IList<T> list)
         {
-            if (replaceIndex + list.Count > this.Count)
-            { throw new Exception("Can't replace, size mismatch"); }
+            ExceptionHelpers.ThrowOnArgumentNull(list, "replacedItems");
+            ExceptionHelpers.ThrowOnOutOfRange(
+                    replaceIndex + list.Count - 1,
+                    0,
+                    this.Count - 1,
+                    "index");
 
-            // TODO: complete method.
+            List<T> oldItems = new List<T>();
+            for (int index = 0; index < list.Count; index++)
+            {
+                var value = list[index];
+                if (!Object.Equals(this.items[replaceIndex+index], value))
+                {
+                    T oldItem = this.items[replaceIndex+index];
+                    this.items[replaceIndex+index] = value;
+                    oldItems.Add(oldItem);
+                }
+            }
+            this.OnCollectionChanged(
+                        CollectionChangedAction.Replace,
+                        replaceIndex,
+                        list,
+                        oldItems);
+
+        }
+
+        public List<T> GetRangeAt(int index, int count)
+        {
+            ExceptionHelpers.ThrowOnOutOfRange(
+                    index,
+                    0,
+                    this.Count - 1,
+                    "first index");
+
+            ExceptionHelpers.ThrowOnOutOfRange(
+                    count,
+                    1,
+                    this.Count,
+                    "count");
+
+            ExceptionHelpers.ThrowOnOutOfRange(
+                    index + count - 1,
+                    0,
+                    this.Count - 1,
+                    "last index");
+
+            var rv = new List<T>();
+            for (int idx = index; idx < this.Count; idx++)
+            {
+                if (idx < index + count) {
+                    rv.Add(this.items[idx]);
+                }
+            }
+
+            return rv;
         }
 
         /// <summary>

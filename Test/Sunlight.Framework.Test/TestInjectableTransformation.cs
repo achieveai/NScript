@@ -20,6 +20,8 @@ namespace Sunlight.Framework.Test
     [TestFixture]
     public class TestInjectableTransformation
     {
+        //private static HeaderInjectableTransformer<Number, Number> transformer;
+
         [Test]
         public static void TestHeaderInjectionInsert(Assert assert)
         {
@@ -35,7 +37,7 @@ namespace Sunlight.Framework.Test
             int expectedIndex = 0;
             List<Number> rangeToInsert = new List<Number>();
             bool eventRaised = false;
-            var transformer = new HeaderInjectableTransformer<Number, Number>(collection, GenerateHeader);
+            var transformer = new HeaderInjectableTransformer<Number, Number>(GenerateHeader, collection);
 
             Action<Observables.INotifyCollectionChanged<InjectedNumber>, NumberColection> transformedCollChanged =
                 (coll, evtArg) =>
@@ -234,6 +236,16 @@ namespace Sunlight.Framework.Test
             itemsRemoved = 0;
             transformer.InputCollection.InsertRangeAt(insertIndex, rangeToInsert);
 
+            //Non-boundary insertion
+            rangeToInsert.Clear();
+            rangeToInsert.Add(192);
+            rangeToInsert.Add(194);
+            insertIndex = 26;
+            expectedIndex = 39;
+            newItemCount = 2;
+            itemsRemoved = 0;
+            transformer.InputCollection.InsertRangeAt(insertIndex, rangeToInsert);
+
             transformer.TransformedCollection.CollectionChanged -= transformedCollChanged;
 
             assert.IsTrue(eventRaised, "Change event raised");
@@ -278,7 +290,7 @@ namespace Sunlight.Framework.Test
             int expectedIndex = 0;
             List<Number> rangeToRemove = new List<Number>();
             bool eventRaised = false;
-            var transformer = new HeaderInjectableTransformer<Number, Number>(collection, GenerateHeader);
+            var transformer = new HeaderInjectableTransformer<Number, Number>(GenerateHeader, collection);
 
             Action<Observables.INotifyCollectionChanged<InjectedNumber>, NumberColection> transformedCollChanged =
                 (coll, evtArg) =>
@@ -417,6 +429,24 @@ namespace Sunlight.Framework.Test
             itemsRemoved = 3;
             transformer.InputCollection.RemoveRangeAt(removeIndex, rangeToRemove.Count);
 
+            rangeToRemove.Clear();
+            rangeToRemove.Add(97);
+            removeIndex = 4;
+            expectedIndex = 5;
+            itemsAdded = 0;
+            itemsRemoved = 2;
+            transformer.InputCollection.RemoveRangeAt(removeIndex, rangeToRemove.Count);
+
+            rangeToRemove.Clear();
+            rangeToRemove.Add(1);
+            rangeToRemove.Add(2);
+            rangeToRemove.Add(3);
+            rangeToRemove.Add(5);
+            removeIndex = 0;
+            expectedIndex = 0;
+            itemsAdded = 0;
+            itemsRemoved = 5;
+            transformer.InputCollection.RemoveRangeAt(removeIndex, rangeToRemove.Count);
 
             transformer.TransformedCollection.CollectionChanged -= transformedCollChanged;
 
@@ -426,22 +456,25 @@ namespace Sunlight.Framework.Test
         [Test]
         public static void TestHeaderInjectionReplace(Assert assert)
         {
+            assert.Expect(38);
+
             ObservableCollection<Number> collection = new ObservableCollection<Number>();
             collection.Add(11);
             collection.Add(12);
             collection.Add(13);
             collection.Add(14);
+            collection.Add(96);
             collection.Add(97);
             collection.Add(98);
             collection.Add(99);
 
             int newItemCount = 0;
             int itemsRemoved = 0;
+            int itemsReplaced = 0;
             int insertIndex = 0;
             int expectedIndex = 0;
-            Number replaceWithValue = 0;
-            bool eventRaised = false;
-            var transformer = new HeaderInjectableTransformer<Number, Number>(collection, GenerateHeader);
+            List<Number> listToReplace = new List<Number>();
+            var transformer = new HeaderInjectableTransformer<Number, Number>(GenerateHeader, collection);
 
             Action<Observables.INotifyCollectionChanged<InjectedNumber>, NumberColection> transformedCollChanged =
                 (coll, evtArg) =>
@@ -451,7 +484,7 @@ namespace Sunlight.Framework.Test
                     {
                         assert.IsTrue(
                             !Object.IsNullOrUndefined(evtArg.NewItems),
-                            "----------------------- " + " -- " + replaceWithValue + "----- Item Added");
+                            "----------------------- " + " -- " + listToReplace[0] + "----- Item Added");
 
                         assert.Equal(
                             evtArg.NewItems.Count,
@@ -459,19 +492,40 @@ namespace Sunlight.Framework.Test
                             "Number of Items Added");
 
                         assert.Equal(
-                            evtArg.ChangeIndex,
                             expectedIndex,
+                            evtArg.ChangeIndex,
                             "Index changed");
                     }
                     else if (evtArg.Action == CollectionChangedAction.Remove)
                     {
                         assert.IsTrue(
                             !Object.IsNullOrUndefined(evtArg.OldItems),
-                            "----------------------- " + " -- " + replaceWithValue + "----- Item Added");
+                            "----------------------- " + " -- " + listToReplace[0] + "----- Item Removed");
 
                         assert.Equal(
-                            itemsRemoved,
                             evtArg.OldItems.Count,
+                            itemsRemoved,
+                            "Number of Items Removed");
+
+                        assert.Equal(
+                            evtArg.ChangeIndex,
+                            expectedIndex,
+                            "Index changed");
+                    }
+                    else if (evtArg.Action == CollectionChangedAction.Replace)
+                    {
+                        assert.IsTrue(
+                            !Object.IsNullOrUndefined(evtArg.OldItems) && !Object.IsNullOrUndefined(evtArg.NewItems),
+                            "----------------------- " + " -- " + listToReplace[0] + "----- Item Replaced");
+
+                        assert.Equal(
+                            evtArg.OldItems.Count,
+                            itemsReplaced,
+                            "Number of Items Removed");
+
+                        assert.Equal(
+                            evtArg.NewItems.Count,
+                            itemsReplaced,
                             "Number of Items Removed");
 
                         assert.Equal(
@@ -480,132 +534,88 @@ namespace Sunlight.Framework.Test
                             "Index changed");
                     }
 
-                    eventRaised = true;
                 };
 
             transformer.TransformedCollection.CollectionChanged += transformedCollChanged;
 
-            replaceWithValue = 10;
-            insertIndex = 0;
-            expectedIndex = 0;
-            newItemCount = 2;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
+            //Replace at non-boundary
+            listToReplace.Clear();
+            listToReplace.Add(17);
+            insertIndex = 1;
+            expectedIndex = 2;
+            itemsReplaced = 1;
+            transformer.InputCollection.ReplaceRangeAt(insertIndex, listToReplace);
 
-            replaceWithValue = 9;
+            listToReplace.Clear();
+            listToReplace.Add(92);
+            listToReplace.Add(93);
+            insertIndex = 5;
+            expectedIndex = 7;
+            itemsReplaced = 2;
+            transformer.InputCollection.ReplaceRangeAt(insertIndex, listToReplace);
+
+            listToReplace.Clear();
+            listToReplace.Add(94);
+            insertIndex = 7;
+            expectedIndex = 9;
+            newItemCount = 1;
+            itemsRemoved = 1;
+            transformer.InputCollection.ReplaceRangeAt(insertIndex, listToReplace);
+
+            //Replace at-boundary
+            listToReplace.Clear();
+            listToReplace.Add(196);
+            insertIndex = 4;
+            expectedIndex = 5;
+            newItemCount = 3;
+            itemsRemoved = 2;
+            transformer.InputCollection.ReplaceRangeAt(insertIndex, listToReplace);
+
+            listToReplace.Clear();
+            listToReplace.Add(111);
             insertIndex = 0;
             expectedIndex = 0;
             newItemCount = 3;
             itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
+            transformer.InputCollection.ReplaceRangeAt(insertIndex, listToReplace);
 
-            replaceWithValue = 19;
+            listToReplace.Clear();
+            listToReplace.Add(113);
+            listToReplace.Add(114);
             insertIndex = 2;
             expectedIndex = 4;
-            newItemCount = 1;
-            itemsRemoved = 1;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
+            newItemCount = 4;
+            itemsRemoved = 3;
+            transformer.InputCollection.ReplaceRangeAt(insertIndex, listToReplace);
 
-            replaceWithValue = 15;
-            insertIndex = 3;
-            expectedIndex = 5;
-            newItemCount = 2;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 91;
-            insertIndex = 3;
-            expectedIndex = 5;
-            newItemCount = 2;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 22;
-            insertIndex = 3;
-            expectedIndex = 5;
-            newItemCount = 3;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 93;
-            insertIndex = 4;
-            expectedIndex = 7;
-            newItemCount = 2;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 29;
-            insertIndex = 4;
-            expectedIndex = 7;
-            newItemCount = 2;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 85;
-            insertIndex = 5;
-            expectedIndex = 8;
-            newItemCount = 3;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 95;
-            insertIndex = 6;
-            expectedIndex = 10;
-            newItemCount = 2;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 102;
-            insertIndex = 6;
-            expectedIndex = 10;
-            newItemCount = 2;
-            itemsRemoved = 2;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 103;
-            insertIndex = 7;
-            expectedIndex = 12;
-            newItemCount = 1;
-            itemsRemoved = 1;
-            transformer.InputCollection.Add(replaceWithValue);
-
-            replaceWithValue = 105;
-            insertIndex = 7;
-            expectedIndex = 12;
-            newItemCount = 1;
-            itemsRemoved = 1;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
-
-            replaceWithValue = 111;
+            listToReplace.Clear();
+            listToReplace.Add(194);
             insertIndex = 7;
             expectedIndex = 12;
             newItemCount = 2;
             itemsRemoved = 1;
-            transformer.InputCollection[insertIndex] = replaceWithValue;
+            transformer.InputCollection.ReplaceRangeAt(insertIndex, listToReplace);
 
             transformer.TransformedCollection.CollectionChanged -= transformedCollChanged;
 
-            assert.IsTrue(eventRaised, "Change event raised");
         }
 
         [Test]
         public static void TestHeaderInjectionReset(Assert assert)
         {
-            ObservableCollection<Number> collection = new ObservableCollection<Number>();
-            collection.Add(111);
-            collection.Add(112);
-            collection.Add(113);
-            collection.Add(114);
-            collection.Add(197);
-            collection.Add(198);
-            collection.Add(199);
+            assert.Expect(63);
 
-            int newItemCount = 18;
-            int itemsRemoved = 9;
-            int expectedIndex = 0;
+            ObservableCollection<Number> resetCollection = new ObservableCollection<Number>();
+            resetCollection.Add(11);
+            resetCollection.Add(12);
+            
+            List<int> expectedCounts = new List<int>();
+            List<int> expectedIndexes = new List<int>();
             bool eventRaised = false;
+            int notificationCount = 0;
 
-            var transformer = new HeaderInjectableTransformer<Number, Number>(collection, GenerateHeader);
+            var transformer = new HeaderInjectableTransformer<Number, Number>(GenerateHeader);//setting inputcollection through setter not constructor
+            //var transformer = new HeaderInjectableTransformer<Number, Number>(resetCollection, GenerateHeader);//setting inputcollection through setter not constructor
 
             Action<Observables.INotifyCollectionChanged<InjectedNumber>, NumberColection> transformedCollChanged =
                 (coll, evtArg) =>
@@ -615,56 +625,134 @@ namespace Sunlight.Framework.Test
                     {
                         assert.IsTrue(
                             !Object.IsNullOrUndefined(evtArg.NewItems),
-                            "Item Added");
+                            "------------------------"+notificationCount + " Add in Reset from " 
+                            + resetCollection[0] + " - " + resetCollection[resetCollection.Count - 1]);
 
                         assert.Equal(
                             evtArg.NewItems.Count,
-                            newItemCount,
-                            "Number of Items Added");
+                            expectedCounts[notificationCount],
+                            "Number of Items Added"+evtArg.NewItems.Count);
 
                         assert.Equal(
                             evtArg.ChangeIndex,
-                            expectedIndex,
-                            "Index changed");
+                            expectedIndexes[notificationCount],
+                            "Index changed"+evtArg.ChangeIndex);
                     }
                     else if (evtArg.Action == CollectionChangedAction.Remove)
                     {
                         assert.IsTrue(
                             !Object.IsNullOrUndefined(evtArg.OldItems),
-                            "Item Removed");
+                            "------------------------"+notificationCount + "Remove in Reset from "
+                            + resetCollection[0] + " - " + resetCollection[resetCollection.Count - 1]);
 
                         assert.Equal(
-                            itemsRemoved,
                             evtArg.OldItems.Count,
-                            "Number of Items Removed");
+                            expectedCounts[notificationCount],
+                            "Number of Items Removed"+evtArg.ChangeIndex);
 
                         assert.Equal(
                             evtArg.ChangeIndex,
-                            expectedIndex,
-                            "Index changed");
+                            expectedIndexes[notificationCount],
+                            "Index changed"+evtArg.ChangeIndex);
+                    }
+                    else if (evtArg.Action == CollectionChangedAction.Replace)
+                    {
+                        assert.IsTrue(
+                            !Object.IsNullOrUndefined(evtArg.OldItems) && !Object.IsNullOrUndefined(evtArg.NewItems),
+                            "------------------------"+notificationCount + "Remove in Reset from " 
+                            + resetCollection[0] + " - " + resetCollection[resetCollection.Count - 1]);
+
+                        assert.Equal(
+                            evtArg.OldItems.Count,
+                            expectedCounts[notificationCount],
+                            "Number of Items Removed"+evtArg.OldItems.Count);
+
+                        assert.Equal(
+                            evtArg.NewItems.Count,
+                            expectedCounts[notificationCount],
+                            "Number of Items Added"+evtArg.NewItems.Count);
+
+                        assert.Equal(
+                            evtArg.ChangeIndex,
+                            expectedIndexes[notificationCount],
+                            "Index changed"+evtArg.NewItems.Count);
                     }
 
+                    notificationCount++;
                     eventRaised = true;
                 };
 
             transformer.TransformedCollection.CollectionChanged += transformedCollChanged;
-            ObservableCollection<Number> resetCollection = new ObservableCollection<Number>();
-            resetCollection.Add(11);
-            resetCollection.Add(12);
-            resetCollection.Add(13);
-            resetCollection.Add(14);
-            resetCollection.Add(97);
-            resetCollection.Add(98);
-            resetCollection.Add(99);
-            resetCollection.Add(111);
-            resetCollection.Add(112);
-            resetCollection.Add(113);
-            resetCollection.Add(114);
-            resetCollection.Add(197);
-            resetCollection.Add(198);
-            resetCollection.Add(199);
 
-            transformer.InputCollection = resetCollection;
+            expectedCounts.InsertRange(expectedCounts.Count, new int[] { 3 });
+            expectedIndexes.InsertRange(expectedIndexes.Count, new int[] { 0 });
+            transformer.InputCollection = resetCollection.Clone();
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+1);
+
+            //Overall replace
+            resetCollection.Clear();
+            resetCollection.Add(21);
+            resetCollection.Add(31);
+            expectedCounts.InsertRange(expectedCounts.Count,new int[] { 3 , 4 });
+            expectedIndexes.InsertRange(expectedIndexes.Count,new int[] { 0 , 0  });
+            transformer.InputCollection = resetCollection.Clone();
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+2);
+
+            //Overall remove
+            expectedCounts.InsertRange(expectedCounts.Count, new int[] { 4 });
+            expectedIndexes.InsertRange(expectedIndexes.Count, new int[] { 0 });
+            transformer.InputCollection = null;
+            transformer.InputCollection = null;
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+3);
+
+            //Overall insert
+            resetCollection.Clear();
+            resetCollection.Add(13);
+            resetCollection.Add(23);
+            resetCollection.Add(33);
+            expectedCounts.InsertRange(expectedCounts.Count, new int[] { 6 });
+            expectedIndexes.InsertRange(expectedIndexes.Count, new int[] { 0 });
+            transformer.InputCollection = resetCollection.Clone();
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+4);
+
+            //Overall remove at boundary
+            resetCollection.Clear();
+            resetCollection.Add(13);
+            resetCollection.Add(23);
+            expectedCounts.InsertRange(expectedCounts.Count, new int[] { 2 , 4 , 4 });
+            expectedIndexes.InsertRange(expectedIndexes.Count, new int[] { 4 , 0 , 0 });
+            transformer.InputCollection = resetCollection.Clone();
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+5);
+
+            //Overall insert at non boundary
+            resetCollection.Clear();
+            resetCollection.Add(13);
+            resetCollection.Add(23);
+            resetCollection.Add(25);
+            expectedCounts.InsertRange(expectedCounts.Count, new int[] { 4 , 4 , 1 });
+            expectedIndexes.InsertRange(expectedIndexes.Count, new int[] { 0 , 0 , 4 });
+            transformer.InputCollection = resetCollection.Clone();
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+6);
+
+            //Overall remove at non boundary
+            resetCollection.Clear();
+            resetCollection.Add(13);
+            resetCollection.Add(23);
+            expectedCounts.InsertRange(expectedCounts.Count, new int[] { 1 , 4 , 4 });
+            expectedIndexes.InsertRange(expectedIndexes.Count, new int[] { 4 , 0 , 0 });
+            transformer.InputCollection = resetCollection.Clone();
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+7);
+
+            //Overall insert at boundary
+            resetCollection.Clear();
+            resetCollection.Add(13);
+            resetCollection.Add(23);
+            resetCollection.Add(33);
+            expectedCounts.InsertRange(expectedCounts.Count, new int[] { 4 , 5 , 1 , 2 });
+            expectedIndexes.InsertRange(expectedIndexes.Count, new int[] { 0 , 0 , 4 , 4 });
+            transformer.InputCollection = resetCollection.Clone();
+            assert.IsTrue(notificationCount == expectedIndexes.Count, "no extra expected items"+8);
+
             assert.IsTrue(eventRaised, "Change event raised");
         }
 

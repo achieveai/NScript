@@ -19,6 +19,7 @@ namespace Sunlight.Framework.Observables
             get { return _header; }
             set { _header = value; }
         }
+
         public I Item
         {
             get { return _item; }
@@ -33,19 +34,17 @@ namespace Sunlight.Framework.Observables
 
     public class HeaderInjectableTransformer<T, H> where H : class
     {
-        private ObservableCollection<T> _inputCollection = new ObservableCollection<T>();
-        private ObservableCollection<InjectedElement<T, H>> _transformedCollection = new ObservableCollection<InjectedElement<T, H>>();
+        private ObservableCollection<T> _inputCollection = null;
+        private readonly ObservableCollection<InjectedElement<T, H>> _transformedCollection = new ObservableCollection<InjectedElement<T, H>>();
         private List<int> _allHeaderIndexes = new List<int>();
         private Func<T, T, H> _headerDelegate;
 
         public HeaderInjectableTransformer(
-            ObservableCollection<T> inputCollection,
-            Func<T, T, H> headerDelegate)
+            Func<T, T, H> headerDelegate,
+            ObservableCollection<T> inputCollection = null)
         {
-            this._inputCollection = inputCollection.Clone();
             this._headerDelegate = headerDelegate;
-            this._inputCollection.CollectionChanged += this.OnSourceChanged;
-            this.BuildCollection();
+            this.InputCollection = inputCollection;
         }
 
         public ObservableCollection<T> InputCollection
@@ -59,16 +58,55 @@ namespace Sunlight.Framework.Observables
 
                 if (this._inputCollection != null)
                 {
-                    // TODO: Break operations into
-                    // Remove (if applicable, i.e. new list is null or is smaller than previous list).
-                    // Replace Elements
-                    // Add, if new list is bigger than older list or older list was null.
                     this._inputCollection.CollectionChanged -= this.OnSourceChanged;
-                    this._inputCollection = value;
+                }
+                else
+                {
+                    this._inputCollection = new ObservableCollection<T>();
+                }
+
+                var inputCollection = this._inputCollection;
+                this._inputCollection = value;
+
+                if (this._inputCollection != null)
+                {
                     this._inputCollection.CollectionChanged += this.OnSourceChanged;
-                    this._transformedCollection.Clear();
-                    this._allHeaderIndexes.Clear();
-                    this.BuildCollection();
+                }
+
+                // Remove (if applicable, i.e. new list is null or is smaller than previous list).
+                // Replace Elements
+                // Add, if new list is bigger than older list or older list was null.
+                // default null to 0 and check 0 length inside methods
+                var newLength = value != null
+                    ? value.Count
+                    : 0;
+                var oldLength = inputCollection
+                    != null
+                    ? inputCollection.Count
+                    : 0;
+                var lengthDifference = newLength - oldLength;
+
+                if (lengthDifference < 0)
+                {
+                    //Overall extra elements are removed
+                    this.RemoveAfterKItems(
+                        inputCollection,
+                        newLength,
+                        -lengthDifference);
+                    this.ReplaceFirstKItems(
+                        value,
+                        newLength);
+                }
+                else
+                {
+                    //Overall extra elements are replaced and/or added
+                    this.ReplaceFirstKItems(
+                        value,
+                        oldLength);
+                    this.InsertAfterFirstKItems(
+                        value,
+                        oldLength,
+                        lengthDifference);
                 }
             }
         }
@@ -78,79 +116,56 @@ namespace Sunlight.Framework.Observables
             get { return this._transformedCollection; }
         }
 
-        private void BuildCollection()
-        {
-            // Use OnSourceAdd method instead.
-            var transformedCollection = new ObservableCollection<InjectedElement<T, H>>();
-            var allHeaderIndexes = new List<int>();
-
-            for (int idx = 0; idx < this._inputCollection.Count; idx++)
-            {
-                T item = this._inputCollection[idx];
-                H header;
-
-                if (idx != 0)
-                {
-                    header = _headerDelegate(
-                        this._inputCollection[idx - 1],
-                        item);
-                }
-                else
-                {
-                    header = _headerDelegate(
-                        default(T),
-                        item);
-                }
-
-                if (header != null)
-                {
-                    InjectedElement<T, H> headerEntry = new InjectedElement<T, H>();
-                    headerEntry.Header = header;
-                    transformedCollection.Add(headerEntry);
-                    allHeaderIndexes.Add(transformedCollection.Count - 1);
-                }
-
-                InjectedElement<T, H> eachItem = new InjectedElement<T, H>();
-                eachItem.Item = item;
-                transformedCollection.Add(eachItem);
-            }
-
-            this._transformedCollection = transformedCollection;
-            this._allHeaderIndexes = allHeaderIndexes;
-        }
-
         public void OnSourceChanged(
             INotifyCollectionChanged<T> obj1,
             CollectionChangedEventArgs<T> obj2)
         {
             if (obj2.Action == CollectionChangedAction.Add)
             {
-                this.InsertElements(obj2.NewItems, obj2.ChangeIndex);
+                this.InsertElements(
+                    obj2.NewItems,
+                    obj2.ChangeIndex);
             }
             else if (obj2.Action == CollectionChangedAction.Remove)
             {
-                this.RemoveElements(obj2.OldItems, obj2.ChangeIndex);
+                this.RemoveElements(
+                    obj2.OldItems,
+                    obj2.ChangeIndex);
             }
             else if (obj2.Action == CollectionChangedAction.Replace)
             {
-                this.ReplaceElements(obj2.NewItems, obj2.ChangeIndex);
+                this.ReplaceElements(
+                    obj2.NewItems,
+                    obj2.ChangeIndex);
             }
         }
 
         private void InsertElements(IList<T> changeList, int changeIndex)
         {
             bool addedBefore, addedAfter;
-            var startIndexTuple = this.GetTransformedIndexes(changeIndex - 1);
-            var insertIndex = startIndexTuple.ElementIndex + 1;
-            var startHeaderIndex = startIndexTuple.HeaderIndex;
 
-            if (insertIndex < this._transformedCollection.Count
-                && this._transformedCollection[insertIndex].Item != null)
+            //index previous to changeindex
+            var leftNeighbourTuple = this.GetTransformedIndexes(changeIndex - 1);
+            var leftElementIndex = leftNeighbourTuple.ElementIndex;
+            var leftHeaderCount = leftNeighbourTuple.HeaderCount;
+
+            //index of element after last element of changeList in the future transformed collection. Insertion happens at one point
+            var rightNeighbourTuple = this.GetTransformedIndexes(changeIndex);
+            var rightElementIndex = rightNeighbourTuple.ElementIndex;
+            var rightHeaderCount = rightNeighbourTuple.HeaderCount;
+
+            //point and count of insertion
+            var boundaryElementIndex = leftElementIndex + 1;
+            var boundaryHeaderIndex = leftHeaderCount;
+            var boundaryElementCount = rightHeaderCount - leftHeaderCount;//will either be 1 or 0 always
+            var boundaryHeaderCount = rightHeaderCount - leftHeaderCount;
+
+            //using number of headers instead of null check
+            if (leftHeaderCount == rightHeaderCount
+                && boundaryElementIndex < this._transformedCollection.Count)
             {
-                // If there is not header at insertion point,
-                // Then the new list can't have header between any items.
                 this._transformedCollection.InsertRangeAt(
-                    insertIndex,
+                    boundaryElementIndex,
                     GetInsertedHeaderList(
                         changeList,
                         false,
@@ -160,8 +175,8 @@ namespace Sunlight.Framework.Observables
                         0).Items);
 
                 this.MoveHeaderIndexes(
-                    startHeaderIndex,
-                    insertIndex,
+                    boundaryHeaderIndex,
+                    boundaryElementIndex,
                     changeList.Count);
 
                 return;
@@ -181,26 +196,28 @@ namespace Sunlight.Framework.Observables
                 false,
                 addedBefore,
                 addedAfter,
-                insertIndex);
+                boundaryElementIndex);
 
             var elementsToAdd = tupleReturn.Items;
             var headersToAdd = tupleReturn.HeaderIndexes;
-            this.RemoveExistingHeaders(
-                insertIndex,
-                startHeaderIndex,
-                1);
 
-            this._transformedCollection.InsertRangeAt(
-                insertIndex,
-                elementsToAdd);
+            this.RemoveElementsAndHeaderIndexes(
+                boundaryElementIndex,
+                boundaryHeaderIndex,
+                boundaryElementCount,
+                boundaryHeaderCount);
 
             this.MoveHeaderIndexes(
-                startHeaderIndex,
-                insertIndex,
-                elementsToAdd.Count - 1);
+                boundaryHeaderIndex,
+                boundaryElementIndex,
+                elementsToAdd.Count - boundaryElementCount);
+
+            this._transformedCollection.InsertRangeAt(
+                boundaryElementIndex,
+                elementsToAdd);
 
             this._allHeaderIndexes.InsertRange(
-                startHeaderIndex,
+                boundaryHeaderIndex,
                 headersToAdd);
 
             return;
@@ -208,19 +225,45 @@ namespace Sunlight.Framework.Observables
 
         private void RemoveElements(IList<T> changeList, int changeIndex)
         {
-            // TODO:If the range that's being removed doesn't
-            // have headers (check from header indexes) then no new headers will be created either.
-
             bool addedBefore, addedAfter;
-            var startIndexTuple = this.GetTransformedIndexes(changeIndex - 1);
-            var insertIndex = startIndexTuple.ElementIndex + 1;
-            var startHeaderIndex = startIndexTuple.HeaderIndex;
-            var endIndexTuple = this.GetTransformedIndexes(changeIndex + changeList.Count);
-            var endElementIndex = endIndexTuple.ElementIndex - 1;
-            var endHeaderIndex = endIndexTuple.HeaderIndex;
+            var leftNeighbourTuple = this.GetTransformedIndexes(changeIndex - 1);//index previous to changeindex
+            var leftElementIndex = leftNeighbourTuple.ElementIndex;
+            var leftHeaderCount = leftNeighbourTuple.HeaderCount;
 
+            var rightNeighbourTuple = this.GetTransformedIndexes(changeIndex + changeList.Count);//index of element after last element of changeList
+            var rightElementIndex = rightNeighbourTuple.ElementIndex;
+            var rightHeaderCount = rightNeighbourTuple.HeaderCount;
 
-            // Remove ItemsCount(changeList.Count) + previous Item (if Header) + #headers in the range.
+            var boundaryElementIndex = leftElementIndex + 1;//index of transformed change
+            var boundaryHeaderIndex = leftHeaderCount;
+            var boundaryElementCount = rightElementIndex - leftElementIndex - 1;//will either be 1 or 0 always using header cound as only headers need to be removed
+            var boundaryHeaderCount = rightHeaderCount - leftHeaderCount;
+
+            if (boundaryElementCount == this._transformedCollection.Count)
+            {
+                //array being emptied
+                this._transformedCollection.RemoveRangeAt(
+                    0,
+                    this._transformedCollection.Count);
+                this._allHeaderIndexes.Clear();
+                return;
+            }
+
+            if (leftHeaderCount == rightHeaderCount
+                && boundaryElementIndex < this._transformedCollection.Count)
+            {
+                this._transformedCollection.RemoveRangeAt(
+                    boundaryElementIndex,
+                    changeList.Count);
+
+                this.MoveHeaderIndexes(
+                    boundaryHeaderIndex,
+                    boundaryElementIndex,
+                    -changeList.Count);
+
+                return;
+            }
+
             List<T> wrappedList = WrapNeighbours(
                 changeList,
                 changeIndex,
@@ -235,65 +278,57 @@ namespace Sunlight.Framework.Observables
                 false,
                 addedBefore,
                 addedAfter,
-                insertIndex);
+                boundaryElementIndex);
 
             var elementsToAdd = tupleReturn.Items;
             var headersToAdd = tupleReturn.HeaderIndexes;
-            var countItemsRemoved = endElementIndex - insertIndex + 1;
 
-            this._transformedCollection.RemoveRangeAt(
-                insertIndex,
-                countItemsRemoved);
-
-            this._allHeaderIndexes.RemoveRangeAt(
-                startHeaderIndex,
-                endHeaderIndex - startHeaderIndex);
-
-            this._transformedCollection.InsertRangeAt(
-                insertIndex,
-                elementsToAdd);
+            this.RemoveElementsAndHeaderIndexes(
+                boundaryElementIndex,
+                boundaryHeaderIndex,
+                boundaryElementCount,
+                boundaryHeaderCount);
 
             this.MoveHeaderIndexes(
-                startHeaderIndex,
-                insertIndex,
-                headersToAdd.Count - countItemsRemoved);
+                boundaryHeaderIndex,
+                boundaryElementIndex,
+                elementsToAdd.Count - boundaryElementCount);
 
-            this._allHeaderIndexes.InsertRange(
-                startHeaderIndex,
+            this.InsertElementsAndHeaderIndexes(
+                boundaryElementIndex,
+                boundaryHeaderIndex,
+                elementsToAdd,
                 headersToAdd);
-
             return;
         }
 
         private void ReplaceElements(IList<T> changeList, int changeIndex)
         {
-            // TODO: If there are no headers around or inside replace range, then
             // Just replace, else assume headers can be anywhere (incl the edges)
 
             bool addedBefore, addedAfter;
-            var startIndexTuple = this.GetTransformedIndexes(changeIndex);
-            var startElementIndex = startIndexTuple.ElementIndex;
-            var startHeaderIndex = startIndexTuple.HeaderIndex;
 
-            int insertionPoint;
-            bool headerOnLeft;
-            if (this._transformedCollection[startElementIndex - 1].Item == null)
+            //index previous to changeindex
+            var leftNeighbourTuple = this.GetTransformedIndexes(changeIndex - 1);
+            var leftElementIndex = leftNeighbourTuple.ElementIndex;
+            var leftHeaderCount = leftNeighbourTuple.HeaderCount;
+
+            //index of element after last element of changeList. Insertion happens over a range of value
+            var rightNeighbourTuple = this.GetTransformedIndexes(changeIndex + changeList.Count);
+            var rightElementIndex = rightNeighbourTuple.ElementIndex;
+            var rightHeaderCount = rightNeighbourTuple.HeaderCount;
+
+            //point and count of insertion
+            var boundaryElementIndex = leftElementIndex + 1;//point of insertion
+            var boundaryHeaderIndex = leftHeaderCount;
+            var boundaryElementCount = rightElementIndex - leftElementIndex - 1;
+            var boundaryHeaderCount = rightHeaderCount - leftHeaderCount;
+
+            if (leftHeaderCount == rightHeaderCount
+                && boundaryElementIndex < this._transformedCollection.Count - 1)
             {
-                insertionPoint = startElementIndex - 1;
-                startHeaderIndex = startHeaderIndex - 1;
-                headerOnLeft = true;
-            }
-            else if (startElementIndex + 1 >= this._transformedCollection.Count
-                || this._transformedCollection[startElementIndex + 1].Item == null)
-            {
-                insertionPoint = startElementIndex;
-                headerOnLeft = false;
-            }
-            else
-            {
-                this._transformedCollection.RemoveAt(startElementIndex);
-                this._transformedCollection.InsertRangeAt(
-                    startElementIndex,
+                this._transformedCollection.ReplaceRangeAt(
+                    boundaryElementIndex,
                     GetInsertedHeaderList(
                         changeList,
                         false,
@@ -318,34 +353,85 @@ namespace Sunlight.Framework.Observables
                 false,
                 addedBefore,
                 addedAfter,
-                insertionPoint);
+                boundaryElementIndex);
 
             var elementsToAdd = tupleReturn.Items;
             var headersToAdd = tupleReturn.HeaderIndexes;
-            int removalCount =
-                !headerOnLeft && startElementIndex == this._transformedCollection.Count - 1
-                    ? 1
-                    : 2;
 
-            this.RemoveExistingHeaders(
-                insertionPoint,
-                startHeaderIndex,
-                removalCount);
+            this.RemoveElementsAndHeaderIndexes(
+                boundaryElementIndex,
+                boundaryHeaderIndex,
+                boundaryElementCount,
+                boundaryHeaderCount);
 
             this._transformedCollection.InsertRangeAt(
-                insertionPoint,
+                boundaryElementIndex,
                 elementsToAdd);
 
             this.MoveHeaderIndexes(
-                startHeaderIndex,
-                insertionPoint,
-                elementsToAdd.Count - 2);
+                boundaryHeaderIndex,
+                boundaryElementIndex,
+                elementsToAdd.Count - boundaryElementCount);
 
             this._allHeaderIndexes.InsertRange(
-                startHeaderIndex,
+                boundaryHeaderIndex,
                 headersToAdd);
 
             return;
+        }
+
+        private void ReplaceFirstKItems(ObservableCollection<T> collection, int k)
+        {
+            if (k == 0 || collection == null)
+            {
+                return;
+            }
+            else
+            {
+                var elementsToReplace = collection.GetRangeAt(
+                    0,
+                    k);
+
+                this.ReplaceElements(
+                elementsToReplace,
+                0);
+            }
+        }
+
+        private void InsertAfterFirstKItems(ObservableCollection<T> collection, int k, int count)
+        {
+            if (count == 0 || collection == null)
+            {
+                return;
+            }
+            else
+            {
+                var elementsToInsert = collection.GetRangeAt(
+                        k,
+                        count);
+
+                this.InsertElements(
+                    elementsToInsert,
+                    k);
+            }
+        }
+
+        private void RemoveAfterKItems(ObservableCollection<T> collection, int k, int count)
+        {
+            if (count == 0 || collection == null)
+            {
+                return;
+            }
+            else
+            {
+                var elementsToRemove = collection.GetRangeAt(
+                    k,
+                    count);
+
+                this.RemoveElements(
+                    elementsToRemove,
+                    k);
+            }
         }
 
         private List<T> WrapNeighbours(
@@ -417,6 +503,7 @@ namespace Sunlight.Framework.Observables
                     {
                         InjectedElement<T, H> eachItem = new InjectedElement<T, H>();
                         eachItem.Item = item;
+
                         insertionCount++;
                         rv.Add(eachItem);
                     }
@@ -475,7 +562,8 @@ namespace Sunlight.Framework.Observables
 
         private void MoveHeaderIndexes(int offset, int insertionIndex, int itemsInsertedCount)
         {
-            if (insertionIndex >= _allHeaderIndexes[_allHeaderIndexes.Count - 1])
+            if (_allHeaderIndexes.Count == 0
+                || insertionIndex >= _allHeaderIndexes[_allHeaderIndexes.Count - 1])
             {
                 return;
             }
@@ -486,10 +574,10 @@ namespace Sunlight.Framework.Observables
             }
         }
 
-        // TODO: Rename the method to mean what it does.
-        private void RemoveExistingHeaders(int startElementIndex, int startHeaderIndex, int count)
+        private void RemoveElementsAndHeaderIndexes(int startElementIndex, int startHeaderIndex, int elementcount, int headerCount)
         {
-            if (startElementIndex > this._transformedCollection.Count - 1)
+            if (startElementIndex == this._transformedCollection.Count
+                || elementcount == 0)
             {
                 return;
             }
@@ -497,8 +585,28 @@ namespace Sunlight.Framework.Observables
             {
                 this._transformedCollection.RemoveRangeAt(
                     startElementIndex,
-                    count);
-                this._allHeaderIndexes.RemoveAt(startHeaderIndex);
+                    elementcount);
+                this._allHeaderIndexes.RemoveRangeAt(startHeaderIndex, headerCount);
+            }
+        }
+
+        private void InsertElementsAndHeaderIndexes(int startElementIndex, int startHeaderIndex, List<InjectedElement<T, H>> elementsToAdd, List<int> headersToAdd)
+        {
+            if (startElementIndex == this._transformedCollection.Count
+                || elementsToAdd.Count == 0
+                || headersToAdd.Count == 0)
+            {
+                return;
+            }
+            else
+            {
+                this._transformedCollection.InsertRangeAt(
+                    startElementIndex,
+                    elementsToAdd);
+
+                this._allHeaderIndexes.InsertRange(
+                    startHeaderIndex,
+                    headersToAdd);
             }
         }
 
@@ -520,11 +628,10 @@ namespace Sunlight.Framework.Observables
                 get { return _elementIndex; }
             }
 
-            public int HeaderIndex
+            public int HeaderCount
             {
                 get { return _headerCount; }
             }
-
         }
 
         private struct ElementsTuple
@@ -549,7 +656,6 @@ namespace Sunlight.Framework.Observables
             {
                 get { return _items; }
             }
-
         }
     }
 }
