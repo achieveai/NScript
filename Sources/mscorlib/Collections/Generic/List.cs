@@ -219,6 +219,20 @@ namespace System.Collections.Generic
             { this.nativeArray.RemoveAt(index); }
         }
 
+        public List<T> GetRangeAt(int index, int count)
+        {
+            var rv = new List<T>();
+            for (int idx = index; idx < this.Count; idx++)
+            {
+                if (idx < index + count)
+                {
+                    rv.Add(this.nativeArray[idx]);
+                }
+            }
+
+            return rv;
+        }
+
         /// <summary>
         /// Gets the number of. 
         /// </summary>

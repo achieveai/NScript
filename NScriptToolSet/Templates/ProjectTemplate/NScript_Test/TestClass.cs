@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace $safeprojectname$
+namespace safeprojectname
 {
     using System;
     using SunlightUnit;

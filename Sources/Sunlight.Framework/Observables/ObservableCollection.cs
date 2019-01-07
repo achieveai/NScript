@@ -439,11 +439,13 @@ using System.Collections.Generic;
                     oldItems.Add(oldItem);
                 }
             }
-            this.OnCollectionChanged(
+            if (oldItems.Count!=0) {
+                this.OnCollectionChanged(
                         CollectionChangedAction.Replace,
                         replaceIndex,
                         list,
                         oldItems);
+            }
 
         }
 

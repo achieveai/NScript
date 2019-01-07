@@ -9,7 +9,15 @@ namespace Sunlight.Framework.Observables
     using System;
     using System.Collections.Generic;
 
-    public class InjectedElement<I, H>
+    public interface IHeaderedElement
+    {
+        bool IsHeader { get; }
+        object Header { get; }
+        object Item { get; }
+    }
+
+    public class InjectedElement<I, H> : IHeaderedElement
+        where H : class
     {
         private H _header = default(H);
         private I _item = default(I);
@@ -25,6 +33,15 @@ namespace Sunlight.Framework.Observables
             get { return _item; }
             set { _item = value; }
         }
+
+        bool IHeaderedElement.IsHeader
+        { get { return this.Header != null; } }
+
+        object IHeaderedElement.Header
+        { get { return this.Header; } }
+
+        object IHeaderedElement.Item
+        { get { return this.Item; } }
     }
 
     // <summary>
@@ -108,6 +125,7 @@ namespace Sunlight.Framework.Observables
                         oldLength,
                         lengthDifference);
                 }
+                return;
             }
         }
 
@@ -138,6 +156,7 @@ namespace Sunlight.Framework.Observables
                     obj2.NewItems,
                     obj2.ChangeIndex);
             }
+            return;
         }
 
         private void InsertElements(IList<T> changeList, int changeIndex)
@@ -516,11 +535,14 @@ namespace Sunlight.Framework.Observables
                         {
                             header = _headerDelegate(default(T), item);
 
-                            InjectedElement<T, H> headerEntry = new InjectedElement<T, H>();
-                            headerEntry.Header = header;
-                            rv.Add(headerEntry);
-                            headerIdx.Add(insertionCount);
-                            insertionCount++;
+                            if (header != default(H))
+                            {
+                                InjectedElement<T, H> headerEntry = new InjectedElement<T, H>();
+                                headerEntry.Header = header;
+                                rv.Add(headerEntry);
+                                headerIdx.Add(insertionCount);
+                                insertionCount++;
+                            }
                         }
 
                         InjectedElement<T, H> eachItem = new InjectedElement<T, H>();

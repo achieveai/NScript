@@ -82,10 +82,10 @@ namespace Sunlight.Framework.Test
 
             observableCollection.CollectionChanged += (coll, evtArg) =>
                 {
-                    assert.Equal(2, evtArg.OldItems.Count, "evtArg.OldItems.Count");
+                    assert.Equal(evtArg.OldItems.Count, 1, "evtArg.OldItems.Count");
                     assert.IsTrue(!Object.IsNullOrUndefined(evtArg.NewItems), "Object.IsNullOrUndefined(evtArg.NewItems)");
-                    assert.Equal(replaceList, evtArg.NewItems, "ObservableCollection");
-                    assert.Equal(1, evtArg.ChangeIndex, "evtArg.changeIndex");
+                    assert.Equal(evtArg.NewItems, replaceList, "ObservableCollection");
+                    assert.Equal(evtArg.ChangeIndex, 1, "evtArg.changeIndex");
                     eventRaised = true;
                 };
             

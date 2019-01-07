@@ -241,7 +241,45 @@ namespace Sunlight.Framework.UI.Test
         { get; set; }
     }
 
-    public class NonObservableObject
+    public class TestViewModelD : ObservableObject
+    {
+        private string str1;
+        private Number num1;
+
+        public string PropStr1
+        {
+            get
+            {
+                return this.str1;
+            }
+            set
+            {
+                if (this.str1 != value)
+                {
+                    this.str1 = value;
+                    base.FirePropertyChanged("PropStr1");
+                }
+            }
+        }
+
+        public Number PropNum1
+        {
+            get
+            {
+                return this.num1;
+            }
+            set
+            {
+                if (this.num1 != value)
+                {
+                    this.num1 = value;
+                    base.FirePropertyChanged("PropNum1");
+                }
+            }
+        }
+    }
+
+        public class NonObservableObject
     {
         public string PropStr
         { get; set; }
