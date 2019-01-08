@@ -24,6 +24,8 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <Use64BitIISExpress />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -63,14 +65,9 @@
   <ItemGroup>
     <Content Include="GeneratedScripts\Sunlight.Framework.Test.js" />
     <Content Include="GeneratedScripts\Sunlight.Framework.UI.Test.js" />
-    <Content Include="GeneratedScripts\test.js" />
-    <Content Include="Scripts\qunit.js" />
-    <Content Include="Styles\qunit.css" />
-    <Content Include="Styles\Site.css" />
+    <Content Include="Scripts\QUnit.2.2.0.js" />
+    <Content Include="Styles\QUnit.2.2.0.css" />
     <Content Include="Global.asax" />
-    <Content Include="Scripts\jquery-1.4.1-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.4.1.js" />
-    <Content Include="Scripts\jquery-1.4.1.min.js" />
     <Content Include="TestPage.htm" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -105,11 +102,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="SrcMapper.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Scripts\jquery-1.4.1.min.js.map">
-      <DependentUpon>jquery-1.4.1.js</DependentUpon>
-    </Content>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
