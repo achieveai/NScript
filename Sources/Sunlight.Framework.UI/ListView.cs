@@ -389,9 +389,12 @@ namespace Sunlight.Framework.UI
                     }
                     break;
                 case CollectionChangedAction.Remove:
-                    if (this.attachedObservableList.Count <= this.topN)
+                    if (this.items.Count <= this.topN)
                     {
-                        this.RemoveChildren(args.ChangeIndex, args.OldItems.Count);
+                        var removeCount = changeIndex < this.items.Count
+                            ? args.OldItems.Count
+                            : 0;
+                        this.RemoveChildren(changeIndex, removeCount);
                     }
                     else
                     {
