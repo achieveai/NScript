@@ -389,10 +389,8 @@ namespace Sunlight.Framework.UI
                     }
                     break;
                 case CollectionChangedAction.Remove:
-                    if (this.attachedObservableList.Count <= this.topN)
-                    {
-                        this.RemoveChildren(args.ChangeIndex, args.OldItems.Count);
-                    }
+                    if (this.observableList.Count + itemCount <= this.topN)
+                    { this.RemoveChildren(changeIndex, oldItems.Count); }
                     else
                     {
                         List<object> replaceList = new List<object>();
@@ -410,13 +408,14 @@ namespace Sunlight.Framework.UI
 
                         this.ObservableEventReplace(changeIndex, replaceCount, replaceList);
 
-                        if (this.attachedObservableList.Count - itemCount <= this.topN)
+                        if (this.attachedObservableList.Count <= this.topN)
                         {
                             this.RemoveChildren(
                                 changeIndex + replaceCount,
                                 items.Count - changeIndex - replaceCount);
                         }
                     }
+
                     break;
                 case CollectionChangedAction.Replace:
                     this.ObservableEventReplace(
