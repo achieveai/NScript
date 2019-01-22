@@ -389,7 +389,8 @@ namespace Sunlight.Framework.UI
                     }
                     break;
                 case CollectionChangedAction.Remove:
-                    if (this.observableList.Count + itemCount <= this.topN)
+                    if (this.attachedObservableList != null
+                        && this.attachedObservableList.Count + itemCount <= this.topN)
                     { this.RemoveChildren(changeIndex, oldItems.Count); }
                     else
                     {
@@ -400,7 +401,7 @@ namespace Sunlight.Framework.UI
                                 changeIndex + itemCount,
                                 Math.Min(
                                     this.topN,
-                                    this.attachedObservableList.Count - itemCount))
+                                    this.attachedObservableList.Count))
                             - changeIndex;
 
                         for (int i = 0; i < replaceCount; i++)
