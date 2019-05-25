@@ -131,10 +131,9 @@ namespace Sunlight.Framework.UI
                     int itemCount = items.Count;
                     for (int iItem = 0; iItem < itemCount; iItem++)
                     {
-                        var listViewItem = this.ResetSkin(
+                        this.ResetSkin(
                             items[iItem],
-                            items[iItem]);
-                        items[iItem] = listViewItem;
+                            observableList[iItem]);
                     }
                 }
             }
@@ -436,10 +435,15 @@ namespace Sunlight.Framework.UI
         {
             for (int iObject = 0; iObject < listCount; iObject++)
             {
-                var listViewItem = this.ResetSkin(
-                        items[changeIndex + iObject],
-                        list[iObject]);
-                items[changeIndex + iObject] = listViewItem;
+                var listItem = items[changeIndex + iObject];
+
+                listItem.Deactivate();
+                this.ResetSkin(
+                    items[changeIndex + iObject],
+                    list[iObject]);
+
+                if (this.IsActive)
+                { listItem.Activate(); }
             }
         }
 
@@ -489,7 +493,9 @@ namespace Sunlight.Framework.UI
 
                     items.Insert(changeIndex + iObject, listViewItem);
                 }
-                listViewItem = this.ResetSkin(
+
+                listViewItem.Deactivate();
+                this.ResetSkin(
                     listViewItem,
                     list[iObject]);
 
@@ -498,7 +504,7 @@ namespace Sunlight.Framework.UI
             }
         }
 
-        private ListViewItem ResetSkin(
+        private void ResetSkin(
             ListViewItem listViewItem,
             object dataItem)
         {
@@ -535,9 +541,6 @@ namespace Sunlight.Framework.UI
                     listViewItem.Element.ClassName = this.itemCssClassName;
                 }
             }
-
-            return listViewItem;
-
         }
 
         private void ResetObservableItems()
@@ -575,16 +578,16 @@ namespace Sunlight.Framework.UI
                             this.Element);
                     }
 
-                    listViewItem.Skin = this.itemSkin;
                     items.Add(listViewItem);
                 }
 
-                listViewItem.DataContext = observableList[iObject];
-                listViewItem.SelectionHelper = this.selectionHelper;
-                listViewItem = this.ResetSkin(
+
+                listViewItem.Deactivate();
+                this.ResetSkin(
                         listViewItem,
                         observableList[iObject]);
 
+                listViewItem.SelectionHelper = this.selectionHelper;
                 ActivateChild(listViewItem);
             }
 
