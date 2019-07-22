@@ -340,6 +340,7 @@
                     {
                         @"DelegateBlocks.cs",
                         @"DupInstructionBlocks.cs",
+                        @"DynamicTest.cs",
                         @"ExceptionHandlerSamples.cs",
                         @"ForLoopBlocks.cs",
                         @"FuncRegressions.cs",
@@ -388,6 +389,7 @@
                     {
                         @"DelegateBlocks.cs",
                         @"DupInstructionBlocks.cs",
+                        @"DynamicTest.cs",
                         @"ExceptionHandlerSamples.cs",
                         @"ForLoopBlocks.cs",
                         @"FuncRegressions.cs",
