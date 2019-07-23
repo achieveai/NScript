@@ -36,6 +36,9 @@ namespace RealScript
 
         public static dynamic GetFoo()
         {
+            // TODO: We still need to test and make sure that
+            // references to anonymous types members are type
+            // preserved. Can only be validated in LINQ.
             return new { Test = "string" };
         }
 
