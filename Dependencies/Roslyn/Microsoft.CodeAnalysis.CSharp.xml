@@ -4203,12 +4203,6 @@
             Set if the group has a receiver but none was not specified in syntax.
             </summary>
         </member>
-        <member name="F:Microsoft.CodeAnalysis.CSharp.BoundNode.BoundNodeAttributes.WasCompilerGeneratedIsChecked">
-            <summary>
-            Captures the fact that consumers of the node already checked the state of the WasCompilerGenerated bit.
-            Allows to assert on attempts to set WasCompilerGenerated bit after that.
-            </summary>
-        </member>
         <member name="P:Microsoft.CodeAnalysis.CSharp.BoundNode.HasAnyErrors">
             <summary>
             Determines if a bound node, or associated syntax or type has an error (not a warning) 
@@ -7559,11 +7553,6 @@
             Maps delegate signature shape (number of parameters and their ref-ness) to a synthesized generic delegate symbol.
             Unlike anonymous types synthesized delegates are not available through symbol APIs. They are only used in lowered bound trees.
             Currently used for dynamic call-site sites whose signature doesn't match any of the well-known Func or Action types.
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.CSharp.Symbols.AnonymousTypeManager._sourceLocationsSeen">
-            <summary>
-            Holds a collection of all the locations of anonymous types and delegates from source
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.CSharp.Symbols.AnonymousTypeManager.ConstructAnonymousTypeImplementationSymbol(Microsoft.CodeAnalysis.CSharp.Symbols.AnonymousTypeManager.AnonymousTypePublicSymbol)">
@@ -36340,19 +36329,6 @@
             of a captured variable is to determine the lifetime of its capture environment.
             </summary>
         </member>
-        <member name="F:Microsoft.CodeAnalysis.CSharp.LambdaRewriter.Analysis.ScopeTreeBuilder._freeVariables">
-            <summary>
-            Free variables are variables declared in expression statements that can then
-            be captured in nested lambdas. Normally, captured variables must lowered as
-            part of closure conversion, but expression tree variables are handled separately
-            by the expression tree rewriter and are considered free for the purposes of
-            closure conversion. For instance, an expression with a nested lambda, e.g.
-                x => y => x + y
-            contains an expression variable, x, that should not be treated as a captured
-            variable to be replaced by closure conversion. Instead, it should be left for
-            expression tree conversion.
-            </summary>
-        </member>
         <member name="F:Microsoft.CodeAnalysis.CSharp.LambdaRewriter.Analysis.ScopeTreeBuilder._methodsConvertedToDelegates">
             <summary>
             If a local function is in the set, at some point in the code it is converted
@@ -37604,7 +37580,7 @@
                   assumptions about array arguments and do not keep them or rely on their identity.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CSharp.SyntheticBoundNodeFactory.StoreToTemp(Microsoft.CodeAnalysis.CSharp.BoundExpression,Microsoft.CodeAnalysis.CSharp.BoundAssignmentOperator@,Microsoft.CodeAnalysis.RefKind,Microsoft.CodeAnalysis.SynthesizedLocalKind,Microsoft.CodeAnalysis.SyntaxNode,System.Int32,System.String)">
+        <member name="M:Microsoft.CodeAnalysis.CSharp.SyntheticBoundNodeFactory.StoreToTemp(Microsoft.CodeAnalysis.CSharp.BoundExpression,Microsoft.CodeAnalysis.CSharp.BoundAssignmentOperator@,Microsoft.CodeAnalysis.RefKind,Microsoft.CodeAnalysis.SynthesizedLocalKind,Microsoft.CodeAnalysis.SyntaxNode)">
             <summary>
             Takes an expression and returns the bound local expression "temp"
             and the bound assignment expression "temp = expr".
