@@ -27,13 +27,13 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        // [TestCase(TestClassNameStr, "CheckIndex", "CheckIndex.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "CheckMethod", "CheckMethod.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GetArray", "GetArray.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GetDictionary", "GetDictionary.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CheckIndex", "CheckIndex.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CheckMethod", "CheckMethod.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GetArray", "GetArray.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GetDictionary", "GetDictionary.js", TestType.All)]
         [TestCase(TestClassNameStr, "GetFoo", "GetFoo.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GetList", "GetList.js", TestType.All)]
-        // [TestCase(TestClassNameStr, "GetSomething", "GetSomething.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GetList", "GetList.js", TestType.All)]
+        [TestCase(TestClassNameStr, "GetSomething", "GetSomething.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

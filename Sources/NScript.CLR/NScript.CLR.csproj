@@ -67,6 +67,7 @@
     <Compile Include="AST\Expressions\ConditionalOperatorExpression.cs" />
     <Compile Include="AST\Expressions\DefaultValueExpression.cs" />
     <Compile Include="AST\Expressions\DelegateMethodExpression.cs" />
+    <Compile Include="AST\Expressions\DynamicCallInvocationExpression.cs" />
     <Compile Include="AST\Expressions\DynamicIndexAccessor.cs" />
     <Compile Include="AST\Expressions\DynamicMemberAccessor.cs" />
     <Compile Include="AST\Expressions\EventReferenceExpression.cs" />

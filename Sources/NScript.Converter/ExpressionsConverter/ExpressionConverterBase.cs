@@ -245,6 +245,26 @@ namespace NScript.Converter.ExpressionsConverter
                 ExpressionConverterBase.SimplifyConverter<FromNullable>(
                     NullableConverter.ConvertFrom));
 
+            returnValue.Add(
+                typeof(AnonymousNewExpression),
+                ExpressionConverterBase.SimplifyConverter<AnonymousNewExpression>(
+                AnonymousNewExpressionConverter.Convert));
+
+            returnValue.Add(
+                typeof(DynamicMemberAccessor),
+                ExpressionConverterBase.SimplifyConverter<DynamicMemberAccessor>(
+                    DynamicMemberAcessorConverter.Convert));
+
+            returnValue.Add(
+                typeof(DynamicIndexAccessor),
+                ExpressionConverterBase.SimplifyConverter<DynamicIndexAccessor>(
+                    DynamicMemberAcessorConverter.Convert));
+
+            returnValue.Add(
+                typeof(DynamicCallInvocationExpression),
+                ExpressionConverterBase.SimplifyConverter<DynamicCallInvocationExpression>(
+                    DynamicMemberAcessorConverter.Convert));
+
             return returnValue;
         }
 

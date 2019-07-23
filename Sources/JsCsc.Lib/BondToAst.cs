@@ -1269,6 +1269,15 @@ namespace JsCsc.Lib
                 this.ParseExpression(jObject.Index));
         }
 
+        private Node ParseDynamicMemberExpression(Serialization.DynamicMemberExpression jObject)
+        {
+            return new DynamicMemberAccessor(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                this.ParseExpression(jObject.Instance),
+                jObject.MemberName);
+        }
+
         private Node ParseDynamicMemberBinder(Serialization.DynamicMethodBinderExpression jObject)
         {
             return new DynamicMemberAccessor(
@@ -1276,6 +1285,17 @@ namespace JsCsc.Lib
                 this.LocFromJObject(jObject),
                 this.ParseExpression(jObject.Instance),
                 jObject.Name);
+        }
+
+        private Node ParseDynamicMethodInvocation(Serialization.DynamicMethodInvocationExpression jObject)
+        {
+            Expression methodInstance = this.ParseExpression(jObject.Method);
+
+            return new DynamicCallInvocationExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                methodInstance,
+                this.ParseArguments(jObject.Arguments));
         }
 
         private Node ParseNewAnonymousType(Serialization.NewAnonymoustype jObject)
@@ -1940,8 +1960,14 @@ namespace JsCsc.Lib
 					typeof(Serialization.DynamicIndexBinderExpression),
 					(a) => this.ParseDynamicIndexBinder((Serialization.DynamicIndexBinderExpression)a));
             parserMap.Add(
+					typeof(Serialization.DynamicMemberExpression),
+					(a) => this.ParseDynamicMemberExpression((Serialization.DynamicMemberExpression)a));
+            parserMap.Add(
 					typeof(Serialization.DynamicMethodBinderExpression),
 					(a) => this.ParseDynamicMemberBinder((Serialization.DynamicMethodBinderExpression)a));
+            parserMap.Add(
+                    typeof(Serialization.DynamicMethodInvocationExpression),
+                    (a) => this.ParseDynamicMethodInvocation((Serialization.DynamicMethodInvocationExpression)a));
             parserMap.Add(
 					typeof(Serialization.NewAnonymoustype),
 					(a) => this.ParseNewAnonymousType((Serialization.NewAnonymoustype)a));
