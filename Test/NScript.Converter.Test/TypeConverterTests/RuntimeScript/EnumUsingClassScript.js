@@ -19,6 +19,10 @@ function EnumUsingClass() {
 };
 EnumUsingClass.typeId = "c";
 EnumUsingClass__TestValue = 2;
+EnumUsingClass__Str = null;
+function EnumUsingClass____cctor() {
+  EnumUsingClass__Str = Int32__ToString(SimpleStaticType__GetField());
+};
 function EnumUsingClass_factory() {
   var this_;
   this_ = new EnumUsingClass();
@@ -38,3 +42,4 @@ ptyp_.__ctor = function EnumUsingClass____ctor() {
   this.testValue2 = 1;
 };
 Type__RegisterReferenceType(EnumUsingClass, "RealScript.EnumUsingClass", Object, []);
+EnumUsingClass____cctor();
