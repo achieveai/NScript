@@ -7,6 +7,7 @@
 namespace RealScript
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for NewLanguageFeatures
@@ -25,5 +26,17 @@ namespace RealScript
 
         public string NameofField()
             => nameof(field);
+
+        public int InitProp { get; } = int.Parse("21");
+
+        public int? OutVarParam(IDictionary<string, int> dict, string str)
+        {
+            if (dict.TryGetValue(str, out var value))
+            {
+                return value;
+            }
+
+            return null;
+        }
     }
 }

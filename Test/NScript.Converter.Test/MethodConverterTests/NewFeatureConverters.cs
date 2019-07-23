@@ -29,6 +29,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase("get_InlineProp", "InlineProp.js", TestType.All)]
         [TestCase("AddNum", "AddNum.js", TestType.All)]
         [TestCase("NameofField", "NameofField.js", TestType.All)]
+        [TestCase("get_InitProp", "InitProp.js", TestType.All)]
+        [TestCase("OutVarParam", "OutVar.js", TestType.All)]
         public void Test(string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

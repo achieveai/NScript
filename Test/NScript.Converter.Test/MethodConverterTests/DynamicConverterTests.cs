@@ -8,8 +8,6 @@ namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
     using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for DynamicConverterTests

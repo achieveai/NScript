@@ -525,6 +525,8 @@
     <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetArray.js" />
     <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetList.js" />
     <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetDictionary.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InitProp.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\OutVar.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>
