@@ -2,6 +2,11 @@
 {
     using System.Runtime.CompilerServices;
 
+    public interface IFormatProvider
+    {
+        object GetFormat(Type formatType);
+    }
+
     [IgnoreNamespace, Extended]
     public sealed class String
     {
@@ -148,10 +153,12 @@
                   });
             ")]
         public extern static string Format(string format, params object[] values);
+
         public static string Format(string format, object value)
-        {
-            return string.Format(format, new object[] { value });
-        }
+        { return string.Format(format, new object[] { value }); }
+
+        public static string Format(IFormatProvider formatProvider, string format, params object[] value)
+        { return String.Format(format, value); }
 
         public extern static string FromCharCode(char ch);
 
