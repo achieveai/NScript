@@ -23,11 +23,15 @@ namespace Sunlight.Framework.UI
         public const string FixedListPropName = "FixedList",
             ObservableListPropName = "ObservableList",
             ItemSkinPropName = "ItemSkin";
+        private const string HeaderSkinPropName = "HeaderSkin";
 
         List<ListViewItem> items = new List<ListViewItem>();
         IObservableCollection observableList;
         IObservableCollection attachedObservableList;
-        IList fixedList;
+        private IList fixedList;
+        private ObservableCollectionGenerator<object, object> listToObservableList;
+        private Skin headerSkin;
+        string headerCssClassName;
         Skin itemSkin;
         string itemCssClassName;
         bool inlineItems;
@@ -110,6 +114,32 @@ namespace Sunlight.Framework.UI
             }
         }
 
+        public Skin HeaderSkin
+        {
+            get { return this.headerSkin; }
+            set
+            {
+                if (this.headerSkin == value)
+                { return; }
+
+                this.headerSkin = value;
+                this.FirePropertyChanged(ListView.HeaderSkinPropName);
+
+                if (this.IsActive)
+                {
+                    var items = this.items;
+                    int itemCount = items.Count;
+                    for (int iItem = 0; iItem < itemCount; iItem++)
+                    {
+                        var listViewItem = this.ResetSkin(
+                            items[iItem],
+                            items[iItem]);
+                        items[iItem] = listViewItem;
+                    }
+                }
+            }
+        }
+
         public Skin ItemSkin
         {
             get
@@ -158,6 +188,14 @@ namespace Sunlight.Framework.UI
         {
             get { return this.itemCssClassName; }
             set { this.itemCssClassName = value; }
+        }
+
+        [CssName]
+        [DefaultDataBinding(Mode = Binders.DataBindingMode.OneTime)]
+        public string HeaderCssClassName
+        {
+            get { return this.headerCssClassName; }
+            set { this.headerCssClassName = value; }
         }
 
         [DefaultDataBinding(Mode=Binders.DataBindingMode.OneTime, IsStrict=true, DefaultValue=false)]
@@ -226,57 +264,38 @@ namespace Sunlight.Framework.UI
             int itemsCount = items.Count;
             if (this.fixedList == null)
             {
-                for (int iItem = 0; iItem < itemsCount; iItem++)
-                { RemoveChild(items[iItem]); }
+                if (this.listToObservableList != null)
+                {
+                    this.listToObservableList.InputCollection = null;
+                }
+                else
+                {
+                    for (int iItem = 0; iItem < itemsCount; iItem++)
+                    { RemoveChild(items[iItem]); }
 
-                items.Clear();
+                    items.Clear();
+                }
+
                 return;
             }
 
-            if (this.IsActive)
+            if (this.IsActive
+                && this.fixedList != null
+                && (this.listToObservableList == null
+                    || this.fixedList != this.listToObservableList.InputCollection))
             {
-                var fixedList = this.fixedList;
-                int fixedListCount = Math.Min(fixedList.Count, this.topN);
-                for (int iObject = 0; iObject < fixedListCount; iObject++)
+                if (this.listToObservableList == null)
                 {
-                    ListViewItem listViewItem;
-                    if (iObject < itemsCount)
-                    {
-                        listViewItem = items[iObject];
-                        listViewItem.IsSelected = 
-                            selectionHelper != null
-                                ? selectionHelper.IsSelected(listViewItem.DataContext)
-                                : false;
-                    }
-                    else
-                    {
-                        listViewItem = this.CreateListViewItem();
-
-                        if (this.itemCssClassName != null)
-                        {
-                            listViewItem.Element.ClassName = this.itemCssClassName;
-                        }
-
-                        if (!this.inlineItems)
-                        {
-                            this.Element.AppendChild(listViewItem.Element);
-                        }
-                        else
-                        {
-                            this.Element.ParentNode.InsertBefore(
-                                listViewItem.Element,
-                                this.Element);
-                        }
-                        listViewItem.Skin = this.itemSkin;
-                        items.Add(listViewItem);
-                    }
-
-                    listViewItem.DataContext = fixedList[iObject];
-                    listViewItem.SelectionHelper = this.selectionHelper;
-                    ActivateChild(listViewItem);
+                    this.listToObservableList = new ObservableCollectionGenerator<object, object>((a) => a);
+                    this.attachedObservableList = this.listToObservableList.OutputCollection;
+                    this.attachedObservableList.CollectionChanged += this.ObservableListCollectionChanged;
                 }
 
-                this.RemoveChildren(fixedListCount, itemsCount - fixedListCount);
+                var list = new List<object>();
+                for (int idx = 0; idx < this.fixedList.Count; idx++)
+                { list.Add(this.fixedList[idx]); }
+
+                this.listToObservableList.InputCollection = list;
             }
         }
 
@@ -346,13 +365,19 @@ namespace Sunlight.Framework.UI
 
                             int replaceCount = this.topN - changeIndex - addCount;
                             List<object> list = new List<object>();
+                            var itemsAdded = false;
                             for (int i = addCount; i < replaceCount && i < itemCount; i++)
-                            { list.Add(newItems[i]); }
+                            {
+                                list.Add(newItems[i]);
+                                itemsAdded = true;
+                            }
 
-                            this.ObservableEventAdd(
+                            if (itemsAdded) {
+                                this.ObservableEventAdd(
                                 changeIndex + addCount,
                                 replaceCount,
                                 list);
+                            }
                         }
                     }
                     else
@@ -364,10 +389,9 @@ namespace Sunlight.Framework.UI
                     }
                     break;
                 case CollectionChangedAction.Remove:
-                    if (this.observableList.Count <= this.topN)
-                    {
-                        this.RemoveChildren(args.ChangeIndex, args.OldItems.Count);
-                    }
+                    if (this.attachedObservableList != null
+                        && this.attachedObservableList.Count + itemCount <= this.topN)
+                    { this.RemoveChildren(changeIndex, oldItems.Count); }
                     else
                     {
                         List<object> replaceList = new List<object>();
@@ -377,21 +401,22 @@ namespace Sunlight.Framework.UI
                                 changeIndex + itemCount,
                                 Math.Min(
                                     this.topN,
-                                    this.observableList.Count - itemCount))
+                                    this.attachedObservableList.Count))
                             - changeIndex;
 
                         for (int i = 0; i < replaceCount; i++)
-                        { replaceList.Add(this.observableList[replaceStartIndex + i]); }
+                        { replaceList.Add(this.attachedObservableList[replaceStartIndex + i]); }
 
                         this.ObservableEventReplace(changeIndex, replaceCount, replaceList);
 
-                        if (this.observableList.Count - itemCount <= this.topN)
+                        if (this.attachedObservableList.Count <= this.topN)
                         {
                             this.RemoveChildren(
                                 changeIndex + replaceCount,
                                 items.Count - changeIndex - replaceCount);
                         }
                     }
+
                     break;
                 case CollectionChangedAction.Replace:
                     this.ObservableEventReplace(
@@ -411,7 +436,10 @@ namespace Sunlight.Framework.UI
         {
             for (int iObject = 0; iObject < listCount; iObject++)
             {
-                items[changeIndex + iObject].DataContext = list[iObject];
+                var listViewItem = this.ResetSkin(
+                        items[changeIndex + iObject],
+                        list[iObject]);
+                items[changeIndex + iObject] = listViewItem;
             }
         }
 
@@ -430,8 +458,6 @@ namespace Sunlight.Framework.UI
                 {
                     listViewItem.Element.ClassName = this.itemCssClassName;
                 }
-
-                listViewItem.Skin = this.itemSkin;
 
                 if (insertBeforeElem == null)
                 {
@@ -463,16 +489,60 @@ namespace Sunlight.Framework.UI
 
                     items.Insert(changeIndex + iObject, listViewItem);
                 }
+                listViewItem = this.ResetSkin(
+                    listViewItem,
+                    list[iObject]);
 
-                listViewItem.DataContext = list[iObject];
                 listViewItem.SelectionHelper = this.selectionHelper;
                 ActivateChild(listViewItem);
             }
         }
 
+        private ListViewItem ResetSkin(
+            ListViewItem listViewItem,
+            object dataItem)
+        {
+            bool hasHeaders = this.headerSkin != null;
+            if (hasHeaders)
+            {
+                var headeredItem = (IHeaderedElement)dataItem;
+
+                if (headeredItem.IsHeader)
+                {
+                    listViewItem.DataContext = headeredItem.Header;
+                    listViewItem.Skin = this.headerSkin;
+                    if (this.headerCssClassName != null)
+                    {
+                        listViewItem.Element.ClassName = this.headerCssClassName;
+                    }
+                }
+                else
+                {
+                    listViewItem.DataContext = headeredItem.Item;
+                    listViewItem.Skin = this.itemSkin;
+                    if (this.itemCssClassName != null)
+                    {
+                        listViewItem.Element.ClassName = this.itemCssClassName;
+                    }
+                }
+            }
+            else
+            {
+                listViewItem.DataContext = dataItem;
+                listViewItem.Skin = this.itemSkin;
+                if (this.itemCssClassName != null)
+                {
+                    listViewItem.Element.ClassName = this.itemCssClassName;
+                }
+            }
+
+            return listViewItem;
+
+        }
+
         private void ResetObservableItems()
         {
-            var observableList = this.observableList;
+            var observableList = this.attachedObservableList;
             var itemsCount = this.items.Count;
             int listCount = Math.Min(observableList.Count, this.topN);
             for (int iObject = 0; iObject < listCount; iObject++)
@@ -511,6 +581,10 @@ namespace Sunlight.Framework.UI
 
                 listViewItem.DataContext = observableList[iObject];
                 listViewItem.SelectionHelper = this.selectionHelper;
+                listViewItem = this.ResetSkin(
+                        listViewItem,
+                        observableList[iObject]);
+
                 ActivateChild(listViewItem);
             }
 

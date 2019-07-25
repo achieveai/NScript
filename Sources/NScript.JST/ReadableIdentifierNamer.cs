@@ -67,11 +67,10 @@ namespace NScript.JST
                     this.assignedNames[identIdx] = ident.SuggestedName;
                     return;
                 }
-
                 string prefix = ident.SuggestedName;
                 var prefixLength = prefix.Length;
 
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < 10000; i++)
                 {
                     string postfix = ReadableIdentifierNamer.GetPostfix(i);
                     var postfixLength = postfix.Length;
@@ -297,7 +296,7 @@ namespace NScript.JST
                 var sb = new System.Text.StringBuilder(2);
                 while(i > 0)
                 {
-                    sb.Append((i - 1) % ReadableIdentifierNamer.CharMap.Length);
+                    sb.Append(ReadableIdentifierNamer.CharMap[(i - 1) % ReadableIdentifierNamer.CharMap.Length]);
                     i = i / ReadableIdentifierNamer.CharMap.Length;
                 }
 

@@ -57,6 +57,7 @@ namespace Sunlight.Framework.Test
 
             evtBus.RaiseOneTime(new Evt1() { X = 10 });
             assert.Equal(10, x1, "10 == x1");
+            assert.Equal(0, x2, "0 == x2");
 
             x1 = 0;
             evtBus.Subscribe(del);
@@ -77,6 +78,7 @@ namespace Sunlight.Framework.Test
 
             evtBus.Raise(new Evt1() { X = 10 });
             assert.Equal(0, x1, "0 == x1");
+            assert.Equal(10, x2, "10 == x2");
         }
     }
 }

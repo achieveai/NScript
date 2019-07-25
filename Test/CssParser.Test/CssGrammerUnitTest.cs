@@ -414,5 +414,23 @@
             Assert.IsNull(((PropertyRangeRule)mediaQuery.MediaRules[2]).LeftValue);
             Assert.IsNull(((PropertyRangeRule)mediaQuery.MediaRules[2]).LeftOp);
         }
+
+        [Test]
+        public void TestRemPropertyValue()
+        {
+            var grammer = new CssGrammer("font-size: 3rem;", true);
+            Assert.IsNull(grammer.Rules);
+            Assert.IsNotNull(grammer.Properties);
+            Assert.AreEqual(1, grammer.Properties.Count);
+
+            Assert.AreEqual("font-size", grammer.Properties[0].PropertyName);
+
+            var propertyArgs = new string[] { "3rem" };
+            Assert.AreEqual(propertyArgs.Length, grammer.Properties[0].PropertyArgs[0].Values.Count);
+            for (int i = 0; i < propertyArgs.Length; i++)
+            {
+                Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[0].Values[i].ToString());
+            }
+        }
     }
 }

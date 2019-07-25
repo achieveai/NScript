@@ -104,6 +104,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.Converter.Plugins", "Sources\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj", "{8E168B27-2033-412A-B362-5102400EA471}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApplication", "Test\TestWebApplication\TestWebApplication.csproj", "{ADF8F287-C67B-43DE-A463-DFD7BB4EACD0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB} = {F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}
+		{6BD4DB74-E584-49D5-9E99-651DE81FB6D5} = {6BD4DB74-E584-49D5-9E99-651DE81FB6D5}
+		{5702ADA9-6583-4019-ADA1-A48CCC3F53EA} = {5702ADA9-6583-4019-ADA1-A48CCC3F53EA}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsCsc.Lib", "Sources\JsCsc.Lib\JsCsc.Lib.csproj", "{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}"
 EndProject

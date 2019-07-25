@@ -529,7 +529,13 @@ namespace NScript.Converter.ExpressionsConverter
                             ? rightJstExpression
                             : leftJstExpression;
 
-                        if (jstOperator == JST.BinaryOperator.StrictEquals)
+                        rvExp = new JST.UnaryExpression(
+                            rvExp.Location,
+                            rvExp.Scope,
+                            JST.UnaryOperator.LogicalNot,
+                            rvExp);
+
+                        if (jstOperator != JST.BinaryOperator.StrictEquals)
                         {
                             rvExp = new JST.UnaryExpression(
                                 rvExp.Location,
@@ -540,6 +546,10 @@ namespace NScript.Converter.ExpressionsConverter
 
                         return rvExp;
                     }
+
+                    jstOperator = jstOperator == JST.BinaryOperator.StrictEquals
+                        ? JST.BinaryOperator.Equals
+                        : JST.BinaryOperator.NotEquals;
                 }
                 else if (BinaryExpressionConverter.IsEqualsIgnorable(rightExpression.ResultType)
                         || BinaryExpressionConverter.IsEqualsIgnorable(leftExpression.ResultType)
