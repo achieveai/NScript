@@ -15,6 +15,7 @@ namespace JsCsc.Lib
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using JsCsc.Lib.Serialization;
+    using System.Linq;
 
     /// <summary>
     /// Definition for Driver
@@ -38,10 +39,34 @@ namespace JsCsc.Lib
             var errorStream = Console.Error;
             var messageStream = Console.Out;
             var printer = new StreamReportPrinter(errorStream);
+            var langverRegex = new System.Text.RegularExpressions.Regex("[/-]langversion:[^\\s]*");
             CommandLineParser cmd = new CommandLineParser(errorStream, messageStream);
 
-            List<string> fixedArgs = new List<string>(args);
-            var setting = cmd.ParseArguments(args);
+            var fixedArgs = args
+                .Where(arg => !arg.StartsWith("/langversion") && !arg.StartsWith("-langverion"))
+                .ToArray();
+
+            foreach (var arg in fixedArgs)
+            {
+                if (arg.StartsWith("@"))
+                {
+                    var argLines = File
+                        .ReadAllLines(arg.Substring(1))
+                        .Where(line =>
+                            !line.StartsWith("/langversion")
+                            && !line.StartsWith("-langversion"))
+                        .Select(line => langverRegex.Replace(line, ""))
+                        .ToList();
+
+                    Console.WriteLine("RspOutput: \r\n{0}", string.Join("\r\n", argLines));
+
+                    File.WriteAllLines(
+                        arg.Substring(1),
+                        argLines);
+                }
+            }
+
+            var setting = cmd.ParseArguments(fixedArgs);
             setting.StdLibRuntimeVersion = RuntimeVersion.v2;
             if (setting == null)
                 return;
