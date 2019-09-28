@@ -502,6 +502,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Value { get; set; }
     }
 
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class DynamicMethodInvocationExpression
         : ExpressionSer
     {

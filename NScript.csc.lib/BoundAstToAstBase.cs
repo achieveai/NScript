@@ -123,8 +123,10 @@
 
         public override AstBase DefaultVisit(BoundNode node, SerializationContext arg)
         { throw new NotImplementedException(); }
+
         public override AstBase VisitAddressOfOperator(BoundAddressOfOperator node, SerializationContext arg)
-            { throw new NotImplementedException(); }
+        { throw new NotImplementedException(); }
+
         public override AstBase VisitAnonymousObjectCreationExpression(BoundAnonymousObjectCreationExpression node, SerializationContext arg)
             => new NewAnonymoustype
             {
@@ -479,10 +481,10 @@
                 case ConversionKind.Boxing:
                     return new BoxCastExpression
                     { Expression = (ExpressionSer)this.Visit(node.Operand, arg) };
-                case ConversionKind.ImplicitDynamic:
                 case ConversionKind.ImplicitReference:
                     return this.Visit(node.Operand, arg);
 
+                case ConversionKind.ImplicitDynamic:
                 case ConversionKind.ExplicitReference:
                     // return this.Visit(node.Operand, arg);
                 case ConversionKind.ExplicitEnumeration: // Cast to enum from int/short, use cast b'cause we may be using string for enum
@@ -495,6 +497,7 @@
                         Expression = (ExpressionSer)this.Visit(node.Operand, arg),
                         Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
                     };
+
                 case ConversionKind.ExplicitNullable:
                     return new NullableToNormal
                     {
@@ -832,11 +835,7 @@
 
         public override AstBase VisitLocalDeclaration(BoundLocalDeclaration node, SerializationContext arg)
             => node.InitializerOpt == null
-                ? (ExpressionSer)new LocalVariableRefExpression
-                {
-                    Location = node.Syntax.Location.GetSerLoc(),
-                    LocalVariable = this.GetLocalVariable(node.LocalSymbol, arg)
-                }
+                ? null
                 : new BinaryExpression
                 {
                     Operator = (int)CLR.AST.BinaryOperator.Assignment,

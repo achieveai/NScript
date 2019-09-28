@@ -482,7 +482,16 @@ namespace JsCsc.Lib
             { return new PointerType(this.DeserializeType(pointerTypeSer.PointedAtType)); }
 
             if (moduleDef == null)
-            { return this._context.KnownReferences.Void; }
+            {
+                if (typeSpec.Name == "dynamic")
+                {
+                    return this._context.KnownReferences.Object;
+                }
+                else
+                {
+                    return this._context.KnownReferences.Void;
+                }
+            }
 
             string name = typeSpec.Name;
             int arity = typeSpec.Arity;

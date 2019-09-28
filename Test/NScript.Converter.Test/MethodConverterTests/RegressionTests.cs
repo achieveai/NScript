@@ -15,7 +15,7 @@ namespace NScript.Converter.Test.MethodConverterTests
     [TestFixture]
     public class RegressionTests
     {
-        private const string TestClassNameStr = "FuncRegressions";
+        public const string TestClassNameStr = "FuncRegressions";
         private const string TestFilesNSStr = "NScript.Converter.Test.MethodConverterTests.Regressions.";
 
         [SetUp]

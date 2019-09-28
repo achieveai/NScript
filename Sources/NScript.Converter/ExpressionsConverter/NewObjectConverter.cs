@@ -109,12 +109,13 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             NewObjectExpression methodCall)
         {
-            JST.InlineObjectInitializer inlineArray =
+            var newInlineObject =
                 new JST.InlineObjectInitializer(
                     methodCall.Location,
                     converter.Scope);
 
-            InlineArrayInitialization inlineArrayInitialization = methodCall.Parameters[0] as InlineArrayInitialization;
+            var inlineArrayInitialization =
+                methodCall.Parameters[0] as InlineArrayInitialization;
 
             if (inlineArrayInitialization == null)
             {
@@ -136,14 +137,14 @@ namespace NScript.Converter.ExpressionsConverter
                             methodCall.Location));
                 }
 
-                inlineArray.AddInitializer(
+                newInlineObject.AddInitializer(
                     ((StringLiteral)inlineArrayInitialization.ElementInitValues[arrayElementIndex]).String,
                     ExpressionConverterBase.Convert(
                         converter,
                         inlineArrayInitialization.ElementInitValues[arrayElementIndex + 1]));
             }
 
-            return inlineArray;
+            return newInlineObject;
         }
     }
 }

@@ -98,6 +98,9 @@ function String__Format(format, values) {
 function String__Formata(format, value) {
   return String__Format(format, ArrayG_$Object$_.__ctor([ArrayG_$Object$_.__ctor([value])]));
 };
+function String__Formatb(formatProvider, format, value) {
+  return String__Format(format, ArrayG_$Object$_.__ctor([value]));
+};
 function String__IndexOf(this_, ch) {
   return this_.indexOf(String.fromCharCode(ch));
 };

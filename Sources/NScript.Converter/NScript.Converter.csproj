@@ -67,11 +67,13 @@
     <Compile Include="DependencyBuilder\InheritanceDependencyBuilder.cs" />
     <Content Include="DependencyBuilder\TypeDependencyInfo.cs" />
     <Compile Include="ExpressionsConverter\AnonymousMethodBodyExpressionConverter.cs" />
+    <Compile Include="ExpressionsConverter\AnonymousNewExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\BinaryExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\BoxExpressionConvereter.cs" />
     <Compile Include="ExpressionsConverter\ConditionalOperatorConverter.cs" />
     <Compile Include="ExpressionsConverter\DefaultValueConverter.cs" />
     <Compile Include="ExpressionsConverter\DelegateMethodConverter.cs" />
+    <Compile Include="ExpressionsConverter\DynamicMemberAcessorConverter.cs" />
     <Compile Include="ExpressionsConverter\EventReferenceConverter.cs" />
     <Compile Include="ExpressionsConverter\ExpressionConverterBase.cs" />
     <Compile Include="ExpressionsConverter\InlineDelegateExpressionConverter.cs" />
