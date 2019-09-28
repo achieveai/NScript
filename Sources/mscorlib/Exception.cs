@@ -15,6 +15,10 @@
         public extern static Exception Create(string message, Dictionary errorInfo, Exception innerException);
 
         [IntrinsicProperty]
+        public static extern int? StackTraceLimit
+        { get; set; }
+
+        [IntrinsicProperty]
         public extern Exception InnerException
         { get; }
 

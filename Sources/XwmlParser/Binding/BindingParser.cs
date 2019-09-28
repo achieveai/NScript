@@ -627,7 +627,8 @@ namespace XwmlParser.Binding
                         continue;
                     }
 
-                    if (!methodReference.ReturnType.ExtendsType(toType)
+                    if (toType.FullName != "System.String"
+                        && !methodReference.ReturnType.ExtendsType(toType)
                         && !methodReference.ReturnType.ImplementsInterface(toType))
                     {
                         continue;

@@ -29,6 +29,20 @@ namespace Sunlight.Framework.UI.Test
             { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplateVMB1_int.html")]
+        public static Skin TestTemplateVMB1_int
+        {
+            get
+            { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplateVMC1.html")]
+        public static Skin TestTemplateVMC1
+        {
+            get
+            { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplateVMB_AttrBinding.html")]
         public static Skin TestTemplateVMB_AttrBinding
         {

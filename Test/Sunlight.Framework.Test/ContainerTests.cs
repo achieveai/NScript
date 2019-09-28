@@ -145,7 +145,8 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType1>(() => new IocTestType1(x++, y))
+            container
+                .Register<IocTestType1>(() => new IocTestType1(x++, y))
                 .IsSingleton();
 
             var t1 = container.ResolveLazy<IocTestType1>();
