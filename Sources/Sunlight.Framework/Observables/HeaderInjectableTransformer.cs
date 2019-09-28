@@ -97,10 +97,11 @@ namespace Sunlight.Framework.Observables
                 var newLength = value != null
                     ? value.Count
                     : 0;
-                var oldLength = inputCollection
-                    != null
+
+                var oldLength = inputCollection != null
                     ? inputCollection.Count
                     : 0;
+
                 var lengthDifference = newLength - oldLength;
 
                 if (lengthDifference < 0)
@@ -125,6 +126,7 @@ namespace Sunlight.Framework.Observables
                         oldLength,
                         lengthDifference);
                 }
+
                 return;
             }
         }
