@@ -169,15 +169,26 @@ namespace NScript.Converter
                 FullAst fullAst = null;
                 foreach (var resource in module.Resources)
                 {
-                    if (resource.Name == "$$BstInfo$$")
+                    if (resource.Name == "$$JstInfo$$")
                     {
                         EmbeddedResource embededResource = (EmbeddedResource)resource;
 
                         // stopWatch.Restart();
                         using (var stream = embededResource.GetResourceStream())
+                        using (var streamReader = new StreamReader(stream))
+                        using (var jsonReader = new JsonTextReader(streamReader))
                         {
-                            fullAst = ProtoBuf.Serializer.Deserialize<FullAst>(stream);
+                            var serializer = Newtonsoft.Json.JsonSerializer
+                                .Create(new Newtonsoft.Json.JsonSerializerSettings
+                                {
+                                    TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto
+                                });
+
+                            fullAst = serializer.Deserialize<FullAst>(jsonReader);
+                            // fullAst = NetJSON.NetJSON.Deserialize<FullAst>(streamReader);
+                            // fullAst = ProtoBuf.Serializer.Deserialize<FullAst>(stream);
                         }
+
                         // stopWatch.Stop();
                         // bondCost += stopWatch.Elapsed.TotalSeconds;
                     }
@@ -215,6 +226,7 @@ namespace NScript.Converter
 
                     // stopWatch.Restart();
                 }
+
                 if (fullAst != null)
                 {
                     var bondToAst = new BondToAst(

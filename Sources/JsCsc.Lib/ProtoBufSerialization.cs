@@ -9,7 +9,9 @@ namespace JsCsc.Lib.Serialization
     using System;
     using System.Collections.Generic;
     using ProtoBuf;
-    //  MaxId = 211;
+    using NetJSON;
+    using Newtonsoft.Json;
+    //  MaxId = 212;
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class ModuleSpecSer
@@ -18,10 +20,10 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(100, typeof(GenericParamSer))]
-    [ProtoInclude(101, typeof(ArrayTypeSer))]
-    [ProtoInclude(102, typeof(GenericInstanceTypeSer))]
-    [ProtoInclude(209, typeof(PointerTypeSer))]
+    [NetJSONKnownType(typeof(GenericParamSer)), ProtoInclude(100, typeof(GenericParamSer))]
+    [NetJSONKnownType(typeof(ArrayTypeSer)), ProtoInclude(101, typeof(ArrayTypeSer))]
+    [NetJSONKnownType(typeof(GenericInstanceTypeSer)), ProtoInclude(102, typeof(GenericInstanceTypeSer))]
+    [NetJSONKnownType(typeof(PointerTypeSer)), ProtoInclude(209, typeof(PointerTypeSer))]
     public class TypeSpecSer
     {
         public string Name { get; set; }
@@ -146,20 +148,20 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(103, typeof(LocalVariableSer))]
-    [ProtoInclude(105, typeof(ExpressionSer))]
-    [ProtoInclude(106, typeof(StatementSer))]
-    [ProtoInclude(110, typeof(MethodCallArg))]
-    [ProtoInclude(169, typeof(SwitchSectionSer))]
-    [ProtoInclude(114, typeof(ObjectInitilaizer))]
-    [ProtoInclude(179, typeof(MethodBody))]
+    [NetJSONKnownType(typeof(LocalVariableSer)), ProtoInclude(103, typeof(LocalVariableSer))]
+    [NetJSONKnownType(typeof(ExpressionSer)), ProtoInclude(105, typeof(ExpressionSer))]
+    [NetJSONKnownType(typeof(StatementSer)), ProtoInclude(106, typeof(StatementSer))]
+    [NetJSONKnownType(typeof(MethodCallArg)), ProtoInclude(110, typeof(MethodCallArg))]
+    [NetJSONKnownType(typeof(SwitchSectionSer)), ProtoInclude(169, typeof(SwitchSectionSer))]
+    [NetJSONKnownType(typeof(ObjectInitilaizer)), ProtoInclude(114, typeof(ObjectInitilaizer))]
+    [NetJSONKnownType(typeof(MethodBody)), ProtoInclude(179, typeof(MethodBody))]
     public class AstBase
     {
         public LocationSer Location { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(104, typeof(ParameterSer))]
+    [NetJSONKnownType(typeof(ParameterSer)), ProtoInclude(104, typeof(ParameterSer))]
     public class LocalVariableSer
         : AstBase
     {
@@ -178,102 +180,103 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(108, typeof(NullExpression))]
-    [ProtoInclude(180, typeof(ByteLiteralExpression))]
-    [ProtoInclude(181, typeof(SByteLiteralExpression))]
-    [ProtoInclude(182, typeof(ShortLiteralExpression))]
-    [ProtoInclude(183, typeof(UShortLiteralExpression))]
-    [ProtoInclude(184, typeof(IntLiteralExpression))]
-    [ProtoInclude(185, typeof(UIntLiteralExpression))]
-    [ProtoInclude(186, typeof(LongLiteralExpression))]
-    [ProtoInclude(187, typeof(ULongLiteralExpression))]
-    [ProtoInclude(188, typeof(FloatLiteralExpression))]
-    [ProtoInclude(189, typeof(DoubleLiteralExpression))]
-    [ProtoInclude(190, typeof(BoolLiteralExpression))]
-    [ProtoInclude(191, typeof(StringLiteralExpression))]
-    [ProtoInclude(192, typeof(DecimalLiteralExpression))]
-    [ProtoInclude(193, typeof(CharLiteralExpression))]
-    [ProtoInclude(194, typeof(BoolConstantExpression))]
-    [ProtoInclude(195, typeof(ByteConstantExpression))]
-    [ProtoInclude(196, typeof(SbyteConstantExpression))]
-    [ProtoInclude(197, typeof(ShortConstantExpression))]
-    [ProtoInclude(198, typeof(UshortConstantExpression))]
-    [ProtoInclude(199, typeof(IntConstantExpression))]
-    [ProtoInclude(200, typeof(UintConstantExpression))]
-    [ProtoInclude(201, typeof(LongConstantExpression))]
-    [ProtoInclude(202, typeof(UlongConstantExpression))]
-    [ProtoInclude(203, typeof(FloatConstantExpression))]
-    [ProtoInclude(204, typeof(DoubleConstantExpression))]
-    [ProtoInclude(205, typeof(StringConstantExpression))]
-    [ProtoInclude(206, typeof(DecimalConstantExpression))]
-    [ProtoInclude(207, typeof(CharConstantExpression))]
-    [ProtoInclude(111, typeof(MethodCallExpression))]
-    [ProtoInclude(116, typeof(NewAnonymoustype))]
-    [ProtoInclude(117, typeof(MethodExpression))]
-    [ProtoInclude(118, typeof(FieldExpression))]
-    [ProtoInclude(119, typeof(PropertyExpression))]
-    [ProtoInclude(121, typeof(DynamicIndexBinderExpression))]
-    [ProtoInclude(122, typeof(DynamicMethodBinderExpression))]
-    [ProtoInclude(123, typeof(DelegateInvocationExpression))]
-    [ProtoInclude(125, typeof(DefaultValueExpr))]
-    [ProtoInclude(126, typeof(TypeExpressionSer))]
-    [ProtoInclude(128, typeof(TypeCastExpression))]
-    [ProtoInclude(129, typeof(DelegateCreationExpression))]
-    [ProtoInclude(130, typeof(ArrayCreationExpression))]
-    [ProtoInclude(131, typeof(ThisExpression))]
-    [ProtoInclude(133, typeof(TypeOfExpression))]
-    [ProtoInclude(134, typeof(ElementAccessExpression))]
-    [ProtoInclude(135, typeof(AssignExpression))]
-    [ProtoInclude(137, typeof(BoxCastExpression))]
-    [ProtoInclude(138, typeof(NullConstantExpression))]
-    [ProtoInclude(141, typeof(UnwrapExpression))]
-    [ProtoInclude(142, typeof(WrapExpression))]
-    [ProtoInclude(143, typeof(LiftedNullExpression))]
-    [ProtoInclude(144, typeof(NullCoalescingOperatorSer))]
-    [ProtoInclude(145, typeof(UnaryExpression))]
-    [ProtoInclude(146, typeof(BinaryExpression))]
-    [ProtoInclude(147, typeof(IsExpression))]
-    [ProtoInclude(148, typeof(AsExpression))]
-    [ProtoInclude(149, typeof(ConditionalExpression))]
-    [ProtoInclude(150, typeof(LocalVariableRefExpression))]
-    [ProtoInclude(152, typeof(ParameterReferenceExpression))]
-    [ProtoInclude(177, typeof(AnonymousMethodBodyExpr))]
-    [ProtoInclude(178, typeof(AnonymousMethodExpr))]
-    [ProtoInclude(176, typeof(IteratorBlock))]
-    [ProtoInclude(208, typeof(NullableToNormal))]
-    [ProtoInclude(209, typeof(EventExpression))]
-    [ProtoInclude(210, typeof(DynamicMemberExpression))]
-    [ProtoInclude(211, typeof(DynamicMethodInvocationExpression))]
-    public class ExpressionSer
+    [NetJSONKnownType(typeof(NullExpression)), ProtoInclude(108, typeof(NullExpression))]
+    [NetJSONKnownType(typeof(ByteLiteralExpression)), ProtoInclude(180, typeof(ByteLiteralExpression))]
+    [NetJSONKnownType(typeof(SByteLiteralExpression)), ProtoInclude(181, typeof(SByteLiteralExpression))]
+    [NetJSONKnownType(typeof(ShortLiteralExpression)), ProtoInclude(182, typeof(ShortLiteralExpression))]
+    [NetJSONKnownType(typeof(UShortLiteralExpression)), ProtoInclude(183, typeof(UShortLiteralExpression))]
+    [NetJSONKnownType(typeof(IntLiteralExpression)), ProtoInclude(184, typeof(IntLiteralExpression))]
+    [NetJSONKnownType(typeof(UIntLiteralExpression)), ProtoInclude(185, typeof(UIntLiteralExpression))]
+    [NetJSONKnownType(typeof(LongLiteralExpression)), ProtoInclude(186, typeof(LongLiteralExpression))]
+    [NetJSONKnownType(typeof(ULongLiteralExpression)), ProtoInclude(187, typeof(ULongLiteralExpression))]
+    [NetJSONKnownType(typeof(FloatLiteralExpression)), ProtoInclude(188, typeof(FloatLiteralExpression))]
+    [NetJSONKnownType(typeof(DoubleLiteralExpression)), ProtoInclude(189, typeof(DoubleLiteralExpression))]
+    [NetJSONKnownType(typeof(BoolLiteralExpression)), ProtoInclude(190, typeof(BoolLiteralExpression))]
+    [NetJSONKnownType(typeof(StringLiteralExpression)), ProtoInclude(191, typeof(StringLiteralExpression))]
+    [NetJSONKnownType(typeof(DecimalLiteralExpression)), ProtoInclude(192, typeof(DecimalLiteralExpression))]
+    [NetJSONKnownType(typeof(CharLiteralExpression)), ProtoInclude(193, typeof(CharLiteralExpression))]
+    [NetJSONKnownType(typeof(BoolConstantExpression)), ProtoInclude(194, typeof(BoolConstantExpression))]
+    [NetJSONKnownType(typeof(ByteConstantExpression)), ProtoInclude(195, typeof(ByteConstantExpression))]
+    [NetJSONKnownType(typeof(SbyteConstantExpression)), ProtoInclude(196, typeof(SbyteConstantExpression))]
+    [NetJSONKnownType(typeof(ShortConstantExpression)), ProtoInclude(197, typeof(ShortConstantExpression))]
+    [NetJSONKnownType(typeof(UshortConstantExpression)), ProtoInclude(198, typeof(UshortConstantExpression))]
+    [NetJSONKnownType(typeof(IntConstantExpression)), ProtoInclude(199, typeof(IntConstantExpression))]
+    [NetJSONKnownType(typeof(UintConstantExpression)), ProtoInclude(200, typeof(UintConstantExpression))]
+    [NetJSONKnownType(typeof(LongConstantExpression)), ProtoInclude(201, typeof(LongConstantExpression))]
+    [NetJSONKnownType(typeof(UlongConstantExpression)), ProtoInclude(202, typeof(UlongConstantExpression))]
+    [NetJSONKnownType(typeof(FloatConstantExpression)), ProtoInclude(203, typeof(FloatConstantExpression))]
+    [NetJSONKnownType(typeof(DoubleConstantExpression)), ProtoInclude(204, typeof(DoubleConstantExpression))]
+    [NetJSONKnownType(typeof(StringConstantExpression)), ProtoInclude(205, typeof(StringConstantExpression))]
+    [NetJSONKnownType(typeof(DecimalConstantExpression)), ProtoInclude(206, typeof(DecimalConstantExpression))]
+    [NetJSONKnownType(typeof(CharConstantExpression)), ProtoInclude(207, typeof(CharConstantExpression))]
+    [NetJSONKnownType(typeof(MethodCallExpression)), ProtoInclude(111, typeof(MethodCallExpression))]
+    [NetJSONKnownType(typeof(NewAnonymoustype)), ProtoInclude(116, typeof(NewAnonymoustype))]
+    [NetJSONKnownType(typeof(MethodExpression)), ProtoInclude(117, typeof(MethodExpression))]
+    [NetJSONKnownType(typeof(FieldExpression)), ProtoInclude(118, typeof(FieldExpression))]
+    [NetJSONKnownType(typeof(PropertyExpression)), ProtoInclude(119, typeof(PropertyExpression))]
+    [NetJSONKnownType(typeof(DynamicIndexBinderExpression)), ProtoInclude(121, typeof(DynamicIndexBinderExpression))]
+    [NetJSONKnownType(typeof(DynamicMethodBinderExpression)), ProtoInclude(122, typeof(DynamicMethodBinderExpression))]
+    [NetJSONKnownType(typeof(DelegateInvocationExpression)), ProtoInclude(123, typeof(DelegateInvocationExpression))]
+    [NetJSONKnownType(typeof(DefaultValueExpr)), ProtoInclude(125, typeof(DefaultValueExpr))]
+    [NetJSONKnownType(typeof(TypeExpressionSer)), ProtoInclude(126, typeof(TypeExpressionSer))]
+    [NetJSONKnownType(typeof(TypeCastExpression)), ProtoInclude(128, typeof(TypeCastExpression))]
+    [NetJSONKnownType(typeof(DelegateCreationExpression)), ProtoInclude(129, typeof(DelegateCreationExpression))]
+    [NetJSONKnownType(typeof(ArrayCreationExpression)), ProtoInclude(130, typeof(ArrayCreationExpression))]
+    [NetJSONKnownType(typeof(ThisExpression)), ProtoInclude(131, typeof(ThisExpression))]
+    [NetJSONKnownType(typeof(TypeOfExpression)), ProtoInclude(133, typeof(TypeOfExpression))]
+    [NetJSONKnownType(typeof(ElementAccessExpression)), ProtoInclude(134, typeof(ElementAccessExpression))]
+    [NetJSONKnownType(typeof(AssignExpression)), ProtoInclude(135, typeof(AssignExpression))]
+    [NetJSONKnownType(typeof(BoxCastExpression)), ProtoInclude(137, typeof(BoxCastExpression))]
+    [NetJSONKnownType(typeof(NullConstantExpression)), ProtoInclude(138, typeof(NullConstantExpression))]
+    [NetJSONKnownType(typeof(UnwrapExpression)), ProtoInclude(141, typeof(UnwrapExpression))]
+    [NetJSONKnownType(typeof(WrapExpression)), ProtoInclude(142, typeof(WrapExpression))]
+    [NetJSONKnownType(typeof(LiftedNullExpression)), ProtoInclude(143, typeof(LiftedNullExpression))]
+    [NetJSONKnownType(typeof(NullCoalescingOperatorSer)), ProtoInclude(144, typeof(NullCoalescingOperatorSer))]
+    [NetJSONKnownType(typeof(UnaryExpression)), ProtoInclude(145, typeof(UnaryExpression))]
+    [NetJSONKnownType(typeof(BinaryExpression)), ProtoInclude(146, typeof(BinaryExpression))]
+    [NetJSONKnownType(typeof(IsExpression)), ProtoInclude(147, typeof(IsExpression))]
+    [NetJSONKnownType(typeof(AsExpression)), ProtoInclude(148, typeof(AsExpression))]
+    [NetJSONKnownType(typeof(ConditionalExpression)), ProtoInclude(149, typeof(ConditionalExpression))]
+    [NetJSONKnownType(typeof(LocalVariableRefExpression)), ProtoInclude(150, typeof(LocalVariableRefExpression))]
+    [NetJSONKnownType(typeof(ParameterReferenceExpression)), ProtoInclude(152, typeof(ParameterReferenceExpression))]
+    [NetJSONKnownType(typeof(AnonymousMethodBodyExpr)), ProtoInclude(177, typeof(AnonymousMethodBodyExpr))]
+    [NetJSONKnownType(typeof(AnonymousMethodExpr)), ProtoInclude(178, typeof(AnonymousMethodExpr))]
+    [NetJSONKnownType(typeof(IteratorBlock)), ProtoInclude(176, typeof(IteratorBlock))]
+    [NetJSONKnownType(typeof(NullableToNormal)), ProtoInclude(208, typeof(NullableToNormal))]
+    [NetJSONKnownType(typeof(EventExpression)), ProtoInclude(209, typeof(EventExpression))]
+    [NetJSONKnownType(typeof(DynamicMemberExpression)), ProtoInclude(210, typeof(DynamicMemberExpression))]
+    [NetJSONKnownType(typeof(DynamicMethodInvocationExpression)), ProtoInclude(211, typeof(DynamicMethodInvocationExpression))]
+    public abstract class ExpressionSer
         : AstBase
     {
+        public bool NoUse_ { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(140, typeof(ThrowExpression))]
-    [ProtoInclude(153, typeof(StatementExpressionSer))]
-    [ProtoInclude(155, typeof(YieldBreakStatement))]
-    [ProtoInclude(156, typeof(StatementListSer))]
-    [ProtoInclude(157, typeof(ReturnStatement))]
-    [ProtoInclude(158, typeof(BreakStatement))]
-    [ProtoInclude(159, typeof(ContinueStatement))]
-    [ProtoInclude(160, typeof(EmptyStatementSer))]
-    [ProtoInclude(161, typeof(VariableBlockDeclaration))]
-    [ProtoInclude(162, typeof(IfStatement))]
-    [ProtoInclude(163, typeof(LoopStatement))]
-    [ProtoInclude(170, typeof(SwitchStatement))]
-    [ProtoInclude(171, typeof(TryFinallyBlockSer))]
-    [ProtoInclude(173, typeof(CatchBlock))]
-    [ProtoInclude(174, typeof(TryCatchBlock))]
-    [ProtoInclude(107, typeof(BlockSer))]
-    public class StatementSer
+    [NetJSONKnownType(typeof(ThrowExpression)), ProtoInclude(140, typeof(ThrowExpression))]
+    [NetJSONKnownType(typeof(StatementExpressionSer)), ProtoInclude(153, typeof(StatementExpressionSer))]
+    [NetJSONKnownType(typeof(YieldBreakStatement)), ProtoInclude(155, typeof(YieldBreakStatement))]
+    [NetJSONKnownType(typeof(StatementListSer)), ProtoInclude(156, typeof(StatementListSer))]
+    [NetJSONKnownType(typeof(ReturnStatement)), ProtoInclude(157, typeof(ReturnStatement))]
+    [NetJSONKnownType(typeof(BreakStatement)), ProtoInclude(158, typeof(BreakStatement))]
+    [NetJSONKnownType(typeof(ContinueStatement)), ProtoInclude(159, typeof(ContinueStatement))]
+    [NetJSONKnownType(typeof(EmptyStatementSer)), ProtoInclude(160, typeof(EmptyStatementSer))]
+    [NetJSONKnownType(typeof(VariableBlockDeclaration)), ProtoInclude(161, typeof(VariableBlockDeclaration))]
+    [NetJSONKnownType(typeof(IfStatement)), ProtoInclude(162, typeof(IfStatement))]
+    [NetJSONKnownType(typeof(LoopStatement)), ProtoInclude(163, typeof(LoopStatement))]
+    [NetJSONKnownType(typeof(SwitchStatement)), ProtoInclude(170, typeof(SwitchStatement))]
+    [NetJSONKnownType(typeof(TryFinallyBlockSer)), ProtoInclude(171, typeof(TryFinallyBlockSer))]
+    [NetJSONKnownType(typeof(CatchBlock)), ProtoInclude(173, typeof(CatchBlock))]
+    [NetJSONKnownType(typeof(TryCatchBlock)), ProtoInclude(174, typeof(TryCatchBlock))]
+    [NetJSONKnownType(typeof(BlockSer)), ProtoInclude(107, typeof(BlockSer))]
+    public abstract class StatementSer
         : AstBase
     {
-        
+        public bool NoUse_ { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(172, typeof(ExplicitBlockSer))]
+    [NetJSONKnownType(typeof(ExplicitBlockSer)), ProtoInclude(172, typeof(ExplicitBlockSer))]
     public class BlockSer
         : StatementSer
     {
@@ -284,7 +287,7 @@ namespace JsCsc.Lib.Serialization
     public class NullExpression
         : ExpressionSer
     {
-        
+        public bool None { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -353,11 +356,11 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(112, typeof(StrCatExpression))]
-    [ProtoInclude(113, typeof(NewExpression))]
-    [ProtoInclude(124, typeof(ConstructorInitializerExpression))]
-    [ProtoInclude(127, typeof(UserCastExpression))]
-    [ProtoInclude(208, typeof(UserDefinedBinaryOrUnaryOpExpression))]
+    [NetJSONKnownType(typeof(StrCatExpression)), ProtoInclude(112, typeof(StrCatExpression))]
+    [NetJSONKnownType(typeof(NewExpression)), ProtoInclude(113, typeof(NewExpression))]
+    [NetJSONKnownType(typeof(ConstructorInitializerExpression)), ProtoInclude(124, typeof(ConstructorInitializerExpression))]
+    [NetJSONKnownType(typeof(UserCastExpression)), ProtoInclude(127, typeof(UserCastExpression))]
+    [NetJSONKnownType(typeof(UserDefinedBinaryOrUnaryOpExpression)), ProtoInclude(208, typeof(UserDefinedBinaryOrUnaryOpExpression))]
     public class MethodCallExpression
         : ExpressionSer
     {
@@ -382,11 +385,12 @@ namespace JsCsc.Lib.Serialization
     public class StrCatExpression
         : MethodCallExpression
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(115, typeof(NewInitializerExpression))]
+    [NetJSONKnownType(typeof(NewInitializerExpression)), ProtoInclude(115, typeof(NewInitializerExpression))]
+    [NetJSONKnownType(typeof(NewCollectionInitializerExpression)), ProtoInclude(212, typeof(NewCollectionInitializerExpression))]
     public class NewExpression
         : MethodCallExpression
     {
@@ -418,6 +422,13 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class NewCollectionInitializerExpression
+        : NewExpression
+    {
+        public List<MethodCallExpression> ItemInitializers { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class NewAnonymoustype
         : ExpressionSer
     {
@@ -445,7 +456,7 @@ namespace JsCsc.Lib.Serialization
    }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(120, typeof(IndexExpression))]
+    [NetJSONKnownType(typeof(IndexExpression)), ProtoInclude(120, typeof(IndexExpression))]
     public class PropertyExpression
         : ExpressionSer
     {
@@ -524,7 +535,7 @@ namespace JsCsc.Lib.Serialization
     public class ConstructorInitializerExpression
         : MethodCallExpression
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -545,7 +556,7 @@ namespace JsCsc.Lib.Serialization
     public class UserCastExpression
         : MethodCallExpression
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -588,18 +599,18 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(132, typeof(BaseThisExpression))]
+    [NetJSONKnownType(typeof(BaseThisExpression)), ProtoInclude(132, typeof(BaseThisExpression))]
     public class ThisExpression
         : ExpressionSer
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class BaseThisExpression
         : ThisExpression
     {
-        
+        public bool NoUse2 { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -619,7 +630,7 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(136, typeof(CompoundAssignExpression))]
+    [NetJSONKnownType(typeof(CompoundAssignExpression)), ProtoInclude(136, typeof(CompoundAssignExpression))]
     public class AssignExpression
         : ExpressionSer
     {
@@ -645,7 +656,9 @@ namespace JsCsc.Lib.Serialization
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class NullConstantExpression
         : ExpressionSer
-    { }
+    {
+        public bool NoUse { get; set; }
+    }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class BoolConstantExpression
@@ -808,7 +821,7 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(151, typeof(TempVariableRefExpression))]
+    [NetJSONKnownType(typeof(TempVariableRefExpression)), ProtoInclude(151, typeof(TempVariableRefExpression))]
     public class LocalVariableRefExpression
         : ExpressionSer
     {
@@ -821,7 +834,7 @@ namespace JsCsc.Lib.Serialization
     public class TempVariableRefExpression
         : LocalVariableRefExpression
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -832,7 +845,7 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(154, typeof(YieldStatement))]
+    [NetJSONKnownType(typeof(YieldStatement)), ProtoInclude(154, typeof(YieldStatement))]
     public class StatementExpressionSer
         : StatementSer
     {
@@ -843,14 +856,14 @@ namespace JsCsc.Lib.Serialization
     public class YieldStatement
         : StatementExpressionSer
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class YieldBreakStatement
         : StatementSer
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -871,21 +884,21 @@ namespace JsCsc.Lib.Serialization
     public class BreakStatement
         : StatementSer
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class ContinueStatement
         : StatementSer
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class EmptyStatementSer
         : StatementSer
     {
-        
+        public bool NoUse { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -907,10 +920,10 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(164, typeof(DoStatement))]
-    [ProtoInclude(165, typeof(WhileStatement))]
-    [ProtoInclude(166, typeof(ForStatement))]
-    [ProtoInclude(167, typeof(ForEachStatement))]
+    [NetJSONKnownType(typeof(DoStatement)), ProtoInclude(164, typeof(DoStatement))]
+    [NetJSONKnownType(typeof(WhileStatement)), ProtoInclude(165, typeof(WhileStatement))]
+    [NetJSONKnownType(typeof(ForStatement)), ProtoInclude(166, typeof(ForStatement))]
+    [NetJSONKnownType(typeof(ForEachStatement)), ProtoInclude(167, typeof(ForEachStatement))]
     public class LoopStatement
         : StatementSer
     {
@@ -922,8 +935,6 @@ namespace JsCsc.Lib.Serialization
         : LoopStatement
     {
         public ExpressionSer Condition { get; set; }
-
-        new public StatementSer Loop { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -931,8 +942,6 @@ namespace JsCsc.Lib.Serialization
         : LoopStatement
     {
         public ExpressionSer Condition { get; set; }
-
-        new public StatementSer Loop { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
@@ -944,8 +953,6 @@ namespace JsCsc.Lib.Serialization
         public StatementSer Initializer { get; set; }
 
         public StatementSer Iterator { get; set; }
-
-        new public StatementSer Loop { get; set; }
 
         public int BlockId { get; set; }
     }
@@ -997,7 +1004,7 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
-    [ProtoInclude(175, typeof(ParameterBlock))]
+    [NetJSONKnownType(typeof(ParameterBlock)), ProtoInclude(175, typeof(ParameterBlock))]
     public class ExplicitBlockSer
         : BlockSer
     {

@@ -73,6 +73,7 @@
     <Compile Include="AST\Expressions\EventReferenceExpression.cs" />
     <Compile Include="AST\Expressions\InitObjectWithDefaultValue.cs" />
     <Compile Include="AST\Expressions\InlineArrayInitialization.cs" />
+    <Compile Include="AST\Expressions\InlineCollectionInitializationExpression.cs" />
     <Compile Include="AST\Expressions\InlineDelegateExpression.cs" />
     <Compile Include="AST\Expressions\InlineIteratorExpression.cs" />
     <Compile Include="AST\Expressions\InlinePropertyInitilizationExpression.cs" />

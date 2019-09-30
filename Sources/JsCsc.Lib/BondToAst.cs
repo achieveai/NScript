@@ -1057,6 +1057,81 @@ namespace JsCsc.Lib
                 thisVariable);
         }
 
+        private Node ParseNewCollectionInitializer(Serialization.NewCollectionInitializerExpression jObject)
+        {
+            var initializerArray = jObject.ItemInitializers;
+
+            var args = this.ParseArguments(jObject.Arguments);
+
+            List<Tuple<MemberReferenceExpression, Expression[]>> setters =
+                new List<Tuple<MemberReferenceExpression, Expression[]>>();
+
+            if (initializerArray != null)
+            {
+                for (int iInit = 0; iInit < initializerArray.Count; iInit++)
+                {
+                    var initObj = initializerArray[iInit];
+                    MemberReferenceExpression memberReferenceExpression = null;
+
+                    if (initObj.Setter != null)
+                    {
+                        PropertyReference propertyReference = new InternalPropertyReference(
+                            null,
+                            this.DeserializeMethod(initObj.Setter.Value));
+
+                        memberReferenceExpression = new PropertyReferenceExpression(
+                            this._clrContext,
+                            this.LocFromJObject(initObj),
+                            propertyReference,
+                            null);
+
+                        setters.Add(
+                            Tuple.Create(
+                                memberReferenceExpression,
+                                new Expression[] { this.ParseExpression(initObj.Value) }));
+                    }
+                    else if (initObj.Field != null)
+                    {
+                        memberReferenceExpression = new FieldReferenceExpression(
+                            this._clrContext,
+                            this.LocFromJObject(initObj),
+                            this.DeserializeField(initObj.Field.Value),
+                            null);
+
+                        setters.Add(
+                            Tuple.Create(
+                                memberReferenceExpression,
+                                new Expression[] { this.ParseExpression(initObj.Value) }));
+                    }
+                    else
+                    {
+                        memberReferenceExpression = new MethodReferenceExpression(
+                            this._clrContext,
+                            this.LocFromJObject(initObj),
+                            this.DeserializeMethod(initObj.MethodCall.Method),
+                            null);
+
+                        var arguments = this.ParseArguments(initObj.MethodCall.Arguments);
+
+                        setters.Add(
+                            Tuple.Create(
+                                memberReferenceExpression,
+                                arguments));
+                    }
+                }
+            }
+
+            return new InlinePropertyInitilizationExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                new NewObjectExpression(
+                    this._clrContext,
+                    this.LocFromJObject(jObject),
+                    this.DeserializeMethod(jObject.Method),
+                    args),
+                setters); ;
+        }
+
         private Node ParseNewInitializer(Serialization.NewInitializerExpression jObject)
         {
             var initializerArray = jObject.Initializers;
@@ -1911,6 +1986,9 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.NewInitializerExpression),
 					(a) => this.ParseNewInitializer((Serialization.NewInitializerExpression)a));
+            parserMap.Add(
+					typeof(Serialization.NewCollectionInitializerExpression),
+					(a) => this.ParseNewInitializer((Serialization.NewCollectionInitializerExpression)a));
             parserMap.Add(
 					typeof(Serialization.MethodExpression),
 					(a) => this.ParseMethodExpr((Serialization.MethodExpression)a));

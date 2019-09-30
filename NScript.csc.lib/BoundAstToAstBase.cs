@@ -33,6 +33,9 @@
                 : this.Visit((BoundBlock)boundNode, arg, methodSymbol, initializers);
 
             // TODO: Make note of [Script] Attribute in case of empty body.
+            if (boundNode != null && boundNode.SyntaxTree.FilePath.Contains("EventBus"))
+            { }
+
             var rv = new MethodBody
             {
                 MethodId = arg
@@ -955,50 +958,84 @@
                 };
             }
 
-            return new NewInitializerExpression
+            if (node.InitializerExpressionOpt is BoundObjectInitializerExpression)
             {
-                Location = location,
-                Type = type,
-                Method = method,
-                Arguments = arguments,
-                Initializers = ((BoundObjectInitializerExpression)node.InitializerExpressionOpt)
-                    .Initializers
-                    .Select(_ =>
-                    {
-                        if (_.Kind == BoundKind.AssignmentOperator)
+                return new NewInitializerExpression
+                {
+                    Location = location,
+                    Type = type,
+                    Method = method,
+                    Arguments = arguments,
+                    Initializers = ((BoundObjectInitializerExpression)node.InitializerExpressionOpt)
+                        .Initializers
+                        .Select(_ =>
                         {
-                            var assignOp = (BoundAssignmentOperator)_;
-                            var initializerMember = (BoundObjectInitializerMember)assignOp.Left;
-                            var rv = new ObjectInitilaizer()
+                            if (_.Kind == BoundKind.AssignmentOperator)
                             {
-                                Location = _.Syntax.Location.GetSerLoc(),
-                                Value = (ExpressionSer)this.Visit(assignOp.Right, arg)
-                            };
+                                var assignOp = (BoundAssignmentOperator)_;
+                                var initializerMember = (BoundObjectInitializerMember)assignOp.Left;
+                                var rv = new ObjectInitilaizer()
+                                {
+                                    Location = _.Syntax.Location.GetSerLoc(),
+                                    Value = (ExpressionSer)this.Visit(assignOp.Right, arg)
+                                };
 
-                            if (initializerMember.MemberSymbol.Kind == SymbolKind.Field)
-                            {
-                                rv.Field = arg.SymbolSerializer.GetFieldSpecId(
-                                    (FieldSymbol)initializerMember.MemberSymbol);
-                            }
-                            else 
-                            {
-                                var propertySymbol = (PropertySymbol)initializerMember.MemberSymbol;
-                                rv.Property = arg.SymbolSerializer.GetPropertySpecId(propertySymbol);
-                                rv.Setter = arg.SymbolSerializer.GetMethodSpecId(propertySymbol.SetMethod);
-                                rv.Getter = propertySymbol.GetMethod != null
-                                    ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.GetMethod)
-                                    : 0;
-                            }
+                                if (initializerMember.MemberSymbol.Kind == SymbolKind.Field)
+                                {
+                                    rv.Field = arg.SymbolSerializer.GetFieldSpecId(
+                                        (FieldSymbol)initializerMember.MemberSymbol);
+                                }
+                                else
+                                {
+                                    var propertySymbol = (PropertySymbol)initializerMember.MemberSymbol;
+                                    rv.Property = arg.SymbolSerializer.GetPropertySpecId(propertySymbol);
+                                    rv.Setter = arg.SymbolSerializer.GetMethodSpecId(propertySymbol.SetMethod);
+                                    rv.Getter = propertySymbol.GetMethod != null
+                                        ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.GetMethod)
+                                        : 0;
+                                }
 
-                            return rv;
-                        }
-                        else
+                                return rv;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        })
+                        .ToList()
+                };
+            }
+            else
+            {
+                return new NewCollectionInitializerExpression
+                {
+                    Location = location,
+                    Type = type,
+                    Method = method,
+                    Arguments = arguments,
+                    ItemInitializers = ((BoundCollectionInitializerExpression)node.InitializerExpressionOpt)
+                        .Initializers
+                        .Select(item =>
                         {
-                            return null;
-                        }
-                    })
-                    .ToList()
-            };
+                            if (item.Kind == BoundKind.CollectionElementInitializer)
+                            {
+                                var elementInitializer = (BoundCollectionElementInitializer)item;
+                                return new MethodCallExpression
+                                {
+                                    Method = arg.SymbolSerializer.GetMethodSpecId(elementInitializer.AddMethod),
+                                    Arguments = this.ToArgs(elementInitializer.AddMethod, elementInitializer.Arguments, arg),
+                                    Location = node.Syntax.Location.GetSerLoc(),
+                                    Instance = null
+                                };
+                            }
+                            else
+                            {
+                                throw new NotSupportedException();
+                            }
+                        })
+                        .ToList()
+                };
+            }
         }
 
         public override AstBase VisitObjectInitializerExpression(BoundObjectInitializerExpression node, SerializationContext arg)

@@ -85,7 +85,40 @@
                 () => ToAstStream(context, rv),
                 true);
 
-            return (new ResourceDescription[] { astResource }, rv);
+            var astJResource = new ResourceDescription(
+                "$$JstInfo$$",
+                () => ToAstJStream(context, rv),
+                true);
+
+            return (new ResourceDescription[] { astJResource, astResource }, rv);
+        }
+
+        private static Stream ToAstJStream(
+            SerializationContext context,
+            Dictionary<IMethodSymbol, MethodBody> methodMaps)
+        {
+            var fullAst = new FullAst
+            {
+                Methods = new LinkedList<MethodBody>(methodMaps.Values),
+                TypeInfo = context.SymbolSerializer.GetTypesInfo()
+            };
+
+            var memStream = new MemoryStream();
+            using (var writer = new StreamWriter(memStream, System.Text.Encoding.UTF8, 16 * 1024, true))
+            {
+                var serializer = Newtonsoft.Json.JsonSerializer
+                    .Create(new Newtonsoft.Json.JsonSerializerSettings
+                    {
+                        TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto
+                    });
+
+                serializer.Serialize(
+                    writer,
+                    fullAst);
+            }
+
+            memStream.Position = 0;
+            return memStream;
         }
 
         private static Stream ToAstStream(
