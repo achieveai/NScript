@@ -345,39 +345,30 @@ namespace Sunlight.Framework.UI
             switch (args.Action)
             {
                 case CollectionChangedAction.Add:
-                    if (changeIndex + itemCount + items.Count > this.topN)
+                    if (changeIndex >= this.topN)
+                    { break; }
+
+                    if (itemCount + items.Count > this.topN)
                     {
-                        if (items.Count >= this.topN)
+                        if (changeIndex + itemCount > this.topN)
                         {
-                            this.ObservableEventReplace(
-                                changeIndex,
-                                this.topN - changeIndex,
-                                newItems);
+                            // Truncate items to add to what can be added.
+                            itemCount = this.TopN - changeIndex;
                         }
-                        else
+
+                        if (items.Count + itemCount > this.topN)
                         {
-                            int addCount = this.topN - items.Count;
-                            this.ObservableEventAdd(
-                                changeIndex,
-                                this.topN - items.Count,
-                                newItems);
-
-                            int replaceCount = this.topN - changeIndex - addCount;
-                            List<object> list = new List<object>();
-                            var itemsAdded = false;
-                            for (int i = addCount; i < replaceCount && i < itemCount; i++)
-                            {
-                                list.Add(newItems[i]);
-                                itemsAdded = true;
-                            }
-
-                            if (itemsAdded) {
-                                this.ObservableEventAdd(
-                                changeIndex + addCount,
-                                replaceCount,
-                                list);
-                            }
+                            // Delete extra items that will be pushed out of topN
+                            var itemsToDelete = items.Count + itemCount - this.topN;
+                            this.RemoveChildren(
+                                items.Count - itemsToDelete,
+                                itemsToDelete);
                         }
+
+                        this.ObservableEventAdd(
+                            changeIndex,
+                            itemCount,
+                            newItems);
                     }
                     else
                     {
