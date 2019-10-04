@@ -37,7 +37,7 @@ namespace NScript.Converter.ExpressionsConverter
                 return null;
             }
 
-            JST.Expression rv = methodConverter.GetReplacementExpression(
+            var rv = methodConverter.GetReplacementExpression(
                 clrExpression);
 
             if (rv != null)
@@ -189,6 +189,11 @@ namespace NScript.Converter.ExpressionsConverter
                 typeof (InlineArrayInitialization),
                 ExpressionConverterBase.SimplifyConverter<InlineArrayInitialization>(
                     InlineNewObjectArrayConverter.Convert));
+
+            returnValue.Add(
+                typeof (InlineCollectionInitializationExpression),
+                ExpressionConverterBase.SimplifyConverter<InlineCollectionInitializationExpression>(
+                    InlineCollectionInitializerConverter.Convert));
 
             returnValue.Add(
                 typeof (InlinePropertyInitilizationExpression),

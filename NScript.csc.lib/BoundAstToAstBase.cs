@@ -909,13 +909,18 @@
             {throw new NotImplementedException(); }
         public override AstBase VisitMultipleLocalDeclarations(BoundMultipleLocalDeclarations node, SerializationContext arg)
         {
-            return new VariableBlockDeclaration
-            {
-                Initializers = node
+            var initializers = node
                     .LocalDeclarations
                     .Select(_ => (ExpressionSer)this.Visit(_, arg))
-                    .ToList()
-            };
+                    .Where(e => e != null)
+                    .ToList();
+
+            return initializers.Count > 0
+                ? (StatementSer)new VariableBlockDeclaration
+                    {
+                        Initializers = initializers
+                    }
+                : new EmptyStatementSer();
         }
 
         public override AstBase VisitNameOfOperator(BoundNameOfOperator node, SerializationContext arg)

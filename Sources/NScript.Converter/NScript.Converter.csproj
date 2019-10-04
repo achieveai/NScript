@@ -79,6 +79,7 @@
     <Compile Include="ExpressionsConverter\DynamicMemberAcessorConverter.cs" />
     <Compile Include="ExpressionsConverter\EventReferenceConverter.cs" />
     <Compile Include="ExpressionsConverter\ExpressionConverterBase.cs" />
+    <Compile Include="ExpressionsConverter\InlineCollectionInitializerConverter.cs" />
     <Compile Include="ExpressionsConverter\InlineDelegateExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\InlineNewObjectArrayConverter.cs" />
     <Compile Include="ExpressionsConverter\InlinePropertyInitializerConverter.cs" />

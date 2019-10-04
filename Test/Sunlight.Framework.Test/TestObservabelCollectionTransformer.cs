@@ -32,7 +32,6 @@ namespace Sunlight.Framework.Test
 
             Action<Observables.INotifyCollectionChanged<string>, CollectionChangedEventArgs<string>> transformedCollChanged =
                 (coll, evtArg) =>
-
                 {
                     var listBounds = _list!=null?_list[0]+" - "+_list[_list.Count-1]:"null";
                     if (evtArg.Action == CollectionChangedAction.Add)

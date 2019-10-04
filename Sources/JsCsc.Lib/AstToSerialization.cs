@@ -641,18 +641,23 @@ namespace JsCsc.Lib
                     }
                 }
 
-                var initializers = expressions.Select(e => this.Dispatch(e)).ToList();
-                return new VariableBlockDeclaration
+                var initializers = expressions
+                    .Select(e => this.Dispatch(e))
+                    .Where(e => e != null)
+                    .ToList();
+
+                if (initializers.Count != 0)
                 {
-                    Location = expression.GetSerLoc(),
-                    Initializers = initializers
-                };
+                    return new VariableBlockDeclaration
+                    {
+                        Location = expression.GetSerLoc(),
+                        Initializers = initializers
+                    };
+                }
             }
-            else
-            {
-                return new EmptyStatementSer
-                { Location = expression.GetSerLoc() };
-            }
+
+            return new EmptyStatementSer
+            { Location = expression.GetSerLoc() };
         }
 
         public AstBase Visit(BlockConstantDeclaration expression)

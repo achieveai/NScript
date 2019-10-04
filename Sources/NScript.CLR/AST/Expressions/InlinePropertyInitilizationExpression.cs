@@ -28,11 +28,6 @@ namespace NScript.CLR.AST
         private readonly ReadOnlyCollection<Tuple<MemberReferenceExpression, Expression[]>> readonlySetters;
 
         /// <summary>
-        /// Backing field for newObjectExpression
-        /// </summary>
-        private NewObjectExpression newObjectExpression;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="InlinePropertyInitilizationExpression"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -46,7 +41,7 @@ namespace NScript.CLR.AST
             List<Tuple<MemberReferenceExpression, Expression[]>> setters)
             : base(context, locationInfo)
         {
-            this.newObjectExpression = newObjectExpression;
+            this.Constructor = newObjectExpression;
             this.setters = setters;
             this.readonlySetters = new ReadOnlyCollection<Tuple<MemberReferenceExpression, Expression[]>>(this.setters);
         }
@@ -55,10 +50,7 @@ namespace NScript.CLR.AST
         /// Gets the constructor.
         /// </summary>
         /// <value>The constructor.</value>
-        public NewObjectExpression Constructor
-        {
-            get { return this.newObjectExpression; }
-        }
+        public NewObjectExpression Constructor { get; private set; }
 
         /// <summary>
         /// Gets the setters.
@@ -77,7 +69,7 @@ namespace NScript.CLR.AST
         {
             get
             {
-                return this.newObjectExpression.ResultType;
+                return this.Constructor.ResultType;
             }
         }
 
@@ -87,7 +79,7 @@ namespace NScript.CLR.AST
         /// <param name="processor">The processor.</param>
         public override void ProcessThroughPipeline(IAstProcessor processor)
         {
-            this.newObjectExpression = (NewObjectExpression)processor.Process(this.newObjectExpression);
+            this.Constructor = (NewObjectExpression)processor.Process(this.Constructor);
 
             for (int setterIndex = 0; setterIndex < this.setters.Count; setterIndex++)
             {
@@ -109,7 +101,7 @@ namespace NScript.CLR.AST
         /// <param name="serializationInfo">The serialization info.</param>
         public override void Serialize(Utils.ICustomSerializer serializationInfo)
         {
-            serializationInfo.AddValue("constructor", this.newObjectExpression);
+            serializationInfo.AddValue("constructor", this.Constructor);
             serializationInfo.AddValue(
                 "setters",
                 this.Setters,

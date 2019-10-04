@@ -3105,7 +3105,7 @@ namespace NScript.Converter
         /// <returns>
         /// MethodReference.
         /// </returns>
-        private MethodReference GetMethodReference(
+        public MethodReference GetMethodReference(
             string methodName,
             TypeReference returnType,
             TypeReference declaringType,
