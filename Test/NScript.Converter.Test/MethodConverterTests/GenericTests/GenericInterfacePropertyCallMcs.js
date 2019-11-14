@@ -9,7 +9,7 @@
       return i;
     }
   } finally {
-    if (tmp_)
+    if (!!tmp_)
       tmp_.V_Dispose_b();
   }
   return Type__GetDefaultValueStatic(T);

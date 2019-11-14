@@ -1,4 +1,4 @@
 ﻿function DelegateBlocks__ClearEvent(db) {
-  if (db.evt)
+  if (!!db.evt)
     db.evt = null;
 }

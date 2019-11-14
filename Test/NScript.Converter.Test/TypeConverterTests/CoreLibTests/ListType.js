@@ -137,7 +137,7 @@ function List(T, _callStatiConstructor) {
     return NativeArray$1__IndexOf(this.nativeArray, item, 0);
   };
   ptyp_.system__Collections__IList__IndexOf = function List$1__System__Collections__IList__IndexOf(value) {
-    if (value === null && T.isInstanceOfType(value))
+    if (value == null && T.isInstanceOfType(value))
       return NativeArray$1__IndexOf(this.nativeArray, Type__UnBoxTypeInstance(T, value), 0);
     return -1;
   };
@@ -162,6 +162,18 @@ function List(T, _callStatiConstructor) {
   };
   ptyp_.removeAt = function List$1__RemoveAt(index) {
     NativeArray$1__RemoveAt(this.nativeArray, index);
+  };
+  ptyp_.removeRangeAt = function List$1__RemoveRangeAt(index, count) {
+    while (count-- > 0)
+      NativeArray$1__RemoveAt(this.nativeArray, index);
+  };
+  ptyp_.getRangeAt = function List$1__GetRangeAt(index, count) {
+    var rv, idx;
+    rv = List$1_$T$_.defaultConstructor();
+    for (idx = index; idx < this.get_count(); idx++)
+      if (idx < index + count)
+        rv.add(this.nativeArray[idx]);
+    return rv;
   };
   ptyp_.get_count = function List$1__get_Count() {
     return this.nativeArray.length;
@@ -222,7 +234,7 @@ function List(T, _callStatiConstructor) {
     return index >= 0;
   };
   ptyp_.system__Collections__IList__Remove = function List$1__System__Collections__IList__Remove(value) {
-    if (value === null && T.isInstanceOfType(value))
+    if (value == null && T.isInstanceOfType(value))
       this.remove(Type__UnBoxTypeInstance(T, value));
   };
   ptyp_.sort = function List$1__Sort(sortFunction) {

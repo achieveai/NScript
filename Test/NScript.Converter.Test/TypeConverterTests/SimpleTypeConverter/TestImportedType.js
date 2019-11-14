@@ -34,7 +34,7 @@ function TestImportedType__ProcessData(this_, data) {
 };
 function TestImportedType__WorkOnString(this_) {
   this_.importedExtension = this_.importedExtension || Object__GetNewImportedExtension();
-  if (this_.importedExtension.tmpStr === null)
+  if (this_.importedExtension.tmpStr == null)
     this_.importedExtension.tmpStr = "";
   else
     this_.importedExtension.tmpStr = this_.importedExtension.tmpStr + Type__BoxTypeInstance(Int32, this_.importedExtension.tmpStr.length);

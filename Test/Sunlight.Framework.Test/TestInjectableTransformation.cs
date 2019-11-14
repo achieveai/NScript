@@ -10,9 +10,9 @@ namespace Sunlight.Framework.Test
     using SunlightUnit;
     using System;
     using System.Collections.Generic;
-    using InjectedNumber = Sunlight.Framework.Observables.InjectedElement<System.Number, System.Number>;
-    using NumberColection = Sunlight.Framework.Observables.CollectionChangedEventArgs
-        <Sunlight.Framework.Observables.InjectedElement<System.Number, System.Number>>;
+    using InjectedNumber = Observables.InjectedElement<System.Number, System.Number>;
+    using NumberColection = Observables.CollectionChangedEventArgs
+        <Observables.InjectedElement<System.Number, System.Number>>;
 
     /// <summary>
     /// Definition for TestInjectableTransformation

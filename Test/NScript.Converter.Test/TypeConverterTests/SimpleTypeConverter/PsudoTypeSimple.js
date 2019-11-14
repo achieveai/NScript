@@ -26,7 +26,7 @@ function PsudoUsage__M1(t) {
   return TestImportedType__ProcessData(t, List_$Int32$_.__ctor(TestImportedType__get_TheArray(t)));
 };
 function PsudoUsage__TestImportedGeneric(tmp) {
-  if (tmp() === null) {
+  if (tmp() == null) {
     tmp.set_Something(ImportedGeneric$1__get_TheArray(tmp).get_item(0));
     return tmp(tmp.get_Something());
   }
