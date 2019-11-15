@@ -3,5 +3,5 @@ set DST=%~dp0
 set SRC=%1
 set Flavor=%2
 
-copy %SRC%\Binaries\%Flavor%\Dlls\Microsoft.CodeAnalysis.CSharp\Microsoft.CodeAnalysis.CSharp.??? %DST%
-copy %SRC%\Binaries\%Flavor%\Dlls\Microsoft.CodeAnalysis\*.??? %DST%
+copy %SRC%\artifacts\bin\Microsoft.CodeAnalysis.CSharp\%Flavor%\netstandard2.0\ref\Microsoft.CodeAnalysis.CSharp.???
+copy %SRC%\artifacts\bin\Microsoft.CodeAnalysis\%Flavor%\netstandard2.0\ref\*.??? %DST%
