@@ -28,20 +28,10 @@ namespace System.Runtime.CompilerServices
             => _resultGetter();
 
         public void OnCompleted(Action continuation)
-        {
-            if (_addCompletors != null)
-            {
-                _addCompletors(continuation);
-            }
-        }
+            => _addCompletors?.Invoke(continuation);
 
         public void UnsafeOnCompleted(Action continuation)
-        {
-            if (_addCompletors != null)
-            {
-                _addCompletors(continuation);
-            }
-        }
+            => _addCompletors?.Invoke(continuation);
     }
 
     /// <summary>
@@ -64,19 +54,9 @@ namespace System.Runtime.CompilerServices
             => _resultGetter();
 
         public void OnCompleted(Action continuation)
-        {
-            if (_addCompletors != null)
-            {
-                _addCompletors(continuation);
-            }
-        }
+            => _addCompletors?.Invoke(continuation);
 
         public void UnsafeOnCompleted(Action continuation)
-        {
-            if (_addCompletors != null)
-            {
-                _addCompletors(continuation);
-            }
-        }
+            => _addCompletors?.Invoke(continuation);
     }
 }

@@ -31,6 +31,9 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase("NameofField", "NameofField.js", TestType.All)]
         [TestCase("get_InitProp", "InitProp.js", TestType.All)]
         [TestCase("OutVarParam", "OutVar.js", TestType.All)]
+        [TestCase("TestConditionalAccess", "TestConditionalAccess.js", TestType.All)]
+        [TestCase("TestConditionalAccess2", "TestConditionalAccess2.js", TestType.All)]
+        [TestCase("TestConditionalInvoke", "TestConditionalInvoke.js", TestType.All)]
         public void Test(string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

@@ -442,14 +442,16 @@
         }
 
         public override AstBase VisitConditionalAccess(BoundConditionalAccess node, SerializationContext arg)
-            => new ConditionalExpression
+            => new ConditionalAccess
             {
-                Condition = (ExpressionSer)this.Visit(node.Receiver, arg),
-                TrueExpression = (ExpressionSer)this.Visit(node.AccessExpression, arg),
+                Receiver = (ExpressionSer)this.Visit(node.Receiver, arg),
+                AccessExpression = (ExpressionSer)this.Visit(node.AccessExpression, arg),
+                Location = node.Syntax.Location.GetSerLoc()
             };
 
         public override AstBase VisitConditionalGoto(BoundConditionalGoto node, SerializationContext arg)
             {throw new NotImplementedException(); }
+
         public override AstBase VisitConditionalOperator(BoundConditionalOperator node, SerializationContext arg)
             => new ConditionalExpression
             {
@@ -459,8 +461,13 @@
                 Location = node.Syntax.Location.GetSerLoc()
             };
 
-        public override AstBase VisitConditionalReceiver(BoundConditionalReceiver node, SerializationContext arg)
-            {throw new NotImplementedException(); }
+        public override AstBase VisitConditionalReceiver(
+            BoundConditionalReceiver node,
+            SerializationContext arg)
+            => new ConditionalReceiver
+            {
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
+            };
         public override AstBase VisitConstantPattern(BoundConstantPattern node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitConstructorMethodBody(BoundConstructorMethodBody node, SerializationContext arg)

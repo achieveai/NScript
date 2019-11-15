@@ -29,6 +29,8 @@
 
         JST.IIdentifier GetTempVariable();
 
+        JST.IIdentifier GetConditionalAccessTempVariable();
+
         JST.Expression GetReplacementExpression(Expression clrExpression);
 
         JST.IIdentifier ResolveLocal(string localName);

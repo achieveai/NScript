@@ -11,7 +11,7 @@ namespace JsCsc.Lib.Serialization
     using ProtoBuf;
     using NetJSON;
     using Newtonsoft.Json;
-    //  MaxId = 212;
+    //  MaxId = 214;
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     public class ModuleSpecSer
@@ -246,6 +246,8 @@ namespace JsCsc.Lib.Serialization
     [NetJSONKnownType(typeof(EventExpression)), ProtoInclude(209, typeof(EventExpression))]
     [NetJSONKnownType(typeof(DynamicMemberExpression)), ProtoInclude(210, typeof(DynamicMemberExpression))]
     [NetJSONKnownType(typeof(DynamicMethodInvocationExpression)), ProtoInclude(211, typeof(DynamicMethodInvocationExpression))]
+    [NetJSONKnownType(typeof(ConditionalAccess)), ProtoInclude(213, typeof(ConditionalAccess))]
+    [NetJSONKnownType(typeof(ConditionalReceiver)), ProtoInclude(214, typeof(ConditionalReceiver))]
     public abstract class ExpressionSer
         : AstBase
     {
@@ -818,6 +820,24 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer TrueExpression { get; set; }
 
         public ExpressionSer FalseExpression { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class ConditionalAccess
+        : ExpressionSer
+    {
+        public ExpressionSer Receiver
+        { get; set; }
+
+        public ExpressionSer AccessExpression
+        { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    public class ConditionalReceiver
+        : ExpressionSer
+    {
+        public int Type { get; set; }
     }
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]

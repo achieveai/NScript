@@ -158,6 +158,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         private bool initializeWrapperDone;
 
+        private IIdentifier conditionalAccessTempVariable = null;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MethodConverter"/> class.
         /// </summary>
@@ -934,6 +936,14 @@ namespace NScript.Converter.TypeSystemConverter
 
             return freeTempVariables.Dequeue();
         }
+
+        public IIdentifier GetConditionalAccessTempVariable()
+            => conditionalAccessTempVariable =
+                conditionalAccessTempVariable
+                ?? SimpleIdentifier.CreateScopeIdentifier(
+                    Scope,
+                    string.Format("stmtTemp{0}", freeTempVariables.Count + 1),
+                    false);
 
         /// <summary>
         /// Releases the temp variable.

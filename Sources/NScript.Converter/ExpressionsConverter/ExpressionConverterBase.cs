@@ -171,6 +171,16 @@ namespace NScript.Converter.ExpressionsConverter
                     ConditionalOperatorConverter.Convert));
 
             returnValue.Add(
+                typeof(ConditionalAccessExpression),
+                ExpressionConverterBase.SimplifyConverter<ConditionalAccessExpression>(
+                    ConditionalAccessConverter.Convert));
+
+            returnValue.Add(
+                typeof(ConditionalAccessExpression.ConditionalReceiver),
+                ExpressionConverterBase.SimplifyConverter<ConditionalAccessExpression.ConditionalReceiver>(
+                    ConditionalAccessConverter.Convert));
+
+            returnValue.Add(
                 typeof (BoxExpression),
                 ExpressionConverterBase.SimplifyConverter<BoxExpression>(
                     BoxExpressionConvereter.Convert));

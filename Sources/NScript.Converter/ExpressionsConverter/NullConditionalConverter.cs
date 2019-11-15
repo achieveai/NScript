@@ -4,16 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using NScript.JST;
-
 namespace NScript.Converter.ExpressionsConverter
 {
-    using System;
+    using NScript.JST;
     using NScript.CLR;
     using NScript.CLR.AST;
-    using NScript.Converter.StatementsConverter;
     using NScript.Converter.TypeSystemConverter;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for NullConditionalConverter

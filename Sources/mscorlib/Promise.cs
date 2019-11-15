@@ -81,10 +81,7 @@ namespace System
             Action complete = () =>
             {
                 completed = true;
-                if (onCompletions != null)
-                {
-                    onCompletions.Invoke();
-                }
+                onCompletions?.Invoke();
             };
 
             this.Then<Exception>(
@@ -101,7 +98,7 @@ namespace System
                     if (onCompletions == null)
                     { onCompletions = onComplete; }
                     else
-                    { onCompletions = onCompletions + onComplete; }
+                    { onCompletions += onComplete; }
                 },
                 () =>
                 {
@@ -189,10 +186,7 @@ namespace System
             Action complete = () =>
             {
                 completed = true;
-                if (onCompletions != null)
-                {
-                    onCompletions.Invoke();
-                }
+                onCompletions?.Invoke();
             };
 
             this.Then<Exception>(
@@ -213,7 +207,7 @@ namespace System
                     if (onCompletions == null)
                     { onCompletions = onComplete; }
                     else
-                    { onCompletions = onCompletions + onComplete; }
+                    { onCompletions += onComplete; }
                 },
                 () =>
                 {

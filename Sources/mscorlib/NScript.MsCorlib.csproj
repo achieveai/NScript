@@ -394,8 +394,10 @@
     </Compile>
     <Compile Include="Runtime\CompilerServices\EntryPointAttribute.cs" />
     <Compile Include="Runtime\CompilerServices\ExtensionAttribute.cs" />
+    <Compile Include="Runtime\CompilerServices\ICriticalNotifyCompletion.cs" />
     <Compile Include="Runtime\CompilerServices\IgnoreGenericArgumentsAttribute.cs" />
     <Compile Include="Runtime\CompilerServices\ImplementAttribute.cs" />
+    <Compile Include="Runtime\CompilerServices\INotifyCompletion.cs" />
     <Compile Include="Runtime\CompilerServices\IntrinsicFieldAttribute.cs" />
     <Compile Include="Runtime\CompilerServices\GlobalMethodsAttribute.cs">
       <SubType>Code</SubType>
@@ -461,6 +463,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Runtime\CompilerServices\Serializable.cs" />
+    <Compile Include="Runtime\CompilerServices\TaskAwaiter.cs" />
     <Compile Include="Runtime\CompilerServices\UsedAttribure.cs" />
     <Compile Include="Runtime\InteropServices\ClassInterfaceAttribute.cs" />
     <Compile Include="Runtime\InteropServices\ComDefaultInterfaceAttribute.cs" />

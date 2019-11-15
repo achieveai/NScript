@@ -38,5 +38,18 @@ namespace RealScript
 
             return null;
         }
+
+        public static int? TestConditionalAccess(NewLanguageFeatures obj)
+        {
+            return obj?.AddNum(10);
+        }
+
+        public static int? TestConditionalAccess2(NewLanguageFeatures obj)
+        {
+            return obj?.NameofField()?.Length;
+        }
+
+        public static int? TestConditionalInvoke(Func<int> func)
+            => func?.Invoke();
     }
 }

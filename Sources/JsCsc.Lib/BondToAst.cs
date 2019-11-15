@@ -26,6 +26,8 @@ namespace JsCsc.Lib
         private MemberReferenceDeserializer _memberReferenceDeserializer;
         private LinkedList<(int id, VariableCollector collector)> scopeBlockStack = new LinkedList<(int, VariableCollector)>();
         private Serialization.TypeInfoSer _typeInfo;
+        private LinkedList<ConditionalAccessExpression.ConditionalReceiver> conditionalReceiverStack
+            = new LinkedList<ConditionalAccessExpression.ConditionalReceiver>();
 
         public BondToAst(
             Serialization.TypeInfoSer typeInfo,
@@ -893,6 +895,28 @@ namespace JsCsc.Lib
                 this.ParseExpression(jObject.TrueExpression),
                 this.ParseExpression(jObject.FalseExpression));
         }
+
+        private Node ParseConditionalAccess(Serialization.ConditionalAccess jObject)
+        {
+            var receiver = this.ParseExpression(jObject.Receiver);
+            var conditionalReceiver = new ConditionalAccessExpression.ConditionalReceiver(
+                _clrContext,
+                receiver.Location,
+                receiver);
+
+            conditionalReceiverStack.AddLast(conditionalReceiver);
+            var rv = new ConditionalAccessExpression(
+                _clrContext,
+                this.LocFromJObject(jObject),
+                receiver,
+                this.ParseExpression(jObject.AccessExpression));
+            conditionalReceiverStack.RemoveLast();
+
+            return rv;
+        }
+
+        private Node ParseConditionalReceiver(Serialization.ConditionalReceiver jObject)
+            => conditionalReceiverStack.Last.Value;
 
         private Node ParseVariableReference(Serialization.LocalVariableRefExpression jObject)
         {
@@ -1923,6 +1947,12 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.ConditionalExpression),
 					(a) => this.ParseConditional((Serialization.ConditionalExpression)a));
+            parserMap.Add(
+					typeof(Serialization.ConditionalAccess),
+					(a) => this.ParseConditionalAccess((Serialization.ConditionalAccess)a));
+            parserMap.Add(
+					typeof(Serialization.ConditionalReceiver),
+					(a) => this.ParseConditionalReceiver((Serialization.ConditionalReceiver)a));
             parserMap.Add(
 					typeof(Serialization.LocalVariableRefExpression),
 					(a) => this.ParseVariableReference((Serialization.LocalVariableRefExpression)a));

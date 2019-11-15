@@ -533,6 +533,9 @@
     <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetDictionary.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InitProp.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\OutVar.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalAccess.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalAccess2.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalInvoke.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

@@ -64,6 +64,7 @@
     <Compile Include="AST\Expressions\BaseVariableReference.cs" />
     <Compile Include="AST\Expressions\BoxExpression.cs" />
     <Compile Include="AST\Expressions\CharLiteral.cs" />
+    <Compile Include="AST\Expressions\ConditionalAccessExpression.cs" />
     <Compile Include="AST\Expressions\ConditionalOperatorExpression.cs" />
     <Compile Include="AST\Expressions\DefaultValueExpression.cs" />
     <Compile Include="AST\Expressions\DelegateMethodExpression.cs" />
