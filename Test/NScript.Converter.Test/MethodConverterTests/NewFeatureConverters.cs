@@ -8,6 +8,7 @@ namespace NScript.Converter.Test.MethodConverterTests
 {
     using NScript.CLR.Test;
     using NUnit.Framework;
+    using System.Threading.Tasks;
 
 
     /// <summary>
@@ -34,6 +35,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase("TestConditionalAccess", "TestConditionalAccess.js", TestType.All)]
         [TestCase("TestConditionalAccess2", "TestConditionalAccess2.js", TestType.All)]
         [TestCase("TestConditionalInvoke", "TestConditionalInvoke.js", TestType.All)]
+        [TestCase("TestNestedFunction", "TestNestedFunction.js", TestType.All)]
+        [TestCase("TestNestedFunctionScoped", "TestNestedFunctionScoped.js", TestType.All)]
         public void Test(string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -42,6 +45,14 @@ namespace NScript.Converter.Test.MethodConverterTests
                 methodName,
                 testType,
                 true);
+        }
+
+        public async Task<int> NoTestAsync()
+        {
+            Assert.AreEqual(1, 1 + 0);
+            Assert.AreEqual(10, 9 + await Task.FromResult(1));
+
+            return 1;
         }
     }
 }

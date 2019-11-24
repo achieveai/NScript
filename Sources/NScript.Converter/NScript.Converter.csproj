@@ -109,6 +109,7 @@
     <Compile Include="StatementsConverter\ForLoopConverter.cs" />
     <Compile Include="StatementsConverter\IfBlockConverter.cs" />
     <Compile Include="StatementsConverter\JumpStatementConverter.cs" />
+    <Compile Include="StatementsConverter\LocalFunctionStatementConverter.cs" />
     <Compile Include="StatementsConverter\ReturnStatementConverter.cs" />
     <Compile Include="StatementsConverter\ScopeBlockConverter.cs" />
     <Compile Include="StatementsConverter\StatementConverterBase.cs" />

@@ -35,11 +35,13 @@
 
         JST.IIdentifier ResolveLocal(string localName);
 
+        JST.IIdentifier ResolveLocalFunction(string localFunctionName);
+
         JST.Expression ResolveThis(
             JST.IdentifierScope identifierScope,
             Location loc);
 
-        JST.Expression ProcessParameterBlock(ParameterBlock parameterBlock);
+        JST.Expression ProcessParameterBlock(ParameterBlock parameterBlock, JST.IIdentifier localMethodName);
 
         void ReleaseTempVariable(JST.IIdentifier tmpIdentifier);
 

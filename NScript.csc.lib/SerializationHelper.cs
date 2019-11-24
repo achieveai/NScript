@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using JsCsc.Lib.Serialization;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -41,6 +42,11 @@
                     pdbStream: outputPdbStream,
                     options: emitOptions,
                     manifestResources: resources);
+
+                var errors = result
+                    .Diagnostics
+                    .Where(diag => diag.Severity == DiagnosticSeverity.Error)
+                    .ToArray();
 
                 if (result.Success)
                 { return rv; }
@@ -85,12 +91,16 @@
                 () => ToAstStream(context, rv),
                 true);
 
+            return (new ResourceDescription[] { astResource }, rv);
+
+            /*
             var astJResource = new ResourceDescription(
                 "$$JstInfo$$",
                 () => ToAstJStream(context, rv),
                 true);
 
             return (new ResourceDescription[] { astJResource, astResource }, rv);
+            */
         }
 
         private static Stream ToAstJStream(
@@ -99,23 +109,12 @@
         {
             var fullAst = new FullAst
             {
-                Methods = new LinkedList<MethodBody>(methodMaps.Values),
+                Methods = new List<MethodBody>(methodMaps.Values),
                 TypeInfo = context.SymbolSerializer.GetTypesInfo()
             };
 
             var memStream = new MemoryStream();
-            using (var writer = new StreamWriter(memStream, System.Text.Encoding.UTF8, 16 * 1024, true))
-            {
-                var serializer = Newtonsoft.Json.JsonSerializer
-                    .Create(new Newtonsoft.Json.JsonSerializerSettings
-                    {
-                        TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto
-                    });
-
-                serializer.Serialize(
-                    writer,
-                    fullAst);
-            }
+            Serializer.Serialize(memStream, fullAst, Serializer.SerializationKind.Json);
 
             memStream.Position = 0;
             return memStream;
@@ -127,12 +126,12 @@
         {
             var fullAst = new FullAst
             {
-                Methods = new LinkedList<MethodBody>(methodMaps.Values),
+                Methods = new List<MethodBody>(methodMaps.Values),
                 TypeInfo = context.SymbolSerializer.GetTypesInfo()
             };
 
             var memStream = new MemoryStream();
-            ProtoBuf.Serializer.Serialize(memStream, fullAst);
+            Serializer.Serialize(memStream, fullAst, Serializer.SerializationKind.NetSerializer);
             memStream.Position = 0;
             return memStream;
         }

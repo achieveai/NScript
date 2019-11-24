@@ -227,6 +227,31 @@ namespace JsCsc.Lib
             return ParseMethodCall(jObject);
         }
 
+        private Node ParseMethodCall(Serialization.LocalMethodCallExpression jObject)
+        {
+            LocalFunctionVariable lfv = null;
+            foreach (var block in this.scopeBlockStack)
+            {
+                lfv = block.collector.ResolveLocalFunctionVariable(jObject.MethodName);
+                if (lfv != null)
+                { break; }
+            }
+
+            if (lfv == null)
+            { throw new InvalidOperationException(); }
+
+            // TODO: move methodReferenceExpression to a different JObject node.
+            return new MethodCallExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                new LocalFunctionReference(
+                    _clrContext,
+                    null,
+                    lfv,
+                    this.DeserializeType(jObject.ReturnType)),
+                this.ParseArguments(jObject.Arguments));
+        }
+
         private Node ParseMethodCall(Serialization.MethodCallExpression jObject)
         {
             Expression instance = this.ParseExpression(jObject.Instance);
@@ -555,7 +580,8 @@ namespace JsCsc.Lib
                     this.ParseStatement(jObject.Initializer),
                     this.ParseStatement(jObject.Iterator),
                     this.GetScopeBlock(jObject.Loop),
-                    variableCollector.GetCapturedVariables());
+                    variableCollector.GetCapturedVariables(),
+                    variableCollector.GetLocalFunctionVariables());
             }finally
             { this.scopeBlockStack.RemoveFirst(); }
         }
@@ -579,7 +605,8 @@ namespace JsCsc.Lib
                         localVariable,
                         iterator,
                         body,
-                        vc.GetCapturedVariables());
+                        vc.GetCapturedVariables(),
+                        vc.GetLocalFunctionVariables());
                 },
                 jObject.BlockId,
                 false);
@@ -628,6 +655,12 @@ namespace JsCsc.Lib
             return WrapVariableCollection(
                 (vc) =>
                 {
+                    if (jObject.LocalFunctions != null)
+                    {
+                        foreach(var localFunction in jObject.LocalFunctions)
+                        { vc.CreateFunctionVariable(localFunction); }
+                    }
+
                     var statements = new List<Statement>();
                     if (jObject.Statements != null)
                     {
@@ -637,22 +670,21 @@ namespace JsCsc.Lib
                     var rv = new ScopeBlock(
                         this._clrContext,
                         this.LocFromJObject(jObject),
-                        vc.GetCapturedVariables());
+                        vc.GetCapturedVariables(),
+                        vc.GetLocalFunctionVariables());
 
                     statements.ForEach(_ => rv.AddStatement(_));
 
                     if (rv.Statements.Count == 1)
                     {
                         Statement singleStatement = rv.Statements[0];
-                        ForEachLoop feLoop = singleStatement as ForEachLoop;
-                        if (feLoop != null)
+                        if (singleStatement is ForEachLoop feLoop)
                         {
                             feLoop.MoveVariablesFrom(rv);
                             return feLoop;
                         }
 
-                        ForLoop forLoop = singleStatement as ForLoop;
-                        if (forLoop != null)
+                        if (singleStatement is ForLoop forLoop)
                         {
                             forLoop.MoveVariablesFrom(rv);
                             return forLoop;
@@ -685,6 +717,12 @@ namespace JsCsc.Lib
             return WrapVariableCollection(
                 (vc) =>
                 {
+                    if (jObject.LocalFunctions != null)
+                    {
+                        foreach(var localFunction in jObject.LocalFunctions)
+                        { vc.CreateFunctionVariable(localFunction); }
+                    }
+
                     var statements = new List<Statement>();
                     if (jObject.Statements != null)
                     {
@@ -696,7 +734,8 @@ namespace JsCsc.Lib
                         this._clrContext,
                         this.LocFromJObject(jObject),
                         vc.GetCapturedVariables(),
-                        vc.GetParamBlockVariables());
+                        vc.GetParamBlockVariables(),
+                        vc.GetLocalFunctionVariables());
 
                     statements.ForEach(_ => rv.AddStatement(_));
 
@@ -760,6 +799,7 @@ namespace JsCsc.Lib
                 tryScopeBlock = new ScopeBlock(
                     this._clrContext,
                     tryBlock.Location,
+                    null,
                     null);
                 tryScopeBlock.AddStatement(tryBlock);
             }
@@ -794,7 +834,8 @@ namespace JsCsc.Lib
                             ScopeBlock tmpBlock = new ScopeBlock(
                                 this._clrContext,
                                 null,
-                                new List<(LocalVariable localVariable, bool isUsed)> { (exceptionVariable, true) });
+                                new List<(LocalVariable localVariable, bool isUsed)> { (exceptionVariable, true) },
+                                vc.GetLocalFunctionVariables());
 
                             handlerScopeBlock.MoveVariablesFrom(tmpBlock);
                         }
@@ -1469,6 +1510,28 @@ namespace JsCsc.Lib
                     : this._clrContext.KnownReferences.MulticastDelegate);
         }
 
+        private Node ParseLocalMethodStatement(Serialization.LocalMethodStatement jObject)
+        {
+            LocalFunctionVariable lfv = null;
+            foreach (var scopeBlock in this.scopeBlockStack)
+            {
+                if (scopeBlock.Item1 == jObject.ScopeBlockId)
+                {
+                    lfv = scopeBlock.Item2.ResolveLocalFunctionVariable(jObject.MethodId.MethodName);
+                    break;
+                }
+            }
+
+            if (lfv == null)
+            { throw new InvalidOperationException(); }
+
+            return new LocalMethodStatement(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                lfv,
+                (ParameterBlock)this.ParseParameterBlock(jObject.Block, true));
+        }
+
         private ParameterVariable ParseArgumentVariable(Serialization.ParameterSer jObject)
         {
             if (jObject == null)
@@ -1592,6 +1655,7 @@ namespace JsCsc.Lib
             var rv = new ScopeBlock(
                 this._clrContext,
                 statement.Location,
+                null,
                 null);
 
             rv.AddStatement(statement);
@@ -2020,6 +2084,12 @@ namespace JsCsc.Lib
 					typeof(Serialization.AnonymousMethodBodyExpr),
 					(a) => this.ParseAnonymousMethod((Serialization.AnonymousMethodBodyExpr)a));
             parserMap.Add(
+					typeof(Serialization.LocalMethodStatement),
+					(a) => this.ParseLocalMethodStatement((Serialization.LocalMethodStatement)a));
+            parserMap.Add(
+					typeof(Serialization.LocalMethodCallExpression),
+					(a) => this.ParseMethodCall((Serialization.LocalMethodCallExpression)a));
+            parserMap.Add(
 					typeof(Serialization.WrapExpression),
 					(a) => this.ParseToNullable((Serialization.WrapExpression)a));
             parserMap.Add(
@@ -2068,7 +2138,9 @@ namespace JsCsc.Lib
                 isParamBlock,
                 thisParameter,
                 paramDefinitions);
+
             this.scopeBlockStack.AddFirst((blockId, vc));
+
             try
             { return func(vc); }
             finally

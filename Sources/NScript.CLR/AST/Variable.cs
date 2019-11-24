@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NScript.Utils;
-using Mono.Cecil;
-
-namespace NScript.CLR.AST
+﻿namespace NScript.CLR.AST
 {
+    using NScript.Utils;
+    using Mono.Cecil;
+
     /// <summary>
     /// Base class for all type of variables.
     /// </summary>

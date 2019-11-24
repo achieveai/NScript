@@ -130,6 +130,11 @@ namespace NScript.Converter.StatementsConverter
                 StatementConverterBase.SimplifyConverter<CLR.AST.TryCatchFinally>(
                     TryCatchFinallyConverter.Convert));
 
+            returnValue.Add(
+                typeof(CLR.AST.LocalMethodStatement),
+                StatementConverterBase.SimplifyConverter<CLR.AST.LocalMethodStatement>(
+                    LocalFunctionStatementConverter.Convert));
+
             return returnValue;
         }
 

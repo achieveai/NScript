@@ -51,8 +51,9 @@ namespace NScript.CLR.AST
             Statement initializeStatement,
             Statement incrementStatement,
             ScopeBlock loop,
-            List<(LocalVariable localVariable, bool isUsed)> variables)
-            : base(context, location, variables)
+            List<(LocalVariable localVariable, bool isUsed)> variables,
+            List<LocalFunctionVariable> localFunctionNames)
+            : base(context, location, variables, localFunctionNames)
         {
             this.condition = condition;
             this.initializeStatement = initializeStatement;

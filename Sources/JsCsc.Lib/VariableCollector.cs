@@ -22,6 +22,8 @@ namespace JsCsc.Lib
             = new HashSet<LocalVariable>();
         private HashSet<Variable> escapingVariable
             = new HashSet<Variable>();
+        private List<LocalFunctionVariable> localFunctionVariables
+            = new List<LocalFunctionVariable>();
 
         private readonly List<ParameterVariable> parameters;
 
@@ -88,6 +90,27 @@ namespace JsCsc.Lib
             return returnValue;
         }
 
+        public LocalFunctionVariable CreateFunctionVariable(
+            string variableName)
+        {
+            string addedVariableName = variableName;
+            int changIndex = -1;
+            for (int variableIndex = 0; variableIndex < this.localFunctionVariables.Count; variableIndex++)
+            {
+                if (this.localFunctionVariables[variableIndex].Name == addedVariableName)
+                {
+                    addedVariableName = variableName + "_" + (++changIndex);
+                    variableIndex = -1;
+                }
+            }
+
+            var returnValue = new LocalFunctionVariable(variableName);
+
+            this.localFunctionVariables.Add(returnValue);
+
+            return returnValue;
+        }
+
         public LocalVariable ResolveVariable(string variableName)
         {
             foreach (LocalVariable variable in this.localVariables)
@@ -106,6 +129,11 @@ namespace JsCsc.Lib
             return null;
         }
 
+        public LocalFunctionVariable ResolveLocalFunctionVariable(string variableName)
+            => this.localFunctionVariables
+                .Where(lfv => lfv.Name == variableName)
+                .FirstOrDefault();
+
         public void AddEscapingVariable(Variable variable)
         {
             if (!_isParamBlock)
@@ -120,6 +148,11 @@ namespace JsCsc.Lib
             return localVariables
                 .Select(_ => (_, usedVariables.Contains(_)))
                 .ToList();
+        }
+
+        public List<LocalFunctionVariable> GetLocalFunctionVariables()
+        {
+            return this.localFunctionVariables;
         }
 
         public (List<Variable> escapingVars, List<ParameterVariable> paras, ThisVariable thisVar)

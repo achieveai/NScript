@@ -37,7 +37,8 @@
         public ScopeBlock(
             ClrContext context,
             Location location,
-            List<(LocalVariable localVariable, bool isUsed)> variables)
+            List<(LocalVariable localVariable, bool isUsed)> variables,
+            List<LocalFunctionVariable> localFunctions)
             : base(context, location)
         {
             if (variables != null)
@@ -53,6 +54,7 @@
             }
 
             this.readonlyLocalVariables = new ReadOnlyCollection<LocalVariable>(this.localVariables);
+            this.LocalFunctions = new ReadOnlyCollection<LocalFunctionVariable>(localFunctions);
         }
 
         /// <summary>
@@ -79,35 +81,9 @@
             }
         }
 
-        /// <summary>
-        /// Creates the variable.
-        /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
-        /// <param name="paramDef">The type reference.</param>
-        /// <returns></returns>
-        public LocalVariable CreateVariable(
-            string variableName,
-            TypeReference typeReference)
-        {
-            string addedVariableName = variableName;
-            int changIndex = -1;
-            for (int variableIndex = 0; variableIndex < this.localVariables.Count; variableIndex++)
-            {
-                if (this.localVariables[variableIndex].Name == addedVariableName)
-                {
-                    addedVariableName = variableName + "_" + (++changIndex);
-                    variableIndex = -1;
-                }
-            }
+        public IList<LocalFunctionVariable> LocalFunctions { get; }
 
-            LocalVariable returnValue = new LocalVariable(
-                new VariableDefinition(typeReference, variableName),
-                this);
 
-            this.localVariables.Add(returnValue);
-
-            return returnValue;
-        }
 
         /// <summary>
         /// Moves the variables.
@@ -121,63 +97,12 @@
                 variable.DefiningScope = this;
                 this.localVariables.Add(variable);
             }
-        }
 
-        /// <summary>
-        /// Determines whether variable with given name is used or not.
-        /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
-        /// <returns>
-        /// <c>true</c> if variable is used otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsVariableUsed(string variableName)
-        {
-            foreach (LocalVariable variable in this.LocalVariables)
+            for (int iLocalFunction = 0; iLocalFunction < this.LocalFunctions.Count; iLocalFunction++)
             {
-                if (variable.Name == variableName)
-                {
-                    return this.usedVariables.Contains(variable);
-                }
+                this.LocalFunctions.Add(this.LocalFunctions[iLocalFunction]);
             }
-
-            throw new InvalidOperationException();
         }
-
-        /// <summary>
-        /// Determines whether given variable is used.
-        /// </summary>
-        /// <param name="variable">The variable.</param>
-        /// <returns>
-        /// <c>true</c> if given variable is used otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsVariableUsed(LocalVariable variable)
-        {
-            return this.usedVariables.Contains(variable);
-        }
-
-        /// <summary>
-        /// Resolves the variable.
-        /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
-        /// <returns></returns>
-        public LocalVariable ResolveVariable(string variableName)
-        {
-            foreach (LocalVariable variable in this.LocalVariables)
-            {
-                if (variable.Name == variableName)
-                {
-                    if (!this.usedVariables.Contains(variable))
-                    {
-                        this.usedVariables.Add(variable);
-                    }
-
-                    return variable;
-                }
-            }
-
-            return null;
-        }
-
         /// <summary>
         /// Processes the through pipeline.
         /// </summary>

@@ -79,6 +79,7 @@
     <Compile Include="AST\Expressions\InlineIteratorExpression.cs" />
     <Compile Include="AST\Expressions\InlinePropertyInitilizationExpression.cs" />
     <Compile Include="AST\Expressions\LoadAddressExpression.cs" />
+    <Compile Include="AST\Expressions\LocalFunctionReference.cs" />
     <Compile Include="AST\Expressions\NullConditional.cs" />
     <Compile Include="AST\Expressions\PropertyReferenceExpression.cs" />
     <Compile Include="AST\Expressions\ToNullable.cs" />
@@ -88,12 +89,14 @@
     <Compile Include="AST\InlineDelegateClass.cs" />
     <Compile Include="AST\InternalEventReference.cs" />
     <Compile Include="AST\InternalPropertyRefernce.cs" />
+    <Compile Include="AST\LocalFunctionVariable.cs" />
     <Compile Include="AST\Processors\IntiObjectSimplifier.cs" />
     <Compile Include="AST\Expressions\AnonymousMethodBodyExpression.cs" />
     <Compile Include="AST\Statements\ExplicitBlock.cs" />
     <Compile Include="AST\Statements\ForEachBlock.cs" />
     <Compile Include="AST\Statements\HandlerBlock.cs" />
     <Compile Include="AST\Statements\InitializerStatement.cs" />
+    <Compile Include="AST\Statements\LocalMethodStatement.cs" />
     <Compile Include="AST\Statements\ParameterBlock.cs" />
     <Compile Include="AST\Statements\TryCatchFinally.cs" />
     <Compile Include="AST\Statements\ThrowStatement.cs" />

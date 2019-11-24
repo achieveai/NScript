@@ -51,5 +51,57 @@ namespace RealScript
 
         public static int? TestConditionalInvoke(Func<int> func)
             => func?.Invoke();
+
+        public static Func<int, long, int> TestNestedFunction(NewLanguageFeatures obj)
+        {
+            int Compute(long l)
+            {
+                return obj.AddNum((int)l);
+            }
+
+            return (x, y) =>
+            {
+                return x + Compute(y);
+            };
+        }
+
+        public static int TestNestedFunctionScoped(NewLanguageFeatures obj)
+        {
+            int Compute(long l)
+            {
+                int Compute2(int l2)
+                {
+                    return l2 + 10;
+                }
+
+                return obj.AddNum(Compute2((int)l));
+            }
+
+            if (obj == null)
+            {
+                int Compute2(long l)
+                {
+                    return (int)l;
+                }
+
+                return Compute2(obj.AddNum(10));
+            }
+
+            return Compute(obj.AddNum(11));
+        }
+
+//         public static List<NewLanguageFeatures> TestNestedFunctionGeneric(NewLanguageFeatures obj)
+//         {
+//             List<U> Compute<U>(U item, int count)
+//             {
+//                 var rv = new List<U>();
+//                 while(count-- < 0)
+//                 { rv.Add(item); }
+// 
+//                 return rv;
+//             }
+// 
+//             return Compute(obj, 10);
+//         }
     }
 }

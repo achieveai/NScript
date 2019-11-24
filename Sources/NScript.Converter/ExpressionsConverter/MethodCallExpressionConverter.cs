@@ -30,10 +30,7 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter methodConverter,
             MethodCallExpression methodCallExpression)
         {
-            MethodReferenceExpression methodReferenceExpression =
-                methodCallExpression.MethodReference as MethodReferenceExpression;
-
-            if (methodReferenceExpression != null)
+            if (methodCallExpression.MethodReference is MethodReferenceExpression methodReferenceExpression)
             {
                 var converterFunc =
                     MethodCallExpressionConverter.ConverterSpecialMethod(
@@ -44,6 +41,19 @@ namespace NScript.Converter.ExpressionsConverter
                 {
                     return converterFunc(methodConverter, methodCallExpression);
                 }
+            }
+
+            if (methodCallExpression.MethodReference is LocalFunctionReference localMethodReferenceExpression)
+            {
+                return SimpleMethodCallConverter(
+                    methodConverter,
+                    methodCallExpression.Location,
+                    new JST.IdentifierExpression(
+                        methodConverter.ResolveLocalFunction(
+                            localMethodReferenceExpression.Variable.Name),
+                        methodConverter.Scope),
+                    null,
+                    methodCallExpression.Parameters);
             }
 
             return MethodCallExpressionConverter.ConvertInternal(
@@ -78,8 +88,7 @@ namespace NScript.Converter.ExpressionsConverter
 
             // Here we are trying to re-route virtual calls to static method
             // for enums.
-            VirtualMethodReferenceExpression virtualRefExpression =
-                methodReferenceExpression as VirtualMethodReferenceExpression;
+            var virtualRefExpression = methodReferenceExpression as VirtualMethodReferenceExpression;
 
             BoxExpression boxedExpression =
                 virtualRefExpression != null
@@ -90,9 +99,8 @@ namespace NScript.Converter.ExpressionsConverter
 
             if (boxedExpression != null)
             {
-                TypeReference resultTypeReference =
-                    (TypeReference)boxedExpression.BoxedExpression.ResultType;
-                TypeDefinition resultTypeDefinition = resultTypeReference.Resolve();
+                var resultTypeReference = boxedExpression.BoxedExpression.ResultType;
+                var resultTypeDefinition = resultTypeReference.Resolve();
 
                 // Here we are trying to re-route virtual calls to static method
                 // for enums.
@@ -145,8 +153,6 @@ namespace NScript.Converter.ExpressionsConverter
                 }
             }
 
-            List<JST.Expression> argumentExpressions = null;
-
             if (methodReferenceExpression != null)
             {
                 JST.Expression thisExpression = null;
@@ -196,19 +202,40 @@ namespace NScript.Converter.ExpressionsConverter
                     methodConverter.RuntimeManager);
             }
 
-            List<JST.Expression> genericArguments = null;
             GenericInstanceMethod genericMethod =
                 methodReferenceExpression != null
                     ? methodReferenceExpression.MethodReference as GenericInstanceMethod
                     : null;
 
-            if (genericMethod != null
-                && methodConverter.RuntimeManager.Context.HasGenericArguments(genericMethod))
+            return SimpleMethodCallConverter(
+                methodConverter,
+                methodCallExpression.Location,
+                ExpressionConverterBase.Convert(
+                    methodConverter,
+                    methodCallExpression.MethodReference),
+                genericMethod != null 
+                    && methodConverter.RuntimeManager.Context.HasGenericArguments(genericMethod)
+                    ? genericMethod.GenericArguments
+                    : null,
+                methodCallExpression.Parameters);
+        }
+
+        private static JST.MethodCallExpression SimpleMethodCallConverter(
+            IMethodScopeConverter methodConverter,
+            Location location,
+            JST.Expression methodReference,
+            IList<TypeReference> methodGenericArguments,
+            IList<Expression> parameters)
+        {
+            List<JST.Expression> genericArguments = null;
+            List<JST.Expression> argumentExpressions = null;
+
+            if (methodGenericArguments != null)
             {
                 // If we are to ignore GenericArguments, let's skip creating
                 // arguments for genericArguments.
                 genericArguments =
-                    genericMethod.GenericArguments.Select(
+                    methodGenericArguments.Select(
                         exp => JST.IdentifierExpression.Create(
                             null,
                             methodConverter.Scope,
@@ -223,15 +250,13 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             argumentExpressions.AddRange(
-                methodCallExpression.Parameters.Select(
+                parameters.Select(
                     exp => ExpressionConverterBase.Convert(methodConverter, exp)));
 
             return new JST.MethodCallExpression(
-                methodCallExpression.Location,
+                location,
                 methodConverter.Scope,
-                ExpressionConverterBase.Convert(
-                    methodConverter,
-                    methodCallExpression.MethodReference),
+                methodReference,
                 argumentExpressions);
         }
 

@@ -9,7 +9,6 @@ namespace NScript.Converter
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.IO.Compression;
     using System.Text.RegularExpressions;
     using NScript.CLR;
     using NScript.CLR.AST;
@@ -20,6 +19,7 @@ namespace NScript.Converter
     using NScript.Utils;
     using FullAst = JsCsc.Lib.Serialization.FullAst;
     using System.Linq;
+    using Serializer = JsCsc.Lib.Serialization.Serializer;
 
     /// <summary>
     /// Definition for ConverterContext.
@@ -171,26 +171,21 @@ namespace NScript.Converter
                 {
                     if (resource.Name == "$$JstInfo$$")
                     {
-                        EmbeddedResource embededResource = (EmbeddedResource)resource;
-
-                        // stopWatch.Restart();
-                        using (var stream = embededResource.GetResourceStream())
-                        using (var streamReader = new StreamReader(stream))
-                        using (var jsonReader = new JsonTextReader(streamReader))
+                        using (var stream = ((EmbeddedResource)resource).GetResourceStream())
                         {
-                            var serializer = Newtonsoft.Json.JsonSerializer
-                                .Create(new Newtonsoft.Json.JsonSerializerSettings
-                                {
-                                    TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto
-                                });
-
-                            fullAst = serializer.Deserialize<FullAst>(jsonReader);
-                            // fullAst = NetJSON.NetJSON.Deserialize<FullAst>(streamReader);
-                            // fullAst = ProtoBuf.Serializer.Deserialize<FullAst>(stream);
+                            fullAst = Serializer.Deserialize(
+                                stream,
+                                Serializer.SerializationKind.Json);
                         }
-
-                        // stopWatch.Stop();
-                        // bondCost += stopWatch.Elapsed.TotalSeconds;
+                    }
+                    if (resource.Name == "$$BstInfo$$")
+                    {
+                        using (var stream = ((EmbeddedResource)resource).GetResourceStream())
+                        {
+                            fullAst = Serializer.Deserialize(
+                                stream,
+                                Serializer.SerializationKind.NetSerializer);
+                        }
                     }
                     else if (resource.Name == "$$ResInfo$$")
                     {

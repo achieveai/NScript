@@ -6,19 +6,13 @@
 
 namespace NScript.Converter.ExpressionsConverter
 {
-    using System;
-    using NScript.CLR;
     using NScript.CLR.AST;
-    using NScript.Converter.StatementsConverter;
     using NScript.Converter.TypeSystemConverter;
-    using System.Collections.Generic;
-    using Mono.Cecil;
-    using NScript.Utils;
 
     /// <summary>
     /// Definition for AnonymousMethodBodyExpressionConverter
     /// </summary>
-    public class AnonymousMethodBodyExpressionConverter
+    public static class AnonymousMethodBodyExpressionConverter
     {
         /// <summary>
         /// Converts the specified converter.
@@ -30,7 +24,7 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             AnonymousMethodBodyExpression expression)
         {
-            return converter.ProcessParameterBlock(expression.ParameterBlock);
+            return converter.ProcessParameterBlock(expression.ParameterBlock, null);
         }
     }
 }

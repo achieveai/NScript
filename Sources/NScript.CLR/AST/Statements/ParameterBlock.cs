@@ -29,8 +29,9 @@ namespace NScript.CLR.AST
             Location location,
             List<(LocalVariable variable, bool isUsed)> variables,
             (List<Variable> escapingVars, List<ParameterVariable> paras, ThisVariable thisVar)
-                paramBlockVariables)
-            : base(context, location, variables)
+                paramBlockVariables,
+            List<LocalFunctionVariable> localFunctionNames)
+            : base(context, location, variables, localFunctionNames)
         {
             this.readonlyVariables =
                 new ReadOnlyCollection<ParameterVariable>(this.parameterVariables);

@@ -22,7 +22,6 @@ namespace JsCsc.Lib
     /// </summary>
     public class DriverWrapper
     {
-        private MemoryStream astStream = new MemoryStream();
         private MemoryStream bstStream = new MemoryStream();
         private MemoryStream resourceInfoStream = new MemoryStream();
         private MonoAstVisitor visitor = new MonoAstVisitor();
@@ -105,15 +104,6 @@ namespace JsCsc.Lib
                 new AssemblyResource(
                     this.bstStream,
                     "$$BstInfo$$",
-                    true)
-                    {
-                        IsEmbeded = true
-                    });
-
-            setting.Resources.Add(
-                new AssemblyResource(
-                    this.astStream,
-                    "$$AstInfo$$",
                     true)
                     {
                         IsEmbeded = true
@@ -260,7 +250,7 @@ namespace JsCsc.Lib
         {
             this.assembly = assemblyDefinition;
 
-            var jarray = new FullAst() { Methods = new LinkedList<MethodBody>() };
+            var fullAst = new FullAst() { Methods = new List<MethodBody>() };
             var toSer = new AstToSerialization();
             HashSet<TypeDefinition> typesProcessed = new HashSet<TypeDefinition>();
 
@@ -285,14 +275,14 @@ namespace JsCsc.Lib
                             if (!this.methodBlocks.ContainsKey(property.Get))
                             { continue; }
 
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     property.Get,
                                     this.methodBlocks[property.Get]));
                         }
                         else if (property.Get != null && !property.IsCompilerGenerated)
                         {
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     property.Get,
                                     null));
@@ -305,14 +295,14 @@ namespace JsCsc.Lib
                                 continue;
                             }
 
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     property.Set,
                                     this.methodBlocks[property.Set]));
                         }
                         else if (property.Set != null && !property.IsCompilerGenerated)
                         {
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     property.Set,
                                     null));
@@ -331,14 +321,14 @@ namespace JsCsc.Lib
                                 continue;
                             }
 
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     indexer.Get,
                                     this.methodBlocks[indexer.Get]));
                         }
                         else if (indexer.Get != null && !indexer.IsCompilerGenerated)
                         {
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     indexer.Get,
                                     null));
@@ -351,14 +341,14 @@ namespace JsCsc.Lib
                                 continue;
                             }
 
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     indexer.Set,
                                     this.methodBlocks[indexer.Set]));
                         }
                         else if (indexer.Set != null && !indexer.IsCompilerGenerated)
                         {
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     indexer.Set,
                                     null));
@@ -377,14 +367,14 @@ namespace JsCsc.Lib
                                 continue;
                             }
 
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     evt.Add,
                                     this.methodBlocks[evt.Add]));
                         }
                         else if (evt.IsCompilerGenerated && evt.Add != null)
                         {
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     evt.Add,
                                     null));
@@ -397,14 +387,14 @@ namespace JsCsc.Lib
                                 continue;
                             }
 
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     evt.Remove,
                                     this.methodBlocks[evt.Remove]));
                         }
                         else if (evt.IsCompilerGenerated && evt.Remove != null)
                         {
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     evt.Remove,
                                     null));
@@ -422,7 +412,7 @@ namespace JsCsc.Lib
                             continue;
                         }
 
-                        jarray.Methods.AddLast(
+                        fullAst.Methods.Add(
                             toSer.SerializeMethodBody(
                                 (Method)method,
                                 this.methodBlocks[method]));
@@ -442,7 +432,7 @@ namespace JsCsc.Lib
                             || (constructor.IsStatic && typeDef.InitializedStaticFields != null && typeDef.InitializedStaticFields.Count > 0)
                             || (!constructor.IsStatic && typeDef.InitializedFields != null && typeDef.InitializedFields.Count > 0))
                         {
-                            jarray.Methods.AddLast(
+                            fullAst.Methods.Add(
                                 toSer.SerializeMethodBody(
                                     constructor,
                                     constructor.IsStatic
@@ -456,248 +446,10 @@ namespace JsCsc.Lib
                 }
             }
 
-
-            {
-
-                jarray.TypeInfo = toSer.TypeSerializationInfo;
-
-                ProtoBuf.Serializer.Serialize(this.bstStream, jarray);
-                // var deserializer = new Deserializer<FastBinaryReader<InputBuffer>>(typeof(FullAst));
-                // var reader = new FastBinaryReader<InputBuffer>(new InputBuffer(outputBuffer.Data));
-                // deserializer.Deserialize<FullAst>(reader);
-            }
+            fullAst.TypeInfo = toSer.TypeSerializationInfo;
+            Serializer.Serialize(this.bstStream, fullAst, Serializer.SerializationKind.NetSerializer);
 
             this.bstStream.Position = 0;
-        }
-
-        private void EmitAstUsingJson(AssemblyDefinition assemblyDefinition)
-        {
-            this.assembly = assemblyDefinition;
-
-            JArray jarray = new JArray();
-            AstToJObject toJObject = new AstToJObject();
-            HashSet<TypeDefinition> typesProcessed = new HashSet<TypeDefinition>();
-
-            foreach (var container in GetNestedContainers(assemblyDefinition.Module.Containers))
-            {
-                TypeDefinition typeDef = container.PartialContainer as TypeDefinition;
-
-                // Partials will appear multiple times, so skip if already processed
-                if (typeDef == null || typesProcessed.Contains(typeDef))
-                { continue; }
-
-                typesProcessed.Add(typeDef);
-                if (container.Kind == MemberKind.Interface) continue;
-
-                foreach (var member in typeDef.Members)
-                {
-                    Property property = member as Property;
-                    if (property != null)
-                    {
-                        if (property.Get != null && !property.Get.IsCompilerGenerated)
-                        {
-                            if (!this.methodBlocks.ContainsKey(property.Get))
-                            { continue; }
-
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    property.Get,
-                                    this.methodBlocks[property.Get]));
-                        }
-                        else if (property.Get != null && !property.IsCompilerGenerated)
-                        {
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    property.Get,
-                                    null));
-                        }
-
-                        if (property.Set != null && !property.Set.IsCompilerGenerated)
-                        {
-                            if (!this.methodBlocks.ContainsKey(property.Set))
-                            {
-                                continue;
-                            }
-
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    property.Set,
-                                    this.methodBlocks[property.Set]));
-                        }
-                        else if (property.Set != null && !property.IsCompilerGenerated)
-                        {
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    property.Set,
-                                    null));
-                        }
-
-                        continue;
-                    }
-
-                    Indexer indexer = member as Indexer;
-                    if (indexer != null)
-                    {
-                        if (indexer.Get != null && !indexer.Get.IsCompilerGenerated)
-                        {
-                            if (!this.methodBlocks.ContainsKey(indexer.Get))
-                            {
-                                continue;
-                            }
-
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    indexer.Get,
-                                    this.methodBlocks[indexer.Get]));
-                        }
-                        else if (indexer.Get != null && !indexer.IsCompilerGenerated)
-                        {
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    indexer.Get,
-                                    null));
-                        }
-
-                        if (indexer.Set != null && !indexer.Set.IsCompilerGenerated)
-                        {
-                            if (!this.methodBlocks.ContainsKey(indexer.Set))
-                            {
-                                continue;
-                            }
-
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    indexer.Set,
-                                    this.methodBlocks[indexer.Set]));
-                        }
-                        else if (indexer.Set != null && !indexer.IsCompilerGenerated)
-                        {
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    indexer.Set,
-                                    null));
-                        }
-
-                        continue;
-                    }
-
-                    Event evt = member as Event;
-                    if (evt != null)
-                    {
-                        if (evt.Add != null && !evt.Add.IsCompilerGenerated)
-                        {
-                            if (!this.methodBlocks.ContainsKey(evt.Add))
-                            {
-                                continue;
-                            }
-
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    evt.Add,
-                                    this.methodBlocks[evt.Add]));
-                        }
-                        else if (evt.IsCompilerGenerated && evt.Add != null)
-                        {
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    evt.Add,
-                                    null));
-                        }
-
-                        if (evt.Remove != null && !evt.Remove.IsCompilerGenerated)
-                        {
-                            if (!this.methodBlocks.ContainsKey(evt.Remove))
-                            {
-                                continue;
-                            }
-
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    evt.Remove,
-                                    this.methodBlocks[evt.Remove]));
-                        }
-                        else if (evt.IsCompilerGenerated && evt.Remove != null)
-                        {
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    evt.Remove,
-                                    null));
-                        }
-
-                        continue;
-                    }
-
-                    Method method = member as Method;
-                    if (method != null)
-                    {
-                        if (method.IsCompilerGenerated
-                            || !this.methodBlocks.ContainsKey(method))
-                        {
-                            continue;
-                        }
-
-                        jarray.Add(
-                            toJObject.SerializeMethodBody(
-                                (Method)method,
-                                this.methodBlocks[method]));
-
-                        continue;
-                    }
-
-                    Constructor constructor = member as Constructor;
-                    if (constructor != null)
-                    {
-                        if (constructor.IsCompilerGenerated)
-                        {
-                            continue;
-                        }
-
-                        if (this.methodBlocks.ContainsKey(constructor)
-                            || (constructor.IsStatic && typeDef.InitializedStaticFields != null && typeDef.InitializedStaticFields.Count > 0)
-                            || (!constructor.IsStatic && typeDef.InitializedFields != null && typeDef.InitializedFields.Count > 0))
-                        {
-                            jarray.Add(
-                                toJObject.SerializeMethodBody(
-                                    constructor,
-                                    constructor.IsStatic
-                                        ? typeDef.InitializedStaticFields
-                                        : typeDef.InitializedFields,
-                                    this.methodBlocks.ContainsKey(constructor)
-                                        ? this.methodBlocks[constructor]
-                                        : null));
-                        }
-                    }
-                }
-            }
-
-            // using (var gzipStream = new GZipStream(this.astStream, CompressionMode.Compress, true))
-            {
-                using (var stream = new StreamWriter(this.astStream, Encoding.UTF8, 4069, true))
-                using (var jsWriter = new JsonTextWriter(stream))
-                {
-                    // jsWriter.Indentation = 2;
-                    // jsWriter.IndentChar = ' ';
-                    jsWriter.Formatting = Formatting.None;
-                    jsWriter.CloseOutput = false;
-
-                    jarray.WriteTo(jsWriter);
-                    jsWriter.Close();
-                }
-            }
-
-            this.astStream.Position = 0;
-
-            /*
-            using (var stream = new FileStream(this.astFileName, FileMode.Truncate))
-            using (var jsWriter = new BsonWriter(stream))
-            {
-                // jsWriter.Indentation = 2;
-                // jsWriter.IndentChar = ' ';
-                // jsWriter.Formatting = Formatting.Indented;
-                jarray.WriteTo(jsWriter);
-                jsWriter.Close();
-            }
-            */
         }
 
         private static IEnumerable<TypeContainer> GetNestedContainers(IEnumerable<TypeContainer> containers)

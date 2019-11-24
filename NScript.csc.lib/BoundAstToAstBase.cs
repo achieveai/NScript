@@ -15,7 +15,8 @@
         : BoundAstToNotImplemented<SerializationContext, AstBase>
     {
         private int id = 0;
-        private LinkedList<(int id, BoundNode nodeBlock)> scopeBlockStack = new LinkedList<(int, BoundNode)>();
+        private LinkedList<(int id, BoundNode nodeBlock, List<string> localFunctions)> scopeBlockStack
+            = new LinkedList<(int, BoundNode, List<string>)>();
 
         public MethodBody GetMethodBody(
             IMethodSymbol methodSymbol,
@@ -33,9 +34,6 @@
                 : this.Visit((BoundBlock)boundNode, arg, methodSymbol, initializers);
 
             // TODO: Make note of [Script] Attribute in case of empty body.
-            if (boundNode != null && boundNode.SyntaxTree.FilePath.Contains("EventBus"))
-            { }
-
             var rv = new MethodBody
             {
                 MethodId = arg
@@ -84,10 +82,11 @@
             var rv = new ParameterBlock
             {
                 Location = node.Syntax.GetSerLoc(),
-                Id = ++this.id
+                Id = ++this.id,
+                LocalFunctions = new List<string>()
             };
 
-            this.scopeBlockStack.AddFirst((rv.Id, node));
+            this.scopeBlockStack.AddFirst((rv.Id, node, rv.LocalFunctions));
 
             // Expression can be null for static field initializer constructors.
             rv.IsMethodOwned = true;
@@ -148,45 +147,7 @@
                     .Where(_ => _ != null)
                     .ToDictionary(_ => _.key, _ => _.val)
             };
-        //{
-        //    var location = node.Syntax.Location.GetSerLoc();
-        //    var type = arg.SymbolSerializer.GetTypeSpecId(node.Type);
-        //    var method = arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
-        //    var arguments = ToArgs(node.Constructor, node.Arguments, arg);
 
-        //    return new NewInitializerExpression
-        //    {
-        //        Location = location,
-        //        Type = type,
-        //        Method = method,
-        //        Arguments = arguments,
-        //        Initializers = Enumerable
-        //            .Range(0, node.Declarations.Length)
-        //            .Select(_ =>
-        //            {
-        //                var property = node.Declarations[_];
-        //                var expr = node.Arguments[0];
-        //                var rv = new ObjectInitilaizer()
-        //                {
-        //                    Location = expr.Syntax.Location.GetSerLoc(),
-        //                    Value = (ExpressionSer)this.Visit(expr, arg)
-        //                };
-
-        //                var propertySymbol = property.Property;
-        //                rv.Property = arg.SymbolSerializer.GetPropertySpecId(propertySymbol);
-        //                rv.Setter = propertySymbol.SetMethod != null
-        //                    ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.SetMethod)
-        //                    : 0;
-
-        //                rv.Getter = propertySymbol.GetMethod != null
-        //                    ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.GetMethod)
-        //                    : 0;
-
-        //                return rv;
-        //            })
-        //            .ToList()
-        //    };
-        //}
         public override AstBase VisitAnonymousPropertyDeclaration(BoundAnonymousPropertyDeclaration node, SerializationContext arg)
             { throw new NotImplementedException(); }
         public override AstBase VisitArgList(BoundArgList node, SerializationContext arg)
@@ -324,12 +285,13 @@
 
         public override AstBase VisitBlock(BoundBlock node, SerializationContext arg)
         {
-            this.scopeBlockStack.AddFirst((++this.id, node));
+            this.scopeBlockStack.AddFirst((++this.id, node, new List<string>()));
             try
             {
                 return new ExplicitBlockSer
                 {
                     Id = this.id,
+                    LocalFunctions = this.scopeBlockStack.Last.Value.localFunctions,
                     Statements = node
                         .Statements
                         .Select(_ => this.VisitToStatement(_, arg))
@@ -350,28 +312,48 @@
             bool isStatic = node.Method.ContainingSymbol.IsStatic
                 || node.Method.IsStatic;
 
-            return node.Method.MethodKind == MethodKind.DelegateInvoke
-                ? (AstBase)new DelegateInvocationExpression
-                    {
-                        Arguments = this.ToArgs(node.Method, node.Arguments, arg),
-                        Location = node.Syntax.Location.GetSerLoc(),
-                        Instance = (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
-                    }
-                : new MethodCallExpression
-                    {
-                        Method = arg.SymbolSerializer.GetMethodSpecId(
+            if (node.Method.ContainingSymbol.Kind == SymbolKind.Method)
+            {
+            }
+
+            if (node.Method.MethodKind == MethodKind.DelegateInvoke)
+            {
+                return new DelegateInvocationExpression
+                {
+                    Arguments = this.ToArgs(node.Method, node.Arguments, arg),
+                    Location = node.Syntax.Location.GetSerLoc(),
+                    Instance = (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
+                };
+            }
+
+            if (node.Method.ContainingSymbol.Kind != SymbolKind.Method)
+            {
+                return new MethodCallExpression
+                {
+                    Method = arg.SymbolSerializer.GetMethodSpecId(
                             node.Method),
-                        Arguments = this.ToArgs(node.Method, node.Arguments, arg),
-                        Location = node.Syntax.Location.GetSerLoc(),
-                        Instance = !isStatic
+                    Arguments = this.ToArgs(node.Method, node.Arguments, arg),
+                    Location = node.Syntax.Location.GetSerLoc(),
+                    Instance = !isStatic
                             ? (ExpressionSer)this.Visit(node.ReceiverOpt, arg)
                             : null
-                    };
+                };
+            }
+
+            return new LocalMethodCallExpression
+            {
+                MethodName = node.Method.Name,
+                ReturnType = arg.SymbolSerializer.GetTypeSpecId(
+                            node.Method.ReturnType.TypeSymbol),
+                Arguments = this.ToArgs(node.Method, node.Arguments, arg),
+                TypeParameters = new List<int>(),
+                Location = node.Syntax.Location.GetSerLoc(),
+            };
         }
 
         public override AstBase VisitCatchBlock(BoundCatchBlock node, SerializationContext arg)
         {
-            this.scopeBlockStack.AddFirst((++this.id, node));
+            this.scopeBlockStack.AddFirst((++this.id, node, new List<string>()));
             try
             {
                 return new CatchBlock
@@ -379,12 +361,13 @@
                     Block = new ExplicitBlockSer
                     {
                         Id = this.id,
+                        LocalFunctions = this.scopeBlockStack.Last.Value.localFunctions,
                         Statements = node
-                        .Body
-                        .Statements
-                        .Select(_ => this.VisitToStatement(_, arg))
-                        .Where(_ => _ != null)
-                        .ToList()
+                            .Body
+                            .Statements
+                            .Select(_ => this.VisitToStatement(_, arg))
+                            .Where(_ => _ != null)
+                            .ToList()
                     },
                     CatchType = node.ExceptionTypeOpt != null
                         ? arg.SymbolSerializer.GetTypeSpecId(node.ExceptionTypeOpt)
@@ -735,7 +718,7 @@
         public override AstBase VisitForEachStatement(BoundForEachStatement node, SerializationContext arg)
             => this.WrapInBlock(
                 node,
-                id =>
+                (id, _) =>
                     new ForEachStatement {
                         BlockId = id,
                         LocalVariableName = node.IterationVariables[0].Name,
@@ -746,7 +729,7 @@
         public override AstBase VisitForStatement(BoundForStatement node, SerializationContext arg)
             => this.WrapInBlock(
                 node,
-                id =>
+                (id, _) =>
                     new ForStatement
                     {
                         BlockId = id,
@@ -808,6 +791,7 @@
             };
         public override AstBase VisitIsPatternExpression(BoundIsPatternExpression node, SerializationContext arg)
             {throw new NotImplementedException(); }
+
         public override AstBase VisitLabel(BoundLabel node, SerializationContext arg)
             {throw new NotImplementedException(); }
         public override AstBase VisitLabeledStatement(BoundLabeledStatement node, SerializationContext arg)
@@ -827,6 +811,33 @@
                 Block = parameterBlock,
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
+        }
+
+        public override AstBase VisitLocalFunctionStatement(
+            BoundLocalFunctionStatement node,
+            SerializationContext arg)
+        {
+            this.scopeBlockStack.Last.Value.localFunctions.Add(node.Symbol.Name);
+
+            var block =
+                this.Visit(
+                    node.Body,
+                    arg,
+                    node.Symbol,
+                    null);
+
+            return new LocalMethodStatement
+                {
+                    Block = block,
+                    ScopeBlockId = this.scopeBlockStack.Last.Value.id,
+                    MethodId = new LocalMethodIdentitySer
+                    {
+                        MethodName = node.Symbol.Name,
+                        ReturnType = arg.SymbolSerializer.GetTypeSpecId(node.Symbol.ReturnType.TypeSymbol),
+                        GenericParameters = node.Symbol.Arity,
+                        Parameters = block.Parameters
+                    }
+                };
         }
 
         public override AstBase VisitLiteral(BoundLiteral node, SerializationContext arg)
@@ -879,9 +890,6 @@
                 BlockId = id
             };
         }
-
-        public override AstBase VisitLocalFunctionStatement(BoundLocalFunctionStatement node, SerializationContext arg)
-            {throw new NotImplementedException(); }
 
         public override AstBase VisitLockStatement(BoundLockStatement node, SerializationContext arg)
             => this.Visit(node.Body, arg);
@@ -1619,11 +1627,11 @@
             }
         }
 
-        private T WrapInBlock<T>(BoundNode node, Func<int, T> func) where T : StatementSer
+        private T WrapInBlock<T>(BoundNode node, Func<int, List<string>, T> func) where T : StatementSer
         {
-            this.scopeBlockStack.AddFirst((++this.id, node));
+            this.scopeBlockStack.AddFirst((++this.id, node, new List<string>()));
             try
-            { return func(this.id); }
+            { return func(this.id, this.scopeBlockStack.Last.Value.localFunctions); }
             finally
             { this.scopeBlockStack.RemoveFirst(); }
         }

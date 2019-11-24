@@ -506,82 +506,12 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Resolved identifier.</returns>
         public IIdentifier ResolveLocal(string localVariable)
         {
-            LinkedListNode<ScopeBlock> scopeNode = scopeBlocksStack.First;
-            LinkedListNode<ParameterBlock> parameterNode = parameterBlocksStack.First;
-            LinkedListNode<IdentifierScope> identifierScopeNode = scopeStack.First;
-            LinkedListNode<Dictionary<string, IIdentifier>> localsNode = localVariableToIdentifierMapStack.First;
-            LinkedListNode<Dictionary<string, int>> variableNamesGivenNode = variableNamesGivenStack.First;
+            return this.ResolveLocalInternal(localVariable, false);
+        }
 
-            Func<IIdentifier> localVariableGetter =
-                delegate
-                {
-                    IIdentifier rv;
-                    if (!localsNode.Value.TryGetValue(localVariable, out rv))
-                    {
-                        string identifierName = null;
-
-                        Match match = ConverterContext.GeneratedFieldNameRegex.Match(localVariable);
-                        if (match.Success)
-                        {
-                            identifierName = match.Groups[ConverterContext.RealNameStr].Value;
-                        }
-                        else if (ConverterContext.GeneratedLocalVarRegex.IsMatch(localVariable))
-                        {
-                            identifierName = "tmp_";
-                        }
-                        else
-                        {
-                            identifierName = localVariable;
-                        }
-
-                        int namesGiven = 0;
-                        variableNamesGivenNode.Value.TryGetValue(identifierName, out namesGiven);
-                        variableNamesGivenNode.Value[identifierName] = namesGiven + 1;
-
-                        if (namesGiven > 0)
-                        {
-                            identifierName = string.Format("{0}{1}", identifierName, namesGiven);
-                        }
-
-                        rv = SimpleIdentifier.CreateScopeIdentifier(
-                            identifierScopeNode.Value,
-                            identifierName,
-                            false);
-
-                        localsNode.Value.Add(localVariable, rv);
-                    }
-
-                    return rv;
-                };
-
-            if (!usingMcs)
-            {
-                return localVariableGetter();
-            }
-
-            while (scopeNode != null)
-            {
-                foreach (LocalVariable localVar in scopeNode.Value.LocalVariables)
-                {
-                    if (localVar.Name == localVariable)
-                    {
-                        return localVariableGetter();
-                    }
-                }
-
-                if (scopeNode.Value
-                    == parameterNode.Value)
-                {
-                    parameterNode = parameterNode.Next;
-                    localsNode = localsNode.Next;
-                    identifierScopeNode = identifierScopeNode.Next;
-                    variableNamesGivenNode = variableNamesGivenNode.Next;
-                }
-
-                scopeNode = scopeNode.Next;
-            }
-
-            return null;
+        public IIdentifier ResolveLocalFunction(string localVariable)
+        {
+            return this.ResolveLocalInternal(localVariable, true);
         }
 
         /// <summary>
@@ -1000,7 +930,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="parameterBlock">The parameter block.</param>
         /// <returns></returns>
-        public JST.Expression ProcessParameterBlock(ParameterBlock parameterBlock)
+        public JST.Expression ProcessParameterBlock(
+            ParameterBlock parameterBlock,
+            IIdentifier localMethodName)
         {
             scopeBlocksStack.AddFirst(parameterBlock);
             parameterBlocksStack.AddFirst(parameterBlock);
@@ -1050,15 +982,17 @@ namespace NScript.Converter.TypeSystemConverter
                     scopeStack.RemoveFirst();
                 }
 
-                IIdentifier delegateFunctionNameId = SimpleIdentifier.CreateScopeIdentifier(
-                    RuntimeManager.Scope,
-                    string.Format(
-                        "{0}_del{1}",
-                        GetMethodName(methodDefinition).OriginalSuggestedName,
-                        delegateCount++ == 0
-                            ? string.Empty
-                            : delegateCount.ToString()),
-                    false);
+                IIdentifier delegateFunctionNameId = 
+                    localMethodName
+                    ?? SimpleIdentifier.CreateScopeIdentifier(
+                        RuntimeManager.Scope,
+                        string.Format(
+                            "{0}_del{1}",
+                            GetMethodName(methodDefinition).OriginalSuggestedName,
+                            delegateCount++ == 0
+                                ? string.Empty
+                                : delegateCount.ToString()),
+                        false);
 
                 var rv = new FunctionExpression(
                     parameterBlock.Location,
@@ -2100,6 +2034,98 @@ namespace NScript.Converter.TypeSystemConverter
         {
             return this.context.IsPsudoType(this.typeConverter.TypeDefinition)
                 && this.typeConverter.TypeDefinition.Fields.Count(_ => !_.IsStatic && !_.HasConstant) > 0;
+        }
+
+        private IIdentifier ResolveLocalInternal(string localVariable, bool isLocalFunction)
+        {
+            LinkedListNode<ScopeBlock> scopeNode = scopeBlocksStack.First;
+            LinkedListNode<ParameterBlock> parameterNode = parameterBlocksStack.First;
+            LinkedListNode<IdentifierScope> identifierScopeNode = scopeStack.First;
+            LinkedListNode<Dictionary<string, IIdentifier>> localsNode = localVariableToIdentifierMapStack.First;
+            LinkedListNode<Dictionary<string, int>> variableNamesGivenNode = variableNamesGivenStack.First;
+
+            Func<IIdentifier> localVariableGetter =
+                delegate
+                {
+                    IIdentifier rv;
+                    if (!localsNode.Value.TryGetValue(localVariable, out rv))
+                    {
+                        string identifierName = null;
+
+                        Match match = ConverterContext.GeneratedFieldNameRegex.Match(localVariable);
+                        if (match.Success)
+                        {
+                            identifierName = match.Groups[ConverterContext.RealNameStr].Value;
+                        }
+                        else if (ConverterContext.GeneratedLocalVarRegex.IsMatch(localVariable))
+                        {
+                            identifierName = "tmp_";
+                        }
+                        else
+                        {
+                            identifierName = localVariable;
+                        }
+
+                        int namesGiven = 0;
+                        variableNamesGivenNode.Value.TryGetValue(identifierName, out namesGiven);
+                        variableNamesGivenNode.Value[identifierName] = namesGiven + 1;
+
+                        if (namesGiven > 0)
+                        {
+                            identifierName = string.Format("{0}{1}", identifierName, namesGiven);
+                        }
+
+                        rv = SimpleIdentifier.CreateScopeIdentifier(
+                            identifierScopeNode.Value,
+                            identifierName,
+                            false);
+
+                        localsNode.Value.Add(localVariable, rv);
+                    }
+
+                    return rv;
+                };
+
+            if (!usingMcs)
+            {
+                return localVariableGetter();
+            }
+
+            while (scopeNode != null)
+            {
+                if (isLocalFunction)
+                {
+                    foreach (LocalFunctionVariable localVar in scopeNode.Value.LocalFunctions)
+                    {
+                        if (localVar.Name == localVariable)
+                        {
+                            return localVariableGetter();
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (LocalVariable localVar in scopeNode.Value.LocalVariables)
+                    {
+                        if (localVar.Name == localVariable)
+                        {
+                            return localVariableGetter();
+                        }
+                    }
+                }
+
+                if (scopeNode.Value == parameterNode.Value)
+                {
+                    parameterNode = parameterNode.Next;
+                    localsNode = localsNode.Next;
+                    identifierScopeNode = identifierScopeNode.Next;
+                    variableNamesGivenNode = variableNamesGivenNode.Next;
+                }
+
+                scopeNode = scopeNode.Next;
+            }
+
+            return null;
         }
     }
 }
