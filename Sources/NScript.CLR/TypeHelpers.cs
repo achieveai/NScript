@@ -1086,11 +1086,9 @@ namespace NScript.CLR
                 IList<TypeReference> genericTypeParameters = null;
                 IList<TypeReference> genericMethodParameters = null;
 
-                GenericInstanceType genericInstanceType = baseMethod.DeclaringType as GenericInstanceType;
+                GenericInstanceType genericInstanceType = baseType as GenericInstanceType;
                 if (genericInstanceType != null)
-                {
-                    genericTypeParameters = genericInstanceType.GenericArguments;
-                }
+                { genericTypeParameters = genericInstanceType.GenericArguments; }
 
                 if (derivedMethod.HasGenericParameters)
                 {

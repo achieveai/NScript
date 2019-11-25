@@ -247,7 +247,8 @@
                 || (nscriptOp == CLR.AST.BinaryOperator.Plus
                     && (typeMask == BinaryOperatorKind.String
                         || typeMask == BinaryOperatorKind.StringAndObject
-                        || typeMask == BinaryOperatorKind.ObjectAndString)))
+                        || typeMask == BinaryOperatorKind.ObjectAndString
+                        || typeMask == BinaryOperatorKind.EnumAndUnderlying)))
             {
                 return new BinaryExpression
                 {
@@ -1317,7 +1318,8 @@
                 };
             }
 
-            if (typeMask <= UnaryOperatorKind.Bool)
+            if (typeMask <= UnaryOperatorKind.Bool
+                || typeMask == UnaryOperatorKind.Enum)
             {
                 return new UnaryExpression
                 {

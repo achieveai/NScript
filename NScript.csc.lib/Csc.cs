@@ -35,6 +35,8 @@ namespace NScript.Csc.Lib
     /// </summary>
     internal sealed class Csc : CSharpCompiler
     {
+        private readonly List<string> rawArguments;
+
         internal Csc(
             string responseFile,
             BuildPaths buildPaths,
@@ -48,6 +50,26 @@ namespace NScript.Csc.Lib
                 Environment.GetEnvironmentVariable("LIB"),
                 analyzerLoader)
         {
+            this.rawArguments =
+                args.SelectMany(arg =>
+                {
+                    if (arg.StartsWith("@"))
+                    {
+                        var respFile = arg.Substring(1);
+                        if (respFile[0] == '"')
+                        { respFile = respFile.Replace("\"", ""); }
+
+                        if (File.Exists(respFile))
+                        {
+                            return File.ReadAllText(respFile)
+                                .Replace(" /", "\r/")
+                                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        }
+                    }
+
+                    return new[] { arg };
+                })
+                .ToList();
         }
 
         internal static int Run(
@@ -103,12 +125,24 @@ namespace NScript.Csc.Lib
                 xhtmlString = ".xhtml";
 
             var jObject = new JObject();
-            foreach (var res in this.Arguments.ManifestResources)
+            foreach (var res in this.rawArguments)
             {
-                if (string.IsNullOrWhiteSpace(res.FileName))
+                if (!res.StartsWith("-resource:")
+                    && !res.StartsWith("/resource:"))
                 { continue; }
-                var fileName = Path.GetFullPath(res.FileName);
-                jObject.Add(res.ResourceName, fileName);
+
+                var resource = res.Substring("-resource:".Length);
+                var resourceParts = resource.Split(',');
+
+                if (resourceParts[0][0] == '"')
+                { resourceParts[0] = resourceParts[0].Replace("\"", ""); }
+
+                if (resourceParts.Length != 2
+                    || !File.Exists(resourceParts[0]))
+                { continue; }
+
+                var fileName = Path.GetFullPath(resourceParts[0]);
+                jObject.Add(resourceParts[1], fileName);
             }
 
             var resourceInfoStream = new MemoryStream();

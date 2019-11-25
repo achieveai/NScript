@@ -23,10 +23,10 @@ namespace NScript.Csc.Lib
             var lineMappig = location.GetMappedLineSpan();
             return new LocationSer
             {
-                StartColumn = lineMappig.StartLinePosition.Character,
-                StartLine = lineMappig.StartLinePosition.Line,
-                EndColumn = lineMappig.EndLinePosition.Character,
-                EndLine = lineMappig.EndLinePosition.Line,
+                StartColumn = lineMappig.StartLinePosition.Character + 1,
+                StartLine = lineMappig.StartLinePosition.Line + 1,
+                EndColumn = lineMappig.EndLinePosition.Character + 1,
+                EndLine = lineMappig.EndLinePosition.Line + 1,
             };
         }
     }

@@ -1,7 +1,5 @@
 ﻿namespace System
 {
-    using System.Runtime.CompilerServices;
-
     /// <summary>
     /// Action delegate
     /// </summary>

@@ -30,7 +30,7 @@ namespace NScript.Converter.ExpressionsConverter
             // initialize a varible that will be used to hold object for initialization.
             var variable = converter.GetTempVariable();
 
-            List<JST.Expression> expressions = new List<JST.Expression>();
+            var expressions = new List<JST.Expression>();
             JST.InlineObjectInitializer inlineObjectInitializer = null;
             JST.Expression initExpression = null;
 
@@ -45,12 +45,12 @@ namespace NScript.Converter.ExpressionsConverter
 
             // Add the constructor statement.
             expressions.Add(
-                    new JST.BinaryExpression(
-                        initExpression.Location,
-                        converter.Scope,
-                        JST.BinaryOperator.Assignment,
-                        new JST.IdentifierExpression(variable, converter.Scope),
-                        initExpression));
+                new JST.BinaryExpression(
+                    initExpression.Location,
+                    converter.Scope,
+                    JST.BinaryOperator.Assignment,
+                    new JST.IdentifierExpression(variable, converter.Scope),
+                    initExpression));
 
             foreach (var setter in expression.Setters)
             {
@@ -59,12 +59,12 @@ namespace NScript.Converter.ExpressionsConverter
 
                 if (setter.Item1 is MethodReferenceExpression)
                 {
-                    MethodCallContext methodCallContext = new MethodCallContext(
+                    var methodCallContext = new MethodCallContext(
                             thisVariable,
                             (MethodReference)setter.Item1.MemberReference,
                             false);
 
-                    List<JST.Expression> args = new List<JST.Expression>();
+                    var args = new List<JST.Expression>();
                     foreach (var arg in setter.Item2)
                     {
                         args.Add(ExpressionConverterBase.Convert(converter, arg));
@@ -78,7 +78,7 @@ namespace NScript.Converter.ExpressionsConverter
                 }
                 else
                 {
-                    JST.Expression valueExpression =
+                    var valueExpression =
                             ExpressionConverterBase.Convert(converter, setter.Item2[0]);
 
                     if (setter.Item1 is FieldReferenceExpression)
@@ -110,7 +110,7 @@ namespace NScript.Converter.ExpressionsConverter
                     }
                     else
                     {
-                        PropertyReference propertyReference = (PropertyReference)setter.Item1.MemberReference;
+                        var propertyReference = (PropertyReference)setter.Item1.MemberReference;
 
                         if (converter.RuntimeManager.Context.IsIntrinsicProperty(propertyReference.Resolve())
                             && (converter.RuntimeManager.Context.GetTypeKind(propertyReference.DeclaringType.Resolve())
@@ -118,7 +118,7 @@ namespace NScript.Converter.ExpressionsConverter
                         {
                             if (converter.RuntimeManager.Context.IsWrappedType(propertyReference.PropertyType))
                             {
-                                JST.MethodCallExpression arrayConstruction = valueExpression as JST.MethodCallExpression;
+                                var arrayConstruction = valueExpression as JST.MethodCallExpression;
                                 if (propertyReference.PropertyType.IsArray
                                     && setter.Item2[0] is InlineArrayInitialization
                                     && arrayConstruction != null
@@ -165,12 +165,12 @@ namespace NScript.Converter.ExpressionsConverter
                         }
                         else
                         {
-                            MethodCallContext methodCallContext = new MethodCallContext(
+                            var methodCallContext = new MethodCallContext(
                                 thisVariable,
                                 propertyReference.Resolve().SetMethod,
                                 false);
 
-                            List<JST.Expression> args = new List<JST.Expression>();
+                            var args = new List<JST.Expression>();
                             foreach (var arg in setter.Item2)
                             {
                                 args.Add(ExpressionConverterBase.Convert(converter, arg));

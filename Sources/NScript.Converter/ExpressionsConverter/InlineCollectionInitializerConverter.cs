@@ -22,21 +22,41 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             InlineCollectionInitializationExpression expression)
         {
-            var nativeArrayConstructor = GetNativeArrayConstructor(
+            if (IsStringDictionary(
                 converter,
-                expression.ResultType);
-
-            if (nativeArrayConstructor != null)
+                expression.ResultType))
             {
-                return ConverterUsingNativeArray(
+                var nativeDictionaryConstructor = GetNativeDictionaryConstructor(
                     converter,
-                    nativeArrayConstructor,
-                    expression);
+                    expression.ResultType);
+
+                if (nativeDictionaryConstructor != null)
+                {
+                    var rv = ConverterUsingNativeDictionary(
+                        converter,
+                        nativeDictionaryConstructor,
+                        expression);
+
+                    if (rv != null)
+                    { return rv; }
+                }
             }
             else
             {
-                throw new NotImplementedException();
+                var nativeArrayConstructor = GetNativeArrayConstructor(
+                    converter,
+                    expression.ResultType);
+
+                if (nativeArrayConstructor != null)
+                {
+                    return ConverterUsingNativeArray(
+                        converter,
+                        nativeArrayConstructor,
+                        expression);
+                }
             }
+
+            throw new NotImplementedException();
         }
 
         private static bool IsStringDictionary(
@@ -57,6 +77,37 @@ namespace NScript.Converter.ExpressionsConverter
            .Any(iface =>
                iface.Module == converter.KnownReferences.ListGeneric.Module
                && iface.FullName == "System.Collections.Generic.IDictionary`2");
+
+        private static JST.Expression ConverterUsingNativeDictionary(
+            IMethodScopeConverter converter,
+            MethodReference constructor,
+            InlineCollectionInitializationExpression expression)
+        {
+            if (expression
+                .Setters
+                .Any(setter => !(setter.Parameters[0] is StringLiteral)))
+            { return null; }
+
+            var objExpression = new JST.InlineObjectInitializer(
+                expression.Location,
+                converter.Scope);
+
+            foreach (var setter in expression.Setters)
+            {
+                objExpression.AddInitializer(
+                    (setter.Parameters[0] as StringLiteral).String,
+                    ExpressionConverterBase.Convert(converter, setter.Parameters[1]));
+            }
+
+            return new JST.MethodCallExpression(
+                expression.Location,
+                converter.Scope,
+                JST.IdentifierExpression.Create(
+                    expression.Location,
+                    converter.Scope,
+                    converter.ResolveFactory(constructor)),
+                objExpression);
+        }
 
         private static JST.Expression ConverterUsingNativeArray(
             IMethodScopeConverter converter,
@@ -116,6 +167,28 @@ namespace NScript.Converter.ExpressionsConverter
                 converter.ClrKnownReferences.Void,
                 typeReference,
                 nativeArrayType);
+
+            return rv;
+        }
+
+        public static MethodReference GetNativeDictionaryConstructor(
+            IMethodScopeConverter converter,
+            TypeReference typeReference)
+        {
+            var typeDef = typeReference.Resolve();
+            var rvConstructorDef = typeDef
+                .Methods
+                .Where(m => m.IsPublic && m.IsConstructor && !m.IsStatic)
+                .Where(m => m.Parameters.Count == 1
+                    && (m.Parameters[0].ParameterType.Resolve() == converter.ClrKnownReferences.Object
+                       || m.Parameters[0].ParameterType.Resolve().FullName == "System.Collections.Dictionary"))
+                .FirstOrDefault();
+
+            var rv = converter.KnownReferences.GetMethodReference(
+                ".ctor",
+                converter.ClrKnownReferences.Void,
+                typeReference,
+                rvConstructorDef.Parameters[0].ParameterType);
 
             return rv;
         }

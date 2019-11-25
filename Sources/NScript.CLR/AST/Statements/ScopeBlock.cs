@@ -28,6 +28,7 @@
         /// Backing field for LocalVariables.
         /// </summary>
         private readonly ReadOnlyCollection<LocalVariable> readonlyLocalVariables;
+        private readonly List<LocalFunctionVariable> localFunctions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScopeBlock"/> class.
@@ -54,7 +55,8 @@
             }
 
             this.readonlyLocalVariables = new ReadOnlyCollection<LocalVariable>(this.localVariables);
-            this.LocalFunctions = new ReadOnlyCollection<LocalFunctionVariable>(localFunctions);
+            this.localFunctions = localFunctions ?? new List<LocalFunctionVariable>();
+            this.LocalFunctions = new ReadOnlyCollection<LocalFunctionVariable>(this.localFunctions);
         }
 
         /// <summary>
@@ -98,9 +100,9 @@
                 this.localVariables.Add(variable);
             }
 
-            for (int iLocalFunction = 0; iLocalFunction < this.LocalFunctions.Count; iLocalFunction++)
+            for (int iLocalFunction = 0; iLocalFunction < scopeBlock.LocalFunctions.Count; iLocalFunction++)
             {
-                this.LocalFunctions.Add(this.LocalFunctions[iLocalFunction]);
+                this.localFunctions.Add(scopeBlock.LocalFunctions[iLocalFunction]);
             }
         }
         /// <summary>

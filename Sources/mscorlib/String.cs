@@ -105,6 +105,9 @@
         [Script(@"return s1 + s2 + s3 + s4;")]
         public extern static string Concat(string s1, string s2, string s3, string s4);
 
+        [Script(@"return s1.@{[mscorlib]System.Object::ToString()}();")]
+        public extern static string Concat(object s1);
+
         [Script(@"return s1.@{[mscorlib]System.Object::ToString()}() + s2.@{[mscorlib]System.Object::ToString()}();")]
         public extern static string Concat(object s1, object s2);
 

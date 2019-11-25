@@ -7,10 +7,7 @@
 namespace JsCsc.Lib.Serialization
 {
     using System;
-    using System.Collections.Generic;
-    using Newtonsoft.Json;
     using ProtoBuf;
-    using ZeroFormatter;
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     [Serializable]

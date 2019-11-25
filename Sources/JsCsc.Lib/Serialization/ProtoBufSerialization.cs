@@ -8,9 +8,7 @@ namespace JsCsc.Lib.Serialization
 {
     using System;
     using System.Collections.Generic;
-    using Newtonsoft.Json;
     using ProtoBuf;
-    using ZeroFormatter;
 
     [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
     [ProtoInclude(103, typeof(LocalVariableSer))]
@@ -174,20 +172,16 @@ namespace JsCsc.Lib.Serialization
     [Serializable]
     public class LocalMethodIdentitySer
     {
-        [Index(0)]
-        public virtual string MethodName
+        public string MethodName
         { get; set; }
 
-        [Index(1)]
-        public virtual int ReturnType
+        public int ReturnType
         { get; set; }
 
-        [Index(2)]
-        public virtual int GenericParameters
+        public int GenericParameters
         { get; set; }
 
-        [Index(3)]
-        public virtual List<ParameterSer> Parameters
+        public List<ParameterSer> Parameters
         { get; set; }
     }
 
@@ -315,12 +309,10 @@ namespace JsCsc.Lib.Serialization
     public class UserDefinedBinaryOrUnaryOpExpression
         : MethodCallExpression
     {
-        [Index(5)]
-        public virtual int Operator
+        public int Operator
         { get; set; }
 
-        [Index(6)]
-        public virtual bool IsLifted
+        public bool IsLifted
         { get; set; }
     }
 
@@ -824,12 +816,10 @@ namespace JsCsc.Lib.Serialization
     public class ConditionalAccess
         : ExpressionSer
     {
-        [Index(2)]
-        public virtual ExpressionSer Receiver
+        public ExpressionSer Receiver
         { get; set; }
 
-        [Index(3)]
-        public virtual ExpressionSer AccessExpression
+        public ExpressionSer AccessExpression
         { get; set; }
     }
 
