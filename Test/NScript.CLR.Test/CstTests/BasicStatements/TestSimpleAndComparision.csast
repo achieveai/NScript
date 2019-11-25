@@ -1,0 +1,13 @@
+﻿ParamBlock(System.Int32 i) ExplicitBlock {
+  return
+    LogicalAnd l:False rt:System.Boolean
+      GreaterThanOrEqual l:False rt:System.Boolean
+        i
+      ,
+        I32 10
+    ,
+      LessThanOrEqual l:False rt:System.Boolean
+        i
+      ,
+        I32 14
+}

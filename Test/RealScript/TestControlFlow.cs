@@ -117,8 +117,8 @@ namespace RealScript
         {
             Console.WriteLine("Testing refs...");
 
-            Console.WriteLine("a = " + a);
-            Console.WriteLine("b = " + b);
+            Console.WriteLine("a = " + a.ToString());
+            Console.WriteLine("b = " + b.ToString());
 
             Swap(ref a, ref b);
 

@@ -1,4 +1,4 @@
-﻿function RealScript__FuncRegressions__IfElseInForBlock(array) {
+﻿function FuncRegressions__IfElseInForBlock(array) {
   var rv, i;
   rv = "[";
   for (i = 0; i < array.V_get_Length(); ++i)

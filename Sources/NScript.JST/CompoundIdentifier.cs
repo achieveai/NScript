@@ -78,6 +78,8 @@ namespace NScript.JST
             }
         }
 
+        public string OriginalSuggestedName => this.SuggestedName;
+
         /// <summary>
         /// Gets the identifiers.
         /// </summary>

@@ -27,22 +27,6 @@ namespace NScript.Converter.Test.MethodConverterTests
         [Test]
         [TestCase(TestClassNameStr, "ForLoopBasic", "ForLoopBasic.js", TestType.All)]
         [TestCase(TestClassNameStr, "ForLoopPadded", "ForLoopPadded.js", TestType.All)]
-        [TestCase(TestClassNameStr, "ForLoopWithContinue", "ForLoopWithContinue.js", TestType.All)]
-        [TestCase(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreak.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreakRetail.js", TestType.Retail)]
-        [TestCase(TestClassNameStr, "ForEachLoop", "ForEachLoop.js", TestType.All)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                TestClassNameStr,
-                methodName,
-                testType);
-        }
-
-        [Test]
-        [TestCase(TestClassNameStr, "ForLoopBasic", "ForLoopBasic.js", TestType.All)]
-        [TestCase(TestClassNameStr, "ForLoopPadded", "ForLoopPadded.js", TestType.All)]
         [TestCase(TestClassNameStr, "ForLoopWithContinue", "ForLoopWithContinueMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "ForLoopWithBreak", "ForLoopWithBreak.js", TestType.All)]
         [TestCase(TestClassNameStr, "ForEachLoop", "ForEachLoop.js", TestType.All)]

@@ -28,6 +28,7 @@
         /// Backing field for LocalVariables.
         /// </summary>
         private readonly ReadOnlyCollection<LocalVariable> readonlyLocalVariables;
+        private readonly List<LocalFunctionVariable> localFunctions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScopeBlock"/> class.
@@ -36,10 +37,26 @@
         /// <param name="location">The location.</param>
         public ScopeBlock(
             ClrContext context,
-            Location location)
+            Location location,
+            List<(LocalVariable localVariable, bool isUsed)> variables,
+            List<LocalFunctionVariable> localFunctions)
             : base(context, location)
         {
+            if (variables != null)
+            {
+                variables.ForEach(_ =>
+                {
+                    _.localVariable.DefiningScope = this;
+                    localVariables.Add(_.localVariable);
+
+                    if (_.isUsed)
+                    { usedVariables.Add(_.localVariable); }
+                });
+            }
+
             this.readonlyLocalVariables = new ReadOnlyCollection<LocalVariable>(this.localVariables);
+            this.localFunctions = localFunctions ?? new List<LocalFunctionVariable>();
+            this.LocalFunctions = new ReadOnlyCollection<LocalFunctionVariable>(this.localFunctions);
         }
 
         /// <summary>
@@ -66,44 +83,15 @@
             }
         }
 
-        /// <summary>
-        /// Creates the variable.
-        /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
-        /// <param name="paramDef">The type reference.</param>
-        /// <returns></returns>
-        public LocalVariable CreateVariable(
-            string variableName,
-            TypeReference typeReference)
-        {
-            string addedVariableName = variableName;
-            int changIndex = -1;
-            for (int variableIndex = 0; variableIndex < this.localVariables.Count; variableIndex++)
-            {
-                if (this.localVariables[variableIndex].Name == addedVariableName)
-                {
-                    addedVariableName = variableName + "_" + (++changIndex);
-                    variableIndex = -1;
-                }
-            }
+        public IList<LocalFunctionVariable> LocalFunctions { get; }
 
-            LocalVariable returnValue = new LocalVariable(
-                new VariableDefinition(
-                    addedVariableName,
-                    typeReference),
-                this);
 
-            this.localVariables.Add(returnValue);
-
-            return returnValue;
-        }
 
         /// <summary>
         /// Moves the variables.
         /// </summary>
         /// <param name="scopeBlock">The scope block.</param>
-        public void MoveVariablesFrom(
-            ScopeBlock scopeBlock)
+        public void MoveVariablesFrom(ScopeBlock scopeBlock)
         {
             for (int iVariable = scopeBlock.localVariables.Count - 1; iVariable >= 0; iVariable--)
             {
@@ -111,63 +99,12 @@
                 variable.DefiningScope = this;
                 this.localVariables.Add(variable);
             }
-        }
 
-        /// <summary>
-        /// Determines whether variable with given name is used or not.
-        /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
-        /// <returns>
-        /// <c>true</c> if variable is used otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsVariableUsed(string variableName)
-        {
-            foreach (LocalVariable variable in this.LocalVariables)
+            for (int iLocalFunction = 0; iLocalFunction < scopeBlock.LocalFunctions.Count; iLocalFunction++)
             {
-                if (variable.Name == variableName)
-                {
-                    return this.usedVariables.Contains(variable);
-                }
+                this.localFunctions.Add(scopeBlock.LocalFunctions[iLocalFunction]);
             }
-
-            throw new InvalidOperationException();
         }
-
-        /// <summary>
-        /// Determines whether given variable is used.
-        /// </summary>
-        /// <param name="variable">The variable.</param>
-        /// <returns>
-        /// <c>true</c> if given variable is used otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsVariableUsed(LocalVariable variable)
-        {
-            return this.usedVariables.Contains(variable);
-        }
-
-        /// <summary>
-        /// Resolves the variable.
-        /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
-        /// <returns></returns>
-        public LocalVariable ResolveVariable(string variableName)
-        {
-            foreach (LocalVariable variable in this.LocalVariables)
-            {
-                if (variable.Name == variableName)
-                {
-                    if (!this.usedVariables.Contains(variable))
-                    {
-                        this.usedVariables.Add(variable);
-                    }
-
-                    return variable;
-                }
-            }
-
-            return null;
-        }
-
         /// <summary>
         /// Processes the through pipeline.
         /// </summary>

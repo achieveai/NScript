@@ -1,0 +1,9 @@
+﻿ParamBlock(System.Int32 x, System.Double y) ExplicitBlock {
+  return
+    System.Int32 CastType
+      Div l:False rt:System.Double
+        System.Double CastType
+          x
+      ,
+        y
+}

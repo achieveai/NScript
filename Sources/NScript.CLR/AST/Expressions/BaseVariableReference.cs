@@ -23,7 +23,6 @@ namespace NScript.CLR.AST
             Location location,
             ThisVariable variable)
             : base(context, location, variable)
-        {
-        }
+        { }
     }
 }

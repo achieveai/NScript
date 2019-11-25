@@ -1,0 +1,86 @@
+﻿ParamBlock(System.Int32[] array) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    randomValue
+  ,
+    I32 11;
+  initializers: 
+    Assignment l:False rt:System.Int32
+      i
+    ,
+      I32 0
+    Assignment l:False rt:System.Int32
+      j
+    ,
+      I32 10
+  While(
+    LessThan l:False rt:System.Boolean
+      i
+    ,
+      j
+  ) {
+    ScopeBlock() {
+      While(
+        LessThanOrEqual l:False rt:System.Boolean
+          array[
+            i
+          ]
+        ,
+          randomValue
+      ) {
+        ScopeBlock() {
+          PreIncrement, is:False
+            i;
+        }
+      }
+      While(
+        GreaterThanOrEqual l:False rt:System.Boolean
+          array[
+            j
+          ]
+        ,
+          randomValue
+      ) {
+        ScopeBlock() {
+          PreDecrement, is:False
+            j;
+        }
+      }
+      if (
+        LessThan l:False rt:System.Boolean
+          i
+        ,
+          j
+      )
+        ScopeBlock(tmp) {
+          Assignment l:False rt:System.Int32
+            tmp
+          ,
+            array[
+              i
+            ];
+          Assignment l:False rt:System.Int32
+            array[
+              i
+            ]
+          ,
+            array[
+              j
+            ];
+          Assignment l:False rt:System.Int32
+            array[
+              j
+            ]
+          ,
+            tmp;
+        }
+    }
+  }
+  Assignment l:False rt:System.Int32
+    array[
+      I32 11
+    ]
+  ,
+    array[
+      i
+    ];
+}

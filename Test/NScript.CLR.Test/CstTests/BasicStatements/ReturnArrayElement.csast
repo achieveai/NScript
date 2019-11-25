@@ -1,0 +1,6 @@
+﻿ParamBlock(System.Int32[] arr, System.Int32 index) ExplicitBlock {
+  return
+    arr[
+      index
+    ]
+}

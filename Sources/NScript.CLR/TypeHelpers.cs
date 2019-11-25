@@ -1086,11 +1086,9 @@ namespace NScript.CLR
                 IList<TypeReference> genericTypeParameters = null;
                 IList<TypeReference> genericMethodParameters = null;
 
-                GenericInstanceType genericInstanceType = baseMethod.DeclaringType as GenericInstanceType;
+                GenericInstanceType genericInstanceType = baseType as GenericInstanceType;
                 if (genericInstanceType != null)
-                {
-                    genericTypeParameters = genericInstanceType.GenericArguments;
-                }
+                { genericTypeParameters = genericInstanceType.GenericArguments; }
 
                 if (derivedMethod.HasGenericParameters)
                 {
@@ -1613,6 +1611,14 @@ namespace NScript.CLR
             }
         }
 
+        public static bool IsValueOrEnum(this TypeReference type)
+        {
+            if (type == null)
+            { return false; }
+
+            return type.IsValueType || type.FullName == "System.Enum";
+        }
+
         /// <summary>
         /// Determines whether the specified type is generic.
         /// </summary>
@@ -2012,7 +2018,7 @@ namespace NScript.CLR
 
             foreach (var iface in typeDefinition.Interfaces)
             {
-                yield return iface;
+                yield return iface.InterfaceType;
             }
 
             yield break;
@@ -2040,10 +2046,10 @@ namespace NScript.CLR
 
             foreach (var iface in typeDefinition.Interfaces)
             {
-                var fixedIface = iface.FixGenericTypeArguments(typeReference);
+                var fixedIface = iface.InterfaceType.FixGenericTypeArguments(typeReference);
                 if (!returnedInterfaces.Contains(fixedIface))
                 {
-                    yield return iface;
+                    yield return iface.InterfaceType;
                 }
             }
 

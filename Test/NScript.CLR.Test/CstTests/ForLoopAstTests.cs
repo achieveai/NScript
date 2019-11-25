@@ -25,29 +25,12 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoop", true,  "ForEachLoop.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoop", false, "ForEachLoop.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopPadded", true,  "ForLoopPadded.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopPadded", false, "ForLoopPadded.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopBasic", true,  "ForLoopBasic.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopBasic", false, "ForLoopBasic.xml")]
-        public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
-        {
-            TestHelpers.Test(
-                ForLoopAstTests.ResourceFileNamepace + resourceName,
-                testClassName,
-                methodName,
-                isDebug,
-                false);
-        }
-
-        [Test]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoop", true,  "ForEachLoop.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoop", false, "ForEachLoop.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopPadded", true,  "ForLoopPadded.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopPadded", false, "ForLoopPadded.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopBasic", true,  "ForLoopBasic.xml")]
-        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopBasic", false, "ForLoopBasic.xml")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopBasic", true,  "ForLoopBasic.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopWithContinue", true,  "ForLoopContinue.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopWithBreak", true,  "ForLoopBreak.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForLoopPadded", true,  "ForLoopPadded.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoop", true,  "ForEachLoop.csast")]
+        [TestCase(ForLoopAstTests.TestClassNameStr, "ForEachLoopArr", true,  "ForEachLoopArr.csast")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -56,16 +39,6 @@ namespace NScript.CLR.Test.CstTests
                 methodName,
                 isDebug,
                 true);
-        }
-
-        public void TestMaker()
-        {
-            var rootBlock = TestHelpers.GetAST(
-                TestClassNameStr,
-                "ForEachLoop",
-                true).RootBlock;
-
-            Debug.Write(TestHelpers.Serialize(rootBlock));
         }
     }
 }

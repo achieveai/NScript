@@ -1,0 +1,4 @@
+﻿ParamBlock(RealScript.TestReferenceClass trc1) ExplicitBlock {
+  PreIncrement, is:False
+    static? FieldReference intField;
+}

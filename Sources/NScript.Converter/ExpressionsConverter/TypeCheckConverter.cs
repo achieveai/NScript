@@ -66,7 +66,7 @@ namespace NScript.Converter.ExpressionsConverter
                 {
                     return nestedExpression;
                 }
-                else if (expression.Expression.ResultType.IsValueType)
+                else if (expression.Expression.ResultType.IsValueOrEnum())
                 {
                     throw new NotImplementedException("Don't know how to handle this case");
                 }

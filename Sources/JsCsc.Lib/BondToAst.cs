@@ -10,10 +10,9 @@ namespace JsCsc.Lib
     using System;
     using System.Collections.Generic;
     using Mono.Cecil;
-    using NScript.CLR;
     using NScript.CLR.AST;
-    using Newtonsoft.Json.Linq;
     using NScript.Utils;
+    using System.Linq;
 
     /// <summary>
     /// Definition for BondToAst
@@ -25,8 +24,10 @@ namespace JsCsc.Lib
         private MethodDefinition _currentMethod;
         private string _currentMethodFileName;
         private MemberReferenceDeserializer _memberReferenceDeserializer;
-        private LinkedList<Tuple<int, ScopeBlock>> scopeBlockStack = new LinkedList<Tuple<int, ScopeBlock>>();
+        private LinkedList<(int id, VariableCollector collector)> scopeBlockStack = new LinkedList<(int, VariableCollector)>();
         private Serialization.TypeInfoSer _typeInfo;
+        private LinkedList<ConditionalAccessExpression.ConditionalReceiver> conditionalReceiverStack
+            = new LinkedList<ConditionalAccessExpression.ConditionalReceiver>();
 
         public BondToAst(
             Serialization.TypeInfoSer typeInfo,
@@ -48,6 +49,9 @@ namespace JsCsc.Lib
             Serialization.MethodBody jObject)
         {
             MethodDefinition method = this.DeserializeMethod(jObject.MethodId).Resolve();
+
+            if (method.Name == "GenericMethodCall3")
+            { }
 
             return new Tuple<MethodDefinition, Func<TopLevelBlock>>(
                 method,
@@ -218,6 +222,36 @@ namespace JsCsc.Lib
                 BinaryOperator.Assignment);
         }
 
+        private Node ParseUserDefinedOperators(Serialization.UserDefinedBinaryOrUnaryOpExpression jObject)
+        {
+            return ParseMethodCall(jObject);
+        }
+
+        private Node ParseMethodCall(Serialization.LocalMethodCallExpression jObject)
+        {
+            LocalFunctionVariable lfv = null;
+            foreach (var block in this.scopeBlockStack)
+            {
+                lfv = block.collector.ResolveLocalFunctionVariable(jObject.MethodName);
+                if (lfv != null)
+                { break; }
+            }
+
+            if (lfv == null)
+            { throw new InvalidOperationException(); }
+
+            // TODO: move methodReferenceExpression to a different JObject node.
+            return new MethodCallExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                new LocalFunctionReference(
+                    _clrContext,
+                    null,
+                    lfv,
+                    this.DeserializeType(jObject.ReturnType)),
+                this.ParseArguments(jObject.Arguments));
+        }
+
         private Node ParseMethodCall(Serialization.MethodCallExpression jObject)
         {
             Expression instance = this.ParseExpression(jObject.Instance);
@@ -294,21 +328,24 @@ namespace JsCsc.Lib
                 TypeCheckType.CastType);
         }
 
-        private Node ParseToNullable(Serialization.WrapExpression jObject)
-        {
-            return new ToNullable(
+        private Node ParseNullableToNormal(Serialization.NullableToNormal jObject)
+            => new FromNullable(
                 this._clrContext,
                 this.LocFromJObject(jObject),
                 this.ParseExpression(jObject.Expression));
-        }
+
+        private Node ParseToNullable(Serialization.WrapExpression jObject)
+            => new ToNullable(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                this.ParseExpression(jObject.Expression));
 
         private Node ParseFromNullable(Serialization.UnwrapExpression jObject)
-        {
-            return new FromNullable(
+            => new FromNullable(
                 this._clrContext,
                 this.LocFromJObject(jObject),
                 this.ParseExpression(jObject.Expression));
-        }
+
 
         private Node ParseConstant(Serialization.ByteConstantExpression jObject)
         {
@@ -532,59 +569,47 @@ namespace JsCsc.Lib
 
         private Node ParseForStatement(Serialization.ForStatement jObject)
         {
-            return new ForLoop(
-                this._clrContext,
-                this.LocFromJObject(jObject),
-                this.ParseExpression(jObject.Condition),
-                this.ParseStatement(jObject.Initializer),
-                this.ParseStatement(jObject.Iterator),
-                this.GetScopeBlock(jObject.Loop));
+            var variableCollector = new VariableCollector(jObject.BlockId);
+            this.scopeBlockStack.AddFirst((jObject.BlockId, variableCollector));
+            try
+            {
+                return new ForLoop(
+                    this._clrContext,
+                    this.LocFromJObject(jObject),
+                    this.ParseExpression(jObject.Condition),
+                    this.ParseStatement(jObject.Initializer),
+                    this.ParseStatement(jObject.Iterator),
+                    this.GetScopeBlock(jObject.Loop),
+                    variableCollector.GetCapturedVariables(),
+                    variableCollector.GetLocalFunctionVariables());
+            }finally
+            { this.scopeBlockStack.RemoveFirst(); }
         }
 
         private Node ParseForEachStatement(Serialization.ForEachStatement jObject)
         {
-            string localVariableName = jObject.LocalVariableName;
-            var iterator = this.ParseExpression(jObject.Collection);
-            var body = this.GetScopeBlock(jObject.Loop);
-
-            LocalVariable localVariable = null;
-            foreach (var tmpVar in body.LocalVariables)
-            {
-                if (tmpVar.Name == localVariableName)
+            return WrapVariableCollection(
+                (vc) =>
                 {
-                    localVariable = tmpVar;
-                    break;
-                }
-            }
+                    var iterator = this.ParseExpression(jObject.Collection);
+                    var body = this.GetScopeBlock(jObject.Loop);
+                    var variables = vc.GetCapturedVariables();
+                    var localVariable = variables
+                        .Where(_ => _.variable.Name == jObject.LocalVariableName)
+                        .Select(_ => _.variable)
+                        .FirstOrDefault();
 
-            ScopeBlock loopBlock = body.Statements[0] as ScopeBlock;
-            if (body is ForLoop
-                || body is ForEachLoop)
-            { loopBlock = body; }
-
-            if (loopBlock == null)
-            {
-                loopBlock = new ScopeBlock(
-                    this._clrContext,
-                    body.Statements[0].Location);
-
-                loopBlock.AddStatement(
-                    body.Statements[0]);
-            }
-
-            var rv = new ForEachLoop(
-                this._clrContext,
-                this.LocFromJObject(jObject),
-                localVariable,
-                iterator,
-                loopBlock);
-
-            if (body != null)
-            {
-                rv.MoveVariablesFrom(body);
-            }
-
-            return rv;
+                    return new ForEachLoop(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        localVariable,
+                        iterator,
+                        body,
+                        vc.GetCapturedVariables(),
+                        vc.GetLocalFunctionVariables());
+                },
+                jObject.BlockId,
+                false);
         }
 
         private Node ParseSwitchStatement(Serialization.SwitchStatement jObject)
@@ -627,96 +652,125 @@ namespace JsCsc.Lib
 
         private Node ParseScopeBlock(Serialization.ExplicitBlockSer jObject)
         {
-            ScopeBlock rv = new ScopeBlock(
+            return WrapVariableCollection(
+                (vc) =>
+                {
+                    if (jObject.LocalFunctions != null)
+                    {
+                        foreach(var localFunction in jObject.LocalFunctions)
+                        { vc.CreateFunctionVariable(localFunction); }
+                    }
+
+                    var statements = new List<Statement>();
+                    if (jObject.Statements != null)
+                    {
+                        foreach (var statement in this.ParseStatements(jObject.Statements))
+                        { statements.Add(statement); }
+                    }
+                    var rv = new ScopeBlock(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        vc.GetCapturedVariables(),
+                        vc.GetLocalFunctionVariables());
+
+                    statements.ForEach(_ => rv.AddStatement(_));
+
+                    if (rv.Statements.Count == 1)
+                    {
+                        Statement singleStatement = rv.Statements[0];
+                        if (singleStatement is ForEachLoop feLoop)
+                        {
+                            feLoop.MoveVariablesFrom(rv);
+                            return feLoop;
+                        }
+
+                        if (singleStatement is ForLoop forLoop)
+                        {
+                            forLoop.MoveVariablesFrom(rv);
+                            return forLoop;
+                        }
+                    }
+
+                    return rv;
+                },
+                jObject.Id,
+                false);
+        }
+
+        private Node ParseBlock(Serialization.BlockSer jObject)
+        {
+            return new ExplicitBlock(
                 this._clrContext,
-                this.LocFromJObject(jObject));
-
-            this.scopeBlockStack.AddFirst(
-                Tuple.Create(
-                    jObject.Id,
-                    rv));
-
-            if (jObject.Statements != null)
-            {
-                foreach (var statement in this.ParseStatements(jObject.Statements))
-                { rv.AddStatement(statement); }
-            }
-
-            this.scopeBlockStack.RemoveFirst();
-
-            if (rv.Statements.Count == 1)
-            {
-                Statement singleStatement = rv.Statements[0];
-                ForEachLoop feLoop = singleStatement as ForEachLoop;
-                if (feLoop != null)
-                {
-                    feLoop.MoveVariablesFrom(rv);
-                    return feLoop;
-                }
-
-                ForLoop forLoop = singleStatement as ForLoop;
-                if (forLoop != null)
-                {
-                    forLoop.MoveVariablesFrom(rv);
-                    return forLoop;
-                }
-            }
-
-            return rv;
+                this.LocFromJObject(jObject),
+                jObject.Statements.Select(_ => this.ParseStatement(_))
+                    .ToArray());
         }
 
         private Node ParseParameterBlock(Serialization.ParameterBlock jObject)
+            => this.ParseParameterBlock(jObject, false);
+
+        private Node ParseParameterBlock(Serialization.ParameterBlock jObject, bool isDelegate)
         {
-            ParameterBlock rv = new ParameterBlock(
-                this._clrContext,
-                this.LocFromJObject(jObject));
+            if (this._currentMethod.Name == "InstanceReferencingDelegate")
+            { }
 
-            var parameterArray = jObject.Parameters;
-
-            for (int iParam = 0; parameterArray != null && iParam < parameterArray.Count; iParam++)
-            {
-                var paramObj = parameterArray[iParam];
-                ParameterAttributes attr = (ParameterAttributes)paramObj.Modifier;
-
-                var parameterType =
-                        this.DeserializeType(paramObj.Type);
-
-                if ((attr & ParameterAttributes.Out) != 0)
+            return WrapVariableCollection(
+                (vc) =>
                 {
-                    parameterType = new ByReferenceType(parameterType);
-                }
+                    if (jObject.LocalFunctions != null)
+                    {
+                        foreach(var localFunction in jObject.LocalFunctions)
+                        { vc.CreateFunctionVariable(localFunction); }
+                    }
 
-                rv.AddParameter(
-                    new ParameterDefinition(
-                        paramObj.Name,
-                        attr,
-                        parameterType));
-            }
+                    var statements = new List<Statement>();
+                    if (jObject.Statements != null)
+                    {
+                        foreach (var statement in this.ParseStatements(jObject.Statements))
+                        { statements.Add(statement); }
+                    }
 
-            if (jObject.IsMethodOwned
-                && this._currentMethod.HasThis)
-            {
-                rv.AddThisParameter(
-                    new ParameterDefinition(
-                        "this",
-                        ParameterAttributes.None,
-                        this._currentMethod.DeclaringType));
-            }
+                    ParameterBlock rv = new ParameterBlock(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        vc.GetCapturedVariables(),
+                        vc.GetParamBlockVariables(),
+                        vc.GetLocalFunctionVariables());
 
-            this.scopeBlockStack.AddFirst(
-                Tuple.Create<int, ScopeBlock>(
-                    jObject.Id,
-                    rv));
+                    statements.ForEach(_ => rv.AddStatement(_));
 
-            if (jObject.Statements != null)
-            {
-                foreach (var statement in this.ParseStatements(jObject.Statements))
-                { rv.AddStatement(statement); }
-            }
+                    return rv;
+                },
+                jObject.Id,
+                true,
+                jObject.IsMethodOwned
+                        && !isDelegate
+                        && this._currentMethod.HasThis
+                        ?  new ParameterDefinition(
+                            "this",
+                            ParameterAttributes.None,
+                            this._currentMethod.DeclaringType)
+                        : null,
+                jObject.Parameters != null
+                    ? jObject.Parameters
+                        .Select(paramObj =>
+                        {
+                            ParameterAttributes attr = (ParameterAttributes)paramObj.Modifier;
 
-            this.scopeBlockStack.RemoveFirst();
+                            var parameterType =
+                                    this.DeserializeType(paramObj.Type);
 
-            return rv;
+                            if ((attr & ParameterAttributes.Out) != 0)
+                            { parameterType = new ByReferenceType(parameterType); }
+
+                            return new ParameterDefinition(
+                                paramObj.Name,
+                                attr,
+                                parameterType);
+                        })
+                        .ToList()
+                    : null
+                );
         }
 
         private Node ParseTryFinally(Serialization.TryFinallyBlockSer jObject)
@@ -744,7 +798,9 @@ namespace JsCsc.Lib
             {
                 tryScopeBlock = new ScopeBlock(
                     this._clrContext,
-                    tryBlock.Location);
+                    tryBlock.Location,
+                    null,
+                    null);
                 tryScopeBlock.AddStatement(tryBlock);
             }
 
@@ -766,31 +822,39 @@ namespace JsCsc.Lib
             {
                 var handlerObj = handlersArray[iHandler];
 
-                ScopeBlock handlerScopeBlock = this.GetScopeBlock(handlerObj.Block);
+                var handlerBlock = WrapVariableCollection(
+                    (vc) =>
+                    {
+                        ScopeBlock handlerScopeBlock = this.GetScopeBlock(handlerObj.Block);
+                        LocalVariable exceptionVariable =
+                            this.ParseLocalVariable(handlerObj.LocalVariable);
 
-                // Push the scope on scopeStack so that our variable gets correct
-                // scopeBlock assigned.
-                this.scopeBlockStack.AddFirst(
-                    Tuple.Create(
-                        handlerObj.Block.Id,
-                        handlerScopeBlock));
-
-                LocalVariable exceptionVariable =
-                    this.ParseLocalVariable(handlerObj.LocalVariable);
-                this.scopeBlockStack.RemoveFirst();
-
-                HandlerBlock handlerBlock = new HandlerBlock(
-                    this._clrContext,
-                    this.LocFromJObject(handlerObj),
-                    this.DeserializeType(handlerObj.CatchType ?? 0)
-                        ?? this._clrContext.KnownReferences.Exception,
-                    exceptionVariable != null
-                        ? new VariableReference(
+                        if (exceptionVariable != null)
+                        {
+                            ScopeBlock tmpBlock = new ScopeBlock(
                                 this._clrContext,
                                 null,
-                                exceptionVariable)
-                        : null,
-                    handlerScopeBlock);
+                                new List<(LocalVariable localVariable, bool isUsed)> { (exceptionVariable, true) },
+                                vc.GetLocalFunctionVariables());
+
+                            handlerScopeBlock.MoveVariablesFrom(tmpBlock);
+                        }
+
+                        return new HandlerBlock(
+                            this._clrContext,
+                            this.LocFromJObject(handlerObj),
+                            this.DeserializeType(handlerObj.CatchType ?? 0)
+                                ?? this._clrContext.KnownReferences.Exception,
+                            exceptionVariable != null
+                                ? new VariableReference(
+                                        this._clrContext,
+                                        null,
+                                        exceptionVariable)
+                                : null,
+                            handlerScopeBlock);
+                    },
+                    handlerObj.Block.Id,
+                    false);
 
                 if (iHandler == 0)
                 {
@@ -872,6 +936,28 @@ namespace JsCsc.Lib
                 this.ParseExpression(jObject.TrueExpression),
                 this.ParseExpression(jObject.FalseExpression));
         }
+
+        private Node ParseConditionalAccess(Serialization.ConditionalAccess jObject)
+        {
+            var receiver = this.ParseExpression(jObject.Receiver);
+            var conditionalReceiver = new ConditionalAccessExpression.ConditionalReceiver(
+                _clrContext,
+                receiver.Location,
+                receiver);
+
+            conditionalReceiverStack.AddLast(conditionalReceiver);
+            var rv = new ConditionalAccessExpression(
+                _clrContext,
+                this.LocFromJObject(jObject),
+                receiver,
+                this.ParseExpression(jObject.AccessExpression));
+            conditionalReceiverStack.RemoveLast();
+
+            return rv;
+        }
+
+        private Node ParseConditionalReceiver(Serialization.ConditionalReceiver jObject)
+            => conditionalReceiverStack.Last.Value;
 
         private Node ParseVariableReference(Serialization.LocalVariableRefExpression jObject)
         {
@@ -977,12 +1063,13 @@ namespace JsCsc.Lib
 
         private Node ParseThisExpr(Serialization.ThisExpression jObject)
         {
-            var thisVar = ((ParameterBlock)this.scopeBlockStack.Last.Value.Item2).GetThisParameter();
+            var thisVar = this.scopeBlockStack.Last.Value.collector.ThisVariable;
             var node = this.scopeBlockStack.Last.Previous;
+
             while (node != null)
             {
-                ParameterBlock paramBlock = node.Value.Item2 as ParameterBlock;
-                if (paramBlock != null)
+                var paramBlock = node.Value.collector;
+                if (paramBlock.IsParamBlock)
                 {
                     paramBlock.AddEscapingVariable(thisVar);
                 }
@@ -1018,15 +1105,13 @@ namespace JsCsc.Lib
 
         private Node ParseBaseExpr(Serialization.BaseThisExpression jObject)
         {
-            var thisVariable = ((ParameterBlock)this.scopeBlockStack.Last.Value.Item2).GetThisParameter();
+            var thisVariable = this.scopeBlockStack.Last.Value.Item2.ThisVariable;
             var node = this.scopeBlockStack.Last.Previous;
             while (node != null)
             {
-                ParameterBlock paramBlock = node.Value.Item2 as ParameterBlock;
-                if (paramBlock != null)
-                {
-                    paramBlock.AddEscapingVariable(thisVariable);
-                }
+                var collector = node.Value.Item2;
+                if (collector.IsParamBlock)
+                { collector.AddEscapingVariable(thisVariable); }
 
                 node = node.Previous;
             }
@@ -1035,6 +1120,41 @@ namespace JsCsc.Lib
                 this._clrContext,
                 this.LocFromJObject(jObject),
                 thisVariable);
+        }
+
+        private Node ParseNewCollectionInitializer(Serialization.NewCollectionInitializerExpression jObject)
+        {
+            var initializerArray = jObject.ItemInitializers;
+
+            var args = this.ParseArguments(jObject.Arguments);
+
+            var objectExpression =
+                new NewObjectExpression(
+                    this._clrContext,
+                    this.LocFromJObject(jObject),
+                    this.DeserializeMethod(jObject.Method));
+
+            var setters = initializerArray
+                .Select(
+                    mc =>
+                    {
+                        var methodReferenceExpression = GetMethodReferenceExpression(
+                            objectExpression,
+                            this.DeserializeMethod(mc.Method),
+                            this.LocFromJObject(mc));
+                        return new MethodCallExpression(
+                            this._clrContext,
+                            this.LocFromJObject(mc),
+                            methodReferenceExpression,
+                            this.ParseArguments(mc.Arguments));
+                    })
+                .ToList();
+
+            return new InlineCollectionInitializationExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                objectExpression,
+                setters);
         }
 
         private Node ParseNewInitializer(Serialization.NewInitializerExpression jObject)
@@ -1116,6 +1236,19 @@ namespace JsCsc.Lib
         {
             var methodReference = this.DeserializeMethod(jObject.Method);
 
+            if (jObject.GenericParameters != null && jObject.GenericParameters.Count > 0)
+            {
+                var typeReferences = jObject.GenericParameters
+                    .Select(_ => this.DeserializeType(_))
+                    .ToList();
+
+                var genericMethodReference = new GenericInstanceMethod(methodReference);
+                foreach (var typeReference in typeReferences)
+                { genericMethodReference.GenericArguments.Add(typeReference); }
+
+                methodReference = genericMethodReference;
+            }
+
             var instance = this.ParseExpression(jObject.Instance);
 
             var location = this.LocFromJObject(jObject);
@@ -1128,7 +1261,8 @@ namespace JsCsc.Lib
                     methodReference);
             }
 
-            bool isVirtual = methodReference.Resolve().IsVirtual
+            var methodDef = methodReference.Resolve();
+            bool isVirtual = methodDef.IsVirtual
                 && !(instance is BaseVariableReference);
 
             if (isVirtual)
@@ -1177,17 +1311,7 @@ namespace JsCsc.Lib
 
         private Node ParsePropertyExpr(Serialization.PropertyExpression jObject)
         {
-            MethodReference getter = jObject.Getter != 0
-                ? this.DeserializeMethod(jObject.Getter)
-                : null;
-
-            MethodReference setter = jObject.Setter != 0
-                ? this.DeserializeMethod(jObject.Setter)
-                : null;
-
-            PropertyReference propertyReference = new InternalPropertyReference(
-                getter,
-                setter);
+            PropertyReference propertyReference = this.DeserializeProperty(jObject.Property);
 
             var instance = this.ParseExpression(jObject.Instance);
 
@@ -1213,6 +1337,29 @@ namespace JsCsc.Lib
                 args);
         }
 
+        private Node ParseEventExpr(Serialization.EventExpression jObject)
+        {
+            EventReference eventReference = this.DeserializeEvent(jObject.Event);
+
+            var instance = this.ParseExpression(jObject.Instance);
+
+            var location = this.LocFromJObject(jObject);
+
+            if (instance == null)
+            {
+                return new EventReferenceExpression(
+                    this._clrContext,
+                    location,
+                    eventReference);
+            }
+
+            return new EventReferenceExpression(
+                this._clrContext,
+                location,
+                eventReference,
+                instance);
+        }
+
         private Node ParseDynamicIndexBinder(Serialization.DynamicIndexBinderExpression jObject)
         {
             return new DynamicIndexAccessor(
@@ -1222,6 +1369,15 @@ namespace JsCsc.Lib
                 this.ParseExpression(jObject.Index));
         }
 
+        private Node ParseDynamicMemberExpression(Serialization.DynamicMemberExpression jObject)
+        {
+            return new DynamicMemberAccessor(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                this.ParseExpression(jObject.Instance),
+                jObject.MemberName);
+        }
+
         private Node ParseDynamicMemberBinder(Serialization.DynamicMethodBinderExpression jObject)
         {
             return new DynamicMemberAccessor(
@@ -1229,6 +1385,17 @@ namespace JsCsc.Lib
                 this.LocFromJObject(jObject),
                 this.ParseExpression(jObject.Instance),
                 jObject.Name);
+        }
+
+        private Node ParseDynamicMethodInvocation(Serialization.DynamicMethodInvocationExpression jObject)
+        {
+            Expression methodInstance = this.ParseExpression(jObject.Method);
+
+            return new DynamicCallInvocationExpression(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                methodInstance,
+                this.ParseArguments(jObject.Arguments));
         }
 
         private Node ParseNewAnonymousType(Serialization.NewAnonymoustype jObject)
@@ -1337,37 +1504,52 @@ namespace JsCsc.Lib
             return new AnonymousMethodBodyExpression(
                 this._clrContext,
                 this.LocFromJObject(jObject),
-                (ParameterBlock)this.ParseParameterBlock(jObject.Block),
+                (ParameterBlock)this.ParseParameterBlock(jObject.Block, true),
                 jObject.Type != 0
                     ? this.DeserializeType(jObject.Type)
                     : this._clrContext.KnownReferences.MulticastDelegate);
         }
 
+        private Node ParseLocalMethodStatement(Serialization.LocalMethodStatement jObject)
+        {
+            LocalFunctionVariable lfv = null;
+            foreach (var scopeBlock in this.scopeBlockStack)
+            {
+                if (scopeBlock.Item1 == jObject.ScopeBlockId)
+                {
+                    lfv = scopeBlock.Item2.ResolveLocalFunctionVariable(jObject.MethodId.MethodName);
+                    break;
+                }
+            }
+
+            if (lfv == null)
+            { throw new InvalidOperationException(); }
+
+            return new LocalMethodStatement(
+                this._clrContext,
+                this.LocFromJObject(jObject),
+                lfv,
+                (ParameterBlock)this.ParseParameterBlock(jObject.Block, true));
+        }
+
         private ParameterVariable ParseArgumentVariable(Serialization.ParameterSer jObject)
         {
             if (jObject == null)
-            {
-                return null;
-            }
+            { return null; }
 
-            List<ParameterBlock> parameterBlocks = null;
+            List<VariableCollector> parameterBlocks = null;
 
             foreach (var node in this.scopeBlockStack)
             {
-                ParameterBlock parameterBlock =
-                    node.Item2 as ParameterBlock;
-
-                if (parameterBlock != null)
+                if (node.collector.IsParamBlock)
                 {
                     ParameterVariable rv;
-                    if (parameterBlock.GetParameterVariable(jObject.Name, out rv))
+                    if (node.collector.GetParameterVariable(jObject.Name, out rv))
                     {
                         if (parameterBlocks != null)
                         {
                             for (int iParamBlock = 0; iParamBlock < parameterBlocks.Count; iParamBlock++)
-                            {
-                                parameterBlocks[iParamBlock].AddEscapingVariable(rv);
-                            }
+                            { parameterBlocks[iParamBlock].AddEscapingVariable(rv); }
                         }
 
                         return rv;
@@ -1376,10 +1558,10 @@ namespace JsCsc.Lib
                     {
                         if (parameterBlocks == null)
                         {
-                            parameterBlocks = new List<ParameterBlock>();
+                            parameterBlocks = new List<VariableCollector>();
                         }
 
-                        parameterBlocks.Add(parameterBlock);
+                        parameterBlocks.Add(node.collector);
                     }
                 }
             }
@@ -1398,14 +1580,14 @@ namespace JsCsc.Lib
             var name = jObject.Name;
             var blockId = jObject.BlockId;
 
-            List<ParameterBlock> parameterBlocks = null;
+            List<VariableCollector> parameterBlocks = null;
 
             foreach (var node in this.scopeBlockStack)
             {
                 if (node.Item1 == blockId)
                 {
-                    LocalVariable rv = node.Item2.ResolveVariable(
-                        name);
+                    LocalVariable rv = node.Item2.ResolveVariable(name);
+
                     if (rv == null)
                     {
                         rv = node.Item2.CreateVariable(
@@ -1423,14 +1605,14 @@ namespace JsCsc.Lib
 
                     return rv;
                 }
-                else if (node.Item2 is ParameterBlock)
+                else if (node.Item2.IsParamBlock)
                 {
                     if (parameterBlocks == null)
                     {
-                        parameterBlocks = new List<ParameterBlock>();
+                        parameterBlocks = new List<VariableCollector>();
                     }
 
-                    parameterBlocks.Add((ParameterBlock)node.Item2);
+                    parameterBlocks.Add(node.Item2);
                 }
             }
 
@@ -1468,13 +1650,13 @@ namespace JsCsc.Lib
             }
 
             if (statement is ScopeBlock)
-            {
-                return (ScopeBlock)statement;
-            }
+            { return (ScopeBlock)statement; }
 
             var rv = new ScopeBlock(
                 this._clrContext,
-                statement.Location);
+                statement.Location,
+                null,
+                null);
 
             rv.AddStatement(statement);
 
@@ -1499,7 +1681,11 @@ namespace JsCsc.Lib
             Expression[] rv = new Expression[expressions.Count];
 
             for (int iArg = 0; iArg < expressions.Count; iArg++)
-            { rv[iArg] = (Expression)this.ParseNode(expressions[iArg]); }
+            {
+                rv[iArg] = (Expression)this.ParseNode(expressions[iArg]);
+                if (rv[iArg] == null)
+                { }
+            }
 
             return rv;
         }
@@ -1569,6 +1755,42 @@ namespace JsCsc.Lib
                 : this._memberReferenceDeserializer.DeserializeField(tmp);
         }
 
+        private PropertyReference DeserializeProperty(int jObject)
+        {
+            if (jObject == 0) { return null; }
+            var tmp = this._typeInfo.Properties[jObject];
+
+            var getter = tmp.Getter != null
+                ? this.DeserializeMethod(tmp.Getter.Value)
+                : null;
+
+            var setter = tmp.Setter != null
+                ? this.DeserializeMethod(tmp.Setter.Value)
+                : null;
+
+            return new NScript.CLR.AST.InternalPropertyReference(
+                getter,
+                setter);
+        }
+
+        private EventReference DeserializeEvent(int jObject)
+        {
+            if (jObject == 0) { return null; }
+            var tmp = this._typeInfo.Events[jObject];
+
+            var addOnMethod = tmp.AddOn != null
+                ? this.DeserializeMethod(tmp.AddOn.Value)
+                : null;
+
+            var removeOnMethod = tmp.RemoveOn != null
+                ? this.DeserializeMethod(tmp.RemoveOn.Value)
+                : null;
+
+            return new NScript.CLR.AST.InternalEventReference(
+                addOnMethod,
+                removeOnMethod);
+        }
+
         private MethodReferenceExpression GetMethodReferenceExpression(
             Expression instanceExpression,
             MethodReference methodRef,
@@ -1584,7 +1806,9 @@ namespace JsCsc.Lib
             }
 
             if (methodDef.IsConstructor
-                || !methodDef.IsVirtual)
+                || !methodDef.IsVirtual
+                || instanceExpression is BaseVariableReference
+                || methodDef.DeclaringType.IsValueType)
             {
                 return new MethodReferenceExpression(
                     this._clrContext,
@@ -1598,7 +1822,12 @@ namespace JsCsc.Lib
                     this._clrContext,
                     loc,
                     methodRef,
-                    instanceExpression);
+                    instanceExpression.ResultType.IsValueType ?
+                        new BoxExpression(
+                            this._clrContext,
+                            instanceExpression.Location,
+                            instanceExpression)
+                        : instanceExpression);
             }
         }
 
@@ -1653,6 +1882,9 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.AssignExpression),
 					(a) => this.ParseAssignment((Serialization.AssignExpression)a));
+            parserMap.Add(
+                    typeof(Serialization.UserDefinedBinaryOrUnaryOpExpression),
+                    (a) => this.ParseUserDefinedOperators((Serialization.UserDefinedBinaryOrUnaryOpExpression)a));
             parserMap.Add(
 					typeof(Serialization.MethodCallExpression),
 					(a) => this.ParseMethodCall((Serialization.MethodCallExpression)a));
@@ -1750,6 +1982,9 @@ namespace JsCsc.Lib
 					typeof(Serialization.ExplicitBlockSer),
 					(a) => this.ParseScopeBlock((Serialization.ExplicitBlockSer)a));
             parserMap.Add(
+					typeof(Serialization.BlockSer),
+					(a) => this.ParseBlock((Serialization.BlockSer)a));
+            parserMap.Add(
 					typeof(Serialization.ParameterBlock),
 					(a) => this.ParseParameterBlock((Serialization.ParameterBlock)a));
             parserMap.Add(
@@ -1776,6 +2011,12 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.ConditionalExpression),
 					(a) => this.ParseConditional((Serialization.ConditionalExpression)a));
+            parserMap.Add(
+					typeof(Serialization.ConditionalAccess),
+					(a) => this.ParseConditionalAccess((Serialization.ConditionalAccess)a));
+            parserMap.Add(
+					typeof(Serialization.ConditionalReceiver),
+					(a) => this.ParseConditionalReceiver((Serialization.ConditionalReceiver)a));
             parserMap.Add(
 					typeof(Serialization.LocalVariableRefExpression),
 					(a) => this.ParseVariableReference((Serialization.LocalVariableRefExpression)a));
@@ -1804,6 +2045,9 @@ namespace JsCsc.Lib
 					typeof(Serialization.NewInitializerExpression),
 					(a) => this.ParseNewInitializer((Serialization.NewInitializerExpression)a));
             parserMap.Add(
+					typeof(Serialization.NewCollectionInitializerExpression),
+					(a) => this.ParseNewCollectionInitializer((Serialization.NewCollectionInitializerExpression)a));
+            parserMap.Add(
 					typeof(Serialization.MethodExpression),
 					(a) => this.ParseMethodExpr((Serialization.MethodExpression)a));
             parserMap.Add(
@@ -1812,6 +2056,9 @@ namespace JsCsc.Lib
             parserMap.Add(
 					typeof(Serialization.PropertyExpression),
 					(a) => this.ParsePropertyExpr((Serialization.PropertyExpression)a));
+            parserMap.Add(
+					typeof(Serialization.EventExpression),
+					(a) => this.ParseEventExpr((Serialization.EventExpression)a));
             parserMap.Add(
 					typeof(Serialization.IndexExpression),
 					(a) => this.ParsePropertyExpr((Serialization.IndexExpression)a));
@@ -1837,8 +2084,17 @@ namespace JsCsc.Lib
 					typeof(Serialization.AnonymousMethodBodyExpr),
 					(a) => this.ParseAnonymousMethod((Serialization.AnonymousMethodBodyExpr)a));
             parserMap.Add(
+					typeof(Serialization.LocalMethodStatement),
+					(a) => this.ParseLocalMethodStatement((Serialization.LocalMethodStatement)a));
+            parserMap.Add(
+					typeof(Serialization.LocalMethodCallExpression),
+					(a) => this.ParseMethodCall((Serialization.LocalMethodCallExpression)a));
+            parserMap.Add(
 					typeof(Serialization.WrapExpression),
 					(a) => this.ParseToNullable((Serialization.WrapExpression)a));
+            parserMap.Add(
+					typeof(Serialization.NullableToNormal),
+					(a) => this.ParseNullableToNormal((Serialization.NullableToNormal)a));
             parserMap.Add(
 					typeof(Serialization.UnwrapExpression),
 					(a) => this.ParseFromNullable((Serialization.UnwrapExpression)a));
@@ -1846,8 +2102,14 @@ namespace JsCsc.Lib
 					typeof(Serialization.DynamicIndexBinderExpression),
 					(a) => this.ParseDynamicIndexBinder((Serialization.DynamicIndexBinderExpression)a));
             parserMap.Add(
+					typeof(Serialization.DynamicMemberExpression),
+					(a) => this.ParseDynamicMemberExpression((Serialization.DynamicMemberExpression)a));
+            parserMap.Add(
 					typeof(Serialization.DynamicMethodBinderExpression),
 					(a) => this.ParseDynamicMemberBinder((Serialization.DynamicMethodBinderExpression)a));
+            parserMap.Add(
+                    typeof(Serialization.DynamicMethodInvocationExpression),
+                    (a) => this.ParseDynamicMethodInvocation((Serialization.DynamicMethodInvocationExpression)a));
             parserMap.Add(
 					typeof(Serialization.NewAnonymoustype),
 					(a) => this.ParseNewAnonymousType((Serialization.NewAnonymoustype)a));
@@ -1858,6 +2120,31 @@ namespace JsCsc.Lib
                     (a) => this.ParseVariableInitializers((Serialization.VariableBlockDeclaration)a));
 
             return parserMap;
+        }
+
+        private T WrapVariableCollection<T>(
+            Func<VariableCollector, T> func,
+            int blockId,
+            bool isParamBlock,
+            ParameterDefinition thisParameter = null,
+            List<ParameterDefinition> paramDefinitions = null)
+        {
+            // Let's skip creating nested collector with same Id.
+            if (this.scopeBlockStack.Count > 0 && this.scopeBlockStack.First.Value.id == blockId)
+            { return func(this.scopeBlockStack.First.Value.collector); }
+
+            var vc = new VariableCollector(
+                blockId,
+                isParamBlock,
+                thisParameter,
+                paramDefinitions);
+
+            this.scopeBlockStack.AddFirst((blockId, vc));
+
+            try
+            { return func(vc); }
+            finally
+            { this.scopeBlockStack.RemoveFirst(); }
         }
     }
 }

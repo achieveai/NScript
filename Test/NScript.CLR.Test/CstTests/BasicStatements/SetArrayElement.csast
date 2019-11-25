@@ -1,0 +1,8 @@
+﻿ParamBlock(System.Int32[] arr, System.Int32 index, System.Int32 value) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    arr[
+      index
+    ]
+  ,
+    value;
+}

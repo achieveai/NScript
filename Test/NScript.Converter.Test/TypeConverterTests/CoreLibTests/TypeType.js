@@ -23,6 +23,9 @@ function Type__ToLocaleString(this_) {
 function Type__ToString(this_) {
   return this_.fullName ? this_.fullName : this_.name;
 };
+function Type__AS(obj) {
+  return obj;
+};
 function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
   this_.fullName = typeName;
@@ -126,7 +129,10 @@ function Type_factory() {
   this_ = Function.getDefaultValue();
 };
 function Type_factory() {
-  return new Function();
+  var this_;
+  this_ = new Function();
+  this_.__ctor();
+  return this_;
 };
 Function.defaultConstructor = Type_factory;
 ptyp_ = Function.prototype;
@@ -150,7 +156,7 @@ ptyp_.isInstanceOfType = function Type__IsInstanceOfType(instance) {
   if (instance === null || typeof instance === "undefined")
     return false;
   if (!this.isInterface)
-    return instance instanceof this || instance && instance.constructor == this;
+    return instance instanceof this || instance !== null && instance.constructor == this;
   else if (!instance.constructor.baseInterfaces)
     Type__InitializeBaseInterfaces(instance.constructor);
   return instance.constructor.baseInterfaces && instance.constructor.baseInterfaces[this.fullName];

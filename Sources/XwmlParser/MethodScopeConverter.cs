@@ -104,7 +104,7 @@ namespace XwmlParser
             throw new NotImplementedException();
         }
 
-        public NScript.JST.Expression ProcessParameterBlock(NScript.CLR.AST.ParameterBlock parameterBlock)
+        public NScript.JST.Expression ProcessParameterBlock(NScript.CLR.AST.ParameterBlock parameterBlock, IIdentifier _)
         {
             throw new NotImplementedException();
         }
@@ -178,5 +178,9 @@ namespace XwmlParser
                 isVirtualCall,
                 scope);
         }
+
+        public IIdentifier GetConditionalAccessTempVariable() => throw new NotImplementedException();
+
+        public IIdentifier ResolveLocalFunction(string localFunctionName) => throw new NotImplementedException();
     }
 }

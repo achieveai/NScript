@@ -1,0 +1,19 @@
+﻿ParamBlock(RealScript.WhileLoopBlocks this, System.Int32 i) ExplicitBlock {
+  doWhile(
+    GreaterThan l:False rt:System.Boolean
+      i
+    ,
+      I32 10
+  ) {
+    ScopeBlock() {
+      static? MethodReference Foo(
+        string "{0}",
+        Box(
+          i
+        )
+      );
+      PreDecrement, is:False
+        i;
+    }
+  }
+}

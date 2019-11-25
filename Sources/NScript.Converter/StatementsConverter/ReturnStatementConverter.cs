@@ -6,6 +6,7 @@
 
 namespace NScript.Converter.StatementsConverter
 {
+    using NScript.CLR;
     using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.Utils;
@@ -30,7 +31,7 @@ namespace NScript.Converter.StatementsConverter
 
             if (methodConverter != null
                 && methodConverter.IsConstructor
-                && methodConverter.MethodDefinition.DeclaringType.IsValueType)
+                && methodConverter.MethodDefinition.DeclaringType.IsValueOrEnum())
             {
                 return new JST.ReturnStatement(
                     location,

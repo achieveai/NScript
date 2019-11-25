@@ -30,6 +30,7 @@ namespace NScript.JST
         /// Backing field for EnforceSuggestion.
         /// </summary>
         private readonly bool enforceSuggestion;
+        private readonly string originalSuggestedName;
 
         /// <summary>
         /// Backing field for owner scope.
@@ -54,6 +55,7 @@ namespace NScript.JST
         {
             this.ownerScope = ownerScope;
             this.enforceSuggestion = enforceSuggestion;
+            this.originalSuggestedName = suggestedName;
             this.suggestedName = string.IsNullOrWhiteSpace(suggestedName)
                     ? string.Empty
                     : enforceSuggestion || dontEscape
@@ -83,12 +85,10 @@ namespace NScript.JST
         /// </summary>
         /// <value>The name of the suggested.</value>
         public string SuggestedName
-        {
-            get
-            {
-                return this.suggestedName;
-            }
-        }
+            => this.suggestedName;
+
+        public string OriginalSuggestedName
+            => this.originalSuggestedName;
 
         /// <summary>
         /// Gets a value indicating whether Identifier should enforce suggestion.
@@ -97,12 +97,7 @@ namespace NScript.JST
         /// <c>true</c> if should enforce suggestion; otherwise, <c>false</c>.
         /// </value>
         public bool ShouldEnforceSuggestion
-        {
-            get
-            {
-                return this.enforceSuggestion;
-            }
-        }
+            => this.enforceSuggestion;
 
         /// <summary>
         /// Gets a value indicating whether this object is empty.
@@ -165,9 +160,6 @@ namespace NScript.JST
             bool enforceSuggestion,
             bool dontEscape = false)
         {
-            if (suggestedName == "pLAYING")
-            { }
-
             if (enforceSuggestion && suggestedName == null)
             {
                 throw new ArgumentException("suggestedName");
@@ -276,9 +268,6 @@ namespace NScript.JST
         /// <returns>Name to be written in script</returns>
         public string GetName()
         {
-            if (this.suggestedName.ToLowerInvariant() == "playing")
-            { }
-
             if (this.enforceSuggestion)
             {
                 return this.SuggestedName;

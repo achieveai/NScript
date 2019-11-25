@@ -25,22 +25,8 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [TestCase(NumberOperationTests.TestClassNameStr, "Div", true,  "IntDivide.xml")]
-        [TestCase(NumberOperationTests.TestClassNameStr, "Div", false,  "IntDivide.xml")]
-        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", true,   "DoubleDivide.xml")]
-        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", false,  "DoubleDivide.xml")]
-        public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
-        {
-            TestHelpers.Test(
-                NumberOperationTests.ResourceFileNamepace + resourceName,
-                TestHelpers.GetAST(testClassName, methodName, isDebug).RootBlock);
-        }
-
-        [Test]
-        [TestCase(NumberOperationTests.TestClassNameStr, "Div", true,  "IntDivide.xml")]
-        [TestCase(NumberOperationTests.TestClassNameStr, "Div", false,  "IntDivide.xml")]
-        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", true,   "DoubleDivide.xml")]
-        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", false,  "DoubleDivide.xml")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "Div", true,  "IntDivide.csast")]
+        [TestCase(NumberOperationTests.TestClassNameStr, "DoubleDivide", true,   "DoubleDivide.csast")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(

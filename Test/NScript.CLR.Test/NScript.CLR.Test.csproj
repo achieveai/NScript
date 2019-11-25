@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
+  <Import Project="..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props')" />
+  <Import Project="..\..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.12.0\build\NUnit.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,12 +13,14 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NScript.CLR.Test</RootNamespace>
     <AssemblyName>NScript.CLR.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,76 +42,85 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\Dependencies\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.core">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\nunit.core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.core.interfaces">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\nunit.core.interfaces.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+    <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.util">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\nunit.util.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NUnit.VisualStudio.TestAdapter">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="protobuf-net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\protobuf-net.2.3.17\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Buffers.4.5.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Collections.Immutable.1.6.0\lib\netstandard1.3\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Memory.4.5.3\lib\netstandard1.1\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata, Version=1.4.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reflection.Metadata.1.7.0\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.4.6.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="XmlUnit.Xunit">
       <HintPath>..\..\packages\XmlUnit.Xunit.0.4\lib\net40\XmlUnit.Xunit.dll</HintPath>
     </Reference>
-    <Reference Include="xunit">
-      <HintPath>..\..\packages\xunit.1.8.0.1549\lib\xunit.dll</HintPath>
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.abstractions.2.0.3\lib\net35\xunit.abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.assert, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.assert.2.4.1\lib\netstandard1.1\xunit.assert.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.extensibility.core.2.4.1\lib\net452\xunit.core.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.execution.desktop, Version=2.4.1.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.extensibility.execution.2.4.1\lib\net452\xunit.execution.desktop.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlockTests\BasicStatementBuilderTestFixture.cs" />
-    <Compile Include="BlockTests\BlockInfo.cs" />
-    <Compile Include="BlockTests\DupInstructionBlockTests.cs" />
-    <Compile Include="BlockTests\InlineInitializaitons.cs" />
-    <Compile Include="BlockTests\LoopBuilderTestFixture.cs" />
-    <Compile Include="BlockTests\SwitchBlockBuilderTestFixture.cs" />
+    <Compile Include="ClrAstToStringVisitor.cs" />
     <Compile Include="CstTests\BasicStatementAstTestFixture.cs" />
     <Compile Include="CstTests\DelegateBlockTests.cs" />
     <Compile Include="CstTests\DupInstructionTests.cs" />
     <Compile Include="CstTests\ExceptionHandlingTests.cs" />
     <Compile Include="CstTests\ForLoopAstTests.cs" />
-    <Compile Include="BlockTests\GenericTests.cs" />
     <Compile Include="CstTests\IfBlockAstTests.cs" />
     <Compile Include="CstTests\InlineInitializationTests.cs" />
     <Compile Include="CstTests\NumberOperationTests.cs" />
     <Compile Include="CstTests\RegressionTests.cs" />
     <Compile Include="CstTests\SwitchStatementTests.cs" />
-    <Compile Include="CstTests\TestFixture.cs" />
     <Compile Include="CstTests\WhileLoopBlockAstTests.cs" />
     <Compile Include="DllBuilder.cs" />
     <Compile Include="TestAssemblyLoader.cs" />
-    <Compile Include="BlockTests\BasicBlockBuilderTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="TypeHelpersTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NScript.csc.lib\NScript.csc.lib.csproj">
+      <Project>{76a3ddec-2f19-4473-abce-0c2914731793}</Project>
+      <Name>NScript.csc.lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Sources\JsCsc.Lib\JsCsc.Lib.csproj">
       <Project>{65fdb136-49ee-4316-95c5-aee4c1a5da83}</Project>
       <Name>JsCsc.Lib</Name>
@@ -119,261 +133,146 @@
       <Project>{030B10DD-4861-4BE1-B0D6-DB43587E603F}</Project>
       <Name>NScript.Utils</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj">
+      <Project>{8edf4429-251a-416d-bb68-93f227191bcf}</Project>
+      <Name>NScript.Csc.Lib.Test</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\SimpleReturnFunction.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstInt.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\SimpleFormat3ArgCall.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLong.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\SimpleConditionalArgument.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLargeLong.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex1ConditionalArgument.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstUInt.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex2ConditionalArgument.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\SimpleConditional.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex2IfCondition.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\SetVariableSimple.csast" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\FuncIncrement.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\Complex2IfConditionRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionStatementDebug.xml" />
-    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionStatementRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionBlockDebug.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex2IfConditionBlockRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex3IfConditionStatementDebug.xml">
+    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitch.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunction.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturn.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnly.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallySimple.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturn.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchSimple.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturn.csast" />
+    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchFinallySimple.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithFor.csast" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForEachLoop.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineConstIntArray.csast" />
+    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlock.csast" />
+    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops.csast" />
+    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops2.csast" />
+    <EmbeddedResource Include="CstTests\Regressions\TwoConsicutivePreIncrements.csast" />
+    <EmbeddedResource Include="CstTests\NumberOperations\IntDivide.csast" />
+    <EmbeddedResource Include="CstTests\NumberOperations\DoubleDivide.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="BlockTests\BasicStatementTemplates\Complex3IfConditionStatementRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchOnlyFunctionDebug.xml" />
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchOnlyFunctionRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SimpleIntSwitchDebug.xml" />
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SimpleIntSwitchRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchWithReturnsOnlyDebug.xml" />
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\SwitchWithReturnsOnlyRelease.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\NestedWhileDoWhileDebug.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\NestedWhileDoWhileRelease.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyForLoopDebug.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyForLoopRelease.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyWhileLoopDebug.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\OnlyWhileLoopRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleDoWhileLoopDebug.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleDoWhileLoopRelease.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleForLoopDebug.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleForLoopRelease.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleWhileLoopDebug.xml" />
-    <EmbeddedResource Include="BlockTests\LoopBuilderTemplates\SimpleWhileLoopRelease.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstInt.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLong.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstLargeLong.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnConstUInt.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\SimpleConditional.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CstTests\BasicStatements\SetVariableSimple.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="BlockTests\DupInstructionTemplates\Tmp.xml">
-      <SubType>Designer</SubType>
-    </Content>
-    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitch.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SimpleIntSwitchRetail.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunctionRetail.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchOnlyFunction.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturn.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnRetail.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnly.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\SwitchWithReturnsOnlyRetail.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallySimple.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturn.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturnRetail.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchSimple.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturn.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturnDebug.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchFinallySimple.xml" />
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitchValues.xml" />
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitchValuesDebug.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithFor.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\RegressSwitchWithForRetail.xml" />
-    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForEachLoop.xml" />
-    <EmbeddedResource Include="BlockTests\GenericTests\NewGenericObject.xml" />
-    <EmbeddedResource Include="BlockTests\GenericTests\NewGenericObject2.xml" />
-    <EmbeddedResource Include="BlockTests\GenericTests\GenericMethodCall.xml" />
-    <EmbeddedResource Include="BlockTests\GenericTests\GenericMethodCall2.xml" />
-    <EmbeddedResource Include="BlockTests\InlineInitialization\ReturnInlineConstIntArray.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineConstIntArray.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlock.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\IfElseInForBlockRetail.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\NestedWhileLoops2.xml" />
-    <EmbeddedResource Include="CstTests\Regressions\TwoConsicutivePreIncrements.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoopRelease.xml" />
-    <EmbeddedResource Include="CstTests\NumberOperations\IntDivide.xml" />
-    <EmbeddedResource Include="CstTests\NumberOperations\DoubleDivide.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoop.xml" />
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitch2.xml" />
-    <EmbeddedResource Include="BlockTests\SwitchBlockTemplates\RegressionContinousSwitch2Debug.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegressionRelease.xml" />
-    <EmbeddedResource Include="CstTests\SwitchStatement\RegressionContinousSwitch2.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\FieldPrefix.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineFieldPrePostfixAssignment.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrefix.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\RegressionPreIncrementInCompare.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgumentMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlockMcs.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrePostifixAssignment.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueMcs.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2Mcs.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryCatchWithReturnMcs.xml" />
-    <EmbeddedResource Include="CstTests\ExceptionHandling\TryFinallyWithReturnMcs.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinueRelease.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegateMcs.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegateMcs.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegateMcs.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegateMcs.xml" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileInfiniteLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression.csast" />
+    <EmbeddedResource Include="CstTests\SwitchStatement\RegressionContinousSwitch2.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileToForConfusionRegression2.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\FieldPrefix.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineFieldPrePostfixAssignment.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrefix.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\RegressionPreIncrementInCompare.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\StaticFieldPrePostifixAssignment.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArrayMcs.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlock.csast" />
     <Content Include="Test.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreakDebug.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinue.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreak.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineOpAssignment.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\NullCheckAssignment.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\NullCheckAssignment.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyOnPropertyOpAssignmentOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyOpAssignmentOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\LocalOpAssignmentOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOnPropertyOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\FunctionCallWithInlineAssignment.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyInlineEquals.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyInConditionOperationDebug.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyInConditionOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixSecondOrderPropertyOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOperation.xml" />
-    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixOperation.xml">
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithContinue.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoopWithBreak.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\InlineOpAssignment.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\NullCheckAssignment.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyOnPropertyOpAssignmentOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyOpAssignmentOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\LocalOpAssignmentOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOnPropertyOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\FunctionCallWithInlineAssignment.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PropertyInlineEquals.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyInConditionOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixSecondOrderPropertyOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixPropertyOperation.csast" />
+    <EmbeddedResource Include="CstTests\DupInstructionBlocks\PostfixOperation.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\DelegateBlocks\IntDelegateTaker.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegate.xml">
+    <EmbeddedResource Include="CstTests\DelegateBlocks\IntDelegateTaker.csast" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalAndInstanceReferencingDelegate.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegate.xml">
+    <EmbeddedResource Include="CstTests\DelegateBlocks\LocalReferencingDelegate.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\BasicStatements\PassArrayElementByRef.xml">
+    <EmbeddedResource Include="CstTests\BasicStatements\PassArrayElementByRef.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\BasicStatements\PassVariableByRef.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\PassObjectFieldByRef.xml">
+    <EmbeddedResource Include="CstTests\BasicStatements\PassVariableByRef.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\PassObjectFieldByRef.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\InlineInitializations\CallMethodWithInlineSettersElement.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineSettersElement.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\TestVarArgs.xml" />
-    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArray.xml" />
-    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopPadded.xml" />
-    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBasic.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegate.xml" />
-    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegate.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhilePaddedLoop.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhilePaddedLoop.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoop.xml" />
-    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhileLoop.xml">
+    <EmbeddedResource Include="CstTests\InlineInitializations\CallMethodWithInlineSettersElement.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineSettersElement.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\TestVarArgs.csast" />
+    <EmbeddedResource Include="CstTests\InlineInitializations\ReturnInlineObjectArray.csast" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopPadded.csast" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBasic.csast" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\InstanceReferencingDelegate.csast" />
+    <EmbeddedResource Include="CstTests\DelegateBlocks\StaticReferencingDelegate.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhilePaddedLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhilePaddedLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\WhileLoop.csast" />
+    <EmbeddedResource Include="CstTests\WhileLoopBlocks\DoWhileLoop.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnIntArray.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnObjectArray.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\ReturnArrayElement.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\SetArrayElement.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\AsType.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\CastType.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\CheckType.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfBlock.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlock.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlock.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlock.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockRelease.xml" />
-    <EmbeddedResource Include="CstTests\IfBlocks\IfReturnBlockDebug.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="BlockTests\InlineInitialization\InlineArrayInitialization.xml" />
-    <EmbeddedResource Include="BlockTests\InlineInitialization\VarArgs.xml" />
-    <EmbeddedResource Include="BlockTests\InlineInitialization\ReturnInlineSettersElement.xml" />
-    <EmbeddedResource Include="BlockTests\InlineInitialization\CallMethodWithInlineSettersElement.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\AccessRefArgument.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixSecondOrderPropertyOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyInConditionOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyInConditionOperationDebug.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\FunctionCallWithInlineAssignment.xml" />
-    <EmbeddedResource Include="BlockTests\BasicBlockTemplates\FuncPostIncrementWithProperty.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PropertyInlineEquals.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PostfixPropertyOnPropertyOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\LocalOpAssignmentOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PropertyOpAssignmentOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\PropertyOnPropertyOpAssignmentOperation.xml" />
-    <EmbeddedResource Include="BlockTests\DupInstructionTemplates\InlineOpAssignment.xml">
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnIntArray.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnObjectArray.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\ReturnArrayElement.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\SetArrayElement.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\AsType.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\CastType.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\CheckType.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfBlock.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfElseBlock.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\NestedIfElseBlock.csast" />
+    <EmbeddedResource Include="CstTests\IfBlocks\IfNestedElseBlock.csast">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <Content Include="CstTests\BasicStatements\ComplexCondition.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleCompare.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleAndComparision.xml" />
-    <EmbeddedResource Include="CstTests\BasicStatements\TestFourPartCondition.xml" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleCompare.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestSimpleAndComparision.csast" />
+    <EmbeddedResource Include="CstTests\BasicStatements\TestFourPartCondition.csast" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForEachLoopArr.csast" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopBreak.csast" />
+    <EmbeddedResource Include="CstTests\ForLoopBlocks\ForLoopContinue.csast" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit.3.12.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props'))" />
+    <Error Condition="!Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\xunit.core.2.4.1\build\xunit.core.props'))" />
+    <Error Condition="!Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\xunit.core.2.4.1\build\xunit.core.targets'))" />
+  </Target>
+  <Import Project="..\..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -1,0 +1,18 @@
+﻿ParamBlock() ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    i
+  ,
+    I32 0;
+  static? MethodReference Unary(
+    PreIncrement, is:False
+      i,
+    PreIncrement, is:False
+      i
+  );
+  static? MethodReference Unary(
+    PostIncrement, is:False
+      i,
+    PostIncrement, is:False
+      i
+  );
+}

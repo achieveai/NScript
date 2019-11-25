@@ -1,0 +1,11 @@
+﻿ParamBlock(RealScript.InlineComplexStatements this) ExplicitBlock {
+  return
+    System.Int32[]
+    {
+      I32 10,
+      I32 11,
+      I32 12,
+      I32 14,
+      I32 15
+    }
+}

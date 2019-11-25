@@ -1,0 +1,14 @@
+﻿ParamBlock(RealScript.InlineComplexStatements this) ExplicitBlock {
+  return
+    RealScript.InlineComplexStatements[]
+    {
+      RealScript.InlineComplexStatements(),
+      null,
+      RealScript.InlineComplexStatements(
+        double 10,
+        ),
+      RealScript.InlineComplexStatements(
+        double 15,
+        )
+    }
+}

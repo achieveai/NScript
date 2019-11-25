@@ -37,14 +37,46 @@ namespace XwmlParser.Test
         {
             if (context == null)
             {
+                var path = System.IO.Path.Combine(
+                    System.IO.Path.GetDirectoryName(typeof(Helper).Assembly.Location),
+                    @"..\..\..\Sunlight.Framework.UI.Test\bin\Debug");
+
                 context = new ClrContext();
-                context.LoadAssembly(MsCorLib, false);
-                context.LoadAssembly(SystemWeb, false);
-                context.LoadAssembly(SystemWebHtml, false);
-                context.LoadAssembly(SunlightFramework, false);
-                context.LoadAssembly(SunlightUnit, false);
-                context.LoadAssembly(SunlightFrameworkUi, false);
-                context.LoadAssembly(SunlightFrameworkUITest, false);
+                context.LoadAssembly(
+                    System.IO.Path.Combine(
+                        path,
+                        MsCorLib),
+                    false);
+                context.LoadAssembly(
+                    System.IO.Path.Combine(
+                        path,
+                        SystemWeb),
+                    false);
+                context.LoadAssembly(
+                    System.IO.Path.Combine(
+                        path,
+                        SystemWebHtml),
+                    false);
+                context.LoadAssembly(
+                    System.IO.Path.Combine(
+                        path,
+                        SunlightFramework),
+                    false);
+                context.LoadAssembly(
+                    System.IO.Path.Combine(
+                        path,
+                        SunlightUnit),
+                        false);
+                context.LoadAssembly(
+                    System.IO.Path.Combine(
+                        path,
+                        SunlightFrameworkUi),
+                    false);
+                context.LoadAssembly(
+                    System.IO.Path.Combine(
+                        path,
+                        SunlightFrameworkUITest),
+                    false);
 
                 ConverterContext converterContext =
                     new ConverterContext(

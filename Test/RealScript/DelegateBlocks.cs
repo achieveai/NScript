@@ -18,6 +18,21 @@ namespace RealScript
         private Class1 class1;
         private int intVariable;
 
+        public event IntFunction Evt;
+
+        public event IntFunction Evt2
+        {
+            add
+            {
+                this.Evt += value;
+            }
+
+            remove
+            {
+                this.Evt -= value;
+            }
+        }
+
         public DelegateBlocks(int i)
         {
             this.intVariable = i;
@@ -82,6 +97,30 @@ namespace RealScript
         public int IntDelegateTaker(string str, IntFunction func)
         {
             return func(str.Length);
+        }
+
+        public static void AddEvent(DelegateBlocks db)
+        {
+            db.Evt += (i) => i + 10;
+        }
+
+        public static void RemoveEvent(DelegateBlocks db)
+        {
+            db.Evt -= (i) => i + 10;
+        }
+
+        public static int CallEvent(DelegateBlocks db)
+        {
+            if (db.Evt != null)
+            { return db.Evt(10); }
+
+            return -1;
+        }
+
+        public static void ClearEvent(DelegateBlocks db)
+        {
+            if (db.Evt != null)
+            { db.Evt = null; }
         }
     }
 }

@@ -1,3 +1,3 @@
-﻿function RealScript__StructClass__Foo(this_) {
+﻿function StructClass__Foo(this_) {
   return 1;
 }

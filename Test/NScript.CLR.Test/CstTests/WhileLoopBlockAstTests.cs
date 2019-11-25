@@ -15,49 +15,14 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhileLoop", true,  "DoWhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhileLoop", false, "DoWhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoop", true,  "WhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoop", false, "WhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhilePaddedLoop", true,  "DoWhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhilePaddedLoop", false, "DoWhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhilePaddedLoop", true,  "WhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhilePaddedLoop", false, "WhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithBreak", true,  "WhileLoopWithBreak.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithBreak", false, "WhileLoopWithBreak.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithContinue", true,  "WhileLoopWithContinue.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithContinue", false, "WhileLoopWithContinueRelease.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileInfiniteLoop", true,  "WhileInfiniteLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileInfiniteLoop", false, "WhileInfiniteLoopRelease.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "TestWhileToForConfusionRegression2", true,  "WhileToForConfusionRegression2.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "TestWhileToForConfusionRegression2", false, "WhileToForConfusionRegression2.xml")]
-        public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
-        {
-            TestHelpers.Test(
-                WhileLoopBlockAstTests.ResourceFileNamepace + resourceName,
-                testClassName,
-                methodName,
-                isDebug,
-                false);
-        }
-
-        [Test]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhileLoop", true,  "DoWhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhileLoop", false, "DoWhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoop", true,  "WhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoop", false, "WhileLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhilePaddedLoop", true,  "DoWhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhilePaddedLoop", false, "DoWhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhilePaddedLoop", true,  "WhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhilePaddedLoop", false, "WhilePaddedLoop.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithBreak", true,  "WhileLoopWithBreak.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithBreak", false, "WhileLoopWithBreak.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithContinue", true,  "WhileLoopWithContinueMcs.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithContinue", false, "WhileLoopWithContinueMcs.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileInfiniteLoop", true,  "WhileInfiniteLoopRelease.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileInfiniteLoop", false, "WhileInfiniteLoopRelease.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "TestWhileToForConfusionRegression2", true,  "WhileToForConfusionRegression2Mcs.xml")]
-        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "TestWhileToForConfusionRegression2", false, "WhileToForConfusionRegression2Mcs.xml")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhileLoop", true,  "DoWhileLoop.csast")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoop", true,  "WhileLoop.csast")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "DoWhilePaddedLoop", true,  "DoWhilePaddedLoop.csast")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhilePaddedLoop", true,  "WhilePaddedLoop.csast")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithBreak", true,  "WhileLoopWithBreak.csast")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileLoopWithContinue", true,  "WhileLoopWithContinue.csast")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "WhileInfiniteLoop", true,  "WhileInfiniteLoop.csast")]
+        [TestCase(WhileLoopBlockAstTests.TestClassNameStr, "TestWhileToForConfusionRegression2", true,  "WhileToForConfusionRegression2.csast")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(
@@ -66,18 +31,6 @@ namespace NScript.CLR.Test.CstTests
                 methodName,
                 isDebug,
                 true);
-        }
-
-        [Test]
-        [Timeout(5000)]
-        public void TestMaker()
-        {
-            var rootBlock = TestHelpers.GetAST(
-                    WhileLoopBlockAstTests.TestClassNameStr,
-                    "WhileInfiniteLoop",
-                    true).RootBlock;
-
-            Debug.Write(TestHelpers.Serialize(rootBlock));
         }
     }
 }

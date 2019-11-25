@@ -1,18 +1,21 @@
-function RealScript_SameNameInstanceAndStaticMethod() {
+function SameNameInstanceAndStaticMethod() {
 };
-RealScript_SameNameInstanceAndStaticMethod.typeId = "b";
-function RealScript__SameNameInstanceAndStaticMethod__GetInt(c) {
+SameNameInstanceAndStaticMethod.typeId = "b";
+function SameNameInstanceAndStaticMethod__GetInt(c) {
   return c.intFiled;
 };
-function RealScript__SameNameInstanceAndStaticMethod_factory() {
-  return new RealScript_SameNameInstanceAndStaticMethod();
+function SameNameInstanceAndStaticMethod_factory() {
+  var this_;
+  this_ = new SameNameInstanceAndStaticMethod();
+  this_.__ctor();
+  return this_;
 };
-RealScript_SameNameInstanceAndStaticMethod.defaultConstructor = RealScript__SameNameInstanceAndStaticMethod_factory;
-ptyp_ = RealScript_SameNameInstanceAndStaticMethod.prototype;
+SameNameInstanceAndStaticMethod.defaultConstructor = SameNameInstanceAndStaticMethod_factory;
+ptyp_ = SameNameInstanceAndStaticMethod.prototype;
 ptyp_.intFiled = 0;
-ptyp_.getInt = function RealScript__SameNameInstanceAndStaticMethod__GetInta() {
+ptyp_.getInt = function SameNameInstanceAndStaticMethod__GetInta() {
   return this.intFiled;
 };
-ptyp_.__ctor = function RealScript__SameNameInstanceAndStaticMethod____ctor() {
+ptyp_.__ctor = function SameNameInstanceAndStaticMethod____ctor() {
 };
-System__Type__RegisterReferenceType(RealScript_SameNameInstanceAndStaticMethod, "RealScript.SameNameInstanceAndStaticMethod", Object, []);
+Type__RegisterReferenceType(SameNameInstanceAndStaticMethod, "RealScript.SameNameInstanceAndStaticMethod", Object, []);

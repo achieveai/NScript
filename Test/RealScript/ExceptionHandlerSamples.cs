@@ -74,6 +74,7 @@ namespace RealScript
             catch(Exception ex)
             {
                 Class1.GetMoreStatic(arg);
+                return 0;
             }
 
             return arg - 1;

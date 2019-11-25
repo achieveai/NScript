@@ -73,7 +73,7 @@ namespace RealScript
             }
         }
 
-        public static void ForEachLoop(Class1[] arr)
+        public static void ForEachLoopArr(Class1[] arr)
         {
             foreach (Class1 kvPair in arr)
             {

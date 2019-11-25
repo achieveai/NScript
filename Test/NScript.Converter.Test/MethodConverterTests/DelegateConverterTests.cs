@@ -25,26 +25,15 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [Test]
-        [TestCase(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegate.js", TestType.All)]
-        [TestCase(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegate.js", TestType.All)]
-        [TestCase(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegate.js", TestType.All)]
-        [TestCase(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegate.js", TestType.All)]
-        [TestCase(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                className,
-                methodName,
-                testType);
-        }
-
-        [Test]
         [TestCase(TestClassNameStr, "StaticReferencingDelegate", "StaticReferencingDelegateMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegateMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "LocalReferencingDelegate", "LocalReferencingDelegateMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "LocalAndInstanceReferencingDelegate", "LocalAndInstanceReferencingDelegateMcs.js", TestType.All)]
         [TestCase(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All)]
+        [TestCase(TestClassNameStr, "AddEvent", "AddEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "RemoveEvent", "RemoveEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "CallEvent", "CallEvent.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ClearEvent", "ClearEvent.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

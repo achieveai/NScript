@@ -63,70 +63,18 @@ namespace NScript.Converter.Test.TypeConverterTests
 
         [Test]
         [TestCase("SimpleFullScript.js",
-             TestType.All,
-             new[]{
-                 "SecondOrderInterfaceInherit",
-                 "InheritInterface",
-                 "SimpleInterface"})]
-        [TestCase("EnumUsingClassScript.js",
-             TestType.All,
-             new[]{
-                 "SimpleEnumType",
-                 "EnumUsingClass"})]
-        [TestCase("FullSpectrumScript.js",
-             TestType.All,
-             new[]{
-                 "InheritDerivedInterface",
-                 "SimpleInheritedInterface",
-                 "SecondOrderInterfaceInherit",
-                 "InheritInterface",
-                 "SimpleInterface",
-                 "MultipleConstructorsType",
-                 "SameNameInstanceAndStaticMethod",
-                 "VirtualBase",
-                 "VirtualOverride",
-                 "SimpleInstanceType",
-                 "SimpleStaticType",
-                 "StaticConstructorType",
-                 "SimpleEnumType",
-                 "EnumUsingClass"})]
-        [TestCase("GenericTypeConversionFull.js",
-             TestType.Retail,
-             new[]{
-                 "List`1",
-                 "GenericSamplesList",
-                 "GenericSamples",
-                 "TestGeneric"})]
-        [TestCase("GenericTypeConversionFullDebug.js",
              TestType.Debug,
              new[]{
-                 "List`1",
-                 "GenericSamplesList",
-                 "GenericSamples",
-                 "TestGeneric"})]
-        public void Test(string resourceName, TestType testType, params string[] classNames)
-        {
-            ScriptConverterHelper.RunTest(
-                RuntimeScriptGenerator.TestFilesNSStr + resourceName,
-                TestType.All,
-                false,
-                classNames);
-        }
-
-        [Test]
-        [TestCase("SimpleFullScript.js",
-             TestType.All,
-             new[]{
                  "SecondOrderInterfaceInherit",
                  "InheritInterface",
                  "SimpleInterface"})]
         [TestCase("EnumUsingClassScript.js",
-             TestType.All,
+             TestType.Debug,
              new[]{
                  "SimpleEnumType",
                  "EnumUsingClass"})]
         [TestCase("FullSpectrumScript.js",
-             TestType.All,
+             TestType.Debug,
              new[]{
                  "InheritDerivedInterface",
                  "SimpleInheritedInterface",
@@ -143,7 +91,7 @@ namespace NScript.Converter.Test.TypeConverterTests
                  "SimpleEnumType",
                  "EnumUsingClass"})]
         [TestCase("GenericTypeConversionFullMcs.js",
-             TestType.All,
+             TestType.Debug,
              new[]{
                  "List`1",
                  "GenericSamplesList",
@@ -153,7 +101,7 @@ namespace NScript.Converter.Test.TypeConverterTests
         {
             ScriptConverterHelper.RunTest(
                 RuntimeScriptGenerator.TestFilesNSStr + resourceName,
-                TestType.All,
+                testType,
                 true,
                 classNames);
         }

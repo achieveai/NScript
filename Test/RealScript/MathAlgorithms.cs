@@ -91,7 +91,7 @@ namespace RealScript
             // Console.WriteLine(QuickSort.Stringify(randomArray));
             QuickSort.QSort(randomArray, 0, randomArray.Length);
             // Console.WriteLine(QuickSort.Stringify(randomArray));
-            Console.WriteLine("Verification: " + QuickSort.Verify(randomArray));
+            Console.WriteLine("Verification: " + QuickSort.Verify(randomArray).ToString());
         }
 
         public static void QSort(int[] array, int startIndex, int endIndex)

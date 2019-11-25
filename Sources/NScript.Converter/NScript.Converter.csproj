@@ -37,19 +37,29 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Dependencies\Mono.Cecil.dll</HintPath>
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Mono.Cecil.Private.Mdb">
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.Mdb.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Mono.Cecil.Private.Pdb">
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="NetJSON, Version=1.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NetJSON.1.3.2\lib\net40\NetJSON.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\protobuf-net.2.3.17\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
@@ -60,12 +70,17 @@
     <Compile Include="DependencyBuilder\InheritanceDependencyBuilder.cs" />
     <Content Include="DependencyBuilder\TypeDependencyInfo.cs" />
     <Compile Include="ExpressionsConverter\AnonymousMethodBodyExpressionConverter.cs" />
+    <Compile Include="ExpressionsConverter\AnonymousNewExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\BinaryExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\BoxExpressionConvereter.cs" />
+    <Compile Include="ExpressionsConverter\ConditionalAccessConverter.cs" />
     <Compile Include="ExpressionsConverter\ConditionalOperatorConverter.cs" />
     <Compile Include="ExpressionsConverter\DefaultValueConverter.cs" />
     <Compile Include="ExpressionsConverter\DelegateMethodConverter.cs" />
+    <Compile Include="ExpressionsConverter\DynamicMemberAcessorConverter.cs" />
+    <Compile Include="ExpressionsConverter\EventReferenceConverter.cs" />
     <Compile Include="ExpressionsConverter\ExpressionConverterBase.cs" />
+    <Compile Include="ExpressionsConverter\InlineCollectionInitializerConverter.cs" />
     <Compile Include="ExpressionsConverter\InlineDelegateExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\InlineNewObjectArrayConverter.cs" />
     <Compile Include="ExpressionsConverter\InlinePropertyInitializerConverter.cs" />
@@ -94,6 +109,7 @@
     <Compile Include="StatementsConverter\ForLoopConverter.cs" />
     <Compile Include="StatementsConverter\IfBlockConverter.cs" />
     <Compile Include="StatementsConverter\JumpStatementConverter.cs" />
+    <Compile Include="StatementsConverter\LocalFunctionStatementConverter.cs" />
     <Compile Include="StatementsConverter\ReturnStatementConverter.cs" />
     <Compile Include="StatementsConverter\ScopeBlockConverter.cs" />
     <Compile Include="StatementsConverter\StatementConverterBase.cs" />

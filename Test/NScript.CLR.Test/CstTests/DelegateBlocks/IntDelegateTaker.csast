@@ -1,0 +1,8 @@
+﻿ParamBlock(RealScript.DelegateBlocks this, System.String str, RealScript.IntFunction func) ExplicitBlock {
+  return
+    func(
+      PropertyReference
+        str
+        .Length
+    )
+}

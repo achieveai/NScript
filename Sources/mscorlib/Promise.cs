@@ -6,9 +6,8 @@
 
 namespace System
 {
-    using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Definition for Promise
@@ -70,6 +69,46 @@ using System.Runtime.CompilerServices;
                         condition,
                         func,
                         result);
+                });
+        }
+
+        public TaskAwaiter GetAwaiter()
+        {
+            Action onCompletions = null;
+            Exception exception = null;
+            bool completed = false;
+
+            Action complete = () =>
+            {
+                completed = true;
+                onCompletions?.Invoke();
+            };
+
+            this.Then<Exception>(
+                complete,
+                (ex) =>
+                {
+                    exception = ex;
+                    complete();
+                });
+
+            return new TaskAwaiter(
+                (onComplete) =>
+                {
+                    if (onCompletions == null)
+                    { onCompletions = onComplete; }
+                    else
+                    { onCompletions += onComplete; }
+                },
+                () =>
+                {
+                    if (!completed)
+                    { throw new Exception("Task not complete"); }
+
+                    if (exception != null)
+                    { throw exception; }
+
+                    return;
                 });
         }
     }
@@ -136,5 +175,50 @@ using System.Runtime.CompilerServices;
         public extern Promise<T> Catch<E>(Func<E, Promise<T>> onRejected);
 
         public extern new Promise<T> Catch<E>(Action<E> onRejected);
+
+        public new TaskAwaiter<T> GetAwaiter()
+        {
+            Action onCompletions = null;
+            Exception exception = null;
+            T result = default(T);
+            bool completed = false;
+
+            Action complete = () =>
+            {
+                completed = true;
+                onCompletions?.Invoke();
+            };
+
+            this.Then<Exception>(
+                (res) =>
+                {
+                    result = res;
+                    complete();
+                },
+                (ex) =>
+                {
+                    exception = ex;
+                    complete();
+                });
+
+            return new TaskAwaiter<T>(
+                (onComplete) =>
+                {
+                    if (onCompletions == null)
+                    { onCompletions = onComplete; }
+                    else
+                    { onCompletions += onComplete; }
+                },
+                () =>
+                {
+                    if (!completed)
+                    { throw new Exception("Task not complete"); }
+
+                    if (exception != null)
+                    { throw exception; }
+
+                    return result;
+                });
+        }
     }
 }

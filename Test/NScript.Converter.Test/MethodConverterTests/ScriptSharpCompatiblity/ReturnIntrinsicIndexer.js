@@ -1,4 +1,4 @@
-﻿function RealScript__ScriptSharpCompat__ReturnIntrinsicIndexer(dict) {
+﻿function ScriptSharpCompat__ReturnIntrinsicIndexer(dict) {
   return dict["Foo"];
 }
 

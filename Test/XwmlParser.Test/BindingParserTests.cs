@@ -79,8 +79,10 @@ namespace XwmlParser.Test
             Assert.AreEqual(
                 resolver.GetPropertyReference(
                     dataContextType,
-                    "PropStr1"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[0]);
+                    "PropStr1").GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[0]
+                    .GetDefinition());
         }
 
         [Test]
@@ -126,10 +128,14 @@ namespace XwmlParser.Test
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath.Count);
 
             Assert.AreEqual(
-                resolver.GetPropertyReference(
-                    dataContextType,
-                    "PropStr1"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[0]);
+                resolver
+                    .GetPropertyReference(
+                        dataContextType,
+                        "PropStr1")
+                    .GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[0]
+                    .GetDefinition());
         }
 
         [Test]
@@ -179,16 +185,24 @@ namespace XwmlParser.Test
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath.Count);
 
             Assert.AreEqual(
-                resolver.GetPropertyReference(
-                    dataContextType,
-                    "TestIface"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[0]);
+                resolver
+                    .GetPropertyReference(
+                        dataContextType,
+                        "TestIface")
+                    .GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[0]
+                    .GetDefinition());
 
             Assert.AreEqual(
-                resolver.GetPropertyReference(
-                    testIfaceType,
-                    "PropStr2"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[1]);
+                resolver
+                    .GetPropertyReference(
+                        testIfaceType,
+                        "PropStr2")
+                    .GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[1]
+                    .GetDefinition());
         }
 
         [Test]
@@ -240,16 +254,24 @@ namespace XwmlParser.Test
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath.Count);
 
             Assert.AreEqual(
-                resolver.GetPropertyReference(
-                    dataContextType,
-                    "TestIface"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[0]);
+                resolver
+                    .GetPropertyReference(
+                        dataContextType,
+                        "TestIface")
+                    .GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[0]
+                    .GetDefinition());
 
             Assert.AreEqual(
-                resolver.GetPropertyReference(
-                    testVMB,
-                    "PropStrB"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[1]);
+                resolver
+                    .GetPropertyReference(
+                        testVMB,
+                        "PropStrB")
+                    .GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[1]
+                    .GetDefinition());
         }
 
         [Test]
@@ -301,16 +323,24 @@ namespace XwmlParser.Test
                 ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath.Count);
 
             Assert.AreEqual(
-                resolver.GetPropertyReference(
-                    testVMB,
-                    "StaticProp"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[0]);
+                resolver
+                    .GetPropertyReference(
+                        testVMB,
+                        "StaticProp")
+                    .GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[0]
+                    .GetDefinition());
 
             Assert.AreEqual(
-                resolver.GetPropertyReference(
-                    testVMB,
-                    "PropStrB"),
-                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo).PropertyReferencePath[1]);
+                resolver
+                    .GetPropertyReference(
+                        testVMB,
+                        "PropStrB")
+                    .GetDefinition(),
+                ((PropertySourceBindingInfo)propertyBinding.SourceBindingInfo)
+                    .PropertyReferencePath[1]
+                    .GetDefinition());
         }
 
         [Test]

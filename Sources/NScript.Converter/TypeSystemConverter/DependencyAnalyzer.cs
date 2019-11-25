@@ -128,7 +128,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 // Any field that is not static and is of value type, adds to
                 // type dependency.
-                if (fieldDefinition.DeclaringType.Resolve().IsValueType
+                if (fieldDefinition.DeclaringType.IsValueOrEnum()
                     && !fieldDefinition.HasConstant)
                 {
                     this.AddTypeDependency(
@@ -358,9 +358,9 @@ namespace NScript.Converter.TypeSystemConverter
 
                 if (typeDefinition.Interfaces != null)
                 {
-                    foreach (var typeReference in typeDefinition.Interfaces)
+                    foreach (var ifaceImpl in typeDefinition.Interfaces)
                     {
-                        this.AddTypeDependency(typeReferences, typeReference);
+                        this.AddTypeDependency(typeReferences, ifaceImpl.InterfaceType);
                     }
                 }
             }

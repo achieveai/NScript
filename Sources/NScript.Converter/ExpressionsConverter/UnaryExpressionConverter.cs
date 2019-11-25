@@ -246,7 +246,9 @@ namespace NScript.Converter.ExpressionsConverter
             // and if the value is null then return null else do the operation.
             expr = ExpressionConverterBase.Convert(
                 converter,
-                ((FromNullable)expression).InnerExpression);
+                expression is FromNullable
+                    ? ((FromNullable)expression).InnerExpression
+                    : expression);
 
             JST.Expression conditionExpr = null;
 

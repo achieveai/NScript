@@ -1,0 +1,14 @@
+﻿ParamBlock(RealScript.DelegateBlocks this) ExplicitBlock {
+  return
+    (RealScript.IntFunction)
+      ParamBlock(System.Int32 i) 
+      ExplicitBlock {
+        return
+          static? MethodReference GetMoreStatic(
+            Plus l:False rt:System.Int32
+              i
+            ,
+              I32 10
+          )
+      }
+}

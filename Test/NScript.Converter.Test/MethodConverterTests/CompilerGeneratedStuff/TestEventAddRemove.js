@@ -1,4 +1,4 @@
-﻿function RealScript__TestCompilerGeneratedStuff__TestEventCheck(del) {
+﻿function TestCompilerGeneratedStuff__TestEventCheck(del) {
   if (this.get_intProperty() == 1)
     this.remove_testEvent(del);
   else

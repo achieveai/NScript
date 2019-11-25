@@ -18,30 +18,6 @@ namespace JsCsc.Lib
 
         public static void Convert(string dllFileName, string pdbFileName)
         {
-            moduleDefinition = ModuleDefinition.ReadModule(
-                dllFileName,
-                new ReaderParameters()
-                {
-                    ReadSymbols = true,
-                    SymbolReaderProvider = readerProvider
-                });
-
-            var writer = writerProvider.GetSymbolWriter(moduleDefinition, pdbFileName);
-
-            foreach (var type in moduleDefinition.Types)
-                foreach (var method in type.Methods)
-                {
-                    if (method.HasBody)
-                    {
-                        try
-                        {
-                            writer.Write(method.Body);
-                        }
-                        catch { }
-                    }
-                }
-
-            writer.Dispose();
         }
     }
 }

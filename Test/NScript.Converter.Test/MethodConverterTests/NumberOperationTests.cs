@@ -27,17 +27,6 @@ namespace NScript.Converter.Test.MethodConverterTests
 
         [Test]
         [TestCase(TestClassNameStr, "Div", "IntDivide.js", TestType.All)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                className,
-                methodName,
-                testType);
-        }
-
-        [Test]
-        [TestCase(TestClassNameStr, "Div", "IntDivide.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

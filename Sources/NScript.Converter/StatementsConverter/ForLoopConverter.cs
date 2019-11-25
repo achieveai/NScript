@@ -11,6 +11,7 @@ namespace NScript.Converter.StatementsConverter
     using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
     using Mono.Cecil;
+    using NScript.CLR;
 
     /// <summary>
     /// Definition for ForLoopConverter
@@ -256,7 +257,7 @@ namespace NScript.Converter.StatementsConverter
 
             // Here we can check if genericParameter is restricted to referenceTypes
             // but for now not needed.
-            if (expectedType.IsValueType
+            if (expectedType.IsValueOrEnum()
                 || expectedType.IsGenericParameter)
             {
                 rv = MethodCallExpressionConverter.CreateMethodCallExpression(

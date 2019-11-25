@@ -125,7 +125,7 @@ namespace NScript.CLR.Test
             }
         }
 
-        private void LoadAst(string assemblyFullFileName)
+        public void LoadAst(string assemblyFullFileName)
         {
             string assemblyFileName = Path.GetFileName(assemblyFullFileName);
             assemblyFileName = assemblyFileName.ToLowerInvariant();
@@ -143,7 +143,7 @@ namespace NScript.CLR.Test
                 throw new InvalidOperationException();
             }
 
-            JArray jsonAstArray = null;
+            // JArray jsonAstArray = null;
             FullAst fullAst = null;
             foreach (var resource in module.Resources)
             {
@@ -162,15 +162,8 @@ namespace NScript.CLR.Test
                 }
                 else if (resource.Name == "$$BstInfo$$")
                 {
-                    EmbeddedResource embededResource = (EmbeddedResource)resource;
-
-                    // stopWatch.Restart();
-                    using (var stream = embededResource.GetResourceStream())
-                    {
-                        fullAst = ProtoBuf.Serializer.Deserialize<FullAst>(stream);
-                    }
-                    // stopWatch.Stop();
-                    // bondCost += stopWatch.Elapsed.TotalSeconds;
+                    using (var stream = ((EmbeddedResource)resource).GetResourceStream())
+                    { fullAst = Serializer.Deserialize(stream); }
                 }
             }
 
@@ -186,18 +179,6 @@ namespace NScript.CLR.Test
                     topLevelBlock.Item1,
                     topLevelBlock.Item2);
             }
-
-            // JObjectToCsAst toAst = new BondToAst(context);
-
-            // for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
-            // {
-            //     var topLevelBlock = toAst.ParseMethodBody(
-            //         jsonAstArray.Value<JObject>(iAst));
-
-            //     this.blockMaps.Add(
-            //         topLevelBlock.Item1,
-            //         topLevelBlock.Item2);
-            // }
         }
     }
 }

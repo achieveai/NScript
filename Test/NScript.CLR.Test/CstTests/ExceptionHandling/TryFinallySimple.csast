@@ -1,0 +1,29 @@
+﻿ParamBlock(System.Int32 arg) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    arg
+  ,
+    static? MethodReference GetMoreStatic(
+      arg
+    );
+  try
+    ScopeBlock() {
+      Assignment l:False rt:System.Int32
+        arg
+      ,
+        static? MethodReference GetMoreStatic(
+          arg
+        );
+    }
+  finally {
+    ScopeBlock() {
+      static? MethodReference GetMoreStatic(
+        arg
+      );
+    }
+  }
+  return
+    Minus l:False rt:System.Int32
+      arg
+    ,
+      I32 10
+}

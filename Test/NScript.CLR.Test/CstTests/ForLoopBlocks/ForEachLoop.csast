@@ -1,0 +1,20 @@
+﻿ParamBlock(System.Collections.Dictionary dict) ExplicitBlock {
+  foreach(kvPair in 
+    dict
+  ) {
+    ScopeBlock() {
+      static? MethodReference Format(
+        string "k:{0}, v:{1}",
+        System.Object[]
+        {
+          PropertyReference
+            kvPair
+            .Key,
+          PropertyReference
+            kvPair
+            .Value
+        }
+      );
+    }
+  }
+}

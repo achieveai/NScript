@@ -1,0 +1,16 @@
+ParamBlock(System.Int32 i1, ref System.Int32& testOut) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    ref
+      testOut
+  ,
+    Plus l:False rt:System.Int32
+      Plus l:False rt:System.Int32
+        i1
+      ,
+        I32 10
+    ,
+      ref
+        testOut;
+  return
+    i1
+}

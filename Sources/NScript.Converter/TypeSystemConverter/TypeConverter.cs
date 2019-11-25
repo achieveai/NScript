@@ -302,7 +302,7 @@ namespace NScript.Converter.TypeSystemConverter
                     selectiveInit);
             }
 
-            if (typeDefinition.IsValueType)
+            if (typeDefinition.IsValueOrEnum())
             {
                 return new StructTypeConverter(
                     runtimeScopeManager,
@@ -936,7 +936,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             MethodConverter converter = this.GetMethodConverter(method);
             if ((converter == null || !converter.IsGlobalStaticImplementation
-                && !this.typeDefinition.IsValueType))
+                && !this.typeDefinition.IsValueOrEnum()))
             {
                 return new IndexExpression(
                         null,
@@ -1992,14 +1992,18 @@ namespace NScript.Converter.TypeSystemConverter
                     // Only add the types that we are tracking. Anything extra is not needed
                     // and may generate undefined reference exception.
                     if (!this.isSelectiveInit
-                        || this.RuntimeManager.DependencyAnalyzer.TypeToTypeReferences.ContainsKey(implementation.Resolve()))
+                        || this.RuntimeManager
+                            .DependencyAnalyzer
+                            .TypeToTypeReferences
+                            .ContainsKey(
+                                implementation.InterfaceType.Resolve()))
                     {
                         interfaceExpressions.Add(
                             IdentifierExpression.Create(
                                 null,
                                 this.Scope,
                                 this.Resolve(
-                                    implementation)));
+                                    implementation.InterfaceType)));
                     }
                 }
             }

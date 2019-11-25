@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props')" />
+  <Import Project="..\..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.12.0\build\NUnit.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -11,12 +13,14 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NScript.Converter.Test</RootNamespace>
     <AssemblyName>NScript.Converter.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -26,7 +30,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -40,55 +44,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentAssertions, Version=4.19.4.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\FluentAssertions.4.19.4\lib\net45\FluentAssertions.dll</HintPath>
-    </Reference>
-    <Reference Include="FluentAssertions.Core, Version=4.19.4.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\FluentAssertions.4.19.4\lib\net45\FluentAssertions.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\..\Dependencies\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Noesis.Javascript" Condition="'$(PlatformTarget)' != 'x86'">
-      <HintPath>..\..\packages\Noesis.Javascript.0.7.1.0\lib\net40\amd64\Noesis.Javascript.dll</HintPath>
-    </Reference>
-    <Reference Include="Noesis.Javascript, Version=0.0.0.0, Culture=neutral, PublicKeyToken=ae36d046c7f89f85, processorArchitecture=x86" Condition="'$(PlatformTarget)' == 'x86'">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Noesis.Javascript.0.7.1.0\lib\net40\x86\Noesis.Javascript.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.core, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\nunit.core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.core.interfaces, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\nunit.core.interfaces.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.util, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\nunit.util.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="NUnit.VisualStudio.TestAdapter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4cb40d35494691ac, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NUnitTestAdapter.1.0\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
       <Visible>False</Visible>
     </CodeAnalysisDependentAssemblyPaths>
@@ -100,10 +55,12 @@
     <Compile Include="JsExecutionTests\SimpleClassGenerationTests.cs" />
     <Compile Include="MethodConverterTests\DelegateConverterTests.cs" />
     <Compile Include="MethodConverterTests\DupInstructionConverterTests.cs" />
+    <Compile Include="MethodConverterTests\DynamicConverterTests.cs" />
     <Compile Include="MethodConverterTests\ExceptionHandlerTests.cs" />
     <Compile Include="MethodConverterTests\ForLoopConverterTests.cs" />
     <Compile Include="MethodConverterTests\GenericTests.cs" />
     <Compile Include="MethodConverterTests\InlineInitializationTests.cs" />
+    <Compile Include="MethodConverterTests\NewFeatureConverters.cs" />
     <Compile Include="MethodConverterTests\NumberOperationTests.cs" />
     <Compile Include="MethodConverterTests\RegressionTests.cs" />
     <Compile Include="MethodConverterTests\ScriptImportTests.cs" />
@@ -127,6 +84,51 @@
     <Compile Include="TypeConverterTests\TypeConverterHelper.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="FluentAssertions, Version=5.9.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentAssertions.5.9.0\lib\net45\FluentAssertions.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
+    <Reference Include="Noesis.Javascript, Version=0.0.0.0, Culture=neutral, PublicKeyToken=ae36d046c7f89f85, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\JsEngine\Noesis.Javascript.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\protobuf-net.2.3.17\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Buffers.4.5.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Collections.Immutable.1.6.0\lib\netstandard1.3\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Memory.4.5.3\lib\netstandard1.1\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata, Version=1.4.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reflection.Metadata.1.7.0\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.4.6.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <ProjectReference Include="..\NScript.CLR.Test\NScript.CLR.Test.csproj">
       <Project>{EC58B191-43C1-4F6B-AFB6-506F3FE3A92B}</Project>
       <Name>NScript.CLR.Test</Name>
@@ -146,6 +148,10 @@
     <ProjectReference Include="..\..\Sources\NScript.Utils\NScript.Utils.csproj">
       <Project>{030B10DD-4861-4BE1-B0D6-DB43587E603F}</Project>
       <Name>NScript.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj">
+      <Project>{8edf4429-251a-416d-bb68-93f227191bcf}</Project>
+      <Name>NScript.Csc.Lib.Test</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -387,13 +393,7 @@
     <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallySimple.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallyWithReturn.js" />
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallyWithReturnRetail.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchSimple.js" />
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchWithReturn.js" />
-    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchWithReturnRetail.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchFinallySimple.js" />
@@ -514,6 +514,30 @@
     <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOrAssign.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOr2.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOrAssign2.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\IntDivideInts.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOrNullable.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\AddEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\CallEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\ClearEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\RemoveEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\AddNum.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InlineProp.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\NameofField.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\DeclarationWithOut.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetSomething.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetFoo.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\CheckIndex.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\CheckMethod.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetArray.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetList.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetDictionary.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InitProp.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\OutVar.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalAccess.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalAccess2.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalInvoke.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestNestedFunction.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestNestedFunctionScoped.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>
@@ -532,6 +556,13 @@
     if not exist "$(TargetDir)amd64" md "$(TargetDir)amd64"
     xcopy /s /y "$(SolutionDir)packages\Noesis.Javascript.0.7.1.0\NativeBinaries\net40\amd64\*.*" "$(TargetDir)amd64"</PostBuildEvent>
   </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit.3.12.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit3TestAdapter.3.15.1\build\net35\NUnit3TestAdapter.props'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

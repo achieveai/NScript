@@ -2,6 +2,11 @@
 {
     using System.Runtime.CompilerServices;
 
+    public interface IFormatProvider
+    {
+        object GetFormat(Type formatType);
+    }
+
     [IgnoreNamespace, Extended]
     public sealed class String
     {
@@ -100,6 +105,9 @@
         [Script(@"return s1 + s2 + s3 + s4;")]
         public extern static string Concat(string s1, string s2, string s3, string s4);
 
+        [Script(@"return s1.@{[mscorlib]System.Object::ToString()}();")]
+        public extern static string Concat(object s1);
+
         [Script(@"return s1.@{[mscorlib]System.Object::ToString()}() + s2.@{[mscorlib]System.Object::ToString()}();")]
         public extern static string Concat(object s1, object s2);
 
@@ -148,10 +156,12 @@
                   });
             ")]
         public extern static string Format(string format, params object[] values);
+
         public static string Format(string format, object value)
-        {
-            return string.Format(format, new object[] { value });
-        }
+        { return string.Format(format, new object[] { value }); }
+
+        public static string Format(IFormatProvider formatProvider, string format, params object[] value)
+        { return String.Format(format, value); }
 
         public extern static string FromCharCode(char ch);
 

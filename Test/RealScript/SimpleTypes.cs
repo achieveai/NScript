@@ -112,6 +112,8 @@ namespace RealScript
         public SimpleEnumType TestValue2 =
             SimpleEnumType.One;
 
+        private static string Str = SimpleStaticType.GetField().ToString();
+
         public string GetStr(SimpleEnumType en)
         {
             return en.ToString();
@@ -129,6 +131,7 @@ namespace RealScript
     public static class StaticConstructorType
     {
         private static int tempValue;
+        private static string Str = SimpleStaticType.GetField().ToString();
 
         static StaticConstructorType()
         {

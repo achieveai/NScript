@@ -1,0 +1,152 @@
+﻿ParamBlock(RealScript.SwitchTest this, System.Int32 action, System.Int32 changeIndex, System.Object[] newItems, System.Object[] oldItems) ExplicitBlock {
+  if (
+    Equals l:False rt:System.Boolean
+      FieldReference
+        this
+        .newItems
+    ,
+      newItems
+  )
+    ScopeBlock() {
+      return
+    }
+  switch(
+    action
+  ) {
+  case 
+    I32 0
+      ExplicitBlock {
+        Assignment l:False rt:System.Object
+          FieldReference
+            this
+            .newItems[
+            changeIndex
+          ]
+        ,
+          newItems[
+            changeIndex
+          ];
+        break
+      }
+  case 
+    I32 1
+      ExplicitBlock {
+        static? MethodReference GetMoreStatic(
+          action
+        );
+        MethodReference
+          this
+          .SimpleIntSwitch(
+          PropertyReference
+            oldItems
+            .Length
+        );
+        break
+      }
+  case 
+    I32 2
+      ExplicitBlock {
+        for(
+          Assignment l:False rt:System.Int32
+            index
+          ,
+            I32 0;
+        ;
+          LessThan l:False rt:System.Boolean
+            index
+          ,
+            PropertyReference
+              newItems
+              .Length
+        ;
+          PreIncrement, is:False
+            index;
+        )
+        ExplicitBlock {
+          ScopeBlock() {
+            if (
+              NotEquals l:False rt:System.Boolean
+                FieldReference
+                  this
+                  .oldItems
+              ,
+                null
+            )
+              ScopeBlock() {
+                Assignment l:False rt:System.Object
+                  FieldReference
+                    this
+                    .oldItems[
+                    Plus l:False rt:System.Int32
+                      changeIndex
+                    ,
+                      index
+                  ]
+                ,
+                  newItems[
+                    index
+                  ];
+              }
+            Assignment l:False rt:System.Object
+              FieldReference
+                this
+                .newItems[
+                Plus l:False rt:System.Int32
+                  changeIndex
+                ,
+                  index
+              ]
+            ,
+              newItems[
+                index
+              ];
+          }
+        }
+        break
+      }
+  case 
+    I32 4
+      ExplicitBlock {
+        static? MethodReference GetMoreStatic(
+          PropertyReference
+            FieldReference
+              this
+              .newItems
+            .Length
+        );
+        for(
+          Assignment l:False rt:System.Int32
+            index
+          ,
+            I32 0;
+        ;
+          LessThan l:False rt:System.Boolean
+            index
+          ,
+            PropertyReference
+              FieldReference
+                this
+                .newItems
+              .Length
+        ;
+          PreIncrement, is:False
+            index;
+        )
+        ExplicitBlock {
+          ScopeBlock() {
+            Assignment l:False rt:System.Object
+              FieldReference
+                this
+                .oldItems[
+                index
+              ]
+            ,
+              newItems[
+                index
+              ];
+          }
+        }
+        break
+      }
+  }
+}

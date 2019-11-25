@@ -1,23 +1,27 @@
-function RealScript_EnumUsingClass() {
+function EnumUsingClass() {
 };
-RealScript_EnumUsingClass.typeId = "b";
-RealScript__EnumUsingClass__TestValue = 2;
-function RealScript__EnumUsingClass_factory() {
+EnumUsingClass.typeId = "b";
+EnumUsingClass__TestValue = 2;
+EnumUsingClass__Str = null;
+function EnumUsingClass____cctor() {
+  EnumUsingClass__Str = Int32__ToString(SimpleStaticType__GetField());
+};
+function EnumUsingClass_factory() {
   var this_;
-  this_ = new RealScript_EnumUsingClass();
+  this_ = new EnumUsingClass();
   this_.__ctor();
   return this_;
 };
-RealScript_EnumUsingClass.defaultConstructor = RealScript__EnumUsingClass_factory;
-ptyp_ = RealScript_EnumUsingClass.prototype;
+EnumUsingClass.defaultConstructor = EnumUsingClass_factory;
+ptyp_ = EnumUsingClass.prototype;
 ptyp_.testValue2 = 0;
-ptyp_.getStr = function RealScript__EnumUsingClass__GetStr(en) {
-  return System__Enum__ToString(RealScript_SimpleEnumType, en);
+ptyp_.getStr = function EnumUsingClass__GetStr(en) {
+  return Enum__ToString(SimpleEnumType, en);
 };
-ptyp_.getStrVoid = function RealScript__EnumUsingClass__GetStrVoid() {
+ptyp_.getStrVoid = function EnumUsingClass__GetStrVoid() {
   return this.getStr(this.testValue2);
 };
-ptyp_.__ctor = function RealScript__EnumUsingClass____ctor() {
+ptyp_.__ctor = function EnumUsingClass____ctor() {
   this.testValue2 = 1;
 };
-System__Type__RegisterReferenceType(RealScript_EnumUsingClass, "RealScript.EnumUsingClass", Object, []);
+Type__RegisterReferenceType(EnumUsingClass, "RealScript.EnumUsingClass", Object, []);

@@ -426,7 +426,10 @@
             Assert.AreEqual("font-size", grammer.Properties[0].PropertyName);
 
             var propertyArgs = new string[] { "3rem" };
-            Assert.AreEqual(propertyArgs.Length, grammer.Properties[0].PropertyArgs[0].Values.Count);
+            Assert.AreEqual(
+                propertyArgs.Length,
+                grammer.Properties[0].PropertyArgs[0].Values.Count);
+
             for (int i = 0; i < propertyArgs.Length; i++)
             {
                 Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[0].Values[i].ToString());

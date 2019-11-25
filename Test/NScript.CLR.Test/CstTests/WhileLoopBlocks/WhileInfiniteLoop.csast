@@ -1,0 +1,34 @@
+﻿ParamBlock(RealScript.WhileLoopBlocks this, System.Int32 candidate, System.Int32[] primes) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    i
+  ,
+    I32 1;
+  While(
+    bool True
+  ) {
+    ScopeBlock(p) {
+      Assignment l:False rt:System.Int32
+        p
+      ,
+        primes[
+          i
+        ];
+      if (
+        LessThan l:False rt:System.Boolean
+          candidate
+        ,
+          Mul l:False rt:System.Int32
+            p
+          ,
+            p
+      )
+        ScopeBlock() {
+          return
+            bool True
+        }
+      static? MethodReference TestWhileToForConfusionRegression(
+        i
+      );
+    }
+  }
+}

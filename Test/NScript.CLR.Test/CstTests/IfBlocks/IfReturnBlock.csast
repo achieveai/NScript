@@ -1,0 +1,20 @@
+﻿ParamBlock(RealScript.IfBlocks this, System.Int32 i) ExplicitBlock {
+  if (
+    GreaterThan l:False rt:System.Boolean
+      i
+    ,
+      I32 10
+  )
+    ScopeBlock() {
+      return
+        Minus l:False rt:System.Int32
+          i
+        ,
+          I32 10
+    }
+  return
+    Plus l:False rt:System.Int32
+      i
+    ,
+      I32 10
+}

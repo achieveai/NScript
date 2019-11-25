@@ -130,6 +130,11 @@ namespace NScript.CLR.AST
                     return invokeMethodDefinition.ReturnType.FixGenericTypeArguments(leftExpressionType);
                 }
 
+                if (this.MethodReference is LocalFunctionReference localFunctionReference)
+                {
+                    return localFunctionReference.ReturnType;
+                }
+
                 throw new NotSupportedException();
             }
         }

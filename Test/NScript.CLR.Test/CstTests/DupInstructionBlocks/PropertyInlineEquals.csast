@@ -1,0 +1,17 @@
+﻿ParamBlock(RealScript.TestReferenceClass referenceClass) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    FieldReference
+      referenceClass
+      .intField
+  ,
+    Assignment l:False rt:System.Int32
+      PropertyReference
+        referenceClass
+        .IntProperty
+    ,
+      FieldReference
+        PropertyReference
+          referenceClass
+          .Property
+        .intField;
+}

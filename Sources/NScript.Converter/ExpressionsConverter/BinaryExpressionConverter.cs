@@ -61,6 +61,7 @@ namespace NScript.Converter.ExpressionsConverter
             // code below.
             if (expression is VariableAddressReference ||
                 expression is PropertyReferenceExpression ||
+                expression is EventReferenceExpression ||
                 expression is ArrayElementExpression)
             {
                 return true;
@@ -92,6 +93,14 @@ namespace NScript.Converter.ExpressionsConverter
                     expression.Operator,
                     expression.Right,
                     expression.ResultType);
+            }
+            else if (expression.Left is EventReferenceExpression)
+            {
+                return EventReferenceConverter.Convert(
+                    converter,
+                    expression.Left as EventReferenceExpression,
+                    expression.Right,
+                    expression.Operator);
             }
 
             BinaryOperator op = expression.Operator;
@@ -164,38 +173,31 @@ namespace NScript.Converter.ExpressionsConverter
             Expression expression,
             JST.Expression value)
         {
-            VariableAddressReference refVariable = expression as VariableAddressReference;
-
-            if (refVariable != null)
+            switch(expression)
             {
-                return
-                    new JST.MethodCallExpression(
-                        expression.Location,
-                        converter.Scope,
-                        VariableAddressReferenceConverter.Convert(
-                            converter,
-                            refVariable,
-                            false),
+                case VariableAddressReference refVariable:
+                    return
+                        new JST.MethodCallExpression(
+                            expression.Location,
+                            converter.Scope,
+                            VariableAddressReferenceConverter.Convert(
+                                converter,
+                                refVariable,
+                                false),
+                            value);
+                case ArrayElementExpression arrayElementExpression:
+                    expression = PropertyReferenceConverter.ConvertToPropertyReference(
+                        converter.RuntimeManager.Context,
+                        arrayElementExpression);
+                    return GetWriteFunction(
+                        converter,
+                        expression,
                         value);
-            }
-
-            ArrayElementExpression arrayElementExpression = expression as ArrayElementExpression;
-            if (arrayElementExpression != null)
-            {
-                expression = PropertyReferenceConverter.ConvertToPropertyReference(
-                    converter.RuntimeManager.Context,
-                    arrayElementExpression);
-            }
-
-            PropertyReferenceExpression propertyReferenceExpression = expression as PropertyReferenceExpression;
-            if (propertyReferenceExpression != null)
-            {
-                JST.Expression returnValue = PropertyReferenceConverter.Convert(
-                    converter,
-                    propertyReferenceExpression,
-                    value);
-
-                return returnValue;
+                case PropertyReferenceExpression propertyReferenceExpression:
+                    return PropertyReferenceConverter.Convert(
+                        converter,
+                        propertyReferenceExpression,
+                        value);
             }
 
             throw new NotSupportedException("Only VariableAddressReference and PropertyReferenceExpression is used");
@@ -767,7 +769,7 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             if (!typeReference.IsArray
-                && typeReference.Resolve().IsValueType)
+                && typeReference.IsValueOrEnum())
             {
                 return false;
             }
@@ -787,7 +789,7 @@ namespace NScript.Converter.ExpressionsConverter
             TypeReference typeReference,
             BinaryOperator binaryOperator)
         {
-            if (typeReference.IsValueType
+            if (typeReference.IsValueOrEnum()
                 && !typeReference.Resolve().IsSameDefinition(converter.ClrKnownReferences.NullableType))
             {
                 return binaryOperator == BinaryOperator.Equals

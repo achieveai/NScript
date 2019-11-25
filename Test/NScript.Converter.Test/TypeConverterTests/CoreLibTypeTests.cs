@@ -29,35 +29,6 @@ namespace NScript.Converter.Test.TypeConverterTests
             TestAssemblyLoader.LoadAssemblies();
         }
 
-        [Test]
-        [TestCase("ObjectType.js",
-             TestType.All,
-             new[] { "System.Object" })]
-        [TestCase("TypeType.js",
-             TestType.All,
-             new[] { "System.Type" })]
-        [TestCase("StringType.js",
-             TestType.All,
-             new[] { "System.String" })]
-        [TestCase("IntType.js",
-             TestType.All,
-             new[] { "System.Int32" })]
-        [TestCase("ArrayType.js",
-             TestType.All,
-             new[]{
-                 "System.Array",
-                 "System.NativeArray`1",
-                 "System.ArrayImpl",
-                 "System.ArrayG`1"})]
-        public void Test(string resourceName, TestType testType, params string[] classNames)
-        {
-            TypeConverterHelper.RunTest(
-                CoreLibTypeTests.TestFilesNSStr + resourceName,
-                TestType.All,
-                false,
-                classNames);
-        }
-
         /// <summary>
         /// Tests mcs.
         /// </summary>

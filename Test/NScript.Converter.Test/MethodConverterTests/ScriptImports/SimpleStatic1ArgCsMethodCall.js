@@ -1,3 +1,3 @@
-﻿function RealScript__JsScriptImport__SimpleStatic1ArgCsMethodCall(str) {
-  return RealScript__TmpC__Foo(str);
+﻿function JsScriptImport__SimpleStatic1ArgCsMethodCall(str) {
+  return TmpC__Foo(str);
 }

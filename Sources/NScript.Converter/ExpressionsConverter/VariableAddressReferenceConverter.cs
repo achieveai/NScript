@@ -7,6 +7,7 @@
 namespace NScript.Converter.ExpressionsConverter
 {
     using System.Collections.Generic;
+    using NScript.CLR;
     using NScript.CLR.AST;
     using NScript.Converter.TypeSystemConverter;
 
@@ -27,7 +28,7 @@ namespace NScript.Converter.ExpressionsConverter
         {
             if (expression.Variable is ThisVariable)
             {
-                if (!expression.Variable.Type.Resolve().IsValueType)
+                if (!expression.Variable.Type.Resolve().IsValueOrEnum())
                 {
                     throw new System.InvalidOperationException("Don't know how to converter '&this'");
                 }

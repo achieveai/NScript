@@ -35,8 +35,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\Dependencies\Mono.Cecil.dll</HintPath>
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -1,3 +1,3 @@
 ﻿function BasicStatements__RegressionFlagsOr(en) {
-  return en | Nullable_$Int32$_.get_value(2);
+  return en === null ? null : en | 2;
 }

@@ -136,6 +136,8 @@ namespace NScript.CLR.AST
         /// <param name="processor">The processor.</param>
         public override void ProcessThroughPipeline(IAstProcessor processor)
         {
+            base.ProcessThroughPipeline(processor);
+
             for (int argumentIndex = 0; argumentIndex < this.arguments.Count; argumentIndex++)
             {
                 this.arguments[argumentIndex] = (Expression)processor.Process(this.arguments[argumentIndex]);
@@ -155,6 +157,7 @@ namespace NScript.CLR.AST
 
             if (right == null
                 || !this.PropertyReference.Equals(right.PropertyReference)
+                || !object.Equals(this.LeftExpression, right.LeftExpression)
                 || this.Arguments.Count != right.Arguments.Count)
             {
                 return false;

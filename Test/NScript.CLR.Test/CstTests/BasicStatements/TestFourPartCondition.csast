@@ -1,0 +1,24 @@
+﻿ParamBlock(System.Int32 i) ExplicitBlock {
+  return
+    LogicalAnd l:False rt:System.Boolean
+      LogicalAnd l:False rt:System.Boolean
+        LogicalOr l:False rt:System.Boolean
+          GreaterThanOrEqual l:False rt:System.Boolean
+            i
+          ,
+            I32 10
+        ,
+          static? MethodReference TestSimpleAndComparision(
+            i
+          )
+      ,
+        LessThanOrEqual l:False rt:System.Boolean
+          i
+        ,
+          I32 14
+    ,
+      LogicalNot, is:False
+        static? MethodReference TestSimpleCompare(
+          i
+        )
+}

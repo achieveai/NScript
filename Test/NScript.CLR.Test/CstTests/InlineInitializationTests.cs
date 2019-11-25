@@ -25,37 +25,11 @@ namespace NScript.CLR.Test.CstTests
         }
 
         [Test]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineObjectArray", true,  "ReturnInlineObjectArray.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineObjectArray", false, "ReturnInlineObjectArray.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "TestVarArgs", true,  "TestVarArgs.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "TestVarArgs", false, "TestVarArgs.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineSettersElement", true,  "ReturnInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineSettersElement", false, "ReturnInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "CallMethodWithInlineSettersElement", true,  "CallMethodWithInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "CallMethodWithInlineSettersElement", false, "CallMethodWithInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineConstIntArray", true,  "ReturnInlineConstIntArray.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineConstIntArray", false, "ReturnInlineConstIntArray.xml")]
-        public void Test(string testClassName, string methodName, bool isDebug, string resourceName)
-        {
-            TestHelpers.Test(
-                InlineInitializationTests.ResourceFileNamepace + resourceName,
-                testClassName,
-                methodName,
-                isDebug,
-                false);
-        }
-
-        [Test]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineObjectArray", true,  "ReturnInlineObjectArrayMcs.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineObjectArray", false, "ReturnInlineObjectArrayMcs.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "TestVarArgs", true,  "TestVarArgs.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "TestVarArgs", false, "TestVarArgs.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineSettersElement", true,  "ReturnInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineSettersElement", false, "ReturnInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "CallMethodWithInlineSettersElement", true,  "CallMethodWithInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "CallMethodWithInlineSettersElement", false, "CallMethodWithInlineSettersElement.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineConstIntArray", true,  "ReturnInlineConstIntArray.xml")]
-        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineConstIntArray", false, "ReturnInlineConstIntArray.xml")]
+        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineObjectArray", true,  "ReturnInlineObjectArray.csast")]
+        [TestCase(InlineInitializationTests.TestClassNameStr, "TestVarArgs", true,  "TestVarArgs.csast")]
+        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineSettersElement", true,  "ReturnInlineSettersElement.csast")]
+        [TestCase(InlineInitializationTests.TestClassNameStr, "CallMethodWithInlineSettersElement", true,  "CallMethodWithInlineSettersElement.csast")]
+        [TestCase(InlineInitializationTests.TestClassNameStr, "ReturnInlineConstIntArray", true,  "ReturnInlineConstIntArray.csast")]
         public void TestMcs(string testClassName, string methodName, bool isDebug, string resourceName)
         {
             TestHelpers.Test(

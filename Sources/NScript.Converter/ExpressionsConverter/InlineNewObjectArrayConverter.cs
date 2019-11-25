@@ -32,17 +32,11 @@ namespace NScript.Converter.ExpressionsConverter
             foreach (Expression elementInitValue in expression.ElementInitValues)
             {
                 expressions.Add(
-                    (JST.Expression) ExpressionConverterBase.Convert(
+                     ExpressionConverterBase.Convert(
                         converter,
                         elementInitValue));
             }
 
-            /*
-            return new JST.InlineNewArrayInitialization(
-                expression.Location.ConvertToJsLocation(),
-                converter.Scope,
-                expressions);
-             */
             return new JST.MethodCallExpression(
                 expression.Location,
                 converter.Scope,

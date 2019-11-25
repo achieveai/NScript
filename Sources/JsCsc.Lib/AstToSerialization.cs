@@ -28,11 +28,12 @@ namespace JsCsc.Lib
 
         private LinkedList<Tuple<int, ExplicitBlock>> scopeBlockStack = new LinkedList<Tuple<int, ExplicitBlock>>();
 
-        private LinkedList<Tuple<int, Ast.ParameterBlock>> parameterBlockStack = new LinkedList<Tuple<int, Ast.ParameterBlock>>();
-
         private Dictionary<TypeSpec, int> typeDict = new Dictionary<TypeSpec, int>();
         private Dictionary<MethodSpec, int> methodDict = new Dictionary<MethodSpec, int>();
         private Dictionary<FieldSpec, int> fieldDict = new Dictionary<FieldSpec, int>();
+        private Dictionary<PropertySpec, int> propertyDict = new Dictionary<PropertySpec, int>();
+        private Dictionary<MethodSpec, int> indexerDict = new Dictionary<MethodSpec, int>();
+        private Dictionary<EventSpec, int> eventDict = new Dictionary<EventSpec, int>();
         public TypeInfoSer TypeSerializationInfo;
 
         public AstToSerialization()
@@ -40,9 +41,11 @@ namespace JsCsc.Lib
             this.dispatcher = new ExpressionVisitDispatcher<AstBase>(this);
             this.TypeSerializationInfo = new TypeInfoSer()
             {
-                Methods = new Dictionary<int,MethodSpecSer>(),
-                Fields = new Dictionary<int,FieldSpecSer>(),
-                Types = new Dictionary<int,TypeSpecSer>()
+                Methods = new Dictionary<int, MethodSpecSer>(),
+                Fields = new Dictionary<int, FieldSpecSer>(),
+                Types = new Dictionary<int, TypeSpecSer>(),
+                Properties = new Dictionary<int, PropertySpecSer>(),
+                Events = new Dictionary<int, EventSpecSer>()
             };
         }
 
@@ -638,18 +641,23 @@ namespace JsCsc.Lib
                     }
                 }
 
-                var initializers = expressions.Select(e => this.Dispatch(e)).ToList();
-                return new VariableBlockDeclaration
+                var initializers = expressions
+                    .Select(e => this.Dispatch(e))
+                    .Where(e => e != null)
+                    .ToList();
+
+                if (initializers.Count != 0)
                 {
-                    Location = expression.GetSerLoc(),
-                    Initializers = initializers
-                };
+                    return new VariableBlockDeclaration
+                    {
+                        Location = expression.GetSerLoc(),
+                        Initializers = initializers
+                    };
+                }
             }
-            else
-            {
-                return new EmptyStatementSer
-                { Location = expression.GetSerLoc() };
-            }
+
+            return new EmptyStatementSer
+            { Location = expression.GetSerLoc() };
         }
 
         public AstBase Visit(BlockConstantDeclaration expression)
@@ -1389,8 +1397,7 @@ namespace JsCsc.Lib
             return new PropertyExpression
             {
                 Location = expression.GetSerLoc(),
-                Getter = this.GetMethodSpecId(expression.Getter),
-                Setter = this.GetMethodSpecId(expression.Setter),
+                Property = this.GetProeprtySpecId(expression.PropertyInfo),
                 Instance = this.Dispatch(expression.InstanceExpression),
             };
         }
@@ -1399,8 +1406,7 @@ namespace JsCsc.Lib
         {
             return new IndexExpression
             {
-                Getter = this.GetMethodSpecId(expression.Getter),
-                Setter = this.GetMethodSpecId(expression.Setter),
+                Property = this.GetIndexerSpecId(expression.Getter, expression.Setter),
                 Instance = this.Dispatch(expression.InstanceExpression),
                 Arguments = this.EnumerateArgs(
                     expression.Arguments,
@@ -1830,32 +1836,128 @@ namespace JsCsc.Lib
         /// <summary>
         ///     Gets method specifier identifier.
         /// </summary>
-        /// <param name="typeSpec"> Information describing the type. </param>
+        /// <param name="methodSpec"> Information describing the type. </param>
         /// <returns>
         ///     The method specifier identifier.
         /// </returns>
-        public int GetMethodSpecId(MethodSpec typeSpec)
+        public int GetMethodSpecId(MethodSpec methodSpec)
         {
             int token = 0;
-            if (typeSpec != null)
+            if (methodSpec != null)
             {
-                if (!this.methodDict.TryGetValue(typeSpec, out token))
+                if (!this.methodDict.TryGetValue(methodSpec, out token))
                 { token = this.methodDict.Count + 1; }
             }
 
-            // var token = typeSpec != null
-            //     ? typeSpec.GetMetaInfo().MetadataToken
-            //     : int.MinValue;
             if (this.TypeSerializationInfo.Methods.ContainsKey(token))
             { return token; }
 
             this.TypeSerializationInfo.Methods[token]
-                = typeSpec != null
-                    ? MemberReferenceSerializer.SerializeN(typeSpec)
+                = methodSpec != null
+                    ? MemberReferenceSerializer.SerializeN(methodSpec)
                     : null;
 
-            if (typeSpec != null)
-            { this.methodDict.Add(typeSpec, token); }
+            if (methodSpec != null)
+            { this.methodDict.Add(methodSpec, token); }
+
+            return token;
+        }
+
+        public int GetProeprtySpecId(PropertySpec propertySpec)
+        {
+            int token = 0;
+            if (propertySpec != null)
+            {
+                if (!this.propertyDict.TryGetValue(propertySpec, out token))
+                { token = this.TypeSerializationInfo.Properties.Count + 1; }
+            }
+
+            if (this.TypeSerializationInfo.Methods.ContainsKey(token))
+            { return token; }
+
+            this.TypeSerializationInfo.Properties[token]
+                = propertySpec != null
+                    ? new PropertySpecSer
+                    {
+                        Getter = propertySpec.Get != null
+                            ? this.GetMethodSpecId(propertySpec.Get)
+                            : (int?)null,
+                        Setter = propertySpec.Set != null
+                            ? this.GetMethodSpecId(propertySpec.Set)
+                            : (int?)null
+                    }
+                    : null;
+
+            if (propertySpec != null)
+            { this.propertyDict.Add(propertySpec, token); }
+
+            return token;
+        }
+
+        public int GetIndexerSpecId(
+            MethodSpec getter,
+            MethodSpec setter)
+        {
+            int token = 0;
+            if (getter != null || setter != null)
+            {
+                if ((getter != null && !this.indexerDict.TryGetValue(getter, out token))
+                    || (setter != null && !this.indexerDict.TryGetValue(setter, out token)))
+                { token = this.TypeSerializationInfo.Properties.Count + 1; }
+            }
+
+            if (this.TypeSerializationInfo.Properties.ContainsKey(token))
+            { return token; }
+
+            this.TypeSerializationInfo.Properties[token]
+                = (getter != null || setter != null)
+                    ? new PropertySpecSer
+                    {
+                        Getter = getter != null
+                            ? this.GetMethodSpecId(getter)
+                            : (int?)null,
+                        Setter = setter != null
+                            ? this.GetMethodSpecId(setter)
+                            : (int?)null
+                    }
+                    : null;
+
+            if (getter != null)
+            { this.indexerDict.Add(getter, token); }
+
+            if (setter != null)
+            { this.indexerDict.Add(setter, token); }
+
+            return token;
+        }
+
+        public int GetEventSpecId(EventSpec eventSpec)
+        {
+            int token = 0;
+            if (eventSpec != null)
+            {
+                if (!this.eventDict.TryGetValue(eventSpec, out token))
+                { token = this.methodDict.Count + 1; }
+            }
+
+            if (this.TypeSerializationInfo.Methods.ContainsKey(token))
+            { return token; }
+
+            this.TypeSerializationInfo.Events[token]
+                = eventSpec != null
+                    ? new EventSpecSer
+                    {
+                        AddOn = eventSpec.AccessorAdd != null
+                            ? this.GetMethodSpecId(eventSpec.AccessorAdd)
+                            : (int?)null,
+                        RemoveOn = eventSpec.AccessorRemove != null
+                            ? this.GetMethodSpecId(eventSpec.AccessorRemove)
+                            : (int?)null
+                    }
+                    : null;
+
+            if (eventSpec != null)
+            { this.eventDict.Add(eventSpec, token); }
 
             return token;
         }

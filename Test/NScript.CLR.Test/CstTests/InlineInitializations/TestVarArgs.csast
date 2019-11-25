@@ -1,0 +1,25 @@
+﻿ParamBlock(RealScript.InlineComplexStatements this) ExplicitBlock {
+  MethodReference
+    this
+    .ProcessItems(
+    string "string",
+    RealScript.InlineComplexStatements[]
+    {
+      RealScript.InlineComplexStatements(
+        System.Double CastType
+          I32 10,
+        ),
+      RealScript.InlineComplexStatements(
+        double 10.2,
+        ),
+      RealScript.InlineComplexStatements(
+        System.Double CastType
+          I32 1,
+        ),
+      RealScript.InlineComplexStatements(
+        System.Double CastType
+          I32 15,
+        )
+    }
+  );
+}

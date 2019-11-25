@@ -49,6 +49,11 @@ namespace RealScript
             return n1 + 10;
         }
 
+        public static double IntDivideInts(int i, int j)
+        {
+            return (double)i / (double)j;
+        }
+
         public static int ReturnMethodCall()
         {
             return BasicStatements.ReturnInt();
@@ -226,6 +231,11 @@ namespace RealScript
         public static FlagEnum? RegressionFlagsOr(FlagEnum? en)
         {
             return en | FlagEnum.Two;
+        }
+
+        public static FlagEnum? RegressionFlagsOrWithNullable(FlagEnum? en, FlagEnum? other)
+        {
+            return en | other;
         }
 
         public static void RegressionFlagsOrAssign2(FlagsEnumOrOperatorRegression obj)

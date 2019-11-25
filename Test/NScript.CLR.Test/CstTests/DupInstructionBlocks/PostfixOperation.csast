@@ -1,0 +1,9 @@
+﻿ParamBlock(System.Int32 i) ExplicitBlock {
+  return
+    System.Int32[]
+    {
+      PostIncrement, is:False
+        i,
+      i
+    }
+}

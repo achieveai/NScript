@@ -32,7 +32,6 @@ namespace Sunlight.Framework.Test
 
             Action<Observables.INotifyCollectionChanged<string>, CollectionChangedEventArgs<string>> transformedCollChanged =
                 (coll, evtArg) =>
-
                 {
                     var listBounds = _list!=null?_list[0]+" - "+_list[_list.Count-1]:"null";
                     if (evtArg.Action == CollectionChangedAction.Add)
@@ -113,27 +112,32 @@ namespace Sunlight.Framework.Test
             TestWithNewList(
                 assert,
                 new List<Number> { 13, 23 },
-                new List<int>() { 1 , 2 },
-                new List<int>() { 2 , 0 });
+                new List<int>() { 1 },
+                new List<int>() { 2 });
             TestWithNewList(
                 assert,
                 new List<Number> { 13, 23, 25 },
-                new List<int>() { 2 , 1 },
-                new List<int>() { 0 , 2 });
+                new List<int>() { 1 },
+                new List<int>() { 2 });
             TestWithNewList(
                 assert,
                 new List<Number> { 13, 23 },
-                new List<int>() { 1, 2 },
-                new List<int>() { 2, 0 });
+                new List<int>() { 1 },
+                new List<int>() { 2 });
             TestWithNewList(
                 assert,
                 new List<Number> { 13, 23, 33 },
-                new List<int>() { 2 , 1 },
-                new List<int>() { 0 , 2 });
+                new List<int>() { 1 },
+                new List<int>() { 2 });
             TestWithNewList(
                 assert,
                 new List<Number> { 13, 23, 33 },
-                new List<int>() { 3 },
+                new List<int>() { },
+                new List<int>() { });
+            TestWithNewList(
+                assert,
+                new List<Number> { 12, 23, 33 },
+                new List<int>() { 1 },
                 new List<int>() { 0 });
             return;
         }

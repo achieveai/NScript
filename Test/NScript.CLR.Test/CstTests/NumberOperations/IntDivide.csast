@@ -1,0 +1,7 @@
+﻿ParamBlock(System.Int32 x, System.Int32 y) ExplicitBlock {
+  return
+    Div l:False rt:System.Int32
+      x
+    ,
+      y
+}

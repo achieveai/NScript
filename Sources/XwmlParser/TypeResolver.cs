@@ -290,7 +290,9 @@ namespace XwmlParser
             {
                 foreach (var iface in typeDefinition.Interfaces)
                 {
-                    if (iface.FixGenericTypeArguments(typeReference).IsSame(interfaceReference))
+                    if (iface.InterfaceType
+                        .FixGenericTypeArguments(typeReference)
+                        .IsSame(interfaceReference))
                     {
                         return true;
                     }

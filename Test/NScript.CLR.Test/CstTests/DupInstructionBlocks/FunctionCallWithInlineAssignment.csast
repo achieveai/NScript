@@ -1,0 +1,17 @@
+﻿ParamBlock(System.Int32 i, RealScript.Class1 cl1) ExplicitBlock {
+  return
+    MethodReference
+      cl1
+      .Func2(
+      Assignment l:False rt:System.Int32
+        i
+      ,
+        MethodReference
+          cl1
+          .Foo1(),
+      Plus l:False rt:System.Int32
+        i
+      ,
+        I32 10
+    )
+}

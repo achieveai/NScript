@@ -180,6 +180,7 @@ using Mono.Cecil;
 
         private MethodReference initializeArrayReference;
         private MethodReference arrayLengthGetter;
+        private TypeReference typedReference;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClrKnownReferences"/> class.
@@ -218,8 +219,6 @@ using Mono.Cecil;
                 {
                     this.booleanReference =
                         this.MSCorlibModule.TypeSystem.Boolean;
-
-                    this.booleanReference.IsValueType = true;
                 }
 
                 return this.booleanReference;
@@ -237,8 +236,6 @@ using Mono.Cecil;
                 {
                     this.byteReference =
                         this.MSCorlibModule.TypeSystem.Byte;
-
-                    this.byteReference.IsValueType = true;
                 }
 
                 return this.byteReference;
@@ -256,8 +253,6 @@ using Mono.Cecil;
                 {
                     this.sbyteReference =
                         this.MSCorlibModule.TypeSystem.SByte;
-
-                    this.sbyteReference.IsValueType = true;
                 }
 
                 return this.sbyteReference;
@@ -275,8 +270,6 @@ using Mono.Cecil;
                 {
                     this.ushortReference =
                         this.MSCorlibModule.TypeSystem.UInt16;
-
-                    this.ushortReference.IsValueType = true;
                 }
 
                 return this.ushortReference;
@@ -294,8 +287,6 @@ using Mono.Cecil;
                 {
                     this.shortReference =
                         this.MSCorlibModule.TypeSystem.Int16;
-
-                    this.shortReference.IsValueType = true;
                 }
 
                 return this.shortReference;
@@ -313,8 +304,6 @@ using Mono.Cecil;
                 {
                     this.uint32Reference =
                         this.MSCorlibModule.TypeSystem.UInt32;
-
-                    this.uint32Reference.IsValueType = true;
                 }
 
                 return this.uint32Reference;
@@ -332,8 +321,6 @@ using Mono.Cecil;
                 {
                     this.int32Reference =
                         this.MSCorlibModule.TypeSystem.Int32;
-
-                    this.int32Reference.IsValueType = true;
                 }
 
                 return this.int32Reference;
@@ -351,8 +338,6 @@ using Mono.Cecil;
                 {
                     this.uint64Reference =
                         this.MSCorlibModule.TypeSystem.UInt64;
-
-                    this.uint64Reference.IsValueType = true;
                 }
 
                 return this.uint64Reference;
@@ -370,8 +355,6 @@ using Mono.Cecil;
                 {
                     this.int64Reference =
                         this.MSCorlibModule.TypeSystem.Int64;
-
-                    this.int64Reference.IsValueType = true;
                 }
 
                 return this.int64Reference;
@@ -389,8 +372,6 @@ using Mono.Cecil;
                 {
                     this.uintPtrReference =
                         this.MSCorlibModule.TypeSystem.UIntPtr;
-
-                    this.uintPtrReference.IsValueType = true;
                 }
 
                 return this.uintPtrReference;
@@ -408,8 +389,6 @@ using Mono.Cecil;
                 {
                     this.intPtrReference =
                         this.MSCorlibModule.TypeSystem.IntPtr;
-
-                    this.intPtrReference.IsValueType = true;
                 }
 
                 return this.intPtrReference;
@@ -427,8 +406,6 @@ using Mono.Cecil;
                 {
                     this.singleReference =
                         this.MSCorlibModule.TypeSystem.Single;
-
-                    this.singleReference.IsValueType = true;
                 }
 
                 return this.singleReference;
@@ -446,8 +423,6 @@ using Mono.Cecil;
                 {
                     this.doubleReference =
                         this.MSCorlibModule.TypeSystem.Double;
-
-                    this.doubleReference.IsValueType = true;
                 }
 
                 return this.doubleReference;
@@ -465,8 +440,6 @@ using Mono.Cecil;
                 {
                     this.charReference =
                         this.MSCorlibModule.TypeSystem.Char;
-
-                    this.charReference.IsValueType = true;
                 }
 
                 return this.charReference;
@@ -487,6 +460,20 @@ using Mono.Cecil;
                 }
 
                 return this.stringReference;
+            }
+        }
+
+        public TypeReference TypedReference
+        {
+            get
+            {
+                if (this.typedReference == null)
+                {
+                    this.typedReference =
+                        this.MSCorlibModule.TypeSystem.TypedReference;
+                }
+
+                return this.typedReference;
             }
         }
 
@@ -538,8 +525,6 @@ using Mono.Cecil;
                     this.enumReference = this.GetTypeReference(
                         ClrKnownReferences.SystemStr,
                         "Enum");
-
-                    this.enumReference.IsValueType = true;
                 }
 
                 return this.enumReference;
@@ -864,7 +849,7 @@ using Mono.Cecil;
                 typeNamespace,
                 typeName,
                 this.MSCorlibModule,
-                this.MSCorlibModule.TypeSystem.Corlib).Resolve();
+                this.MSCorlibModule.TypeSystem.CoreLibrary).Resolve();
         }
 
         /// <summary>

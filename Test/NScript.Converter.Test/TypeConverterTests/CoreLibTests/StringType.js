@@ -2,10 +2,23 @@
 String__formatHelperRegex = null;
 String__trimStartHelperRegex = null;
 String__trimEndHelperRegex = null;
-function String____cctor() {
-  String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
-  String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
-  String__trimEndHelperRegex = new RegExp("[\\s\\xA0]+$");
+function String__get_FormatHelperRegex() {
+  if (Object__IsNullOrUndefined(String__formatHelperRegex))
+    String__formatHelperRegex = new RegExp("(\\{[^\\}^\\{]+\\})", "g");
+  return String__formatHelperRegex;
+};
+function String__get_TrimEndHelperRegex() {
+  if (Object__IsNullOrUndefined(String__trimEndHelperRegex))
+    String__trimEndHelperRegex = new RegExp("^[\\s\\xA0]+");
+  return String__trimEndHelperRegex;
+};
+function String__get_TrimStartHelperRegex() {
+  if (Object__IsNullOrUndefined(String__trimStartHelperRegex))
+    String__trimStartHelperRegex = new RegExp("^[\\s\\xA0]+");
+  return String__trimStartHelperRegex;
+};
+function String__At(this_, index) {
+  return this_[index];
 };
 function String__Compare(s1, s2) {
   s1 = s1 || "";
@@ -72,15 +85,21 @@ function String__Equals(s1, s2, ignoreCase) {
   return String__Comparea(s1, s2, ignoreCase) == 0;
 };
 function String__Format(format, values) {
-  return format.replace(String__formatHelperRegex, function(str, m) {
+  return format.replace(String__get_FormatHelperRegex(), function(str, m) {
     var index, value; {
       index = parseInt(m.substr(1));
-      value = values.get_item(index + 1);
+      value = values.get_item(index);
       if (!value)
         return "";
       return value.toString();
     }
   });
+};
+function String__Formata(format, value) {
+  return String__Format(format, ArrayG_$Object$_.__ctor([ArrayG_$Object$_.__ctor([value])]));
+};
+function String__Formatb(formatProvider, format, value) {
+  return String__Format(format, ArrayG_$Object$_.__ctor([value]));
 };
 function String__IndexOf(this_, ch) {
   return this_.indexOf(String.fromCharCode(ch));
@@ -126,15 +145,15 @@ function String__Trim(this_) {
   return String__TrimEnd(String__TrimStart(this_));
 };
 function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__trimEndHelperRegex, "");
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex(), "");
 };
 function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__trimStartHelperRegex, "");
+  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex(), "");
 };
 function String__get_Item(this_, index) {
   return this_.charCodeAt(index);
 };
-String.defaultConstructor = function String_factory() {
+String.defaultConstructor = function System_String_factory() {
   return new String();
 };
 String__EndsWith = function String__EndsWith(this_, ch) {
@@ -162,9 +181,9 @@ String__LastIndexOfa = function String__LastIndexOfa(this_, ch, startIndex) {
   return this_.lastIndexOf(String.fromCharCode(ch), startIndex);
 };
 String__TrimEnd = function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__trimEndHelperRegex, "");
+  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex(), "");
 };
 String__TrimStart = function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__trimStartHelperRegex, "");
+  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex(), "");
 };
 Type__RegisterReferenceType(String, "System.String", Object, []);

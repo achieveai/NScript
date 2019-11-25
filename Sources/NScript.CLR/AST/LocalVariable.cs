@@ -1,10 +1,5 @@
 ﻿namespace NScript.CLR.AST
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using Mono.Cecil;
     using VariableDefinition = Mono.Cecil.Cil.VariableDefinition;
 
     /// <summary>
@@ -78,14 +73,7 @@
 
         private static string GetName(VariableDefinition variableDefinition)
         {
-            if (!string.IsNullOrEmpty(variableDefinition.Name))
-            {
-                return variableDefinition.Name;
-            }
-            else
-            {
-                return string.Format("V_{0}", variableDefinition.Index);
-            }
+            return variableDefinition.ToString();
         }
     }
 }

@@ -18,6 +18,7 @@ namespace NScript.JST
         string GetName();
         void AddUsage(IdentifierScope scope);
         string SuggestedName { get; }
+        string OriginalSuggestedName { get; }
         bool IsEmpty { get; }
         void MarkAsFunctionName();
     }

@@ -1,0 +1,4 @@
+﻿ParamBlock() ExplicitBlock {
+  return
+    UI32 10
+}

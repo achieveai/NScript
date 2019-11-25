@@ -43,8 +43,10 @@ namespace NScript.CLR.AST
             Location location,
             LocalVariable iteratorVariable,
             Expression collection,
-            ScopeBlock scope)
-            : base(context, location)
+            ScopeBlock scope,
+            List<(LocalVariable, bool)> variables,
+            List<LocalFunctionVariable> localFunctionNames)
+            : base(context, location, variables, localFunctionNames)
         {
             this.iteratorVariable = iteratorVariable;
             this.collection = collection;

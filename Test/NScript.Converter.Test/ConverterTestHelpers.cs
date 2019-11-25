@@ -152,9 +152,7 @@ namespace NScript.Converter.Test
                 if (expectedValue != actualValue)
                 {
                     Console.WriteLine("====== Expected ================================> ");
-                    Console.WriteLine("====== Expected ================================> ");
                     Console.WriteLine(expectedValue);
-                    Console.WriteLine("====== Actual ==================================> ");
                     Console.WriteLine("====== Actual ==================================> ");
                     Console.WriteLine(actualValue);
                 }

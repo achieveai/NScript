@@ -1,3 +1,3 @@
-﻿function RealScript__GenericSamples__GenericMethodCall(bar, foo) {
-  return RealScript_TestGeneric_TestSubClass_$Int32$_.foo(System_Boolean, foo, foo);
+﻿function GenericSamples__GenericMethodCall(bar, foo) {
+  return TestSubClass_$Int32$_.foo(Booleana, foo, foo);
 }

@@ -1,0 +1,15 @@
+﻿ParamBlock(System.Int32 i) ExplicitBlock {
+  Assignment l:False rt:System.Int32
+    j
+  ,
+    I32 10;
+  return
+    Plus l:False rt:System.Int32
+      static? MethodReference AccessRefArgument(
+        i,
+        ref/out
+          j
+      )
+    ,
+      j
+}

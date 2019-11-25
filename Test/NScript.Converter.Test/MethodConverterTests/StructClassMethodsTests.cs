@@ -31,26 +31,6 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All)]
         [TestCase(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All)]
         [TestCase(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All)]
-        [TestCase(TestClassNameStr2, "GetFooValue", "StructPropertyInvoke.js", TestType.Debug)]
-        [TestCase(TestClassNameStr, ".ctor", "Constructor.js", TestType.All)]
-        [TestCase(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All)]
-        [TestCase(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All)]
-        [TestCase("EnumUsingClass", "GetStr", "EnumToString.js", TestType.All)]
-        public void Test(string className, string methodName, string resourceName, TestType testType)
-        {
-            ConverterTestHelpers.RunTest(
-                TestFilesNSStr + resourceName,
-                className,
-                methodName,
-                testType);
-        }
-
-        [Test]
-        [TestCase(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All)]
-        [TestCase(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All)]
-        [TestCase(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All)]
-        [TestCase(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All)]
-        [TestCase(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All)]
         [TestCase(TestClassNameStr2, "GetFooValue", "StructPropertyInvokeMcs.js", TestType.Debug)]
         [TestCase(TestClassNameStr, ".ctor", "Constructor.js", TestType.All)]
         [TestCase(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All)]

@@ -125,5 +125,17 @@ namespace RealScript
             var items = new NativeArray(1);
             items.Push<Foo>(fooObject);
         }
+
+        public static string DeclarationWithOut(
+            System.Collections.Generic.Dictionary<string, Func<string, string>> dict)
+        {
+            Func<string, string> func;
+            if (dict.TryGetValue("foo", out func))
+            {
+                return func("foo");
+            }
+
+            return null;
+        }
     }
 }

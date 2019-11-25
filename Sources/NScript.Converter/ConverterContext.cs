@@ -9,7 +9,6 @@ namespace NScript.Converter
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.IO.Compression;
     using System.Text.RegularExpressions;
     using NScript.CLR;
     using NScript.CLR.AST;
@@ -19,6 +18,8 @@ namespace NScript.Converter
     using Newtonsoft.Json.Linq;
     using NScript.Utils;
     using FullAst = JsCsc.Lib.Serialization.FullAst;
+    using System.Linq;
+    using Serializer = JsCsc.Lib.Serialization.Serializer;
 
     /// <summary>
     /// Definition for ConverterContext.
@@ -161,7 +162,6 @@ namespace NScript.Converter
             this.methodConverterPlugins = methodConverterPlugins ?? new List<IMethodConverterPlugin>();
             this.typeConverterPlugins = typeConverterPlugins ?? new List<ITypeConverterPlugin>();
 
-            JObjectToCsAst toAst = new JObjectToCsAst(clrContext);
             foreach (var module in clrContext.Modules)
             {
                 JArray jsonAstArray = null;
@@ -169,31 +169,23 @@ namespace NScript.Converter
                 FullAst fullAst = null;
                 foreach (var resource in module.Resources)
                 {
-                    if (resource.Name == "$$AstInfo$$")
+                    if (resource.Name == "$$JstInfo$$")
                     {
-                        // EmbeddedResource embededResource = (EmbeddedResource)resource;
-
-                        // stopWatch.Restart();
-                        // using (var stream = embededResource.GetResourceStream())
-                        // // using (var unzipStream = new GZipStream(stream, CompressionMode.Decompress))
-                        // {
-                        //     JsonTextReader reader = new JsonTextReader(new StreamReader(stream));
-                        //     jsonAstArray = JArray.Load(reader);
-                        // }
-                        // stopWatch.Stop();
-                        // jsonCost += stopWatch.Elapsed.TotalSeconds;
-                    }
-                    else if (resource.Name == "$$BstInfo$$")
-                    {
-                        EmbeddedResource embededResource = (EmbeddedResource)resource;
-
-                        // stopWatch.Restart();
-                        using (var stream = embededResource.GetResourceStream())
+                        using (var stream = ((EmbeddedResource)resource).GetResourceStream())
                         {
-                            fullAst = ProtoBuf.Serializer.Deserialize<FullAst>(stream);
+                            fullAst = Serializer.Deserialize(
+                                stream,
+                                Serializer.SerializationKind.Json);
                         }
-                        // stopWatch.Stop();
-                        // bondCost += stopWatch.Elapsed.TotalSeconds;
+                    }
+                    if (resource.Name == "$$BstInfo$$")
+                    {
+                        using (var stream = ((EmbeddedResource)resource).GetResourceStream())
+                        {
+                            fullAst = Serializer.Deserialize(
+                                stream,
+                                Serializer.SerializationKind.NetSerializer);
+                        }
                     }
                     else if (resource.Name == "$$ResInfo$$")
                     {
@@ -229,6 +221,7 @@ namespace NScript.Converter
 
                     // stopWatch.Restart();
                 }
+
                 if (fullAst != null)
                 {
                     var bondToAst = new BondToAst(
@@ -1091,9 +1084,10 @@ namespace NScript.Converter
                         // method.Body.CodeSize == 0 for extern constructor.
                         else if (
                             method.Body != null
-                            && ((method.Body.CodeSize != 7
-                                && method.Body.Instructions.Count != 3)
-                                || typeDefinition.IsValueType))
+                            && (method.Body.Instructions
+                                    .Where(_ => _.OpCode.Code != Mono.Cecil.Cil.Code.Nop)
+                                    .Count() != 3
+                                || typeDefinition.IsValueOrEnum()))
                         {
                             hasConstructor = true;
                             bool isExtern = this.IsExtern(method);
@@ -1136,7 +1130,7 @@ namespace NScript.Converter
                         hasPublicFields = true;
                     }
 
-                    if (field.FieldType.IsValueType
+                    if (field.FieldType.IsValueOrEnum()
                         && !field.FieldType.IsSameDefinition(this.ClrKnownReferences.NullableType))
                     {
                         hasNonNullableStructField = true;
@@ -1149,7 +1143,7 @@ namespace NScript.Converter
                     if (baseType != null
                         && baseKind != TypeKind.Extended
                         && baseKind != TypeKind.Imported
-                        && !typeDefinition.IsValueType)
+                        && !typeDefinition.IsValueOrEnum())
                     {
                         throw new InvalidDataException(
                             string.Format(
@@ -1169,7 +1163,7 @@ namespace NScript.Converter
                         && baseKind != TypeKind.Imported
                         && baseKind != TypeKind.Extended
                         && baseKind != TypeKind.JSONType
-                        && !typeDefinition.IsValueType)
+                        && !typeDefinition.IsValueOrEnum())
                     {
                         throw new ApplicationException(
                             string.Format(

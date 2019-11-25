@@ -37,7 +37,7 @@ namespace NScript.Converter.ExpressionsConverter
                 return null;
             }
 
-            JST.Expression rv = methodConverter.GetReplacementExpression(
+            var rv = methodConverter.GetReplacementExpression(
                 clrExpression);
 
             if (rv != null)
@@ -171,6 +171,16 @@ namespace NScript.Converter.ExpressionsConverter
                     ConditionalOperatorConverter.Convert));
 
             returnValue.Add(
+                typeof(ConditionalAccessExpression),
+                ExpressionConverterBase.SimplifyConverter<ConditionalAccessExpression>(
+                    ConditionalAccessConverter.Convert));
+
+            returnValue.Add(
+                typeof(ConditionalAccessExpression.ConditionalReceiver),
+                ExpressionConverterBase.SimplifyConverter<ConditionalAccessExpression.ConditionalReceiver>(
+                    ConditionalAccessConverter.Convert));
+
+            returnValue.Add(
                 typeof (BoxExpression),
                 ExpressionConverterBase.SimplifyConverter<BoxExpression>(
                     BoxExpressionConvereter.Convert));
@@ -191,6 +201,11 @@ namespace NScript.Converter.ExpressionsConverter
                     InlineNewObjectArrayConverter.Convert));
 
             returnValue.Add(
+                typeof (InlineCollectionInitializationExpression),
+                ExpressionConverterBase.SimplifyConverter<InlineCollectionInitializationExpression>(
+                    InlineCollectionInitializerConverter.Convert));
+
+            returnValue.Add(
                 typeof (InlinePropertyInitilizationExpression),
                 ExpressionConverterBase.SimplifyConverter<InlinePropertyInitilizationExpression>(
                     InlinePropertyInitializerConverter.Convert));
@@ -204,6 +219,11 @@ namespace NScript.Converter.ExpressionsConverter
                 typeof (PropertyReferenceExpression),
                 ExpressionConverterBase.SimplifyConverter<PropertyReferenceExpression>(
                     PropertyReferenceConverter.Convert));
+
+            returnValue.Add(
+                typeof (EventReferenceExpression),
+                ExpressionConverterBase.SimplifyConverter<EventReferenceExpression>(
+                    EventReferenceConverter.Convert));
 
             returnValue.Add(
                 typeof (LoadAddressExpression),
@@ -239,6 +259,26 @@ namespace NScript.Converter.ExpressionsConverter
                 typeof (FromNullable),
                 ExpressionConverterBase.SimplifyConverter<FromNullable>(
                     NullableConverter.ConvertFrom));
+
+            returnValue.Add(
+                typeof(AnonymousNewExpression),
+                ExpressionConverterBase.SimplifyConverter<AnonymousNewExpression>(
+                AnonymousNewExpressionConverter.Convert));
+
+            returnValue.Add(
+                typeof(DynamicMemberAccessor),
+                ExpressionConverterBase.SimplifyConverter<DynamicMemberAccessor>(
+                    DynamicMemberAcessorConverter.Convert));
+
+            returnValue.Add(
+                typeof(DynamicIndexAccessor),
+                ExpressionConverterBase.SimplifyConverter<DynamicIndexAccessor>(
+                    DynamicMemberAcessorConverter.Convert));
+
+            returnValue.Add(
+                typeof(DynamicCallInvocationExpression),
+                ExpressionConverterBase.SimplifyConverter<DynamicCallInvocationExpression>(
+                    DynamicMemberAcessorConverter.Convert));
 
             return returnValue;
         }

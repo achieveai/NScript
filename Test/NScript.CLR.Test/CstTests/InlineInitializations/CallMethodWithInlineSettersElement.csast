@@ -1,0 +1,15 @@
+﻿ParamBlock(RealScript.InlineComplexStatements this) ExplicitBlock {
+  static? MethodReference Foo(
+    string "foo",
+    RealScript.InlineComplexStatements
+      RealScript.InlineComplexStatements()
+    {
+      static? PropertyReference StringProperty:
+      string "fooProp",
+      static? FieldReference intProperty:
+      I32 10,
+      static? PropertyReference TestReference:
+      null,
+    }
+  );
+}

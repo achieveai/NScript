@@ -58,6 +58,9 @@
             StringBuilder strBuilder = new StringBuilder(str.Length);
             char ch = str[0];
 
+            if (str.Contains("$$"))
+            { }
+
             if ((ch >= 'A' && ch <= 'Z') ||
                 (ch >= 'a' && ch <= 'z') ||
                 (ch == '_'))
@@ -94,7 +97,7 @@
                 }
                 else if (ch == '.')
                 {
-                    strBuilder.Append("$$");
+                    strBuilder.Append("__");
                 }
                 else if (ch == '<')
                 {

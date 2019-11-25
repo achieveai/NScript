@@ -39,6 +39,18 @@ namespace NScript.Converter.ExpressionsConverter
             if (!methodConverter.RuntimeManager.Context.IsExtended(typeDef)
                 && !methodConverter.RuntimeManager.Context.IsPsudoType(typeDef))
             {
+                if (methodReference.Parameters.Count == 0
+                    && typeDef.IsValueType)
+                {
+                    // Let's use default constructor when there are 0 constructor parameters.
+                    return DefaultValueConverter.GetDefaultValue(
+                        methodConverter,
+                        methodConverter.RuntimeManager,
+                        methodConverter.Scope,
+                        methodReference.DeclaringType,
+                        newObjectExpression.Location);
+                }
+
                 // Call into factory methods that will create and return the type.
                 return new JST.MethodCallExpression(
                     newObjectExpression.Location,
@@ -97,12 +109,13 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             NewObjectExpression methodCall)
         {
-            JST.InlineObjectInitializer inlineArray =
+            var newInlineObject =
                 new JST.InlineObjectInitializer(
                     methodCall.Location,
                     converter.Scope);
 
-            InlineArrayInitialization inlineArrayInitialization = methodCall.Parameters[0] as InlineArrayInitialization;
+            var inlineArrayInitialization =
+                methodCall.Parameters[0] as InlineArrayInitialization;
 
             if (inlineArrayInitialization == null)
             {
@@ -124,14 +137,14 @@ namespace NScript.Converter.ExpressionsConverter
                             methodCall.Location));
                 }
 
-                inlineArray.AddInitializer(
+                newInlineObject.AddInitializer(
                     ((StringLiteral)inlineArrayInitialization.ElementInitValues[arrayElementIndex]).String,
                     ExpressionConverterBase.Convert(
                         converter,
                         inlineArrayInitialization.ElementInitValues[arrayElementIndex + 1]));
             }
 
-            return inlineArray;
+            return newInlineObject;
         }
     }
 }

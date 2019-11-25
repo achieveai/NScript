@@ -1,19 +1,21 @@
 ﻿Array.typeId = "b";
 function Array__Sort(T, array, comparator) {
   var ArrayG_$T$_;
-  ArrayG_$T$_ = System_ArrayG(T, true);
+  ArrayG_$T$_ = ArrayG(T, true);
   array.sort(comparator);
 };
-Type__RegisterReferenceType(Array, "System.Array", Object, [System_Collections_IList, System_Collections_IEnumerable, System_Collections_ICollection]);
-function System_ArrayImpl() {
+Type__RegisterReferenceType(Array, "System.Array", Object, [IList, ICollection, IEnumerable]);
+function ArrayImpl() {
 };
-System_ArrayImpl.typeId = "c";
+ArrayImpl.typeId = "c";
 function ArrayImpl__Sort(T, array, comparator) {
   var ArrayG_$T$_;
-  ArrayG_$T$_ = System_ArrayG(T, true);
+  ArrayG_$T$_ = ArrayG(T, true);
   array.sort(comparator);
 };
-ptyp_ = System_ArrayImpl.prototype;
+ptyp_ = ArrayImpl.prototype;
+ptyp_.__ctor = function ArrayImpl____ctor() {
+};
 ptyp_.system__Collections__IList__get_IsFixedSize = function ArrayImpl__System__Collections__IList__get_IsFixedSize() {
   return true;
 };
@@ -44,8 +46,6 @@ ptyp_.system__Collections__IList__RemoveAt = function ArrayImpl__System__Collect
 ptyp_.system__Collections__ICollection__get_Count = function ArrayImpl__System__Collections__ICollection__get_Count() {
   return this.V_get_Length();
 };
-ptyp_.__ctor = function ArrayImpl____ctor() {
-};
 ptyp_.V_get_IsFixedSize_d = ptyp_.system__Collections__IList__get_IsFixedSize;
 ptyp_.V_get_IsReadOnly_d = ptyp_.system__Collections__IList__get_IsReadOnly;
 ptyp_.V_get_Item_d = ptyp_.system__Collections__IList__get_Item;
@@ -62,16 +62,13 @@ ptyp_.V_Contains_d = function(arg0) {
 ptyp_.V_IndexOf_d = function(arg0) {
   return this.V_IndexOf(arg0);
 };
-ptyp_.V_GetEnumerator_f = function() {
-  return this.V_GetEnumerator();
-};
 ptyp_.V_CopyTo_e = function(arg0, arg1) {
   return this.V_CopyTo(arg0, arg1);
 };
-Type__RegisterReferenceType(System_ArrayImpl, "System.ArrayImpl", Object, [System_Collections_IList, System_Collections_IEnumerable, System_Collections_ICollection]);
-function NativeArray$1__GetArray(this_) {
-  return ArrayG$1_$T$_.__ctor(this_);
+ptyp_.V_GetEnumerator_f = function() {
+  return this.V_GetEnumerator();
 };
+Type__RegisterReferenceType(ArrayImpl, "System.ArrayImpl", Object, [IList, ICollection, IEnumerable]);
 function NativeArray$1__GetNativeArray(array) {
   return array ? array.innerArray : null;
 };
@@ -90,76 +87,55 @@ function NativeArray$1__Concatb(this_, array, array2) {
 function NativeArray$1__Concatc(this_, array, array2, array3) {
   return this_.concat(array, array2, array3);
 };
-function NativeArray$1__Pop(this_) {
-  return this_.pop();
-};
-function NativeArray$1__Push(this_, value) {
-  return this_.push(value);
-};
-function NativeArray$1__Shift(this_) {
-  return this_.shift();
-};
-function NativeArray$1__Unshift(this_, value) {
-  return this_.unshift(value);
-};
 function NativeArray$1__Splice(this_, index, howMany, elements) {
-  var newArray;
-  newArray = elements.innerArray.slice(0);
+  var newArray, rv;
+  newArray = elements.innerArray;
   newArray.unshift(howMany);
   newArray.unshift(index);
-  return this_.splice.apply(this_, newArray);
+  rv = this_.splice.apply(this_, newArray);
+  newArray.shift();
+  newArray.shift();
+  return rv;
 };
 function NativeArray$1__IndexOf(this_, value, startIndex) {
-  var i;
   startIndex = startIndex < 0 ? 0 : startIndex;
-  for (i = this_.length; i >= startIndex && i >= 0; --i)
-    if (this_[i] === value)
-      return i;
-  return -1;
+  return this_.indexOf(value, startIndex);
 };
 function NativeArray$1__InsertAt(this_, index, value) {
-  var i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  for (i = this_.length - 1; i >= index; i--)
-    this_[i + 1] = this_[i];
-  this_[index] = value;
+  this_.splice(index, 0, value);
 };
 function NativeArray$1__InsertRangeAt(this_, index, values) {
-  var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  len = values.length;
-  for (i = this_.length - 1; i >= index; index--)
-    this_[i + len] = this_[i];
-  for (i = len - 1; --i; )
-    this_[index + i] = values[i];
+  values.unshift(0);
+  values.unshift(index);
+  this_.splice.apply(this_, values);
+  values.shift();
+  values.shift();
 };
 function NativeArray$1__RemoveAt(this_, index) {
-  var len, i;
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
-  len = this_.length - 1;
-  for (i = index; i < len; i++)
-    this_[i] = this_[i + 1];
-  this_.pop();
+  this_.splice(index, 1);
 };
 function NativeArray$1__op_Implicit(n) {
-  return n.get_innerArray();
+  return !n ? null : n.get_innerArray();
 };
-function System_ArrayG(T, $5fcallStatiConstructor) {
-  var Enumerator_$T$_, ArrayG$1_$T$_, T$5b$5d_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, $5f_initTracker;
-  if (System_ArrayG[T.typeId])
-    return System_ArrayG[T.typeId];
-  System_ArrayG[T.typeId] = function ArrayG$1() {
+function ArrayG(T, _callStatiConstructor) {
+  var ArrayG$1_$T$_, T$5b$5d_$T$_, Enumerator_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, __initTracker;
+  if (ArrayG[T.typeId])
+    return ArrayG[T.typeId];
+  ArrayG[T.typeId] = function System__ArrayG$1() {
   };
-  ArrayG$1_$T$_ = System_ArrayG[T.typeId];
+  ArrayG$1_$T$_ = ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
-  ArrayG$1_$T$_.genericClosure = System_ArrayG;
+  ArrayG$1_$T$_.genericClosure = ArrayG;
   ArrayG$1_$T$_.typeId = "g$" + T.typeId + "$";
-  IList$1_$T$_ = System_Collections_Generic_IList(T, $5fcallStatiConstructor);
-  ICollection$1_$T$_ = System_Collections_Generic_ICollection(T, $5fcallStatiConstructor);
-  IEnumerable$1_$T$_ = System_Collections_Generic_IEnumerable(T, $5fcallStatiConstructor);
+  IList$1_$T$_ = ILista(T, _callStatiConstructor);
+  ICollection$1_$T$_ = ICollectiona(T, _callStatiConstructor);
+  IEnumerable$1_$T$_ = IEnumerablea(T, _callStatiConstructor);
   ArrayG$1_$T$_.__ctora = function System_ArrayG$1_factory(size) {
     var this_;
     this_ = new ArrayG$1_$T$_();
@@ -172,34 +148,17 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     this_.__ctorb(nativeArray);
     return this_;
   };
-  ptyp_ = new System_ArrayImpl();
+  ptyp_ = new ArrayImpl();
   ArrayG$1_$T$_.prototype = ptyp_;
   ptyp_.innerArray = null;
-  ptyp_.system__Collections__Generic__ICollection_$T$___get_IsReadOnly = function ArrayG$1__System__Collections__Generic__ICollection_$T$___get_IsReadOnly() {
-    return false;
-  };
-  ptyp_.system__Collections__Generic__IList_$T$___Insert = function ArrayG$1__System__Collections__Generic__IList_$T$___Insert(index, item) {
-    throw new Error("Not Implemented.");
-  };
-  ptyp_.system__Collections__Generic__ICollection_$T$___Add = function ArrayG$1__System__Collections__Generic__ICollection_$T$___Add(item) {
-    throw new Error("Not Implemented.");
-  };
-  ptyp_.system__Collections__Generic__ICollection_$T$___Clear = function ArrayG$1__System__Collections__Generic__ICollection_$T$___Clear() {
-    throw new Error("Not Implemented.");
-  };
-  ptyp_.system__Collections__Generic__ICollection_$T$___Remove = function ArrayG$1__System__Collections__Generic__ICollection_$T$___Remove(item) {
-    return NativeArray$1__IndexOf(this.innerArray, item, 0) != -1;
-  };
-  ptyp_.system__Collections__Generic__IEnumerable_$T$___GetEnumerator = function ArrayG$1__System__Collections__Generic__IEnumerable_$T$___GetEnumerator() {
-    return Enumerator_$T$_.__ctor(this);
-  };
   ptyp_.__ctora = function ArrayG$1____ctor(size) {
     var def, i;
-    this.__ctor();
-    this.innerArray = new Array(size);
-    def = Type__GetDefaultValueStatic(T);
-    for (i = 0; i < size; i++)
-      this.innerArray[i] = def;
+    this.__ctor(); {
+      this.innerArray = new Array(size);
+      def = Type__GetDefaultValueStatic(T);
+      for (i = 0; i < size; i++)
+        this.innerArray[i] = def;
+    }
   };
   ptyp_.__ctorb = function ArrayG$1____ctora(nativeArray) {
     this.__ctor();
@@ -212,15 +171,18 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index];
   };
   ptyp_.set_item = function ArrayG$1__set_Item(index, value) {
     var arr;
     arr = this.innerArray;
     if (index < 0 || index >= arr.length)
-      throw "index " + index + " out of range";
+      throw new Error("index " + index + " out of range");
     return arr[index] = value;
+  };
+  ptyp_.system__Collections__Generic__ICollection_$T$___get_IsReadOnly = function ArrayG$1__System__Collections__Generic__ICollection_$T$___get_IsReadOnly() {
+    return false;
   };
   ptyp_.get_innerArray = function ArrayG$1__get_InnerArray() {
     return this.innerArray;
@@ -256,6 +218,15 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_.indexOfb = function ArrayG$1__IndexOfb(item) {
     return NativeArray$1__IndexOf(this.innerArray, item, 0);
   };
+  ptyp_.system__Collections__Generic__IList_$T$___Insert = function ArrayG$1__System__Collections__Generic__IList_$T$___Insert(index, item) {
+    throw new Error("Not Implemented.");
+  };
+  ptyp_.system__Collections__Generic__ICollection_$T$___Add = function ArrayG$1__System__Collections__Generic__ICollection_$T$___Add(item) {
+    throw new Error("Not Implemented.");
+  };
+  ptyp_.system__Collections__Generic__ICollection_$T$___Clear = function ArrayG$1__System__Collections__Generic__ICollection_$T$___Clear() {
+    throw new Error("Not Implemented.");
+  };
   ptyp_.containsa = function ArrayG$1__Containsa(item) {
     return NativeArray$1__IndexOf(this.innerArray, item, 0) != -1;
   };
@@ -274,7 +245,13 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
     arr = Type__CastType(T$5b$5d_$T$_, array);
     this.copyTo(arr, index);
   };
+  ptyp_.system__Collections__Generic__ICollection_$T$___Remove = function ArrayG$1__System__Collections__Generic__ICollection_$T$___Remove(item) {
+    return NativeArray$1__IndexOf(this.innerArray, item, 0) != -1;
+  };
   ptyp_.getEnumerator = function ArrayG$1__GetEnumerator() {
+    return Enumerator_$T$_.__ctor(this);
+  };
+  ptyp_.system__Collections__Generic__IEnumerable_$T$___GetEnumerator = function ArrayG$1__System__Collections__Generic__IEnumerable_$T$___GetEnumerator() {
     return Enumerator_$T$_.__ctor(this);
   };
   ptyp_["V_get_IsReadOnly_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___get_IsReadOnly;
@@ -298,15 +275,15 @@ function System_ArrayG(T, $5fcallStatiConstructor) {
   ptyp_["V_IndexOf_" + IList$1_$T$_.typeId] = ptyp_.indexOfb;
   ptyp_["V_Contains_" + ICollection$1_$T$_.typeId] = ptyp_.containsa;
   ptyp_["V_CopyTo_" + ICollection$1_$T$_.typeId] = ptyp_.copyTo;
-  Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", System_ArrayImpl, [IList$1_$T$_, System_Collections_IList, ICollection$1_$T$_, System_Collections_ICollection, System_Collections_IEnumerable, IEnumerable$1_$T$_]);
+  Type__RegisterReferenceType(ArrayG$1_$T$_, "System.ArrayG`1<" + T.fullName + ">", ArrayImpl, [IList$1_$T$_, IList, ICollection, IEnumerable, ICollection$1_$T$_, IEnumerable$1_$T$_]);
   ArrayG$1_$T$_._tri = function() {
-    if ($5f_initTracker)
+    if (__initTracker)
       return;
-    $5f_initTracker = true;
-    Enumerator_$T$_ = System_ArrayG_Enumerator(T, true);
-    T$5b$5d_$T$_ = System_ArrayG(T, true);
+    __initTracker = true;
+    T$5b$5d_$T$_ = ArrayG(T, true);
+    Enumerator_$T$_ = Enumerator(T, true);
   };
-  if ($5fcallStatiConstructor)
+  if (_callStatiConstructor)
     ArrayG$1_$T$_._tri();
   return ArrayG$1_$T$_;
 };

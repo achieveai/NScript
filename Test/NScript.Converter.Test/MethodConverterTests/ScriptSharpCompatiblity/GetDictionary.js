@@ -1,3 +1,3 @@
-﻿function RealScript__ScriptSharpCompat__GetDictionary(str) {
-  return System__Collections__Dictionary__GetDictionary(str);
+﻿function ScriptSharpCompat__GetDictionary(str) {
+  return Dictionary__GetDictionary(str);
 }

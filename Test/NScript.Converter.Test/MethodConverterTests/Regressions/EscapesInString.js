@@ -1,3 +1,3 @@
-﻿function RealScript__FuncRegressions__EscapesInString() {
-  return "\\+.?/\\r\\n\\+?.\r\n\"";
+﻿function FuncRegressions__EscapesInString() {
+  return "\\+.?/\\r\\n" + "\\+?.\r\n\"";
 }

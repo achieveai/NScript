@@ -1,0 +1,7 @@
+﻿ParamBlock(System.Int32 i) ExplicitBlock {
+  return
+    Equals l:False rt:System.Boolean
+      i
+    ,
+      I32 10
+}
