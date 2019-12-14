@@ -29,7 +29,9 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id="BASEINSTALLFOLDER" Name="nScript">
           <Directory Id="INSTALLFOLDER" Name="$(var.ProductVersion)">
-            <Directory Id="INSTALLFOLDER_BIN" Name="bin"/>
+            <Directory Id="INSTALLFOLDER_BIN" Name="bin">
+              <Directory Id="INSTALLFOLDER_BIN_X86" Name="x86"/>
+            </Directory>
             <Directory Id="INSTALLFOLDER_LIB" Name="lib"/>
           </Directory>
         </Directory>
@@ -69,11 +71,60 @@
       </Component>
 
       <Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
+        <File Source="$(var.ToolsetDir)\bin\AdvancedStringBuilder.dll" />
+        <File Source="$(var.ToolsetDir)\bin\AdvancedStringBuilder.xml" />
         <File Source="$(var.ToolsetDir)\bin\Antlr3.Runtime.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll.config" />
+        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\ClearScript.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Csc.exe" />
+        <File Source="$(var.ToolsetDir)\bin\Csc.exe.config" />
+        <File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\CssParser.dll" />
+        <File Source="$(var.ToolsetDir)\bin\CssParser.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\dotless.Core.dll" />
+        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.dll" />
+        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.xml" />
+        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.dll" />
+        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.xml" />
+        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.dll" />
+        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.xml" />
+        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
+        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\mcs.dll" />
+        <File Source="$(var.ToolsetDir)\bin\mcs.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.xml" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.xml" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.Abstractions.xml" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.xml" />
+        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Mdb.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Mdb.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Pdb.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Pdb.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NetJSON.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NetJSON.xml" />
+        <File Source="$(var.ToolsetDir)\bin\NetSerializer.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
+        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.xml" />
         <File Source="$(var.ToolsetDir)\bin\NScript.CLR.dll" />
         <File Source="$(var.ToolsetDir)\bin\NScript.CLR.pdb" />
         <File Source="$(var.ToolsetDir)\bin\NScript.Converter.dll" />
         <File Source="$(var.ToolsetDir)\bin\NScript.Converter.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.dll" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.dll.config" />
+        <File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.pdb" />
         <File Source="$(var.ToolsetDir)\bin\NScript.exe" />
         <File Source="$(var.ToolsetDir)\bin\NScript.exe.config" />
         <File Source="$(var.ToolsetDir)\bin\NScript.JSParser.dll" />
@@ -83,39 +134,33 @@
         <File Source="$(var.ToolsetDir)\bin\NScript.pdb" />
         <File Source="$(var.ToolsetDir)\bin\NScript.Utils.dll" />
         <File Source="$(var.ToolsetDir)\bin\NScript.Utils.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Csc.exe" KeyPath="yes" />
-        <File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
-        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\mcs.dll" />
-        <File Source="$(var.ToolsetDir)\bin\mcs.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.private.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.private.Mdb.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.private.Mdb.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.private.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.private.Pdb.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.private.Pdb.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
-        <File Source="$(var.ToolsetDir)\bin\protobuf-net.dll" />
         <File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
+        <File Source="$(var.ToolsetDir)\bin\protobuf-net.dll" />
+        <File Source="$(var.ToolsetDir)\bin\protobuf-net.xml" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
         <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.dll" />
-        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.xml" />
-        <File Source="$(var.ToolsetDir)\bin\CssParser.dll" />
-        <File Source="$(var.ToolsetDir)\bin\CssParser.pdb" />
+        <File Source="$(var.ToolsetDir)\bin\System.Buffers.dll" />
+        <File Source="$(var.ToolsetDir)\bin\System.Buffers.xml" />
+        <File Source="$(var.ToolsetDir)\bin\System.Collections.Immutable.dll" />
+        <File Source="$(var.ToolsetDir)\bin\System.Collections.Immutable.xml" />
+        <File Source="$(var.ToolsetDir)\bin\System.Memory.dll" />
+        <File Source="$(var.ToolsetDir)\bin\System.Memory.xml" />
+        <File Source="$(var.ToolsetDir)\bin\System.Reflection.Metadata.dll" />
+        <File Source="$(var.ToolsetDir)\bin\System.Reflection.Metadata.xml" />
+        <File Source="$(var.ToolsetDir)\bin\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Source="$(var.ToolsetDir)\bin\System.Runtime.CompilerServices.Unsafe.xml" />
+        <File Source="$(var.ToolsetDir)\bin\System.Runtime.InteropServices.RuntimeInformation.dll" />
+        <File Source="$(var.ToolsetDir)\bin\System.ValueTuple.dll" />
+        <File Source="$(var.ToolsetDir)\bin\System.ValueTuple.xml" />
         <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll" />
+        <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll.config" />
         <File Source="$(var.ToolsetDir)\bin\XwmlParser.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.dll" />
-        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll" />
-        <File Source="$(var.ToolsetDir)\bin\ClearScript.dll" />
-
-        <File Source="$(var.V8EngineDir)\ClearScriptV8-32.dll" />
-        <File Source="$(var.V8EngineDir)\V8-ia32.dll" />
+      </Component>
+      <Component Id="BinComponentX86" Directory="INSTALLFOLDER_BIN_X86" Guid="{D971F92B-CC87-4559-807E-55BA14DD944F}">
+        <File Source="$(var.ToolsetDir)\bin\x86\ClearScriptV8-32.dll" />
+        <File Source="$(var.ToolsetDir)\bin\x86\v8-base-ia32.dll" />
+        <File Source="$(var.ToolsetDir)\bin\x86\v8-ia32.dll" />
+        <File Source="$(var.ToolsetDir)\bin\x86\v8-libcpp-ia32.dll" />
       </Component>
 
       <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">

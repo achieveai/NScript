@@ -37,6 +37,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase("TestConditionalInvoke", "TestConditionalInvoke.js", TestType.All)]
         [TestCase("TestNestedFunction", "TestNestedFunction.js", TestType.All)]
         [TestCase("TestNestedFunctionScoped", "TestNestedFunctionScoped.js", TestType.All)]
+        [TestCase("CallWithDefaultParameter", "CallWithDefaultParameter.js", TestType.All)]
         public void Test(string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

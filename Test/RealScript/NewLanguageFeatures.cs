@@ -90,6 +90,20 @@ namespace RealScript
             return Compute(obj.AddNum(11));
         }
 
+        public static int CallWithDefaultParameter(NewLanguageFeatures obj)
+        {
+            return CheckWithDefaultParameter(obj.field)
+                + (CheckValue(1) ?? 0);
+        }
+
+        public static int CheckWithDefaultParameter(int value, int other = 10)
+        {
+            return value + other;
+        }
+
+        public static int? CheckValue(int value, int? obj = default(int?))
+        { return value + obj; }
+
 //         public static List<NewLanguageFeatures> TestNestedFunctionGeneric(NewLanguageFeatures obj)
 //         {
 //             List<U> Compute<U>(U item, int count)

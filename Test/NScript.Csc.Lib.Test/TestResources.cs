@@ -476,9 +476,9 @@
                             .Assembly
                             .GetName()
                             .Name))
-                + "..\\";
+                + @"..\..\..\..\";
 
-            baseGitPath = nscriptGitPath;
+            // baseGitPath = nscriptGitPath;
 
             var trees = resources
                 .files

@@ -538,6 +538,7 @@
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalInvoke.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestNestedFunction.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestNestedFunctionScoped.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\CallWithDefaultParameter.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

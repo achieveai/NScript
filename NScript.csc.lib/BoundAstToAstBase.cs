@@ -1530,7 +1530,9 @@
                     else
                     {
                         return new MethodCallArg
-                        { Value = new NullExpression { } };
+                        {
+                            Value = (ExpressionSer)GetConstantValue(parameter.ExplicitDefaultValue)
+                        };
                     }
                 })
                 .ToList();
