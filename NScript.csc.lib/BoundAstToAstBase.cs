@@ -1422,6 +1422,10 @@
 
             switch (constValue)
             {
+                case bool i:
+                    return new BoolLiteralExpression
+                    { Value = i };
+
                 case byte i:
                     return new ByteLiteralExpression
                     { Value = i };

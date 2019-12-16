@@ -109,7 +109,9 @@ namespace NScript.Converter.ExpressionsConverter
 
             delegateConverterArgs.Add(
                 converter.ResolveMethodSlotName(
-                    expression.Method.MethodReference,
+                    isVirtualCall
+                        ? converter.RuntimeManager.Context.ClrContext.GetBaseSlotForVirtual(expression.Method.MethodReference)
+                        : expression.Method.MethodReference,
                     isVirtualCall,
                     converter.Scope));
 
