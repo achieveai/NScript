@@ -1224,11 +1224,16 @@ namespace JsCsc.Lib
             return new InlinePropertyInitilizationExpression(
                 this._clrContext,
                 this.LocFromJObject(jObject),
-                new NewObjectExpression(
-                    this._clrContext,
-                    this.LocFromJObject(jObject),
-                    this.DeserializeMethod(jObject.Method),
-                    args),
+                jObject.Method == 0
+                    ? (Expression)new DefaultValueExpression(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        this.DeserializeType(jObject.Type))
+                    : new NewObjectExpression(
+                        this._clrContext,
+                        this.LocFromJObject(jObject),
+                        this.DeserializeMethod(jObject.Method),
+                        args),
                 setters); ;
         }
 

@@ -965,7 +965,9 @@
         {
             var location = node.Syntax.Location.GetSerLoc();
             var type = arg.SymbolSerializer.GetTypeSpecId(node.Type);
-            var method = arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
+            var method = node.Constructor.IsDefaultValueTypeConstructor()
+                ? 0
+                : arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
             var arguments = ToArgs(node.Constructor, node.Arguments, arg);
 
             if (node.InitializerExpressionOpt == null)

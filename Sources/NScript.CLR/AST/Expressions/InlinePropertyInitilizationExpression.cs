@@ -37,7 +37,7 @@ namespace NScript.CLR.AST
         public InlinePropertyInitilizationExpression(
             ClrContext context,
             Location locationInfo,
-            NewObjectExpression newObjectExpression,
+            Expression newObjectExpression,
             List<Tuple<MemberReferenceExpression, Expression[]>> setters)
             : base(context, locationInfo)
         {
@@ -50,7 +50,7 @@ namespace NScript.CLR.AST
         /// Gets the constructor.
         /// </summary>
         /// <value>The constructor.</value>
-        public NewObjectExpression Constructor { get; private set; }
+        public Expression Constructor { get; private set; }
 
         /// <summary>
         /// Gets the setters.
