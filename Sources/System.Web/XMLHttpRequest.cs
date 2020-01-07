@@ -14,25 +14,14 @@ namespace System.Web
     /// </summary>
     public enum ReadyState
     {
-        /// <summary>
-        /// .
-        /// </summary>
         Unsent = 0,
-        /// <summary>
-        /// .
-        /// </summary>
+
         Opened = 1,
-        /// <summary>
-        /// .
-        /// </summary>
+
         HeadersReceived = 2,
-        /// <summary>
-        /// .
-        /// </summary>
+
         Loading = 3,
-        /// <summary>
-        /// .
-        /// </summary>
+
         Done = 4
     }
 
@@ -166,12 +155,15 @@ namespace System.Web
             Action<NativeArray<T>, short, bool> cb,
             string acceptType = "*",
             string[] headerPair = null,
-            int timeout = -1)
+            int timeout = 0)
         {
             XMLHttpRequest.GetRaw(
                 url,
                 (request, code, error) =>
-                { if (cb != null) cb(error ? null : (NativeArray<T>)request.Response, code, error); },
+                    cb?.Invoke(
+                        error
+                        ? null
+                        : (NativeArray<T>)request.Response, code, error),
                 XMLHttpRequest.ArrayBufferType,
                 acceptType,
                 headerPair,
@@ -193,10 +185,10 @@ namespace System.Web
             string url,
             string acceptType = "*",
             string[] headerPair = null,
-            int timeout=-1)
+            int timeout = 0)
         {
             return new Promise<NativeArray<T>>(
-                delegate(Action<NativeArray<T>> resolve, Action<object> reject)
+                (Action<NativeArray<T>> resolve, Action<object> reject) =>
                 {
                     XMLHttpRequest.GetArrayBuffer<T>(
                         url,
@@ -227,12 +219,15 @@ namespace System.Web
             Action<Blob, short, bool> cb,
             string acceptType = "*",
             string[] headerPair = null,
-            int timeout = -1)
+            int timeout = 0)
         {
             XMLHttpRequest.GetRaw(
                 url,
                 (request, code, error) =>
-                { if (cb != null) cb(error ? null : (Blob)request.Response, code, error); },
+                    cb?.Invoke(
+                        error
+                        ? null
+                        : (Blob)request.Response, code, error),
                 XMLHttpRequest.BlobType,
                 acceptType,
                 headerPair,
@@ -253,10 +248,10 @@ namespace System.Web
             string url,
             string acceptType = "*",
             string[] headerPair = null,
-            int timeout=-1)
+            int timeout = 0)
         {
             return new Promise<Blob>(
-                delegate(Action<Blob> resolve, Action<object> reject)
+                (Action<Blob> resolve, Action<object> reject) =>
                 {
                     XMLHttpRequest.GetBlob(
                         url,
@@ -287,11 +282,11 @@ namespace System.Web
             Action<string, short, bool> cb,
             string acceptType = "text/*",
             string[] headerPair = null,
-            int timeout = -1)
+            int timeout = 0)
         {
             XMLHttpRequest.GetRaw(
                 url,
-                (request, code, error) => { if (cb != null) cb(request.ResponseText, code, error); },
+                (request, code, error) => cb?.Invoke(request.ResponseText, code, error),
                 null,
                 acceptType,
                 headerPair,
@@ -312,10 +307,10 @@ namespace System.Web
             string url,
             string acceptType = "*",
             string[] headerPair = null,
-            int timeout=-1)
+            int timeout = 0)
         {
             return new Promise<string>(
-                delegate(Action<string> resolve, Action<object> reject)
+                (Action<string> resolve, Action<object> reject) =>
                 {
                     XMLHttpRequest.Get(
                         url,
@@ -347,7 +342,7 @@ namespace System.Web
             string responseType,
             string acceptType = "text/*",
             string[] headerPair = null,
-            int timeout = -1)
+            int timeout = 0)
         {
             var request = new XMLHttpRequest();
             request.Open("GET", url, true);
@@ -363,26 +358,23 @@ namespace System.Web
                 }
             }
 
+            void OnLoad(XMLHttpRequest _, ProgressEvent __)
+            {
+                EventBinder.CleanUp(request);
+                cb?.Invoke(request, request.Status, request.Status >= 400);
+            }
+
+            void OnError(XMLHttpRequest _, ProgressEvent __)
+            {
+                EventBinder.CleanUp(request);
+                cb?.Invoke(request, request.Status, true);
+            }
+
             if (cb != null)
             {
-                request.OnLoad +=
-                    (s, e) =>
-                    {
-                        EventBinder.CleanUp(request);
-                        if (cb != null)
-                        { cb(request, request.Status, request.Status >= 400); }
-                    };
-
-                Action<XMLHttpRequest, ProgressEvent> errorCb = 
-                    (s, e) =>
-                    {
-                        EventBinder.CleanUp(request);
-                        if (cb != null)
-                        { cb(request, request.Status, true); }
-                    };
-
-                request.OnError += errorCb;
-                request.OnTimeout += errorCb;
+                request.OnLoad += OnLoad;
+                request.OnError += OnError;
+                request.OnTimeout += OnError;
             }
 
             if (!string.IsNullOrEmpty(responseType))
@@ -407,10 +399,10 @@ namespace System.Web
             string responseType,
             string acceptType = "*",
             string[] headerPair = null,
-            int timeout=-1)
+            int timeout = 0)
         {
             return new Promise<XMLHttpRequest>(
-                delegate(Action<XMLHttpRequest> resolve, Action<object> reject)
+                (Action<XMLHttpRequest> resolve, Action<object> reject) =>
                 {
                     XMLHttpRequest.GetRaw(
                         url,
@@ -445,7 +437,8 @@ namespace System.Web
             string contentType,
             object data,
             string acceptType = "text/*",
-            string[] headerPair = null)
+            string[] headerPair = null,
+            int timeout = 0)
         {
             XMLHttpRequest.PostRaw(
                 url,
@@ -453,7 +446,8 @@ namespace System.Web
                 contentType,
                 data,
                 acceptType,
-                headerPair);
+                headerPair,
+                timeout);
         }
 
         /// <summary>
@@ -469,12 +463,15 @@ namespace System.Web
             string contentType,
             object data,
             string acceptType = "text/*",
-            string[] headerPair = null)
+            string[] headerPair = null,
+            int timeout = 0)
         {
             var request = new XMLHttpRequest();
             request.Open("POST", url, true);
             request.SetRequestHeader("Content-Type", contentType);
             request.SetRequestHeader("Accept", acceptType);
+            request.Timeout = timeout;
+
             if (headerPair != null)
             {
                 for (int iHeader = 0; iHeader < headerPair.Length - 1; iHeader+=2)
@@ -483,23 +480,25 @@ namespace System.Web
                 }
             }
 
+            void OnLoad(XMLHttpRequest _, ProgressEvent __)
+            {
+                EventBinder.CleanUp(request);
+                cb?.Invoke(request, request.Status, request.Status >= 400);
+            }
+
+            void OnError(XMLHttpRequest _, ProgressEvent __)
+            {
+                EventBinder.CleanUp(request);
+                cb?.Invoke(request, request.Status, true);
+            }
+
             if (cb != null)
             {
-                request.OnLoad +=
-                    (s, e) =>
-                    {
-                        EventBinder.CleanUp(request);
-                        if (cb != null)
-                        { cb(request, request.Status, request.Status >= 400); }
-                    };
+                request.OnLoad += OnLoad;
 
-                request.OnError +=
-                    (s, e) =>
-                    {
-                        EventBinder.CleanUp(request);
-                        if (cb != null)
-                        { cb(request, request.Status, true); }
-                    };
+                request.OnError += OnError;
+
+                request.OnTimeout += OnError;
             }
 
             request.Send(data);
@@ -521,10 +520,11 @@ namespace System.Web
             string contentType,
             object data,
             string acceptType = "*",
-            string[] headerPair = null)
+            string[] headerPair = null,
+            int timeout = 0)
         {
             return new Promise<string>(
-                delegate(Action<string> resolve, Action<object> reject)
+                (Action<string> resolve, Action<object> reject) =>
                 {
                     XMLHttpRequest.Post(
                         url,
@@ -542,7 +542,8 @@ namespace System.Web
                         contentType,
                         data,
                         acceptType,
-                        headerPair);
+                        headerPair,
+                        timeout);
                 });
         }
 
@@ -551,10 +552,11 @@ namespace System.Web
             string contentType,
             object data,
             string acceptType = "*",
-            string[] headerPair = null)
+            string[] headerPair = null,
+            int timeout = 0)
         {
             return new Promise<XMLHttpRequest>(
-                delegate(Action<XMLHttpRequest> resolve, Action<object> reject)
+                (Action<XMLHttpRequest> resolve, Action<object> reject) =>
                 {
                     XMLHttpRequest.PostRaw(
                         url,
@@ -568,7 +570,8 @@ namespace System.Web
                         contentType,
                         data,
                         acceptType,
-                        headerPair);
+                        headerPair,
+                        timeout);
                 });
         }
 

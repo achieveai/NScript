@@ -125,6 +125,24 @@ namespace RealScript
         /// <param name="objs">The objs.</param>
         public void ProcessItems(string foo, params InlineComplexStatements[] objs)
         {
+            Console.WriteLine(foo);
+            Console.WriteLine(objs.Length);
+        }
+
+        /// <summary>
+        /// Tests the args.
+        /// </summary>
+        public void TestVarArgs2()
+        {
+            this.ProcessItems(
+                "string",
+                new[]
+                {
+                    new InlineComplexStatements(10),
+                    new InlineComplexStatements(10.2),
+                    new InlineComplexStatements(1),
+                    new InlineComplexStatements(15)
+                });
         }
 
         /// <summary>

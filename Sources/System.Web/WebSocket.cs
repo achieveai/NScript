@@ -76,14 +76,17 @@ namespace System.Web
         /// .
         /// </summary>
         Connecting,
+
         /// <summary>
         /// .
         /// </summary>
         Open,
+
         /// <summary>
         /// .
         /// </summary>
         Closing,
+
         /// <summary>
         /// .
         /// </summary>

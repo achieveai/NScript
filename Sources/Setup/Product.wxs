@@ -191,11 +191,11 @@
       </Component>
 
       <Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
+        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript.VSTDIR" />
         <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application.zip" />
         <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Windows_Application.zip" />
         <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Library.zip" />
         <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Test.zip" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript.VSTDIR" />
       </Component>
     </ComponentGroup>
   </Fragment>

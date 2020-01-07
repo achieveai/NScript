@@ -27,6 +27,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [Test]
         [TestCase(TestClassNameStr, "ReturnInlineObjectArray", "ReturnInlineObjectArray.js", TestType.All)]
         [TestCase(TestClassNameStr, "TestVarArgs", "VarArgs.js", TestType.All)]
+        [TestCase(TestClassNameStr, "TestVarArgs2", "VarArgs2.js", TestType.All)]
+        [TestCase(TestClassNameStr, "ProcessItems", "ProcessItems.js", TestType.All)]
         [TestCase(TestClassNameStr, "ReturnInlineSettersElement", "ReturnInlineSettersElement.js", TestType.All)]
         [TestCase(TestClassNameStr, "CallMethodWithInlineSettersElement", "CallMethodWithInlineSettersElement.js", TestType.All)]
         [TestCase(TestClassNameStr, "ReturnInlineConstIntArray", "ReturnInlineConstIntArray.js", TestType.All)]

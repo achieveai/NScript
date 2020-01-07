@@ -24,6 +24,9 @@
             BoundStatementList initializers,
             SerializationContext arg)
         {
+            if (methodSymbol.Name.StartsWith("TestVarArgs"))
+            { }
+
             var methodId = arg
                 .SymbolSerializer
                 .GetMethodSpecId(methodSymbol);
@@ -1488,13 +1491,13 @@
         {
             return Enumerable
                 .Range(0, method.Parameters.Length)
-                .Select(_ =>
+                .Select(paramIdx =>
                 {
-                    var parameter = method.Parameters[_];
+                    var parameter = method.Parameters[paramIdx];
 
                     if (parameter.IsParams)
                     {
-                        if (nodes.Count <= _)
+                        if (nodes.Count <= paramIdx)
                         {
                             return new MethodCallArg
                             {
@@ -1509,6 +1512,17 @@
                                 }
                             };
                         }
+                        else if (nodes.Count == paramIdx + 1
+                            && nodes[nodes.Count - 1].Type.Equals(parameter.Type))
+                        {
+                            return new MethodCallArg
+                            {
+                                IsByRef = parameter.RefKind == RefKind.Ref
+                                    || parameter.RefKind == RefKind.Out
+                                    || parameter.RefKind == RefKind.RefReadOnly,
+                                Value = (ExpressionSer)this.Visit(nodes[paramIdx], arg)
+                            };
+                        }
 
                         return new MethodCallArg
                         {
@@ -1517,20 +1531,20 @@
                                 ArrayType = arg.SymbolSerializer.GetTypeSpecId(parameter.Type),
                                 ElementType = arg.SymbolSerializer.GetTypeSpecId(
                                     ((IArrayTypeSymbol)parameter.Type).ElementType),
-                                Initializers = nodes.Skip(_)
+                                Initializers = nodes.Skip(paramIdx)
                                     .Select(_a => (ExpressionSer)this.Visit(_a, arg))
                                     .ToList()
                             }
                         };
                     }
-                    else if (nodes.Count > _)
+                    else if (nodes.Count > paramIdx)
                     {
                         return new MethodCallArg
                         {
                             IsByRef = parameter.RefKind == RefKind.Ref
                                 || parameter.RefKind == RefKind.Out
                                 || parameter.RefKind == RefKind.RefReadOnly,
-                            Value = (ExpressionSer)this.Visit(nodes[_], arg)
+                            Value = (ExpressionSer)this.Visit(nodes[paramIdx], arg)
                         };
                     }
                     else
