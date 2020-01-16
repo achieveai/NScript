@@ -982,7 +982,7 @@ namespace NScript.Converter.TypeSystemConverter
                     scopeStack.RemoveFirst();
                 }
 
-                IIdentifier delegateFunctionNameId = 
+                IIdentifier delegateFunctionNameId =
                     localMethodName
                     ?? SimpleIdentifier.CreateScopeIdentifier(
                         RuntimeManager.Scope,
@@ -1268,7 +1268,6 @@ namespace NScript.Converter.TypeSystemConverter
                 this.InitializeImportedWrapper(returnValue);
             }
 
-
             returnValue.AddRange(scopeBlock.Statements);
             return returnValue;
         }
@@ -1289,16 +1288,20 @@ namespace NScript.Converter.TypeSystemConverter
                     case IntrestLevel.PreEmitStatements:
                         statements.InsertRange(0, plugin.GetPreInsertionStatements(this));
                         break;
+
                     case IntrestLevel.PostEmitStatements:
                         statements.AddRange(plugin.GetPostInsertionStatements(this));
                         break;
+
                     case IntrestLevel.Encapsulate:
                         statements = plugin.GetEncapsulationStatements(this, statements);
                         break;
+
                     case IntrestLevel.Overwrite:
                         statements = plugin.GetOverwrite(this);
                         functionExpression.AddStatements(statements);
                         return functionExpression;
+
                     case IntrestLevel.None:
                     default:
                         break;
@@ -1487,7 +1490,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <exception cref="InvalidProgramException"> Thrown when an Invalid Program error condition
         ///     occurs. </exception>
         /// <param name="returnValue"> The return value. </param>
-        private void GenerateCompilerImplemented(List<Statement> returnValue )
+        private void GenerateCompilerImplemented(List<Statement> returnValue)
         {
             if (this.HasWrappedField())
             {
@@ -1619,7 +1622,7 @@ namespace NScript.Converter.TypeSystemConverter
                     this.Scope,
                     this.ResolveStaticMember(
                         this.MethodDefinition.IsAddOn
-                            ?  this.context.KnownReferences.AddEventMethod
+                            ? this.context.KnownReferences.AddEventMethod
                             : this.context.KnownReferences.RemoveEventMethod)),
                 new JST.IdentifierExpression(this.thisIdentifier, this.Scope),
                 new JST.StringLiteralExpression(this.Scope, this.GetNativeEventName()),
@@ -1845,7 +1848,7 @@ namespace NScript.Converter.TypeSystemConverter
             for (int iParameter = 0; iParameter < this.methodDefinition.Parameters.Count; iParameter++)
             {
                 var parameterType = this.methodDefinition.Parameters[iParameter].ParameterType;
-                var parameterExpression = 
+                var parameterExpression =
                         new IdentifierExpression(
                             this.ResolveArgument(this.methodDefinition.Parameters[iParameter].Name),
                             this.Scope);
@@ -1980,7 +1983,8 @@ namespace NScript.Converter.TypeSystemConverter
                 else
                 {
                     return new JST.IdentifierExpression(
-                        new CompoundIdentifier(this.thisIdentifier, 
+                        new CompoundIdentifier(
+                            this.thisIdentifier,
                             this.Resolve(this.KnownReferences.ImportedExtensionField)),
                             this.Scope);
                 }

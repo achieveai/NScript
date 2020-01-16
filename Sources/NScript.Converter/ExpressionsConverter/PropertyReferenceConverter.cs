@@ -75,6 +75,22 @@ namespace NScript.Converter.ExpressionsConverter
 
                 MethodCallContext callContext = null;
                 var methodDefinition = (value == null ? propertyDefinition.GetMethod : propertyDefinition.SetMethod);
+                if (methodDefinition == null)
+                {
+                    return new JST.BinaryExpression(
+                        null,
+                        converter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        new JST.IndexExpression(
+                           null,
+                           converter.Scope,
+                           converter.ResolveThis(converter.Scope, null),
+                           new JST.IdentifierExpression(
+                               converter.RuntimeManager.Resolve(propertyDefinition),
+                               converter.Scope)),
+                        value);
+                }
+
                 var methodReference = methodDefinition.FixGenericTypeArguments(expression.PropertyReference.DeclaringType);
                 MemberReferenceConverter.FixMethodReference(converter.RuntimeManager.Context, ref methodReference);
 
