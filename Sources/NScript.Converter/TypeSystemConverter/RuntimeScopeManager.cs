@@ -289,10 +289,10 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="types">The types.</param>
         /// <returns>List of statements.</returns>
-        public List<Statement> Convert(IList<TypeDefinition> types, IRuntimeConverterPlugin[] plugins = null)
+        public List<Statement> ConvertForTests(IList<TypeDefinition> types, IRuntimeConverterPlugin[] plugins = null)
         {
-            List<TypeConverter> typeConverters = new List<TypeConverter>();
-            Dictionary<TypeDefinition, TypeConverter> convertersAdded = new Dictionary<TypeDefinition, TypeConverter>();
+            var typeConverters = new List<TypeConverter>();
+            var convertersAdded = new Dictionary<TypeDefinition, TypeConverter>();
 
             foreach (var typeDefinition in types)
             {
@@ -302,7 +302,7 @@ namespace NScript.Converter.TypeSystemConverter
                     continue;
                 }
 
-                TypeConverter typeConverter = TypeConverter.Create(
+                var typeConverter = TypeConverter.Create(
                     this,
                     typeDefinition);
 
@@ -310,10 +310,10 @@ namespace NScript.Converter.TypeSystemConverter
                 typeConverters.Add(typeConverter);
             }
 
-            List<Statement> returnValue = new List<Statement>();
-            HashSet<TypeDefinition> typeRegistered = new HashSet<TypeDefinition>();
-            HashSet<TypeReference> typeReferencesRegistered = new HashSet<TypeReference>(new MemberReferenceComparer());
-            HashSet<TypeDefinition> typesToRegister = new HashSet<TypeDefinition>(types);
+            var returnValue = new List<Statement>();
+            var typeRegistered = new HashSet<TypeDefinition>();
+            var typeReferencesRegistered = new HashSet<TypeReference>(new MemberReferenceComparer());
+            var typesToRegister = new HashSet<TypeDefinition>(types);
             List<TypeReference> typesToConvert = this.DependencyAnalyzer.GetTypeReferenceDependencies(types);
 
             // Here we will register all the concrete types and their dependencies.
@@ -441,11 +441,11 @@ namespace NScript.Converter.TypeSystemConverter
 
                 // Now we have all the typeDefinitions and typeReferences that we need to work with.
                 // Now let's crate JST for the script.
-                HashSet<TypeDefinition> typeRegistered = new HashSet<TypeDefinition>();
-                HashSet<TypeReference> typeReferencesRegistered = new HashSet<TypeReference>();
-                List<TypeReference> typesToConvert = this.DependencyAnalyzer.GetTypeReferenceDependencies(
+                var typeRegistered = new HashSet<TypeDefinition>();
+                var typeReferencesRegistered = new HashSet<TypeReference>();
+                var typesToConvert = this.DependencyAnalyzer.GetTypeReferenceDependencies(
                     this.typesDefinitionsUsed.Keys);
-                List<TypeReference> typesInitializedInOrder = new List<TypeReference>();
+                var typesInitializedInOrder = new List<TypeReference>();
 
                 // Here we will register all the concrete types and their dependencies.
                 foreach (var typeReference in typesToConvert)
@@ -484,7 +484,6 @@ namespace NScript.Converter.TypeSystemConverter
 
                                     typeReferencesRegistered.Add(dependentTypeReference);
                                     typesInitializedInOrder.Add(dependentTypeReference);
-
 
                                     if (!this.context.HasIgnoreNamespaceAttribute(dependentTypeReference.Resolve())
                                         && !this.context.IsExtended(dependentTypeReference.Resolve()))
@@ -705,7 +704,7 @@ namespace NScript.Converter.TypeSystemConverter
                     || this.context.IsPsudoType(typeDefinition);
 
                 // Imported types do not have generic symbols.
-                // 
+                //
                 if (typeDefinition.HasGenericParameters
                     && isExtended
                     && typeName.Item2.Contains("`"))
@@ -738,7 +737,7 @@ namespace NScript.Converter.TypeSystemConverter
 
                     resolvedIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                         nameSpace.Scope,
-                        isExtended  || string.IsNullOrEmpty(typeName.Item1)
+                        isExtended || string.IsNullOrEmpty(typeName.Item1)
                             ? typeName.Item2
                             : (typeName.Item2).Replace('.', '_'),
                         isExtended);
@@ -1473,7 +1472,7 @@ namespace NScript.Converter.TypeSystemConverter
                 var typeReference = this.usedTypeReferencesToProcess.Dequeue();
                 if (this.typeReferencesUsed.Contains(typeReference)
                     || typeReference.IsGenericParameter
-                    || (typeReference.IsArray && typeReference.GetElementType().IsGenericParameter) )
+                    || (typeReference.IsArray && typeReference.GetElementType().IsGenericParameter))
                 {
                     continue;
                 }
@@ -1537,15 +1536,13 @@ namespace NScript.Converter.TypeSystemConverter
 
                 // Currently we only process field and methods. We do this because
                 // even properties will show up as methods anyways.
-                MethodDefinition method = memberDefinition as MethodDefinition;
-                if (method != null)
+                if (memberDefinition is MethodDefinition method)
                 {
                     this.typesDefinitionsUsed[method.DeclaringType].AddMethodToImplementation(method);
                     continue;
                 }
 
-                FieldDefinition fieldDefinition = memberDefinition as FieldDefinition;
-                if (fieldDefinition != null)
+                if (memberDefinition is FieldDefinition fieldDefinition)
                 {
                     this.typesDefinitionsUsed[fieldDefinition.DeclaringType].AddFieldToImplementation(fieldDefinition);
                 }

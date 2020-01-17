@@ -6,11 +6,11 @@
 
 namespace JsCsc.Lib.Serialization
 {
+    using ProtoBuf;
     using System;
     using System.Collections.Generic;
-    using ProtoBuf;
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(103, typeof(LocalVariableSer))]
     [ProtoInclude(105, typeof(ExpressionSer))]
     [ProtoInclude(106, typeof(StatementSer))]
@@ -24,7 +24,7 @@ namespace JsCsc.Lib.Serialization
         public LocationSer Location { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(104, typeof(ParameterSer))]
     [Serializable]
     public class LocalVariableSer
@@ -35,9 +35,9 @@ namespace JsCsc.Lib.Serialization
         public string Name { get; set; }
 
         public int BlockId { get; set; }
-   }
+    }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ParameterSer
         : LocalVariableSer
@@ -45,7 +45,7 @@ namespace JsCsc.Lib.Serialization
         public int Modifier { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(108, typeof(NullExpression))]
     [ProtoInclude(180, typeof(ByteLiteralExpression))]
     [ProtoInclude(181, typeof(SByteLiteralExpression))]
@@ -115,6 +115,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(213, typeof(ConditionalAccess))]
     [ProtoInclude(214, typeof(ConditionalReceiver))]
     [ProtoInclude(216, typeof(LocalMethodCallExpression))]
+    [ProtoInclude(217, typeof(LocalMethodExpression))]
     [Serializable]
     public abstract class ExpressionSer
         : AstBase
@@ -122,7 +123,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse_ { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(140, typeof(ThrowExpression))]
     [ProtoInclude(153, typeof(StatementExpressionSer))]
     [ProtoInclude(155, typeof(YieldBreakStatement))]
@@ -147,7 +148,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse_ { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(172, typeof(ExplicitBlockSer))]
     [Serializable]
     public class BlockSer
@@ -168,7 +169,7 @@ namespace JsCsc.Lib.Serialization
         public int ScopeBlockId { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class LocalMethodIdentitySer
     {
@@ -185,7 +186,7 @@ namespace JsCsc.Lib.Serialization
         { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class NullExpression
         : ExpressionSer
@@ -193,77 +194,77 @@ namespace JsCsc.Lib.Serialization
         public bool None { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class ByteLiteralExpression : ExpressionSer
-	{public byte Value { get; set; } }
+    public class ByteLiteralExpression : ExpressionSer
+    { public byte Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class SByteLiteralExpression : ExpressionSer
-	{public sbyte Value { get; set; } }
+    public class SByteLiteralExpression : ExpressionSer
+    { public sbyte Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class CharLiteralExpression : ExpressionSer
-	{public char Value { get; set; } }
+    public class CharLiteralExpression : ExpressionSer
+    { public char Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class ShortLiteralExpression : ExpressionSer
-	{public short Value { get; set; } }
+    public class ShortLiteralExpression : ExpressionSer
+    { public short Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class UShortLiteralExpression : ExpressionSer
-	{public ushort Value { get; set; } }
+    public class UShortLiteralExpression : ExpressionSer
+    { public ushort Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class IntLiteralExpression : ExpressionSer
-	{public int Value { get; set; } }
+    public class IntLiteralExpression : ExpressionSer
+    { public int Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class UIntLiteralExpression : ExpressionSer
-	{public uint Value { get; set; } }
+    public class UIntLiteralExpression : ExpressionSer
+    { public uint Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class LongLiteralExpression : ExpressionSer
-	{public long Value { get; set; } }
+    public class LongLiteralExpression : ExpressionSer
+    { public long Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class ULongLiteralExpression : ExpressionSer
-	{public ulong Value { get; set; } }
+    public class ULongLiteralExpression : ExpressionSer
+    { public ulong Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class FloatLiteralExpression : ExpressionSer
-	{public float Value { get; set; } }
+    public class FloatLiteralExpression : ExpressionSer
+    { public float Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class DoubleLiteralExpression : ExpressionSer
-	{public double Value { get; set; } }
+    public class DoubleLiteralExpression : ExpressionSer
+    { public double Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class BoolLiteralExpression : ExpressionSer
-	{public bool Value { get; set; } }
+    public class BoolLiteralExpression : ExpressionSer
+    { public bool Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class StringLiteralExpression : ExpressionSer
-	{public string Value { get; set; } }
+    public class StringLiteralExpression : ExpressionSer
+    { public string Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-	public class DecimalLiteralExpression : ExpressionSer
-	{public decimal Value { get; set; } }
+    public class DecimalLiteralExpression : ExpressionSer
+    { public decimal Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class MethodCallArg
         : AstBase
@@ -273,7 +274,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Value { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(112, typeof(StrCatExpression))]
     [ProtoInclude(113, typeof(NewExpression))]
     [ProtoInclude(124, typeof(ConstructorInitializerExpression))]
@@ -290,7 +291,7 @@ namespace JsCsc.Lib.Serialization
         public List<MethodCallArg> Arguments { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class LocalMethodCallExpression
         : ExpressionSer
@@ -304,7 +305,7 @@ namespace JsCsc.Lib.Serialization
         public List<MethodCallArg> Arguments { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class UserDefinedBinaryOrUnaryOpExpression
         : MethodCallExpression
@@ -316,7 +317,7 @@ namespace JsCsc.Lib.Serialization
         { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class StrCatExpression
         : MethodCallExpression
@@ -324,7 +325,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(115, typeof(NewInitializerExpression))]
     [ProtoInclude(212, typeof(NewCollectionInitializerExpression))]
     [Serializable]
@@ -334,7 +335,7 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ObjectInitilaizer
         : AstBase
@@ -352,7 +353,7 @@ namespace JsCsc.Lib.Serialization
         public int? Property { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class NewInitializerExpression
         : NewExpression
@@ -360,7 +361,7 @@ namespace JsCsc.Lib.Serialization
         public List<ObjectInitilaizer> Initializers { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class NewCollectionInitializerExpression
         : NewExpression
@@ -368,7 +369,7 @@ namespace JsCsc.Lib.Serialization
         public List<MethodCallExpression> ItemInitializers { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class NewAnonymoustype
         : ExpressionSer
@@ -376,7 +377,7 @@ namespace JsCsc.Lib.Serialization
         public Dictionary<string, ExpressionSer> Initializers { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class MethodExpression
         : ExpressionSer
@@ -388,7 +389,19 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Instance { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class LocalMethodExpression
+        : ExpressionSer
+    {
+        public string MethodName { get; set; }
+
+        public int ReturnType { get; set; }
+
+        public List<int> GenericParameters { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class FieldExpression
         : ExpressionSer
@@ -396,9 +409,9 @@ namespace JsCsc.Lib.Serialization
         public int Field { get; set; }
 
         public ExpressionSer Instance { get; set; }
-   }
+    }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(120, typeof(IndexExpression))]
     [Serializable]
     public class PropertyExpression
@@ -411,7 +424,7 @@ namespace JsCsc.Lib.Serialization
         public int Property { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class EventExpression : ExpressionSer
     {
@@ -422,7 +435,7 @@ namespace JsCsc.Lib.Serialization
         public int Event { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class IndexExpression
         : PropertyExpression
@@ -430,7 +443,7 @@ namespace JsCsc.Lib.Serialization
         public List<MethodCallArg> Arguments { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DynamicMemberExpression
         : ExpressionSer
@@ -440,7 +453,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Instance { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DynamicIndexBinderExpression
         : ExpressionSer
@@ -450,7 +463,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Index { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DynamicMethodBinderExpression
         : ExpressionSer
@@ -462,7 +475,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Value { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DynamicMethodInvocationExpression
         : ExpressionSer
@@ -472,7 +485,7 @@ namespace JsCsc.Lib.Serialization
         public List<MethodCallArg> Arguments { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DelegateInvocationExpression
         : ExpressionSer
@@ -482,7 +495,7 @@ namespace JsCsc.Lib.Serialization
         public List<MethodCallArg> Arguments { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ConstructorInitializerExpression
         : MethodCallExpression
@@ -490,7 +503,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DefaultValueExpr
         : ExpressionSer
@@ -498,7 +511,7 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class TypeExpressionSer
         : ExpressionSer
@@ -506,7 +519,7 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class UserCastExpression
         : MethodCallExpression
@@ -514,7 +527,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class TypeCastExpression
         : ExpressionSer
@@ -526,14 +539,14 @@ namespace JsCsc.Lib.Serialization
         public bool IsUnbox { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class NullableToNormal : ExpressionSer
     {
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DelegateCreationExpression
         : ExpressionSer
@@ -543,7 +556,7 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ArrayCreationExpression
         : ExpressionSer
@@ -557,7 +570,7 @@ namespace JsCsc.Lib.Serialization
         public List<ExpressionSer> Arguments { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(132, typeof(BaseThisExpression))]
     [Serializable]
     public class ThisExpression
@@ -566,7 +579,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class BaseThisExpression
         : ThisExpression
@@ -574,7 +587,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse2 { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class TypeOfExpression
         : ExpressionSer
@@ -582,7 +595,7 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ElementAccessExpression
         : ExpressionSer
@@ -592,7 +605,7 @@ namespace JsCsc.Lib.Serialization
         public List<MethodCallArg> Arguments { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(136, typeof(CompoundAssignExpression))]
     [Serializable]
     public class AssignExpression
@@ -603,7 +616,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Right { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class CompoundAssignExpression
         : AssignExpression
@@ -611,7 +624,7 @@ namespace JsCsc.Lib.Serialization
         public int Operator { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class BoxCastExpression
         : ExpressionSer
@@ -619,7 +632,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class NullConstantExpression
         : ExpressionSer
@@ -627,91 +640,91 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class BoolConstantExpression
         : ExpressionSer
-    {public bool Value { get; set; } }
+    { public bool Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ByteConstantExpression
         : ExpressionSer
-    {public byte Value { get; set; } }
+    { public byte Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class SbyteConstantExpression
         : ExpressionSer
-    {public sbyte Value { get; set; } }
+    { public sbyte Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class CharConstantExpression
         : ExpressionSer
-    {public char Value { get; set; } }
+    { public char Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ShortConstantExpression
         : ExpressionSer
-    {public short Value { get; set; } }
+    { public short Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class UshortConstantExpression
         : ExpressionSer
-    {public ushort Value { get; set; } }
+    { public ushort Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class IntConstantExpression
         : ExpressionSer
-    {public int Value { get; set; } }
+    { public int Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class UintConstantExpression
         : ExpressionSer
-    {public uint Value { get; set; } }
+    { public uint Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class LongConstantExpression
         : ExpressionSer
-    {public long Value { get; set; } }
+    { public long Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class UlongConstantExpression
         : ExpressionSer
-    {public ulong Value { get; set; } }
+    { public ulong Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class FloatConstantExpression
         : ExpressionSer
-    {public float Value { get; set; } }
+    { public float Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DoubleConstantExpression
         : ExpressionSer
-    {public double Value { get; set; } }
+    { public double Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class StringConstantExpression
         : ExpressionSer
-    {public string Value { get; set; } }
+    { public string Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DecimalConstantExpression
         : ExpressionSer
-    {public decimal Value { get; set; } }
+    { public decimal Value { get; set; } }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ThrowExpression
         : StatementSer
@@ -719,7 +732,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class UnwrapExpression
         : ExpressionSer
@@ -727,7 +740,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class WrapExpression
         : ExpressionSer
@@ -735,7 +748,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class LiftedNullExpression
         : ExpressionSer
@@ -743,7 +756,7 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class NullCoalescingOperatorSer
         : ExpressionSer
@@ -753,7 +766,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Right { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class UnaryExpression
         : ExpressionSer
@@ -765,7 +778,7 @@ namespace JsCsc.Lib.Serialization
         public bool IsLifted { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class BinaryExpression
         : ExpressionSer
@@ -779,7 +792,7 @@ namespace JsCsc.Lib.Serialization
         public bool IsLifted { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class IsExpression
         : ExpressionSer
@@ -789,7 +802,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class AsExpression
         : ExpressionSer
@@ -799,7 +812,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ConditionalExpression
         : ExpressionSer
@@ -811,7 +824,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer FalseExpression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ConditionalAccess
         : ExpressionSer
@@ -823,7 +836,7 @@ namespace JsCsc.Lib.Serialization
         { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ConditionalReceiver
         : ExpressionSer
@@ -831,7 +844,7 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(151, typeof(TempVariableRefExpression))]
     [Serializable]
     public class LocalVariableRefExpression
@@ -842,7 +855,7 @@ namespace JsCsc.Lib.Serialization
         public LocalVariableSer LocalVariable { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class TempVariableRefExpression
         : LocalVariableRefExpression
@@ -850,7 +863,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ParameterReferenceExpression
         : ExpressionSer
@@ -858,7 +871,7 @@ namespace JsCsc.Lib.Serialization
         public ParameterSer Parameter { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(154, typeof(YieldStatement))]
     [Serializable]
     public class StatementExpressionSer
@@ -867,7 +880,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class YieldStatement
         : StatementExpressionSer
@@ -875,7 +888,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class YieldBreakStatement
         : StatementSer
@@ -883,7 +896,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class StatementListSer
         : StatementSer
@@ -891,7 +904,7 @@ namespace JsCsc.Lib.Serialization
         public List<StatementSer> Statements { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ReturnStatement
         : StatementSer
@@ -899,7 +912,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Expression { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class BreakStatement
         : StatementSer
@@ -907,7 +920,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ContinueStatement
         : StatementSer
@@ -915,7 +928,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class EmptyStatementSer
         : StatementSer
@@ -923,7 +936,7 @@ namespace JsCsc.Lib.Serialization
         public bool NoUse { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class VariableBlockDeclaration
         : StatementSer
@@ -931,7 +944,7 @@ namespace JsCsc.Lib.Serialization
         public List<ExpressionSer> Initializers { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class IfStatement
         : StatementSer
@@ -943,7 +956,7 @@ namespace JsCsc.Lib.Serialization
         public StatementSer FalseStatement { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(164, typeof(DoStatement))]
     [ProtoInclude(165, typeof(WhileStatement))]
     [ProtoInclude(166, typeof(ForStatement))]
@@ -955,7 +968,7 @@ namespace JsCsc.Lib.Serialization
         public StatementSer Loop { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DoStatement
         : LoopStatement
@@ -963,7 +976,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Condition { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class WhileStatement
         : LoopStatement
@@ -971,7 +984,7 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Condition { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ForStatement
         : LoopStatement
@@ -985,7 +998,7 @@ namespace JsCsc.Lib.Serialization
         public int BlockId { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ForEachStatement
         : LoopStatement
@@ -999,14 +1012,14 @@ namespace JsCsc.Lib.Serialization
         public int BlockId { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class SwitchCaseLabel
     {
         public ExpressionSer LabelValue { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class SwitchSectionSer
         : AstBase
@@ -1016,7 +1029,7 @@ namespace JsCsc.Lib.Serialization
         public StatementSer Block { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class SwitchStatement
         : StatementSer
@@ -1026,7 +1039,7 @@ namespace JsCsc.Lib.Serialization
         public List<SwitchSectionSer> Blocks { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class TryFinallyBlockSer
         : StatementSer
@@ -1036,7 +1049,7 @@ namespace JsCsc.Lib.Serialization
         public StatementSer FinallyBlock { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(175, typeof(ParameterBlock))]
     [Serializable]
     public class ExplicitBlockSer
@@ -1047,7 +1060,7 @@ namespace JsCsc.Lib.Serialization
         public List<string> LocalFunctions { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class CatchBlock
         : StatementSer
@@ -1059,7 +1072,7 @@ namespace JsCsc.Lib.Serialization
         public ExplicitBlockSer Block { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class TryCatchBlock
         : StatementSer
@@ -1069,7 +1082,7 @@ namespace JsCsc.Lib.Serialization
         public List<CatchBlock> CatchBlocks { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ParameterBlock
         : ExplicitBlockSer
@@ -1079,7 +1092,7 @@ namespace JsCsc.Lib.Serialization
         public bool IsMethodOwned { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class IteratorBlock
         : ExpressionSer
@@ -1089,7 +1102,7 @@ namespace JsCsc.Lib.Serialization
         public ParameterBlock Block { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class AnonymousMethodBodyExpr
         : ExpressionSer
@@ -1099,7 +1112,7 @@ namespace JsCsc.Lib.Serialization
         public ParameterBlock Block { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class AnonymousMethodExpr
         : ExpressionSer
@@ -1107,7 +1120,7 @@ namespace JsCsc.Lib.Serialization
         public ParameterBlock Block { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class MethodBody
         : AstBase
@@ -1121,7 +1134,7 @@ namespace JsCsc.Lib.Serialization
         public LocationSer ScriptBlockLocation { get; set; }
     }
 
-    [ProtoContract(ImplicitFields=ImplicitFields.AllPublic)]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class FullAst
     {

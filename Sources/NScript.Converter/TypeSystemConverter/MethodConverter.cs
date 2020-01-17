@@ -4,18 +4,17 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+using Mono.Cecil;
 using NScript.CLR;
 using NScript.CLR.AST;
 using NScript.Converter.StatementsConverter;
 using NScript.JSParser;
 using NScript.JST;
 using NScript.Utils;
-using Mono.Cecil;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using BinaryExpression = NScript.JST.BinaryExpression;
 using BinaryOperator = NScript.JST.BinaryOperator;
 using Expression = NScript.CLR.AST.Expression;
@@ -174,7 +173,7 @@ namespace NScript.Converter.TypeSystemConverter
             context = typeConverter.RuntimeManager.Context;
             clrKnownReferences = context.ClrKnownReferences;
             cnvtKnownReferences = context.KnownReferences;
-            hasGenericArguments = this.context.HasGenericArguments(methodDefinition);
+            hasGenericArguments = context.HasGenericArguments(methodDefinition);
 
             if (methodDefinition.HasGenericParameters
                 && !hasGenericArguments
@@ -193,14 +192,14 @@ namespace NScript.Converter.TypeSystemConverter
                 argumentNames.AddRange(methodDefinition.GenericParameters.Select(g => g.Name));
             }
 
-            if (this.HasStaticImplementation
+            if (HasStaticImplementation
                 && this.methodDefinition.HasThis
-                && !this.IsConstructor)
+                && !IsConstructor)
             {
                 argumentNames.Add(ThisArgument);
             }
 
-            int argumentsStartIndex = argumentNames.Count;
+            var argumentsStartIndex = argumentNames.Count;
             argumentNames.AddRange(methodDefinition.Parameters.Select(a => a.Name));
 
             methodScope = new IdentifierScope(
@@ -212,7 +211,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             if (hasGenericArguments)
             {
-                for (int genericArgumentIndex = 0;
+                for (var genericArgumentIndex = 0;
                      genericArgumentIndex < this.methodDefinition.GenericParameters.Count;
                      genericArgumentIndex++)
                 {
@@ -223,7 +222,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             argumentVariableToIdentifierMapStack.AddFirst(new Dictionary<string, IIdentifier>());
-            for (int argumentIndex = 0;
+            for (var argumentIndex = 0;
                  argumentIndex < methodDefinition.Parameters.Count;
                  argumentIndex++)
             {
@@ -232,7 +231,7 @@ namespace NScript.Converter.TypeSystemConverter
                     methodScope.ParameterIdentifiers[argumentsStartIndex + argumentIndex]);
             }
 
-            if (this.HasStaticImplementation
+            if (HasStaticImplementation
                 && this.methodDefinition.HasThis)
             {
                 if (this.methodDefinition.GenericParameters.Count != argumentsStartIndex)
@@ -241,9 +240,9 @@ namespace NScript.Converter.TypeSystemConverter
                         this.methodDefinition.GenericParameters.Count];
                 }
                 else if (this.methodDefinition.CustomAttributes.SelectAttribute(
-                        this.KnownReferences.IgnoreGenericArgumentsAttribute) != null)
+                        KnownReferences.IgnoreGenericArgumentsAttribute) != null)
                 {
-                    this.thisIdentifier = methodScope.ParameterIdentifiers[0];
+                    thisIdentifier = methodScope.ParameterIdentifiers[0];
                 }
                 else
                 {
@@ -277,19 +276,13 @@ namespace NScript.Converter.TypeSystemConverter
         /// Gets the scope.
         /// </summary>
         /// <value>The scope.</value>
-        public IdentifierScope Scope
-        {
-            get { return scopeStack.First.Value; }
-        }
+        public IdentifierScope Scope => scopeStack.First.Value;
 
         /// <summary>
         /// Gets the runtime manager.
         /// </summary>
         /// <value>The runtime manager.</value>
-        public RuntimeScopeManager RuntimeManager
-        {
-            get { return typeConverter.RuntimeManager; }
-        }
+        public RuntimeScopeManager RuntimeManager => typeConverter.RuntimeManager;
 
         /// <summary>
         /// Gets a value indicating whether this instance is constructor.
@@ -297,42 +290,27 @@ namespace NScript.Converter.TypeSystemConverter
         /// <value>
         /// <c>true</c> if this instance is constructor; otherwise, <c>false</c>.
         /// </value>
-        public bool IsConstructor
-        {
-            get { return methodDefinition.Name == ".ctor"; }
-        }
+        public bool IsConstructor => methodDefinition.Name == ".ctor";
 
         /// <summary>
         /// Gets the CLR known references.
         /// </summary>
-        public ClrKnownReferences ClrKnownReferences
-        {
-            get { return clrKnownReferences; }
-        }
+        public ClrKnownReferences ClrKnownReferences => clrKnownReferences;
 
         /// <summary>
         /// Gets the known references.
         /// </summary>
-        public ConverterKnownReferences KnownReferences
-        {
-            get { return cnvtKnownReferences; }
-        }
+        public ConverterKnownReferences KnownReferences => cnvtKnownReferences;
 
         /// <summary>
         /// Gets the method definition.
         /// </summary>
-        public MethodDefinition MethodDefinition
-        {
-            get { return methodDefinition; }
-        }
+        public MethodDefinition MethodDefinition => methodDefinition;
 
         /// <summary>
         /// Gets the method function expression.
         /// </summary>
-        public FunctionExpression MethodFunctionExpression
-        {
-            get { return methodFunctionExpression; }
-        }
+        public FunctionExpression MethodFunctionExpression => methodFunctionExpression;
 
         /// <summary>
         /// Gets a value indicating whether this instance has static implementation.
@@ -340,21 +318,14 @@ namespace NScript.Converter.TypeSystemConverter
         /// <value>
         /// <c>true</c> if this instance has static implementation; otherwise, <c>false</c>.
         /// </value>
-        public bool HasStaticImplementation
-        {
-            get
-            {
-                return
-                    (this.methodDefinition.HasThis
-                        && (this.context.IsExtended(this.typeConverter.TypeDefinition)
-                            || this.context.IsPsudoType(this.typeConverter.TypeDefinition)
-                            || this.typeConverter.AllStaticMethods
-                            || this.RuntimeManager.ImplementInstanceAsStatic)
-                        && this.methodDefinition.CustomAttributes.SelectAttribute(
-                                this.KnownReferences.KeepInstanceUsageAttribute) == null)
-                    || !this.methodDefinition.HasThis;
-            }
-        }
+        public bool HasStaticImplementation => (methodDefinition.HasThis
+                        && (context.IsExtended(typeConverter.TypeDefinition)
+                            || context.IsPsudoType(typeConverter.TypeDefinition)
+                            || typeConverter.AllStaticMethods
+                            || RuntimeManager.ImplementInstanceAsStatic)
+                        && methodDefinition.CustomAttributes.SelectAttribute(
+                                KnownReferences.KeepInstanceUsageAttribute) == null)
+                    || !methodDefinition.HasThis;
 
         /// <summary>
         /// Gets a value indicating whether this instance is global static implementation.
@@ -362,14 +333,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// <value>
         /// <c>true</c> if this instance is global static implementation; otherwise, <c>false</c>.
         /// </value>
-        public bool IsGlobalStaticImplementation
-        {
-            get
-            {
-                return this.HasStaticImplementation
-                    && !this.typeConverter.IsGenericLike;
-            }
-        }
+        public bool IsGlobalStaticImplementation => HasStaticImplementation
+                    && !typeConverter.IsGenericLike;
 
         /// <summary>
         /// Generates a wrapper expression.
@@ -398,7 +363,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
             else
             {
-                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
+                var genericInstanceType = expressionType as GenericInstanceType;
                 if (genericInstanceType == null
                     || !genericInstanceType.ElementType.Resolve().IsSameDefinition(knownReferences.ListGeneric))
                 {
@@ -443,7 +408,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
             else
             {
-                GenericInstanceType genericInstanceType = expressionType as GenericInstanceType;
+                var genericInstanceType = expressionType as GenericInstanceType;
                 if (genericInstanceType == null
                     || !genericInstanceType.ElementType.IsSameDefinition(knownReferences.ListGeneric))
                 {
@@ -474,7 +439,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             if (methodDefinition.HasAssociatedMember())
             {
-                PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
+                var propertyDefinition = methodDefinition.GetPropertyDefinition();
                 if (propertyDefinition != null
                     && context.IsIntrinsicProperty(propertyDefinition))
                 {
@@ -504,15 +469,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="localIndex">Index of the local.</param>
         /// <returns>Resolved identifier.</returns>
-        public IIdentifier ResolveLocal(string localVariable)
-        {
-            return this.ResolveLocalInternal(localVariable, false);
-        }
+        public IIdentifier ResolveLocal(string localVariable) => ResolveLocalInternal(localVariable, false);
 
-        public IIdentifier ResolveLocalFunction(string localVariable)
-        {
-            return this.ResolveLocalInternal(localVariable, true);
-        }
+        public IIdentifier ResolveLocalFunction(string localVariable) => ResolveLocalInternal(localVariable, true);
 
         /// <summary>
         /// Resolves the argument.
@@ -521,8 +480,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         public IIdentifier ResolveArgument(string argumentName)
         {
-            IIdentifier rv;
-            if (!TryResolveArgument(argumentName, out rv))
+            if (!TryResolveArgument(argumentName, out var rv))
             {
                 throw new ArgumentException(argumentName + " not found");
             }
@@ -577,12 +535,12 @@ namespace NScript.Converter.TypeSystemConverter
         public IList<IIdentifier> Resolve(
             TypeReference typeReference)
         {
-            GenericParameterType? typeScope = typeReference.GetGenericTypeScope();
+            var typeScope = typeReference.GetGenericTypeScope();
 
             // Convert ByRef type to normal type. There is not need to keep it
             // as ByRef type, we do not ever care about byRef part of the type.
             // at least not while referencing the type.
-            ByReferenceType byRefType = typeReference as ByReferenceType;
+            var byRefType = typeReference as ByReferenceType;
             if (byRefType != null)
             { typeReference = byRefType.ElementType; }
 
@@ -607,8 +565,7 @@ namespace NScript.Converter.TypeSystemConverter
                             typeReference));
                 }
 
-                IIdentifier rv;
-                if (!localTypeReferences.TryGetValue(typeReference, out rv))
+                if (!localTypeReferences.TryGetValue(typeReference, out var rv))
                 {
                     var strBuilder = new StringBuilder();
 
@@ -617,10 +574,10 @@ namespace NScript.Converter.TypeSystemConverter
                         strBuilder,
                         (typeDefinitionBase, typeNameBuilder) =>
                         {
-                            string typeName = RuntimeScopeManager.GetSplitName(
+                            var typeName = RuntimeScopeManager.GetSplitName(
                                 typeDefinitionBase.Name).Item2;
 
-                            int apposIndex = typeName.LastIndexOf('`');
+                            var apposIndex = typeName.LastIndexOf('`');
                             if (apposIndex > 0)
                             {
                                 typeName = typeName.Substring(0, apposIndex);
@@ -679,61 +636,43 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="member">The member.</param>
         /// <returns>Resolve static member</returns>
-        public IList<IIdentifier> ResolveStaticMember(FieldReference member)
-        {
-            return typeConverter.ResolveStaticMember(
+        public IList<IIdentifier> ResolveStaticMember(FieldReference member) => typeConverter.ResolveStaticMember(
                 member,
                 Resolve);
-        }
 
         /// <summary>
         /// Resolves the static member.
         /// </summary>
         /// <param name="member">The member.</param>
         /// <returns>Resolve static member</returns>
-        public IList<IIdentifier> ResolveStaticMember(MethodReference member)
-        {
-            return typeConverter.ResolveStaticMember(
+        public IList<IIdentifier> ResolveStaticMember(MethodReference member) => typeConverter.ResolveStaticMember(
                 member,
                 Resolve);
-        }
 
-        public IList<IIdentifier> ResolveFactory(MethodReference constructor)
-        {
-            return typeConverter.ResolveFactory(
+        public IList<IIdentifier> ResolveFactory(MethodReference constructor) => typeConverter.ResolveFactory(
                 constructor,
                 Resolve);
-        }
 
         /// <summary>
         /// Resolves the specified member reference.
         /// </summary>
         /// <param name="fieldReference">The member reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public IIdentifier Resolve(FieldReference fieldReference)
-        {
-            return typeConverter.Resolve(fieldReference);
-        }
+        public IIdentifier Resolve(FieldReference fieldReference) => typeConverter.Resolve(fieldReference);
 
         /// <summary>
         /// Resolves the specified member reference.
         /// </summary>
         /// <param name="propertyReference">The member reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public IIdentifier Resolve(PropertyReference propertyReference)
-        {
-            return typeConverter.Resolve(propertyReference);
-        }
+        public IIdentifier Resolve(PropertyReference propertyReference) => typeConverter.Resolve(propertyReference);
 
         /// <summary>
         /// Resolves the specified member reference.
         /// </summary>
         /// <param name="memberReference">The member reference.</param>
         /// <returns>Identifier identifying the member.</returns>
-        public IIdentifier Resolve(MethodReference memberReference)
-        {
-            return typeConverter.Resolve(memberReference);
-        }
+        public IIdentifier Resolve(MethodReference memberReference) => typeConverter.Resolve(memberReference);
 
         /// <summary>
         /// Resolves the virtual.
@@ -743,13 +682,10 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Expression that will resolve in slot for the method.</returns>
         public JST.Expression ResolveVirtualMethod(
             MethodReference methodReference,
-            IdentifierScope scope)
-        {
-            return typeConverter.ResolveVirtualMethod(
+            IdentifierScope scope) => typeConverter.ResolveVirtualMethod(
                 methodReference,
                 scope,
                 Resolve);
-        }
 
         /// <summary>
         /// Resolves the name of the method slot.
@@ -765,7 +701,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             if (isVirtual)
             {
-                JST.Expression rv = ResolveVirtualMethod(
+                var rv = ResolveVirtualMethod(
                     methodReference,
                     scope);
 
@@ -811,13 +747,15 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 // Currently only struct method calls are converted to static method calls.
                 // In future calls to all methods may become static call.
-                JST.Expression methodIdentifier = IdentifierExpression.Create(
+                var methodIdentifier = IdentifierExpression.Create(
                     location,
                     scope,
                     ResolveStaticMember(methodReference));
 
-                var newArguments = new List<JST.Expression>();
-                newArguments.Add(instance);
+                var newArguments = new List<JST.Expression>
+                {
+                    instance
+                };
                 if (arguments != null)
                 {
                     newArguments.AddRange(arguments);
@@ -879,10 +817,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// Releases the temp variable.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
-        public void ReleaseTempVariable(IIdentifier identifier)
-        {
-            freeTempVariables.Enqueue(identifier);
-        }
+        public void ReleaseTempVariable(IIdentifier identifier) => freeTempVariables.Enqueue(identifier);
 
         /// <summary>
         /// Gets the replacement expression.
@@ -891,9 +826,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Canned expression if replacer exists.</returns>
         public JST.Expression GetReplacementExpression(Expression expression)
         {
-            for (int replacerScopeIndex = 0; replacerScopeIndex < replacers.Count; replacerScopeIndex++)
+            for (var replacerScopeIndex = 0; replacerScopeIndex < replacers.Count; replacerScopeIndex++)
             {
-                for (int replacerTupleIndex = 0;
+                for (var replacerTupleIndex = 0;
                      replacerTupleIndex < replacers[replacerScopeIndex].Length;
                      replacerTupleIndex++)
                 {
@@ -912,18 +847,12 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="expressionMappers">The expression mappers.</param>
         public void PushExpressionReplacement(
-            params Tuple<Expression, Func<IdentifierScope, JST.Expression>>[] expressionMappers)
-        {
-            replacers.Add(expressionMappers);
-        }
+            params Tuple<Expression, Func<IdentifierScope, JST.Expression>>[] expressionMappers) => replacers.Add(expressionMappers);
 
         /// <summary>
         /// Pops the replacer.
         /// </summary>
-        public void PopReplacer()
-        {
-            replacers.RemoveAt(replacers.Count - 1);
-        }
+        public void PopReplacer() => replacers.RemoveAt(replacers.Count - 1);
 
         /// <summary>
         /// Pushes the parameter block.
@@ -943,7 +872,7 @@ namespace NScript.Converter.TypeSystemConverter
             try
             {
                 var parameterNames = new List<string>();
-                foreach (ParameterVariable param in parameterBlock.Parameters)
+                foreach (var param in parameterBlock.Parameters)
                 {
                     parameterNames.Add(param.Name);
                 }
@@ -953,7 +882,7 @@ namespace NScript.Converter.TypeSystemConverter
                     parameterNames,
                     false);
 
-                for (int iParam = 0; iParam < parameterNames.Count; iParam++)
+                for (var iParam = 0; iParam < parameterNames.Count; iParam++)
                 {
                     argumentVariableToIdentifierMapStack.First.Value.Add(
                         parameterNames[iParam],
@@ -964,9 +893,9 @@ namespace NScript.Converter.TypeSystemConverter
                 var statements = new List<Statement>();
                 try
                 {
-                    foreach (CLR.AST.Statement statement in parameterBlock.Statements)
+                    foreach (var statement in parameterBlock.Statements)
                     {
-                        Statement jsStatement =
+                        var jsStatement =
                             StatementConverterBase.Convert(
                                 this,
                                 statement);
@@ -982,7 +911,7 @@ namespace NScript.Converter.TypeSystemConverter
                     scopeStack.RemoveFirst();
                 }
 
-                IIdentifier delegateFunctionNameId =
+                var delegateFunctionNameId =
                     localMethodName
                     ?? SimpleIdentifier.CreateScopeIdentifier(
                         RuntimeManager.Scope,
@@ -1012,6 +941,7 @@ namespace NScript.Converter.TypeSystemConverter
                 variableNamesGivenStack.RemoveFirst();
                 localVariableToIdentifierMapStack.RemoveFirst();
                 argumentVariableToIdentifierMapStack.RemoveFirst();
+                conditionalAccessTempVariable = null;
             }
         }
 
@@ -1019,18 +949,12 @@ namespace NScript.Converter.TypeSystemConverter
         /// Pushes the scope block.
         /// </summary>
         /// <param name="scopeBlock">The scope block.</param>
-        public void PushScopeBlock(ScopeBlock scopeBlock)
-        {
-            scopeBlocksStack.AddFirst(scopeBlock);
-        }
+        public void PushScopeBlock(ScopeBlock scopeBlock) => scopeBlocksStack.AddFirst(scopeBlock);
 
         /// <summary>
         /// Pops the scope block.
         /// </summary>
-        public void PopScopeBlock()
-        {
-            scopeBlocksStack.RemoveFirst();
-        }
+        public void PopScopeBlock() => scopeBlocksStack.RemoveFirst();
 
         /// <summary>
         /// Fixes the this variable.
@@ -1039,13 +963,13 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>fixes this keyword inside of script to this_ and this_ variables to other names.</returns>
         private static string FixThisVariable(string script)
         {
-            StringBuilder strBuilder = new StringBuilder();
+            var strBuilder = new StringBuilder();
             int lastIndex = 0, nowIndex = 0;
-            bool inStr = false;
-            char strChar = (char)0;
+            var inStr = false;
+            var strChar = (char)0;
             for (; nowIndex < script.Length; nowIndex++)
             {
-                char ch = script[nowIndex];
+                var ch = script[nowIndex];
                 if (inStr)
                 {
                     if (ch == '\\')
@@ -1095,7 +1019,7 @@ namespace NScript.Converter.TypeSystemConverter
                         }
                         else if (script[nowIndex + 1] == '*')
                         {
-                            int endComment = script.IndexOf("*/", nowIndex);
+                            var endComment = script.IndexOf("*/", nowIndex);
                             if (endComment < 0)
                             {
                                 break;
@@ -1154,8 +1078,8 @@ namespace NScript.Converter.TypeSystemConverter
             strBuilder.Append(thisStr);
             startAt += thisStr.Length;
 
-            bool matchFailed = false;
-            for (int startIndex = startAt; startIndex < endAt && startIndex < fromString.Length; startIndex++)
+            var matchFailed = false;
+            for (var startIndex = startAt; startIndex < endAt && startIndex < fromString.Length; startIndex++)
             {
                 if (fromString[startIndex] != '_')
                 {
@@ -1177,18 +1101,13 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="methodReference">The method reference.</param>
         /// <returns>Method name identifier.</returns>
-        private IIdentifier GetMethodName(MethodReference methodReference)
-        {
-            return typeConverter.RuntimeManager.ResolveFunctionName(methodReference);
-        }
+        private IIdentifier GetMethodName(MethodReference methodReference) => typeConverter.RuntimeManager.ResolveFunctionName(methodReference);
 
         /// <summary>
         /// Gets the constructor default initialization statement.
         /// </summary>
         /// <returns></returns>
-        private Statement GetConstructorDefaultInitializationStatement()
-        {
-            return new ExpressionStatement(
+        private Statement GetConstructorDefaultInitializationStatement() => new ExpressionStatement(
                 null,
                 Scope,
                 new BinaryExpression(
@@ -1209,7 +1128,6 @@ namespace NScript.Converter.TypeSystemConverter
                             new IdentifierExpression(
                                 Resolve(cnvtKnownReferences.GetDefaultMethod), Scope)),
                         new JST.Expression[0])));
-        }
 
         /// <summary>
         /// Imports the js script.
@@ -1217,7 +1135,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Function Expression after parsing js script.</returns>
         private List<Statement> ImportJsScript()
         {
-            CustomAttribute scriptAttribute = methodDefinition.CustomAttributes.SelectAttribute(
+            var scriptAttribute = methodDefinition.CustomAttributes.SelectAttribute(
                 KnownReferences.ScriptAttribute);
 
             if (scriptAttribute == null
@@ -1232,9 +1150,9 @@ namespace NScript.Converter.TypeSystemConverter
             JST.ScopeBlock scopeBlock = null;
             try
             {
-                string script = (string)scriptAttribute.ConstructorArguments[0].Value;
+                var script = (string)scriptAttribute.ConstructorArguments[0].Value;
 
-                if (this.thisIdentifier != null)
+                if (thisIdentifier != null)
                 {
                     script = MethodConverter.FixThisVariable(script);
                 }
@@ -1254,7 +1172,7 @@ namespace NScript.Converter.TypeSystemConverter
                     ex);
             }
 
-            List<Statement> returnValue = new List<Statement>();
+            var returnValue = new List<Statement>();
             if (IsConstructor
                 && thisIdentifier != null
                 && Scope.UsedLocalIdentifiers.Contains(thisIdentifier))
@@ -1263,9 +1181,9 @@ namespace NScript.Converter.TypeSystemConverter
                 returnValue.Add(GetConstructorDefaultInitializationStatement());
             }
 
-            if (this.HasWrappedField())
+            if (HasWrappedField())
             {
-                this.InitializeImportedWrapper(returnValue);
+                InitializeImportedWrapper(returnValue);
             }
 
             returnValue.AddRange(scopeBlock.Statements);
@@ -1278,12 +1196,12 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         private FunctionExpression Convert()
         {
-            List<Statement> statements = this.InnerConvert();
-            FunctionExpression functionExpression = this.GetFunctionExpressionShell();
+            var statements = InnerConvert();
+            var functionExpression = GetFunctionExpressionShell();
 
-            foreach (var plugin in this.context.MethodConverterPlugins)
+            foreach (var plugin in context.MethodConverterPlugins)
             {
-                switch (plugin.GetInterestLevel(this.methodDefinition, this.context))
+                switch (plugin.GetInterestLevel(methodDefinition, context))
                 {
                     case IntrestLevel.PreEmitStatements:
                         statements.InsertRange(0, plugin.GetPreInsertionStatements(this));
@@ -1321,17 +1239,17 @@ namespace NScript.Converter.TypeSystemConverter
         private List<Statement> ConvertCST()
         {
             var statements = new List<Statement>();
-            ParameterBlock rootBlock = GetRootBlock();
+            var rootBlock = GetRootBlock();
 
-            if (this.HasWrappedField())
+            if (HasWrappedField())
             {
-                this.InitializeImportedWrapper(statements);
+                InitializeImportedWrapper(statements);
             }
 
             // This means that we have compiler implemented method for Property or Event.
             if (rootBlock == null)
             {
-                this.GenerateCompilerImplemented(statements);
+                GenerateCompilerImplemented(statements);
                 return statements;
             }
 
@@ -1345,7 +1263,7 @@ namespace NScript.Converter.TypeSystemConverter
             // Check if thisIdentifier is really hoisted, then we need to copy this variable in another temporary variable
             if (thisIdentifier == null)
             {
-                foreach (ParameterVariable param in rootBlock.Parameters)
+                foreach (var param in rootBlock.Parameters)
                 {
                     if (param is ThisVariable)
                     {
@@ -1367,9 +1285,9 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
-            foreach (CLR.AST.Statement statement in rootBlock.Statements)
+            foreach (var statement in rootBlock.Statements)
             {
-                Statement jsStatement =
+                var jsStatement =
                     StatementConverterBase.Convert(
                         this,
                         statement);
@@ -1382,7 +1300,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             // Only struct constructors have return (essentially these constructors are factory to begin with).
             if (IsConstructor
-                && this.typeConverter.AllStaticMethods
+                && typeConverter.AllStaticMethods
                 && (statements.Count == 0
                     || !(statements[statements.Count - 1] is ReturnStatement)))
             {
@@ -1438,9 +1356,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         private List<Statement> InnerConvert()
         {
-            if (this.context.IsWrapped(this.methodDefinition))
+            if (context.IsWrapped(methodDefinition))
             {
-                return this.GenerateWrapperImplementation();
+                return GenerateWrapperImplementation();
             }
 
             if (!methodDefinition.HasBody
@@ -1449,7 +1367,7 @@ namespace NScript.Converter.TypeSystemConverter
                 return ImportJsScript();
             }
 
-            return this.ConvertCST();
+            return ConvertCST();
         }
 
         /// <summary>
@@ -1460,17 +1378,17 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         private FunctionExpression GetFunctionExpressionShell()
         {
-            IIdentifier functionName = this.GetMethodName(methodDefinition);
+            var functionName = GetMethodName(methodDefinition);
 
-            if (this.IsGlobalStaticImplementation)
+            if (IsGlobalStaticImplementation)
             {
-                if (this.IsConstructor && this.HasStaticImplementation)
+                if (IsConstructor && HasStaticImplementation)
                 {
-                    functionName = this.RuntimeManager.ResolveFactory(this.methodDefinition);
+                    functionName = RuntimeManager.ResolveFactory(methodDefinition);
                 }
                 else
                 {
-                    functionName = this.RuntimeManager.ResolveStatic(this.methodDefinition);
+                    functionName = RuntimeManager.ResolveStatic(methodDefinition);
                 }
             }
 
@@ -1492,23 +1410,23 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="returnValue"> The return value. </param>
         private void GenerateCompilerImplemented(List<Statement> returnValue)
         {
-            if (this.HasWrappedField())
+            if (HasWrappedField())
             {
-                this.InitializeImportedWrapper(returnValue);
+                InitializeImportedWrapper(returnValue);
             }
 
-            if (this.methodDefinition.IsSetter)
+            if (methodDefinition.IsSetter)
             {
-                this.GenerateSetterImplementation(returnValue);
+                GenerateSetterImplementation(returnValue);
             }
-            else if (this.methodDefinition.IsGetter)
+            else if (methodDefinition.IsGetter)
             {
-                this.GenerateGetterImplementation(returnValue);
+                GenerateGetterImplementation(returnValue);
             }
-            else if (this.methodDefinition.IsAddOn
-                || this.methodDefinition.IsRemoveOn)
+            else if (methodDefinition.IsAddOn
+                || methodDefinition.IsRemoveOn)
             {
-                this.GenerateAddonOrRemoveOnImplementation(returnValue);
+                GenerateAddonOrRemoveOnImplementation(returnValue);
             }
             else
             {
@@ -1524,28 +1442,28 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         private List<Statement> GenerateWrapperImplementation()
         {
-            IIdentifier functionName = this.GetMethodName(methodDefinition);
+            var functionName = GetMethodName(methodDefinition);
 
-            List<Statement> returnValue = new List<Statement>();
+            var returnValue = new List<Statement>();
 
-            if (this.methodDefinition.IsSetter
-                && !this.context.IsRenamed(this.methodDefinition))
+            if (methodDefinition.IsSetter
+                && !context.IsRenamed(methodDefinition))
             {
-                this.GenerateSetterImportedWrapper(returnValue);
+                GenerateSetterImportedWrapper(returnValue);
             }
-            else if (this.methodDefinition.IsGetter
-                && !this.context.IsRenamed(this.methodDefinition))
+            else if (methodDefinition.IsGetter
+                && !context.IsRenamed(methodDefinition))
             {
-                this.GenerateGetterImportedWrapper(returnValue);
+                GenerateGetterImportedWrapper(returnValue);
             }
-            else if (this.methodDefinition.IsAddOn
-                || this.methodDefinition.IsRemoveOn)
+            else if (methodDefinition.IsAddOn
+                || methodDefinition.IsRemoveOn)
             {
-                this.GenerateAddonOrRemoveOnImportedWrapper(returnValue);
+                GenerateAddonOrRemoveOnImportedWrapper(returnValue);
             }
             else
             {
-                this.GenerateMethodWrapper(returnValue);
+                GenerateMethodWrapper(returnValue);
             }
 
             return returnValue;
@@ -1557,54 +1475,54 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="functionExpression">The function expression.</param>
         private void GenerateAddonOrRemoveOnImplementation(List<Statement> statements)
         {
-            int matchOffset = this.methodDefinition.IsAddOn
+            var matchOffset = methodDefinition.IsAddOn
                 ? "add_".Length
                 : "remove_".Length;
 
-            string fieldName = this.methodDefinition.Name.Substring(matchOffset);
-            FieldReference fieldReference = this.typeConverter.TypeDefinition.Fields.First((fld) => fld.Name == fieldName);
+            var fieldName = methodDefinition.Name.Substring(matchOffset);
+            FieldReference fieldReference = typeConverter.TypeDefinition.Fields.First((fld) => fld.Name == fieldName);
 
             MethodReference addOrRemoveRef;
-            if (this.methodDefinition.IsAddOn)
+            if (methodDefinition.IsAddOn)
             {
-                addOrRemoveRef = this.context.KnownReferences.DelegateCombineMethod;
+                addOrRemoveRef = context.KnownReferences.DelegateCombineMethod;
             }
             else
             {
-                addOrRemoveRef = this.context.KnownReferences.DelegateRemoveMethod;
+                addOrRemoveRef = context.KnownReferences.DelegateRemoveMethod;
             }
 
             var methodCallExpr = new JST.MethodCallExpression(
                 null,
-                this.Scope,
+                Scope,
                 JST.IdentifierExpression.Create(
                     null,
-                    this.Scope,
-                    this.ResolveStaticMember(addOrRemoveRef)),
+                    Scope,
+                    ResolveStaticMember(addOrRemoveRef)),
                 fieldReference.Resolve().IsStatic
                     ? JST.IdentifierExpression.Create(
                             null,
-                            this.Scope,
-                            this.ResolveStaticMember(fieldReference))
+                            Scope,
+                            ResolveStaticMember(fieldReference))
                     : new JST.IndexExpression(
                         null,
-                        this.Scope,
-                        this.ResolveThis(this.Scope, null),
-                        new JST.IdentifierExpression(this.Resolve(fieldReference), this.Scope)),
-                new JST.IdentifierExpression(this.Scope.ParameterIdentifiers[0], this.Scope));
+                        Scope,
+                        ResolveThis(Scope, null),
+                        new JST.IdentifierExpression(Resolve(fieldReference), Scope)),
+                new JST.IdentifierExpression(Scope.ParameterIdentifiers[0], Scope));
 
             statements.Add(
                 JST.ExpressionStatement.CreateAssignmentExpression(
                     fieldReference.Resolve().IsStatic
                         ? JST.IdentifierExpression.Create(
                                 null,
-                                this.Scope,
-                                this.ResolveStaticMember(fieldReference))
+                                Scope,
+                                ResolveStaticMember(fieldReference))
                         : new JST.IndexExpression(
                             null,
-                            this.Scope,
-                            this.ResolveThis(this.Scope, null),
-                            new JST.IdentifierExpression(this.Resolve(fieldReference), this.Scope)),
+                            Scope,
+                            ResolveThis(Scope, null),
+                            new JST.IdentifierExpression(Resolve(fieldReference), Scope)),
                     methodCallExpr));
         }
 
@@ -1616,20 +1534,20 @@ namespace NScript.Converter.TypeSystemConverter
         {
             var methodCallExpr = new JST.MethodCallExpression(
                 null,
-                this.Scope,
+                Scope,
                 JST.IdentifierExpression.Create(
                     null,
-                    this.Scope,
-                    this.ResolveStaticMember(
-                        this.MethodDefinition.IsAddOn
-                            ? this.context.KnownReferences.AddEventMethod
-                            : this.context.KnownReferences.RemoveEventMethod)),
-                new JST.IdentifierExpression(this.thisIdentifier, this.Scope),
-                new JST.StringLiteralExpression(this.Scope, this.GetNativeEventName()),
-                new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope),
-                new JST.BooleanLiteralExpression(this.Scope, false));
+                    Scope,
+                    ResolveStaticMember(
+                        MethodDefinition.IsAddOn
+                            ? context.KnownReferences.AddEventMethod
+                            : context.KnownReferences.RemoveEventMethod)),
+                new JST.IdentifierExpression(thisIdentifier, Scope),
+                new JST.StringLiteralExpression(Scope, GetNativeEventName()),
+                new JST.IdentifierExpression(ResolveArgument(methodDefinition.Parameters[0].Name), Scope),
+                new JST.BooleanLiteralExpression(Scope, false));
 
-            statements.Add(new ExpressionStatement(null, this.Scope, methodCallExpr));
+            statements.Add(new ExpressionStatement(null, Scope, methodCallExpr));
         }
 
         /// <summary>
@@ -1640,8 +1558,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         private string GetNativeEventName()
         {
-            EventDefinition eventDefinition = (EventDefinition)this.methodDefinition.GetAssociatedMember();
-            string eventName = eventDefinition.Name;
+            var eventDefinition = (EventDefinition)methodDefinition.GetAssociatedMember();
+            var eventName = eventDefinition.Name;
 
             var attr = TypeHelpers.SelectAttribute(
                 eventDefinition.CustomAttributes,
@@ -1664,45 +1582,39 @@ namespace NScript.Converter.TypeSystemConverter
         /// Generates the setter implementation.
         /// </summary>
         /// <param name="functionExpression">The function expression.</param>
-        private void GenerateSetterImplementation(List<Statement> statements)
-        {
-            statements.Add(
+        private void GenerateSetterImplementation(List<Statement> statements) => statements.Add(
                 new JST.ReturnStatement(
                     null,
-                    this.Scope,
+                    Scope,
                     new JST.BinaryExpression(
                         null,
-                        this.Scope,
+                        Scope,
                         BinaryOperator.Assignment,
                        new JST.IndexExpression(
                            null,
-                           this.Scope,
-                           this.GetMethodSlotParentExpression(),
+                           Scope,
+                           GetMethodSlotParentExpression(),
                            new JST.IdentifierExpression(
-                               this.RuntimeManager.Resolve(
-                                   this.methodDefinition.GetPropertyDefinition()), this.Scope)),
+                               RuntimeManager.Resolve(
+                                   methodDefinition.GetPropertyDefinition()), Scope)),
                        new JST.IdentifierExpression(
-                           this.ResolveArgument(methodDefinition.Parameters[0].Name), this.Scope))));
-        }
+                           ResolveArgument(methodDefinition.Parameters[0].Name), Scope))));
 
         /// <summary>
         /// Generates the getter implementation.
         /// </summary>
         /// <param name="statements"> The statements. </param>
-        private void GenerateGetterImplementation(List<Statement> statements)
-        {
-            statements.Add(
+        private void GenerateGetterImplementation(List<Statement> statements) => statements.Add(
                 new JST.ReturnStatement(
                     null,
-                    this.Scope,
+                    Scope,
                     new JST.IndexExpression(
                         null,
-                        this.Scope,
-                        this.GetMethodSlotParentExpression(),
+                        Scope,
+                        GetMethodSlotParentExpression(),
                         new JST.IdentifierExpression(
-                            this.RuntimeManager.Resolve(
-                                this.methodDefinition.GetPropertyDefinition()), this.Scope))));
-        }
+                            RuntimeManager.Resolve(
+                                methodDefinition.GetPropertyDefinition()), Scope))));
 
         /// <summary>
         /// Generates a getter imported wrapper.
@@ -1712,77 +1624,77 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="functionExpression"> The function expression. </param>
         public void GenerateGetterImportedWrapper(List<Statement> statements)
         {
-            PropertyDefinition propertyDefinition = (PropertyDefinition)this.methodDefinition.GetAssociatedMember();
-            var valueParameter = this.methodDefinition.ReturnType;
+            var propertyDefinition = (PropertyDefinition)methodDefinition.GetAssociatedMember();
+            var valueParameter = methodDefinition.ReturnType;
 
-            if (this.methodDefinition.IsStatic)
+            if (methodDefinition.IsStatic)
             {
                 JST.Expression valueExpression = new JST.ConditionalOperatorExpression(
                     null,
-                    this.Scope,
-                    new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                    Scope,
+                    new JST.IdentifierExpression(typeConverter.ResolveStaticMember(propertyDefinition), Scope),
                     MethodConverter.GenerateWrapperExpression(
                         valueParameter,
-                        new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                        new JST.IdentifierExpression(typeConverter.ResolveStaticMember(propertyDefinition), Scope),
                         this,
-                        this.Scope),
-                    new JST.NullLiteralExpression(this.Scope));
+                        Scope),
+                    new JST.NullLiteralExpression(Scope));
 
                 statements.Add(
                     new JST.ReturnStatement(
                         null,
-                        this.Scope,
+                        Scope,
                         new JST.BinaryExpression(
                             null,
-                            this.Scope,
+                            Scope,
                             BinaryOperator.Assignment,
-                            new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                            new JST.IdentifierExpression(typeConverter.ResolveStaticMember(propertyDefinition), Scope),
                             new JST.BinaryExpression(
                                 null,
-                                this.Scope,
+                                Scope,
                                 BinaryOperator.LogicalOr,
-                                new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                                new JST.IdentifierExpression(typeConverter.ResolveStaticMember(propertyDefinition), Scope),
                                 valueExpression))));
             }
             else
             {
-                this.InitializeImportedWrapper(statements);
+                InitializeImportedWrapper(statements);
 
                 JST.Expression valueExpression = new JST.ConditionalOperatorExpression(
                     null,
-                    this.Scope,
+                    Scope,
                     new JST.IndexExpression(
                         null,
-                        this.Scope,
-                        this.ResolveThis(this.Scope, null),
-                        new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
+                        Scope,
+                        ResolveThis(Scope, null),
+                        new JST.IdentifierExpression(typeConverter.Resolve(propertyDefinition), Scope),
                         false),
                     MethodConverter.GenerateWrapperExpression(
                         valueParameter,
                         new JST.IndexExpression(
                             null,
-                            this.Scope,
-                            this.ResolveThis(this.Scope, null),
-                            new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
+                            Scope,
+                            ResolveThis(Scope, null),
+                            new JST.IdentifierExpression(typeConverter.Resolve(propertyDefinition), Scope),
                             false),
                         this,
-                        this.Scope),
-                    new JST.NullLiteralExpression(this.Scope));
+                        Scope),
+                    new JST.NullLiteralExpression(Scope));
 
                 statements.Add(
                     new JST.ReturnStatement(
                         null,
-                        this.Scope,
+                        Scope,
                         new JST.BinaryExpression(
                             null,
-                            this.Scope,
+                            Scope,
                             BinaryOperator.Assignment,
-                            new JST.IdentifierExpression(this.GetImportedWrapperIdentifier(propertyDefinition), this.Scope),
+                            new JST.IdentifierExpression(GetImportedWrapperIdentifier(propertyDefinition), Scope),
                             new JST.BinaryExpression(
                                 null,
-                                this.Scope,
+                                Scope,
                                 BinaryOperator.LogicalOr,
-                                new JST.IdentifierExpression(this.GetImportedWrapperIdentifier(propertyDefinition), this.Scope),
+                                new JST.IdentifierExpression(GetImportedWrapperIdentifier(propertyDefinition), Scope),
                                 valueExpression))));
             }
         }
@@ -1795,46 +1707,46 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="functionExpression"> The function expression. </param>
         private void GenerateSetterImportedWrapper(List<Statement> statements)
         {
-            PropertyDefinition propertyDefinition = (PropertyDefinition)this.methodDefinition.GetAssociatedMember();
+            var propertyDefinition = (PropertyDefinition)methodDefinition.GetAssociatedMember();
 
-            if (this.methodDefinition.IsStatic)
+            if (methodDefinition.IsStatic)
             {
                 statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
-                        new JST.IdentifierExpression(this.typeConverter.ResolveImplementedVersion(propertyDefinition), this.Scope),
-                        new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope)));
+                        new JST.IdentifierExpression(typeConverter.ResolveImplementedVersion(propertyDefinition), Scope),
+                        new JST.IdentifierExpression(ResolveArgument(methodDefinition.Parameters[0].Name), Scope)));
 
                 statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
-                        new JST.IdentifierExpression(this.typeConverter.ResolveStaticMember(propertyDefinition), this.Scope),
+                        new JST.IdentifierExpression(typeConverter.ResolveStaticMember(propertyDefinition), Scope),
                         MethodConverter.GenerateExtrationExpression(
-                            this.methodDefinition.Parameters[0].ParameterType,
-                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope),
+                            methodDefinition.Parameters[0].ParameterType,
+                            new JST.IdentifierExpression(ResolveArgument(methodDefinition.Parameters[0].Name), Scope),
                             this,
-                            this.Scope)));
+                            Scope)));
             }
             else
             {
-                this.InitializeImportedWrapper(statements);
+                InitializeImportedWrapper(statements);
 
                 statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
-                        new JST.IdentifierExpression(this.GetImportedWrapperIdentifier(propertyDefinition), this.Scope),
-                        new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope)));
+                        new JST.IdentifierExpression(GetImportedWrapperIdentifier(propertyDefinition), Scope),
+                        new JST.IdentifierExpression(ResolveArgument(methodDefinition.Parameters[0].Name), Scope)));
 
                 statements.Add(
                     JST.ExpressionStatement.CreateAssignmentExpression(
                         new JST.IndexExpression(
                             null,
-                            this.Scope,
-                            this.ResolveThis(this.Scope, null),
-                            new JST.IdentifierExpression(this.typeConverter.Resolve(propertyDefinition), this.Scope),
+                            Scope,
+                            ResolveThis(Scope, null),
+                            new JST.IdentifierExpression(typeConverter.Resolve(propertyDefinition), Scope),
                             false),
                         MethodConverter.GenerateExtrationExpression(
-                            this.methodDefinition.Parameters[0].ParameterType,
-                            new JST.IdentifierExpression(this.ResolveArgument(this.methodDefinition.Parameters[0].Name), this.Scope),
+                            methodDefinition.Parameters[0].ParameterType,
+                            new JST.IdentifierExpression(ResolveArgument(methodDefinition.Parameters[0].Name), Scope),
                             this,
-                            this.Scope)));
+                            Scope)));
             }
         }
 
@@ -1844,22 +1756,22 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="statements"> The statements. </param>
         private void GenerateMethodWrapper(List<Statement> statements)
         {
-            List<JST.Expression> arguments = new List<JST.Expression>();
-            for (int iParameter = 0; iParameter < this.methodDefinition.Parameters.Count; iParameter++)
+            var arguments = new List<JST.Expression>();
+            for (var iParameter = 0; iParameter < methodDefinition.Parameters.Count; iParameter++)
             {
-                var parameterType = this.methodDefinition.Parameters[iParameter].ParameterType;
+                var parameterType = methodDefinition.Parameters[iParameter].ParameterType;
                 var parameterExpression =
                         new IdentifierExpression(
-                            this.ResolveArgument(this.methodDefinition.Parameters[iParameter].Name),
-                            this.Scope);
-                if (this.context.IsWrappedType(parameterType))
+                            ResolveArgument(methodDefinition.Parameters[iParameter].Name),
+                            Scope);
+                if (context.IsWrappedType(parameterType))
                 {
                     arguments.Add(
                         MethodConverter.GenerateExtrationExpression(
                             parameterType,
                             parameterExpression,
                             this,
-                            this.Scope));
+                            Scope));
                 }
                 else
                 {
@@ -1869,49 +1781,49 @@ namespace NScript.Converter.TypeSystemConverter
 
             JST.MethodCallExpression methodCallExpression = null;
             JST.Expression methodExpression = null;
-            if (this.methodDefinition.IsStatic)
+            if (methodDefinition.IsStatic)
             {
-                methodExpression = new JST.IdentifierExpression(this.typeConverter.ResolveWrappedMethod(this.methodDefinition), this.Scope);
+                methodExpression = new JST.IdentifierExpression(typeConverter.ResolveWrappedMethod(methodDefinition), Scope);
             }
             else
             {
                 methodExpression =
                     new IndexExpression(
                         null,
-                        this.Scope,
-                        this.ResolveThis(this.Scope, null),
+                        Scope,
+                        ResolveThis(Scope, null),
                         new JST.IdentifierExpression(
-                            this.typeConverter.ResolveWrappedMethod(this.methodDefinition),
-                            this.Scope));
+                            typeConverter.ResolveWrappedMethod(methodDefinition),
+                            Scope));
             }
 
             methodCallExpression = new MethodCallExpression(
                 null,
-                this.Scope,
+                Scope,
                 methodExpression,
                 arguments);
 
-            if (!this.methodDefinition.ReturnType.IsSameDefinition(this.ClrKnownReferences.Void))
+            if (!methodDefinition.ReturnType.IsSameDefinition(ClrKnownReferences.Void))
             {
-                var returnType = this.methodDefinition.ReturnType;
-                if (this.context.IsWrappedType(returnType))
+                var returnType = methodDefinition.ReturnType;
+                if (context.IsWrappedType(returnType))
                 {
                     methodCallExpression = MethodConverter.GenerateWrapperExpression(
                         returnType,
                         methodCallExpression,
                         this,
-                        this.Scope);
+                        Scope);
                 }
 
                 statements.Add(
                     new JST.ReturnStatement(
                         null,
-                        this.Scope,
+                        Scope,
                         methodCallExpression));
             }
             else
             {
-                statements.Add(new ExpressionStatement(null, this.Scope, methodCallExpression));
+                statements.Add(new ExpressionStatement(null, Scope, methodCallExpression));
             }
         }
 
@@ -1922,12 +1834,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>
         /// The imported wrapper identifier.
         /// </returns>
-        private IIdentifier GetImportedWrapperIdentifier(PropertyDefinition propertyDefinition)
-        {
-            return new CompoundIdentifier(
-                this.thisIdentifier,
-                this.typeConverter.ResolveImplementedVersion(propertyDefinition));
-        }
+        private IIdentifier GetImportedWrapperIdentifier(PropertyDefinition propertyDefinition) => new CompoundIdentifier(
+                thisIdentifier,
+                typeConverter.ResolveImplementedVersion(propertyDefinition));
 
         /// <summary>
         /// Initializes the imported wrapper.
@@ -1935,37 +1844,37 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="functionExpression"> The function expression. </param>
         private void InitializeImportedWrapper(List<Statement> statements)
         {
-            if (!this.methodDefinition.HasThis
-                || this.initializeWrapperDone)
+            if (!methodDefinition.HasThis
+                || initializeWrapperDone)
             { return; }
 
-            FieldReference importedAdapterField = this.KnownReferences.ImportedExtensionField;
+            var importedAdapterField = KnownReferences.ImportedExtensionField;
             statements.Add(
                 JST.ExpressionStatement.CreateAssignmentExpression(
                     new JST.IndexExpression(
                         null,
-                        this.Scope,
-                        this.ResolveThis(this.Scope, null),
-                        new JST.IdentifierExpression(this.Resolve(importedAdapterField), this.Scope),
+                        Scope,
+                        ResolveThis(Scope, null),
+                        new JST.IdentifierExpression(Resolve(importedAdapterField), Scope),
                         false),
                     new JST.BinaryExpression(
                         null,
-                        this.Scope,
+                        Scope,
                         BinaryOperator.LogicalOr,
                         new JST.IndexExpression(
                             null,
-                            this.Scope,
-                            this.ResolveThis(this.Scope, null),
-                            new JST.IdentifierExpression(this.Resolve(importedAdapterField), this.Scope),
+                            Scope,
+                            ResolveThis(Scope, null),
+                            new JST.IdentifierExpression(Resolve(importedAdapterField), Scope),
                             false),
                         new JST.MethodCallExpression(
                             null,
-                            this.Scope,
+                            Scope,
                             JST.IdentifierExpression.Create(
                                 null,
-                                this.Scope,
-                                this.ResolveStaticMember(this.KnownReferences.GetNewImportedExtensionMethod))))));
-            this.initializeWrapperDone = true;
+                                Scope,
+                                ResolveStaticMember(KnownReferences.GetNewImportedExtensionMethod))))));
+            initializeWrapperDone = true;
         }
 
         /// <summary>
@@ -1974,9 +1883,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         private JST.Expression GetMethodSlotParentExpression()
         {
-            if (this.context.IsPsudoType(this.typeConverter.TypeDefinition))
+            if (context.IsPsudoType(typeConverter.TypeDefinition))
             {
-                if (this.methodDefinition.IsStatic)
+                if (methodDefinition.IsStatic)
                 {
                     throw new InvalidProgramException("Static Compiler generated properties not supported for imported or JsonType");
                 }
@@ -1984,22 +1893,22 @@ namespace NScript.Converter.TypeSystemConverter
                 {
                     return new JST.IdentifierExpression(
                         new CompoundIdentifier(
-                            this.thisIdentifier,
-                            this.Resolve(this.KnownReferences.ImportedExtensionField)),
-                            this.Scope);
+                            thisIdentifier,
+                            Resolve(KnownReferences.ImportedExtensionField)),
+                            Scope);
                 }
             }
 
-            if (this.methodDefinition.IsStatic)
+            if (methodDefinition.IsStatic)
             {
                 return JST.IdentifierExpression.Create(
                         null,
-                        this.Scope,
-                        this.Resolve(this.typeConverter.TypeDefinition));
+                        Scope,
+                        Resolve(typeConverter.TypeDefinition));
             }
             else
             {
-                return this.ResolveThis(this.Scope, null);
+                return ResolveThis(Scope, null);
             }
         }
 
@@ -2007,10 +1916,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// Gets the argument names.
         /// </summary>
         /// <returns></returns>
-        private List<string> GetArgumentNames()
-        {
-            return null;
-        }
+        private List<string> GetArgumentNames() => null;
 
         /// <summary>
         /// Gets the root block.
@@ -2018,8 +1924,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         private ParameterBlock GetRootBlock()
         {
-            ParameterBlock rv;
-            if (RuntimeManager.Context.TryGetMethodAst(methodDefinition, out rv))
+            if (RuntimeManager.Context.TryGetMethodAst(methodDefinition, out var rv))
             {
                 usingMcs = true;
                 return rv;
@@ -2034,29 +1939,25 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>
         /// true if wrapped field, false if not.
         /// </returns>
-        private bool HasWrappedField()
-        {
-            return this.context.IsPsudoType(this.typeConverter.TypeDefinition)
-                && this.typeConverter.TypeDefinition.Fields.Count(_ => !_.IsStatic && !_.HasConstant) > 0;
-        }
+        private bool HasWrappedField() => context.IsPsudoType(typeConverter.TypeDefinition)
+                && typeConverter.TypeDefinition.Fields.Count(_ => !_.IsStatic && !_.HasConstant) > 0;
 
         private IIdentifier ResolveLocalInternal(string localVariable, bool isLocalFunction)
         {
-            LinkedListNode<ScopeBlock> scopeNode = scopeBlocksStack.First;
-            LinkedListNode<ParameterBlock> parameterNode = parameterBlocksStack.First;
-            LinkedListNode<IdentifierScope> identifierScopeNode = scopeStack.First;
-            LinkedListNode<Dictionary<string, IIdentifier>> localsNode = localVariableToIdentifierMapStack.First;
-            LinkedListNode<Dictionary<string, int>> variableNamesGivenNode = variableNamesGivenStack.First;
+            var scopeNode = scopeBlocksStack.First;
+            var parameterNode = parameterBlocksStack.First;
+            var identifierScopeNode = scopeStack.First;
+            var localsNode = localVariableToIdentifierMapStack.First;
+            var variableNamesGivenNode = variableNamesGivenStack.First;
 
             Func<IIdentifier> localVariableGetter =
                 delegate
                 {
-                    IIdentifier rv;
-                    if (!localsNode.Value.TryGetValue(localVariable, out rv))
+                    if (!localsNode.Value.TryGetValue(localVariable, out var rv))
                     {
                         string identifierName = null;
 
-                        Match match = ConverterContext.GeneratedFieldNameRegex.Match(localVariable);
+                        var match = ConverterContext.GeneratedFieldNameRegex.Match(localVariable);
                         if (match.Success)
                         {
                             identifierName = match.Groups[ConverterContext.RealNameStr].Value;
@@ -2070,8 +1971,7 @@ namespace NScript.Converter.TypeSystemConverter
                             identifierName = localVariable;
                         }
 
-                        int namesGiven = 0;
-                        variableNamesGivenNode.Value.TryGetValue(identifierName, out namesGiven);
+                        variableNamesGivenNode.Value.TryGetValue(identifierName, out var namesGiven);
                         variableNamesGivenNode.Value[identifierName] = namesGiven + 1;
 
                         if (namesGiven > 0)
@@ -2099,7 +1999,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 if (isLocalFunction)
                 {
-                    foreach (LocalFunctionVariable localVar in scopeNode.Value.LocalFunctions)
+                    foreach (var localVar in scopeNode.Value.LocalFunctions)
                     {
                         if (localVar.Name == localVariable)
                         {
@@ -2109,7 +2009,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
                 else
                 {
-                    foreach (LocalVariable localVar in scopeNode.Value.LocalVariables)
+                    foreach (var localVar in scopeNode.Value.LocalVariables)
                     {
                         if (localVar.Name == localVariable)
                         {

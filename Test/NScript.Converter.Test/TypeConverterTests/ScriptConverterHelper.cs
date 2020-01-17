@@ -77,7 +77,7 @@ namespace NScript.Converter.Test.TypeConverterTests
             }
 
             List<JST.Statement> statements =
-                runtimeScopeManager.Convert(typeDefinitions);
+                runtimeScopeManager.ConvertForTests(typeDefinitions);
             string functionStr = ConverterTestHelpers.GetScriptString(
                 statements);
 

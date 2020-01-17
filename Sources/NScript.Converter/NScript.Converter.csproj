@@ -83,6 +83,7 @@
     <Compile Include="ExpressionsConverter\InlinePropertyInitializerConverter.cs" />
     <Compile Include="ExpressionsConverter\LiteralExpressionConverter.cs" />
     <Compile Include="ExpressionsConverter\LoadAddressExpressionConverter.cs" />
+    <Compile Include="ExpressionsConverter\LocalFunctionReferenceConverter.cs" />
     <Compile Include="ExpressionsConverter\MemberReferenceConverter.cs" />
     <Compile Include="ExpressionsConverter\MethodCallContext.cs" />
     <Compile Include="ExpressionsConverter\MethodCallExpressionConverter.cs" />

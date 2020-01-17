@@ -77,6 +77,28 @@ namespace NScript.Converter.ExpressionsConverter
                 var methodDefinition = (value == null ? propertyDefinition.GetMethod : propertyDefinition.SetMethod);
                 if (methodDefinition == null)
                 {
+                    // This is the case of Readonly Propoerties. We need to find backing Field to set.
+                    var type = propertyDefinition.DeclaringType.Resolve();
+                    FieldDefinition backingField = null;
+                    foreach (var field in type.Fields)
+                    {
+                        if (field.IsPrivate
+                            && field.IsInitOnly
+                            && field.Name.EndsWith("_BackingField")
+                            && field.CustomAttributes.Any(ca => ca.AttributeType.IsSameDefinition(converter.ClrKnownReferences.CompilerGeneratedAttribute))
+                            && field.FieldType.Equals(propertyDefinition.PropertyType)
+                            && field.Name.Contains('<' + propertyDefinition.Name + '>'))
+                        {
+                            backingField = field;
+                            break;
+                        }
+                    }
+
+                    if (backingField == null)
+                    {
+                        throw new NotImplementedException($"Could not resolve backing field for Property: {propertyDefinition}");
+                    }
+
                     return new JST.BinaryExpression(
                         null,
                         converter.Scope,
@@ -86,7 +108,7 @@ namespace NScript.Converter.ExpressionsConverter
                            converter.Scope,
                            converter.ResolveThis(converter.Scope, null),
                            new JST.IdentifierExpression(
-                               converter.RuntimeManager.Resolve(propertyDefinition),
+                               converter.RuntimeManager.Resolve(backingField),
                                converter.Scope)),
                         value);
                 }
