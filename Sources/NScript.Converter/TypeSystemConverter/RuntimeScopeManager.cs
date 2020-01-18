@@ -6,14 +6,14 @@
 
 namespace NScript.Converter.TypeSystemConverter
 {
+    using Mono.Cecil;
+    using NScript.CLR;
+    using NScript.JST;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Text;
     using System.Text.RegularExpressions;
-    using NScript.CLR;
-    using NScript.JST;
-    using Mono.Cecil;
 
     /// <summary>
     /// Definition for RuntimeInitializer
@@ -181,72 +181,47 @@ namespace NScript.Converter.TypeSystemConverter
         public RuntimeScopeManager(ConverterContext context)
         {
             this.context = context;
-            this.jsBaseObjectScopeManager = new JSBaseObjectIdentifierManager(this);
-            this.dependencyAnalyzer = new DependencyAnalyzer(this.context);
-            this.reusablePrototypeIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                this.globalNamespaceManager.Scope,
+            jsBaseObjectScopeManager = new JSBaseObjectIdentifierManager(this);
+            dependencyAnalyzer = new DependencyAnalyzer(this.context);
+            reusablePrototypeIdentifier = SimpleIdentifier.CreateScopeIdentifier(
+                globalNamespaceManager.Scope,
                 "ptyp_",
                 false);
-            this.InitializeKnownGlobalIdentifiers();
+            InitializeKnownGlobalIdentifiers();
         }
 
         /// <summary>
         /// Gets the scope.
         /// </summary>
         /// <value>The scope.</value>
-        public IdentifierScope Scope
-        {
-            get
-            {
-                return this.globalNamespaceManager.Scope;
-            }
-        }
+        public IdentifierScope Scope => globalNamespaceManager.Scope;
 
         /// <summary>
         /// Gets the context.
         /// </summary>
-        public ConverterContext Context
-        { get { return this.context; } }
+        public ConverterContext Context => context;
 
         /// <summary>
         /// Gets the reusable prototype identifier.
         /// </summary>
         /// <value>The reusable prototype identifier.</value>
-        public IIdentifier ReusablePrototypeIdentifier
-        {
-            get
-            {
-                return this.reusablePrototypeIdentifier;
-            }
-        }
+        public IIdentifier ReusablePrototypeIdentifier => reusablePrototypeIdentifier;
 
         /// <summary>
         /// Gets the reference manager.
         /// </summary>
         /// <value>The reference manager.</value>
-        public ReferenceIdentifierManager ReferenceManager
-        {
-            get { return this.referenceIdentifierManager; }
-        }
+        public ReferenceIdentifierManager ReferenceManager => referenceIdentifierManager;
 
         /// <summary>
         /// Gets the dependency analyzer.
         /// </summary>
-        public DependencyAnalyzer DependencyAnalyzer
-        {
-            get
-            {
-                return this.dependencyAnalyzer;
-            }
-        }
+        public DependencyAnalyzer DependencyAnalyzer => dependencyAnalyzer;
 
         /// <summary>
         /// Gets the JS base object scope manager.
         /// </summary>
-        public JSBaseObjectIdentifierManager JSBaseObjectScopeManager
-        {
-            get { return this.jsBaseObjectScopeManager; }
-        }
+        public JSBaseObjectIdentifierManager JSBaseObjectScopeManager => jsBaseObjectScopeManager;
 
         /// <summary>
         /// Gets or sets a value indicating whether [implement instance as static].
@@ -262,8 +237,8 @@ namespace NScript.Converter.TypeSystemConverter
 
         public Statement GetVariableDeclarations()
         {
-            List<Expression> varList = new List<Expression>();
-            foreach (var identifier in this.Scope.UsedLocalIdentifiers)
+            var varList = new List<Expression>();
+            foreach (var identifier in Scope.UsedLocalIdentifiers)
             {
                 if (identifier.ShouldEnforceSuggestion
                     || identifier.IsFunctionName)
@@ -271,12 +246,12 @@ namespace NScript.Converter.TypeSystemConverter
                     continue;
                 }
 
-                varList.Add(new IdentifierExpression(identifier, this.Scope));
+                varList.Add(new IdentifierExpression(identifier, Scope));
             }
 
             if (varList.Count > 0)
             {
-                return new VarInitializerStatement(null, this.Scope, varList);
+                return new VarInitializerStatement(null, Scope, varList);
             }
             else
             {
@@ -296,7 +271,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             foreach (var typeDefinition in types)
             {
-                this.DependencyAnalyzer.AddTypeForAnalysis(typeDefinition);
+                DependencyAnalyzer.AddTypeForAnalysis(typeDefinition);
                 if (convertersAdded.ContainsKey(typeDefinition))
                 {
                     continue;
@@ -314,7 +289,7 @@ namespace NScript.Converter.TypeSystemConverter
             var typeRegistered = new HashSet<TypeDefinition>();
             var typeReferencesRegistered = new HashSet<TypeReference>(new MemberReferenceComparer());
             var typesToRegister = new HashSet<TypeDefinition>(types);
-            List<TypeReference> typesToConvert = this.DependencyAnalyzer.GetTypeReferenceDependencies(types);
+            var typesToConvert = DependencyAnalyzer.GetTypeReferenceDependencies(types);
 
             // Here we will register all the concrete types and their dependencies.
             foreach (var typeReference in typesToConvert)
@@ -332,8 +307,8 @@ namespace NScript.Converter.TypeSystemConverter
                             foreach (var dependentTypeReference in
                                 dependencyAnalyzer.TypeToTypeReferences[typeConverter.TypeDefinition])
                             {
-                                IList<TypeReference> genericArguments = typeReference.GetGenericArguments();
-                                TypeReference fixedDependent = dependentTypeReference.FixGenericTypeArguments(
+                                var genericArguments = typeReference.GetGenericArguments();
+                                var fixedDependent = dependentTypeReference.FixGenericTypeArguments(
                                     genericArguments,
                                     null);
 
@@ -351,16 +326,16 @@ namespace NScript.Converter.TypeSystemConverter
                                 statements.Add(
                                     new ExpressionStatement(
                                         null,
-                                        this.Scope,
-                                        this.InitializeGenericType(
+                                        Scope,
+                                        InitializeGenericType(
                                             fixedDependent,
-                                            this.Scope)));
+                                            Scope)));
                             }
                         }));
 
                 // Once emited, remove the type from the convertersAdded dictionary.
                 // This is done so that we don't reinit the type again (case of generics).
-                typeRegistered.Add((TypeDefinition)typeReference.Resolve());
+                typeRegistered.Add(typeReference.Resolve());
             }
 
             // There is chance that we may have missed some Generic types that are
@@ -379,7 +354,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             // Now let's initialize all the Generic global symbols that will be used somewhere inside the
             // methods.
-            foreach (var typeReference in this.dependencyAnalyzer.GetOrderedGenericTypeDependencies(this.typeReferenceIdentifiers.Keys))
+            foreach (var typeReference in dependencyAnalyzer.GetOrderedGenericTypeDependencies(typeReferenceIdentifiers.Keys))
             {
                 if (typeReferencesRegistered.Contains(typeReference)
                     || !typesToRegister.Contains(typeReference.Resolve())
@@ -392,17 +367,17 @@ namespace NScript.Converter.TypeSystemConverter
                 returnValue.Add(
                     new ExpressionStatement(
                         null,
-                        this.Scope,
-                        this.InitializeGenericType(
+                        Scope,
+                        InitializeGenericType(
                             typeReference,
-                            this.Scope)));
+                            Scope)));
             }
 
             // here we need to initialize all the static constructor for
             // all these classes.
             foreach (var typeReference in typesToConvert)
             {
-                Statement staticConstructor =
+                var staticConstructor =
                     convertersAdded[typeReference.Resolve()]
                         .InitializeTypeStatement(
                             typeReference);
@@ -426,14 +401,14 @@ namespace NScript.Converter.TypeSystemConverter
             // put all the members and types in to process queue.
             foreach (var methodDefinition in methods)
             {
-                this.usedMembersToProcess.Enqueue(methodDefinition);
-                this.usedTypeReferencesToProcess.Enqueue(methodDefinition.DeclaringType);
+                usedMembersToProcess.Enqueue(methodDefinition);
+                usedTypeReferencesToProcess.Enqueue(methodDefinition.DeclaringType);
             }
 
-            int typesGenerated = -1;
-            int membersGenerated = -1;
-            this.WalkUsedDependencies();
-            List<Statement> returnValue = new List<Statement>();
+            var typesGenerated = -1;
+            var membersGenerated = -1;
+            WalkUsedDependencies();
+            var returnValue = new List<Statement>();
 
             do
             {
@@ -443,8 +418,8 @@ namespace NScript.Converter.TypeSystemConverter
                 // Now let's crate JST for the script.
                 var typeRegistered = new HashSet<TypeDefinition>();
                 var typeReferencesRegistered = new HashSet<TypeReference>();
-                var typesToConvert = this.DependencyAnalyzer.GetTypeReferenceDependencies(
-                    this.typesDefinitionsUsed.Keys);
+                var typesToConvert = DependencyAnalyzer.GetTypeReferenceDependencies(
+                    typesDefinitionsUsed.Keys);
                 var typesInitializedInOrder = new List<TypeReference>();
 
                 // Here we will register all the concrete types and their dependencies.
@@ -457,15 +432,15 @@ namespace NScript.Converter.TypeSystemConverter
 
                     // Let's emit the type.
                     returnValue.AddRange(
-                        this.typesDefinitionsUsed[typeReference.Resolve()].Convert(
+                        typesDefinitionsUsed[typeReference.Resolve()].Convert(
                             (typeConverter, statements) =>
                             {
-                                foreach (TypeReference dependent in
+                                foreach (var dependent in
                                     dependencyAnalyzer.TypeToTypeReferences[typeConverter.TypeDefinition])
                                 {
                                     if (dependent == null
                                         || dependent.IsGenericParameter
-                                        || !this.typesDefinitionsUsed.ContainsKey(dependent.Resolve()))
+                                        || !typesDefinitionsUsed.ContainsKey(dependent.Resolve()))
                                     {
                                         continue;
                                     }
@@ -485,16 +460,16 @@ namespace NScript.Converter.TypeSystemConverter
                                     typeReferencesRegistered.Add(dependentTypeReference);
                                     typesInitializedInOrder.Add(dependentTypeReference);
 
-                                    if (!this.context.HasIgnoreNamespaceAttribute(dependentTypeReference.Resolve())
-                                        && !this.context.IsExtended(dependentTypeReference.Resolve()))
+                                    if (!context.HasIgnoreNamespaceAttribute(dependentTypeReference.Resolve())
+                                        && !context.IsExtended(dependentTypeReference.Resolve()))
                                     {
                                         statements.Add(
                                             new ExpressionStatement(
                                                 null,
-                                                this.Scope,
-                                                this.InitializeGenericType(
+                                                Scope,
+                                                InitializeGenericType(
                                                     dependentTypeReference,
-                                                    this.Scope)));
+                                                    Scope)));
                                     }
                                 }
                             }));
@@ -508,7 +483,7 @@ namespace NScript.Converter.TypeSystemConverter
                     // this be added in typeReferenceIdentifiers if it gets inside typesToConvert
                     // Result: The reason why we get here is because this type is referenced through
                     // second level Generic (or higher level generic).
-                    this.ResolveType(typeReference);
+                    ResolveType(typeReference);
                 }
 
                 if (plugins != null)
@@ -520,7 +495,7 @@ namespace NScript.Converter.TypeSystemConverter
                         {
                             foreach (var methodRef in newMethods)
                             {
-                                this.Resolve(methodRef);
+                                Resolve(methodRef);
                             }
                         }
                     }
@@ -529,7 +504,7 @@ namespace NScript.Converter.TypeSystemConverter
                 // There is chance that we may have missed some Generic types that are
                 // only used within methods and so don't have direct dependency on types.
                 // Let's add all those types as well.
-                foreach (var typeConverter in this.typesDefinitionsUsed.Values)
+                foreach (var typeConverter in typesDefinitionsUsed.Values)
                 {
                     if (typeRegistered.Contains(typeConverter.TypeDefinition))
                     {
@@ -542,13 +517,13 @@ namespace NScript.Converter.TypeSystemConverter
 
                 // Now let's initialize all the Generic global symbols that will be used somewhere inside the
                 // methods.
-                foreach (var typeReference in this.dependencyAnalyzer.GetOrderedGenericTypeDependencies(this.typeReferenceIdentifiers.Keys))
+                foreach (var typeReference in dependencyAnalyzer.GetOrderedGenericTypeDependencies(typeReferenceIdentifiers.Keys))
                 {
                     if (typeReferencesRegistered.Contains(typeReference)
-                        || !this.typesDefinitionsUsed.ContainsKey(typeReference.Resolve())
+                        || !typesDefinitionsUsed.ContainsKey(typeReference.Resolve())
                         || typeReference.GetGenericTypeScope().HasValue
-                        || this.context.IsImportedType(typeReference.Resolve())
-                        || this.context.IsJsonType(typeReference.Resolve()))
+                        || context.IsImportedType(typeReference.Resolve())
+                        || context.IsJsonType(typeReference.Resolve()))
                     {
                         continue;
                     }
@@ -558,21 +533,21 @@ namespace NScript.Converter.TypeSystemConverter
                     returnValue.Add(
                         new ExpressionStatement(
                             null,
-                            this.Scope,
-                            this.InitializeGenericType(
+                            Scope,
+                            InitializeGenericType(
                                 typeReference,
-                                this.Scope)));
+                                Scope)));
                 }
 
                 // here we need to initialize all the static constructor for
                 // all these classes.
                 foreach (var typeReference in typesInitializedInOrder)
                 {
-                    if (!this.typesDefinitionsUsed.ContainsKey(typeReference.Resolve()))
+                    if (!typesDefinitionsUsed.ContainsKey(typeReference.Resolve()))
                     { continue; }
 
-                    Statement staticConstructor =
-                        this.typesDefinitionsUsed[typeReference.Resolve()]
+                    var staticConstructor =
+                        typesDefinitionsUsed[typeReference.Resolve()]
                             .InitializeTypeStatement(typeReference);
 
                     if (staticConstructor != null)
@@ -581,15 +556,15 @@ namespace NScript.Converter.TypeSystemConverter
                     }
                 }
 
-                typesGenerated = this.typesDefinitionsUsed.Count;
-                membersGenerated = this.membersProcessed.Count;
-                this.WalkUsedDependencies();
-                foreach (var typeDefConverter in this.typesDefinitionsUsed.Values)
+                typesGenerated = typesDefinitionsUsed.Count;
+                membersGenerated = membersProcessed.Count;
+                WalkUsedDependencies();
+                foreach (var typeDefConverter in typesDefinitionsUsed.Values)
                 {
                     typeDefConverter.ClearVariableInitializedTracking();
                 }
-            } while (typesGenerated < this.typesDefinitionsUsed.Count
-                || membersGenerated < this.membersProcessed.Count);
+            } while (typesGenerated < typesDefinitionsUsed.Count
+                || membersGenerated < membersProcessed.Count);
 
             return returnValue;
         }
@@ -607,14 +582,14 @@ namespace NScript.Converter.TypeSystemConverter
         {
             worker(typeReference, strBuilder);
 
-            IList<TypeReference> genericArguments = typeReference.GetGenericArguments();
+            var genericArguments = typeReference.GetGenericArguments();
             if (genericArguments != null
                 && genericArguments.Count > 0
                 && !typeReference.IsDefinition)
             {
                 strBuilder.Append('<');
 
-                for (int paramIndex = 0; paramIndex < genericArguments.Count; paramIndex++)
+                for (var paramIndex = 0; paramIndex < genericArguments.Count; paramIndex++)
                 {
                     if (paramIndex > 0)
                     {
@@ -643,7 +618,7 @@ namespace NScript.Converter.TypeSystemConverter
                 return Tuple.Create<string, string>(string.Empty, string.Empty);
             }
 
-            int dotIndex = name.LastIndexOf('.');
+            var dotIndex = name.LastIndexOf('.');
 
             if (dotIndex > 0)
             {
@@ -664,8 +639,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Identifier associated with known name</returns>
         public IIdentifier GetKnownIdentifier(string name)
         {
-            IIdentifier returnValue = null;
-            this.knownIdentifiers.TryGetValue(name, out returnValue);
+            knownIdentifiers.TryGetValue(name, out var returnValue);
             return returnValue;
         }
 
@@ -676,22 +650,21 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         public IList<IIdentifier> ResolveType(TypeReference typeReference)
         {
-            IList<IIdentifier> returnValue;
-            TypeDefinition typeDefinition = typeReference.Resolve();
+            var typeDefinition = typeReference.Resolve();
 
-            if (this.context.IsJsonType(typeDefinition))
+            if (context.IsJsonType(typeDefinition))
             {
-                typeReference = this.context.ClrKnownReferences.Object;
+                typeReference = context.ClrKnownReferences.Object;
             }
 
-            typeReference = this.Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
+            typeReference = Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
 
-            if (!this.typeReferenceIdentifiers.TryGetValue(
+            if (!typeReferenceIdentifiers.TryGetValue(
                 typeReference,
-                out returnValue))
+                out var returnValue))
             {
                 IIdentifier resolvedIdentifier;
-                var typeName = this.GetTypeName(typeReference);
+                var typeName = GetTypeName(typeReference);
 
                 if (typeName == null)
                 {
@@ -699,9 +672,9 @@ namespace NScript.Converter.TypeSystemConverter
                     return null;
                 }
 
-                NamespaceManager nameSpace = this.globalNamespaceManager;
-                bool isExtended = this.context.IsExtended(typeReference)
-                    || this.context.IsPsudoType(typeDefinition);
+                var nameSpace = globalNamespaceManager;
+                var isExtended = context.IsExtended(typeReference)
+                    || context.IsPsudoType(typeDefinition);
 
                 // Imported types do not have generic symbols.
                 //
@@ -723,14 +696,14 @@ namespace NScript.Converter.TypeSystemConverter
 
                 // put in queue to process. In case of conversion using dependency
                 // walk, this will be used to start converting these types as well.
-                this.usedTypeReferencesToProcess.Enqueue(typeReference);
+                usedTypeReferencesToProcess.Enqueue(typeReference);
 
                 // Create the name of identifier to be used.
                 if (typeName != null)
                 {
                     if (isExtended
                         && !string.IsNullOrEmpty(typeName.Item1)
-                        && !this.context.HasIgnoreNamespaceAttribute(typeDefinition))
+                        && !context.HasIgnoreNamespaceAttribute(typeDefinition))
                     {
                         nameSpace = nameSpace.GetNamespace(typeName.Item1, true);
                     }
@@ -742,8 +715,10 @@ namespace NScript.Converter.TypeSystemConverter
                             : (typeName.Item2).Replace('.', '_'),
                         isExtended);
 
-                    returnValue = new List<IIdentifier>();
-                    returnValue.Add(resolvedIdentifier);
+                    returnValue = new List<IIdentifier>
+                    {
+                        resolvedIdentifier
+                    };
                     while (nameSpace.Parent != null)
                     {
                         returnValue.Insert(0, nameSpace.Identifier);
@@ -757,7 +732,7 @@ namespace NScript.Converter.TypeSystemConverter
                     returnValue = new ReadOnlyCollection<IIdentifier>(new IIdentifier[] { });
                 }
 
-                this.typeReferenceIdentifiers.Add(
+                typeReferenceIdentifiers.Add(
                     typeReference,
                     returnValue);
             }
@@ -777,21 +752,21 @@ namespace NScript.Converter.TypeSystemConverter
             Func<TypeReference, IdentifierScope, Expression, Expression> resolveTypeToExpressionHelper,
             Expression initializeRefsAndStaticCtor = null)
         {
-            TypeReference typeReference = (TypeReference)typeReferenceBase;
-            typeReference = this.Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
+            var typeReference = typeReferenceBase;
+            typeReference = Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
 
             var typeDef = typeReference.Resolve();
-            if ((typeDef == null || !this.context.IsPsudoType(typeDef))
+            if ((typeDef == null || !context.IsPsudoType(typeDef))
                 && typeReferenceBase.GetGenericTypeScope().HasValue)
             {
                 if (initializeRefsAndStaticCtor == null)
                 {
-                    Expression rv = IdentifierExpression.Create(
+                    var rv = IdentifierExpression.Create(
                     null,
                     scope,
-                    this.ResolveType(typeReference.Resolve()));
+                    ResolveType(typeReference.Resolve()));
 
-                    IList<TypeReference> genericArguments = typeReference.GetGenericArguments();
+                    var genericArguments = typeReference.GetGenericArguments();
                     if (genericArguments != null)
                     {
                         foreach (var genericParam in genericArguments)
@@ -805,7 +780,7 @@ namespace NScript.Converter.TypeSystemConverter
                                     scope,
                                     resolveTypeToExpressionHelper(genericParam, scope, initializeRefsAndStaticCtor),
                                     new IdentifierExpression(
-                                        this.JSBaseObjectScopeManager.TypeId, scope)));
+                                        JSBaseObjectScopeManager.TypeId, scope)));
                         }
                     }
 
@@ -813,9 +788,9 @@ namespace NScript.Converter.TypeSystemConverter
                 }
                 else
                 {
-                    List<Expression> arguments = new List<Expression>();
+                    var arguments = new List<Expression>();
 
-                    IList<TypeReference> genericArguments = typeReference.GetGenericArguments();
+                    var genericArguments = typeReference.GetGenericArguments();
                     if (genericArguments != null)
                     {
                         foreach (var genericParam in genericArguments)
@@ -836,7 +811,7 @@ namespace NScript.Converter.TypeSystemConverter
                         IdentifierExpression.Create(
                             null,
                             scope,
-                            this.ResolveType(typeReference.Resolve())),
+                            ResolveType(typeReference.Resolve())),
                         arguments);
                 }
             }
@@ -845,7 +820,7 @@ namespace NScript.Converter.TypeSystemConverter
                 return IdentifierExpression.Create(
                     null,
                     scope,
-                    this.ResolveType(typeReference));
+                    ResolveType(typeReference));
             }
         }
 
@@ -857,10 +832,10 @@ namespace NScript.Converter.TypeSystemConverter
         public IIdentifier Resolve(
             PropertyReference propertyReference)
         {
-            this.usedTypeReferencesToProcess.Enqueue(propertyReference.DeclaringType);
-            this.usedMembersToProcess.Enqueue(propertyReference);
+            usedTypeReferencesToProcess.Enqueue(propertyReference.DeclaringType);
+            usedMembersToProcess.Enqueue(propertyReference);
 
-            return this.GetTypeScope(propertyReference.DeclaringType).ResolveProperty(propertyReference.Resolve());
+            return GetTypeScope(propertyReference.DeclaringType).ResolveProperty(propertyReference.Resolve());
         }
 
         /// <summary>
@@ -871,10 +846,10 @@ namespace NScript.Converter.TypeSystemConverter
         public IIdentifier Resolve(
             FieldReference memberReference)
         {
-            this.usedTypeReferencesToProcess.Enqueue(memberReference.DeclaringType);
-            this.usedMembersToProcess.Enqueue(memberReference);
+            usedTypeReferencesToProcess.Enqueue(memberReference.DeclaringType);
+            usedMembersToProcess.Enqueue(memberReference);
 
-            return this.GetTypeScope(memberReference.DeclaringType).ResolveField(memberReference);
+            return GetTypeScope(memberReference.DeclaringType).ResolveField(memberReference);
         }
 
         /// <summary>
@@ -886,8 +861,8 @@ namespace NScript.Converter.TypeSystemConverter
             MethodReference memberReference,
             bool forceStatic = false)
         {
-            this.usedTypeReferencesToProcess.Enqueue(memberReference.DeclaringType);
-            this.usedMembersToProcess.Enqueue(memberReference);
+            usedTypeReferencesToProcess.Enqueue(memberReference.DeclaringType);
+            usedMembersToProcess.Enqueue(memberReference);
 
             if (memberReference.Name == ".ctor"
                 && forceStatic
@@ -896,11 +871,11 @@ namespace NScript.Converter.TypeSystemConverter
                 // This means that we are looking at finding factory method for this constructor
                 // This constructor has 0 arguments, so we can as well return GetGetDefaultConstructor
                 // function on Type.
-                return this.GetTypeScope(this.Context.ClrKnownReferences.TypeType)
-                    .ResolveMethod(this.Context.KnownReferences.GetDefaultConstructorMethod, false);
+                return GetTypeScope(Context.ClrKnownReferences.TypeType)
+                    .ResolveMethod(Context.KnownReferences.GetDefaultConstructorMethod, false);
             }
 
-            return this.GetTypeScope(memberReference.DeclaringType).ResolveMethod(memberReference, forceStatic);
+            return GetTypeScope(memberReference.DeclaringType).ResolveMethod(memberReference, forceStatic);
         }
 
         /// <summary>
@@ -924,10 +899,10 @@ namespace NScript.Converter.TypeSystemConverter
                         null,
                         scope,
                         new IdentifierExpression(
-                            this.ResolveVirtualMethodHelper(methodReference), scope),
+                            ResolveVirtualMethodHelper(methodReference), scope),
                         string.Empty,
                         "_"),
-                    this.GetTypeId(
+                    GetTypeId(
                         methodReference.DeclaringType,
                         scope,
                         typeResolver));
@@ -935,7 +910,7 @@ namespace NScript.Converter.TypeSystemConverter
             else
             {
                 return new IdentifierExpression(
-                    this.ResolveVirtualMethodHelper(methodReference),
+                    ResolveVirtualMethodHelper(methodReference),
                     scope);
             }
         }
@@ -947,16 +922,14 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Method name identifier.</returns>
         public IIdentifier ResolveFunctionName(MethodReference methodReference)
         {
-            IIdentifier returnValue;
-
-            if (!this.methodNameIdentifier.TryGetValue(methodReference, out returnValue))
+            if (!methodNameIdentifier.TryGetValue(methodReference, out var returnValue))
             {
-                string suggestedName =
+                var suggestedName =
                     methodReference.DeclaringType.Resolve().Name + "." + methodReference.Name;
 
-                returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
+                returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
 
-                this.methodNameIdentifier.Add(methodReference, returnValue);
+                methodNameIdentifier.Add(methodReference, returnValue);
             }
 
             return returnValue;
@@ -969,14 +942,12 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Identifier sequence for given alias.</returns>
         public IList<IIdentifier> ResolveScriptAlias(string alias)
         {
-            IList<IIdentifier> returnValue;
-
-            if (!this.scriptAliasIdentifiers.TryGetValue(
+            if (!scriptAliasIdentifiers.TryGetValue(
                 alias,
-                out returnValue))
+                out var returnValue))
             {
                 IIdentifier resolvedIdentifier;
-                NamespaceManager nameSpace = this.globalNamespaceManager;
+                var nameSpace = globalNamespaceManager;
                 var typeName = RuntimeScopeManager.GetSplitName(alias);
 
                 if (typeName.Item1 != null)
@@ -991,9 +962,10 @@ namespace NScript.Converter.TypeSystemConverter
                     typeName.Item2,
                     true);
 
-                returnValue = new List<IIdentifier>();
-
-                returnValue.Add(resolvedIdentifier);
+                returnValue = new List<IIdentifier>
+                {
+                    resolvedIdentifier
+                };
 
                 while (nameSpace.Parent != null)
                 {
@@ -1002,7 +974,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
 
                 returnValue = new ReadOnlyCollection<IIdentifier>(returnValue);
-                this.scriptAliasIdentifiers.Add(
+                scriptAliasIdentifiers.Add(
                     alias,
                     returnValue);
             }
@@ -1017,17 +989,17 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>identifier for the method</returns>
         public IIdentifier ResolveStatic(MethodDefinition methodDefinition)
         {
-            TypeDefinition typeDef = methodDefinition.DeclaringType.Resolve();
+            var typeDef = methodDefinition.DeclaringType.Resolve();
             if ((typeDef.IsGenericInstance || typeDef.HasGenericParameters)
-                && !this.context.IsPsudoType(typeDef))
+                && !context.IsPsudoType(typeDef))
             {
                 throw new InvalidOperationException(
                     "Can't resolve (static) method to global identifier if method is on generic type.");
             }
 
-            this.usedTypeReferencesToProcess.Enqueue(methodDefinition.DeclaringType);
-            this.usedMembersToProcess.Enqueue(methodDefinition);
-            return this.ResolveFunctionName(methodDefinition);
+            usedTypeReferencesToProcess.Enqueue(methodDefinition.DeclaringType);
+            usedMembersToProcess.Enqueue(methodDefinition);
+            return ResolveFunctionName(methodDefinition);
         }
 
         /// <summary>
@@ -1037,7 +1009,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>identifier for the method</returns>
         public IIdentifier ResolveFactory(MethodDefinition constructor)
         {
-            TypeDefinition typeDef = constructor.DeclaringType.Resolve();
+            var typeDef = constructor.DeclaringType.Resolve();
             if (typeDef.IsGenericInstance
                 || typeDef.HasGenericParameters)
             {
@@ -1045,20 +1017,18 @@ namespace NScript.Converter.TypeSystemConverter
                     "Can't resolve (static) method to global identifier if method is on generic type.");
             }
 
-            IIdentifier returnValue;
-
-            if (!this.staticFactoryMap.TryGetValue(constructor, out returnValue))
+            if (!staticFactoryMap.TryGetValue(constructor, out var returnValue))
             {
-                string suggestedName =
+                var suggestedName =
                     constructor.DeclaringType.Resolve().Name + "_factory";
 
-                returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
+                returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
 
-                this.staticFactoryMap.Add(constructor, returnValue);
+                staticFactoryMap.Add(constructor, returnValue);
             }
 
-            this.usedTypeReferencesToProcess.Enqueue(constructor.DeclaringType);
-            this.usedMembersToProcess.Enqueue(constructor);
+            usedTypeReferencesToProcess.Enqueue(constructor.DeclaringType);
+            usedMembersToProcess.Enqueue(constructor);
             return returnValue;
         }
 
@@ -1069,7 +1039,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>identifier for the field.</returns>
         public IIdentifier ResolveStatic(FieldDefinition fieldDefinition)
         {
-            TypeDefinition typeDef = fieldDefinition.DeclaringType.Resolve();
+            var typeDef = fieldDefinition.DeclaringType.Resolve();
             if (!fieldDefinition.IsStatic
                 || typeDef.IsGenericInstance
                 || typeDef.HasGenericParameters)
@@ -1078,26 +1048,24 @@ namespace NScript.Converter.TypeSystemConverter
                     "Can't resolve static field to global identifier if type is generic or member is not static.");
             }
 
-            IIdentifier returnValue;
-
-            if (!this.staticMemberMap.TryGetValue(fieldDefinition, out returnValue))
+            if (!staticMemberMap.TryGetValue(fieldDefinition, out var returnValue))
             {
-                string suggestedName =
+                var suggestedName =
                     fieldDefinition.DeclaringType.Resolve().Name + "." + fieldDefinition.Name;
 
-                returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
+                returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
 
-                this.staticMemberMap.Add(fieldDefinition, returnValue);
+                staticMemberMap.Add(fieldDefinition, returnValue);
             }
 
-            this.usedTypeReferencesToProcess.Enqueue(fieldDefinition.DeclaringType);
-            this.usedMembersToProcess.Enqueue(fieldDefinition);
+            usedTypeReferencesToProcess.Enqueue(fieldDefinition.DeclaringType);
+            usedMembersToProcess.Enqueue(fieldDefinition);
             return returnValue;
         }
 
         public IIdentifier ResolveStatic(PropertyDefinition propertyDefinition)
         {
-            TypeDefinition typeDef = propertyDefinition.DeclaringType.Resolve();
+            var typeDef = propertyDefinition.DeclaringType.Resolve();
             if (!propertyDefinition.IsStatic()
                 || typeDef.IsGenericInstance
                 || typeDef.HasGenericParameters)
@@ -1106,20 +1074,18 @@ namespace NScript.Converter.TypeSystemConverter
                     "Can't resolve static field to global identifier if type is generic or member is not static.");
             }
 
-            IIdentifier returnValue;
-
-            if (!this.staticMemberMap.TryGetValue(propertyDefinition, out returnValue))
+            if (!staticMemberMap.TryGetValue(propertyDefinition, out var returnValue))
             {
-                string suggestedName =
+                var suggestedName =
                     propertyDefinition.DeclaringType.Resolve().Name + "." + propertyDefinition.Name;
 
-                returnValue = SimpleIdentifier.CreateScopeIdentifier(this.Scope, suggestedName, false);
+                returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
 
-                this.staticMemberMap.Add(propertyDefinition, returnValue);
+                staticMemberMap.Add(propertyDefinition, returnValue);
             }
 
-            this.usedTypeReferencesToProcess.Enqueue(propertyDefinition.DeclaringType);
-            this.usedMembersToProcess.Enqueue(propertyDefinition);
+            usedTypeReferencesToProcess.Enqueue(propertyDefinition.DeclaringType);
+            usedMembersToProcess.Enqueue(propertyDefinition);
             return returnValue;
         }
 
@@ -1128,10 +1094,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="paramDef">The type reference.</param>
         /// <returns></returns>
-        public TypeScopeManager GetTypeScope(TypeReference typeReference)
-        {
-            return this.GetTypeScope(typeReference.Resolve());
-        }
+        public TypeScopeManager GetTypeScope(TypeReference typeReference) => GetTypeScope(typeReference.Resolve());
 
         /// <summary>
         /// Gets the type scope.
@@ -1140,17 +1103,15 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         public TypeScopeManager GetTypeScope(TypeDefinition typeDefinition)
         {
-            TypeScopeManager returnValue;
-
-            if (!this.typeScopes.TryGetValue(typeDefinition, out returnValue))
+            if (!typeScopes.TryGetValue(typeDefinition, out var returnValue))
             {
-                if (typeDefinition.IsSameDefinition(this.context.ClrKnownReferences.Object))
+                if (typeDefinition.IsSameDefinition(context.ClrKnownReferences.Object))
                 {
-                    returnValue = this.jsBaseObjectScopeManager.ObjecTypeScopeManager;
+                    returnValue = jsBaseObjectScopeManager.ObjecTypeScopeManager;
                 }
-                else if (typeDefinition.IsSameDefinition(this.context.ClrKnownReferences.TypeType))
+                else if (typeDefinition.IsSameDefinition(context.ClrKnownReferences.TypeType))
                 {
-                    returnValue = this.jsBaseObjectScopeManager.TypeTypeScopeManager;
+                    returnValue = jsBaseObjectScopeManager.TypeTypeScopeManager;
                 }
                 else
                 {
@@ -1158,7 +1119,7 @@ namespace NScript.Converter.TypeSystemConverter
 
                     if (typeDefinition.BaseType != null)
                     {
-                        parentTypeScopeManager = this.GetTypeScope(typeDefinition.BaseType);
+                        parentTypeScopeManager = GetTypeScope(typeDefinition.BaseType);
 
                         returnValue = new TypeScopeManager(
                             typeDefinition,
@@ -1167,14 +1128,14 @@ namespace NScript.Converter.TypeSystemConverter
                     else
                     {
                         returnValue = new TypeScopeManager(
-                            this.context,
+                            context,
                             typeDefinition,
-                            this.JSBaseObjectScopeManager.InstanceScope,
-                            this.JSBaseObjectScopeManager.StaticScope);
+                            JSBaseObjectScopeManager.InstanceScope,
+                            JSBaseObjectScopeManager.StaticScope);
                     }
                 }
 
-                this.typeScopes.Add(typeDefinition, returnValue);
+                typeScopes.Add(typeDefinition, returnValue);
             }
 
             return returnValue;
@@ -1189,26 +1150,26 @@ namespace NScript.Converter.TypeSystemConverter
         {
             // format for typeId is
             // curTypeId$[genericTypeId]_[genericTypeId]$
-            StringBuilder typeId = new StringBuilder();
-            IList<TypeReference> genericArguments = typeReference.GetGenericArguments();
+            var typeId = new StringBuilder();
+            var genericArguments = typeReference.GetGenericArguments();
             if (genericArguments.Count > 0)
             {
-                typeId.AppendFormat("{0}$", this.GetTypeId(typeReference.Resolve()));
-                for (int paramIndex = 0; paramIndex < genericArguments.Count; paramIndex++)
+                typeId.AppendFormat("{0}$", GetTypeId(typeReference.Resolve()));
+                for (var paramIndex = 0; paramIndex < genericArguments.Count; paramIndex++)
                 {
                     if (paramIndex > 0)
                     {
                         typeId.Append('_');
                     }
 
-                    typeId.Append(this.GetTypeId(genericArguments[paramIndex]));
+                    typeId.Append(GetTypeId(genericArguments[paramIndex]));
                 }
 
                 typeId.Append("$");
             }
             else
             {
-                typeId.Append(this.GetTypeId(typeReference.Resolve()));
+                typeId.Append(GetTypeId(typeReference.Resolve()));
             }
 
             return typeId.ToString();
@@ -1221,13 +1182,21 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Returns typeId for given type.</returns>
         public string GetTypeId(TypeDefinition typeDefinition)
         {
-            string typeId;
-            if (!this.typeIdMap.TryGetValue(typeDefinition, out typeId))
+            if (!typeIdMap.TryGetValue(typeDefinition, out var typeId))
             {
-                int newTypeId = System.Threading.Interlocked.Increment(
-                    ref this.typeIdsUsed);
-                typeId = Utils.GetCompressedInt(newTypeId);
-                this.typeIdMap[typeDefinition] = typeId;
+                if (Context.IsJsonType(typeDefinition)
+                    || Context.IsPsudoType(typeDefinition))
+                {
+                    typeId = GetTypeId(Context.ClrKnownReferences.Object);
+                }
+                else
+                {
+                    var newTypeId = System.Threading.Interlocked.Increment(
+                        ref typeIdsUsed);
+                    typeId = Utils.GetCompressedInt(newTypeId);
+                }
+
+                typeIdMap[typeDefinition] = typeId;
             }
 
             return typeId;
@@ -1244,7 +1213,7 @@ namespace NScript.Converter.TypeSystemConverter
             IdentifierScope scope,
             Func<TypeReference, IList<IIdentifier>> typeResolver)
         {
-            GenericParameterType? typeScope = typeReference.GetGenericTypeScope();
+            var typeScope = typeReference.GetGenericTypeScope();
 
             if (typeScope.HasValue)
             {
@@ -1255,13 +1224,13 @@ namespace NScript.Converter.TypeSystemConverter
                         null,
                         scope,
                         typeResolver(typeReference)),
-                    new IdentifierExpression(this.JSBaseObjectScopeManager.TypeId, scope));
+                    new IdentifierExpression(JSBaseObjectScopeManager.TypeId, scope));
             }
             else
             {
                 return new StringLiteralExpression(
                     scope,
-                    this.GetTypeId((TypeReference)typeReference));
+                    GetTypeId(typeReference));
             }
         }
 
@@ -1271,10 +1240,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="typeDefinition">The type definition.</param>
         /// <returns>Type converter for given typeDefinition</returns>
         public TypeConverter GetTypeConverter(
-            TypeDefinition typeDefinition)
-        {
-            return this.typesDefinitionsUsed[typeDefinition];
-        }
+            TypeDefinition typeDefinition) => typesDefinitionsUsed[typeDefinition];
 
         /// <summary>
         /// Compares the identifiers.
@@ -1286,7 +1252,7 @@ namespace NScript.Converter.TypeSystemConverter
             IList<IIdentifier> left,
             IList<IIdentifier> right)
         {
-            for (int i = 0; i < left.Count - 1 && i < right.Count - 1; i++)
+            for (var i = 0; i < left.Count - 1 && i < right.Count - 1; i++)
             {
                 if (left[i] != right[i])
                 {
@@ -1302,7 +1268,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         private void InitializeKnownGlobalIdentifiers()
         {
-            string[] globalNames = new String[]
+            var globalNames = new string[]
             {
                 "Function",
                 "Array",
@@ -1330,12 +1296,12 @@ namespace NScript.Converter.TypeSystemConverter
                 "event",
             };
 
-            foreach (string globalName in globalNames)
+            foreach (var globalName in globalNames)
             {
-                this.knownIdentifiers.Add(
+                knownIdentifiers.Add(
                     globalName,
                     SimpleIdentifier.CreateScopeIdentifier(
-                        this.Scope,
+                        Scope,
                         globalName,
                         true));
             }
@@ -1353,14 +1319,14 @@ namespace NScript.Converter.TypeSystemConverter
             // generic type with generic parameters.
             if (typeReference.GetGenericTypeScope() != null)
             {
-                string typeName = this.context.GetTypeName(typeReference);
+                var typeName = context.GetTypeName(typeReference);
 
                 return RuntimeScopeManager.GetSplitName(typeName);
             }
             else
             {
-                StringBuilder typeNameBuilder = new StringBuilder();
-                bool nameSpaceSet = false;
+                var typeNameBuilder = new StringBuilder();
+                var nameSpaceSet = false;
                 string nameSpace = null;
 
                 RuntimeScopeManager.CalculateFriendlyTypeReferenceName(
@@ -1368,7 +1334,7 @@ namespace NScript.Converter.TypeSystemConverter
                     typeNameBuilder,
                     (typeDef, strBuilder) =>
                     {
-                        string typeName = this.context.GetTypeName(typeDef);
+                        var typeName = context.GetTypeName(typeDef);
 
                         if (typeName != null)
                         {
@@ -1416,15 +1382,15 @@ namespace NScript.Converter.TypeSystemConverter
         {
             // Here we will initialize the reference identifier for this generic type.
             // As part of this initialization, generic type will register itself.
-            List<Expression> genericArguments = new List<Expression>();
-            IList<TypeReference> genericTypeArgs = typeReference.GetGenericArguments();
-            for (int genericArgIndex = 0; genericArgIndex < genericTypeArgs.Count; genericArgIndex++)
+            var genericArguments = new List<Expression>();
+            var genericTypeArgs = typeReference.GetGenericArguments();
+            for (var genericArgIndex = 0; genericArgIndex < genericTypeArgs.Count; genericArgIndex++)
             {
                 genericArguments.Add(
                     IdentifierExpression.Create(
                         null,
                         scope,
-                        this.ResolveType(genericTypeArgs[genericArgIndex])));
+                        ResolveType(genericTypeArgs[genericArgIndex])));
             }
 
             return new BinaryExpression(
@@ -1434,14 +1400,14 @@ namespace NScript.Converter.TypeSystemConverter
                 IdentifierExpression.Create(
                     null,
                     scope,
-                    this.ResolveType(typeReference)),
+                    ResolveType(typeReference)),
                 new MethodCallExpression(
                     null,
                     scope,
                     IdentifierExpression.Create(
                         null,
                         scope,
-                        this.ResolveType(typeReference.Resolve())),
+                        ResolveType(typeReference.Resolve())),
                     genericArguments));
         }
 
@@ -1454,12 +1420,12 @@ namespace NScript.Converter.TypeSystemConverter
         {
             var methodDefinition = methodReference.Resolve();
 
-            this.usedTypeReferencesToProcess.Enqueue(methodReference.DeclaringType);
-            this.usedMembersToProcess.Enqueue(methodReference);
-            this.virtualMethodReferencesUsed.Add(methodReference);
-            this.virtualMethodsUsed.Add(methodDefinition);
+            usedTypeReferencesToProcess.Enqueue(methodReference.DeclaringType);
+            usedMembersToProcess.Enqueue(methodReference);
+            virtualMethodReferencesUsed.Add(methodReference);
+            virtualMethodsUsed.Add(methodDefinition);
 
-            return this.GetTypeScope(methodReference.DeclaringType).ResolveVirtualMethod(methodDefinition);
+            return GetTypeScope(methodReference.DeclaringType).ResolveVirtualMethod(methodDefinition);
         }
 
         /// <summary>
@@ -1467,10 +1433,10 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         private void ProcessTypes()
         {
-            while (this.usedTypeReferencesToProcess.Count > 0)
+            while (usedTypeReferencesToProcess.Count > 0)
             {
-                var typeReference = this.usedTypeReferencesToProcess.Dequeue();
-                if (this.typeReferencesUsed.Contains(typeReference)
+                var typeReference = usedTypeReferencesToProcess.Dequeue();
+                if (typeReferencesUsed.Contains(typeReference)
                     || typeReference.IsGenericParameter
                     || (typeReference.IsArray && typeReference.GetElementType().IsGenericParameter))
                 {
@@ -1478,37 +1444,36 @@ namespace NScript.Converter.TypeSystemConverter
                 }
 
                 var typeDefinition = typeReference.Resolve();
-                TypeConverter typeConverter;
-                this.typeReferencesUsed.Add(typeReference);
+                typeReferencesUsed.Add(typeReference);
                 if (typeReference.IsGenericInstance)
                 {
-                    GenericInstanceType genericTypeReference = (GenericInstanceType)typeReference;
+                    var genericTypeReference = (GenericInstanceType)typeReference;
                     foreach (var param in genericTypeReference.GenericArguments)
                     {
                         if (!param.IsGenericParameter)
-                        { this.usedTypeReferencesToProcess.Enqueue(param); }
+                        { usedTypeReferencesToProcess.Enqueue(param); }
                     }
                 }
 
-                this.dependencyAnalyzer.AddTypeForAnalysis(typeDefinition);
+                dependencyAnalyzer.AddTypeForAnalysis(typeDefinition);
 
-                if (this.typesDefinitionsUsed.TryGetValue(typeDefinition, out typeConverter))
+                if (typesDefinitionsUsed.TryGetValue(typeDefinition, out var typeConverter))
                 {
                     continue;
                 }
 
-                if (typeDefinition == this.context.ClrKnownReferences.Object)
+                if (typeDefinition == context.ClrKnownReferences.Object)
                 {
-                    this.usedMembersToProcess.Enqueue(
-                        this.context.KnownReferences.ToStringMethod);
+                    usedMembersToProcess.Enqueue(
+                        context.KnownReferences.ToStringMethod);
                 }
 
                 typeConverter = TypeConverter.Create(this, typeDefinition, true);
-                this.typesDefinitionsUsed.Add(typeDefinition, typeConverter);
+                typesDefinitionsUsed.Add(typeDefinition, typeConverter);
 
                 // Now let's add all the dependencies of the class.
-                this.dependencyAnalyzer.GetTypeReferenceDependencies(new TypeDefinition[] { typeDefinition })
-                    .ForEach(tr => this.usedTypeReferencesToProcess.Enqueue(tr));
+                dependencyAnalyzer.GetTypeReferenceDependencies(new TypeDefinition[] { typeDefinition })
+                    .ForEach(tr => usedTypeReferencesToProcess.Enqueue(tr));
             }
         }
 
@@ -1517,34 +1482,34 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         private void ProcessMembers()
         {
-            while (this.usedMembersToProcess.Count > 0)
+            while (usedMembersToProcess.Count > 0)
             {
-                var memberReference = this.usedMembersToProcess.Dequeue();
+                var memberReference = usedMembersToProcess.Dequeue();
                 var memberDefinition = memberReference.GetDefinition() as MemberReference;
 
-                if (this.membersProcessed.Contains(memberDefinition))
+                if (membersProcessed.Contains(memberDefinition))
                 {
                     continue;
                 }
 
-                this.membersProcessed.Add(memberDefinition);
+                membersProcessed.Add(memberDefinition);
 
                 // Before we proceed we need to make sure that typeQueue is all flushed.
                 // We do this to gurantee that TypeConverter for this member is already
                 // in our tracking list.
-                this.ProcessTypes();
+                ProcessTypes();
 
                 // Currently we only process field and methods. We do this because
                 // even properties will show up as methods anyways.
                 if (memberDefinition is MethodDefinition method)
                 {
-                    this.typesDefinitionsUsed[method.DeclaringType].AddMethodToImplementation(method);
+                    typesDefinitionsUsed[method.DeclaringType].AddMethodToImplementation(method);
                     continue;
                 }
 
                 if (memberDefinition is FieldDefinition fieldDefinition)
                 {
-                    this.typesDefinitionsUsed[fieldDefinition.DeclaringType].AddFieldToImplementation(fieldDefinition);
+                    typesDefinitionsUsed[fieldDefinition.DeclaringType].AddFieldToImplementation(fieldDefinition);
                 }
             }
         }
@@ -1554,37 +1519,37 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         private void WalkUsedDependencies()
         {
-            while (this.usedMembersToProcess.Count > 0
-                || this.usedTypeReferencesToProcess.Count > 0)
+            while (usedMembersToProcess.Count > 0
+                || usedTypeReferencesToProcess.Count > 0)
             {
-                this.ProcessTypes();
-                this.ProcessMembers();
+                ProcessTypes();
+                ProcessMembers();
 
                 // Last step here is to make sure that if a virtual method is used, all it's implementations
                 // are also used. Currently our approach is brute force, but later on this can be optimized.
-                foreach (var typeDefinition in this.typesDefinitionsUsed.Keys)
+                foreach (var typeDefinition in typesDefinitionsUsed.Keys)
                 {
-                    foreach (var kvPair in typeDefinition.GetInterfaceOverrides(this.Context.ClrContext))
+                    foreach (var kvPair in typeDefinition.GetInterfaceOverrides(Context.ClrContext))
                     {
                         var overridenMethod = kvPair.Key;
                         var method = kvPair.Value;
 
-                        if (this.virtualMethodsUsed.Contains(overridenMethod.Resolve()))
+                        if (virtualMethodsUsed.Contains(overridenMethod.Resolve()))
                         {
-                            if (!this.membersProcessed.Contains(method))
+                            if (!membersProcessed.Contains(method))
                             {
-                                this.usedMembersToProcess.Enqueue(method);
+                                usedMembersToProcess.Enqueue(method);
                                 if (overridenMethod.DeclaringType.Resolve().IsInterface)
                                 {
-                                    MethodDefinition methodDef = (MethodDefinition)method.GetDefinition();
+                                    var methodDef = (MethodDefinition)method.GetDefinition();
                                     if (methodDef.IsVirtual)
                                     {
                                         // If this type is inheriting from interface and this method is
                                         // also virtual. In this case any call to method on interface will
                                         // also make virtual call on this method. So we need to add this method
                                         // to virtuals used set.
-                                        this.virtualMethodReferencesUsed.Add(method);
-                                        this.virtualMethodsUsed.Add(methodDef);
+                                        virtualMethodReferencesUsed.Add(method);
+                                        virtualMethodsUsed.Add(methodDef);
                                     }
                                 }
                             }
