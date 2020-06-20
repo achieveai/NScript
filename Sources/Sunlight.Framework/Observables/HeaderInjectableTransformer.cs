@@ -463,7 +463,7 @@ namespace Sunlight.Framework.Observables
             out bool addedAfter)
         {
             List<T> wrappedList = new List<T>();
-            addedBefore = changeIdx - 1 > 0;
+            addedBefore = changeIdx > 0;
 
             if (addedBefore)
             {

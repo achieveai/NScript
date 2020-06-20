@@ -454,6 +454,24 @@ namespace Sunlight.Framework.Test
         }
 
         [Test]
+        public static void TestRegressionReplace(Assert assert)
+        {
+            ObservableCollection<Number> collection = new ObservableCollection<Number>();
+            collection.Add(11);
+            collection.Add(15);
+            collection.Add(96);
+            collection.Add(97);
+
+            var transformer = new HeaderInjectableTransformer<Number, Number>(GenerateHeader, collection);
+            assert.Equal(transformer.TransformedCollection.Count, 6, "total output items");
+
+            collection[0] = 12;
+            collection[1] = 16;
+
+            assert.Equal(transformer.TransformedCollection.Count, 6, "total output items");
+        }
+
+        [Test]
         public static void TestHeaderInjectionReplace(Assert assert)
         {
             assert.Expect(38);
