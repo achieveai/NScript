@@ -104,18 +104,23 @@ namespace RealScript
         public static int? CheckValue(int value, int? obj = default(int?))
         { return value + obj; }
 
-//         public static List<NewLanguageFeatures> TestNestedFunctionGeneric(NewLanguageFeatures obj)
-//         {
-//             List<U> Compute<U>(U item, int count)
-//             {
-//                 var rv = new List<U>();
-//                 while(count-- < 0)
-//                 { rv.Add(item); }
-// 
-//                 return rv;
-//             }
-// 
-//             return Compute(obj, 10);
-//         }
+        public static void DiscardVariable(int value)
+        {
+            _ = NewLanguageFeatures.CheckWithDefaultParameter(value, 11);
+        }
+
+        //         public static List<NewLanguageFeatures> TestNestedFunctionGeneric(NewLanguageFeatures obj)
+        //         {
+        //             List<U> Compute<U>(U item, int count)
+        //             {
+        //                 var rv = new List<U>();
+        //                 while(count-- < 0)
+        //                 { rv.Add(item); }
+        //
+        //                 return rv;
+        //             }
+        //
+        //             return Compute(obj, 10);
+        //         }
     }
 }

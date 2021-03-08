@@ -1,202 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion="1.0.0.0" ?>
-  <?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
-  <?define V8EngineDir="$(var.SolutionDir)NScriptToolset\bin\x86" ?>
+	<?define ProductVersion="1.0.0.0" ?>
+	<?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
+	<?define V8EngineDir="$(var.SolutionDir)NScriptToolset\bin\x86" ?>
 
-  <Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+	<Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
-    <MediaTemplate EmbedCab="yes"/>
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
+		<MediaTemplate EmbedCab="yes" />
 
-    <Property Id="USERITEMTEMPLATEDIR">
-      <RegistrySearch Id="ItemTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
-    </Property>
+		<Property Id="USERITEMTEMPLATEDIR">
+			<RegistrySearch Id="ItemTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserItemTemplatesLocation" Type="directory" />
+		</Property>
 
-    <Property Id="USERPROJECTTEMPLATEDIR">
-      <RegistrySearch Id="ProjectTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
-    </Property>
-         
-    <Feature Id="ProductFeature" Title="nScript" Level="1">
-      <ComponentGroupRef Id="ProductComponents" />
-    </Feature>
-  </Product>
+		<Property Id="USERPROJECTTEMPLATEDIR">
+			<RegistrySearch Id="ProjectTemplateDir" Root="HKLM" Key="Software\Microsoft\VisualStudio\11.0" Name="UserProjectTemplatesLocation" Type="directory" />
+		</Property>
 
-  <!-- Step 1: Define the directory structure -->
-  <Fragment>
-    <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
-        <Directory Id="BASEINSTALLFOLDER" Name="nScript">
-          <Directory Id="INSTALLFOLDER" Name="$(var.ProductVersion)">
-            <Directory Id="INSTALLFOLDER_BIN" Name="bin">
-              <Directory Id="INSTALLFOLDER_BIN_X86" Name="x86"/>
-            </Directory>
-            <Directory Id="INSTALLFOLDER_LIB" Name="lib"/>
-          </Directory>
-        </Directory>
-      </Directory>
+		<Feature Id="ProductFeature" Title="nScript" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
 
-      <Directory Id="USERITEMTEMPLATEDIR">
-        <Directory Id="ITEMTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
-          <Directory Id="ITEMTEMPLATE_DIR" Name="nScript">
-            <Directory Id="ITEMTEMPLATE_DIR_CLASS" Name="Class" />
-          </Directory>
-        </Directory>
-      </Directory>
+	<!-- Step 1: Define the directory structure -->
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="BASEINSTALLFOLDER" Name="nScript">
+					<Directory Id="INSTALLFOLDER" Name="$(var.ProductVersion)">
+						<Directory Id="INSTALLFOLDER_BIN" Name="bin">
+							<Directory Id="INSTALLFOLDER_BIN_X86" Name="x86" />
+						</Directory>
+						<Directory Id="INSTALLFOLDER_LIB" Name="lib" />
+					</Directory>
+				</Directory>
+			</Directory>
 
-      <Directory Id="USERPROJECTTEMPLATEDIR">
-        <Directory Id="PROJECTTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
-          <Directory Id="PROJECTTEMPLATE_DIR" Name="nScript" />
-        </Directory>
-      </Directory>
-    </Directory>
-  </Fragment>
+			<Directory Id="USERITEMTEMPLATEDIR">
+				<Directory Id="ITEMTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
+					<Directory Id="ITEMTEMPLATE_DIR" Name="nScript">
+						<Directory Id="ITEMTEMPLATE_DIR_CLASS" Name="Class" />
+					</Directory>
+				</Directory>
+			</Directory>
 
-  <!-- Step 2: Add files to your installer package -->
-  <Fragment>
-    <ComponentGroup Id="ProductComponents">
-      <Component Id="RegistryEntry" Directory="INSTALLFOLDER" Guid="{E995DA69-5D6E-4F76-979D-D86DA16189AA}">
-        <RegistryKey Root="HKLM" Key="Software\NScript">
-          <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
-        </RegistryKey>
+			<Directory Id="USERPROJECTTEMPLATEDIR">
+				<Directory Id="PROJECTTEMPLATE_BASEDIR_CSHARP" Name="Visual C#">
+					<Directory Id="PROJECTTEMPLATE_DIR" Name="nScript" />
+				</Directory>
+			</Directory>
+		</Directory>
+	</Fragment>
 
-        <RegistryKey Root="HKLM" Key="Software\WOW6432Node\NScript">
-          <RegistryValue Type="string" Value="[INSTALLFOLDER]" />
-        </RegistryKey>
-      </Component>
+	<!-- Step 2: Add files to your installer package -->
+	<Fragment>
+		<ComponentGroup Id="ProductComponents">
+			<Component Id="RegistryEntry" Directory="INSTALLFOLDER" Guid="{E995DA69-5D6E-4F76-979D-D86DA16189AA}">
+				<RegistryKey Root="HKLM" Key="Software\NScript">
+					<RegistryValue Type="string" Value="[INSTALLFOLDER]" />
+				</RegistryKey>
 
-      <Component Id="TargetsFileComponent" Directory="INSTALLFOLDER" Guid="{CF8FC4F5-9B73-47E2-A3C5-EFC72C4A1AEF}">
-        <File Source="$(var.ToolsetDir)\NScript.CSharp.targets" />
-      </Component>
+				<RegistryKey Root="HKLM" Key="Software\WOW6432Node\NScript">
+					<RegistryValue Type="string" Value="[INSTALLFOLDER]" />
+				</RegistryKey>
+			</Component>
 
-      <Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
-        <File Source="$(var.ToolsetDir)\bin\AdvancedStringBuilder.dll" />
-        <File Source="$(var.ToolsetDir)\bin\AdvancedStringBuilder.xml" />
-        <File Source="$(var.ToolsetDir)\bin\Antlr3.Runtime.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll.config" />
-        <File Source="$(var.ToolsetDir)\bin\Autoprefixer.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\ClearScript.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Csc.exe" />
-        <File Source="$(var.ToolsetDir)\bin\Csc.exe.config" />
-        <File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\CssParser.dll" />
-        <File Source="$(var.ToolsetDir)\bin\CssParser.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\dotless.Core.dll" />
-        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.dll" />
-        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.xml" />
-        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.dll" />
-        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.xml" />
-        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.dll" />
-        <File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.xml" />
-        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
-        <File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\mcs.dll" />
-        <File Source="$(var.ToolsetDir)\bin\mcs.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.xml" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.xml" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.Abstractions.xml" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.xml" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Mdb.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Mdb.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Pdb.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Pdb.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NetJSON.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NetJSON.xml" />
-        <File Source="$(var.ToolsetDir)\bin\NetSerializer.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
-        <File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.xml" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.CLR.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.CLR.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.dll.config" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.exe" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.exe.config" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.JSParser.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.JSParser.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.JST.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.JST.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Utils.dll" />
-        <File Source="$(var.ToolsetDir)\bin\NScript.Utils.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
-        <File Source="$(var.ToolsetDir)\bin\protobuf-net.dll" />
-        <File Source="$(var.ToolsetDir)\bin\protobuf-net.xml" />
-        <File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
-        <File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
-        <File Source="$(var.ToolsetDir)\bin\System.Buffers.dll" />
-        <File Source="$(var.ToolsetDir)\bin\System.Buffers.xml" />
-        <File Source="$(var.ToolsetDir)\bin\System.Collections.Immutable.dll" />
-        <File Source="$(var.ToolsetDir)\bin\System.Collections.Immutable.xml" />
-        <File Source="$(var.ToolsetDir)\bin\System.Memory.dll" />
-        <File Source="$(var.ToolsetDir)\bin\System.Memory.xml" />
-        <File Source="$(var.ToolsetDir)\bin\System.Reflection.Metadata.dll" />
-        <File Source="$(var.ToolsetDir)\bin\System.Reflection.Metadata.xml" />
-        <File Source="$(var.ToolsetDir)\bin\System.Runtime.CompilerServices.Unsafe.dll" />
-        <File Source="$(var.ToolsetDir)\bin\System.Runtime.CompilerServices.Unsafe.xml" />
-        <File Source="$(var.ToolsetDir)\bin\System.Runtime.InteropServices.RuntimeInformation.dll" />
-        <File Source="$(var.ToolsetDir)\bin\System.ValueTuple.dll" />
-        <File Source="$(var.ToolsetDir)\bin\System.ValueTuple.xml" />
-        <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll" />
-        <File Source="$(var.ToolsetDir)\bin\XwmlParser.dll.config" />
-        <File Source="$(var.ToolsetDir)\bin\XwmlParser.pdb" />
-      </Component>
-      <Component Id="BinComponentX86" Directory="INSTALLFOLDER_BIN_X86" Guid="{D971F92B-CC87-4559-807E-55BA14DD944F}">
-        <File Source="$(var.ToolsetDir)\bin\x86\ClearScriptV8-32.dll" />
-        <File Source="$(var.ToolsetDir)\bin\x86\v8-base-ia32.dll" />
-        <File Source="$(var.ToolsetDir)\bin\x86\v8-ia32.dll" />
-        <File Source="$(var.ToolsetDir)\bin\x86\v8-libcpp-ia32.dll" />
-      </Component>
+			<Component Id="TargetsFileComponent" Directory="INSTALLFOLDER" Guid="{CF8FC4F5-9B73-47E2-A3C5-EFC72C4A1AEF}">
+				<File Source="$(var.ToolsetDir)\NScript.CSharp.targets" />
+			</Component>
 
-      <Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">
-        <File Source="$(var.ToolsetDir)\lib\mscorlib.dll" />
-        <File Source="$(var.ToolsetDir)\lib\mscorlib.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\System.Core.dll" />
-        <File Source="$(var.ToolsetDir)\lib\System.Core.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\Microsoft.CSharp.dll" />
-        <File Source="$(var.ToolsetDir)\lib\Microsoft.CSharp.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.dll" />
-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.dll" />
-        <File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\SunlightUnit.dll" />
-        <File Source="$(var.ToolsetDir)\lib\SunlightUnit.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\System.Web.dll" />
-        <File Source="$(var.ToolsetDir)\lib\System.Web.Html.dll" />
-        <File Source="$(var.ToolsetDir)\lib\System.Web.Html.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\System.Web.pdb" />
-        <File Source="$(var.ToolsetDir)\lib\Windows.dll" />
-        <File Source="$(var.ToolsetDir)\lib\Windows.pdb" />
-      </Component>
+			<Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
+				<File Source="$(var.ToolsetDir)\bin\AdvancedStringBuilder.dll" />
+				<File Source="$(var.ToolsetDir)\bin\AdvancedStringBuilder.xml" />
+				<File Source="$(var.ToolsetDir)\bin\Antlr3.Runtime.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Autoprefixer.dll.config" />
+				<File Source="$(var.ToolsetDir)\bin\Autoprefixer.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\ClearScript.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Csc.exe" />
+				<File Source="$(var.ToolsetDir)\bin\Csc.exe.config" />
+				<File Source="$(var.ToolsetDir)\bin\Csc.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\CssParser.dll" />
+				<File Source="$(var.ToolsetDir)\bin\CssParser.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\dotless.Core.dll" />
+				<File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.dll" />
+				<File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\HtmlAgilityPack.xml" />
+				<File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.dll" />
+				<File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.Core.xml" />
+				<File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.dll" />
+				<File Source="$(var.ToolsetDir)\bin\JavaScriptEngineSwitcher.V8.xml" />
+				<File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.dll" />
+				<File Source="$(var.ToolsetDir)\bin\JsCsc.Lib.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\mcs.dll" />
+				<File Source="$(var.ToolsetDir)\bin\mcs.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.CSharp.xml" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.CodeAnalysis.xml" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.Abstractions.xml" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Microsoft.Extensions.DependencyInjection.xml" />
+				<File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Mdb.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Mdb.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Pdb.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Mono.Cecil.Private.Pdb.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NetSerializer.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.dll" />
+				<File Source="$(var.ToolsetDir)\bin\Newtonsoft.Json.xml" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.CLR.dll" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.CLR.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.Converter.dll" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.Converter.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.dll" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.Converter.Plugins.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.dll" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.dll.config" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.csc.lib.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.exe" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.exe.config" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.JSParser.dll" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.JSParser.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.JST.dll" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.JST.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.Utils.dll" />
+				<File Source="$(var.ToolsetDir)\bin\NScript.Utils.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\PluginConfig.xml" />
+				<File Source="$(var.ToolsetDir)\bin\protobuf-net.dll" />
+				<File Source="$(var.ToolsetDir)\bin\protobuf-net.xml" />
+				<File Source="$(var.ToolsetDir)\bin\SourceMap.dll" />
+				<File Source="$(var.ToolsetDir)\bin\SourceMap.pdb" />
+				<File Source="$(var.ToolsetDir)\bin\System.Buffers.dll" />
+				<File Source="$(var.ToolsetDir)\bin\System.Buffers.xml" />
+				<File Source="$(var.ToolsetDir)\bin\System.Collections.Immutable.dll" />
+				<File Source="$(var.ToolsetDir)\bin\System.Collections.Immutable.xml" />
+				<File Source="$(var.ToolsetDir)\bin\System.Memory.dll" />
+				<File Source="$(var.ToolsetDir)\bin\System.Memory.xml" />
+				<File Source="$(var.ToolsetDir)\bin\System.Reflection.Metadata.dll" />
+				<File Source="$(var.ToolsetDir)\bin\System.Reflection.Metadata.xml" />
+				<File Source="$(var.ToolsetDir)\bin\System.Runtime.CompilerServices.Unsafe.dll" />
+				<File Source="$(var.ToolsetDir)\bin\System.Runtime.CompilerServices.Unsafe.xml" />
+				<File Source="$(var.ToolsetDir)\bin\System.Runtime.InteropServices.RuntimeInformation.dll" />
+				<File Source="$(var.ToolsetDir)\bin\System.ValueTuple.dll" />
+				<File Source="$(var.ToolsetDir)\bin\System.ValueTuple.xml" />
+				<File Source="$(var.ToolsetDir)\bin\XwmlParser.dll" />
+				<File Source="$(var.ToolsetDir)\bin\XwmlParser.dll.config" />
+				<File Source="$(var.ToolsetDir)\bin\XwmlParser.pdb" />
+			</Component>
+			<Component Id="BinComponentX86" Directory="INSTALLFOLDER_BIN_X86" Guid="{D971F92B-CC87-4559-807E-55BA14DD944F}">
+				<File Source="$(var.ToolsetDir)\bin\x86\ClearScriptV8-32.dll" />
+				<File Source="$(var.ToolsetDir)\bin\x86\v8-base-ia32.dll" />
+				<File Source="$(var.ToolsetDir)\bin\x86\v8-ia32.dll" />
+				<File Source="$(var.ToolsetDir)\bin\x86\v8-libcpp-ia32.dll" />
+			</Component>
 
-      <Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScriptClass.zip" />
-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScriptTestClass.zip" />
-        <File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScript_Item.VSTDIR" />
-      </Component>
+			<Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">
+				<File Source="$(var.ToolsetDir)\lib\mscorlib.dll" />
+				<File Source="$(var.ToolsetDir)\lib\mscorlib.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\System.Core.dll" />
+				<File Source="$(var.ToolsetDir)\lib\System.Core.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\Microsoft.CSharp.dll" />
+				<File Source="$(var.ToolsetDir)\lib\Microsoft.CSharp.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.dll" />
+				<File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.dll" />
+				<File Source="$(var.ToolsetDir)\lib\Sunlight.Framework.UI.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\SunlightUnit.dll" />
+				<File Source="$(var.ToolsetDir)\lib\SunlightUnit.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\System.Web.dll" />
+				<File Source="$(var.ToolsetDir)\lib\System.Web.Html.dll" />
+				<File Source="$(var.ToolsetDir)\lib\System.Web.Html.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\System.Web.pdb" />
+				<File Source="$(var.ToolsetDir)\lib\Windows.dll" />
+				<File Source="$(var.ToolsetDir)\lib\Windows.pdb" />
+			</Component>
 
-      <Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript.VSTDIR" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application.zip" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Windows_Application.zip" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Library.zip" />
-        <File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Test.zip" />
-      </Component>
-    </ComponentGroup>
-  </Fragment>
+			<Component Id="ItemTemplate" Directory="ITEMTEMPLATE_DIR" Guid="{09197507-B598-442C-98DC-61D6B93A2E23}">
+				<File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScriptClass.zip" />
+				<File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScriptTestClass.zip" />
+				<File Source="$(var.ToolsetDir)\Templates\ItemTemplate\NScript_Item.VSTDIR" />
+			</Component>
+
+			<Component Id="ProjectTemplate" Directory="PROJECTTEMPLATE_DIR" Guid="{5CE3D6C7-953C-4E66-97CC-7CD9BEFD852B}">
+				<File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript.VSTDIR" />
+				<File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Application.zip" />
+				<File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Windows_Application.zip" />
+				<File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Library.zip" />
+				<File Source="$(var.ToolsetDir)\Templates\ProjectTemplate\NScript_Test.zip" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>
 </Wix>

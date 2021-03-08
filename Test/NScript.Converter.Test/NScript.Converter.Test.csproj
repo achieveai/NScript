@@ -541,6 +541,7 @@
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\CallWithDefaultParameter.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ProcessItems.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs2.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\DiscardVariable.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
   </ItemGroup>

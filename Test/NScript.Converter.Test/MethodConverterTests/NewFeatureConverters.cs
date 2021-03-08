@@ -10,7 +10,6 @@ namespace NScript.Converter.Test.MethodConverterTests
     using NUnit.Framework;
     using System.Threading.Tasks;
 
-
     /// <summary>
     /// Definition for NewFeatureConverters
     /// </summary>
@@ -38,6 +37,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [TestCase("TestNestedFunction", "TestNestedFunction.js", TestType.All)]
         [TestCase("TestNestedFunctionScoped", "TestNestedFunctionScoped.js", TestType.All)]
         [TestCase("CallWithDefaultParameter", "CallWithDefaultParameter.js", TestType.All)]
+        [TestCase("DiscardVariable", "DiscardVariable.js", TestType.All)]
         public void Test(string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

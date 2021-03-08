@@ -202,7 +202,9 @@
             };
 
         public override AstBase VisitAssignmentOperator(BoundAssignmentOperator node, SerializationContext arg)
-            => new BinaryExpression
+            => node.Left is BoundDiscardExpression
+            ? (ExpressionSer)Visit(node.Right, arg)
+            : new BinaryExpression
             {
                 Left = (ExpressionSer)Visit(node.Left, arg),
                 Right = (ExpressionSer)Visit(node.Right, arg),
@@ -590,7 +592,7 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
 
-        public override AstBase VisitDiscardExpression(BoundDiscardExpression node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitDiscardExpression(BoundDiscardExpression node, SerializationContext arg) => throw new InvalidOperationException();
 
         public override AstBase VisitDoStatement(BoundDoStatement node, SerializationContext arg)
             => new DoStatement
@@ -805,7 +807,29 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId((ITypeSymbol)node.TargetType.ExpressionSymbol)
             };
 
-        public override AstBase VisitIsPatternExpression(BoundIsPatternExpression node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitIsPatternExpression(BoundIsPatternExpression node, SerializationContext arg)
+            => new BinaryExpression
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                Operator = (int)CLR.AST.BinaryOperator.NotEquals,
+                Left = new BinaryExpression
+                {
+                    Location = node.Syntax.Location.GetSerLoc(),
+                    Operator = (int)CLR.AST.BinaryOperator.Assignment,
+                    Left = (ExpressionSer)Visit(
+                        ((BoundDeclarationPattern)node.Pattern).VariableAccess,
+                        arg),
+                    Right = new AsExpression
+                    {
+                        Type = arg.SymbolSerializer.GetTypeSpecId(
+                            ((BoundDeclarationPattern)node.Pattern).DeclaredType.Type),
+                        Expression = (ExpressionSer)Visit(node.Expression, arg)
+                    },
+                },
+                Right = new NullExpression
+                {
+                }
+            };
 
         public override AstBase VisitLabel(BoundLabel node, SerializationContext arg) => throw new NotImplementedException();
 
