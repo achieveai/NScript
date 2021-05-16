@@ -1021,10 +1021,17 @@ namespace JsCsc.Lib
                             propertyReference,
                             null);
 
+                        var setterArgs = initObj.PropertyArgs != null
+                            ? initObj.PropertyArgs
+                                .Select(arg => ParseExpression(arg.Value))
+                                .Concat(new Expression[] { ParseExpression(initObj.Value) })
+                                .ToArray()
+                            : new Expression[] { ParseExpression(initObj.Value) };
+
                         setters.Add(
                             Tuple.Create(
                                 memberReferenceExpression,
-                                new Expression[] { ParseExpression(initObj.Value) }));
+                                setterArgs));
                     }
                     else if (initObj.Field != null)
                     {

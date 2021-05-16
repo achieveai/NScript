@@ -7,6 +7,7 @@
 namespace RealScript
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for InlineComplexStatements
@@ -197,6 +198,26 @@ namespace RealScript
                 12,
                 14,
                 15
+            };
+        }
+
+        public StringDictionary<int> ReturnStrDict()
+        {
+            return new StringDictionary<int>
+            {
+                ["0"] = 0,
+                ["1"] = 1,
+                ["2"] = 1,
+            };
+        }
+
+        public StringDictionary<int> ReturnStrDict2(string a, string b, string c)
+        {
+            return new StringDictionary<int>
+            {
+                [a] = 0,
+                [b] = 1,
+                [c] = 1,
             };
         }
     }

@@ -11,6 +11,8 @@ namespace NScript.Converter.ExpressionsConverter
     using NScript.Converter.TypeSystemConverter;
     using Mono.Cecil;
     using System.Collections.Generic;
+    using System;
+    using System.Linq;
 
     /// <summary>
     /// Definition for InlinePropertyInitializerConverter
@@ -32,7 +34,16 @@ namespace NScript.Converter.ExpressionsConverter
 
             var expressions = new List<JST.Expression>();
             JST.InlineObjectInitializer inlineObjectInitializer = null;
-            JST.Expression initExpression = null;
+            JST.Expression initExpression;
+
+            if (CanUseNativeStringDictionary(converter, expression))
+            {
+                var rv = ConvertStringDictionary(converter, expression);
+                if (rv != null)
+                {
+                    return rv;
+                }
+            }
 
             if (!converter.RuntimeManager.Context.IsJsonType(expression.Constructor.ResultType.Resolve()))
             {
@@ -200,6 +211,64 @@ namespace NScript.Converter.ExpressionsConverter
             {
                 return inlineObjectInitializer;
             }
+        }
+
+        private static bool CanUseNativeStringDictionary(
+            IMethodScopeConverter converter,
+            InlinePropertyInitilizationExpression expr)
+        {
+            return InlineCollectionInitializerConverter.IsStringDictionary(converter, expr.Constructor.ResultType);
+        }
+
+        private static JST.Expression ConvertStringDictionary(
+            IMethodScopeConverter converter,
+            InlinePropertyInitilizationExpression expression)
+        {
+            var nativeDictionaryConstructor = InlineCollectionInitializerConverter.GetNativeDictionaryConstructor(
+                converter,
+                expression.ResultType);
+
+            if (nativeDictionaryConstructor != null)
+            {
+                return ConverterUsingNativeDictionary(
+                    converter,
+                    nativeDictionaryConstructor,
+                    expression.Setters,
+                    expression.Location);
+            }
+
+            return null;
+        }
+
+        private static JST.Expression ConverterUsingNativeDictionary(
+            IMethodScopeConverter converter,
+            MethodReference constructor,
+            IList<Tuple<MemberReferenceExpression, Expression[]>> setters,
+            Utils.Location location)
+        {
+            if (setters
+                .Any(setter => !(setter.Item2[0] is StringLiteral)))
+            { return null; }
+
+            var objExpression = new JST.InlineObjectInitializer(
+                location,
+                converter.Scope);
+
+            foreach (var setter in setters)
+            {
+                objExpression.AddInitializer(
+                    (setter.Item2[0] as StringLiteral).String,
+                    ExpressionConverterBase.Convert(converter, setter.Item2[1]));
+            }
+
+            return new JST.MethodCallExpression(
+                location,
+                converter.Scope,
+                JST.IdentifierExpression.Create(
+                    location,
+                    converter.Scope,
+                    converter.ResolveFactory(constructor)),
+                objExpression);
         }
     }
 }

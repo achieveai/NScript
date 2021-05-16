@@ -35,7 +35,8 @@ namespace NScript.Converter.ExpressionsConverter
                     var rv = ConverterUsingNativeDictionary(
                         converter,
                         nativeDictionaryConstructor,
-                        expression);
+                        expression.Setters,
+                        expression.Location);
 
                     if (rv != null)
                     { return rv; }
@@ -59,7 +60,7 @@ namespace NScript.Converter.ExpressionsConverter
             throw new NotImplementedException();
         }
 
-        private static bool IsStringDictionary(
+        public static bool IsStringDictionary(
             IMethodScopeConverter converter,
             TypeReference typeRef)
         {
@@ -78,21 +79,21 @@ namespace NScript.Converter.ExpressionsConverter
                iface.Module == converter.KnownReferences.ListGeneric.Module
                && iface.FullName == "System.Collections.Generic.IDictionary`2");
 
-        private static JST.Expression ConverterUsingNativeDictionary(
+        public static JST.Expression ConverterUsingNativeDictionary(
             IMethodScopeConverter converter,
             MethodReference constructor,
-            InlineCollectionInitializationExpression expression)
+            IList<MethodCallExpression> setters,
+            Utils.Location location)
         {
-            if (expression
-                .Setters
+            if (setters
                 .Any(setter => !(setter.Parameters[0] is StringLiteral)))
             { return null; }
 
             var objExpression = new JST.InlineObjectInitializer(
-                expression.Location,
+                location,
                 converter.Scope);
 
-            foreach (var setter in expression.Setters)
+            foreach (var setter in setters)
             {
                 objExpression.AddInitializer(
                     (setter.Parameters[0] as StringLiteral).String,
@@ -100,10 +101,10 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             return new JST.MethodCallExpression(
-                expression.Location,
+                location,
                 converter.Scope,
                 JST.IdentifierExpression.Create(
-                    expression.Location,
+                    location,
                     converter.Scope,
                     converter.ResolveFactory(constructor)),
                 objExpression);

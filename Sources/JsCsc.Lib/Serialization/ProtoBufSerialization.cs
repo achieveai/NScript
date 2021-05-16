@@ -351,6 +351,8 @@ namespace JsCsc.Lib.Serialization
         public MethodCallExpression MethodCall { get; set; }
 
         public int? Property { get; set; }
+
+        public List<MethodCallArg> PropertyArgs { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

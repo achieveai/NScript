@@ -1075,6 +1075,11 @@
                                     rv.Getter = propertySymbol.GetMethod != null
                                         ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.GetMethod)
                                         : 0;
+
+                                    rv.PropertyArgs = ToArgs(
+                                        propertySymbol.GetMethod,
+                                        initializerMember.Arguments,
+                                        arg);
                                 }
 
                                 return rv;
