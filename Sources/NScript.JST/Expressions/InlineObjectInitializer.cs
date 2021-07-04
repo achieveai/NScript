@@ -103,7 +103,7 @@ namespace NScript.JST
         {
             if (this.initializers.Count > 0)
             {
-                writer.Write(Symbols.BrackedOpenCurly)
+                _ = writer.Write(Symbols.BrackedOpenCurly)
                     .EnterScope();
 
                 for (int initializerIndex = 0;
@@ -112,22 +112,32 @@ namespace NScript.JST
                 {
                     if (initializerIndex > 0)
                     {
-                        writer.Write(Symbols.Comma);
+                        _ = writer.Write(Symbols.Comma);
                     }
 
                     var initializer = this.initializers[initializerIndex];
-                    writer.WriteNewLine()
+                    _ = writer.WriteNewLine()
                         .Write(initializer.Item1)
-                        .Write(Symbols.Colon)
-                        .Write(initializer.Item2);
+                        .Write(Symbols.Colon);
+                    if (initializer.Item2.Precedence == Precedence.Comma)
+                    {
+                        _ = writer
+                            .Write(Symbols.BracketOpenRound)
+                            .Write(initializer.Item2)
+                            .Write(Symbols.BracketCloseRound);
+                    }
+                    else
+                    {
+                        _ = writer.Write(initializer.Item2);
+                    }
                 }
 
-                writer.ExitScope()
+                _ = writer.ExitScope()
                     .Write(Symbols.BracketCloseCurly);
             }
             else
             {
-                writer.Write(Symbols.BrackedOpenCurly)
+                _ = writer.Write(Symbols.BrackedOpenCurly)
                     .Write(Symbols.BracketCloseCurly);
             }
         }

@@ -414,7 +414,10 @@ namespace XwmlParser
                 }
             }
 
-            TemplateParser templateParser = htmlParser.GetTemplateParser(templateNameSplits.Length == 2 ? templateNameSplits[1] : null);
+            TemplateParser templateParser = htmlParser.GetTemplateParser(
+                templateNameSplits.Length == 2
+                    ? templateNameSplits[1]
+                    : null);
             if (templateParser == null)
             {
                 throw new ApplicationException(

@@ -323,8 +323,7 @@ namespace NScript.Converter
             {
                 if (item.IsInterface
                     || item.IsValueType
-                    || item.HasGenericParameters
-                    || item.IsAbstract)
+                    || item.HasGenericParameters)
                 {
                     continue;
                 }

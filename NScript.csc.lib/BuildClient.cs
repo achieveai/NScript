@@ -69,7 +69,9 @@ namespace NScript.Csc.Lib
         {
             textWriter = textWriter ?? Console.Out;
 
-            var args = originalArguments.Select(arg => arg.Trim()).ToArray();
+            var args = originalArguments
+                .Select(arg => arg.Trim())
+                .ToArray();
 
             List<string> parsedArgs;
             bool hasShared;

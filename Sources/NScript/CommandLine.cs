@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using NScript.Converter;
-
-namespace NScript
+﻿namespace NScript
 {
-    internal class CommandLine
+    using System;
+    using System.Collections.Generic;
+    using NScript.Converter;
+
+    internal static class CommandLine
     {
         private static void Main(string[] args)
         {
@@ -15,7 +15,7 @@ namespace NScript
             if (parseOptions == null)
             {
                 ParseOptions.PrintUsage();
-                Console.ReadKey();
+                _ = Console.ReadKey();
             }
 
             List<IConverterPlugin> plugins = new List<IConverterPlugin>();
@@ -45,7 +45,7 @@ namespace NScript
                 parseOptions.ReferenceDlls.ToArray(),
                 plugins.ToArray());
 
-            builder.Execute();
+            _ = builder.Execute();
 
             stopWatch.Stop();
             System.Console.WriteLine("TimeTaken: {0}ms", stopWatch.ElapsedMilliseconds);

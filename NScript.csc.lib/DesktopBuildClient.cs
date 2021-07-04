@@ -10,6 +10,7 @@ namespace NScript.Csc.Lib
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -55,7 +56,8 @@ namespace NScript.Csc.Lib
             var workingDir = Directory.GetCurrentDirectory();
             var tempDir = BuildServerConnection.GetTempPath(workingDir);
             var buildPaths = new BuildPaths(clientDir: clientDir, workingDir: workingDir, sdkDir: sdkDir, tempDir: tempDir);
-            var originalArguments = GetCommandLineArgs(arguments);
+            var originalArguments = GetCommandLineArgs(arguments)
+                .Where(arg => !arg.TrimStart().StartsWith("/analyzerconfig:"));
             return client.RunCompilation(originalArguments, buildPaths).ExitCode;
         }
 
