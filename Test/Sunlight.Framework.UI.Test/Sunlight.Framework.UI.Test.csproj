@@ -1,25 +1,87 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <NoStdLib>True</NoStdLib>
     <NoStandardLibraries>false</NoStandardLibraries>
     <CopyReferences>True</CopyReferences>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Sunlight.Framework.UI.Test</RootNamespace>
+    <AssemblyName>Sunlight.Framework.UI.Test</AssemblyName>
+    <FileAlignment>512</FileAlignment>
     <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0824</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
     <NoWarn>0824</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\sources\mscorlib\NScript.MsCorlib.csproj" />
-    <ProjectReference Include="..\..\Sources\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
-    <ProjectReference Include="..\..\sources\Sunlight.Framework\Sunlight.Framework.csproj" />
-    <ProjectReference Include="..\..\sources\Sunlight.Framework\Sunlight.Framework.UI.csproj" />
-    <ProjectReference Include="..\..\Sources\System.Web.Html\System.Web.Html.csproj" />
-    <ProjectReference Include="..\..\Sources\System.Web\System.Web.csproj" />
-    <ProjectReference Include="..\TestRunner\SunlightUnit.csproj" />
+    <ProjectReference Include="..\..\sources\mscorlib\NScript.MsCorlib.csproj">
+      <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
+      <Name>NScript.MsCorlib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sources\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj">
+      <Project>{650bbe9a-d0c5-4590-a82a-8e63c664a894}</Project>
+      <Name>Sunlight.Framework.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\sources\Sunlight.Framework\Sunlight.Framework.csproj">
+      <Project>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</Project>
+      <Name>Sunlight.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\sources\Sunlight.Framework\Sunlight.Framework.UI.csproj">
+      <Project>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</Project>
+      <Name>Sunlight.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sources\System.Web.Html\System.Web.Html.csproj">
+      <Project>{a60706ff-08d7-4320-99f9-a2413275cdf6}</Project>
+      <Name>System.Web.Html</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sources\System.Web\System.Web.csproj">
+      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
+      <Name>System.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TestRunner\SunlightUnit.csproj">
+      <Project>{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}</Project>
+      <Name>SunlightUnit</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PluginConfig.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="LiveBinderTests.cs" />
+    <Compile Include="NScriptsTemplateTests.cs" />
+    <Compile Include="NScriptTemplatesClass.cs" />
+    <Compile Include="SkinBinderHelperTests.cs" />
+    <Compile Include="TestListView.cs" />
+    <Compile Include="TestUIElements.cs" />
+    <Compile Include="TestViewModels.cs" />
+    <Compile Include="NScriptTestClass1.cs" />
+    <Compile Include="UIElementTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestTemplate1.html" />
