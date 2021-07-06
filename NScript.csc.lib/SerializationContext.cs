@@ -3,7 +3,7 @@ namespace NScript.Csc.Lib
 {
     using Microsoft.CodeAnalysis;
 
-    public class SerializationContext
+    internal class SerializationContext
     {
         public SerializationContext(SymbolSerializer symbolSerializer)
         {

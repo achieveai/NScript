@@ -6,6 +6,8 @@
     using JsCsc.Lib.Serialization;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Symbols;
+    using Microsoft.CodeAnalysis.Symbols;
     using Microsoft.CodeAnalysis.Emit;
 
     public class SerializationHelper
@@ -81,7 +83,7 @@
                 lock(rv)
                 {
                     rv.Add(
-                        methodSymbol,
+                        (IMethodSymbol)((ISymbolInternal)methodSymbol).GetISymbol(),
                         methodBody);
                 }
             };

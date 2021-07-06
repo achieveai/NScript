@@ -63,7 +63,7 @@ namespace Autoprefixer
 	        }
 	        else
 	        {
-// ReSharper disable once UseObjectOrCollectionInitializer
+                // ReSharper disable once UseObjectOrCollectionInitializer
 	            var arguments = new JArray(browsers);
                 arguments.Add(JObject.FromObject(options));
 	            currentBrowsersString = arguments.ToString();

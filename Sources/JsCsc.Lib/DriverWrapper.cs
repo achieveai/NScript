@@ -124,12 +124,6 @@ namespace JsCsc.Lib
                 string pdbFileName = Path.Combine(
                     Path.GetDirectoryName(setting.OutputFile),
                     Path.GetFileNameWithoutExtension(setting.OutputFile) + ".pdb");
-
-                try
-                {
-                    MdbToPdb.Convert(setting.OutputFile, pdbFileName);
-                }
-                catch { }
             }
 
             stopWatch.Stop();

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sources", "Sources", "{BC2DF808-D5CB-4C06-8AC2-D772407CDD23}"
 EndProject
@@ -73,27 +73,27 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NScript_Test", "NScript_Tes
 		NScriptToolSet\Templates\ProjectTemplate\NScript_Test\TestClass.cs = NScriptToolSet\Templates\ProjectTemplate\NScript_Test\TestClass.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript", "Sources\NScript\NScript.csproj", "{71392F3D-7171-43FA-8F68-365A31889AB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript", "Sources\NScript\NScript.csproj", "{71392F3D-7171-43FA-8F68-365A31889AB0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8E168B27-2033-412A-B362-5102400EA471} = {8E168B27-2033-412A-B362-5102400EA471}
 		{E3FE7841-2DB8-4713-8C41-FB399D921A77} = {E3FE7841-2DB8-4713-8C41-FB399D921A77}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.Utils", "Sources\NScript.Utils\NScript.Utils.csproj", "{030B10DD-4861-4BE1-B0D6-DB43587E603F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Utils", "Sources\NScript.Utils\NScript.Utils.csproj", "{030B10DD-4861-4BE1-B0D6-DB43587E603F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.JS.AST", "Sources\NScript.JST\NScript.JS.AST.csproj", "{35789C27-44DE-4251-8528-6B0DE5C66608}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.JS.AST", "Sources\NScript.JST\NScript.JS.AST.csproj", "{35789C27-44DE-4251-8528-6B0DE5C66608}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.CLR", "Sources\NScript.CLR\NScript.CLR.csproj", "{83FB5360-CE27-4255-8457-13E789DC5B0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.CLR", "Sources\NScript.CLR\NScript.CLR.csproj", "{83FB5360-CE27-4255-8457-13E789DC5B0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.CLR.Test", "Test\NScript.CLR.Test\NScript.CLR.Test.csproj", "{EC58B191-43C1-4F6B-AFB6-506F3FE3A92B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.CLR.Test", "Test\NScript.CLR.Test\NScript.CLR.Test.csproj", "{EC58B191-43C1-4F6B-AFB6-506F3FE3A92B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.Converter", "Sources\NScript.Converter\NScript.Converter.csproj", "{2CB180C7-D96A-4E43-8676-F928E4736A1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Converter", "Sources\NScript.Converter\NScript.Converter.csproj", "{2CB180C7-D96A-4E43-8676-F928E4736A1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.Converter.Test", "Test\NScript.Converter.Test\NScript.Converter.Test.csproj", "{C66D5C17-4E9A-4E91-A62C-927F7FD94B06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Converter.Test", "Test\NScript.Converter.Test\NScript.Converter.Test.csproj", "{C66D5C17-4E9A-4E91-A62C-927F7FD94B06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.JSParser", "Sources\NScript.JSParser\NScript.JSParser.csproj", "{52661571-B3EE-421E-A6ED-983023665738}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.JSParser", "Sources\NScript.JSParser\NScript.JSParser.csproj", "{52661571-B3EE-421E-A6ED-983023665738}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.JSParser.Test", "Test\NScript.JSParser.Test\NScript.JSParser.Test.csproj", "{3C8F7229-645F-4899-BEF5-6E55660EFD16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.JSParser.Test", "Test\NScript.JSParser.Test\NScript.JSParser.Test.csproj", "{3C8F7229-645F-4899-BEF5-6E55660EFD16}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.MsCorlib", "Sources\mscorlib\NScript.MsCorlib.csproj", "{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -101,7 +101,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.MsCorlib", "Sources
 		{584493DA-04A9-4A95-AA49-F532A85D8C1A} = {584493DA-04A9-4A95-AA49-F532A85D8C1A}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.Converter.Plugins", "Sources\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj", "{8E168B27-2033-412A-B362-5102400EA471}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Converter.Plugins", "Sources\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj", "{8E168B27-2033-412A-B362-5102400EA471}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApplication", "Test\TestWebApplication\TestWebApplication.csproj", "{ADF8F287-C67B-43DE-A463-DFD7BB4EACD0}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -110,17 +110,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApplication", "Test\
 		{5702ADA9-6583-4019-ADA1-A48CCC3F53EA} = {5702ADA9-6583-4019-ADA1-A48CCC3F53EA}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsCsc.Lib", "Sources\JsCsc.Lib\JsCsc.Lib.csproj", "{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsCsc.Lib", "Sources\JsCsc.Lib\JsCsc.Lib.csproj", "{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsCsc", "Sources\JsCsc\JsCsc.csproj", "{584493DA-04A9-4A95-AA49-F532A85D8C1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsCsc", "Sources\JsCsc\JsCsc.csproj", "{584493DA-04A9-4A95-AA49-F532A85D8C1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Web.Html", "Sources\System.Web.Html\System.Web.Html.csproj", "{A60706FF-08D7-4320-99F9-A2413275CDF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CssParser", "Sources\CssParser\CssParser.csproj", "{C2534DEA-AF8C-43F3-81ED-86E6B5932CF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CssParser", "Sources\CssParser\CssParser.csproj", "{C2534DEA-AF8C-43F3-81ED-86E6B5932CF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CssParser.Test", "Test\CssParser.Test\CssParser.Test.csproj", "{B3299141-8636-4403-B884-2C5C63ED4A73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CssParser.Test", "Test\CssParser.Test\CssParser.Test.csproj", "{B3299141-8636-4403-B884-2C5C63ED4A73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XwmlParser", "Sources\XwmlParser\XwmlParser.csproj", "{E3FE7841-2DB8-4713-8C41-FB399D921A77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XwmlParser", "Sources\XwmlParser\XwmlParser.csproj", "{E3FE7841-2DB8-4713-8C41-FB399D921A77}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{7F129FBE-E40C-4B53-8536-492D677B25D5}"
 EndProject
@@ -128,13 +128,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework", "Sourc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI", "Sources\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj", "{650BBE9A-D0C5-4590-A82A-8E63C664A894}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Web.Html.Tests", "Test\System.Web.Html.Tests\System.Web.Html.Tests.csproj", "{6BD4DB74-E584-49D5-9E99-651DE81FB6D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Web.Html.Tests", "Test\System.Web.Html.Tests\System.Web.Html.Tests.csproj", "{6BD4DB74-E584-49D5-9E99-651DE81FB6D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.Test", "Test\Sunlight.Framework.Test\Sunlight.Framework.Test.csproj", "{5702ADA9-6583-4019-ADA1-A48CCC3F53EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.Test", "Test\Sunlight.Framework.Test\Sunlight.Framework.Test.csproj", "{5702ADA9-6583-4019-ADA1-A48CCC3F53EA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SunlightUnit", "Test\TestRunner\SunlightUnit.csproj", "{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceMap", "Sources\SourceMap\SourceMap.csproj", "{20CCB52F-DE6E-4DA4-821E-5B3BD6771704}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceMap", "Sources\SourceMap\SourceMap.csproj", "{20CCB52F-DE6E-4DA4-821E-5B3BD6771704}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealScript.Debug", "Test\RealScript\RealScript.Debug.csproj", "{142D8B13-3EED-43A9-96BD-353FFA72E536}"
 EndProject
@@ -183,9 +183,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestClass", "TestClass", "{
 		NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.vstemplate = NScriptToolSet\Templates\ItemTemplate\TestClass\NScriptTestClass.vstemplate
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI.Test", "Test\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.UI.Test", "Test\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XwmlParser.Test", "Test\XwmlParser.Test\XwmlParser.Test.csproj", "{D54C40D0-8658-41F3-9426-7747CE9E6FA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XwmlParser.Test", "Test\XwmlParser.Test\XwmlParser.Test.csproj", "{D54C40D0-8658-41F3-9426-7747CE9E6FA6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB} = {F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}
 	EndProjectSection
@@ -196,7 +196,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CSharp", "Sources
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Dynamic", "Sources\System.Dynamic\System.Dynamic.csproj", "{C57A61D9-4E45-41BB-AE75-933FBA9A9079}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternGenerator", "Sources\ExternGenerator\ExternGenerator.csproj", "{427A547E-5E65-429F-86A3-52D5126DB0C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternGenerator", "Sources\ExternGenerator\ExternGenerator.csproj", "{427A547E-5E65-429F-86A3-52D5126DB0C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B9FB0CC4-9644-4D0A-801B-45835B2E6E9B}"
 EndProject
@@ -205,7 +205,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{41B33C
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autoprefixer", "Sources\Autoprefixer\Autoprefixer.csproj", "{46B431CD-5C7E-4A74-9479-E6AA8B320BF5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoprefixer", "Sources\Autoprefixer\Autoprefixer.csproj", "{46B431CD-5C7E-4A74-9479-E6AA8B320BF5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Roslyn", "Roslyn", "{CF60D52E-EB9A-4F97-BB74-9B81C08B2B12}"
 	ProjectSection(SolutionItems) = preProject
@@ -217,11 +217,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Roslyn", "Roslyn", "{CF60D5
 		Dependencies\Roslyn\Microsoft.DiaSymReader.Native.x86.dll = Dependencies\Roslyn\Microsoft.DiaSymReader.Native.x86.dll
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.csc.lib", "NScript.csc.lib\NScript.csc.lib.csproj", "{76A3DDEC-2F19-4473-ABCE-0C2914731793}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.csc.lib", "NScript.csc.lib\NScript.csc.lib.csproj", "{76A3DDEC-2F19-4473-ABCE-0C2914731793}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.Csc.Lib.Test", "Test\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj", "{8EDF4429-251A-416D-BB68-93F227191BCF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Csc.Lib.Test", "Test\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj", "{8EDF4429-251A-416D-BB68-93F227191BCF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLauncher", "TestLauncher\TestLauncher.csproj", "{DEAE4354-A273-44A7-B95A-DD86BE728FFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestLauncher", "TestLauncher\TestLauncher.csproj", "{DEAE4354-A273-44A7-B95A-DD86BE728FFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -237,13 +237,13 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|ARM.ActiveCfg = Debug|x86
-		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|x64.ActiveCfg = Debug|x86
-		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|x86.ActiveCfg = Debug|x86
-		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|x86.Build.0 = Debug|x86
+		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{71392F3D-7171-43FA-8F68-365A31889AB0}.Debug|x86.Build.0 = Debug|Any CPU
 		{71392F3D-7171-43FA-8F68-365A31889AB0}.Release|Any CPU.ActiveCfg = Release|x86
 		{71392F3D-7171-43FA-8F68-365A31889AB0}.Release|ARM.ActiveCfg = Release|x86
 		{71392F3D-7171-43FA-8F68-365A31889AB0}.Release|Mixed Platforms.ActiveCfg = Release|x86
@@ -288,7 +288,6 @@ Global
 		{83FB5360-CE27-4255-8457-13E789DC5B0C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{83FB5360-CE27-4255-8457-13E789DC5B0C}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{83FB5360-CE27-4255-8457-13E789DC5B0C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{83FB5360-CE27-4255-8457-13E789DC5B0C}.Debug|x86.Build.0 = Debug|Any CPU
 		{83FB5360-CE27-4255-8457-13E789DC5B0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83FB5360-CE27-4255-8457-13E789DC5B0C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{83FB5360-CE27-4255-8457-13E789DC5B0C}.Release|ARM.ActiveCfg = Release|Any CPU
@@ -316,7 +315,6 @@ Global
 		{2CB180C7-D96A-4E43-8676-F928E4736A1F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{2CB180C7-D96A-4E43-8676-F928E4736A1F}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{2CB180C7-D96A-4E43-8676-F928E4736A1F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2CB180C7-D96A-4E43-8676-F928E4736A1F}.Debug|x86.Build.0 = Debug|Any CPU
 		{2CB180C7-D96A-4E43-8676-F928E4736A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CB180C7-D96A-4E43-8676-F928E4736A1F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2CB180C7-D96A-4E43-8676-F928E4736A1F}.Release|ARM.ActiveCfg = Release|Any CPU
@@ -387,7 +385,6 @@ Global
 		{8E168B27-2033-412A-B362-5102400EA471}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{8E168B27-2033-412A-B362-5102400EA471}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{8E168B27-2033-412A-B362-5102400EA471}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8E168B27-2033-412A-B362-5102400EA471}.Debug|x86.Build.0 = Debug|Any CPU
 		{8E168B27-2033-412A-B362-5102400EA471}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E168B27-2033-412A-B362-5102400EA471}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8E168B27-2033-412A-B362-5102400EA471}.Release|ARM.ActiveCfg = Release|Any CPU
@@ -415,7 +412,6 @@ Global
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Debug|x86.Build.0 = Debug|Any CPU
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Release|Any CPU.Build.0 = Release|Any CPU
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Release|ARM.ActiveCfg = Release|Any CPU
@@ -423,13 +419,14 @@ Global
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Release|x64.ActiveCfg = Release|Any CPU
 		{65FDB136-49EE-4316-95C5-AEE4C1A5DA83}.Release|x86.ActiveCfg = Release|Any CPU
-		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|ARM.ActiveCfg = Debug|x86
-		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|x64.ActiveCfg = Debug|x86
-		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|x86.ActiveCfg = Debug|x86
-		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|x86.Build.0 = Debug|x86
+		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Debug|x86.Build.0 = Debug|Any CPU
 		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Release|Any CPU.ActiveCfg = Release|x86
 		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Release|ARM.ActiveCfg = Release|x86
 		{584493DA-04A9-4A95-AA49-F532A85D8C1A}.Release|Mixed Platforms.ActiveCfg = Release|x86

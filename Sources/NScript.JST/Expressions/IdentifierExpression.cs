@@ -110,11 +110,6 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            if (identifier.SuggestedName == "get_fullHeight")
-            {
-                if (identifier.SuggestedName != null) ;
-            }
-
             writer.Write(this.identifier);
         }
     }

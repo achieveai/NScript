@@ -47,14 +47,7 @@ namespace NScript.Csc.Lib
         /// </summary>
         public static string GetSystemSdkDirectory()
         {
-            if (CoreClrShim.IsRunningOnCoreClr)
-            {
-                return null;
-            }
-            else
-            {
-                return RuntimeEnvironment.GetRuntimeDirectory();
-            }
+            return RuntimeEnvironment.GetRuntimeDirectory();
         }
 
         /// <summary>
@@ -122,13 +115,6 @@ namespace NScript.Csc.Lib
                 var assemblyName = Assembly.GetExecutingAssembly().GetName();
                 var profileName = assemblyName.Name + assemblyName.Version + ".profile";
                 Directory.CreateDirectory(profileRoot);
-#if NETCORE
-                AssemblyLoadContext.Default.SetProfileOptimizationRoot(profileRoot);
-                AssemblyLoadContext.Default.StartProfileOptimization(profileName);
-#else
-                ProfileOptimization.SetProfileRoot(profileRoot);
-                ProfileOptimization.StartProfile(profileName);
-#endif
             }
             catch (Exception e)
             {
@@ -257,15 +243,6 @@ namespace NScript.Csc.Lib
 
             if (Type.GetType("Mono.Runtime") != null)
             {
-                return false;
-            }
-
-            if (CoreClrShim.IsRunningOnCoreClr)
-            {
-                // The native invoke ends up giving us both CoreRun and the exe file.
-                // We've decided to ignore backcompat for CoreCLR,
-                // and use the Main()-provided arguments
-                // https://github.com/dotnet/roslyn/issues/6677
                 return false;
             }
 

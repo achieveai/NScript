@@ -786,6 +786,7 @@ namespace NScript.Csc.Lib
             arg.Depth--;
             return rv;
         }
+/*
         public override AstBase VisitPatternSwitchStatement(BoundPatternSwitchStatement node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
@@ -816,6 +817,7 @@ namespace NScript.Csc.Lib
             arg.Depth--;
             return rv;
         }
+*/
         public override AstBase VisitIfStatement(BoundIfStatement node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
@@ -1577,6 +1579,8 @@ namespace NScript.Csc.Lib
             arg.Depth--;
             return rv;
         }
+
+        /*
         public override AstBase VisitWildcardPattern(BoundWildcardPattern node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
@@ -1587,6 +1591,8 @@ namespace NScript.Csc.Lib
             arg.Depth--;
             return rv;
         }
+        */
+
         public override AstBase VisitDiscardExpression(BoundDiscardExpression node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)

@@ -1009,7 +1009,7 @@ namespace JsCsc.Lib.Serialization
 
         public string LocalVariableName { get; set; }
 
-        public StatementSer Loop { get; set; }
+        new public StatementSer Loop { get; set; }
 
         public int BlockId { get; set; }
     }

@@ -11,39 +11,40 @@ namespace NScript.Csc.Lib
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Symbols;
+    using Microsoft.CodeAnalysis.Symbols;
     using Mono.Cecil;
 
-    public class SymbolSerializer
+    internal class SymbolSerializer
     {
-        private ConcurrentDictionary<IMethodSymbol, int> methodTokenMap
-            = new ConcurrentDictionary<IMethodSymbol, int>();
+        private ConcurrentDictionary<MethodSymbol, int> methodTokenMap
+            = new ConcurrentDictionary<MethodSymbol, int>();
 
-        private ConcurrentDictionary<IFieldSymbol, int> fieldTokenMap
-            = new ConcurrentDictionary<IFieldSymbol, int>();
+        private ConcurrentDictionary<FieldSymbol, int> fieldTokenMap
+            = new ConcurrentDictionary<FieldSymbol, int>();
 
-        private ConcurrentDictionary<IPropertySymbol, int> propertyTokenMap
-            = new ConcurrentDictionary<IPropertySymbol, int>();
+        private ConcurrentDictionary<PropertySymbol, int> propertyTokenMap
+            = new ConcurrentDictionary<PropertySymbol, int>();
 
-        private ConcurrentDictionary<IEventSymbol, int> eventTokenMap
-            = new ConcurrentDictionary<IEventSymbol, int>();
+        private ConcurrentDictionary<EventSymbol, int> eventTokenMap
+            = new ConcurrentDictionary<EventSymbol, int>();
 
-        private ConcurrentDictionary<ITypeSymbol, int> typeTokenMap
-            = new ConcurrentDictionary<ITypeSymbol, int>();
+        private ConcurrentDictionary<TypeSymbol, int> typeTokenMap
+            = new ConcurrentDictionary<TypeSymbol, int>();
 
-        private ConcurrentDictionary<IMethodSymbol, MethodSpecSer> methodSerMap
-            = new ConcurrentDictionary<IMethodSymbol, MethodSpecSer>();
+        private ConcurrentDictionary<MethodSymbol, MethodSpecSer> methodSerMap
+            = new ConcurrentDictionary<MethodSymbol, MethodSpecSer>();
 
-        private ConcurrentDictionary<IFieldSymbol, FieldSpecSer> fieldSerMap
-            = new ConcurrentDictionary<IFieldSymbol, FieldSpecSer>();
+        private ConcurrentDictionary<FieldSymbol, FieldSpecSer> fieldSerMap
+            = new ConcurrentDictionary<FieldSymbol, FieldSpecSer>();
 
-        private ConcurrentDictionary<IPropertySymbol, PropertySpecSer> propertySerMap
-            = new ConcurrentDictionary<IPropertySymbol, PropertySpecSer>();
+        private ConcurrentDictionary<PropertySymbol, PropertySpecSer> propertySerMap
+            = new ConcurrentDictionary<PropertySymbol, PropertySpecSer>();
 
-        private ConcurrentDictionary<IEventSymbol, EventSpecSer> eventSerMap
-            = new ConcurrentDictionary<IEventSymbol, EventSpecSer>();
+        private ConcurrentDictionary<EventSymbol, EventSpecSer> eventSerMap
+            = new ConcurrentDictionary<EventSymbol, EventSpecSer>();
 
-        private ConcurrentDictionary<ITypeSymbol, TypeSpecSer> typeSerMap
-            = new ConcurrentDictionary<ITypeSymbol, TypeSpecSer>();
+        private ConcurrentDictionary<TypeSymbol, TypeSpecSer> typeSerMap
+            = new ConcurrentDictionary<TypeSymbol, TypeSpecSer>();
 
         public TypeInfoSer GetTypesInfo()
         {
@@ -67,7 +68,7 @@ namespace NScript.Csc.Lib
             return rv;
         }
 
-        public int GetMethodSpecId(IMethodSymbol method)
+        public int GetMethodSpecId(MethodSymbol method)
         {
             if (methodTokenMap.TryGetValue(method, out var rv))
             { return rv; }
@@ -77,7 +78,7 @@ namespace NScript.Csc.Lib
             return methodTokenMap[method];
         }
 
-        public int GetTypeSpecId(ITypeSymbol type)
+        public int GetTypeSpecId(TypeSymbol type)
         {
             if (typeTokenMap.TryGetValue(type, out var rv))
             { return rv; }
@@ -87,7 +88,7 @@ namespace NScript.Csc.Lib
             return typeTokenMap[type];
         }
 
-        public int GetFieldSpecId(IFieldSymbol field)
+        public int GetFieldSpecId(FieldSymbol field)
         {
             if (fieldTokenMap.TryGetValue(field, out var rv))
             { return rv; }
@@ -97,7 +98,7 @@ namespace NScript.Csc.Lib
             return fieldTokenMap[field];
         }
 
-        public int GetPropertySpecId(IPropertySymbol property)
+        public int GetPropertySpecId(PropertySymbol property)
         {
             if (propertyTokenMap.TryGetValue(property, out var rv))
             { return rv; }
@@ -107,7 +108,7 @@ namespace NScript.Csc.Lib
             return propertyTokenMap[property];
         }
 
-        public int GetEventSpecId(IEventSymbol evt)
+        public int GetEventSpecId(EventSymbol evt)
         {
             if (eventTokenMap.TryGetValue(evt, out var rv))
             { return rv; }
@@ -117,7 +118,7 @@ namespace NScript.Csc.Lib
             return eventTokenMap[evt];
         }
 
-        private TypeSpecSer GetTypeSpecSer(ITypeSymbol type)
+        private TypeSpecSer GetTypeSpecSer(TypeSymbol type)
         {
             if (typeSerMap.TryGetValue(type, out var rv))
             { return rv; }
@@ -127,7 +128,7 @@ namespace NScript.Csc.Lib
             return typeSerMap[type];
         }
 
-        private void AddTypeSpecId(ITypeSymbol type)
+        private void AddTypeSpecId(TypeSymbol type)
         {
             var ser = this.Serialize(type);
             if (typeTokenMap.ContainsKey(type)) { return; }
@@ -141,7 +142,7 @@ namespace NScript.Csc.Lib
             }
         }
 
-        private void AddMethodSpecId(IMethodSymbol method)
+        private void AddMethodSpecId(MethodSymbol method)
         {
             var ser = this.Serialize(method);
             if (methodTokenMap.ContainsKey(method)) { return; }
@@ -154,7 +155,7 @@ namespace NScript.Csc.Lib
             }
         }
 
-        private void AddFieldSpecId(IFieldSymbol field)
+        private void AddFieldSpecId(FieldSymbol field)
         {
             var ser = this.Serialize(field);
             if (fieldTokenMap.ContainsKey(field)) { return; }
@@ -168,7 +169,7 @@ namespace NScript.Csc.Lib
             }
         }
 
-        private void AddPropertySpecId(IPropertySymbol property)
+        private void AddPropertySpecId(PropertySymbol property)
         {
             var ser = this.Serialize(property);
             if (propertyTokenMap.ContainsKey(property)) { return; }
@@ -182,7 +183,7 @@ namespace NScript.Csc.Lib
             }
         }
 
-        private void AddEventSpecId(IEventSymbol evt)
+        private void AddEventSpecId(EventSymbol evt)
         {
             var ser = this.Serialize(evt);
             if (eventTokenMap.ContainsKey(evt)) { return; }
@@ -196,18 +197,18 @@ namespace NScript.Csc.Lib
             }
         }
 
-        private TypeSpecSer Serialize(ITypeSymbol type)
+        private TypeSpecSer Serialize(TypeSymbol type)
         {
             if (type.Kind == SymbolKind.ArrayType)
             {
                 return new ArrayTypeSer
-                { ElementType = GetTypeSpecSer(((IArrayTypeSymbol)type).ElementType) };
+                { ElementType = GetTypeSpecSer(((ArrayTypeSymbol)type).ElementType) };
             }
 
             if (type.Kind == SymbolKind.PointerType)
             {
                 return new PointerTypeSer
-                { PointedAtType = GetTypeSpecSer(((IPointerTypeSymbol)type).PointedAtType) };
+                { PointedAtType = GetTypeSpecSer(((PointerTypeSymbol)type).PointedAtType) };
             }
 
             if (type.ContainingModule == null)
@@ -223,7 +224,7 @@ namespace NScript.Csc.Lib
             var moduleSpec = new ModuleSpecSer { Name = type.ContainingModule.Name };
             if (type.Kind == SymbolKind.TypeParameter)
             {
-                var typeParameter = type as ITypeParameterSymbol;
+                var typeParameter = type as TypeParameterSymbol;
                 return new GenericParamSer
                 {
                     Name = typeParameter.Name,
@@ -241,13 +242,18 @@ namespace NScript.Csc.Lib
             if (namedTypeSymbol.IsNestedType())
             { }
 
-            var name = type.MetadataName;
             var @namespace = namedTypeSymbol.IsNestedType()
                 ? null
-                : ((NamespaceSymbol)type.ContainingNamespace).QualifiedName;
-            var nestedParent = type.ContainingType == null
+                : type.ContainingNamespace.QualifiedName;
+
+            var nestedParent = TypeSymbol
+                .Equals(
+                    type.ContainingType,
+                    null,
+                    TypeCompareKind.ObliviousNullableModifierMatchesAny)
                 ? null
                 : GetTypeSpecSer(type.ContainingType);
+
             if (namedTypeSymbol.Arity > 0)
             {
                 return new GenericInstanceTypeSer
@@ -258,14 +264,14 @@ namespace NScript.Csc.Lib
                     Arity = namedTypeSymbol.Arity,
                     NestedParent = nestedParent,
                     TypeParams =
-                    namedTypeSymbol.TypeArgumentsNoUseSiteDiagnostics != null
+                    namedTypeSymbol.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics != null
                         ?  namedTypeSymbol
-                            .TypeArgumentsNoUseSiteDiagnostics
-                            .Select(_ => this.GetTypeSpecSer(_.TypeSymbol))
+                            .TypeArgumentsWithAnnotationsNoUseSiteDiagnostics
+                            .Select(annotation => this.GetTypeSpecSer(annotation.Type))
                             .ToList()
                         : namedTypeSymbol
                             .TypeParameters
-                            .Select(_ => this.GetTypeSpecSer(_))
+                            .Select(type => this.GetTypeSpecSer(type))
                             .ToList()
                 };
             }
@@ -280,7 +286,7 @@ namespace NScript.Csc.Lib
             };
         }
 
-        private MethodSpecSer Serialize(IMethodSymbol method)
+        private MethodSpecSer Serialize(MethodSymbol method)
         {
             if (method.Name == "get_Item"
                 && ((NamedTypeSymbol)method.ContainingType).MetadataName == "List`1")
@@ -315,12 +321,12 @@ namespace NScript.Csc.Lib
                 .ToList();
 
             var typeArgs =
-                method.TypeArguments.Length == 0
-                ? null
-                : method
-                .TypeArguments
-                .Select(_ => GetTypeSpecSer(_))
-                .ToList();
+                method.TypeArgumentsWithAnnotations.Length == 0
+                    ? null
+                    : method
+                        .TypeArgumentsWithAnnotations
+                        .Select(annotation => GetTypeSpecSer(annotation.Type))
+                        .ToList();
 
             return new MethodSpecSer
             {
@@ -334,7 +340,7 @@ namespace NScript.Csc.Lib
             };
         }
 
-        private FieldSpecSer Serialize(IFieldSymbol field)
+        private FieldSpecSer Serialize(FieldSymbol field)
             => new FieldSpecSer
             {
                 Name = field.MetadataName,
@@ -342,7 +348,7 @@ namespace NScript.Csc.Lib
                 MemberType = this.GetTypeSpecSer(field.OriginalDefinition.Type)
             };
 
-        private PropertySpecSer Serialize(IPropertySymbol property)
+        private PropertySpecSer Serialize(PropertySymbol property)
             => new PropertySpecSer
             {
                 Setter = property.SetMethod != null
@@ -353,7 +359,7 @@ namespace NScript.Csc.Lib
                     : null,
             };
 
-        private EventSpecSer Serialize(IEventSymbol evt)
+        private EventSpecSer Serialize(EventSymbol evt)
             => new EventSpecSer
             {
                 AddOn = evt.AddMethod != null

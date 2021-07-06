@@ -18,7 +18,7 @@
             = new LinkedList<(int, BoundNode, List<string>)>();
 
         public MethodBody GetMethodBody(
-            IMethodSymbol methodSymbol,
+            MethodSymbol methodSymbol,
             BoundNode boundNode,
             BoundStatementList initializers,
             SerializationContext arg)
@@ -27,7 +27,7 @@
                 || methodSymbol.Name == "TestNestedFunctionScoped")
             { }
 
-            var methodId = arg
+            _ = arg
                 .SymbolSerializer
                 .GetMethodSpecId(methodSymbol);
 
@@ -50,7 +50,7 @@
             return rv;
         }
 
-        public ParameterSer Visit(IParameterSymbol parameter, SerializationContext arg)
+        public ParameterSer Visit(ParameterSymbol parameter, SerializationContext arg)
         {
             var attributes = ParameterAttributes.None;
             var paramName = parameter.Name;
@@ -81,7 +81,7 @@
         public ParameterBlock Visit(
             BoundBlock node,
             SerializationContext arg,
-            IMethodSymbol methodSymbol,
+            MethodSymbol methodSymbol,
             BoundStatementList parentBlockWithInitializers)
         {
             var rv = new ParameterBlock
@@ -91,7 +91,7 @@
                 LocalFunctions = new List<string>()
             };
 
-            scopeBlockStack.AddFirst((rv.Id, node, rv.LocalFunctions));
+            _ = scopeBlockStack.AddFirst((rv.Id, node, rv.LocalFunctions));
 
             // Expression can be null for static field initializer constructors.
             rv.IsMethodOwned = true;
@@ -178,7 +178,7 @@
             {
                 Location = node.Syntax.Location.GetSerLoc(),
                 ArrayType = arg.SymbolSerializer.GetTypeSpecId(node.Type),
-                ElementType = arg.SymbolSerializer.GetTypeSpecId(((IArrayTypeSymbol)node.Type).ElementType),
+                ElementType = arg.SymbolSerializer.GetTypeSpecId(((ArrayTypeSymbol)node.Type).ElementType),
                 Initializers = node.InitializerOpt?
                     .Initializers
                     .Select(_ => (ExpressionSer)Visit(_, arg))
@@ -227,7 +227,7 @@
         {
             var op = node.OperatorKind;
             var isLifted = IsLifted(op);
-            var isChecked = IsChecked(op);
+            _ = IsChecked(op);
             var typeMask = op & BinaryOperatorKind.TypeMask;
             if (typeMask == BinaryOperatorKind.UserDefined)
             {
@@ -270,7 +270,7 @@
         private AstBase UserDefinedBinaryOperator(
             BoundBinaryOperator node,
             SerializationContext arg,
-            IMethodSymbol methodSymbol,
+            MethodSymbol methodSymbol,
             BinaryOperatorKind binaryOperator,
             bool isLifted)
             => new UserDefinedBinaryOrUnaryOpExpression
@@ -288,7 +288,7 @@
 
         public override AstBase VisitBlock(BoundBlock node, SerializationContext arg)
         {
-            scopeBlockStack.AddFirst((++id, node, new List<string>()));
+            _ = scopeBlockStack.AddFirst((++id, node, new List<string>()));
             try
             {
                 return new ExplicitBlockSer
@@ -331,7 +331,7 @@
                 {
                     MethodName = node.Method.Name,
                     ReturnType = arg.SymbolSerializer.GetTypeSpecId(
-                                node.Method.ReturnType.TypeSymbol),
+                                node.Method.ReturnType),
                     Arguments = ToArgs(node.Method, node.Arguments, arg),
                     TypeParameters = new List<int>(),
                     Location = node.Syntax.Location.GetSerLoc(),
@@ -352,7 +352,7 @@
 
         public override AstBase VisitCatchBlock(BoundCatchBlock node, SerializationContext arg)
         {
-            scopeBlockStack.AddFirst((++id, node, new List<string>()));
+            _ = scopeBlockStack.AddFirst((++id, node, new List<string>()));
             try
             {
                 return new CatchBlock
@@ -368,7 +368,7 @@
                             .Where(_ => _ != null)
                             .ToList()
                     },
-                    CatchType = node.ExceptionTypeOpt != null
+                    CatchType = !TypeSymbol.Equals(node.ExceptionTypeOpt, null)
                         ? arg.SymbolSerializer.GetTypeSpecId(node.ExceptionTypeOpt)
                         : (int?)null,
                     LocalVariable = node.ExceptionSourceOpt != null
@@ -392,7 +392,7 @@
         {
             var op = node.Operator.Kind;
             var isLifted = IsLifted(op);
-            var isChecked = IsChecked(op);
+            _ = IsChecked(op);
             var typeMask = op & BinaryOperatorKind.TypeMask;
             if (typeMask == BinaryOperatorKind.UserDefined)
             { throw new NotImplementedException(); }
@@ -517,7 +517,7 @@
                         Arguments = new List<MethodCallArg> { new MethodCallArg { Value = (ExpressionSer)Visit(node.Operand, arg) } },
                     };
 
-                case ConversionKind.DefaultOrNullLiteral:
+                case ConversionKind.DefaultLiteral:
                     return new DefaultValueExpr
                     {
                         Location = node.Syntax.Location.GetSerLoc(),
@@ -532,6 +532,9 @@
                     // This is cast to one of the base types
                     // Should we return this as typeCast Expression in case of interface?
                     return Visit(node.Operand, arg);
+
+                case ConversionKind.NullLiteral:
+                    return new NullExpression();
 
                 case ConversionKind.NoConversion:
                 case ConversionKind.ImplicitNullable:
@@ -549,11 +552,6 @@
                 case ConversionKind.ImplicitTuple:
                 case ConversionKind.ExplicitTupleLiteral:
                 case ConversionKind.ExplicitTuple:
-                case ConversionKind.PointerToVoid:
-                case ConversionKind.NullToPointer:
-                case ConversionKind.PointerToPointer:
-                case ConversionKind.IntegerToPointer:
-                case ConversionKind.PointerToInteger:
                 case ConversionKind.IntPtr:
                 case ConversionKind.InterpolatedString:
                 case ConversionKind.Deconstruction:
@@ -608,7 +606,7 @@
         public override AstBase VisitDynamicIndexerAccess(BoundDynamicIndexerAccess node, SerializationContext arg)
             => new DynamicIndexBinderExpression
             {
-                Instance = (ExpressionSer)Visit(node.ReceiverOpt, arg),
+                Instance = (ExpressionSer)Visit(node.Receiver, arg),
                 Index = (ExpressionSer)Visit(node.Arguments[0], arg),
                 Location = node.Syntax.GetSerLoc()
             };
@@ -704,7 +702,8 @@
 
         // TODO: validate FieldSymbol has full TypeInfo, e.g. generic arguments
         {
-            AstBase rv = null;
+            AstBase rv;
+
             if (node.FieldSymbol.IsConst)
             { rv = GetConstantValue(node.FieldSymbol.ConstantValue); }
             else
@@ -804,7 +803,7 @@
             {
                 Location = node.Syntax.Location.GetSerLoc(),
                 Expression = (ExpressionSer)Visit(node.Operand, arg),
-                Type = arg.SymbolSerializer.GetTypeSpecId((ITypeSymbol)node.TargetType.ExpressionSymbol)
+                Type = arg.SymbolSerializer.GetTypeSpecId((TypeSymbol)node.TargetType.ExpressionSymbol)
             };
 
         public override AstBase VisitIsPatternExpression(BoundIsPatternExpression node, SerializationContext arg)
@@ -872,7 +871,7 @@
                 MethodId = new LocalMethodIdentitySer
                 {
                     MethodName = node.Symbol.Name,
-                    ReturnType = arg.SymbolSerializer.GetTypeSpecId(node.Symbol.ReturnType.TypeSymbol),
+                    ReturnType = arg.SymbolSerializer.GetTypeSpecId(node.Symbol.ReturnType),
                     GenericParameters = node.Symbol.Arity,
                     Parameters = block.Parameters
                 }
@@ -925,7 +924,7 @@
             return new LocalVariableSer
             {
                 Name = localSymbol.MetadataName,
-                Type = arg.SymbolSerializer.GetTypeSpecId(localSymbol.Type.TypeSymbol),
+                Type = arg.SymbolSerializer.GetTypeSpecId(localSymbol.Type),
                 BlockId = id
             };
         }
@@ -949,10 +948,10 @@
                 return new LocalMethodExpression
                 {
                     MethodName = method.Name,
-                    ReturnType = arg.SymbolSerializer.GetTypeSpecId(method.ReturnType.TypeSymbol),
+                    ReturnType = arg.SymbolSerializer.GetTypeSpecId(method.ReturnType),
                     GenericParameters = node.TypeArgumentsOpt != null
                         ? node.TypeArgumentsOpt
-                            .Select(_ => arg.SymbolSerializer.GetTypeSpecId(_.TypeSymbol))
+                            .Select(t => arg.SymbolSerializer.GetTypeSpecId(t.Type))
                             .ToList()
                         : null,
                     Location = node.Syntax.Location.GetSerLoc(),
@@ -966,7 +965,7 @@
                     Method = arg.SymbolSerializer.GetMethodSpecId(method),
                     GenericParameters = node.TypeArgumentsOpt != null
                         ? node.TypeArgumentsOpt
-                            .Select(_ => arg.SymbolSerializer.GetTypeSpecId(_.TypeSymbol))
+                            .Select(t => arg.SymbolSerializer.GetTypeSpecId(t.Type))
                             .ToList()
                         : null,
                     Instance = !method.IsStatic
@@ -1150,7 +1149,7 @@
                     {
                         Name = node.ParameterSymbol.MetadataName,
                         BlockId = 0,
-                        Type = arg.SymbolSerializer.GetTypeSpecId(node.ParameterSymbol.Type.TypeSymbol),
+                        Type = arg.SymbolSerializer.GetTypeSpecId(node.ParameterSymbol.Type),
                         Modifier = (int)attrs
                     }
                 };
@@ -1160,11 +1159,13 @@
 
         public override AstBase VisitPassByCopy(BoundPassByCopy node, SerializationContext arg) => throw new NotImplementedException();
 
+        /*
         public override AstBase VisitPatternSwitchLabel(BoundPatternSwitchLabel node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitPatternSwitchSection(BoundPatternSwitchSection node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitPatternSwitchStatement(BoundPatternSwitchStatement node, SerializationContext arg) => throw new NotImplementedException();
+        */
 
         public override AstBase VisitPointerElementAccess(BoundPointerElementAccess node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1235,9 +1236,12 @@
         public override AstBase VisitStringInsert(BoundStringInsert node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitSwitchLabel(BoundSwitchLabel node, SerializationContext arg)
-            => node.ExpressionOpt != null
-                ? (ExpressionSer)Visit(node.ExpressionOpt, arg)
-                : (ExpressionSer)GetConstLiteral(node.ConstantValueOpt);
+        {
+            throw new NotImplementedException();
+            // => node.WhenClause != null
+            //     ? (ExpressionSer)Visit(node.WhenClause, arg)
+            //     : (ExpressionSer)GetConstLiteral(node.ConstantValueOpt);
+        }
 
         public override AstBase VisitSwitchSection(BoundSwitchSection node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1249,14 +1253,35 @@
                 var caseLabels = new List<SwitchCaseLabel>();
                 foreach (var label in section.SwitchLabels)
                 {
-                    if (label.ConstantValueOpt == null && label.ExpressionOpt == null)
-                    { caseLabels.Add(new SwitchCaseLabel()); }
-                    else
+                    // Also check BoundSwitchLabel visitor.
+
+                    if (label.Pattern.Kind == BoundKind.ConstantPattern)
                     {
+                        var constPattern = (BoundConstantPattern)label.Pattern;
                         caseLabels.Add(
                             new SwitchCaseLabel
-                            { LabelValue = (ExpressionSer)VisitSwitchLabel(label, arg) });
+                            {
+                                LabelValue = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
+                            });
                     }
+                    else if (label.Pattern.Kind == BoundKind.DiscardPattern)
+                    {
+                        caseLabels.Add(new SwitchCaseLabel());
+                    }
+                    else 
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    // if (label.Pattern.Kind == BoundKind.ConstantPattern && label.ExpressionOpt == null)
+                    // {
+                    // }
+                    // else
+                    // {
+                    //     caseLabels.Add(
+                    //         new SwitchCaseLabel
+                    //         { LabelValue = (ExpressionSer)VisitSwitchLabel(label, arg) });
+                    // }
                 }
 
                 StatementSer blockSer = null;
@@ -1344,7 +1369,7 @@
             => new TypeOfExpression
             {
                 Location = node.Syntax.Location.GetSerLoc(),
-                Type = arg.SymbolSerializer.GetTypeSpecId((ITypeSymbol)node.SourceType.ExpressionSymbol)
+                Type = arg.SymbolSerializer.GetTypeSpecId((TypeSymbol)node.SourceType.ExpressionSymbol)
             };
 
         public override AstBase VisitTypeOrInstanceInitializers(BoundTypeOrInstanceInitializers node, SerializationContext arg) => throw new NotImplementedException();
@@ -1360,12 +1385,12 @@
 
         private AstBase ConvertUnaryOperator(
             BoundExpression node,
-            IMethodSymbol methodOpt,
+            MethodSymbol methodOpt,
             UnaryOperatorKind op,
             SerializationContext arg)
         {
             var isLifted = IsLifted(op);
-            var isChecked = IsChecked(op);
+            _ = IsChecked(op);
             var typeMask = op & UnaryOperatorKind.TypeMask;
             var nscriptOp = GetNScriptOperator(op);
             if (typeMask == UnaryOperatorKind.UserDefined)
@@ -1413,7 +1438,9 @@
                 Condition = (ExpressionSer)Visit(node.Condition, arg)
             };
 
+        /*
         public override AstBase VisitWildcardPattern(BoundWildcardPattern node, SerializationContext arg) => throw new NotImplementedException();
+        */
 
         public override AstBase VisitYieldBreakStatement(BoundYieldBreakStatement node, SerializationContext arg)
             => new YieldBreakStatement { Location = node.Syntax.GetSerLoc() };
@@ -1430,7 +1457,7 @@
             switch (constValue.Discriminator)
             {
                 case ConstantValueTypeDiscriminator.Null:
-                    return new NullExpression { };
+                    return new NullExpression();
 
                 case ConstantValueTypeDiscriminator.Bad:
                     throw new NotImplementedException();
@@ -1561,7 +1588,7 @@
         }
 
         public List<MethodCallArg> ToArgs(
-            IMethodSymbol method,
+            MethodSymbol method,
             IList<BoundExpression> nodes,
             SerializationContext arg) => Enumerable
                 .Range(0, method.Parameters.Length)
@@ -1579,7 +1606,7 @@
                                 {
                                     ArrayType = arg.SymbolSerializer.GetTypeSpecId(parameter.Type),
                                     ElementType = arg.SymbolSerializer.GetTypeSpecId(
-                                        ((IArrayTypeSymbol)parameter.Type).ElementType),
+                                        ((ArrayTypeSymbol)parameter.Type).ElementType),
                                     Initializers = null,
                                     Arguments = new List<ExpressionSer>()
                                         { new IntLiteralExpression { Value = 0 } }
@@ -1604,7 +1631,7 @@
                             {
                                 ArrayType = arg.SymbolSerializer.GetTypeSpecId(parameter.Type),
                                 ElementType = arg.SymbolSerializer.GetTypeSpecId(
-                                    ((IArrayTypeSymbol)parameter.Type).ElementType),
+                                    ((ArrayTypeSymbol)parameter.Type).ElementType),
                                 Initializers = nodes.Skip(paramIdx)
                                     .Select(_a => (ExpressionSer)Visit(_a, arg))
                                     .ToList()
@@ -1752,7 +1779,7 @@
 
         private T WrapInBlock<T>(BoundNode node, Func<int, List<string>, T> func) where T : StatementSer
         {
-            scopeBlockStack.AddFirst((++id, node, new List<string>()));
+            _ = scopeBlockStack.AddFirst((++id, node, new List<string>()));
             try
             { return func(id, scopeBlockStack.Last.Value.localFunctions); }
             finally

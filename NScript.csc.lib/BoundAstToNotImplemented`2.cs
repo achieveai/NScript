@@ -228,12 +228,14 @@ namespace NScript.Csc.Lib
             {throw new NotImplementedException(); }
         public override R VisitPassByCopy(BoundPassByCopy node, A arg)
             {throw new NotImplementedException(); }
+        /*
         public override R VisitPatternSwitchLabel(BoundPatternSwitchLabel node, A arg)
             {throw new NotImplementedException(); }
         public override R VisitPatternSwitchSection(BoundPatternSwitchSection node, A arg)
             {throw new NotImplementedException(); }
         public override R VisitPatternSwitchStatement(BoundPatternSwitchStatement node, A arg)
             {throw new NotImplementedException(); }
+        */
         public override R VisitPointerElementAccess(BoundPointerElementAccess node, A arg)
             {throw new NotImplementedException(); }
         public override R VisitPointerIndirectionOperator(BoundPointerIndirectionOperator node, A arg)
@@ -318,8 +320,11 @@ namespace NScript.Csc.Lib
             {throw new NotImplementedException(); }
         public override R VisitWhileStatement(BoundWhileStatement node, A arg)
             {throw new NotImplementedException(); }
+        /*
         public override R VisitWildcardPattern(BoundWildcardPattern node, A arg)
             {throw new NotImplementedException(); }
+        */
+
         public override R VisitYieldBreakStatement(BoundYieldBreakStatement node, A arg)
             {throw new NotImplementedException(); }
         public override R VisitYieldReturnStatement(BoundYieldReturnStatement node, A arg)

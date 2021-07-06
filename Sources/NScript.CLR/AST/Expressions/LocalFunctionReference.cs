@@ -49,5 +49,11 @@ namespace NScript.CLR.AST
             return right != null
                 && this.Variable.Name.Equals(right.Variable.Name);
         }
+
+        public override int GetHashCode()
+        {
+            return typeof(VariableReference).GetHashCode()
+                ^ this.Variable.Name.GetHashCode();
+        }
     }
 }

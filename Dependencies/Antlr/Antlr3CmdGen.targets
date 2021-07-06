@@ -1,0 +1,55 @@
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <BuildSystem>MSBuild</BuildSystem>
+    <TaskVersion>3.2.0.0</TaskVersion>
+    <TaskKeyToken>eb42632606e9261g</TaskKeyToken>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LoadTimeSensitiveTargets>
+      $(LoadTimeSensitiveTargets);
+      AntlrCompile;
+    </LoadTimeSensitiveTargets>
+
+    <PrepareResourcesDependsOn>
+      AntlrCompile;
+      $(PrepareResourcesDependsOn)
+    </PrepareResourcesDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AntlrToolLocation Condition="'$(AntlrToolPath)'!=''">$(AntlrToolPath)</AntlrToolLocation>
+    <AntlrToolLocation Condition="'$(AntlrToolPath)'==''">$(MSBuildThisFileDirectory)\Antlr3.exe</AntlrToolLocation>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PrepareResourcesDependsOn>
+      AntlrCompileAddFilesGenerated;
+      $(PrepareResourcesDependsOn)
+    </PrepareResourcesDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)'=='true'">
+    <AvailableItemName Include="Antlr3" />
+    <AvailableItemName Include="AntlrTokens" />
+  </ItemGroup>
+
+  <Target Name="AntlrCompile"
+          Condition="'@(Antlr3)' != ''"
+          Inputs="@(Antlr3);@(AntlrTokens)"
+          Outputs="@(Antlr3 -> '%(Filename)Parser.cs');@(Antlr3 -> '%(Filename)Lexer.cs')">
+
+    <Exec Command="$(MSBuildThisFileDirectory)/Antlr3.exe -make %(Antlr3.identity)" />
+  </Target>
+
+  <Target Name="AntlrCompileAddFilesGenerated"
+          DependsOnTargets="AntlrCompile"
+          Condition="'@(Antlr3)' != ''">
+
+    <ItemGroup>
+      <Compile Include="@(Antlr3 -> '%(Filename)Lexer.cs')" />
+      <Compile Include="@(Antlr3 -> '%(Filename)Parser.cs')" />
+    </ItemGroup>
+
+  </Target>
+</Project>

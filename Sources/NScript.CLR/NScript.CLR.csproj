@@ -1,44 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{83FB5360-CE27-4255-8457-13E789DC5B0C}</ProjectGuid>
+    <TargetFramework>net48</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NScript.CLR</RootNamespace>
-    <AssemblyName>NScript.CLR</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <BaseIntermediateOutputPath>$(tmp)\$(SolutionName)\$(AssemblyName)\obj</BaseIntermediateOutputPath>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Accessibility">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
+    <Compile Remove="Decompiler\**" />
+    <EmbeddedResource Remove="Decompiler\**" />
+    <None Remove="Decompiler\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Mono.Cecil.Private">
       <HintPath>..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
     </Reference>
@@ -48,135 +20,13 @@
     <Reference Include="Mono.Cecil.Private.Pdb">
       <HintPath>..\..\Dependencies\Mono.Cecil.Private.Pdb.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AST\AstVisitor.cs" />
-    <Compile Include="AST\Expressions\AnonymousNewExpression.cs" />
-    <Compile Include="AST\Expressions\BaseVariableReference.cs" />
-    <Compile Include="AST\Expressions\BoxExpression.cs" />
-    <Compile Include="AST\Expressions\CharLiteral.cs" />
-    <Compile Include="AST\Expressions\ConditionalAccessExpression.cs" />
-    <Compile Include="AST\Expressions\ConditionalOperatorExpression.cs" />
-    <Compile Include="AST\Expressions\DefaultValueExpression.cs" />
-    <Compile Include="AST\Expressions\DelegateMethodExpression.cs" />
-    <Compile Include="AST\Expressions\DynamicCallInvocationExpression.cs" />
-    <Compile Include="AST\Expressions\DynamicIndexAccessor.cs" />
-    <Compile Include="AST\Expressions\DynamicMemberAccessor.cs" />
-    <Compile Include="AST\Expressions\EventReferenceExpression.cs" />
-    <Compile Include="AST\Expressions\InitObjectWithDefaultValue.cs" />
-    <Compile Include="AST\Expressions\InlineArrayInitialization.cs" />
-    <Compile Include="AST\Expressions\InlineCollectionInitializationExpression.cs" />
-    <Compile Include="AST\Expressions\InlineDelegateExpression.cs" />
-    <Compile Include="AST\Expressions\InlineIteratorExpression.cs" />
-    <Compile Include="AST\Expressions\InlinePropertyInitilizationExpression.cs" />
-    <Compile Include="AST\Expressions\LoadAddressExpression.cs" />
-    <Compile Include="AST\Expressions\LocalFunctionReference.cs" />
-    <Compile Include="AST\Expressions\NullConditional.cs" />
-    <Compile Include="AST\Expressions\PropertyReferenceExpression.cs" />
-    <Compile Include="AST\Expressions\ToNullable.cs" />
-    <Compile Include="AST\Expressions\TypeofExpression.cs" />
-    <Compile Include="AST\Expressions\TypeReferenceExpression.cs" />
-    <Compile Include="AST\Expressions\UnboxExpression.cs" />
-    <Compile Include="AST\InlineDelegateClass.cs" />
-    <Compile Include="AST\InternalEventReference.cs" />
-    <Compile Include="AST\InternalPropertyRefernce.cs" />
-    <Compile Include="AST\LocalFunctionVariable.cs" />
-    <Compile Include="AST\Processors\IntiObjectSimplifier.cs" />
-    <Compile Include="AST\Expressions\AnonymousMethodBodyExpression.cs" />
-    <Compile Include="AST\Statements\ExplicitBlock.cs" />
-    <Compile Include="AST\Statements\ForEachBlock.cs" />
-    <Compile Include="AST\Statements\HandlerBlock.cs" />
-    <Compile Include="AST\Statements\InitializerStatement.cs" />
-    <Compile Include="AST\Statements\LocalMethodStatement.cs" />
-    <Compile Include="AST\Statements\ParameterBlock.cs" />
-    <Compile Include="AST\Statements\TryCatchFinally.cs" />
-    <Compile Include="AST\Statements\ThrowStatement.cs" />
-    <Compile Include="AST\IAstProcessor.cs" />
-    <Compile Include="AST\Processors\AstProcessor.cs" />
-    <Compile Include="AST\Processors\ConditionalOperatorProcessor.cs" />
-    <Compile Include="AST\Processors\IfBlockToReturnConditional.cs" />
-    <Compile Include="AST\Processors\IntCastSimplifier.cs" />
-    <Compile Include="AST\Processors\IsTypeProcessor.cs" />
-    <Compile Include="AST\Enums.cs" />
-    <Compile Include="AST\Expressions\ArrayElementExpression.cs" />
-    <Compile Include="AST\Expressions\BinaryExpression.cs" />
-    <Compile Include="AST\Expressions\BooleanLiteral.cs" />
-    <Compile Include="AST\Expressions\ConstructorReferenceExpression.cs" />
-    <Compile Include="AST\Expressions\ConvertTypeExpression.cs" />
-    <Compile Include="AST\Expressions\DoubleLiteral.cs" />
-    <Compile Include="AST\Expressions\Expression.cs" />
-    <Compile Include="AST\Expressions\FieldReferenceExpression.cs" />
-    <Compile Include="AST\Expressions\IntLiteral.cs" />
-    <Compile Include="AST\Expressions\LiteralExpression.cs" />
-    <Compile Include="AST\Expressions\MemberReferenceExpression.cs" />
-    <Compile Include="AST\Expressions\MethodReferenceExpression.cs" />
-    <Compile Include="AST\Expressions\NewArrayExpression.cs" />
-    <Compile Include="AST\Expressions\NewObjectExpression.cs" />
-    <Compile Include="AST\Expressions\NullLiteral.cs" />
-    <Compile Include="AST\Expressions\StringLiteral.cs" />
-    <Compile Include="AST\Expressions\MethodCallExpression.cs" />
-    <Compile Include="AST\Expressions\TypeCheckExpression.cs" />
-    <Compile Include="AST\Expressions\UIntLiteral.cs" />
-    <Compile Include="AST\Expressions\UnaryExpression.cs" />
-    <Compile Include="AST\Expressions\VariableAddressReference.cs" />
-    <Compile Include="AST\Expressions\VariableReference.cs" />
-    <Compile Include="AST\Expressions\VirtualMethodReferenceExpression.cs" />
-    <Compile Include="AST\Processors\NotConditionSimplifier.cs" />
-    <Compile Include="AST\Statements\BreakStatement.cs" />
-    <Compile Include="AST\Statements\ContinueStatement.cs" />
-    <Compile Include="AST\Statements\DebuggerBreakStatement.cs" />
-    <Compile Include="AST\Statements\DoWhileLoop.cs" />
-    <Compile Include="AST\Statements\ExpressionStatement.cs" />
-    <Compile Include="AST\Statements\ForLoop.cs" />
-    <Compile Include="AST\Statements\IfBlockStatement.cs" />
-    <Compile Include="AST\Statements\ReturnStatement.cs" />
-    <Compile Include="AST\Statements\SwitchStatement.cs" />
-    <Compile Include="AST\Statements\WhileLoop.cs" />
-    <Compile Include="AST\Statements\YieldStatement.cs" />
-    <Compile Include="AST\TopLevelBlock.cs" />
-    <Compile Include="AST\LocalVariable.cs" />
-    <Compile Include="AST\Node.cs" />
-    <Compile Include="AST\ParameterVariable.cs" />
-    <Compile Include="AST\Statements\ScopeBlock.cs" />
-    <Compile Include="AST\Statements\Statement.cs" />
-    <Compile Include="AST\ThisVariable.cs" />
-    <Compile Include="AST\Variable.cs" />
-    <Compile Include="ClrContext.cs" />
-    <Compile Include="ClrKnownReferences.cs" />
-    <Compile Include="TypeHelpers.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj">
-      <Project>{030B10DD-4861-4BE1-B0D6-DB43587E603F}</Project>
-      <Name>NScript.Utils</Name>
-    </ProjectReference>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Decompiler\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <PropertyGroup />
 </Project>

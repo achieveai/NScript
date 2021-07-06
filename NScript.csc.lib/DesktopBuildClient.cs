@@ -44,13 +44,6 @@ namespace NScript.Csc.Lib
             IAnalyzerAssemblyLoader analyzerAssemblyLoader)
         {
             var sdkDir = GetSystemSdkDirectory();
-            if (CoreClrShim.IsRunningOnCoreClr)
-            {
-                // Register encodings for console
-                // https://github.com/dotnet/roslyn/issues/10785
-                // System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            }
-
             var client = new DesktopBuildClient(language, compileFunc, analyzerAssemblyLoader);
             var clientDir = AppContext.BaseDirectory;
             var workingDir = Directory.GetCurrentDirectory();

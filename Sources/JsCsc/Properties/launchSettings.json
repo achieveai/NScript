@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "JsCsc": {
+      "commandName": "Project",
+      "commandLineArgs": "/noconfig /nowarn:0028,1591,0414,0219,0824,0626,0169,0168,1701,1702,2008 /fullpaths /nostdlib+ /errorreport:prompt /warn:4 /doc:..\\bin\\Debug\\RealScript.Debug.xml /define:DEBUG /errorendlocation /preferreduilang:en-US /highentropyva- /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\Microsoft.CSharp.dll /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\mscorlib.dll /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\System.Core.dll /debug+ /out:obj\\Debug\\RealScript.Debug.dll /ruleset:\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Team Tools\\Static Analysis Tools\\\\Rule Sets\\AllRules.ruleset\" /target:library /utf8output /langversion:7.3 BasicBlockTestFunctions.cs BasicStatements.cs ConstructorTests.cs DelegateBlocks.cs DupInstructionBlocks.cs DynamicTest.cs EnumTypes.cs ExceptionHandlerSamples.cs ForLoopBlocks.cs FuncRegressions.cs GenericCollections.cs GenericSamples.cs IfBlocks.cs InlineComplexStatements.cs JsScriptImport.cs LoopTests.cs MathAlgorithms.cs NewLanguageFeatures.cs NumberOperations.cs ScriptSharpCompat.cs SimpleInterfaceTest.cs SimpleTypes.cs StructClass.cs SwitchTest.cs TestArithmetics.cs TestCompilerGeneratedStuff.cs TestControlFlow.cs TestDelegates.cs TestGeneric.cs TestInheritence.cs TestInitializers.cs TestPsudoType.cs TestReferenceClass.cs WhileLoopBlocks.cs YieldReturnTests.cs Properties\\AssemblyInfo.cs Class1.cs",
+      "workingDirectory": "C:\\Projects\\Cs2JsC\\Test\\RealScript"
+    }
+  }
+}
