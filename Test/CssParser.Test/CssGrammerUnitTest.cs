@@ -2,18 +2,18 @@
 {
     using System;
     using CssParser;
-    using NUnit.Framework;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    [TestFixture]
+    [TestClass]
     public class CssGrammerUnitTest
     {
-        [Test]
+        [TestMethod]
         public void BasicTest()
         {
             CssGrammer grammer = new CssGrammer(".body { border: #ddeeff thin 123px solid; }");
             Assert.AreEqual(1, grammer.Rules.Count);
             Assert.AreEqual(1, grammer.Rules[0].Selectors.Count);
-            Assert.IsInstanceOf<CssClassName>(grammer.Rules[0].Selectors[0]);
+            Assert.IsInstanceOfType(grammer.Rules[0].Selectors[0], typeof(CssClassName));
 
             Assert.AreEqual(1, grammer.Rules[0].Properties.Count);
             Assert.AreEqual("border", grammer.Rules[0].Properties[0].PropertyName);
@@ -25,7 +25,7 @@
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestBasicKeyFrames()
         {
             CssGrammer grammer = new CssGrammer("@keyframes test { from { border: 1px;} to , 50% { border: 10px;} 10% {border: 20px; } }");
@@ -49,111 +49,111 @@
             Assert.AreEqual("10%", frame.Selectors[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void TestCssSelectorUnder()
         {
             CssGrammer grammer = new CssGrammer("div .list {}");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(CssRuleSelector));
             CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
             Assert.AreEqual(2, ruleSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssClassName>(ruleSelector.Selectors[1]);
-            Assert.IsInstanceOf<CssTagName>(ruleSelector.Selectors[0]);
+            Assert.IsInstanceOfType(ruleSelector.Selectors[1], typeof(CssClassName));
+            Assert.IsInstanceOfType(ruleSelector.Selectors[0], typeof(CssTagName));
             Assert.AreEqual(SelectorOp.Under, ruleSelector.Ops[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void TestCssSelectorUnder1()
         {
             CssGrammer grammer = new CssGrammer("div:first-child() .list {}");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(CssRuleSelector));
             CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
             Assert.AreEqual(2, ruleSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssClassName>(ruleSelector.Selectors[1]);
-            Assert.IsInstanceOf<AndCssSelector>(ruleSelector.Selectors[0]);
+            Assert.IsInstanceOfType(ruleSelector.Selectors[1], typeof(CssClassName));
+            Assert.IsInstanceOfType(ruleSelector.Selectors[0], typeof(AndCssSelector));
             Assert.AreEqual(SelectorOp.Under, ruleSelector.Ops[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void TestCssSelectorAnd()
         {
             CssGrammer grammer = new CssGrammer("div.list {}");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(AndCssSelector));
             AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
             Assert.AreEqual(2, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<CssClassName>(andCssSelector.Selectors[1]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[1], typeof(CssClassName));
         }
 
-        [Test]
+        [TestMethod]
         public void TestCssSelectorAnd1()
         {
             CssGrammer grammer = new CssGrammer("div:first-child().list {}");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(AndCssSelector));
             AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
             Assert.AreEqual(3, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<CssClassName>(andCssSelector.Selectors[2]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[2], typeof(CssClassName));
         }
 
-        [Test]
+        [TestMethod]
         public void TestCssSelector()
         {
             CssGrammer grammer = new CssGrammer(".list > div { border: #ddeeff thin 1px solid; }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(CssRuleSelector));
             CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
             Assert.AreEqual(2, ruleSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssClassName>(ruleSelector.Selectors[0]);
-            Assert.IsInstanceOf<CssTagName>(ruleSelector.Selectors[1]);
+            Assert.IsInstanceOfType(ruleSelector.Selectors[0], typeof(CssClassName));
+            Assert.IsInstanceOfType(ruleSelector.Selectors[1], typeof(CssTagName));
             Assert.AreEqual(SelectorOp.ParentOf, ruleSelector.Ops[0]);
         }
 
-        [Test]
+        [TestMethod]
         public void TestCssRuleSelector3Deep()
         {
             CssGrammer grammer = new CssGrammer(".list > a > #div { border: #ddeeff thin 1px solid; }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(CssRuleSelector));
             CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
             Assert.AreEqual(3, ruleSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssClassName>(ruleSelector.Selectors[0]);
-            Assert.IsInstanceOf<CssTagName>(ruleSelector.Selectors[1]);
-            Assert.IsInstanceOf<CssId>(ruleSelector.Selectors[2]);
+            Assert.IsInstanceOfType(ruleSelector.Selectors[0], typeof(CssClassName));
+            Assert.IsInstanceOfType(ruleSelector.Selectors[1], typeof(CssTagName));
+            Assert.IsInstanceOfType(ruleSelector.Selectors[2], typeof(CssId));
         }
 
-        [Test]
+        [TestMethod]
         public void TestAttributeSelector()
         {
             CssGrammer grammer = new CssGrammer("a[t=m] > div { color: red; }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<CssRuleSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(CssRuleSelector));
             CssRuleSelector ruleSelector = selectors[0] as CssRuleSelector;
             Assert.AreEqual(2, ruleSelector.Selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(ruleSelector.Selectors[0]);
-            Assert.IsInstanceOf<CssTagName>(ruleSelector.Selectors[1]);
+            Assert.IsInstanceOfType(ruleSelector.Selectors[0], typeof(AndCssSelector));
+            Assert.IsInstanceOfType(ruleSelector.Selectors[1], typeof(CssTagName));
 
             AndCssSelector andCssSelector = (AndCssSelector)ruleSelector.Selectors[0];
             Assert.AreEqual(2, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<AttributeSelector>(andCssSelector.Selectors[1]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[1], typeof(AttributeSelector));
 
             AttributeSelector attrSel = (AttributeSelector)andCssSelector.Selectors[1];
             Assert.AreEqual("t", attrSel.Attribute);
@@ -161,97 +161,97 @@
             Assert.AreEqual(attrSel.Condition, AttributeCondition.Equal);
         }
 
-        [Test]
+        [TestMethod]
         public void TestPseudoSelector()
         {
             CssGrammer grammer = new CssGrammer("a:hover { }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(AndCssSelector));
             AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
             Assert.AreEqual(2, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[1], typeof(PseudoSelector));
 
             PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
             Assert.AreEqual("hover", attrSel.Name);
             Assert.IsNull(attrSel.Arg);
         }
 
-        [Test]
+        [TestMethod]
         public void TestPseudoFuncSelector()
         {
             CssGrammer grammer = new CssGrammer("a:first-child() { }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(AndCssSelector));
             AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
             Assert.AreEqual(2, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[1], typeof(PseudoSelector));
 
             PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
             Assert.AreEqual("first-child", attrSel.Name);
             Assert.AreEqual("", attrSel.Arg);
         }
 
-        [Test]
+        [TestMethod]
         public void TestPseudoFuncNumSelector()
         {
             CssGrammer grammer = new CssGrammer("a:nth-child(2) { }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(AndCssSelector));
             AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
             Assert.AreEqual(2, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[1], typeof(PseudoSelector));
 
             PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
             Assert.AreEqual("nth-child", attrSel.Name);
             Assert.AreEqual("2", attrSel.Arg);
         }
 
-        [Test]
+        [TestMethod]
         public void TestPseudoFuncArgIdentSelector()
         {
             CssGrammer grammer = new CssGrammer("a:nth-child(odd) { }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(AndCssSelector));
             AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
             Assert.AreEqual(2, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[1], typeof(PseudoSelector));
 
             PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
             Assert.AreEqual("nth-child", attrSel.Name);
             Assert.AreEqual("odd", attrSel.Arg);
         }
 
-        [Test]
+        [TestMethod]
         public void TestPseudoFuncArgMultSelector()
         {
             CssGrammer grammer = new CssGrammer("a:nth-child(2n + 10) { }");
             Assert.AreEqual(1, grammer.Rules.Count);
             var selectors = grammer.Rules[0].Selectors;
             Assert.AreEqual(1, selectors.Count);
-            Assert.IsInstanceOf<AndCssSelector>(selectors[0]);
+            Assert.IsInstanceOfType(selectors[0], typeof(AndCssSelector));
             AndCssSelector andCssSelector = (AndCssSelector)selectors[0];
             Assert.AreEqual(2, andCssSelector.Selectors.Count);
-            Assert.IsInstanceOf<CssTagName>(andCssSelector.Selectors[0]);
-            Assert.IsInstanceOf<PseudoSelector>(andCssSelector.Selectors[1]);
+            Assert.IsInstanceOfType(andCssSelector.Selectors[0], typeof(CssTagName));
+            Assert.IsInstanceOfType(andCssSelector.Selectors[1], typeof(PseudoSelector));
 
             PseudoSelector attrSel = (PseudoSelector)andCssSelector.Selectors[1];
             Assert.AreEqual("nth-child", attrSel.Name);
             Assert.AreEqual("2n+10", attrSel.Arg);
         }
 
-        [Test]
+        [TestMethod]
         public void PropertyOnlyTest()
         {
             CssGrammer grammer = new CssGrammer("border: #ddeeff thin 1px solid;", true);
@@ -269,7 +269,7 @@
             }
         }
 
-        [Test]
+        [TestMethod]
         public void PropertiesOnlyTest()
         {
             CssGrammer grammer = new CssGrammer("border: #ddeeff thin 1px solid; background-color: #ffeedd;", true);
@@ -292,7 +292,7 @@
             }
         }
 
-        [Test]
+        [TestMethod]
         public void MultiplePropertyValuesTest()
         {
             CssGrammer grammer = new CssGrammer("font: courier, 'New Courier', rockwell;", true);
@@ -308,7 +308,7 @@
             }
         }
 
-        [Test]
+        [TestMethod]
         public void CalcPropertyValueTest()
         {
             CssGrammer grammer = new CssGrammer("height: calc(10% + 10em);", true);
@@ -319,7 +319,7 @@
             var property = grammer.Properties[0];
             Assert.AreEqual("height", property.PropertyName);
             Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
-            Assert.IsInstanceOf<CssCalcPropertyValue>(property.PropertyArgs[0].Values[0]);
+            Assert.IsInstanceOfType(property.PropertyArgs[0].Values[0], typeof(CssCalcPropertyValue));
 
             var propertyArg = (CssCalcPropertyValue)property.PropertyArgs[0].Values[0];
             Assert.AreEqual(1, propertyArg.Operators.Length);
@@ -329,7 +329,7 @@
             Assert.AreEqual("10em", propertyArg.PropertyValues[1].ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void FunctionPropertyValueTest()
         {
             CssGrammer grammer = new CssGrammer("color: rgba(10,20,40,.5);", true);
@@ -340,14 +340,14 @@
             var property = grammer.Properties[0];
             Assert.AreEqual("color", property.PropertyName);
             Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
-            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0].Values[0]);
+            Assert.IsInstanceOfType(property.PropertyArgs[0].Values[0], typeof(CssFunctionPropertyValue));
 
             var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
             Assert.AreEqual("rgba", propertyArg.FunctionName);
             Assert.AreEqual(4, propertyArg.Args.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void FunctionPropertyValueTestWithLinearGradient()
         {
             CssGrammer grammer = new CssGrammer("background-image: linear-gradient(top bottom, #03a9f4, #0288d1);", true);
@@ -358,14 +358,14 @@
             var property = grammer.Properties[0];
             Assert.AreEqual("background-image", property.PropertyName);
             Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
-            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0].Values[0]);
+            Assert.IsInstanceOfType(property.PropertyArgs[0].Values[0], typeof(CssFunctionPropertyValue));
 
             var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
             Assert.AreEqual("linear-gradient", propertyArg.FunctionName);
             Assert.AreEqual(3, propertyArg.Args.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void FunctionPropertyWebkitLinearGradientProperty()
         {
             CssGrammer grammer = new CssGrammer(
@@ -378,7 +378,7 @@
             var property = grammer.Properties[0];
             Assert.AreEqual("background-image", property.PropertyName);
             Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
-            Assert.IsInstanceOf<CssFunctionPropertyValue>(property.PropertyArgs[0].Values[0]);
+            Assert.IsInstanceOfType(property.PropertyArgs[0].Values[0], typeof(CssFunctionPropertyValue));
 
             var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
             Assert.AreEqual("-webkit-linear-gradient", propertyArg.FunctionName);
@@ -386,7 +386,7 @@
         }
 
 
-        [Test]
+        [TestMethod]
         public void MediaQueryTest()
         {
             var css = @"@media all and (max-width: 699px) and (width >= 200px) { #sidebar { } }";
@@ -399,9 +399,9 @@
             Assert.AreEqual(1, grammer.MediaRules[0].RuleSet.Count);
 
             var mediaQuery = grammer.MediaRules[0].MediaQueires[0];
-            Assert.IsInstanceOf<MediaTypeRule>(mediaQuery.MediaRules[0]);
-            Assert.IsInstanceOf<PropertyEqualityRule>(mediaQuery.MediaRules[1]);
-            Assert.IsInstanceOf<PropertyRangeRule>(mediaQuery.MediaRules[2]);
+            Assert.IsInstanceOfType(mediaQuery.MediaRules[0], typeof(MediaTypeRule));
+            Assert.IsInstanceOfType(mediaQuery.MediaRules[1], typeof(PropertyEqualityRule));
+            Assert.IsInstanceOfType(mediaQuery.MediaRules[2], typeof(PropertyRangeRule));
 
             Assert.AreEqual("all", ((MediaTypeRule)mediaQuery.MediaRules[0]).MediaType);
             Assert.AreEqual("max-width", ((PropertyRule)mediaQuery.MediaRules[1]).PropertyName);
@@ -415,7 +415,7 @@
             Assert.IsNull(((PropertyRangeRule)mediaQuery.MediaRules[2]).LeftOp);
         }
 
-        [Test]
+        [TestMethod]
         public void TestRemPropertyValue()
         {
             var grammer = new CssGrammer("font-size: 3rem;", true);
