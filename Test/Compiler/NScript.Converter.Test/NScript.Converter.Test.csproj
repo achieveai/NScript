@@ -1,0 +1,268 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="MethodConverterTests\YieldReturn\**" />
+    <EmbeddedResource Remove="MethodConverterTests\YieldReturn\**" />
+    <None Remove="MethodConverterTests\YieldReturn\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
+    <Reference Update="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <ProjectReference Include="$(CompilerSources)\JsCsc.Lib\JsCsc.Lib.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.JSParser\NScript.JSParser.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.CLR\NScript.CLR.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.Converter\NScript.Converter.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.JST\NScript.JS.AST.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.Utils\NScript.Utils.csproj" />
+    <ProjectReference Include="$(CompilerTestSources)\NScript.CLR.Test\NScript.CLR.Test.csproj" />
+    <ProjectReference Include="$(CompilerTestSources)\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\DoWhileLoop.js" />
+    <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\WhileLoop.js" />
+    <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\DoWhilePaddedLoop.js" />
+    <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\WhilePaddedLoop.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\Complex3IfCondition.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\SimpleConditional.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\FourPartCondition.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\SimpleAndComparision.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ComplexCondition.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnMethodCall.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnMethodCallWith1Arg.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnNewObject.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnInt.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\AddIntArgs.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\AddIntArgToConst.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnNewObjectWithArg.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\SetArrayElement.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\CheckType.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\TestSimpleCompare.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnIntArray.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnObjectArray.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnArrayElement.js" />
+    <EmbeddedResource Include="MethodConverterTests\ForLoopConverters\ForLoopPadded.js" />
+    <EmbeddedResource Include="MethodConverterTests\ForLoopConverters\ForLoopBasic.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnInlineObjectArray.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnInlineSettersElement.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\CallMethodWithInlineSettersElement.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\PassVariableByRef.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\PassObjectFieldByRef.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\PassArrayElementByRef.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\AccessRefArgument.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\InstanceReferencingDelegate.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\StaticReferencingDelegate.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\IntDelegateTaker.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\LocalAndInstanceReferencingDelegate.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\LocalReferencingDelegate.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptSharpCompatiblity\ReturnIntrinsicProperty.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptSharpCompatiblity\ReturnIntrinsicIndexer.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptSharpCompatiblity\SetIntrinsicIndexer.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptSharpCompatiblity\GetDictionary.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptSharpCompatiblity\DelegateCombine.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PostfixOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PostfixPropertyOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PostfixSecondOrderPropertyOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PostfixPropertyInConditionOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PostfixPropertyInConditionOperationDebug.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\FunctionCallWithInlineAssignment.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PropertyInlineEquals.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PostfixPropertyOnPropertyOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\LocalOpAssignmentOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PropertyOpAssignmentOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PropertyOnPropertyOpAssignmentOperation.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\NullCheckAssignment.js" />
+    <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\InlineOpAssignment.js" />
+    <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\WhileLoopWithBreak.js" />
+    <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\WhileLoopWithContinue.js" />
+    <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\WhileLoopWithContinueRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\ForLoopConverters\ForLoopWithContinue.js" />
+    <EmbeddedResource Include="MethodConverterTests\ForLoopConverters\ForLoopWithBreak.js" />
+    <EmbeddedResource Include="MethodConverterTests\ForLoopConverters\ForLoopWithBreakRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SimpleIntSwitch.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SimpleIntSwitchRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchOnlyFunction.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchOnlyFunctionRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchWithReturn.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchWithReturnOnly.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchWithReturnOnlyRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchWithReturnRetail.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SimpleStaticType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SimpleInstanceType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\MultipleConstructorsType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SameNameInstanceAndStaticMethod.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\VirtualOverride.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\VirtualBase.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SimpleFullVirtual.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\InheritInterface.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\InheritDerivedInterface.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SecondOrderInterfaceInherit.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\FullInheritDerivedInterface.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SimpleEnumType.js" />
+    <EmbeddedResource Include="TypeConverterTests\RuntimeScript\SimpleFullScript.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\EnumUsingClass.js" />
+    <EmbeddedResource Include="TypeConverterTests\RuntimeScript\EnumUsingClassScript.js" />
+    <EmbeddedResource Include="TypeConverterTests\RuntimeScript\FullSpectrumScript.js" />
+    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallySimple.js" />
+    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchSimple.js" />
+    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchFinallySimple.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\RegressionContinousSwitchValues.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\RegressionContinousSwitchValuesRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\RegressSwitchWithForDebug.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\RegressSwitchWithForRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\ForLoopConverters\ForEachLoop.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\NewGenericObject.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\NewGenericObject2.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCall.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCall2.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\GenericListType.js" />
+    <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFull.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ListType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestImportedGeneric.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestImportedType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\TestJsonType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\PsudoTypeSimple.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ArrayTypeMcs.js" />
+    <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullMcs.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\StructClassTypeMcs.js" />
+    <EmbeddedResource Include="TypeConverterTests\DependencyBasedConverter\SimpleInstanceDependencyType.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\IntType.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ArrayType.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\StringType.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\TypeType.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ObjectType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\StructClassType.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\Simple0ArgScript.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\Simple1ArgScript.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\SimpleCsMethodCall.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\SimpleStatic1ArgCsMethodCall.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\Simple0ArgObjectAccessMethod.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\InterfaceImplMethod.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\ScriptedMethod.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\OverridenMethod.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\Constructor.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\ScriptedConstructor.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\StructDelegate.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnInlineConstIntArray.js" />
+    <EmbeddedResource Include="TypeConverterTests\DependencyBasedConverter\SimpleStaticDependencyType.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\IfElseInForBlock.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\IfElseInForBlockRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\NestedWhileLoops.js" />
+    <EmbeddedResource Include="MethodConverterTests\NumberOperations\IntDivide.js" />
+    <EmbeddedResource Include="JsExecutionTests\Results\FactorialCalculator.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\GetMin.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\QuickSort.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\TestArithmetics.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\TestControlFlow.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\TestInitializer.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\TestDelegates.txt" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericStructBoxing.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericInterfacePropertyCall.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericInterfacePropertyCallRetail.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\StructPropertyInvoke.js" />
+    <EmbeddedResource Include="JsExecutionTests\Results\TestGenerics.txt" />
+    <EmbeddedResource Include="MethodConverterTests\ForLoopConverters\ForLoopWithContinueMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\NestedWhileLoopsMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\StructPropertyInvokeMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryCatchWithReturnMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\ExceptionHandling\TryFinallyWithReturnMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\InstanceReferencingDelegateMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\LocalAndInstanceReferencingDelegateMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\LocalReferencingDelegateMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\StaticReferencingDelegateMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCall3.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericInterfacePropertyCallMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\CallStructOverride.js" />
+    <EmbeddedResource Include="MethodConverterTests\StructClassMethods\EnumToString.js" />
+    <EmbeddedResource Include="JsExecutionTests\Results\NullableTests.txt" />
+    <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\AddTestEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\GetAutoProperty.js" />
+    <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\RemoveTestEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\SetAutoProperty.js" />
+    <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\TestEventAddRemove.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\AddAssignDelegates.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\AddDelegates.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\SubAssignDelegates.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\SubDelegates.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\IndexerGet.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\IndexerSet.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\AccessStringElement.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\CheckFooBar.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\GetAndSetIndexerPropertyMcs.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\TestPassByRefAssignment.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\EscapesInString.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCalls.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\CollapsingForInIfRegression.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionWithLastIndexOfString.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\OddNativeArrayPushBehavior.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\SelfMethodCallTest.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\ExternGenericCallTest.js" />
+    <EmbeddedResource Include="MethodConverterTests\ScriptImports\CallStaticScriptMethodOnImportedClass.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnInlineObjectArrayWithPropInit.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOr.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOrAssign.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOr2.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOrAssign2.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\IntDivideInts.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\RegressionFlagsOrNullable.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\AddEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\CallEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\ClearEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\RemoveEvent.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\AddNum.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InlineProp.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\NameofField.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\DeclarationWithOut.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetSomething.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetFoo.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\CheckIndex.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\CheckMethod.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetArray.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetList.js" />
+    <EmbeddedResource Include="MethodConverterTests\DynamicConverters\GetDictionary.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InitProp.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\OutVar.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalAccess.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalAccess2.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestConditionalInvoke.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestNestedFunction.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestNestedFunctionScoped.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\CallWithDefaultParameter.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ProcessItems.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs2.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\DiscardVariable.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnStrDict.js" />
+    <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnStrDict2.js" />
+    <Content Include="Staging.js" />
+    <EmbeddedResource Include="TypeConverterTests\RuntimeScript\GenericTypeConversionFullDebug.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.9.0" />
+    <PackageReference Include="JavaScriptEngineSwitcher.Core" Version="3.3.0" />
+    <PackageReference Include="JavaScriptEngineSwitcher.V8" Version="3.12.4" />
+    <PackageReference Include="JavaScriptEngineSwitcher.V8.Native.win-x86" Version="3.12.4" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
+    <PackageReference Include="protobuf-net" Version="2.3.17" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+  </ItemGroup>
+</Project>

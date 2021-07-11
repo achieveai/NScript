@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(CompilerSources)\JsCsc.Lib\JsCsc.Lib.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
+    <PackageReference Include="protobuf-net" Version="2.3.17" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+  </ItemGroup>
+</Project>

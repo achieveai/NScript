@@ -80,14 +80,6 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\CssParser\CssParser.csproj">
-      <Name>CssParser</Name>
-      <Project>{c2534dea-af8c-43f3-81ed-86e6b5932cf6}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
     <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj">
       <Name>JsCsc.Lib</Name>
       <Project>{65fdb136-49ee-4316-95c5-aee4c1a5da83}</Project>

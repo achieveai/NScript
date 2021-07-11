@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(CompilerSources)\CssParser\CssParser.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+  </ItemGroup>
+</Project>

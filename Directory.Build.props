@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <NScriptRoot>$(MSBuildThisFileDirectory)</NScriptRoot>
+    <Dependencies>$(NScriptRoot)/Dependencies</Dependencies>
+    <NScriptToolsetDir>$(NScriptRoot)/NScriptToolSet</NScriptToolsetDir>
+    <CompilerSources>$(NScriptRoot)/Sources/Compiler</CompilerSources>
+    <CompilerTestSources>$(NScriptRoot)/Test/Compiler</CompilerTestSources>
+    <SolutionDir>$(NScriptRoot)</SolutionDir>
+    <TestOutputDir>$(NScriptRoot)/Test/TestBin</TestOutputDir>
+    <CompilerNetFramework>netcoreapp3.1</CompilerNetFramework>
+  </PropertyGroup>
+	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<Deterministric>true</Deterministric>
+	</PropertyGroup>
+</Project>

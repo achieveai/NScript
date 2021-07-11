@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Private.Mdb">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Private.Pdb">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DependencyBuilder\TypeDependencyInfo.cs" />
+    <Content Include="TypeSystemConverter\ScriptSharpAttributes.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj" />
+    <ProjectReference Include="..\NScript.JSParser\NScript.JSParser.csproj" />
+    <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj" />
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
+    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="protobuf-net" Version="2.3.17" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="DependencyBuilder\TypeDependencyInfo.cs" />
+    <Compile Remove="TypeSystemConverter\ScriptSharpAttributes.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mcs, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Dependencies)\mcs.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Private.Mdb">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Private.Pdb">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AstConverter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj" />
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="NetSerializer" Version="4.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="protobuf-net" Version="2.3.17" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="AstConverter.cs" />
+  </ItemGroup>
+</Project>

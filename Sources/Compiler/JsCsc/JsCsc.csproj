@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Csc</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <StartupObject>JsCsc.Program</StartupObject>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <Prefer32Bit>true</Prefer32Bit>
+    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NScript.csc.lib\NScript.csc.lib.csproj" />
+    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj" />
+  </ItemGroup>
+</Project>

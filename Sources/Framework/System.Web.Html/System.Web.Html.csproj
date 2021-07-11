@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A60706FF-08D7-4320-99F9-A2413275CDF6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStdLib>True</NoStdLib>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <CopyReferences>True</CopyReferences>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>System.Web.Html</RootNamespace>
+    <AssemblyName>System.Web.Html</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <NoWarn>0626, 0067,0824</NoWarn>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <NoWarn>0626, 0067,0824</NoWarn>
+    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AnchorElement.cs" />
+    <Compile Include="CheckBoxElement.cs" />
+    <Compile Include="DomError.cs" />
+    <Compile Include="ErrorEvent.cs" />
+    <Compile Include="File.cs" />
+    <Compile Include="FileInput.cs" />
+    <Compile Include="FileReader.cs" />
+    <Compile Include="FormData.cs" />
+    <Compile Include="TokenList.cs" />
+    <Compile Include="Data\ApplicationCache.cs" />
+    <Compile Include="AreaElement.cs" />
+    <Compile Include="AudioElement.cs" />
+    <Compile Include="CanvasElement.cs" />
+    <Compile Include="ClientRect.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="CustomEvent.cs" />
+    <Compile Include="DataTransfer.cs" />
+    <Compile Include="Data\WebSqlDb.cs" />
+    <Compile Include="Data\WebSqlError.cs" />
+    <Compile Include="Data\WebSqlResultSet.cs" />
+    <Compile Include="Data\WebSqlResultSetRow.cs" />
+    <Compile Include="Data\WebSqlTransaction.cs" />
+    <Compile Include="DivElement.cs" />
+    <Compile Include="Document.cs" />
+    <Compile Include="DocumentFragment.cs" />
+    <Compile Include="DomList.cs" />
+    <Compile Include="Element.cs" />
+    <Compile Include="MediaElement.cs" />
+    <Compile Include="NodeAttribute.cs" />
+    <Compile Include="NodeCollection.cs" />
+    <Compile Include="ElementEvent.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="ErrorHandler.cs" />
+    <Compile Include="Filters\VisualTransition.cs" />
+    <Compile Include="FormElement.cs" />
+    <Compile Include="Geolocation\GeolocationService.cs" />
+    <Compile Include="GestureEvent.cs" />
+    <Compile Include="Graphics\CanvasContext.cs" />
+    <Compile Include="Graphics\CanvasContext2D.cs" />
+    <Compile Include="Graphics\Enums.cs" />
+    <Compile Include="Graphics\Gradient.cs" />
+    <Compile Include="Graphics\ImageData.cs" />
+    <Compile Include="Graphics\Pattern.cs" />
+    <Compile Include="Graphics\Rendering.cs" />
+    <Compile Include="Graphics\TextMetrics.cs" />
+    <Compile Include="History.cs" />
+    <Compile Include="IFrameElement.cs" />
+    <Compile Include="ImageElement.cs" />
+    <Compile Include="InputElement.cs" />
+    <Compile Include="Location.cs" />
+    <Compile Include="MapElement.cs" />
+    <Compile Include="MessageEvent.cs" />
+    <Compile Include="MutableEvent.cs" />
+    <Compile Include="Navigator.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="OptionElement.cs" />
+    <Compile Include="Orientation.cs" />
+    <Compile Include="Screen.cs" />
+    <Compile Include="ScriptElement.cs" />
+    <Compile Include="SelectElement.cs" />
+    <Compile Include="Selection.cs" />
+    <Compile Include="Data\Storage.cs" />
+    <Compile Include="Data\Enums.cs" />
+    <Compile Include="SourceElement.cs" />
+    <Compile Include="Style.cs" />
+    <Compile Include="TableCellElement.cs" />
+    <Compile Include="TableElement.cs" />
+    <Compile Include="TableRowElement.cs" />
+    <Compile Include="TableSectionElement.cs" />
+    <Compile Include="TextAreaElement.cs" />
+    <Compile Include="TextElement.cs" />
+    <Compile Include="TouchEvent.cs" />
+    <Compile Include="TouchInfo.cs" />
+    <Compile Include="Filters\VisualFilter.cs" />
+    <Compile Include="VideoElement.cs" />
+    <Compile Include="WheelEvent.cs" />
+    <Compile Include="Window.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CSharp\Microsoft.CSharp.csproj">
+      <Project>{30070734-422b-4c24-be3f-906e2ae03a12}</Project>
+      <Name>Microsoft.CSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
+      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
+      <Name>NScript.MsCorlib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Core\System.Core.csproj">
+      <Project>{30070734-422b-4c24-be3f-906e2ae03a10}</Project>
+      <Name>System.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Web\System.Web.csproj">
+      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
+      <Name>System.Web</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
+</Project>

@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AntlrGenCodeFileNames>AntlrGeneratedCodeFileListAbsolute.txt</AntlrGenCodeFileNames>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>TRACE;DEBUG;ANTLR_TRACE</DefineConstants>
+    <NoWarn>2002;3021</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <NoWarn>2002;3021</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AntlrPath>$(Dependencies)\Antlr</AntlrPath>
+    <AntlrBuildTaskPath>$(AntlrPath)</AntlrBuildTaskPath>
+    <AntlrToolPath>$(AntlrPath)\Antlr3.exe</AntlrToolPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime">
+      <HintPath>$(AntlrPath)\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="CssGrammer.cs">
+      <DependentUpon>CssGrammer.g3</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="CssGrammerParser.cs" />
+    <Compile Remove="CssGrammerLexer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Antlr3 Include="CssGrammer.g3">
+      <Generator>MSBuild:Compile</Generator>
+    </Antlr3>
+  </ItemGroup>
+  <Import Project="$(AntlrPath)\Antlr3CmdGen.targets" />
+</Project>

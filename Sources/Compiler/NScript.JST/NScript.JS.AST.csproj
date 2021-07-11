@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>NScript.JST</RootNamespace>
+    <AssemblyName>NScript.JST</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
+    <ProjectReference Include="..\SourceMap\SourceMap.csproj" />
+  </ItemGroup>
+</Project>

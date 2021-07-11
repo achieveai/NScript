@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj" />
+    <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="protobuf-net" Version="2.3.17" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <PackageReference Include="System.Security.AccessControl" Version="5.0.0" />
+  </ItemGroup>
+</Project>

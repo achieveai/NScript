@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <OutputPath>$(MSBuildThisFileDirectory)/bin</OutputPath>
+    <Dependencies>$(MSBuildThisFileDirectory)/../../Dependencies</Dependencies>
+  </PropertyGroup>
+</Project>
+
+

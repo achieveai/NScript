@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>3021</NoWarn>
+    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AntlrPath>$(Dependencies)\Antlr</AntlrPath>
+    <AntlrBuildTaskPath>$(AntlrPath)</AntlrBuildTaskPath>
+    <AntlrToolPath>$(AntlrPath)\Antlr3.exe</AntlrToolPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime">
+      <HintPath>$(AntlrPath)\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="JavaScript.cs">
+      <DependentUpon>JavaScript.g3</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="JavaScriptParser.cs" />
+    <Compile Remove="JavaScriptLexer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Antlr3 Include="JavaScript.g3">
+      <Generator>MSBuild:Compile</Generator>
+    </Antlr3>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj" />
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
+  </ItemGroup>
+  <Import Project="$(AntlrPath)\Antlr3CmdGen.targets" />
+</Project>
