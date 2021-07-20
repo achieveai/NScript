@@ -57,16 +57,19 @@ function String__Concatb(s1, s2, s3) {
 function String__Concatc(s1, s2, s3, s4) {
   return s1 + s2 + s3 + s4;
 };
-function String__Concatd(s1, s2) {
+function String__Concatd(s1) {
+  return s1.toString();
+};
+function String__Concate(s1, s2) {
   return s1.toString() + s2.toString();
 };
-function String__Concate(s1, s2, s3) {
+function String__Concatf(s1, s2, s3) {
   return s1.toString() + s2.toString() + s3.toString();
 };
-function String__Concatf(s1, s2, s3, s4) {
+function String__Concatg(s1, s2, s3, s4) {
   return s1.toString() + s2.toString() + s3.toString() + s4.toString();
 };
-function String__Concatg(strings) {
+function String__Concath(strings) {
   return strings.innerArray.join("");
 };
 function String__EndsWith(this_, ch) {
@@ -96,10 +99,10 @@ function String__Format(format, values) {
   });
 };
 function String__Formata(format, value) {
-  return String__Format(format, ArrayG_$Object$_.__ctor([ArrayG_$Object$_.__ctor([value])]));
+  return String__Format(format, ArrayG_$Object$_.__ctor([value]));
 };
 function String__Formatb(formatProvider, format, value) {
-  return String__Format(format, ArrayG_$Object$_.__ctor([value]));
+  return String__Format(format, value);
 };
 function String__IndexOf(this_, ch) {
   return this_.indexOf(String.fromCharCode(ch));

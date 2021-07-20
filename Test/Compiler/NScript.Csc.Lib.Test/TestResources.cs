@@ -476,7 +476,7 @@
                             .Assembly
                             .GetName()
                             .Name))
-                + @"..\..\..\..\";
+                + @"..\..\..\";
 
             // baseGitPath = nscriptGitPath;
 
