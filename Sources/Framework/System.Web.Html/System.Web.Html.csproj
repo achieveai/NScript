@@ -20,7 +20,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,14 +29,12 @@
     <Optimize>false</Optimize>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <NoWarn>0626, 0067,0824</NoWarn>
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <NoWarn>0626, 0067,0824</NoWarn>
     <DefineConstants>TRACE</DefineConstants>
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AnchorElement.cs" />

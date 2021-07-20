@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<Plugins>
-  <Plugin Assembly="Cs2JsC.Converter.Plugins" ClassName="Cs2JsC.Converter.Plugins.TestGenerator" />
-</Plugins>

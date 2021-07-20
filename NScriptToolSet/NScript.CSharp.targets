@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
-    <CscToolPath>$(MSBuildThisFileDirectory)\bin</CscToolPath>
+    <CscToolPath>$(MSBuildThisFileDirectory)\bin\netcoreapp3.1\</CscToolPath>
   </PropertyGroup>
   <ItemGroup>
 	  <AdditionalLibPaths Include="$(MSBuildThisFileDirectory)\lib"/>

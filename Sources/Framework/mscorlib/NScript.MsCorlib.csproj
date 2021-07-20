@@ -38,31 +38,28 @@
     <SignAssembly>true</SignAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
     <CscToolPath>$(NScriptToolSetPath)\bin</CscToolPath>
     <TargetFrameworkProfile />
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
     <WarningLevel>4</WarningLevel>
     <DebugType>full</DebugType>
     <ErrorReport>prompt</ErrorReport>
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
     <WarningLevel>4</WarningLevel>
     <DebugType>none</DebugType>
     <ErrorReport>prompt</ErrorReport>
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Activator.cs" />

@@ -15,8 +15,8 @@
     <AssemblyName>Windows</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0067; 0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
   </PropertyGroup>
@@ -24,24 +24,15 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <OutputPath>bin\Debug\</OutputPath>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <OutputPath>bin\Release\</OutputPath>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
-  </PropertyGroup>
-  <ItemGroup />
   <ItemGroup>
     <Compile Include="Guid.cs" />
     <Compile Include="Windows.ApplicationModel.Activation\ActivationKind.cs" />
