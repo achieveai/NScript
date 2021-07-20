@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using JavaScriptEngineSwitcher.Core;
-using JavaScriptEngineSwitcher.Core.Helpers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-namespace Autoprefixer
+﻿namespace Autoprefixer
 {
-	public sealed class Compiler : IDisposable
+    using System;
+    using System.Collections.Generic;
+    using JavaScriptEngineSwitcher.Core;
+    using Microsoft.ClearScript;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
+    public sealed class Compiler : IDisposable
 	{
 		/// <summary>
 		/// Name of resource, which contains the Autoprefixer library
@@ -19,7 +19,7 @@ namespace Autoprefixer
 		/// </summary>
 		const string FunctionCallTemplate = @"autoprefixer.apply(this, {1}).process({0}).css;";
 
-		private readonly IJsEngine _javascriptEngine;
+		private readonly ScriptEngine _javascriptEngine;
 
 		private readonly object _synchronizer = new object();
 
@@ -31,7 +31,7 @@ namespace Autoprefixer
 		/// Constructs instance of Autoprefixer
 		/// </summary>
 		/// <param name="javascriptEngineFactory">Delegate that creates an instance of JavaScript engine</param>
-		public Compiler(Func<IJsEngine> javascriptEngineFactory)
+		public Compiler(Func<Microsoft.ClearScript.ScriptEngine> javascriptEngineFactory)
 		{
 			_javascriptEngine = javascriptEngineFactory();
 		}
@@ -44,7 +44,14 @@ namespace Autoprefixer
 		    if (_initialized) return;
 		    var type = GetType();
 
-		    _javascriptEngine.ExecuteResource(LibraryResourceName, type);
+			string script = null;
+			using (var stream = type.Assembly.GetManifestResourceStream(LibraryResourceName))
+            using (var streamReader = new System.IO.StreamReader(stream))
+            {
+				script = streamReader.ReadToEnd();
+            }
+
+            _javascriptEngine.Execute(script);
 
 		    _initialized = true;
 		}
@@ -75,10 +82,10 @@ namespace Autoprefixer
 
                 try
                 {
-                    return _javascriptEngine.Evaluate<string>(
+                    return _javascriptEngine.Evaluate(
                         string.Format(FunctionCallTemplate,
                             JsonConvert.SerializeObject(content),
-                            currentBrowsersString));
+                            currentBrowsersString)) as string;
                 }
                 catch (JsRuntimeException e)
                 {

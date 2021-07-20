@@ -55,27 +55,27 @@ namespace NScript.Converter.Test.TypeConverterTests
                 InheritanceDependencyBuilder.GetTypesByInheritanceOrder(
                     typeDefinitions);
 
-            result.IndexOf(typeDefinitions[1]).Should().BeLessThan(
+            _ = result.IndexOf(typeDefinitions[1]).Should().BeLessThan(
                 result.IndexOf(typeDefinitions[0]));
-            result.IndexOf(typeDefinitions[2]).Should().BeLessThan(
+            _ = result.IndexOf(typeDefinitions[2]).Should().BeLessThan(
                 result.IndexOf(typeDefinitions[1]));
         }
 
         [DataTestMethod]
         [DataRow("SimpleFullScript.js",
              TestType.Debug,
-             new[]{
+             new string[]{
                  "SecondOrderInterfaceInherit",
                  "InheritInterface",
                  "SimpleInterface"})]
         [DataRow("EnumUsingClassScript.js",
              TestType.Debug,
-             new[]{
+             new string[]{
                  "SimpleEnumType",
                  "EnumUsingClass"})]
         [DataRow("FullSpectrumScript.js",
              TestType.Debug,
-             new[]{
+             new string[]{
                  "InheritDerivedInterface",
                  "SimpleInheritedInterface",
                  "SecondOrderInterfaceInherit",
@@ -92,12 +92,12 @@ namespace NScript.Converter.Test.TypeConverterTests
                  "EnumUsingClass"})]
         [DataRow("GenericTypeConversionFullMcs.js",
              TestType.Debug,
-             new[]{
+             new string[]{
                  "List`1",
                  "GenericSamplesList",
                  "GenericSamples",
                  "TestGeneric"})]
-        public void TestMcs(string resourceName, TestType testType, params string[] classNames)
+        public void TestMcs(string resourceName, TestType testType, string[] classNames)
         {
             ScriptConverterHelper.RunTest(
                 RuntimeScriptGenerator.TestFilesNSStr + resourceName,

@@ -37,17 +37,17 @@ namespace NScript.Converter.Test.TypeConverterTests
         [DataTestMethod]
         [DataRow("TestJsonType.js",
              TestType.All,
-             new[]{"TestJsonType"})]
+             new string[]{"TestJsonType"})]
         [DataRow("TestImportedType.js",
              TestType.All,
-             new[]{"TestImportedType"})]
+             new string[]{"TestImportedType"})]
         [DataRow("TestImportedGeneric.js",
              TestType.All,
-             new[]{"ImportedGeneric`1"})]
+             new string[]{"ImportedGeneric`1"})]
         [DataRow("PsudoTypeSimple.js",
              TestType.All,
-             new[]{"PsudoUsage"})]
-        public void TestImportedTypes(string resourceName, TestType testType, params string[] classNames)
+             new string[]{"PsudoUsage"})]
+        public void TestImportedTypes(string resourceName, TestType testType, string[] classNames)
         {
             ScriptConverterHelper.RunTest(
                 ImportedTypeConverterTest.TestFilesNSStr + resourceName,

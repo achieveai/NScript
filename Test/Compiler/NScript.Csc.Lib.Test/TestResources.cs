@@ -244,7 +244,7 @@
                         @"Xml\XmlNodeList.cs",
                         @"Xml\XmlNodeType.cs",
                         @"Xml\XmlText.cs"},
-                    @"Sources\mscorlib",
+                    @"Sources\Framework\mscorlib",
                     new string[0],
                     @"Sources\mscorlib\mscorlibKey.snk",
                     true
@@ -316,7 +316,7 @@
                         @"Runtime\CompilerServices\CallSite.cs",
                         @"Runtime\CompilerServices\DynamicAttribute.cs",
                     },
-                    @"Sources\System.Core",
+                    @"Sources\Framework\System.Core",
                     new string[] {"mscorlib"},
                     @"Sources\mscorlib\mscorlibKey.snk",
                     true
@@ -331,7 +331,7 @@
                         @"RuntimeBinder\RuntimeBInderException.cs",
                         @"RuntimeBinder\RuntimeBinderInternalCompilerException.cs",
                     },
-                    @"Sources\Microsoft.CSharp",
+                    @"Sources\Framework\Microsoft.CSharp",
                     new string[] { "mscorlib", "system.core" },
                     @"Sources\mscorlib\mscorlibKey.snk",
                     true
@@ -380,7 +380,7 @@
                         @"ConstructorTests.cs",
                         @"NullableTests.cs"
                     },
-                    @"Test\RealScript",
+                    @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
                     (string)null,
                     false
@@ -429,7 +429,7 @@
                         @"ConstructorTests.cs",
                         @"NullableTests.cs"
                     },
-                    @"Test\RealScript",
+                    @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
                     (string)null,
                     true
@@ -450,8 +450,8 @@
 
         public static void CompileAll()
         {
-            var tmp = RealScriptDebugMethods;
-            tmp = RealScriptMethods;
+            _ = RealScriptDebugMethods;
+            _ = RealScriptMethods;
         }
 
         private static Dictionary<IMethodSymbol, MethodBody> GetMethodMaps(
@@ -476,7 +476,7 @@
                             .Assembly
                             .GetName()
                             .Name))
-                + @"..\..\..\..\..\";
+                + @"..\..\..\..\";
 
             // baseGitPath = nscriptGitPath;
 

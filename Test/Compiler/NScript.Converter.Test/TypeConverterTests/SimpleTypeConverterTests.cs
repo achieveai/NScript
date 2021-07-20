@@ -46,7 +46,7 @@ namespace NScript.Converter.Test.TypeConverterTests
         [DataRow("FullInheritDerivedInterface.js", TestType.Debug, new []{"SimpleInterface", "SimpleInheritedInterface", "InheritDerivedInterface"})]
         [DataRow("EnumUsingClass.js", TestType.Debug, new []{"EnumUsingClass"})]
         [DataRow("StructClassTypeMcs.js", TestType.Retail, new []{"StructClass", "StructClass2"})]
-        public void TestMcs(string resourceName, TestType testType, params string[] classNames)
+        public void TestMcs(string resourceName, TestType testType, string[] classNames)
         {
             TypeConverterHelper.RunTest(
                 TestFilesNSStr + resourceName,

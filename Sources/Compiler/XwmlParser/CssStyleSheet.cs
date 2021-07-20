@@ -18,7 +18,7 @@ namespace XwmlParser
     /// </summary>
     public class CssStyleSheet
     {
-        private static JavaScriptEngineSwitcher.V8.V8JsEngine jsEngine = new JavaScriptEngineSwitcher.V8.V8JsEngine();
+        private static Microsoft.ClearScript.V8.V8ScriptEngine jsEngine = new Microsoft.ClearScript.V8.V8ScriptEngine();
         private static Autoprefixer.Compiler compiler;
 
         public static readonly Autoprefixer.BrowserSpecification browserSpecification =

@@ -74,7 +74,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         {
             JsConsole jsConsole = new JsConsole();
             // Jint.JintEngine engine = new Jint.JintEngine(Jint.Options.Ecmascript3);
-            using (var engine = new JavaScriptEngineSwitcher.V8.V8JsEngine())
+            using (var engine = new Microsoft.ClearScript.V8.V8ScriptEngine())
             {
                 string script = JsExecutionHelper.GetScript(
                     isDebug,
@@ -84,7 +84,7 @@ namespace NScript.Converter.Test.JsExecutionTests
                 System.Diagnostics.Debug.WriteLine(script);
 
                 // engine.SetDebugMode(true);
-                engine.EmbedHostObject("console", jsConsole);
+                engine.AddHostObject("console", jsConsole);
                 engine.Execute(script);
             }
 
