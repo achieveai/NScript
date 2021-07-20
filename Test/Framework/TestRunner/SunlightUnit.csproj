@@ -14,7 +14,8 @@
     <RootNamespace>SunlightUnit</RootNamespace>
     <AssemblyName>SunlightUnit</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
   </PropertyGroup>
@@ -23,7 +24,6 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\NScriptToolSet\lib\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,7 +33,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\NScriptToolSet\lib\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -50,7 +49,7 @@
     <Compile Include="TestSetup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Sources\mscorlib\NScript.MsCorlib.csproj">
+    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>

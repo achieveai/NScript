@@ -6,7 +6,7 @@
     <NoStandardLibraries>false</NoStandardLibraries>
     <CopyReferences>True</CopyReferences>
     <GenerateJs>True</GenerateJs>
-    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
     <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\NScript)</NScriptToolSetPath>
     <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\NScript)</NScriptToolSetPath>
     <OutputPath>bin\$(Configuration)</OutputPath>
@@ -19,9 +19,9 @@
     <OutputPath>bin\Debug</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Sources\mscorlib\NScript.MsCorlib.csproj" />
-    <ProjectReference Include="..\..\Sources\System.Web.Html\System.Web.Html.csproj" />
-    <ProjectReference Include="..\..\Sources\System.Web\System.Web.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj" />
     <ProjectReference Include="..\TestRunner\SunlightUnit.csproj" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />

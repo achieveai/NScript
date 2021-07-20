@@ -14,7 +14,7 @@
     <RootNamespace>Sunlight.Framework.Test</RootNamespace>
     <AssemblyName>Sunlight.Framework.Test</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <NScriptToolSetPath>..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
@@ -53,19 +53,19 @@
     <Compile Include="TestObservabelCollectionTransformer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\sources\mscorlib\NScript.MsCorlib.csproj">
+    <ProjectReference Include="..\..\..\sources\Framework\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\sources\Sunlight.Framework\Sunlight.Framework.csproj">
+    <ProjectReference Include="..\..\..\sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj">
       <Project>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</Project>
       <Name>Sunlight.Framework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Sources\System.Web.Html\System.Web.Html.csproj">
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj">
       <Project>{a60706ff-08d7-4320-99f9-a2413275cdf6}</Project>
       <Name>System.Web.Html</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Sources\System.Web\System.Web.csproj">
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj">
       <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
       <Name>System.Web</Name>
     </ProjectReference>

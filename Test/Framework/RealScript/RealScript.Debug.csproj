@@ -16,25 +16,22 @@
     <RootNamespace>RealScript.Debug</RootNamespace>
     <AssemblyName>RealScript.Debug</AssemblyName>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
-    <NScriptToolSetPath>..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <OutputPath>$(ProjectDir)..\bin\</OutputPath>
     <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>$(ProjectDir)..\NScript.CLR.Test\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>$(ProjectDir)..\bin\Debug\RealScript.Debug.xml</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>$(ProjectDir)..\NScript.CLR.Test\bin\Release\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>$(ProjectDir)..\NScript.CLR.Test\bin\Release\RealScript.Debug.xml</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
@@ -85,15 +82,15 @@
     <None Include="RealScript.il" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Sources\Microsoft.CSharp\Microsoft.CSharp.csproj">
+    <ProjectReference Include="..\..\..\Sources\Framework\Microsoft.CSharp\Microsoft.CSharp.csproj">
       <Project>{30070734-422b-4c24-be3f-906e2ae03a12}</Project>
       <Name>Microsoft.CSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Sources\mscorlib\NScript.MsCorlib.csproj">
+    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj">
       <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Sources\System.Core\System.Core.csproj">
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Core\System.Core.csproj">
       <Project>{30070734-422b-4c24-be3f-906e2ae03a10}</Project>
       <Name>System.Core</Name>
     </ProjectReference>
