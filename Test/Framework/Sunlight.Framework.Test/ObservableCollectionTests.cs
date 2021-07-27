@@ -14,7 +14,7 @@ namespace Sunlight.Framework.Test
     /// <summary>
     /// Definition for ObservableCollectionTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class ObservableCollectionTests
     {
         [Test]

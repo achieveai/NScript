@@ -16,7 +16,7 @@ namespace Sunlight.Framework.Test
     /// <summary>
     /// Definition for TestInjectableTransformation
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class TestObservabelCollectionTransformer
     {
         private static ObservableCollectionGenerator<Number, string> _listTransformer;

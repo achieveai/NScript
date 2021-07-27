@@ -13,7 +13,7 @@ namespace Sunlight.Framework.UI.Test
     /// <summary>
     /// Definition for LiveBinderTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class LiveBinderTests
     {
         private static SkinBinderInfo oneWayBinder;

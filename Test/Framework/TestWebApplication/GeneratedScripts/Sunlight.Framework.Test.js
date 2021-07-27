@@ -1440,7 +1440,10 @@ function Evt1() {
 };
 Evt1.typeId = "fb";
 function Evt1_factory() {
-  return new Evt1();
+  var this_;
+  this_ = new Evt1();
+  this_.__ctor();
+  return this_;
 };
 Evt1.defaultConstructor = Evt1_factory;
 ptyp_ = Evt1.prototype;
@@ -1782,7 +1785,10 @@ function SimpleObjectWithProperty() {
 };
 SimpleObjectWithProperty.typeId = "mb";
 function SimpleObjectWithProperty_factory() {
-  return new SimpleObjectWithProperty();
+  var this_;
+  this_ = new SimpleObjectWithProperty();
+  this_.__ctor();
+  return this_;
 };
 SimpleObjectWithProperty.defaultConstructor = SimpleObjectWithProperty_factory;
 ptyp_ = SimpleObjectWithProperty.prototype;
@@ -2021,7 +2027,10 @@ function BinderTestHelper() {
 };
 BinderTestHelper.typeId = "qb";
 function BinderTestHelper_factory() {
-  return new BinderTestHelper();
+  var this_;
+  this_ = new BinderTestHelper();
+  this_.__ctor();
+  return this_;
 };
 BinderTestHelper.defaultConstructor = BinderTestHelper_factory;
 ptyp_ = BinderTestHelper.prototype;
@@ -2859,7 +2868,10 @@ function InjectedElement(I, H, _callStatiConstructor) {
   InjectedElement$2_$I_x_H$_.genericClosure = InjectedElement;
   InjectedElement$2_$I_x_H$_.typeId = "yb$" + I.typeId + "_" + H.typeId + "$";
   InjectedElement$2_$I_x_H$_.defaultConstructor = function Sunlight_Framework_Observables_InjectedElement$2_factory() {
-    return new InjectedElement$2_$I_x_H$_();
+    var this_;
+    this_ = new InjectedElement$2_$I_x_H$_();
+    this_.__ctor();
+    return this_;
   };
   ptyp_ = InjectedElement$2_$I_x_H$_.prototype;
   ptyp_._header = Type__GetDefaultValueStatic(H);

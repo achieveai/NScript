@@ -42,9 +42,9 @@
     <SignAssembly>true</SignAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
-    <CscToolPath>$(NScriptToolSetPath)\bin</CscToolPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
+    <NScriptBinPath>$(NScriptToolSetPath)bin\netcoreapp3.1\</NScriptBinPath>
+    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -81,7 +81,7 @@
     <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
     <Compile Include="RuntimeBinder\RuntimeBinderInternalCompilerException.cs" />
   </ItemGroup>
-  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)NScript.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent />
     <PostBuildEvent />

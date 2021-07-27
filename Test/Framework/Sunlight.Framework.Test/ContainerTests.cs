@@ -61,7 +61,7 @@ namespace Sunlight.Framework.Test
     /// <summary>
     /// Definition for ContainerTests
     /// </summary>
-    [TestClass]
+    [SunlightUnit.TestFixture]
     public class ContainerTests
     {
         [Test]
@@ -72,8 +72,8 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType2>(() => new IocTestType2(x));
-            container.Register<IocTestType1>(() => new IocTestType1(x, y));
+            _ = container.Register<IocTestType2>(() => new IocTestType2(x));
+            _ = container.Register<IocTestType1>(() => new IocTestType1(x, y));
 
             var t2 = container.Resolve<IocTestType2>();
 
@@ -98,8 +98,8 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType2>(() => new IocTestType2(x));
-            container.Register<IocTestType1>(() => new IocTestType1(x, y))
+            _ = container.Register<IocTestType2>(() => new IocTestType2(x));
+            _ = container.Register<IocTestType1>(() => new IocTestType1(x, y))
                 .As<IIocTestType1>();
 
             var t2 = container.Resolve<IocTestType2>();
@@ -121,8 +121,8 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container.Register<IocTestType2>(() => new IocTestType2(x));
-            container.Register<IocTestType1>(() => new IocTestType1(x, y))
+            _ = container.Register<IocTestType2>(() => new IocTestType2(x));
+            _ = container.Register<IocTestType1>(() => new IocTestType1(x, y))
                 .IsSingleton();
 
             var t2 = container.Resolve<IocTestType2>();
@@ -145,7 +145,7 @@ namespace Sunlight.Framework.Test
             int x = 1;
             int y = 2;
 
-            container
+            _ = container
                 .Register<IocTestType1>(() => new IocTestType1(x++, y))
                 .IsSingleton();
 

@@ -13,7 +13,7 @@ namespace Sunlight.Framework.Test.Binders
     /// <summary>
     /// Definition for SourcePropertyBinderTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class SourcePropertyBinderTests
     {
         public class BinderTestHelper : ISourceDataBinder

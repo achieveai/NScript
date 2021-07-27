@@ -49,7 +49,7 @@ namespace Sunlight.Framework.UI.Test
     /// <summary>
     /// Definition for NScriptTestClass1
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class ManualTemplateTests
     {
         public static ValueIfTrue<string> noneValue = new ValueIfTrue<string>("none");

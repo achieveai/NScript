@@ -13,7 +13,7 @@ namespace Sunlight.Framework.UI.Test
     /// <summary>
     /// Definition for UIElementTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class UIElementTests
     {
         [Test]

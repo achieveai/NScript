@@ -13,7 +13,7 @@ namespace Sunlight.Framework.UI.Test
     /// <summary>
     /// Definition for NScriptsTemplateTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class NScriptsTemplateTests
     {
         /// <summary>

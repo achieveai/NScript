@@ -14,7 +14,7 @@ namespace Sunlight.Framework.Test
     /// <summary>
     /// Definition for ObservableObjectTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class ObservableObjectTests
     {
         private class ObservableTestObject : ObservableObject

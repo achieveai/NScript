@@ -12,7 +12,7 @@ namespace Sunlight.Framework.Test
     /// <summary>
     /// Definition for EventBusTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class EventBusTests
     {
         class Evt1

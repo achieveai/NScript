@@ -15,7 +15,7 @@ namespace Sunlight.Framework.UI.Test
     /// <summary>
     /// Definition for TestListView
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class TestListView
     {
         private static HeaderInjectableTransformer<TestViewModelB, TestViewModelC> _headerTransformer;

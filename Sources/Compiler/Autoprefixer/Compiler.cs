@@ -12,7 +12,7 @@
 		/// <summary>
 		/// Name of resource, which contains the Autoprefixer library
 		/// </summary>
-		const string LibraryResourceName = "Resources.autoprefixer.js";
+		const string LibraryResourceName = "Autoprefixer.Resources.autoprefixer.js";
 
 		/// <summary>
 		/// Template of function call, which is responsible for autoprefixing

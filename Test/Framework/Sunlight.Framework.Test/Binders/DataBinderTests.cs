@@ -14,7 +14,7 @@ namespace Sunlight.Framework.Test.Binders
     /// <summary>
     /// Definition for DataBinderTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class DataBinderTests
     {
         [Test]

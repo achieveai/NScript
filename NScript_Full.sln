@@ -101,6 +101,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.Test", "Test\Framework\Sunlight.Framework.Test\Sunlight.Framework.Test.csproj", "{5702ADA9-6583-4019-ADA1-A48CCC3F53EA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI.Test", "Test\Framework\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{05F0565E-2A8F-4FEE-A9CE-44499D295905} = {05F0565E-2A8F-4FEE-A9CE-44499D295905}
+		{1F04F790-76C3-45A4-980E-62A506633BF8} = {1F04F790-76C3-45A4-980E-62A506633BF8}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SunlightUnit", "Test\Framework\TestRunner\SunlightUnit.csproj", "{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}"
 EndProject

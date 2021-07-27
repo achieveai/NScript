@@ -15,6 +15,7 @@
     <AssemblyName>Sunlight.Framework.Test</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptBinPath>$(NScriptToolSetPath)\bin\netcoreapp3.1\</NScriptBinPath>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>

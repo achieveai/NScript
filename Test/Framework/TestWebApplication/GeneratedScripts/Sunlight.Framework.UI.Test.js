@@ -1297,7 +1297,10 @@ function TestWindowTimer() {
 };
 TestWindowTimer.typeId = "hb";
 function TestWindowTimer_factory() {
-  return new TestWindowTimer();
+  var this_;
+  this_ = new TestWindowTimer();
+  this_.__ctor();
+  return this_;
 };
 TestWindowTimer.defaultConstructor = TestWindowTimer_factory;
 ptyp_ = TestWindowTimer.prototype;
@@ -2623,7 +2626,10 @@ function WindowTimer() {
 };
 WindowTimer.typeId = "zb";
 function WindowTimer_factory() {
-  return new WindowTimer();
+  var this_;
+  this_ = new WindowTimer();
+  this_.__ctor();
+  return this_;
 };
 WindowTimer.defaultConstructor = WindowTimer_factory;
 ptyp_ = WindowTimer.prototype;
@@ -4030,7 +4036,10 @@ function InjectedElement(I, H, _callStatiConstructor) {
   InjectedElement$2_$I_x_H$_.genericClosure = InjectedElement;
   InjectedElement$2_$I_x_H$_.typeId = "nc$" + I.typeId + "_" + H.typeId + "$";
   InjectedElement$2_$I_x_H$_.defaultConstructor = function Sunlight_Framework_Observables_InjectedElement$2_factory() {
-    return new InjectedElement$2_$I_x_H$_();
+    var this_;
+    this_ = new InjectedElement$2_$I_x_H$_();
+    this_.__ctor();
+    return this_;
   };
   ptyp_ = InjectedElement$2_$I_x_H$_.prototype;
   ptyp_._header = Type__GetDefaultValueStatic(H);

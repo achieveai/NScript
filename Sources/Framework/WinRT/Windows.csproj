@@ -15,8 +15,9 @@
     <AssemblyName>Windows</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
+    <NScriptBinPath>$(NScriptToolSetPath)bin\netcoreapp3.1\</NScriptBinPath>
+    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0067; 0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
   </PropertyGroup>
@@ -3176,5 +3177,5 @@
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)NScript.CSharp.targets" />
 </Project>

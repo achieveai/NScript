@@ -1,10 +1,12 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
-    <CscToolPath>$(MSBuildThisFileDirectory)\bin\netcoreapp3.1\</CscToolPath>
+    <NScriptBinPath Condition="'$(NScriptBinPath)' == ''">$(MSBuildThisFileDirectory)bin\</NScriptBinPath>
+    <CscToolPath>$(NScriptBinPath)</CscToolPath>
+	<NScriptExe>$(NScriptBinPath)NScript.exe</NScriptExe>
   </PropertyGroup>
   <ItemGroup>
-	  <AdditionalLibPaths Include="$(MSBuildThisFileDirectory)\lib"/>
+	  <AdditionalLibPaths Include="$(MSBuildThisFileDirectory)lib"/>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   
@@ -46,11 +48,11 @@
       <ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext)&quot;"/>
       <ScriptGenerateOption Include="-references $(Refs)"/>
       <ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
-      <ScriptGenerateOption Include="-pluginHintPath &quot;$(MsBuildThisFileDirectory)\bin;&quot;" Condition="'$(PluginConfig)' != ''"/>
-      <ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)\lib&quot;"/>
+      <ScriptGenerateOption Include="-pluginHintPath &quot;$(NScriptBinPath);&quot;" Condition="'$(PluginConfig)' != ''"/>
+      <ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)lib&quot;"/>
     </ItemGroup>
 
-    <Exec Command="&quot;$(MSBuildThisFileDirectory)\bin\NScript.exe&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
+    <Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
 
   </Target>
   <Target Name="CopyJsFile"

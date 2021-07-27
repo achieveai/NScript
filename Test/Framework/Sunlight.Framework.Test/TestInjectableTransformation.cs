@@ -17,7 +17,7 @@ namespace Sunlight.Framework.Test
     /// <summary>
     /// Definition for TestInjectableTransformation
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class TestInjectableTransformation
     {
         //private static HeaderInjectableTransformer<Number, Number> transformer;

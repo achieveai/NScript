@@ -14,7 +14,7 @@ namespace Sunlight.Framework.UI.Test
     /// <summary>
     /// Definition for SkinBinderHelperTests
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class SkinBinderHelperTests
     {
         [Test]

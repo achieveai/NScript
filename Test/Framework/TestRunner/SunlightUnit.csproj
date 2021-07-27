@@ -14,8 +14,9 @@
     <RootNamespace>SunlightUnit</RootNamespace>
     <AssemblyName>SunlightUnit</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
+    <NScriptBinPath>$(NScriptToolSetPath)bin\netcoreapp3.1\</NScriptBinPath>
+    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
   </PropertyGroup>
@@ -54,7 +55,7 @@
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
+  <Import Project="$(NScriptToolSetPath)NScript.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

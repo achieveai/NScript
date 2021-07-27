@@ -9,6 +9,7 @@ namespace NScript
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using NScript.Utils;
 
     /// <summary>
@@ -200,8 +201,9 @@ namespace NScript
                     case CurrentOption.ReferenceHintPaths:
                     case CurrentOption.PluginHintPaths:
                         {
+                            var paths = args[iArg].Trim();
                             List<ErrorInfo> fileErrors = options.GetFiles(
-                                args[iArg],
+                                paths,
                                 option == CurrentOption.ReferenceHintPaths
                                     ? options.referencePath
                                     : options.pluginHintPath,
@@ -335,7 +337,17 @@ namespace NScript
             List<ErrorInfo> fileErrors = new List<ErrorInfo>();
 
             string[] fileSplits = fileNameOrWildcard.Split(
-                new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(path =>
+                {
+                    if (path.EndsWith("\\") || path.EndsWith("/"))
+                    {
+                        path = path.Substring(0, path.Length - 1);
+                    }
+
+                    return path;
+                })
+                .ToArray();
 
             string fileName;
 
@@ -365,7 +377,7 @@ namespace NScript
                         {
                             fileErrors.Add(
                                 new ErrorInfo(
-                                    fileName,
+                                    singleFileName,
                                     0,
                                     0,
                                     "Cs2Js001",

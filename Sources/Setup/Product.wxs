@@ -31,6 +31,31 @@
 					<Directory Id="INSTALLFOLDER" Name="$(var.ProductVersion)">
 						<Directory Id="INSTALLFOLDER_BIN" Name="bin">
 							<Directory Id="INSTALLFOLDER_BIN_X86" Name="x86" />
+							<Directory Id="INSTALLFOLDER_BIN_RU_RU" Name="ru-ru" />
+							<Directory Id="INSTALLFOLDER_BIN_RUNTIME" Name="runtime">
+								<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX" Name="unix">
+									<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB" Name="lib">
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB_NETCA2_0" Name="netcoreapp2.0"/>
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB_NETCA2_1" Name="netcoreapp2.1"/>
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB_NETCA3_0" Name="netcoreapp3.0"/>
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB_NETSTD2_0" Name="netstandard2.0"/>
+									</Directory>
+								</Directory>
+								<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WIN" Name="win">
+									<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WIN_LIB" Name="lib">
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WIN_LIB_NETCA2_0" Name="netcoreapp2.0"/>
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WIN_LIB_NETCA2_1" Name="netcoreapp2.1"/>
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WIN_LIB_NETCA3_0" Name="netcoreapp3.0"/>
+										<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WIN_LIB_NETSTD2_0" Name="netstandard2.0"/>
+									</Directory>
+								</Directory>
+								<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WINX86" Name="win-x86">
+									<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WINX86_NATIVE" Name="native"/>
+								</Directory>
+								<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WINX64" Name="win-x64">
+									<Directory Id="INSTALLFOLDER_BIN_RUNTIME_WINX64_NATIVE" Name="native"/>
+								</Directory>
+							</Directory>
 						</Directory>
 						<Directory Id="INSTALLFOLDER_LIB" Name="lib" />
 					</Directory>
@@ -71,10 +96,17 @@
 			</Component>
 
 			<Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
+				<File Source="$(var.ToolsetBinDir)\AdvancedStringBuilder.dll" />
 				<File Source="$(var.ToolsetBinDir)\Antlr3.Runtime.dll" />
+				<File Source="$(var.ToolsetBinDir)\Autoprefixer.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\Autoprefixer.dll" />
 				<File Source="$(var.ToolsetBinDir)\Autoprefixer.dll.config" />
 				<File Source="$(var.ToolsetBinDir)\Autoprefixer.pdb" />
+				<File Source="$(var.ToolsetBinDir)\ClearScript.Core.dll" />
+				<File Source="$(var.ToolsetBinDir)\ClearScript.V8.dll" />
+				<File Source="$(var.ToolsetBinDir)\ClearScript.Windows.Core.dll" />
+				<File Source="$(var.ToolsetBinDir)\ClearScript.Windows.dll" />
+				<File Source="$(var.ToolsetBinDir)\ClearScriptV8.ICU.dat" />
 				<File Source="$(var.ToolsetBinDir)\Csc.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\Csc.dll" />
 				<File Source="$(var.ToolsetBinDir)\Csc.dll.config" />
@@ -82,8 +114,12 @@
 				<File Source="$(var.ToolsetBinDir)\Csc.pdb" />
 				<File Source="$(var.ToolsetBinDir)\Csc.runtimeconfig.dev.json" />
 				<File Source="$(var.ToolsetBinDir)\Csc.runtimeconfig.json" />
+				<File Source="$(var.ToolsetBinDir)\CssParser.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\CssParser.dll" />
 				<File Source="$(var.ToolsetBinDir)\CssParser.pdb" />
+				<File Source="$(var.ToolsetBinDir)\HtmlAgilityPack.dll" />
+				<File Source="$(var.ToolsetBinDir)\JavaScriptEngineSwitcher.Core.dll" />
+				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.dll" />
 				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.pdb" />
 				<File Source="$(var.ToolsetBinDir)\mcs.dll" />
@@ -97,7 +133,10 @@
 				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.dll" />
 				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.pdb" />
 				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.xml" />
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Extensions.DependencyInjection.dll" />
 				<File Source="$(var.ToolsetBinDir)\Microsoft.NET.StringTools.dll" />
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Win32.Registry.dll" />
 				<File Source="$(var.ToolsetBinDir)\Microsoft.Win32.SystemEvents.dll" />
 				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.dll" />
 				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Mdb.dll" />
@@ -107,11 +146,18 @@
 				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Pdb.pdb" />
 				<File Source="$(var.ToolsetBinDir)\NetSerializer.dll" />
 				<File Source="$(var.ToolsetBinDir)\Newtonsoft.Json.dll" />
+				<File Source="$(var.ToolsetBinDir)\NScript.CLR.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\NScript.CLR.dll" />
 				<File Source="$(var.ToolsetBinDir)\NScript.CLR.pdb" />
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\NScript.Converter.dll" />
 				<File Source="$(var.ToolsetBinDir)\NScript.Converter.dll.config" />
 				<File Source="$(var.ToolsetBinDir)\NScript.Converter.pdb" />
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.deps.json" />
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.dll" />
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.dll.config" />
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.pdb" />
+				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.dll" />
 				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.dll.config" />
 				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.pdb" />
@@ -119,22 +165,27 @@
 				<File Source="$(var.ToolsetBinDir)\NScript.dll" />
 				<File Source="$(var.ToolsetBinDir)\NScript.dll.config" />
 				<File Source="$(var.ToolsetBinDir)\NScript.exe" />
+				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.dll" />
 				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.dll.config" />
 				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.pdb" />
+				<File Source="$(var.ToolsetBinDir)\NScript.JST.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\NScript.JST.dll" />
 				<File Source="$(var.ToolsetBinDir)\NScript.JST.pdb" />
 				<File Source="$(var.ToolsetBinDir)\NScript.pdb" />
 				<File Source="$(var.ToolsetBinDir)\NScript.runtimeconfig.dev.json" />
 				<File Source="$(var.ToolsetBinDir)\NScript.runtimeconfig.json" />
+				<File Source="$(var.ToolsetBinDir)\NScript.Utils.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\NScript.Utils.dll" />
 				<File Source="$(var.ToolsetBinDir)\NScript.Utils.pdb" />
 				<File Source="$(var.ToolsetBinDir)\PluginConfig.xml" />
 				<File Source="$(var.ToolsetBinDir)\protobuf-net.dll" />
+				<File Source="$(var.ToolsetBinDir)\SourceMap.deps.json" />
 				<File Source="$(var.ToolsetBinDir)\SourceMap.dll" />
 				<File Source="$(var.ToolsetBinDir)\SourceMap.pdb" />
 				<File Source="$(var.ToolsetBinDir)\System.CodeDom.dll" />
 				<File Source="$(var.ToolsetBinDir)\System.Collections.Immutable.dll" />
+				<File Source="$(var.ToolsetBinDir)\System.ComponentModel.Composition.dll" />
 				<File Source="$(var.ToolsetBinDir)\System.Configuration.ConfigurationManager.dll" />
 				<File Source="$(var.ToolsetBinDir)\System.Drawing.Common.dll" />
 				<File Source="$(var.ToolsetBinDir)\System.Reflection.Metadata.dll" />
@@ -159,6 +210,46 @@
 				<File Source="$(var.ToolsetBinDir)\x86\v8-base-ia32.dll" />
 				<File Source="$(var.ToolsetBinDir)\x86\v8-ia32.dll" />
 				<File Source="$(var.ToolsetBinDir)\x86\v8-libcpp-ia32.dll" />
+			</Component>
+			<Component Id="BinComponentRURU" Directory="INSTALLFOLDER_BIN_RU_RU" Guid="{D971F92B-CC87-4559-807E-55BA14DD945F}">
+                <File Source="$(var.ToolsetBinDir)\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" />
+			</Component>
+			<Component Id="BinComponentUnixNetCoreApp2_0" Directory="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD946F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\unix\lib\netcoreapp2.0\System.Security.AccessControl.dll" />
+			</Component>
+			<Component Id="BinComponentUnixNetCoreApp2_1" Directory="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_2_1" Guid="{D971F92B-CC87-4559-807E-55BA14DD947F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\unix\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
+			</Component>
+			<Component Id="BinComponentUnixNetCoreApp3_0" Directory="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_3_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD948F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll" />
+			</Component>
+			<Component Id="BinComponentUnixNetStd2_0" Directory="INSTALLFOLDER_BIN_UNIX_NET_STD_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD949F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\unix\lib\netstandard2.0\System.Private.ServiceModel.dll" />
+			</Component>
+
+			<Component Id="BinComponentWinNetCoreApp2_0" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD950F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp2.0\System.Security.AccessControl.dll" />
+			</Component>
+			<Component Id="BinComponentWinNetCoreApp2_1" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_2_1" Guid="{D971F92B-CC87-4559-807E-55BA14DD951F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
+			</Component>
+			<Component Id="BinComponentWinNetCoreApp3_0" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_3_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD952F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll" />
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" />
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\System.Security.Cryptography.Pkcs.dll" />
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" />
+			</Component>
+			<Component Id="BinComponentWinNetStd2_0" Directory="INSTALLFOLDER_BIN_WIN_NET_STD_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD953F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\System.Private.ServiceModel.dll" />
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" />
+			</Component>
+
+			<Component Id="BinComponentWinX86Native" Directory="INSTALLFOLDER_BIN_WIN_X86_NATIVE" Guid="{D971F92B-CC87-4559-807E-55BA14DD957F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\win-x86\native\ClearScriptV8.win-x86.dll" />
+			</Component>
+			<Component Id="BinComponentWinX64Native" Directory="INSTALLFOLDER_BIN_WIN_X64_NATIVE" Guid="{D971F92B-CC87-4559-807E-55BA14DD958F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\win-x64\native\ClearScriptV8.win-x64.dll" />
 			</Component>
 
 			<Component Id="LibComponent" Directory="INSTALLFOLDER_LIB" Guid="{D971F92B-CC87-4559-807E-55BA14DD944E}">

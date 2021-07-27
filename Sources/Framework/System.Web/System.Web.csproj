@@ -15,8 +15,9 @@
     <AssemblyName>System.Web</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
+    <NScriptBinPath>$(NScriptToolSetPath)bin\netcoreapp3.1\</NScriptBinPath>
+    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
