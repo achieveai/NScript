@@ -53,9 +53,13 @@
     <Compile Include="IfBlocks.cs" />
     <Compile Include="InlineComplexStatements.cs" />
     <Compile Include="JsScriptImport.cs" />
+    <Compile Include="Lang7Features.cs" />
+    <Compile Include="Lang8Features.cs" />
+    <Compile Include="Lang9Features.cs" />
     <Compile Include="LoopTests.cs" />
     <Compile Include="MathAlgorithms.cs" />
     <Compile Include="NewLanguageFeatures.cs" />
+    <Compile Include="NullableTests.cs" />
     <Compile Include="NumberOperations.cs" />
     <Compile Include="ScriptSharpCompat.cs" />
     <Compile Include="SimpleInterfaceTest.cs" />

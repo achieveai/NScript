@@ -116,6 +116,8 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(214, typeof(ConditionalReceiver))]
     [ProtoInclude(216, typeof(LocalMethodCallExpression))]
     [ProtoInclude(217, typeof(LocalMethodExpression))]
+    [ProtoInclude(218, typeof(TupleLiteral))]
+    [ProtoInclude(219, typeof(DeconstructTupleAssignment))]
     [Serializable]
     public abstract class ExpressionSer
         : AstBase
@@ -401,6 +403,26 @@ namespace JsCsc.Lib.Serialization
         public int ReturnType { get; set; }
 
         public List<int> GenericParameters { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class TupleLiteral
+        : ExpressionSer
+    {
+        public List<ExpressionSer> TupleArgs { get; set; }
+
+        public int TupleType { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class DeconstructTupleAssignment
+        : ExpressionSer
+    {
+        public List<ExpressionSer> LHSArgs { get; set; }
+
+        public ExpressionSer RightTuple { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -729,7 +751,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class ThrowExpression
-        : StatementSer
+        : ExpressionSer
     {
         public ExpressionSer Expression { get; set; }
     }

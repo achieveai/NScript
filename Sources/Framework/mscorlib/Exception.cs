@@ -47,6 +47,44 @@
         { get; }
     }
 
+    public class ArgumentException : Exception
+    {
+        public ArgumentException()
+            : base(null)
+        {
+        }
+
+        public ArgumentException(string message)
+            : base(message)
+        {
+        }
+    }
+
+    public class ArgumentNullException : ArgumentException
+    {
+        public ArgumentNullException()
+        {
+        }
+
+        public ArgumentNullException(string message)
+            : base(message)
+        {
+        }
+    }
+
+    public class InvalidProgramException : Exception
+    {
+        public InvalidProgramException()
+            : base(null)
+        {
+        }
+
+        public InvalidProgramException(string message)
+            : base(message)
+        {
+        }
+    }
+
     public class NotSupportedException : Exception
     {
         public NotSupportedException()

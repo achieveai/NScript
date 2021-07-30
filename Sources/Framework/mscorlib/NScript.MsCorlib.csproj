@@ -462,6 +462,7 @@
     </Compile>
     <Compile Include="Runtime\CompilerServices\Serializable.cs" />
     <Compile Include="Runtime\CompilerServices\TaskAwaiter.cs" />
+    <Compile Include="Runtime\CompilerServices\TupleElementNameAttribute.cs" />
     <Compile Include="Runtime\CompilerServices\UsedAttribure.cs" />
     <Compile Include="Runtime\InteropServices\ClassInterfaceAttribute.cs" />
     <Compile Include="Runtime\InteropServices\ComDefaultInterfaceAttribute.cs" />
@@ -522,6 +523,7 @@
     <Compile Include="UIntPtr.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ValueTuple.cs" />
     <Compile Include="ValueType.cs">
       <SubType>Code</SubType>
     </Compile>

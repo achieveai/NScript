@@ -548,13 +548,14 @@
                     };
 
                 case ConversionKind.ImplicitThrow:
+                case ConversionKind.Deconstruction:
+                    return Visit(node.Operand, arg);
                 case ConversionKind.ImplicitTupleLiteral:
                 case ConversionKind.ImplicitTuple:
                 case ConversionKind.ExplicitTupleLiteral:
                 case ConversionKind.ExplicitTuple:
                 case ConversionKind.IntPtr:
                 case ConversionKind.InterpolatedString:
-                case ConversionKind.Deconstruction:
                 case ConversionKind.StackAllocToPointerType:
                 case ConversionKind.StackAllocToSpanType:
                 case ConversionKind.PinnedObjectToPointer:
@@ -565,11 +566,20 @@
 
         public override AstBase VisitConvertedStackAllocExpression(BoundConvertedStackAllocExpression node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitConvertedTupleLiteral(BoundConvertedTupleLiteral node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitConvertedTupleLiteral(BoundConvertedTupleLiteral node, SerializationContext arg)
+            => this.Visit(node.SourceTuple, arg);
 
         public override AstBase VisitDeclarationPattern(BoundDeclarationPattern node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitDeconstructionAssignmentOperator(BoundDeconstructionAssignmentOperator node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitDeconstructionAssignmentOperator(BoundDeconstructionAssignmentOperator node, SerializationContext arg)
+            => new DeconstructTupleAssignment
+            {
+                Location = node.Syntax.GetSerLoc(),
+                LHSArgs = node.Left.Arguments
+                    .Select(tupleArg => (ExpressionSer)this.Visit(tupleArg, arg))
+                    .ToList(),
+                RightTuple = (ExpressionSer)this.Visit(node.Right, arg),
+            };
 
         public override AstBase VisitDeconstructionVariablePendingInference(DeconstructionVariablePendingInference node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1322,15 +1332,24 @@
         public override AstBase VisitThisReference(BoundThisReference node, SerializationContext arg)
             => new ThisExpression { Location = node.Syntax.Location.GetSerLoc() };
 
-        public override AstBase VisitThrowExpression(BoundThrowExpression node, SerializationContext arg) => throw new NotImplementedException();
-
-        public override AstBase VisitThrowStatement(BoundThrowStatement node, SerializationContext arg)
+        public override AstBase VisitThrowExpression(BoundThrowExpression node, SerializationContext arg)
             => new ThrowExpression
             {
                 Location = node.Syntax.Location.GetSerLoc(),
-                Expression = node.ExpressionOpt != null
+                Expression = (ExpressionSer)Visit(node.Expression, arg)
+            };
+
+        public override AstBase VisitThrowStatement(BoundThrowStatement node, SerializationContext arg)
+            => new StatementExpressionSer
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                Expression = new ThrowExpression
+                {
+                    Location = node.Syntax.Location.GetSerLoc(),
+                    Expression = node.ExpressionOpt != null
                     ? (ExpressionSer)Visit(node.ExpressionOpt, arg)
                     : null
+                }
             };
 
         public override AstBase VisitTryStatement(BoundTryStatement node, SerializationContext arg)
@@ -1359,7 +1378,15 @@
 
         public override AstBase VisitTupleBinaryOperator(BoundTupleBinaryOperator node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitTupleLiteral(BoundTupleLiteral node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitTupleLiteral(BoundTupleLiteral node, SerializationContext arg)
+            => new TupleLiteral
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                TupleType = arg.SymbolSerializer.GetTypeSpecId(node.Type),
+                TupleArgs = node.Arguments
+                    .Select(tupleArg => (ExpressionSer)this.Visit(tupleArg, arg))
+                    .ToList(),
+            };
 
         public override AstBase VisitTupleOperandPlaceholder(BoundTupleOperandPlaceholder node, SerializationContext arg) => throw new NotImplementedException();
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<?define ProductVersion="1.1.0.0" ?>
+	<?define ProductVersion="1.1.0.0001" ?>
 	<?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
 	<?define ToolsetBinDir="$(var.SolutionDir)NScriptToolset\bin\netcoreapp3.1" ?>
 
@@ -32,7 +32,7 @@
 						<Directory Id="INSTALLFOLDER_BIN" Name="bin">
 							<Directory Id="INSTALLFOLDER_BIN_X86" Name="x86" />
 							<Directory Id="INSTALLFOLDER_BIN_RU_RU" Name="ru-ru" />
-							<Directory Id="INSTALLFOLDER_BIN_RUNTIME" Name="runtime">
+							<Directory Id="INSTALLFOLDER_BIN_RUNTIME" Name="runtimes">
 								<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX" Name="unix">
 									<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB" Name="lib">
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_2_1" Name="netcoreapp2.1"/>

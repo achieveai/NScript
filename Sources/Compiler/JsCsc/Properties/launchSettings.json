@@ -2,8 +2,8 @@
   "profiles": {
     "JsCsc": {
       "commandName": "Project",
-      "commandLineArgs": "/noconfig /nowarn:0824,1701,1702,2008 /fullpaths /nostdlib+ /errorreport:prompt /warn:4 /define:DEBUG;TRACE /errorendlocation /preferreduilang:en-US /highentropyva- /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\mscorlib.dll /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\Sunlight.Framework.dll /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\SunlightUnit.dll /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\System.Web.dll /reference:C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\System.Web.Html.dll /debug+ /debug:full /filealign:512 /optimize- /out:obj\\Debug\\Sunlight.Framework.Test.dll /target:library /utf8output /langversion:latest Binders\\DataBinderTests.cs Binders\\SimpleNotifiableClass.cs Binders\\SimpleObjectWithProperty.cs Binders\\SourcePropertyBinderTests.cs ContainerTests.cs EventBusTests.cs ObservableCollectionTests.cs ObservableObjectTests.cs Properties\\AssemblyInfo.cs TestInjectableTransformation.cs TestObservabelCollectionTransformer.cs",
-      "workingDirectory": "C:\\Projects\\Cs2JsC\\test\\Framework\\Sunlight.Framework.Test"
+      "commandLineArgs": "@testbuild.rsp",
+      "workingDirectory": "C:\\Projects\\Cs2JsC\\Sources\\Framework\\mscorlib"
     }
   }
 }
