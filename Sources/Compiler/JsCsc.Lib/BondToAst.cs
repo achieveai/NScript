@@ -497,12 +497,18 @@ namespace JsCsc.Lib
 
                 for (var iLabel = 0; iLabel < labelJArray.Count; iLabel++)
                 {
-                    if (labelJArray[iLabel] == null)
-                    { labels.Add(null); }
-                    else
+                    switch (labelJArray[iLabel])
                     {
-                        labels.Add((LiteralExpression)
-                            ParseExpression(((Serialization.SwitchConstCaseLabel)labelJArray[iLabel]).LabelValue));
+                        case Serialization.SwitchConstCaseLabel sccl:
+                            labels.Add((LiteralExpression)
+                                ParseExpression(sccl.LabelValue));
+                            break;
+                        case Serialization.SwitchDiscardCaseLabel:
+                        case null:
+                            labels.Add(null);
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
 
