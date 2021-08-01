@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "JsCsc": {
-      "commandName": "Project",
-      "commandLineArgs": "@testbuild.rsp",
-      "workingDirectory": "C:\\Projects\\Cs2JsC\\Sources\\Framework\\mscorlib"
-    }
-  }
-}

@@ -1142,14 +1142,6 @@
 
         public override AstBase VisitOutVariablePendingInference(OutVariablePendingInference node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitTupleLiteral(BoundTupleLiteral node, SerializationContext ctx)
-        {
-            return new TupleLiteral
-            {
-                TupleArgs => node.Arguments.
-            }
-        }
-
         public override AstBase VisitParameter(BoundParameter node, SerializationContext arg)
         {
             var attrs = ParameterAttributes.None;

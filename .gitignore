@@ -71,3 +71,4 @@ Test/TestWebApplication/GeneratedScripts/*
 /.vs/NScript/v15/sqlite3/db.lock
 /.vs/NScript/DesignTimeBuild/.dtbcache
 /submodules/cecil
+launchsettings.json
