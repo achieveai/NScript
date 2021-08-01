@@ -285,7 +285,11 @@ namespace NScript.Converter.ExpressionsConverter
                         ExpressionConverterBase.SimplifyConverter<TypeofExpression>(
                             TypeofExpressionConverter.Convert)
                     },
-
+                    {
+                        typeof(ThrowExpression),
+                        ExpressionConverterBase.SimplifyConverter<ThrowExpression>(
+                            ThrowExpressionConverter.Convert)
+                    },
                     {
                         typeof(ToNullable),
                         ExpressionConverterBase.SimplifyConverter<ToNullable>(

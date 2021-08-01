@@ -45,6 +45,7 @@ namespace RealScript
                 switch (i)
                 {
                     case 0:
+                    case 10:
                         break;
                     case IEnumerable<int> childSequence:
                     {

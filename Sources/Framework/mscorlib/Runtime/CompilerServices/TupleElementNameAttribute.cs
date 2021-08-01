@@ -38,7 +38,7 @@ namespace System.Runtime.CompilerServices
         //     construction, which value tuple occurrences are meant to carry element names.
         public TupleElementNamesAttribute(string[] transformNames)
         {
-            _transformNames = transformNames ?? throw new Exception("Argument null: transformNames");
+            _transformNames = transformNames;
         }
     }
 }

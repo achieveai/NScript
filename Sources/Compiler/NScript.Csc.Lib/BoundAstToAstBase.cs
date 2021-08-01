@@ -1142,6 +1142,14 @@
 
         public override AstBase VisitOutVariablePendingInference(OutVariablePendingInference node, SerializationContext arg) => throw new NotImplementedException();
 
+        public override AstBase VisitTupleLiteral(BoundTupleLiteral node, SerializationContext ctx)
+        {
+            return new TupleLiteral
+            {
+                TupleArgs => node.Arguments.
+            }
+        }
+
         public override AstBase VisitParameter(BoundParameter node, SerializationContext arg)
         {
             var attrs = ParameterAttributes.None;
@@ -1257,73 +1265,94 @@
 
         public override AstBase VisitSwitchStatement(BoundSwitchStatement node, SerializationContext arg)
         {
+            bool isElseIfStatement = false;
             var switchSections = new List<SwitchSectionSer>();
             foreach (var section in node.SwitchSections)
             {
-                var caseLabels = new List<SwitchCaseLabel>();
-                foreach (var label in section.SwitchLabels)
+                _ = scopeBlockStack.AddFirst((++id, section, new List<string>()));
+                try
                 {
-                    // Also check BoundSwitchLabel visitor.
+                    var caseLabels = new List<SwitchCaseLabel>();
+                    foreach (var label in section.SwitchLabels)
+                    {
+                        // Also check BoundSwitchLabel visitor.
 
-                    if (label.Pattern.Kind == BoundKind.ConstantPattern)
-                    {
-                        var constPattern = (BoundConstantPattern)label.Pattern;
-                        caseLabels.Add(
-                            new SwitchCaseLabel
-                            {
-                                LabelValue = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
-                            });
-                    }
-                    else if (label.Pattern.Kind == BoundKind.DiscardPattern)
-                    {
-                        caseLabels.Add(new SwitchCaseLabel());
-                    }
-                    else 
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    // if (label.Pattern.Kind == BoundKind.ConstantPattern && label.ExpressionOpt == null)
-                    // {
-                    // }
-                    // else
-                    // {
-                    //     caseLabels.Add(
-                    //         new SwitchCaseLabel
-                    //         { LabelValue = (ExpressionSer)VisitSwitchLabel(label, arg) });
-                    // }
-                }
-
-                StatementSer blockSer = null;
-                if (section.Statements != null)
-                {
-                    if (section.Statements.Length > 1)
-                    {
-                        blockSer = new BlockSer
+                        if (label.Pattern.Kind == BoundKind.ConstantPattern)
                         {
-                            Statements = section.Statements == null
-                                        ? null
-                                        : section
-                                        .Statements
-                                        .Select(_ => VisitToStatement(_, arg))
-                                        .Where(_ => _ != null)
-                                        .ToList()
-                        };
-                    }
-                    else
-                    { blockSer = VisitToStatement(section.Statements[0], arg); }
-                }
+                            var constPattern = (BoundConstantPattern)label.Pattern;
+                            caseLabels.Add(
+                                new SwitchConstCaseLabel
+                                {
+                                    LabelValue = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
+                                });
+                        }
+                        else if (label.Pattern.Kind == BoundKind.DiscardPattern)
+                        {
+                            caseLabels.Add(new SwitchDiscardCaseLabel());
+                        }
+                        else if (label.Pattern.Kind == BoundKind.DeclarationPattern)
+                        {
+                            caseLabels.Add(new SwitchDeclarationCaseLabel()
+                            {
+                                // Create scope and then assign local to this scope
+                                LocalVariable = ((LocalVariableRefExpression)this.VisitLocal((BoundLocal)((BoundDeclarationPattern)label.Pattern).VariableAccess, arg)).LocalVariable,
+                                When = label.WhenClause != null 
+                                    ? (ExpressionSer)this.Visit(label.WhenClause, arg)
+                                    : null
+                            });
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
 
-                switchSections.Add(
-                    new SwitchSectionSer
+                        // if (label.Pattern.Kind == BoundKind.ConstantPattern && label.ExpressionOpt == null)
+                        // {
+                        // }
+                        // else
+                        // {
+                        //     caseLabels.Add(
+                        //         new SwitchCaseLabel
+                        //         { LabelValue = (ExpressionSer)VisitSwitchLabel(label, arg) });
+                        // }
+                    }
+
+                    StatementSer blockSer = null;
+                    if (section.Statements != null)
                     {
-                        Labels = caseLabels,
-                        Block = blockSer
-                    });
+                        if (section.Statements.Length > 1)
+                        {
+                            blockSer = new BlockSer
+                            {
+                                Statements = section.Statements == null
+                                            ? null
+                                            : section
+                                            .Statements
+                                            .Select(_ => VisitToStatement(_, arg))
+                                            .Where(_ => _ != null)
+                                            .ToList()
+                            };
+                        }
+                        else
+                        { blockSer = VisitToStatement(section.Statements[0], arg); }
+                    }
+
+                    switchSections.Add(
+                        new SwitchSectionSer
+                        {
+                            Labels = caseLabels,
+                            Block = blockSer
+                        });
+                }
+                finally
+                {
+                    scopeBlockStack.RemoveFirst();
+                }
             }
 
             return new SwitchStatement
             {
+                IsIfElseStatement = isElseIfStatement,
                 Blocks = switchSections,
                 SwitchExpression = (ExpressionSer)Visit(node.Expression, arg)
             };

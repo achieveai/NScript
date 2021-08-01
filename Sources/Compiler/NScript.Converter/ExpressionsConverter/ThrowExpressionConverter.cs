@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace NScript.Converter.StatementsConverter
+namespace NScript.Converter.ExpressionsConverter
 {
     using System;
     using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace NScript.Converter.StatementsConverter
     /// <summary>
     /// Definition for ThrowStatementConverter
     /// </summary>
-    public static class ThrowStatementConverter
+    public static class ThrowExpressionConverter
     {
         /// <summary>
         /// Converts the specified converter.
@@ -22,14 +22,14 @@ namespace NScript.Converter.StatementsConverter
         /// <param name="converter">The converter.</param>
         /// <param name="statement">The statement.</param>
         /// <returns>ThrowStatement.</returns>
-        public static JST.Statement Convert(
+        public static JST.Expression Convert(
             IMethodScopeConverter converter,
-            ThrowStatement statement)
+            ThrowExpression statement)
         {
-            return new JST.ThrowStatement(
+            return new JST.ThrowExpression(
                 statement.Location,
                 converter.Scope,
-                ExpressionsConverter.ExpressionConverterBase.Convert(
+                ExpressionConverterBase.Convert(
                     converter,
                     statement.Expression));
         }

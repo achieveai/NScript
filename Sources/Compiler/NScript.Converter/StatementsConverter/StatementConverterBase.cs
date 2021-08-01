@@ -121,11 +121,6 @@ namespace NScript.Converter.StatementsConverter
                     SwitchStatementConverter.Convert));
 
             returnValue.Add(
-                typeof (CLR.AST.ThrowStatement),
-                StatementConverterBase.SimplifyConverter<CLR.AST.ThrowStatement>(
-                    ThrowStatementConverter.Convert));
-
-            returnValue.Add(
                 typeof (CLR.AST.TryCatchFinally),
                 StatementConverterBase.SimplifyConverter<CLR.AST.TryCatchFinally>(
                     TryCatchFinallyConverter.Convert));

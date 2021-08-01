@@ -86,20 +86,20 @@ namespace NScript.Converter.ExpressionsConverter
         }
 
         /// <summary>
-        /// Converts the string literal.
+        /// Converts the char literal.
         /// </summary>
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="literal">The literal.</param>
         /// <returns></returns>
         public static JST.Expression ConvertCharLiteral(IMethodScopeConverter methodConverter, CharLiteral literal)
         {
-            return new JST.NumberLiteralExpression(
+            return new JST.StringLiteralExpression(
                 methodConverter.Scope,
-                literal.Value);
+                literal.Value.ToString());
         }
 
         /// <summary>
-        /// Converts the boolean literal.
+        /// Converts the null literal.
         /// </summary>
         /// <param name="methodConverter">The method converter.</param>
         /// <param name="literal">The literal.</param>

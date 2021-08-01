@@ -748,11 +748,11 @@ namespace JsCsc.Lib
                 foreach (var label in section.Labels)
                 {
                     if (label.IsDefault)
-                    { caseLabels.Add(new SwitchCaseLabel()); }
+                    { caseLabels.Add(new SwitchDiscardCaseLabel()); }
                     else
                     {
                         caseLabels.Add(
-                            new SwitchCaseLabel
+                            new SwitchConstCaseLabel
                             { LabelValue = this.Dispatch(label.Converted ?? label.Label) });
                     }
                 }

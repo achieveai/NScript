@@ -9,6 +9,7 @@
     <None Remove="MethodConverterTests\YieldReturn\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="MethodConverterTests\NewLanguageFeatures\DefaultLiteralExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\SumPositiveNumbers.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />
@@ -36,6 +37,7 @@
     <ProjectReference Include="$(CompilerTestSources)\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\DefaultLiteralExpression.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\SumPositiveNumbers.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />

@@ -116,6 +116,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(214, typeof(ConditionalReceiver))]
     [ProtoInclude(216, typeof(LocalMethodCallExpression))]
     [ProtoInclude(217, typeof(LocalMethodExpression))]
+    [ProtoInclude(140, typeof(ThrowExpression))]
     [ProtoInclude(218, typeof(TupleLiteral))]
     [ProtoInclude(219, typeof(DeconstructTupleAssignment))]
     [Serializable]
@@ -126,7 +127,6 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    [ProtoInclude(140, typeof(ThrowExpression))]
     [ProtoInclude(153, typeof(StatementExpressionSer))]
     [ProtoInclude(155, typeof(YieldBreakStatement))]
     [ProtoInclude(156, typeof(StatementListSer))]
@@ -594,6 +594,12 @@ namespace JsCsc.Lib.Serialization
         public List<ExpressionSer> Arguments { get; set; }
     }
 
+    public class TupleCreationExpression
+        : ExpressionSer
+    {
+        public List<int> tupleType { get; set; }
+    }
+
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(132, typeof(BaseThisExpression))]
     [Serializable]
@@ -1037,11 +1043,37 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [ProtoInclude(220, typeof(SwitchConstCaseLabel))]
+    [ProtoInclude(221, typeof(SwitchDeclarationCaseLabel))]
+    [ProtoInclude(222, typeof(SwitchDiscardCaseLabel))]
     [Serializable]
     public class SwitchCaseLabel
     {
+        public bool NoUse_ { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class SwitchDiscardCaseLabel : SwitchCaseLabel
+    {
+        public bool NoUse_2 { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class SwitchConstCaseLabel : SwitchCaseLabel
+    {
         public ExpressionSer LabelValue { get; set; }
     }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class SwitchDeclarationCaseLabel : SwitchCaseLabel
+    {
+        public LocalVariableSer LocalVariable { get; set; }
+        public ExpressionSer When { get; set; }
+    }
+
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
@@ -1058,6 +1090,8 @@ namespace JsCsc.Lib.Serialization
     public class SwitchStatement
         : StatementSer
     {
+        public bool IsIfElseStatement { get; set; }
+
         public ExpressionSer SwitchExpression { get; set; }
 
         public List<SwitchSectionSer> Blocks { get; set; }

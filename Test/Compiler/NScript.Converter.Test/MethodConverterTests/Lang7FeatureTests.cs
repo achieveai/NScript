@@ -17,7 +17,7 @@ namespace NScript.Converter.Test.MethodConverterTests
     public class Lang7FeatureTests
     {
         private const string TestClassNameStr = @"Lang7Features";
-        private const string TestFilesNSStr = @"NScript.Converter.Test.MethodConverterTests.LangFeatures.";
+        private const string TestFilesNSStr = @"NScript.Converter.Test.MethodConverterTests.NewLanguageFeatures.";
 
         [TestInitialize]
         public void Setup()

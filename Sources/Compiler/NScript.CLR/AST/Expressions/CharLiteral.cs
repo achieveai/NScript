@@ -22,7 +22,7 @@ namespace NScript.CLR.AST
         private readonly char value;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BooleanLiteral"/> class.
+        /// Initializes a new instance of the <see cref="CharLiteral"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="location">The location.</param>

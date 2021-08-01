@@ -378,7 +378,7 @@ namespace JsCsc.Lib
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
 
-        private Node ParseThrowStatment(Serialization.ThrowExpression jObject) => new ThrowStatement(
+        private Node ParseThrowStatment(Serialization.ThrowExpression jObject) => new ThrowExpression(
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
@@ -502,7 +502,7 @@ namespace JsCsc.Lib
                     else
                     {
                         labels.Add((LiteralExpression)
-                            ParseExpression(labelJArray[iLabel].LabelValue));
+                            ParseExpression(((Serialization.SwitchConstCaseLabel)labelJArray[iLabel]).LabelValue));
                     }
                 }
 
