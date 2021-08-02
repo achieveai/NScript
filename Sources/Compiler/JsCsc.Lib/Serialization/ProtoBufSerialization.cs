@@ -118,7 +118,6 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(217, typeof(LocalMethodExpression))]
     [ProtoInclude(140, typeof(ThrowExpression))]
     [ProtoInclude(218, typeof(TupleLiteral))]
-    [ProtoInclude(219, typeof(DeconstructTupleAssignment))]
     [Serializable]
     public abstract class ExpressionSer
         : AstBase
@@ -143,6 +142,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(174, typeof(TryCatchBlock))]
     [ProtoInclude(107, typeof(BlockSer))]
     [ProtoInclude(215, typeof(LocalMethodStatement))]
+    [ProtoInclude(219, typeof(DeconstructTupleAssignment))]
     [Serializable]
     public abstract class StatementSer
         : AstBase
@@ -418,7 +418,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DeconstructTupleAssignment
-        : ExpressionSer
+        : StatementSer
     {
         public List<ExpressionSer> LHSArgs { get; set; }
 
