@@ -6,6 +6,7 @@
 
 namespace NScript.Converter.ExpressionsConverter
 {
+    using JsCsc.Lib.Serialization;
     using NScript.CLR.AST;
     using NScript.Converter.TypeSystemConverter;
     using System;
@@ -330,7 +331,13 @@ namespace NScript.Converter.ExpressionsConverter
                         typeof(LocalFunctionReference),
                         ExpressionConverterBase.SimplifyConverter<LocalFunctionReference>(
                             LocalFunctionReferenceConverter.Convert)
-                    }
+                    },
+
+                    {
+                        typeof(TupleLiteral),
+                        ExpressionConverterBase.SimplifyConverter<TupleLiteral>(
+                            TupleLiteralConverter.Convert)
+                    },
                 };
 
             return returnValue;

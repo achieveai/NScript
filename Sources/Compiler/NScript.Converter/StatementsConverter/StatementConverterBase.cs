@@ -31,7 +31,7 @@ namespace NScript.Converter.StatementsConverter
             IMethodScopeConverter methodConverter,
             CLR.AST.Statement clrStatement)
         {
-            Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement> converter = null;
+            Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement> converter;
 
             if (clrStatement == null)
             {
@@ -129,6 +129,11 @@ namespace NScript.Converter.StatementsConverter
                 typeof(CLR.AST.LocalMethodStatement),
                 StatementConverterBase.SimplifyConverter<CLR.AST.LocalMethodStatement>(
                     LocalFunctionStatementConverter.Convert));
+
+            returnValue.Add(
+                typeof(CLR.AST.Statements.TupleDeconstructStatement),
+                StatementConverterBase.SimplifyConverter<CLR.AST.Statements.TupleDeconstructStatement>(
+                    TupleDeconstructConverter.Convert));
 
             return returnValue;
         }
