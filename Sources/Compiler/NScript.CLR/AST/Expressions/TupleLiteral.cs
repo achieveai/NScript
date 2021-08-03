@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace NScript.CLR.AST.Expressions
+namespace NScript.CLR.AST
 {
     using NScript.Utils;
     using Mono.Cecil;

@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace NScript.CLR.AST.Statements
+namespace NScript.CLR.AST
 {
     using System;
     using System.Collections.Generic;
@@ -13,9 +13,9 @@ namespace NScript.CLR.AST.Statements
     /// <summary>
     /// Definition for TupleDeconstructExpression
     /// </summary>
-    public class TupleDeconstructStatement : Statement
+    public class TupleDeconstructExpression : Expression
     {
-        public TupleDeconstructStatement(
+        public TupleDeconstructExpression(
             ClrContext context,
             Utils.Location location,
             Expression[] leftExpressions,
@@ -31,14 +31,14 @@ namespace NScript.CLR.AST.Statements
         public Expression RightExpression { get; }
 
         public override bool Equals(object obj)
-            => obj is TupleDeconstructStatement tupleDeconstruct
+            => obj is TupleDeconstructExpression tupleDeconstruct
                 && tupleDeconstruct.LeftExpressions.Length == this.LeftExpressions.Length
                 && tupleDeconstruct.RightExpression.Equals(this.RightExpression)
                 && Enumerable.Range(0, this.LeftExpressions.Length)
                     .All(idx => tupleDeconstruct.LeftExpressions[idx].Equals(this.LeftExpressions[idx]));
 
         public override int GetHashCode()
-            => typeof(TupleDeconstructStatement).GetHashCode()
+            => typeof(TupleDeconstructExpression).GetHashCode()
                 ^ this.RightExpression.GetHashCode()
                 ^ Enumerable.Range(0, this.LeftExpressions.Length)
                     .Select(idx =>

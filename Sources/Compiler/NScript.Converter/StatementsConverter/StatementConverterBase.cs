@@ -130,11 +130,6 @@ namespace NScript.Converter.StatementsConverter
                 StatementConverterBase.SimplifyConverter<CLR.AST.LocalMethodStatement>(
                     LocalFunctionStatementConverter.Convert));
 
-            returnValue.Add(
-                typeof(CLR.AST.Statements.TupleDeconstructStatement),
-                StatementConverterBase.SimplifyConverter<CLR.AST.Statements.TupleDeconstructStatement>(
-                    TupleDeconstructConverter.Convert));
-
             return returnValue;
         }
 

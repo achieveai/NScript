@@ -6,11 +6,11 @@
 
 namespace NScript.Converter.ExpressionsConverter
 {
+    using Mono.Cecil;
     using NScript.CLR;
     using NScript.CLR.AST;
     using NScript.Converter.TypeSystemConverter;
     using NScript.Utils;
-    using Mono.Cecil;
 
     /// <summary>
     /// Definition for DefaultValueConverter

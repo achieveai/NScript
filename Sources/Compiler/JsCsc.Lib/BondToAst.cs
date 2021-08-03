@@ -10,7 +10,6 @@ namespace JsCsc.Lib
     using NScript.CLR;
     using NScript.CLR.AST;
     using NScript.CLR.AST.Expressions;
-    using NScript.CLR.AST.Statements;
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
@@ -2100,7 +2099,7 @@ namespace JsCsc.Lib
 
         private Node ParseTupleDeconstruct(Serialization.DeconstructTupleAssignment tupleDeconstruct)
         {
-            return new TupleDeconstructStatement(
+            return new TupleDeconstructExpression(
                 _clrContext,
                 LocFromJObject(tupleDeconstruct),
                 this.ParseExpressions(tupleDeconstruct.LHSArgs),

@@ -6,9 +6,10 @@
 
 namespace NScript.Converter.ExpressionsConverter
 {
-    using JsCsc.Lib.Serialization;
     using NScript.Converter.TypeSystemConverter;
+    using NScript.CLR.AST;
     using NScript.JST;
+    using System.Linq;
     using System;
 
     /// <summary>
@@ -16,7 +17,7 @@ namespace NScript.Converter.ExpressionsConverter
     /// </summary>
     public static class TupleLiteralConverter
     {
-        internal static Expression Convert(
+        internal static JST.Expression Convert(
             IMethodScopeConverter scopeConverter,
             TupleLiteral tupleLiteral)
         {
@@ -24,7 +25,15 @@ namespace NScript.Converter.ExpressionsConverter
             // using field identifier of ValueTuple type's respective field
             // to generate the field name. Initialize the value to the expression
             // from tupleLiteral.
-            throw new NotImplementedException();
+            var inlineInitializer = new JST.InlineObjectInitializer(tupleLiteral.Location, scopeConverter.Scope);
+            var elements = tupleLiteral.TupleArgs;
+
+            foreach(var (element, index) in elements.Select((item, index) => (item, index)))
+            {
+                inlineInitializer.AddInitializer($"Item{index}", ExpressionConverterBase.Convert(scopeConverter, element));
+            }
+
+            return inlineInitializer;
         }
     }
 }

@@ -26,7 +26,18 @@ namespace RealScript
             return x + y;
         }
 
-        public static int TestThrowExpression(int? num)
+        struct S {
+            public int x;
+        }
+        public static void TestTupleType()
+        {
+            S s = default;
+            (int, int, char) a = default;
+    
+        // Console.WriteLine((a = (1, 2, 'a')));
+        }
+
+    public static int TestThrowExpression(int? num)
         {
             int rv = num ?? throw new ArgumentNullException("num");
             return rv;

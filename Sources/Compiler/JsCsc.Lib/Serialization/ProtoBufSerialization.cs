@@ -418,7 +418,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DeconstructTupleAssignment
-        : StatementSer
+        : ExpressionSer
     {
         public List<ExpressionSer> LHSArgs { get; set; }
 
