@@ -11,6 +11,8 @@ namespace NScript.Converter.ExpressionsConverter
     using NScript.CLR.AST;
     using NScript.Converter.TypeSystemConverter;
     using NScript.Utils;
+    using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Definition for DefaultValueConverter
@@ -46,8 +48,42 @@ namespace NScript.Converter.ExpressionsConverter
             RuntimeScopeManager runtimeScopeManager,
             JST.IdentifierScope scope,
             TypeReference typeReference,
-            Location location = null)
+            Location location = null,
+            Dictionary<GenericParameter, TypeReference> knownGenericParameters = null)
         {
+            if (typeReference.IsGenericParameter)
+            {
+                TypeReference ty = null;
+                knownGenericParameters?.TryGetValue(typeReference as GenericParameter, out ty);
+                if (ty == null)
+                {
+                    return MethodCallExpressionConverter.CreateMethodCallExpression(
+                        new MethodCallContext(
+                            runtimeScopeManager.Context.KnownReferences.GetDefaultMethodStatic,
+                            location,
+                            scope),
+                        new JST.Expression[]
+                        {
+                            JST.IdentifierExpression.Create(
+                                location,
+                                scope,
+                                resolver.Resolve(typeReference)),
+                        },
+                        resolver,
+                        runtimeScopeManager);
+                }
+                else
+                {
+                    return GetDefaultValue(
+                        resolver,
+                        runtimeScopeManager,
+                        scope,
+                        ty,
+                        location,
+                        knownGenericParameters);
+                }
+            }
+
             if (typeReference.IsBoolean())
             {
                 return new JST.BooleanLiteralExpression(
@@ -79,22 +115,39 @@ namespace NScript.Converter.ExpressionsConverter
                     location,
                     scope);
 
+                Dictionary<GenericParameter, TypeReference> knownGenericParams;
+                if (knownGenericParameters != null)
+                    knownGenericParams = new Dictionary<GenericParameter, TypeReference>(knownGenericParameters);
+                else
+                {
+                    knownGenericParams = new Dictionary<GenericParameter, TypeReference>();
+                }
+                foreach (var (param, arg) in typeDefinition.GenericParameters.Zip(typeReference.GetGenericArguments()))
+                {
+                    TypeReference ty = arg;
+                    if (arg.IsGenericParameter)
+                    {
+                        knownGenericParams.TryGetValue(arg as GenericParameter, out ty);
+                    }
+                    knownGenericParams.Add(param, ty);
+                }
+
                 foreach (var field in typeDefinition.Fields)
                 {
                     if (field.IsStatic || field.HasConstant)
                     {
                         continue;
                     }
-
                     initializer.AddInitializer(
                         runtimeScopeManager.Resolve(field),
                         DefaultValueConverter.GetDefaultValue(
                             resolver,
                             runtimeScopeManager,
                             scope,
-                            field.FieldType));
+                            field.FieldType,
+                            null,
+                            knownGenericParams));
                 }
-
                 return initializer;
             }
 
