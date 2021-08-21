@@ -30,7 +30,7 @@ namespace NScript.Converter.ExpressionsConverter
 
             foreach(var (element, index) in elements.Select((item, index) => (item, index)))
             {
-                inlineInitializer.AddInitializer($"Item{index}", ExpressionConverterBase.Convert(scopeConverter, element));
+                inlineInitializer.AddInitializer($"Item{index+1}", ExpressionConverterBase.Convert(scopeConverter, element));
             }
 
             return inlineInitializer;

@@ -129,7 +129,8 @@ namespace NScript.Converter.ExpressionsConverter
                     {
                         knownGenericParams.TryGetValue(arg as GenericParameter, out ty);
                     }
-                    knownGenericParams.Add(param, ty);
+                    knownGenericParams[param] = ty;
+                    // knownGenericParams.Add(param, ty);
                 }
 
                 foreach (var field in typeDefinition.Fields)
