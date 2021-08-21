@@ -1,6 +1,6 @@
-﻿function NewLanguageFeatures__TestTupleReturn(x, y) {
-    return {
-      "Item1": x,
-      "Item2": y
-    };
+﻿function Lang7Features__TestTupleReturn(x, y) {
+  return {
+    "Item1": x,
+    "Item2": y
+  };
 }
