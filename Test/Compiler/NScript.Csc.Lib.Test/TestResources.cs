@@ -383,7 +383,8 @@
                         @"Properties\AssemblyInfo.cs",
                         @"Class1.cs",
                         @"ConstructorTests.cs",
-                        @"NullableTests.cs"
+                        @"NullableTests.cs",
+                        @"TestDefaultExpr.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
@@ -435,7 +436,8 @@
                         @"Properties\AssemblyInfo.cs",
                         @"Class1.cs",
                         @"ConstructorTests.cs",
-                        @"NullableTests.cs"
+                        @"NullableTests.cs",
+                        @"TestDefaultExpr.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },

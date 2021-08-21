@@ -69,6 +69,7 @@
     <Compile Include="TestArithmetics.cs" />
     <Compile Include="TestCompilerGeneratedStuff.cs" />
     <Compile Include="TestControlFlow.cs" />
+    <Compile Include="TestDefaultExpr.cs" />
     <Compile Include="TestDelegates.cs" />
     <Compile Include="TestGeneric.cs" />
     <Compile Include="TestInheritence.cs" />

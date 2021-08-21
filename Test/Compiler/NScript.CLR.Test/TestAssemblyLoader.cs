@@ -594,7 +594,8 @@
                 @"Properties\AssemblyInfo.cs",
                 @"Class1.cs",
                 @"ConstructorTests.cs",
-                @"NullableTests.cs"
+                @"NullableTests.cs",
+                @"TestDefaultExpr.cs"
             };
 
             TestAssemblyLoader.DllBuilder.Build(

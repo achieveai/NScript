@@ -26,18 +26,7 @@ namespace RealScript
             return x + y;
         }
 
-        struct S {
-            public int x;
-        }
-        public static void TestTupleType()
-        {
-            S s = default;
-            (int, int, char) a = default;
-    
-        // Console.WriteLine((a = (1, 2, 'a')));
-        }
-
-    public static int TestThrowExpression(int? num)
+        public static int TestThrowExpression(int? num)
         {
             int rv = num ?? throw new ArgumentNullException("num");
             return rv;
@@ -59,11 +48,11 @@ namespace RealScript
                     case 10:
                         break;
                     case IEnumerable<int> childSequence:
-                    {
-                        foreach(var item in childSequence)
-                            sum += (item > 0) ? item : 0;
-                        break;
-                    }
+                        {
+                            foreach (var item in childSequence)
+                                sum += (item > 0) ? item : 0;
+                            break;
+                        }
                     case Number n when n > 0:
                         sum += n;
                         break;
