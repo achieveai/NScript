@@ -117,7 +117,9 @@ namespace NScript.Converter.ExpressionsConverter
 
                 Dictionary<GenericParameter, TypeReference> knownGenericParams;
                 if (knownGenericParameters != null)
+                {
                     knownGenericParams = new Dictionary<GenericParameter, TypeReference>(knownGenericParameters);
+                }
                 else
                 {
                     knownGenericParams = new Dictionary<GenericParameter, TypeReference>();
