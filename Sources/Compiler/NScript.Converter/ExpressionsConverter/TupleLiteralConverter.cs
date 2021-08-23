@@ -27,10 +27,11 @@ namespace NScript.Converter.ExpressionsConverter
             // from tupleLiteral.
             var inlineInitializer = new JST.InlineObjectInitializer(tupleLiteral.Location, scopeConverter.Scope);
             var elements = tupleLiteral.TupleArgs;
+            var typeDefinition = tupleLiteral.ResultType.Resolve();
 
-            foreach(var (element, index) in elements.Select((item, index) => (item, index)))
+            foreach(var (field, expr) in typeDefinition.Fields.Zip(elements))
             {
-                inlineInitializer.AddInitializer($"Item{index+1}", ExpressionConverterBase.Convert(scopeConverter, element));
+                inlineInitializer.AddInitializer(scopeConverter.Resolve(field), ExpressionConverterBase.Convert(scopeConverter, expr));
             }
 
             return inlineInitializer;

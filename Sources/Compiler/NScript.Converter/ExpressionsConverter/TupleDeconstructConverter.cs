@@ -33,16 +33,17 @@ namespace NScript.Converter.ExpressionsConverter
             var inlineInitializer = new JST.InlineObjectInitializer(expr.Location, scopeConverter.Scope);
             var expressions = new List<JST.Expression>();
 
+            var typeDefinition = expr.RightExpression.ResultType.Resolve();
+
             // JS: (a = jsRhs.Item1, b = jsRhs.Item2, ..., jsRhs)
-            foreach (var (assignee, index) in lhs.Select((elem, index) => (elem, index)))
+            foreach (var (field, assignee) in typeDefinition.Fields.Zip(lhs))
             {
                 var jsLhs = ExpressionConverterBase.Convert(scopeConverter, assignee);
-                var accessProperty = new JST.StringLiteralExpression(null, $"Item{index + 1}");
-                var accessExpression = new JST.IndexExpression(jsRhs.Location, scopeConverter.Scope, jsRhs, accessProperty);
+                var fieldRef = new FieldReferenceExpression(expr.Context, null, field, expr.RightExpression);
                 expressions.Add(
                     new JST.BinaryExpression(null, null,
                         JST.BinaryOperator.Assignment, jsLhs,
-                        accessExpression)
+                        ExpressionConverterBase.Convert(scopeConverter, fieldRef))
                     );
             }
             expressions.Add(jsRhs);
