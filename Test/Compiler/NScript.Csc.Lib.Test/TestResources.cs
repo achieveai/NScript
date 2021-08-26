@@ -208,6 +208,7 @@
                         @"Runtime\CompilerServices\ScriptNamespaceAttribute.cs",
                         @"Runtime\CompilerServices\ScriptQualifierAttribute.cs",
                         @"Runtime\CompilerServices\ScriptSkipAttribute.cs",
+                        @"Runtime\CompilerServices\TupleElementNameAttribute.cs",
                         @"Runtime\CompilerServices\Serializable.cs",
                         @"Runtime\CompilerServices\TaskAwaiter.cs",
                         @"Runtime\CompilerServices\UsedAttribure.cs",
@@ -236,6 +237,7 @@
                         @"UIntPtr.cs",
                         @"ValueType.cs",
                         @"Void.cs",
+                        @"ValueTuple.cs",
                         @"Xml\XmlAttribute.cs",
                         @"Xml\XmlDocument.cs",
                         @"Xml\XmlDocumentParser.cs",
@@ -356,6 +358,9 @@
                         @"InlineComplexStatements.cs",
                         @"JsScriptImport.cs",
                         @"LoopTests.cs",
+                        @"Lang7Features.cs",
+                        @"Lang8Features.cs",
+                        @"Lang9Features.cs",
                         @"MathAlgorithms.cs",
                         @"NumberOperations.cs",
                         @"ScriptSharpCompat.cs",
@@ -378,7 +383,8 @@
                         @"Properties\AssemblyInfo.cs",
                         @"Class1.cs",
                         @"ConstructorTests.cs",
-                        @"NullableTests.cs"
+                        @"NullableTests.cs",
+                        @"TestDefaultExpr.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
@@ -405,6 +411,9 @@
                         @"InlineComplexStatements.cs",
                         @"JsScriptImport.cs",
                         @"LoopTests.cs",
+                        @"Lang7Features.cs",
+                        @"Lang8Features.cs",
+                        @"Lang9Features.cs",
                         @"MathAlgorithms.cs",
                         @"NumberOperations.cs",
                         @"ScriptSharpCompat.cs",
@@ -427,7 +436,8 @@
                         @"Properties\AssemblyInfo.cs",
                         @"Class1.cs",
                         @"ConstructorTests.cs",
-                        @"NullableTests.cs"
+                        @"NullableTests.cs",
+                        @"TestDefaultExpr.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
@@ -476,7 +486,7 @@
                             .Assembly
                             .GetName()
                             .Name))
-                + @"..\..\..\";
+                + @"..\..\..\..\";
 
             // baseGitPath = nscriptGitPath;
 

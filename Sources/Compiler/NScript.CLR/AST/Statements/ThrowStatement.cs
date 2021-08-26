@@ -13,17 +13,17 @@ namespace NScript.CLR.AST
     /// <summary>
     /// Definition for ThrowExpression
     /// </summary>
-    public class ThrowStatement : Statement
+    public class ThrowExpression : Expression
     {
         private Expression innerExpression;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ThrowStatement"/> class.
+        /// Initializes a new instance of the <see cref="ThrowExpression"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="location">The location.</param>
         /// <param name="innerExpression">The inner expression.</param>
-        public ThrowStatement(
+        public ThrowExpression(
             ClrContext context,
             Location location,
             Expression innerExpression)

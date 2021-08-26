@@ -31,7 +31,7 @@ namespace NScript.Converter.StatementsConverter
             IMethodScopeConverter methodConverter,
             CLR.AST.Statement clrStatement)
         {
-            Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement> converter = null;
+            Func<IMethodScopeConverter, CLR.AST.Statement, JST.Statement> converter;
 
             if (clrStatement == null)
             {
@@ -119,11 +119,6 @@ namespace NScript.Converter.StatementsConverter
                 typeof (CLR.AST.SwitchStatement),
                 StatementConverterBase.SimplifyConverter<CLR.AST.SwitchStatement>(
                     SwitchStatementConverter.Convert));
-
-            returnValue.Add(
-                typeof (CLR.AST.ThrowStatement),
-                StatementConverterBase.SimplifyConverter<CLR.AST.ThrowStatement>(
-                    ThrowStatementConverter.Convert));
 
             returnValue.Add(
                 typeof (CLR.AST.TryCatchFinally),

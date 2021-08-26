@@ -1,6 +1,7 @@
-/runtimemetadataversion:4
+/noconfig
 /unsafe+
 /nowarn:0824,0169,0649,0626,0414,0660,0661,3001,3002,1701,1702,2008
+/fullpaths
 /nostdlib+
 /errorreport:prompt
 /warn:4
@@ -17,7 +18,7 @@
 /target:library
 /warnaserror+
 /utf8output
-/ruleset:"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Team Tools\Static Analysis Tools\\Rule Sets\MinimumRecommendedRules.ruleset"
+/langversion:latest
 Activator.cs
 AssemblyInfo.cs
 Action.cs
@@ -180,8 +181,10 @@ Runtime\CompilerServices\AttachedPropertyAttribute.cs
 Runtime\CompilerServices\CompilerGeneratedAttribute.cs
 Runtime\CompilerServices\EntryPointAttribute.cs
 Runtime\CompilerServices\ExtensionAttribute.cs
+Runtime\CompilerServices\ICriticalNotifyCompletion.cs
 Runtime\CompilerServices\IgnoreGenericArgumentsAttribute.cs
 Runtime\CompilerServices\ImplementAttribute.cs
+Runtime\CompilerServices\INotifyCompletion.cs
 Runtime\CompilerServices\IntrinsicFieldAttribute.cs
 Runtime\CompilerServices\GlobalMethodsAttribute.cs
 Runtime\CompilerServices\IgnoreNamespaceAttribute.cs
@@ -209,6 +212,8 @@ Runtime\CompilerServices\ScriptNamespaceAttribute.cs
 Runtime\CompilerServices\ScriptQualifierAttribute.cs
 Runtime\CompilerServices\ScriptSkipAttribute.cs
 Runtime\CompilerServices\Serializable.cs
+Runtime\CompilerServices\TaskAwaiter.cs
+Runtime\CompilerServices\TupleElementNameAttribute.cs
 Runtime\CompilerServices\UsedAttribure.cs
 Runtime\InteropServices\ClassInterfaceAttribute.cs
 Runtime\InteropServices\ComDefaultInterfaceAttribute.cs

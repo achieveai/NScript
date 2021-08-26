@@ -548,13 +548,14 @@
                     };
 
                 case ConversionKind.ImplicitThrow:
+                case ConversionKind.Deconstruction:
+                    return Visit(node.Operand, arg);
                 case ConversionKind.ImplicitTupleLiteral:
                 case ConversionKind.ImplicitTuple:
                 case ConversionKind.ExplicitTupleLiteral:
                 case ConversionKind.ExplicitTuple:
                 case ConversionKind.IntPtr:
                 case ConversionKind.InterpolatedString:
-                case ConversionKind.Deconstruction:
                 case ConversionKind.StackAllocToPointerType:
                 case ConversionKind.StackAllocToSpanType:
                 case ConversionKind.PinnedObjectToPointer:
@@ -565,11 +566,20 @@
 
         public override AstBase VisitConvertedStackAllocExpression(BoundConvertedStackAllocExpression node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitConvertedTupleLiteral(BoundConvertedTupleLiteral node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitConvertedTupleLiteral(BoundConvertedTupleLiteral node, SerializationContext arg)
+            => this.Visit(node.SourceTuple, arg);
 
         public override AstBase VisitDeclarationPattern(BoundDeclarationPattern node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitDeconstructionAssignmentOperator(BoundDeconstructionAssignmentOperator node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitDeconstructionAssignmentOperator(BoundDeconstructionAssignmentOperator node, SerializationContext arg)
+            => new DeconstructTupleAssignment
+            {
+                Location = node.Syntax.GetSerLoc(),
+                LHSArgs = node.Left.Arguments
+                    .Select(tupleArg => (ExpressionSer)this.Visit(tupleArg, arg))
+                    .ToList(),
+                RightTuple = (ExpressionSer)this.Visit(node.Right, arg),
+            };
 
         public override AstBase VisitDeconstructionVariablePendingInference(DeconstructionVariablePendingInference node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1247,73 +1257,94 @@
 
         public override AstBase VisitSwitchStatement(BoundSwitchStatement node, SerializationContext arg)
         {
+            bool isElseIfStatement = false;
             var switchSections = new List<SwitchSectionSer>();
             foreach (var section in node.SwitchSections)
             {
-                var caseLabels = new List<SwitchCaseLabel>();
-                foreach (var label in section.SwitchLabels)
+                _ = scopeBlockStack.AddFirst((++id, section, new List<string>()));
+                try
                 {
-                    // Also check BoundSwitchLabel visitor.
+                    var caseLabels = new List<SwitchCaseLabel>();
+                    foreach (var label in section.SwitchLabels)
+                    {
+                        // Also check BoundSwitchLabel visitor.
 
-                    if (label.Pattern.Kind == BoundKind.ConstantPattern)
-                    {
-                        var constPattern = (BoundConstantPattern)label.Pattern;
-                        caseLabels.Add(
-                            new SwitchCaseLabel
-                            {
-                                LabelValue = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
-                            });
-                    }
-                    else if (label.Pattern.Kind == BoundKind.DiscardPattern)
-                    {
-                        caseLabels.Add(new SwitchCaseLabel());
-                    }
-                    else 
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    // if (label.Pattern.Kind == BoundKind.ConstantPattern && label.ExpressionOpt == null)
-                    // {
-                    // }
-                    // else
-                    // {
-                    //     caseLabels.Add(
-                    //         new SwitchCaseLabel
-                    //         { LabelValue = (ExpressionSer)VisitSwitchLabel(label, arg) });
-                    // }
-                }
-
-                StatementSer blockSer = null;
-                if (section.Statements != null)
-                {
-                    if (section.Statements.Length > 1)
-                    {
-                        blockSer = new BlockSer
+                        if (label.Pattern.Kind == BoundKind.ConstantPattern)
                         {
-                            Statements = section.Statements == null
-                                        ? null
-                                        : section
-                                        .Statements
-                                        .Select(_ => VisitToStatement(_, arg))
-                                        .Where(_ => _ != null)
-                                        .ToList()
-                        };
-                    }
-                    else
-                    { blockSer = VisitToStatement(section.Statements[0], arg); }
-                }
+                            var constPattern = (BoundConstantPattern)label.Pattern;
+                            caseLabels.Add(
+                                new SwitchConstCaseLabel
+                                {
+                                    LabelValue = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
+                                });
+                        }
+                        else if (label.Pattern.Kind == BoundKind.DiscardPattern)
+                        {
+                            caseLabels.Add(new SwitchDiscardCaseLabel());
+                        }
+                        else if (label.Pattern.Kind == BoundKind.DeclarationPattern)
+                        {
+                            caseLabels.Add(new SwitchDeclarationCaseLabel()
+                            {
+                                // Create scope and then assign local to this scope
+                                LocalVariable = ((LocalVariableRefExpression)this.VisitLocal((BoundLocal)((BoundDeclarationPattern)label.Pattern).VariableAccess, arg)).LocalVariable,
+                                When = label.WhenClause != null 
+                                    ? (ExpressionSer)this.Visit(label.WhenClause, arg)
+                                    : null
+                            });
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
 
-                switchSections.Add(
-                    new SwitchSectionSer
+                        // if (label.Pattern.Kind == BoundKind.ConstantPattern && label.ExpressionOpt == null)
+                        // {
+                        // }
+                        // else
+                        // {
+                        //     caseLabels.Add(
+                        //         new SwitchCaseLabel
+                        //         { LabelValue = (ExpressionSer)VisitSwitchLabel(label, arg) });
+                        // }
+                    }
+
+                    StatementSer blockSer = null;
+                    if (section.Statements != null)
                     {
-                        Labels = caseLabels,
-                        Block = blockSer
-                    });
+                        if (section.Statements.Length > 1)
+                        {
+                            blockSer = new BlockSer
+                            {
+                                Statements = section.Statements == null
+                                            ? null
+                                            : section
+                                            .Statements
+                                            .Select(_ => VisitToStatement(_, arg))
+                                            .Where(_ => _ != null)
+                                            .ToList()
+                            };
+                        }
+                        else
+                        { blockSer = VisitToStatement(section.Statements[0], arg); }
+                    }
+
+                    switchSections.Add(
+                        new SwitchSectionSer
+                        {
+                            Labels = caseLabels,
+                            Block = blockSer
+                        });
+                }
+                finally
+                {
+                    scopeBlockStack.RemoveFirst();
+                }
             }
 
             return new SwitchStatement
             {
+                IsIfElseStatement = isElseIfStatement,
                 Blocks = switchSections,
                 SwitchExpression = (ExpressionSer)Visit(node.Expression, arg)
             };
@@ -1322,15 +1353,24 @@
         public override AstBase VisitThisReference(BoundThisReference node, SerializationContext arg)
             => new ThisExpression { Location = node.Syntax.Location.GetSerLoc() };
 
-        public override AstBase VisitThrowExpression(BoundThrowExpression node, SerializationContext arg) => throw new NotImplementedException();
-
-        public override AstBase VisitThrowStatement(BoundThrowStatement node, SerializationContext arg)
+        public override AstBase VisitThrowExpression(BoundThrowExpression node, SerializationContext arg)
             => new ThrowExpression
             {
                 Location = node.Syntax.Location.GetSerLoc(),
-                Expression = node.ExpressionOpt != null
+                Expression = (ExpressionSer)Visit(node.Expression, arg)
+            };
+
+        public override AstBase VisitThrowStatement(BoundThrowStatement node, SerializationContext arg)
+            => new StatementExpressionSer
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                Expression = new ThrowExpression
+                {
+                    Location = node.Syntax.Location.GetSerLoc(),
+                    Expression = node.ExpressionOpt != null
                     ? (ExpressionSer)Visit(node.ExpressionOpt, arg)
                     : null
+                }
             };
 
         public override AstBase VisitTryStatement(BoundTryStatement node, SerializationContext arg)
@@ -1359,7 +1399,15 @@
 
         public override AstBase VisitTupleBinaryOperator(BoundTupleBinaryOperator node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitTupleLiteral(BoundTupleLiteral node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitTupleLiteral(BoundTupleLiteral node, SerializationContext arg)
+            => new TupleLiteral
+            {
+                Location = node.Syntax.Location.GetSerLoc(),
+                TupleType = arg.SymbolSerializer.GetTypeSpecId(node.Type),
+                TupleArgs = node.Arguments
+                    .Select(tupleArg => (ExpressionSer)this.Visit(tupleArg, arg))
+                    .ToList(),
+            };
 
         public override AstBase VisitTupleOperandPlaceholder(BoundTupleOperandPlaceholder node, SerializationContext arg) => throw new NotImplementedException();
 

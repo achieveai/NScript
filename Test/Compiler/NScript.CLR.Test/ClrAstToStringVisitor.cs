@@ -454,7 +454,7 @@
                 + GetSpaces(arg) + "}";
         }
 
-        public override string VisitStatement(ThrowStatement node, int arg)
+        public override string VisitStatement(ThrowExpression node, int arg)
         {
             if (node.Expression != null)
             {

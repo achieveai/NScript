@@ -127,7 +127,7 @@
                     return this.VisitStatement(n, arg);
                 case SwitchStatement n:
                     return this.VisitStatement(n, arg);
-                case ThrowStatement n:
+                case ThrowExpression n:
                     return this.VisitStatement(n, arg);
                 case TryCatchFinally n:
                     return this.VisitStatement(n, arg);
@@ -200,7 +200,7 @@
         public abstract R VisitStatement(ReturnStatement node, A arg);
         public abstract R VisitStatement(ScopeBlock node, A arg);
         public abstract R VisitStatement(SwitchStatement node, A arg);
-        public abstract R VisitStatement(ThrowStatement node, A arg);
+        public abstract R VisitStatement(ThrowExpression node, A arg);
         public abstract R VisitStatement(TryCatchFinally node, A arg);
         public abstract R VisitStatement(WhileLoop node, A arg);
         public abstract R VisitStatement(YieldStatement node, A arg);

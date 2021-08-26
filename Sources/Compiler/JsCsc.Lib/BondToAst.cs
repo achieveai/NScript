@@ -9,6 +9,7 @@ namespace JsCsc.Lib
     using Mono.Cecil;
     using NScript.CLR;
     using NScript.CLR.AST;
+    using NScript.CLR.AST.Expressions;
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
@@ -378,7 +379,7 @@ namespace JsCsc.Lib
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
 
-        private Node ParseThrowStatment(Serialization.ThrowExpression jObject) => new ThrowStatement(
+        private Node ParseThrowStatment(Serialization.ThrowExpression jObject) => new ThrowExpression(
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
@@ -441,7 +442,7 @@ namespace JsCsc.Lib
         private Node ParseForStatement(Serialization.ForStatement jObject)
         {
             var variableCollector = new VariableCollector(jObject.BlockId);
-            scopeBlockStack.AddFirst((jObject.BlockId, variableCollector));
+            _ = scopeBlockStack.AddFirst((jObject.BlockId, variableCollector));
             try
             {
                 return new ForLoop(
@@ -497,12 +498,18 @@ namespace JsCsc.Lib
 
                 for (var iLabel = 0; iLabel < labelJArray.Count; iLabel++)
                 {
-                    if (labelJArray[iLabel] == null)
-                    { labels.Add(null); }
-                    else
+                    switch (labelJArray[iLabel])
                     {
-                        labels.Add((LiteralExpression)
-                            ParseExpression(labelJArray[iLabel].LabelValue));
+                        case Serialization.SwitchConstCaseLabel sccl:
+                            labels.Add((LiteralExpression)
+                                ParseExpression(sccl.LabelValue));
+                            break;
+                        case Serialization.SwitchDiscardCaseLabel:
+                        case null:
+                            labels.Add(null);
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
 
@@ -525,7 +532,7 @@ namespace JsCsc.Lib
                     if (jObject.LocalFunctions != null)
                     {
                         foreach (var localFunction in jObject.LocalFunctions)
-                        { vc.CreateFunctionVariable(localFunction); }
+                        { _ = vc.CreateFunctionVariable(localFunction); }
                     }
 
                     var statements = new List<Statement>();
@@ -583,7 +590,7 @@ namespace JsCsc.Lib
                     if (jObject.LocalFunctions != null)
                     {
                         foreach (var localFunction in jObject.LocalFunctions)
-                        { vc.CreateFunctionVariable(localFunction); }
+                        { _ = vc.CreateFunctionVariable(localFunction); }
                     }
 
                     var statements = new List<Statement>();
@@ -787,7 +794,7 @@ namespace JsCsc.Lib
                 receiver.Location,
                 receiver);
 
-            conditionalReceiverStack.AddLast(conditionalReceiver);
+            _ = conditionalReceiverStack.AddLast(conditionalReceiver);
             var rv = new ConditionalAccessExpression(
                 _clrContext,
                 LocFromJObject(jObject),
@@ -2067,10 +2074,45 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.VariableBlockDeclaration),
                     (a) => ParseVariableInitializers((Serialization.VariableBlockDeclaration)a)
+                },
+                {
+                    typeof(Serialization.TupleLiteral),
+                    (a) => ParseTupleLiteral((Serialization.TupleLiteral)a)
+                },
+                {
+                    typeof(Serialization.DeconstructTupleAssignment),
+                    (a) => ParseTupleDeconstruct((Serialization.DeconstructTupleAssignment)a)
+                },
+                {
+                    typeof(Serialization.TupleCreationExpression),
+                    (a) => ParseTupleCreation((Serialization.TupleCreationExpression)a)
                 }
             };
 
             return parserMap;
+        }
+
+        private Node ParseTupleCreation(Serialization.TupleCreationExpression a)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Node ParseTupleDeconstruct(Serialization.DeconstructTupleAssignment tupleDeconstruct)
+        {
+            return new TupleDeconstructExpression(
+                _clrContext,
+                LocFromJObject(tupleDeconstruct),
+                this.ParseExpressions(tupleDeconstruct.LHSArgs),
+                this.ParseExpression(tupleDeconstruct.RightTuple));
+        }
+
+        private Node ParseTupleLiteral(Serialization.TupleLiteral tupleLiteral)
+        {
+            return new TupleLiteral(
+                _clrContext,
+                LocFromJObject(tupleLiteral),
+                DeserializeType(tupleLiteral.TupleType),
+                this.ParseExpressions(tupleLiteral.TupleArgs));
         }
 
         private T WrapVariableCollection<T>(
@@ -2090,7 +2132,7 @@ namespace JsCsc.Lib
                 thisParameter,
                 paramDefinitions);
 
-            scopeBlockStack.AddFirst((blockId, vc));
+            _ = scopeBlockStack.AddFirst((blockId, vc));
 
             try
             { return func(vc); }

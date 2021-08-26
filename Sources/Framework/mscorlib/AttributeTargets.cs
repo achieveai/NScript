@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    [Extended, EditorBrowsable(EditorBrowsableState.Never), NonScriptable]
+    [Extended, EditorBrowsable(EditorBrowsableState.Never), NonScriptable, Flags]
     public enum AttributeTargets
     {
         All = 0x7fff,

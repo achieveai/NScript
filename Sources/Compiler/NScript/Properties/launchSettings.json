@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "NScript": {
-      "commandName": "Project",
-      "commandLineArgs": "-outJs \"bin\\Debug\\Sunlight.Framework.UI.Test.js\" -entryAssembly \"obj\\Debug\\Sunlight.Framework.UI.Test.dll\" -references \"C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\mscorlib.dll\",\"C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\Sunlight.Framework.dll\",\"C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\Sunlight.Framework.UI.dll\",\"C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\SunlightUnit.dll\",\"C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\System.Web.dll\",\"C:\\Projects\\Cs2JsC\\NScriptToolSet\\lib\\System.Web.Html.dll\" -pluginConfig \"PluginConfig.xml\" -pluginHintPath \"..\\..\\..\\NScriptToolSet\\bin\\netcoreapp3.1\\ \" -referenceHintPath \"C:\\Projects\\Cs2JsC\\NScriptToolSet\\\\lib\"",
-      "workingDirectory": "C:\\Projects\\Cs2JsC\\Test\\Framework\\Sunlight.Framework.UI.Test"
-    }
-  }
-}

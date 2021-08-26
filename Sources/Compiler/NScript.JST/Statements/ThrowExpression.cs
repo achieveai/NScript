@@ -13,7 +13,7 @@ namespace NScript.JST
     /// <summary>
     /// Definition for ThrowExpression
     /// </summary>
-    public class ThrowStatement : Statement
+    public class ThrowExpression : Expression
     {
         /// <summary>
         /// Backing field for InnerExpression.
@@ -21,12 +21,12 @@ namespace NScript.JST
         private Expression innerExpression;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ThrowStatement"/> class.
+        /// Initializes a new instance of the <see cref="ThrowExpression"/> class.
         /// </summary>
         /// <param name="location">The location.</param>
         /// <param name="scope">The scope.</param>
         /// <param name="innerExpression">The inner expression.</param>
-        public ThrowStatement(
+        public ThrowExpression(
             Location location,
             IdentifierScope scope,
             Expression innerExpression)
@@ -49,11 +49,10 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.WriteNewLine()
+            writer
                 .EnterLocation(this.Location)
                 .Write(Keyword.Throw)
                 .Write(this.Expression)
-                .Write(Symbols.SemiColon)
                 .LeaveLocation();
         }
 
