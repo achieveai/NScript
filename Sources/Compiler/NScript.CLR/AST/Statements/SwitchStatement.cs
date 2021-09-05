@@ -13,7 +13,7 @@ namespace NScript.CLR.AST
     /// <summary>
     /// Definition for SwitchStatement
     /// </summary>
-    public class SwitchStatement : Statement
+    public class SwitchStatement : ScopeBlock
     {
         /// <summary>
         /// Backing field for StatementValue.
@@ -23,7 +23,7 @@ namespace NScript.CLR.AST
         /// <summary>
         /// Backing field for CaseBlocks.
         /// </summary>
-        private List<KeyValuePair<List<LiteralExpression>, Statement>> caseBlocks;
+        private List<KeyValuePair<List<CaseLabel>, Statement>> caseBlocks;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SwitchStatement"/> class.
@@ -36,8 +36,10 @@ namespace NScript.CLR.AST
             ClrContext context,
             Location location,
             Expression statementValue,
-            List<KeyValuePair<List<LiteralExpression>, Statement>> caseBlocks)
-            : base(context, location)
+            List<KeyValuePair<List<CaseLabel>, Statement>> caseBlocks,
+            List<(LocalVariable localVariable, bool isUsed)> variables,
+            List<LocalFunctionVariable> localFunctionNames)
+            : base(context, location, variables, localFunctionNames)
         {
             this.statementValue = statementValue;
             this.caseBlocks = caseBlocks;
@@ -56,7 +58,7 @@ namespace NScript.CLR.AST
         /// Gets the case blocks.
         /// </summary>
         /// <value>The case blocks.</value>
-        public List<KeyValuePair<List<LiteralExpression>, Statement>> CaseBlocks
+        public List<KeyValuePair<List<CaseLabel>, Statement>> CaseBlocks
         {
             get { return this.caseBlocks; }
         }
@@ -72,7 +74,7 @@ namespace NScript.CLR.AST
             for (int caseBlockIndex = 0; caseBlockIndex < caseBlocks.Count; caseBlockIndex++)
             {
                 this.caseBlocks[caseBlockIndex] =
-                    new KeyValuePair<List<LiteralExpression>, Statement>(
+                    new KeyValuePair<List<CaseLabel>, Statement>(
                         this.caseBlocks[caseBlockIndex].Key,
                         (Statement) processor.Process(this.caseBlocks[caseBlockIndex].Value));
             }

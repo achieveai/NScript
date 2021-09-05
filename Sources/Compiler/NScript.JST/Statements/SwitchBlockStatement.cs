@@ -23,7 +23,7 @@ namespace NScript.JST
         /// <summary>
         /// Backing field for caseBlocks.
         /// </summary>
-        private List<KeyValuePair<List<LiteralExpression>, Statement>> caseBlocks;
+        private List<KeyValuePair<List<Expression>, Statement>> caseBlocks;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SwitchBlockStatement"/> class.
@@ -36,7 +36,7 @@ namespace NScript.JST
             Location location,
             IdentifierScope scope,
             Expression statementValue,
-            List<KeyValuePair<List<LiteralExpression>, Statement>> caseBlocks)
+            List<KeyValuePair<List<Expression>, Statement>> caseBlocks)
             : base(location, scope)
         {
             this.statementValue = statementValue;

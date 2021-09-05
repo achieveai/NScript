@@ -30,6 +30,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "TestTupleUnfolding", "TestTupleUnfolding.js", TestType.All)]
         [DataRow(TestClassNameStr, "TestThrowExpression", "TestThrowExpression.js", TestType.All)]
         [DataRow(TestClassNameStr, "DefaultLiteralExpression", "DefaultLiteralExpression.js", TestType.All)]
+        [DataRow(TestClassNameStr, "SumPositiveNumbers", "DefaultLiteralExpression.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

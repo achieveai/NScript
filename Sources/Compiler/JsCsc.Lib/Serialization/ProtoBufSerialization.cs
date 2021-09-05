@@ -1047,7 +1047,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(221, typeof(SwitchDeclarationCaseLabel))]
     [ProtoInclude(222, typeof(SwitchDiscardCaseLabel))]
     [Serializable]
-    public class SwitchCaseLabel
+    public class SwitchCaseLabel: AstBase
     {
         public bool NoUse_ { get; set; }
     }
@@ -1072,17 +1072,21 @@ namespace JsCsc.Lib.Serialization
     {
         public LocalVariableSer LocalVariable { get; set; }
         public ExpressionSer When { get; set; }
+
+        public int? DeclaredTypeOpt { get; set; }
     }
 
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class SwitchSectionSer
-        : AstBase
+        : BlockSer
     {
         public List<SwitchCaseLabel> Labels { get; set; }
 
         public StatementSer Block { get; set; }
+
+        public int BlockId { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -1095,6 +1099,8 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer SwitchExpression { get; set; }
 
         public List<SwitchSectionSer> Blocks { get; set; }
+
+        public int BlockId { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

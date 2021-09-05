@@ -145,6 +145,22 @@ namespace RealScript
             }
         }
 
+        public void SwitchScopeTest()
+        {
+            switch (0)
+            {
+                case 0:
+                    var x = 10;
+                    break;
+                default:
+                    break;
+                case 1:
+                    x = 90;
+                    var y = x + 90;
+                    break;
+            }
+        }
+
         public void RegressionContinousSwitchValues(
             int action,
             int changeIndex,
