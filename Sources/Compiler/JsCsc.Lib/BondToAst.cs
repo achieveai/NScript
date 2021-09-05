@@ -521,17 +521,19 @@ namespace JsCsc.Lib
                             break;
 
                         case Serialization.SwitchDeclarationCaseLabel sdcl:
-                            var localVariable = ParseLocalVariable(sdcl.LocalVariable);
+                            var localVariableOpt = sdcl.LocalVariableOpt != null
+                                ? ParseLocalVariable(sdcl.LocalVariableOpt)
+                                : null;
+
                             labels.Add(
                                 new DeclarationCaseLabel(_clrContext,
                                 LocFromJObject(@case),
-                                localVariable != null
-                                ? new VariableReference(
+                                localVariableOpt != null
+                                    ? new VariableReference(
                                         _clrContext,
                                         null,
-                                        localVariable)
-                                : null
-,
+                                        localVariableOpt)
+                                    : null,
                                 DeserializeType(sdcl.DeclaredTypeOpt.Value),
                                 ParseExpression(sdcl.When)));
 

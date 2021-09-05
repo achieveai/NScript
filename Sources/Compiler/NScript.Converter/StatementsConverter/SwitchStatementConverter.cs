@@ -40,8 +40,7 @@ namespace NScript.Converter.StatementsConverter
                 });
             switchValueOrTempVar = tempVar;
 
-            // var switchValueTempVar = new JST.IdentifierExpression(converter.GetTempVariable(), converter.Scope);
-            // var assignStmt = new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.Assignment, switchValueTempVar, switchValue);
+            var conversionVariant = GetSwitchConversionVariant(statement);
 
             var caseBlocks =
                 new List<KeyValuePair<List<JST.Expression>, JST.Statement>>(statement.CaseBlocks.Count);
@@ -57,7 +56,7 @@ namespace NScript.Converter.StatementsConverter
                         cases.Add(
                             Convert(
                                 converter,
-                                keyValuePair.Key[literalIndex], switchValueOrTempVar));
+                                keyValuePair.Key[literalIndex], switchValueOrTempVar, conversionVariant));
                     }
                     else
                     {
@@ -85,13 +84,16 @@ namespace NScript.Converter.StatementsConverter
         private static JST.Expression Convert(
             IMethodScopeConverter converter,
             CaseLabel label,
-            JST.Expression switchValueOrTempVar)
+            JST.Expression switchValueOrTempVar,
+            ConversionVariant conversionVariant)
         {
             switch (label)
             {
                 case ConstCaseLabel ccl:
                     var constantExpression = ExpressionConverterBase.Convert(converter, ccl.ConstantExpression);
-                    return new JST.BinaryExpression(
+                    return conversionVariant == ConversionVariant.RegularSwitchValue
+                        ?  constantExpression
+                        : new JST.BinaryExpression(
                             null,
                             converter.Scope.ParentScope,
                             JST.BinaryOperator.Equals,
@@ -99,7 +101,9 @@ namespace NScript.Converter.StatementsConverter
                             constantExpression);
 
                 case DeclarationCaseLabel dcl:
-                    var variable = (JST.IdentifierExpression)ExpressionConverterBase.Convert(converter, dcl.Variable);
+                    var variableOpt = dcl.VariableOpt != null
+                        ? (JST.IdentifierExpression)ExpressionConverterBase.Convert(converter, dcl.VariableOpt)
+                        : null;
                     var ty = dcl.TypeReference.Resolve();
                     var methodReference = converter.KnownReferences.AsTypeMethod;
                     var typeRefExpr = JST.IdentifierExpression.Create(null, converter.Scope,
@@ -110,13 +114,25 @@ namespace NScript.Converter.StatementsConverter
                         converter,
                         converter.RuntimeManager
                     );
-                    var binding = new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.Assignment, variable, asType);
-                    return new JST.BinaryExpression(
+
+                    var whenExprOpt = dcl.WhenExpressionOpt != null
+                        ? ExpressionConverterBase.Convert(converter, dcl.WhenExpressionOpt)
+                        : null;
+
+                    var binding = variableOpt != null
+                        ? new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.Assignment, variableOpt, asType)
+                        : asType;
+
+                    var typeCheckExpr = new JST.BinaryExpression(
                         null,
                         converter.Scope,
                         JST.BinaryOperator.NotEquals,
                         binding,
                         new JST.NullLiteralExpression(converter.Scope));
+
+                    return whenExprOpt != null
+                        ? new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.LogicalAnd, typeCheckExpr, whenExprOpt)
+                        : typeCheckExpr;
 
                 default:
                     throw new NotImplementedException();
@@ -134,6 +150,30 @@ namespace NScript.Converter.StatementsConverter
                 default:
                     return true;
             }
+        }
+
+        private enum ConversionVariant
+        {
+            BooleanSwitchValue,
+            RegularSwitchValue
+        }
+
+        private static ConversionVariant GetSwitchConversionVariant(SwitchStatement statement)
+        {
+            foreach (var block in statement.CaseBlocks)
+            {
+                var cases = block.Key;
+                foreach (var @case in cases)
+                {
+                    var dcl = @case as DeclarationCaseLabel;
+                    if (dcl?.VariableOpt != null)
+                    {
+                        return ConversionVariant.BooleanSwitchValue;
+                    }
+                }
+            }
+
+            return ConversionVariant.RegularSwitchValue;
         }
     }
 }

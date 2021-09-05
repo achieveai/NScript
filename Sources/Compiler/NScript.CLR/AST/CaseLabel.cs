@@ -14,12 +14,12 @@ namespace NScript.CLR.AST
     public class DeclarationCaseLabel : CaseLabel
     {
         public TypeReference TypeReference { get; }
-        public VariableReference Variable { get; }
+        public VariableReference? VariableOpt { get; }
         public Expression? WhenExpressionOpt { get;  }
-        public DeclarationCaseLabel(ClrContext ctx, Location location, VariableReference localVariable, TypeReference ty, Expression? whenExpressionOpt)
+        public DeclarationCaseLabel(ClrContext ctx, Location location, VariableReference? localVariableOpt, TypeReference ty, Expression? whenExpressionOpt)
             : base(ctx, location)
         {
-            this.Variable = localVariable;
+            this.VariableOpt = localVariableOpt;
             this.TypeReference = ty;
             this.WhenExpressionOpt = whenExpressionOpt;
         }

@@ -1070,7 +1070,7 @@ namespace JsCsc.Lib.Serialization
     [Serializable]
     public class SwitchDeclarationCaseLabel : SwitchCaseLabel
     {
-        public LocalVariableSer LocalVariable { get; set; }
+        public LocalVariableSer? LocalVariableOpt { get; set; }
         public ExpressionSer When { get; set; }
 
         public int? DeclaredTypeOpt { get; set; }

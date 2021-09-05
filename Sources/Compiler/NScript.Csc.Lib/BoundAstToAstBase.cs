@@ -1287,18 +1287,22 @@
                             else if (label.Pattern.Kind == BoundKind.DeclarationPattern)
                             {
                                 var declaredTypeOpt = ((BoundDeclarationPattern)label.Pattern).DeclaredType.Type;
-                                var xu = !TypeSymbol.Equals(declaredTypeOpt, null)
+                                var ty = !TypeSymbol.Equals(declaredTypeOpt, null)
                                     ? arg.SymbolSerializer.GetTypeSpecId(declaredTypeOpt)
                                     : (int?)null;
 
+                                var boundPattern = (BoundDeclarationPattern)label.Pattern;
+                                BoundLocal? boundLocalOpt = (BoundLocal?)boundPattern.VariableAccess;
+
                                 caseLabels.Add(new SwitchDeclarationCaseLabel()
                                 {
-                                    // Create scope and then assign local to this scope
-                                    LocalVariable = ((LocalVariableRefExpression)this.VisitLocal((BoundLocal)((BoundDeclarationPattern)label.Pattern).VariableAccess, arg)).LocalVariable,
+                                    LocalVariableOpt = boundLocalOpt != null
+                                        ? ((LocalVariableRefExpression)this.VisitLocal(boundLocalOpt, arg)).LocalVariable
+                                        : null,
                                     When = label.WhenClause != null
                                         ? (ExpressionSer)this.Visit(label.WhenClause, arg)
                                         : null,
-                                    DeclaredTypeOpt = xu,
+                                    DeclaredTypeOpt = ty,
                                 });
                             }
                             else
