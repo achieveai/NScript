@@ -18,6 +18,8 @@
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />
+    <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
+    <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -51,6 +53,8 @@
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
+    <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
     <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\DoWhileLoop.js" />
     <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\WhileLoop.js" />
     <EmbeddedResource Include="MethodConverterTests\WhileLoopBlockConverters\DoWhilePaddedLoop.js" />

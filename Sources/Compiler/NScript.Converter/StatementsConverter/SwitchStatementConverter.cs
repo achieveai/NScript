@@ -21,26 +21,10 @@ namespace NScript.Converter.StatementsConverter
             IMethodScopeConverter converter,
             SwitchStatement statement)
         {
-            JST.Expression switchValue = ExpressionConverterBase.Convert(
-                converter,
-                statement.SwitchValue);
-            converter.PushScopeBlock(statement);
-
-            JST.Expression switchValueOrTempVar = switchValue;
-
-            var tempVar = new JST.IdentifierExpression(converter.GetTempVariable(), converter.Scope);
-
-            switchValue = new JST.ExpressionsList(switchValue.Location, converter.Scope, new JST.Expression[] {
-                    new JST.BinaryExpression(switchValue.Location,
-                        converter.Scope,
-                        JST.BinaryOperator.Assignment,
-                        tempVar,
-                        switchValue),
-                    new JST.BooleanLiteralExpression(null, true)
-                });
-            switchValueOrTempVar = tempVar;
-
             var conversionVariant = GetSwitchConversionVariant(statement);
+            var (jsSwitchValue, reusableSwitchValue) = ConvertSwitchValue(converter, statement.SwitchValue, conversionVariant);
+
+            converter.PushScopeBlock(statement);
 
             var caseBlocks =
                 new List<KeyValuePair<List<JST.Expression>, JST.Statement>>(statement.CaseBlocks.Count);
@@ -56,7 +40,7 @@ namespace NScript.Converter.StatementsConverter
                         cases.Add(
                             Convert(
                                 converter,
-                                keyValuePair.Key[literalIndex], switchValueOrTempVar, conversionVariant));
+                                keyValuePair.Key[literalIndex], reusableSwitchValue, conversionVariant));
                     }
                     else
                     {
@@ -77,14 +61,14 @@ namespace NScript.Converter.StatementsConverter
             return new JST.SwitchBlockStatement(
                 statement.Location,
                 converter.Scope,
-                switchValue,
+                jsSwitchValue,
                 caseBlocks);
         }
 
         private static JST.Expression Convert(
             IMethodScopeConverter converter,
             CaseLabel label,
-            JST.Expression switchValueOrTempVar,
+            JST.Expression reusableSwitchValue,
             ConversionVariant conversionVariant)
         {
             switch (label)
@@ -92,12 +76,12 @@ namespace NScript.Converter.StatementsConverter
                 case ConstCaseLabel ccl:
                     var constantExpression = ExpressionConverterBase.Convert(converter, ccl.ConstantExpression);
                     return conversionVariant == ConversionVariant.RegularSwitchValue
-                        ?  constantExpression
+                        ? constantExpression
                         : new JST.BinaryExpression(
                             null,
                             converter.Scope.ParentScope,
                             JST.BinaryOperator.Equals,
-                            switchValueOrTempVar,
+                            reusableSwitchValue,
                             constantExpression);
 
                 case DeclarationCaseLabel dcl:
@@ -108,27 +92,29 @@ namespace NScript.Converter.StatementsConverter
                     var methodReference = converter.KnownReferences.AsTypeMethod;
                     var typeRefExpr = JST.IdentifierExpression.Create(null, converter.Scope,
                         converter.Resolve(ty));
+                    // JS: Type__AsType(Type, ident)
                     var asType = MethodCallExpressionConverter.CreateMethodCallExpression(
                         new MethodCallContext(typeRefExpr, methodReference, false),
-                        new JST.Expression[] { switchValueOrTempVar },
+                        new JST.Expression[] { reusableSwitchValue },
                         converter,
                         converter.RuntimeManager
                     );
-
-                    var whenExprOpt = dcl.WhenExpressionOpt != null
-                        ? ExpressionConverterBase.Convert(converter, dcl.WhenExpressionOpt)
-                        : null;
 
                     var binding = variableOpt != null
                         ? new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.Assignment, variableOpt, asType)
                         : asType;
 
+                     // JS: Type__AsType(Type, ident) != null
                     var typeCheckExpr = new JST.BinaryExpression(
                         null,
                         converter.Scope,
                         JST.BinaryOperator.NotEquals,
                         binding,
                         new JST.NullLiteralExpression(converter.Scope));
+
+                    var whenExprOpt = dcl.WhenExpressionOpt != null
+                        ? ExpressionConverterBase.Convert(converter, dcl.WhenExpressionOpt)
+                        : null;
 
                     return whenExprOpt != null
                         ? new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.LogicalAnd, typeCheckExpr, whenExprOpt)
@@ -139,23 +125,62 @@ namespace NScript.Converter.StatementsConverter
             }
         }
 
-        private static bool ShouldRequireTempVariable(Expression switchValue)
-        {
-            switch (switchValue)
-            {
-                case LiteralExpression:
-                case VariableReference:
-                    return false;
-
-                default:
-                    return true;
-            }
-        }
-
         private enum ConversionVariant
         {
             BooleanSwitchValue,
             RegularSwitchValue
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="converter"></param>
+        /// <param name="switchValue"></param>
+        /// <param name="conversionVariant"></param>
+        /// <returns>(jsSwitchValue, reusableSwitchValue)</returns>
+        private static (JST.Expression, JST.Expression) ConvertSwitchValue(IMethodScopeConverter converter, Expression switchValue, ConversionVariant conversionVariant)
+        {
+            var jsSwitchValue = ExpressionConverterBase.Convert(converter, switchValue);
+
+            if (conversionVariant == ConversionVariant.RegularSwitchValue)
+            {
+                // JS: switch(12), switch(o), switch(f()), etc.
+                return (jsSwitchValue, jsSwitchValue);
+            }
+
+            var shouldRequireTempVariable = switchValue switch
+            {
+                LiteralExpression => false,
+                VariableReference => false,
+                _ => true
+            };
+
+            JST.Expression reusableSwitchValue = null;
+
+            if (shouldRequireTempVariable)
+            {
+                var tempVarExpr = new JST.IdentifierExpression(converter.GetTempVariable(), converter.Scope);
+                var assignmentExpr = new JST.BinaryExpression(switchValue.Location, converter.Scope, JST.BinaryOperator.Assignment, tempVarExpr, jsSwitchValue);
+
+                // JS: switch(temp0 = switchValue, true)
+                jsSwitchValue = new JST.ExpressionsList(
+                    switchValue.Location,
+                    converter.Scope,
+                    new JST.Expression[]
+                    {
+                        assignmentExpr, new JST.BooleanLiteralExpression(converter.Scope, true)
+                    });
+
+                reusableSwitchValue = tempVarExpr;
+            }
+            else
+            {
+                reusableSwitchValue = jsSwitchValue;
+                // JS: switch(true)
+                jsSwitchValue = new JST.BooleanLiteralExpression(converter.Scope, true);
+            }
+
+            return (jsSwitchValue, reusableSwitchValue);
         }
 
         private static ConversionVariant GetSwitchConversionVariant(SwitchStatement statement)
@@ -165,8 +190,7 @@ namespace NScript.Converter.StatementsConverter
                 var cases = block.Key;
                 foreach (var @case in cases)
                 {
-                    var dcl = @case as DeclarationCaseLabel;
-                    if (dcl?.VariableOpt != null)
+                    if (@case is DeclarationCaseLabel)
                     {
                         return ConversionVariant.BooleanSwitchValue;
                     }

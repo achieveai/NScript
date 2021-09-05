@@ -161,6 +161,18 @@ namespace RealScript
             }
         }
 
+        public void SwitchPatternMatching()
+        {
+            object o = 12;
+            switch (o)
+            {
+                case String _:
+                    return;
+                case Int16Array a when a.Length > 12:
+                    return;
+            }
+        }
+
         public void RegressionContinousSwitchValues(
             int action,
             int changeIndex,
