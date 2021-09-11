@@ -379,7 +379,9 @@ namespace NScript.Converter.TypeSystemConverter
             // If we can't implement this method, let's skip.
             if (!this.TypeScopeManager.IsImplemented(methodDefinition)
                 || !this.context.IsImplemented(methodDefinition)
-                || (methodDefinition.IsConstructor && this.context.IsPsudoType(this.typeDefinition)))
+                || (methodDefinition.IsConstructor
+                    && this.context.IsPsudoType(this.typeDefinition)
+                    && !methodDefinition.IsStatic))
             {
                 return;
             }

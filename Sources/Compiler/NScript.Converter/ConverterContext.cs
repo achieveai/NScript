@@ -1124,7 +1124,8 @@ namespace NScript.Converter
                 foreach (var field in typeDefinition.Fields)
                 {
                     if (!field.IsPrivate
-                        && field.Constant == null)
+                        && field.Constant == null
+                        && !field.IsStatic)
                     {
                         hasPublicFields = true;
                     }
@@ -1294,8 +1295,7 @@ namespace NScript.Converter
 
                 if (rv != TypeKind.Normal)
                 {
-                    if (implmentedConstructor
-                        || (rv != TypeKind.Extended && hasStaticConstructor))
+                    if (implmentedConstructor)
                     {
                         throw new InvalidDataException(
                             string.Format(
