@@ -26,6 +26,8 @@ namespace NScript.Converter.Test.MethodConverterTests
 
         [DataTestMethod]
         [DataRow(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
+        [DataRow(TestClassNameStr, "SwitchPatternMatching", "SwitchPatternMatching.js", TestType.All)]
+        [DataRow(TestClassNameStr, "SwitchScopeTest", "SwitchScopeTest.js", TestType.All)]
         [DataRow(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
         [DataRow(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
         [DataRow(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]

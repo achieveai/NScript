@@ -123,9 +123,9 @@
                     return this.VisitStatement(n, arg);
                 case ReturnStatement n:
                     return this.VisitStatement(n, arg);
-                case ScopeBlock n:
-                    return this.VisitStatement(n, arg);
                 case SwitchStatement n:
+                    return this.VisitStatement(n, arg);
+                case ScopeBlock n:
                     return this.VisitStatement(n, arg);
                 case ThrowExpression n:
                     return this.VisitStatement(n, arg);

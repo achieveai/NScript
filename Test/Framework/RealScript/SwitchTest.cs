@@ -145,6 +145,34 @@ namespace RealScript
             }
         }
 
+        public void SwitchScopeTest()
+        {
+            switch (0)
+            {
+                case 0:
+                    var x = 10;
+                    break;
+                default:
+                    break;
+                case 1:
+                    x = 90;
+                    var y = x + 90;
+                    break;
+            }
+        }
+
+        public void SwitchPatternMatching()
+        {
+            object o = 12;
+            switch (o)
+            {
+                case String _:
+                    return;
+                case Int16Array a when a.Length > 12:
+                    return;
+            }
+        }
+
         public void RegressionContinousSwitchValues(
             int action,
             int changeIndex,
