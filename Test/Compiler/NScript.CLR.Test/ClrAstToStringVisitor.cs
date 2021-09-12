@@ -446,7 +446,7 @@
                         {
                             return string.Concat(
                                 _.Key
-                                    .Select(_k => GetSpaces(arg) + (_k == null ? "default" : ("case " + this.Visit(_k, arg + 1))))
+                                    .Select(_k => GetSpaces(arg) + this.VisitCaseLabel(_k, arg) )
                                     .ToArray()) +
                                 this.Visit(_.Value, arg + 2);
                         })
@@ -521,6 +521,17 @@
                         .Select(_ => this.Visit(_, arg + 1))
                         .ToList())
                 + GetSpaces(arg) + "}";
+        }
+
+        private string VisitCaseLabel(CaseLabel node, int arg)
+        {
+            return node switch
+            {
+                ConstCaseLabel ccl => "case " + this.Visit(ccl.ConstantExpression, arg + 1),
+                DeclarationCaseLabel dcl => "case " + this.Visit(dcl.VariableOpt, arg + 1),
+                null => "default",
+                _ => throw new NotImplementedException()
+            };
         }
     }
 }
