@@ -15,6 +15,8 @@
     <None Remove="MethodConverterTests\DefaultExpressions\TestReferenceType.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\DefaultLiteralExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\SumPositiveNumbers.js" />
+    <None Remove="MethodConverterTests\NewLanguageFeatures\TestSwitchPatternMatching_1.js" />
+    <None Remove="MethodConverterTests\NewLanguageFeatures\TestSwitchPatternMatching_2.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />
@@ -50,6 +52,8 @@
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestValueType.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\DefaultLiteralExpression.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\SumPositiveNumbers.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestSwitchPatternMatching_1.js" />
+    <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestSwitchPatternMatching_2.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />

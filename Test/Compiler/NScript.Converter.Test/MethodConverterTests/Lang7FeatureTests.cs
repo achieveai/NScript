@@ -31,6 +31,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "TestThrowExpression", "TestThrowExpression.js", TestType.All)]
         [DataRow(TestClassNameStr, "DefaultLiteralExpression", "DefaultLiteralExpression.js", TestType.All)]
         [DataRow(TestClassNameStr, "SumPositiveNumbers", "SumPositiveNumbers.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestSwitchPatternMatching_1", "TestSwitchPatternMatching_1.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestSwitchPatternMatching_2", "TestSwitchPatternMatching_2.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
