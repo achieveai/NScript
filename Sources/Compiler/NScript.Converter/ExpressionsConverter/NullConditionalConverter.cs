@@ -49,20 +49,19 @@ namespace NScript.Converter.ExpressionsConverter
             JST.Expression rv;
 
             if (converter.ClrKnownReferences.String.IsSameDefinition(expression.FirstChoice.ResultType)
+                || expression.ResultType.IsValueType
                 || converter.ClrKnownReferences.Object.IsSameDefinition(expression.ResultType))
             {
-                // only for string do we check strict equals.
+                var methodRef = converter.ClrKnownReferences.NullOrUndefinedCheck;
+                var methodIdentifier = converter.ResolveStaticMember(methodRef);
+                var methodExpression = new JST.IdentifierExpression(methodIdentifier[0], converter.Scope);
+
                 rv = new JST.ConditionalOperatorExpression(
                     expression.Location,
                     converter.Scope,
-                    new JST.BinaryExpression(
-                        firstExpression.Location,
-                        converter.Scope,
-                        JST.BinaryOperator.StrictNotEquals,
-                        firstExpression,
-                        new JST.NullLiteralExpression(converter.Scope)),
-                    new IdentifierExpression(tmpIdentifier, converter.Scope),
-                    alternateExpression);
+                    new JST.MethodCallExpression(expression.Location, converter.Scope, methodExpression, firstExpression),
+                    alternateExpression,
+                    new IdentifierExpression(tmpIdentifier, converter.Scope));
             }
             else
             {
