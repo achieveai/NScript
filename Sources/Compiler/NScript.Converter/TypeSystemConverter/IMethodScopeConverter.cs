@@ -11,6 +11,8 @@
 
     public interface IMethodScopeConverter : IResolver
     {
+        bool IsIterator { get; set; }
+
         JST.IdentifierScope Scope
         { get; }
 

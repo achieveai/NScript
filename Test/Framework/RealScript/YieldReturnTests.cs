@@ -7,12 +7,30 @@
 namespace RealScript
 {
     using System.Collections.Generic;
+    using System.Collections;
 
     /// <summary>
     /// Definition for YieldReturnTests
     /// </summary>
-    public class YieldReturnTests
+    public static class YieldReturnTests
     {
+        public static void Main()
+        {
+            var ator = F();
+            while(ator.MoveNext())
+            {
+                Console.WriteLine(ator.Current);
+            }
+
+            var x = 89;
+        }
+
+        public static IEnumerator F()
+        {
+            yield return 12;
+            yield return 90;
+        }
+
         public static IEnumerator<string> GetEnumeratorNestedForeach(System.Collections.Generic.IList<string> strList)
         {
             foreach (var kv in strList)

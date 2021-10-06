@@ -31,6 +31,7 @@ namespace NScript.Converter.TypeSystemConverter
     /// </summary>
     public class MethodConverter : IResolver, IMethodScopeConverter
     {
+        public bool IsIterator { get; set; }
         /// <summary>
         /// This argument.
         /// </summary>
@@ -1226,6 +1227,19 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
+            if (IsIterator)
+            {
+                var generatorShell = GetGeneratorShell();
+                generatorShell.AddStatements(statements);
+                var ctor = KnownReferences.GeneratorWrapperCtor;
+                var jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
+                var wrapperCallExpression = new MethodCallExpression(null, Scope, jstCtor, generatorShell);
+                functionExpression.AddStatement(
+                    new JST.ReturnStatement(null, Scope, wrapperCallExpression));
+                IsIterator = false;
+                return functionExpression;
+            }
+
             functionExpression.AddStatements(statements);
             return functionExpression;
         }
@@ -1368,6 +1382,17 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             return ConvertCST();
+        }
+
+        private FunctionExpression GetGeneratorShell()
+        {
+            return new FunctionExpression(
+                null,
+                typeConverter.Scope,
+                Scope,
+                new List<IIdentifier>(),
+                null,
+                true);
         }
 
         /// <summary>

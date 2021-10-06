@@ -16,6 +16,7 @@ namespace XwmlParser
     /// </summary>
     public class MethodScopeConverter : IMethodScopeConverter
     {
+        public bool IsIterator { get; set; }
         private IdentifierScope scope;
         private RuntimeScopeManager runtimeManager;
         Dictionary<string, IIdentifier> localMap = new Dictionary<string,IIdentifier>();
