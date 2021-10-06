@@ -173,6 +173,8 @@ namespace NScript.Converter
 
         private TypeReference generatorWrapperType;
 
+        private TypeReference generatorWrapperGenericType;
+
         private TypeReference nativeGeneratorType;
 
         /// <summary>
@@ -301,6 +303,8 @@ namespace NScript.Converter
         private MethodReference moveNextEnumeratorMethod;
 
         private MethodReference generatorWrapperCtor;
+
+        private MethodReference generatorWrapperGenericCtor;
 
         private MethodReference nativeGeneratorCtor;
 
@@ -625,13 +629,29 @@ namespace NScript.Converter
         {
             get
             {
-                if (this.generatorWrapperType != null)
+                if (this.generatorWrapperType == null)
                 {
-                    return this.generatorWrapperType;
+                    this.generatorWrapperType = GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "GeneratorWrapper");
                 }
-                return this.generatorWrapperType = GetTypeReference(
-                    ClrKnownReferences.SystemStr,
-                    "GeneratorWrapper");
+
+                return this.generatorWrapperType;
+            }
+        }
+
+        public TypeReference GeneratorWrapperGeneric
+        {
+            get
+            {
+                if (this.generatorWrapperGenericType == null)
+                {
+                    this.generatorWrapperGenericType = GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "GeneratorWrapper`1");
+                }
+
+                return this.generatorWrapperGenericType;
             }
         }
 
@@ -639,7 +659,7 @@ namespace NScript.Converter
         {
             get
             {
-                if(this.nativeGeneratorType != null)
+                if (this.nativeGeneratorType != null)
                 {
                     return this.nativeGeneratorType;
                 }
@@ -1476,10 +1496,28 @@ namespace NScript.Converter
                 {
                     return this.generatorWrapperCtor;
                 }
+
                 return this.generatorWrapperCtor = this.GetMethodReference(
                     ".ctor",
                     ClrReferences.Void,
                     GeneratorWrapper,
+                    ClrReferences.Object);
+            }
+        }
+
+        public MethodReference GeneratorWrapperGenericCtor
+        {
+            get
+            {
+                if (this.generatorWrapperGenericCtor != null)
+                {
+                    return this.generatorWrapperGenericCtor;
+                }
+
+                return this.generatorWrapperGenericCtor = this.GetMethodReference(
+                    ".ctor",
+                    ClrReferences.Void,
+                    GeneratorWrapperGeneric,
                     ClrReferences.Object);
             }
         }

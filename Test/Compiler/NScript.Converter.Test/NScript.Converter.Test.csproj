@@ -9,6 +9,7 @@
     <None Remove="MethodConverterTests\YieldReturn\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="JsExecutionTests\Results\YieldReturnTests.txt" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestBuiltinValueTypes.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericReferenceType.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericValueType.js" />
@@ -43,6 +44,7 @@
     <ProjectReference Include="$(CompilerTestSources)\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="JsExecutionTests\Results\YieldReturnTests.txt" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestBuiltinValueTypes.js" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestGenericReferenceType.js" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestReferenceType.js" />

@@ -17,18 +17,53 @@ namespace RealScript
         public static void Main()
         {
             var ator = F();
-            while(ator.MoveNext())
+            while (ator.MoveNext())
             {
                 Console.WriteLine(ator.Current);
             }
 
-            var x = 89;
+            foreach (var el in G())
+            {
+                Console.WriteLine(el);
+            }
+
+            foreach(var el in I())
+            {
+                Console.WriteLine(el);
+            }
+
+            foreach(var el in H<string>("first", "second", "third"))
+            {
+                Console.WriteLine(el);
+            }
+
+            var x = 1112;
         }
 
         public static IEnumerator F()
         {
             yield return 12;
             yield return 90;
+        }
+
+        public static IEnumerable G()
+        {
+            yield return "asdf";
+            yield return "iopp";
+        }
+
+        public static IEnumerable<string> I()
+        {
+            yield return "789";
+            yield return "0123";
+        }
+
+        public static IEnumerable<T> H<T>(params T[] args)
+        {
+            foreach(var arg in args)
+            {
+                yield return arg;
+            }
         }
 
         public static IEnumerator<string> GetEnumeratorNestedForeach(System.Collections.Generic.IList<string> strList)

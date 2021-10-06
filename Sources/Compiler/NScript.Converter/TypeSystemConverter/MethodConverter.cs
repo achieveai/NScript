@@ -1231,8 +1231,23 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 var generatorShell = GetGeneratorShell();
                 generatorShell.AddStatements(statements);
-                var ctor = KnownReferences.GeneratorWrapperCtor;
-                var jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
+                MethodReference ctor;
+                JST.Expression jstCtor;
+
+                if (MethodDefinition.ReturnType.IsSameDefinition(KnownReferences.IEnumerable)
+                    || MethodDefinition.ReturnType.IsSameDefinition(KnownReferences.IEnumerator))
+                {
+                    ctor = KnownReferences.GeneratorWrapperCtor;
+                    jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
+                }
+                else
+                {
+                    ctor = KnownReferences
+                        .GeneratorWrapperGenericCtor
+                        .FixGenericTypeArguments(MethodDefinition.ReturnType);
+                    jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
+                }
+
                 var wrapperCallExpression = new MethodCallExpression(null, Scope, jstCtor, generatorShell);
                 functionExpression.AddStatement(
                     new JST.ReturnStatement(null, Scope, wrapperCallExpression));
