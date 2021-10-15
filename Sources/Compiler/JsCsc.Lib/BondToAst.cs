@@ -797,6 +797,11 @@ namespace JsCsc.Lib
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
 
+        private Node ParseYield(Serialization.YieldBreakStatement jObject) => new YieldStatement(
+            _clrContext,
+            LocFromJObject(jObject),
+            null);
+
         private Node ParseIterator(Serialization.IteratorBlock jObject) => new InlineIteratorExpression(
                 _clrContext,
                 LocFromJObject(jObject),
@@ -1953,6 +1958,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.YieldStatement),
                     (a) => ParseYield((Serialization.YieldStatement)a)
+                },
+                {
+                    typeof(Serialization.YieldBreakStatement),
+                    (a) => ParseYield((Serialization.YieldBreakStatement)a)
                 },
                 {
                     typeof(Serialization.IteratorBlock),

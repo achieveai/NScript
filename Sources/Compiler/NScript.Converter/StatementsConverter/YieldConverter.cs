@@ -13,6 +13,14 @@ namespace NScript.Converter.StatementsConverter
         {
             methodScopeConverter.IsIterator = true;
 
+            if (yieldStatement.IsBreak)
+            {
+                return new JST.ReturnStatement(
+                    yieldStatement.Location,
+                    methodScopeConverter.Scope,
+                    null);
+            }
+
             var yieldExpression = new JST.YieldExpression(
                 yieldStatement.Location,
                 methodScopeConverter.Scope,

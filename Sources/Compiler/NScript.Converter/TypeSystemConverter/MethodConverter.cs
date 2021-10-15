@@ -1229,6 +1229,23 @@ namespace NScript.Converter.TypeSystemConverter
 
             if (IsIterator)
             {
+                HandleIterator(functionExpression, statements);
+            }
+            else
+            {
+                functionExpression.AddStatements(statements);
+            }
+
+            return functionExpression;
+        }
+
+        private void HandleIterator(
+            FunctionExpression outerFunction,
+            List<Statement> statements)
+        {
+            scopeStack.AddFirst(new IdentifierScope(Scope));
+            try
+            {
                 var generatorShell = GetGeneratorShell();
                 generatorShell.AddStatements(statements);
                 MethodReference ctor;
@@ -1246,17 +1263,48 @@ namespace NScript.Converter.TypeSystemConverter
                         .GeneratorWrapperGenericCtor
                         .FixGenericTypeArguments(MethodDefinition.ReturnType);
                     jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
+
+                    if (MethodDefinition.ReturnType.ContainsGenericParameter)
+                    {
+                        var idfier = ResolveFactory(ctor)[0];
+                        var ty = ResolveTypeToExpression(
+                            KnownReferences.GeneratorWrapperGeneric.Resolve()
+                            .FixGenericTypeArguments(
+                                MethodDefinition.ReturnType),
+                            Scope);
+
+                        var tyCall = new MethodCallExpression(
+                            null,
+                            Scope,
+                            ty,
+                            MethodDefinition.ReturnType.GetGenericArguments().Select(
+                                genericParam => IdentifierExpression.Create(null,
+                                Scope, this.Resolve(genericParam)))
+                            .ToArray());
+
+                        var expr = new BinaryExpression(
+                            null,
+                            Scope,
+                            BinaryOperator.Assignment,
+                            new IdentifierExpression(idfier, Scope),
+                            tyCall);
+
+                        outerFunction.AddStatement(
+                            new ExpressionStatement(null, outerFunction.Scope, expr));
+                    }
                 }
 
-                var wrapperCallExpression = new MethodCallExpression(null, Scope, jstCtor, generatorShell);
-                functionExpression.AddStatement(
-                    new JST.ReturnStatement(null, Scope, wrapperCallExpression));
-                IsIterator = false;
-                return functionExpression;
-            }
+                var wrapperCallExpression = new MethodCallExpression(
+                    null, Scope, jstCtor, generatorShell);
 
-            functionExpression.AddStatements(statements);
-            return functionExpression;
+                outerFunction.AddStatement(
+                    new JST.ReturnStatement(null, outerFunction.Scope, wrapperCallExpression));
+                IsIterator = false;
+            }
+            finally
+            {
+                scopeStack.RemoveFirst();
+            }
         }
 
         /// <summary>
@@ -1403,8 +1451,8 @@ namespace NScript.Converter.TypeSystemConverter
         {
             return new FunctionExpression(
                 null,
-                typeConverter.Scope,
                 Scope,
+                new IdentifierScope(Scope, new List<string>(), false),
                 new List<IIdentifier>(),
                 null,
                 true);
