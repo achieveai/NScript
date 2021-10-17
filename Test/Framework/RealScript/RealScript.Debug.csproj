@@ -76,6 +76,7 @@
     <Compile Include="TestInitializers.cs" />
     <Compile Include="TestPsudoType.cs" />
     <Compile Include="TestReferenceClass.cs" />
+    <Compile Include="TupleTests.cs" />
     <Compile Include="WhileLoopBlocks.cs" />
     <Compile Include="YieldReturnTests.cs" />
     <Content Include="Properties\Project.FxCop" />

@@ -6,6 +6,8 @@
 
 namespace NScript.Converter.ExpressionsConverter
 {
+    using Mono.Cecil;
+    using NScript.CLR;
     using NScript.CLR.AST;
     using NScript.Converter.TypeSystemConverter;
     using System.Collections.Generic;
@@ -20,34 +22,192 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter scopeConverter,
             TupleDeconstructExpression expr)
         {
-            // Create assignment operators for each of left
-            // expression and match it to corresponding property on tuple
-            // E.g. idx: 1, should be matched with Item2 field on ValueTuple
-            var lhs = expr.LeftExpressions;
-            var jsRhs = ExpressionConverterBase.Convert(scopeConverter, expr.RightExpression);
+            return InternalConvert(scopeConverter, expr, true);
+        }
 
-            // C#: var temp = tuple;
-            var tempIdentifier = new JST.IdentifierExpression(scopeConverter.GetTempVariable(), scopeConverter.Scope);
-            var tupleTempAssignment = JST.ExpressionStatement.CreateAssignmentExpression(tempIdentifier, jsRhs);
+        private static JST.Expression InternalConvert(
+            IMethodScopeConverter scopeConverter,
+            TupleDeconstructExpression expr,
+            bool addTailExpr = false)
+        {
+            return expr.RightExpression switch
+            {
+                TupleLiteral literal => InternalConvert(
+                    scopeConverter,
+                    expr.LeftExpressions,
+                    literal,
+                    expr.ResultType,
+                    addTailExpr),
 
-            var inlineInitializer = new JST.InlineObjectInitializer(expr.Location, scopeConverter.Scope);
+                _ => InternalConvert(
+                    scopeConverter,
+                    expr.LeftExpressions,
+                    expr.RightExpression,
+                    expr.ResultType,
+                    addTailExpr)
+            };
+        }
+
+        /// <summary>
+        /// Call when rhs is a tuple literal.
+        /// The lhs expressions are assigned to the corresponding tuple args of rhs.
+        /// Ex: (a, (b, c)) = (f(), z())
+        /// </summary>
+        private static JST.Expression InternalConvert(
+            IMethodScopeConverter scopeConverter,
+            Expression[] lhs,
+            TupleLiteral rhs,
+            TypeReference resultType,
+            bool addTailExpr = false)
+        {
+            var expressions = new List<JST.Expression>(lhs.Count());
+
+            foreach (var (expr, tupleArg) in lhs.Zip(rhs.TupleArgs))
+            {
+                if (expr is TupleLiteral lit)
+                {
+                    var decons = new TupleDeconstructExpression(expr.Context, expr.Location, lit.TupleArgs, tupleArg);
+                    expressions.Add(InternalConvert(scopeConverter, decons));
+                    continue;
+                }
+
+                var jsLhs = ExpressionConverterBase.Convert(scopeConverter, expr);
+                var jsRhs = ExpressionConverterBase.Convert(scopeConverter, tupleArg);
+
+                expressions.Add(
+                    new JST.BinaryExpression(
+                        rhs.Location,
+                        scopeConverter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        jsLhs,
+                        jsRhs));
+            }
+
+            // Finally add the tuple literal, since the tuple deconstruct expression evaluates
+            // to the tupleLiteral
+            if (addTailExpr)
+            {
+                expressions.Add(ExpressionConverterBase.Convert(scopeConverter, rhs));
+            }
+
+            return new JST.ExpressionsList(
+                rhs.Location,
+                scopeConverter.Scope,
+                expressions);
+        }
+
+        /// <summary>
+        /// Used when rhs is TupleDeconstructExpression is not a TupleLiteral
+        /// Ex: (a, b) = f() | x
+        /// The rhs is evaluated once and stored into a temp variable (if required)
+        /// and conversion is carried out.
+        /// </summary>
+        private static JST.Expression InternalConvert(
+            IMethodScopeConverter scopeConverter,
+            Expression[] lhs,
+            Expression rhs,
+            TypeReference resultType,
+            bool addTailExpr = false)
+        {
+            // Cache function result in a tmp variable
+            var tmpIdentifier = scopeConverter.GetTempVariable();
+            try
+            {
+                var jsRhs = ExpressionConverterBase.Convert(scopeConverter, rhs);
+                JST.Expression tempVarInitializer = null;
+
+                // Create tempVar only when rhs is not variable, else use the variable as it is.
+                if (!(rhs is VariableReference))
+                {
+                    var tmpVarExpression = new JST.IdentifierExpression(tmpIdentifier, scopeConverter.Scope, rhs.Location);
+                    tempVarInitializer = new JST.BinaryExpression(
+                        rhs.Location,
+                        scopeConverter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        tmpVarExpression,
+                        jsRhs);
+
+                    jsRhs = tmpVarExpression;
+                }
+
+                var expressionList = InternalConvert(
+                    scopeConverter,
+                    lhs,
+                    jsRhs,
+                    resultType,
+                    addTailExpr);
+
+                if (tempVarInitializer != null)
+                {
+                    expressionList.Expressions.Insert(0, tempVarInitializer);
+                }
+
+                return expressionList;
+            }
+            finally
+            {
+                scopeConverter.ReleaseTempVariable(tmpIdentifier);
+            }
+        }
+
+        /// <summary>
+        /// Used when rhs is cached into a JS tmp variable, and
+        /// each lhs arg needs to be assigned to corresponding field of the tuple
+        /// </summary>
+        private static JST.ExpressionsList InternalConvert(
+            IMethodScopeConverter scopeConverter,
+            Expression[] lhs,
+            JST.Expression rhs,
+            TypeReference rhsTy,
+            bool addTrailingExpr = false)
+        {
             var expressions = new List<JST.Expression>();
 
-            var typeDefinition = expr.RightExpression.ResultType.Resolve();
-
-            // JS: (a = jsRhs.Item1, b = jsRhs.Item2, ..., jsRhs)
-            foreach (var (field, assignee) in typeDefinition.Fields.Zip(lhs))
+            foreach (var (expr, (field, ty)) in lhs.Zip(rhsTy.Resolve().Fields.Zip(rhsTy.GetGenericArguments())))
             {
-                var jsLhs = ExpressionConverterBase.Convert(scopeConverter, assignee);
-                var fieldRef = new FieldReferenceExpression(expr.Context, null, field, expr.RightExpression);
+                var itemAccess = CreateItemAccessExpression(scopeConverter, rhs, field);
+
+                if (expr is TupleLiteral literal)
+                {
+                    expressions.Add(InternalConvert(
+                        scopeConverter,
+                        literal.TupleArgs,
+                        itemAccess,
+                        ty));
+                    continue;
+                }
+
                 expressions.Add(
-                    new JST.BinaryExpression(null, null,
-                        JST.BinaryOperator.Assignment, jsLhs,
-                        ExpressionConverterBase.Convert(scopeConverter, fieldRef))
-                    );
+                    new JST.BinaryExpression(
+                        expr.Location,
+                        scopeConverter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        ExpressionConverterBase.Convert(scopeConverter, expr),
+                        itemAccess));
             }
-            expressions.Add(jsRhs);
-            return new JST.ExpressionsList(expr.Location, scopeConverter.Scope, expressions);
+
+            if (addTrailingExpr)
+            {
+                expressions.Add(rhs);
+            }
+
+            return new JST.ExpressionsList(null, scopeConverter.Scope, expressions);
+        }
+
+
+        private static JST.Expression CreateItemAccessExpression(
+            IMethodScopeConverter scopeConverter,
+            JST.Expression rhs,
+            FieldDefinition fieldDef)
+        {
+            var fieldIdentifier = scopeConverter.Resolve(fieldDef);
+            var itemAccessExpr = new JST.IndexExpression(
+                rhs.Location,
+                scopeConverter.Scope,
+                rhs,
+                new JST.IdentifierExpression(fieldIdentifier, scopeConverter.Scope));
+
+            return itemAccessExpr;
         }
     }
 }
