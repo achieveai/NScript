@@ -6,6 +6,7 @@
 
 namespace NScript.CLR.AST
 {
+    using Mono.Cecil;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -47,5 +48,7 @@ namespace NScript.CLR.AST
                         return ((hash << (idx % 32)) + (hash >> (32 - idx % 32))) ^ idx;
                     })
                     .Sum();
+
+        public override TypeReference ResultType => RightExpression.ResultType;
     }
 }
