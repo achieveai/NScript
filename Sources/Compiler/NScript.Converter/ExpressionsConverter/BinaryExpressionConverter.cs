@@ -13,6 +13,7 @@ namespace NScript.Converter.ExpressionsConverter
     using NScript.Converter.TypeSystemConverter;
     using NScript.Utils;
     using Mono.Cecil;
+    using System.Diagnostics;
 
     /// <summary>
     /// Definition for BinaryExpressionConverter
@@ -29,6 +30,12 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             BinaryExpression expression)
         {
+            if (expression.Left is DiscardExpression)
+            {
+                Debug.Assert(expression.IsAssignmentOperator);
+                return ExpressionConverterBase.Convert(converter, expression);
+            }
+
             if (expression.IsAssignmentOperator &&
                 BinaryExpressionConverter.IsResolvingToFunctionCall(expression.Left))
             {

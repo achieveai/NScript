@@ -29,6 +29,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "TestTupleDecons", "TestTupleDecons.js", TestType.All)]
         [DataRow(TestClassNameStr, "TestTupleReturn", "TestTupleReturn.js", TestType.All)]
         [DataRow(TestClassNameStr, "TestTempVarCreation", "TestTempVarCreation.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestDiscard", "TestTempVarCreation.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

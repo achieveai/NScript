@@ -37,6 +37,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "TestDelegates", "Main")]
         [DataRow(TestType.Debug, "TestGenerics", "Main")]
         [DataRow(TestType.Debug, "NullableTests", "Main")]
+        [DataRow(TestType.Debug, "TupleTests", "Main")]
         public void TestMcs(
                 TestType testType,
                 string className,

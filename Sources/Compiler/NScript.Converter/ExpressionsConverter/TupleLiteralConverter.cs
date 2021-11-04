@@ -8,9 +8,9 @@ namespace NScript.Converter.ExpressionsConverter
 {
     using NScript.Converter.TypeSystemConverter;
     using NScript.CLR.AST;
-    using NScript.JST;
     using System.Linq;
-    using System;
+    using System.Collections.Generic;
+    using Mono.Cecil;
 
     /// <summary>
     /// Definition for TupleLiteralConverter
@@ -21,20 +21,30 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter scopeConverter,
             TupleLiteral tupleLiteral)
         {
-            // Create new Object, where each property/field is 
-            // using field identifier of ValueTuple type's respective field
-            // to generate the field name. Initialize the value to the expression
-            // from tupleLiteral.
-            var inlineInitializer = new JST.InlineObjectInitializer(tupleLiteral.Location, scopeConverter.Scope);
-            var elements = tupleLiteral.TupleArgs;
-            var typeDefinition = tupleLiteral.ResultType.Resolve();
+            return ConstructTupleLiteral(
+                scopeConverter,
+                tupleLiteral
+                    .TupleArgs
+                    .Select(_ => ExpressionConverterBase.Convert(scopeConverter, _)),
+                tupleLiteral.ResultType);
+        }
 
-            foreach(var (field, expr) in typeDefinition.Fields.Zip(elements))
+        public static JST.Expression ConstructTupleLiteral(
+            IMethodScopeConverter methodScopeConverter,
+            IEnumerable<JST.Expression> expressions,
+            TypeReference ty)
+        {
+            var initializer = new JST.InlineObjectInitializer(
+                null,
+                methodScopeConverter.Scope);
+
+            foreach(var (expr, field) in expressions.Zip(ty.Resolve().Fields))
             {
-                inlineInitializer.AddInitializer(scopeConverter.Resolve(field), ExpressionConverterBase.Convert(scopeConverter, expr));
+                initializer.AddInitializer(methodScopeConverter.Resolve(field), expr);
             }
 
-            return inlineInitializer;
+            return initializer;
         }
+
     }
 }

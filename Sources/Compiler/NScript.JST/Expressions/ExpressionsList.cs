@@ -61,6 +61,8 @@ namespace NScript.JST
             }
         }
 
+        public override OperatorPlacement OperatorPlacement => OperatorPlacement.Infix;
+
         public override void Write(JSWriter writer)
         {
             writer.Write(this.expressions[0]);
