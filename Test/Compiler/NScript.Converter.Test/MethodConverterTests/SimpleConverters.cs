@@ -23,6 +23,7 @@ namespace NScript.Converter.Test.MethodConverterTests
 
         [DataTestMethod]
         [DataRow("ReturnInt", "ReturnInt.js", TestType.All)]
+        [DataRow("ReturnChar", "ReturnChar.js", TestType.All)]
         [DataRow("AddIntArgs", "AddIntArgs.js", TestType.All)]
         [DataRow("AddIntArgToConst", "AddIntArgToConst.js", TestType.All)]
         [DataRow("IntDivideInts", "IntDivideInts.js", TestType.All)]

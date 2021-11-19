@@ -4,6 +4,11 @@ namespace RealScript
 {
     public class BasicStatements
     {
+        public static char ReturnChar()
+        {
+            return 't';
+        }
+
         public static int ReturnInt()
         {
             return 10;
