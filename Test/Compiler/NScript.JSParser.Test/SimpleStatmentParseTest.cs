@@ -330,6 +330,15 @@ namespace NScript.JSParser.Test
                 "b", "a");
         }
 
+        [TestMethod]
+        public void TestRegressionShrPrecidence()
+        {
+            JSParserAndGeneratorHelper.ParseAndGenerateTest(
+                "var key = (b << 15) + (a << 8) + c;",
+                "var key;\r\nkey = (b << 15) + (a << 8) + c;",
+                "b", "a", "c");
+        }
+
         // [TestMethod]
         public void TestFooBar()
         {

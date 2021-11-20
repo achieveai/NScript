@@ -39,6 +39,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow("BasicStatements", "RegressionFlagsOrAssign", "RegressionFlagsOrAssign.js", TestType.All)]
         [DataRow("BasicStatements", "RegressionFlagsOr2", "RegressionFlagsOr2.js", TestType.All)]
         [DataRow("BasicStatements", "RegressionFlagsOrAssign2", "RegressionFlagsOrAssign2.js", TestType.All)]
+        [DataRow(TestClassNameStr, "ShrPrecedenceRegression", "ShrPrecedenceRegression.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

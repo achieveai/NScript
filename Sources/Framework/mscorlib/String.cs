@@ -163,7 +163,7 @@
         public static string Format(IFormatProvider formatProvider, string format, params object[] value)
         { return String.Format(format, value); }
 
-        public extern static string FromCharCode(char ch);
+        public extern static string FromCharCode(params char[] ch);
 
         [MakeStaticUsage]
         [Script(@"
@@ -210,7 +210,11 @@
 
         public extern string Replace(string oldText, string replaceText);
 
+        public extern string Replace(RegularExpression oldText, string replaceText);
+
         public extern string ReplaceFirst(string oldText, string replaceText);
+
+        public extern string ReplaceFirst(RegularExpression oldText, string replaceText);
 
         public string[] Split(char ch)
         {

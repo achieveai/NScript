@@ -137,5 +137,10 @@ namespace RealScript
 
             return null;
         }
+
+        public static int ShrPrecedenceRegression(int a, int b, int c)
+        {
+            return (a << 16) + (b << 8) + c;
+        }
     }
 }

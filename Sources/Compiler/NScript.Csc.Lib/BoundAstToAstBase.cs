@@ -294,7 +294,7 @@
                 return new ExplicitBlockSer
                 {
                     Id = id,
-                    LocalFunctions = scopeBlockStack.Last.Value.localFunctions,
+                    LocalFunctions = scopeBlockStack.First.Value.localFunctions,
                     Statements = node
                         .Statements
                         .Select(_ => VisitToStatement(_, arg))
@@ -360,7 +360,7 @@
                     Block = new ExplicitBlockSer
                     {
                         Id = id,
-                        LocalFunctions = scopeBlockStack.Last.Value.localFunctions,
+                        LocalFunctions = scopeBlockStack.First.Value.localFunctions,
                         Statements = node
                             .Body
                             .Statements
@@ -866,7 +866,7 @@
             BoundLocalFunctionStatement node,
             SerializationContext arg)
         {
-            scopeBlockStack.Last.Value.localFunctions.Add(node.Symbol.Name);
+            scopeBlockStack.First.Value.localFunctions.Add(node.Symbol.Name);
 
             var block =
                 Visit(
@@ -878,7 +878,7 @@
             return new LocalMethodStatement
             {
                 Block = block,
-                ScopeBlockId = scopeBlockStack.Last.Value.id,
+                ScopeBlockId = scopeBlockStack.First.Value.id,
                 MethodId = new LocalMethodIdentitySer
                 {
                     MethodName = node.Symbol.Name,

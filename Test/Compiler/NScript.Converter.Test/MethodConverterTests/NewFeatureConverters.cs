@@ -35,6 +35,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow("TestConditionalAccess2", "TestConditionalAccess2.js", TestType.All)]
         [DataRow("TestConditionalInvoke", "TestConditionalInvoke.js", TestType.All)]
         [DataRow("TestNestedFunction", "TestNestedFunction.js", TestType.All)]
+        [DataRow("TestNestedFunctionCrossReferenced", "TestNestedFunctionCrossReferenced.js", TestType.All)]
         [DataRow("TestNestedFunctionScoped", "TestNestedFunctionScoped.js", TestType.All)]
         [DataRow("CallWithDefaultParameter", "CallWithDefaultParameter.js", TestType.All)]
         [DataRow("DiscardVariable", "DiscardVariable.js", TestType.All)]

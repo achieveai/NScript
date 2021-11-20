@@ -1,9 +1,9 @@
 ﻿function NewLanguageFeatures__TestNestedFunctionScoped(obj) {
   function Compute(l) {
-    function Compute2(l2) {
+    function Compute2a(l2) {
       return l2 + 10;
     };
-    return obj.addNum(Compute2(l));
+    return obj.addNum(Compute2a(l));
   };
   if (!obj) {
     function Compute2(l) {

@@ -65,6 +65,30 @@ namespace RealScript
             };
         }
 
+        public static Func<int, long, int> TestNestedFunctionCrossReferenced(NewLanguageFeatures obj)
+        {
+            int Compute(long l)
+            {
+                if (l < 10)
+                {
+
+                    l = Compute2(l, 10);
+                }
+
+                return obj.AddNum((int)l);
+            }
+
+            int Compute2(long l, long ll)
+            {
+                return obj.AddNum((int)l) * (int)ll;
+            }
+
+            return (x, y) =>
+            {
+                return x + Compute(y);
+            };
+        }
+
         public static int TestNestedFunctionScoped(NewLanguageFeatures obj)
         {
             int Compute(long l)
