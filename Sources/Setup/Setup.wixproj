@@ -24,79 +24,95 @@
     <Compile Include="Product.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj">
-      <Name>NScript.CLR</Name>
-      <Project>{83fb5360-ce27-4255-8457-13e789dc5b0c}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj">
-      <Name>NScript.Converter.Plugins</Name>
-      <Project>{8e168b27-2033-412a-b362-5102400ea471}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\NScript.Converter\NScript.Converter.csproj">
-      <Name>NScript.Converter</Name>
-      <Project>{2cb180c7-d96a-4e43-8676-f928e4736a1f}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\NScript.JSParser\NScript.JSParser.csproj">
-      <Name>NScript.JSParser</Name>
-      <Project>{52661571-b3ee-421e-a6ed-983023665738}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj">
-      <Name>NScript.JS.AST</Name>
-      <Project>{35789c27-44de-4251-8528-6b0de5c66608}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj">
-      <Name>NScript.Utils</Name>
-      <Project>{030b10dd-4861-4be1-b0d6-db43587e603f}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\NScript\NScript.csproj">
-      <Name>NScript</Name>
-      <Project>{71392f3d-7171-43fa-8f68-365a31889ab0}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj">
+    <ProjectReference Include="..\Compiler\JsCsc.Lib\JsCsc.Lib.csproj">
       <Name>JsCsc.Lib</Name>
-      <Project>{65fdb136-49ee-4316-95c5-aee4c1a5da83}</Project>
+      <Project>{ccf76780-e1cb-4ec8-832b-1378caf0b694}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\JsCsc\JsCsc.csproj">
+    <ProjectReference Include="..\Compiler\JsCsc\JsCsc.csproj">
       <Name>JsCsc</Name>
-      <Project>{584493da-04a9-4a95-aa49-f532a85d8c1a}</Project>
+      <Project>{2f761e61-2724-492e-b79f-c64d9b032613}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
+    <ProjectReference Include="..\Compiler\NScript.CLR\NScript.CLR.csproj">
+      <Name>NScript.CLR</Name>
+      <Project>{b23a005d-3573-44be-b27d-e5080675a3b7}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj">
+      <Name>NScript.Converter.Plugins</Name>
+      <Project>{1f04f790-76c3-45a4-980e-62a506633bf8}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\NScript.Converter\NScript.Converter.csproj">
+      <Name>NScript.Converter</Name>
+      <Project>{1dfa2e32-70d8-47ad-a585-29be63c86dd3}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\NScript.JSParser\NScript.JSParser.csproj">
+      <Name>NScript.JSParser</Name>
+      <Project>{0d04bd5c-b0ec-48c8-b3bf-4d330f9681ed}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\NScript.JST\NScript.JS.AST.csproj">
+      <Name>NScript.JS.AST</Name>
+      <Project>{a952ec3d-f3a1-4600-a0bc-9fe87b22a20a}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\NScript.Utils\NScript.Utils.csproj">
+      <Name>NScript.Utils</Name>
+      <Project>{8074e557-a27b-4ee1-afc0-ba177231a77c}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\NScript\NScript.csproj">
+      <Name>NScript</Name>
+      <Project>{1619fbaf-d0c6-4d3a-8484-3f81bf70944b}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\SourceMap\SourceMap.csproj">
+      <Name>SourceMap</Name>
+      <Project>{39088860-f57b-47ae-b5fb-0a12db3007f1}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Compiler\XwmlParser\XwmlParser.csproj">
+      <Name>XwmlParser</Name>
+      <Project>{05f0565e-2a8f-4fee-a9ce-44499d295905}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Framework\mscorlib\NScript.MsCorlib.csproj">
       <Name>NScript.MsCorlib</Name>
       <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
       <Private>True</Private>
@@ -104,15 +120,7 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\SourceMap\SourceMap.csproj">
-      <Name>SourceMap</Name>
-      <Project>{20ccb52f-de6e-4da4-821e-5b3bd6771704}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj">
+    <ProjectReference Include="..\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj">
       <Name>Sunlight.Framework.UI</Name>
       <Project>{650bbe9a-d0c5-4590-a82a-8e63c664a894}</Project>
       <Private>True</Private>
@@ -120,7 +128,7 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\System.Web.Html\System.Web.Html.csproj">
+    <ProjectReference Include="..\Framework\System.Web.Html\System.Web.Html.csproj">
       <Name>System.Web.Html</Name>
       <Project>{a60706ff-08d7-4320-99f9-a2413275cdf6}</Project>
       <Private>True</Private>
@@ -128,7 +136,7 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\System.Web\System.Web.csproj">
+    <ProjectReference Include="..\Framework\System.Web\System.Web.csproj">
       <Name>System.Web</Name>
       <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
       <Private>True</Private>
@@ -136,17 +144,9 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\WinRT\Windows.csproj">
+    <ProjectReference Include="..\Framework\WinRT\Windows.csproj">
       <Name>Windows</Name>
       <Project>{0eb34c67-4e1f-4d7b-a1e0-16061a857dea}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\XwmlParser\XwmlParser.csproj">
-      <Name>XwmlParser</Name>
-      <Project>{e3fe7841-2db8-4713-8c41-fb399d921a77}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
