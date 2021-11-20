@@ -18,6 +18,7 @@
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />
+    <None Remove="MethodConverterTests\SimpleConverters\ReturnChar.js" />
     <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
     <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTempVarCreation.js" />
@@ -56,6 +57,7 @@
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />
+    <EmbeddedResource Include="MethodConverterTests\SimpleConverters\ReturnChar.js" />
     <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
     <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestTempVarCreation.js" />

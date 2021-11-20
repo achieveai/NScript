@@ -93,9 +93,9 @@ namespace NScript.Converter.ExpressionsConverter
         /// <returns></returns>
         public static JST.Expression ConvertCharLiteral(IMethodScopeConverter methodConverter, CharLiteral literal)
         {
-            return new JST.StringLiteralExpression(
+            return new JST.NumberLiteralExpression(
                 methodConverter.Scope,
-                literal.Value.ToString());
+                literal.Value);
         }
 
         /// <summary>
