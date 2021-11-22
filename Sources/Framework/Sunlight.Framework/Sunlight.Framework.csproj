@@ -76,7 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
-      <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
+      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>
     <ProjectReference Include="..\System.Web\System.Web.csproj">

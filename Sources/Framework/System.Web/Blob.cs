@@ -97,26 +97,26 @@ namespace System.Web
         {
             var nMod3 = 2;
             var sB64Enc = "";
-
-            for (int nLen = aBytes.length, nUint24 = 0ul, nIdx = 0;
-                nIdx < nLen; nIdx++)
+            var nUint24 = 0ul;
+            for (int nLen = aBytes.Length, nIdx = 0;
+                nIdx < nLen;
+                nIdx++)
             {
                 nMod3 = nIdx % 3;
-                nUint24 |= aBytes[nIdx] << (16 >> nMod3 & 24);
-                if (nMod3 == 2 || aBytes.length - nIdx == 1)
+                nUint24 |= ((ulong)aBytes[nIdx]) << (16 >> nMod3 & 24);
+                if (nMod3 == 2 || aBytes.Length - nIdx == 1)
                 {
                     sB64Enc += String.FromCharCode(
-                        Uint6ToB64(nUint24 >> 18 & 63),
-                        Uint6ToB64(nUint24 >> 12 & 63),
-                        Uint6ToB64(nUint24 >> 6 & 63),
-                        Uint6ToB64(nUint24 & 63));
+                        Uint6ToB64((byte)(nUint24 >> 18 & 63)),
+                        Uint6ToB64((byte)(nUint24 >> 12 & 63)),
+                        Uint6ToB64((byte)(nUint24 >> 6 & 63)),
+                        Uint6ToB64((byte)(nUint24 & 63)));
                     nUint24 = 0;
                 }
             }
 
             return sB64Enc.Substring(0, sB64Enc.Length - 2 + nMod3)
                 + (nMod3 == 2 ? "" : nMod3 == 1 ? "=" : "==");
-
         }
 
         public static string ToBase64String(NativeArray<byte> array)
@@ -155,12 +155,14 @@ namespace System.Web
             }
 
             var rv = strParts.Join(string.Empty);
+            /*
             var rv2 = Base64EncArr(array);
 
             if (rv != rv2)
             {
                 throw new Exception("Error matching base64 string");
             }
+            */
 
             return rv;
         }

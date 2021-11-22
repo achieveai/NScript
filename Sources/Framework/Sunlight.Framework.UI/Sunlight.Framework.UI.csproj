@@ -66,11 +66,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
-      <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
+      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
       <Name>NScript.MsCorlib</Name>
     </ProjectReference>
     <ProjectReference Include="..\Sunlight.Framework\Sunlight.Framework.csproj">
-      <Project>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</Project>
+      <Project>{650bbe9a-d0c5-4590-a82a-8e63c664a893}</Project>
       <Name>Sunlight.Framework</Name>
     </ProjectReference>
     <ProjectReference Include="..\System.Web.Html\System.Web.Html.csproj">

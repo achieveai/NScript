@@ -10,7 +10,7 @@
                 {
 
                 }
-            case (i.GetType() == Number.id && (Cast(Number, i) > 0):
+            case (i.GetType() == Number.id && (Cast(Number, i) > 0)):
                 {
                     var n;
                     n = Cast(Number, i);

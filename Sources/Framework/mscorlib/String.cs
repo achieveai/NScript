@@ -163,7 +163,10 @@
         public static string Format(IFormatProvider formatProvider, string format, params object[] value)
         { return String.Format(format, value); }
 
-        public extern static string FromCharCode(params char[] ch);
+        public extern static string FromCharCode(char ch);
+        public extern static string FromCharCode(char ch, char ch2);
+        public extern static string FromCharCode(char ch, char ch2, char ch3);
+        public extern static string FromCharCode(char ch, char ch2, char ch3, char ch4);
 
         [MakeStaticUsage]
         [Script(@"
