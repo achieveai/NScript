@@ -902,6 +902,15 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class AwaitExpression
+        : ExpressionSer
+    {
+        public ExpressionSer GetAwaiterMethod { get; set; }
+        public ExpressionSer Expression { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(154, typeof(YieldStatement))]
     [Serializable]
     public class StatementExpressionSer
@@ -1184,6 +1193,16 @@ namespace JsCsc.Lib.Serialization
         public ParameterBlock Block { get; set; }
     }
 
+    [Flags]
+    [Serializable]
+    public enum Kind
+    {
+        Regular = 1 << 0,
+        Iterator = 1 << 1,
+        Async = 1 << 2
+    }
+
+
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class MethodBody
@@ -1193,9 +1212,16 @@ namespace JsCsc.Lib.Serialization
 
         public string FileName { get; set; }
 
+        public Kind Kind { get; set; }
+
         public ParameterBlock Body { get; set; }
 
         public LocationSer ScriptBlockLocation { get; set; }
+
+        public MethodBody()
+        {
+            Kind = Kind.Regular;
+        }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

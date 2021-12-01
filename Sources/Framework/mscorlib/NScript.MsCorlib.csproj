@@ -384,6 +384,8 @@
     <Compile Include="Runtime\CompilerServices\AlternateSignatureAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Runtime\CompilerServices\AsyncMethodBuilderAttribute.cs" />
+    <Compile Include="Runtime\CompilerServices\AsyncVoidMethodBuilder.cs" />
     <Compile Include="Runtime\CompilerServices\AttachedPropertyAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -392,6 +394,7 @@
     </Compile>
     <Compile Include="Runtime\CompilerServices\EntryPointAttribute.cs" />
     <Compile Include="Runtime\CompilerServices\ExtensionAttribute.cs" />
+    <Compile Include="Runtime\CompilerServices\IAsyncStateMachine.cs" />
     <Compile Include="Runtime\CompilerServices\ICriticalNotifyCompletion.cs" />
     <Compile Include="Runtime\CompilerServices\IgnoreGenericArgumentsAttribute.cs" />
     <Compile Include="Runtime\CompilerServices\ImplementAttribute.cs" />

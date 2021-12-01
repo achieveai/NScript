@@ -65,7 +65,7 @@ namespace JsCsc.Lib
                         var methodBlockObject = jObject.Body;
                         if (methodBlockObject != null)
                         {
-                            var rv = new TopLevelBlock(method)
+                            var rv = new TopLevelBlock(method, (BlockKind)((int)jObject.Kind))
                             {
                                 RootBlock = (ParameterBlock)ParseNode(methodBlockObject)
                             };
@@ -229,6 +229,12 @@ namespace JsCsc.Lib
                 ParseExpression(jObject.Expression),
                 (UnaryOperator)jObject.Operator,
                 jObject.IsLifted);
+
+        private Node ParseAwaitExpr(Serialization.AwaitExpression jObject) => new AwaitExpression(
+            _clrContext,
+            LocFromJObject(jObject),
+            ParseExpression(jObject.Expression),
+            ParseExpression(jObject.GetAwaiterMethod));
 
         private Node ParseTypeCast(Serialization.TypeCastExpression jObject)
         {
@@ -2129,6 +2135,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.TupleCreationExpression),
                     (a) => ParseTupleCreation((Serialization.TupleCreationExpression)a)
+                },
+                {
+                    typeof(Serialization.AwaitExpression),
+                    (a) => ParseAwaitExpr((Serialization.AwaitExpression)a)
                 }
             };
 

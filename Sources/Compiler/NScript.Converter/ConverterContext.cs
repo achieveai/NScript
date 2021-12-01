@@ -231,8 +231,9 @@ namespace NScript.Converter
                     foreach (var item in fullAst.Methods)
                     {
                         var tuple = bondToAst.ParseMethodBody(item);
+                        var (methodDef, func) = tuple;
                         // tupl.Item2();
-                        this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
+                        this.methodAstMapping.Add(methodDef, func);
                     }
 
                     // stopWatch.Stop();
@@ -368,10 +369,12 @@ namespace NScript.Converter
         /// </returns>
         public bool TryGetMethodAst(
             MethodDefinition method,
-            out ParameterBlock rootBlock)
+            out ParameterBlock rootBlock,
+            out BlockKind kind)
         {
             Func<TopLevelBlock> func;
             rootBlock = null;
+            kind = BlockKind.Regular;
             if (!this.methodAstMapping.TryGetValue(method, out func))
             {
                 return false;
@@ -381,6 +384,7 @@ namespace NScript.Converter
             rootBlock = topLevelBlock != null
                 ? topLevelBlock.RootBlock
                 : null;
+            kind = topLevelBlock.Kind;
             return true;
         }
 

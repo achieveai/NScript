@@ -537,6 +537,10 @@ namespace NScript.JST
         {
             switch (keyword)
             {
+                case Keyword.Async:
+                    return "async";
+                case Keyword.Await:
+                    return "await";
                 case Keyword.Break:
                     return "break";
                 case Keyword.Case:

@@ -49,7 +49,7 @@ namespace NScript.JST
             this.readonlyArguments = new ReadOnlyCollection<Expression>(this.arguments);
             if (arguments.Contains(null))
             {
-                throw new System.ArgumentNullException("arguments");
+                throw new System.ArgumentNullException($"arguments, {methodExpression}");
             }
         }
 

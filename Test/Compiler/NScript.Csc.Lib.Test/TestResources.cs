@@ -174,10 +174,13 @@
                         @"RuntimeFieldHandle.cs",
                         @"RuntimeTypeHandle.cs",
                         @"Runtime\CompilerServices\AlternateSignatureAttribute.cs",
+                        @"Runtime\CompilerServices\AsyncMethodBuilderAttribute.cs",
+                        @"Runtime\CompilerServices\AsyncVoidMethodBuilder.cs",
                         @"Runtime\CompilerServices\AttachedPropertyAttribute.cs",
                         @"Runtime\CompilerServices\CompilerGeneratedAttribute.cs",
                         @"Runtime\CompilerServices\EntryPointAttribute.cs",
                         @"Runtime\CompilerServices\ExtensionAttribute.cs",
+                        @"Runtime\CompilerServices\IAsyncStateMachine.cs",
                         @"Runtime\CompilerServices\ICriticalNotifyCompletion.cs",
                         @"Runtime\CompilerServices\IgnoreGenericArgumentsAttribute.cs",
                         @"Runtime\CompilerServices\ImplementAttribute.cs",
@@ -385,7 +388,8 @@
                         @"Class1.cs",
                         @"ConstructorTests.cs",
                         @"NullableTests.cs",
-                        @"TestDefaultExpr.cs"
+                        @"TestDefaultExpr.cs",
+                        @"TestAsyncAwait.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
@@ -439,7 +443,8 @@
                         @"Class1.cs",
                         @"ConstructorTests.cs",
                         @"NullableTests.cs",
-                        @"TestDefaultExpr.cs"
+                        @"TestDefaultExpr.cs",
+                        @"TestAsyncAwait.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },

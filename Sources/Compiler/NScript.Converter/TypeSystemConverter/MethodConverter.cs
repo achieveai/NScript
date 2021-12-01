@@ -159,6 +159,8 @@ namespace NScript.Converter.TypeSystemConverter
 
         private IIdentifier conditionalAccessTempVariable = null;
 
+        private BlockKind _kind;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MethodConverter"/> class.
         /// </summary>
@@ -1397,7 +1399,9 @@ namespace NScript.Converter.TypeSystemConverter
                 typeConverter.Scope,
                 Scope,
                 Scope.ParameterIdentifiers,
-                functionName);
+                functionName,
+                (_kind & BlockKind.Async) == BlockKind.Async,
+                (_kind & BlockKind.Iterator) == BlockKind.Iterator);
 
             return returnValue;
         }
@@ -1924,8 +1928,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         private ParameterBlock GetRootBlock()
         {
-            if (RuntimeManager.Context.TryGetMethodAst(methodDefinition, out var rv))
+            if (RuntimeManager.Context.TryGetMethodAst(methodDefinition, out var rv, out var kind))
             {
+                _kind = kind;
                 usingMcs = true;
                 return rv;
             }

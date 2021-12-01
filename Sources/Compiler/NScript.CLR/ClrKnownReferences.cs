@@ -181,6 +181,10 @@ using Mono.Cecil;
         private MethodReference initializeArrayReference;
         private MethodReference arrayLengthGetter;
         private TypeReference typedReference;
+        private TypeReference promiseType;
+        private TypeReference promiseGenericTypeReference;
+        private TypeReference taskAwaiterTypeReference;
+        private TypeReference taskAwaiterGenericTypeReference;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClrKnownReferences"/> class.
@@ -759,6 +763,82 @@ using Mono.Cecil;
                 return this.nullableType;
             }
         }
+
+        public TypeReference PromiseType
+        {
+            get
+            {
+                if (promiseType == null)
+                {
+                    promiseType = this.GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "Promise");
+                }
+
+                return promiseType;
+            }
+        }
+
+        public TypeReference PromiseGenericTypeReference
+        {
+            get
+            {
+                if (promiseGenericTypeReference == null)
+                {
+                    promiseGenericTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "Promise`1");
+                }
+
+                return promiseGenericTypeReference;
+            }
+        }
+
+        public TypeReference TaskAwaiterTypeReference
+        {
+            get
+            {
+                if (taskAwaiterTypeReference == null)
+                {
+                    taskAwaiterTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "TaskAwaiter");
+                }
+
+                return taskAwaiterTypeReference;
+            }
+        }
+
+        public TypeReference TaskAwaiterGenericTypeReference
+        {
+            get
+            {
+                if (taskAwaiterGenericTypeReference == null)
+                {
+                    taskAwaiterGenericTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "TaskAwaiter`1");
+                }
+
+                return taskAwaiterGenericTypeReference;
+            }
+        }
+
+        // TODO(Vijay): Non-Generic case
+        public MethodReference GetAwaiterMethodReference(TypeReference declaringType)
+        {
+            var typeDef = declaringType.Resolve();
+            foreach(var method in typeDef.Methods)
+            {
+                if(method.Name == "GetAwaiter")
+                {
+                    return method;
+                }
+            }
+            return null;
+            // this.GetMethodReference("GetAwaiter", TaskAwaiterGenericTypeReference, declaringType);
+        }
+
 
         /// <summary>
         /// Gets the initialize array reference.

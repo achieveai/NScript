@@ -36,9 +36,15 @@
                 ? null
                 : Visit((BoundBlock)boundNode, arg, methodSymbol, initializers);
 
+            var kind = 0;
+            if (methodSymbol.IsIterator) kind |= (int)Kind.Iterator;
+            if (methodSymbol.IsAsync) kind |= (int)Kind.Async;
+            if (kind == 0) kind = (int)Kind.Regular;
+
             // TODO: Make note of [Script] Attribute in case of empty body.
             var rv = new MethodBody
             {
+                Kind = (Kind)kind,
                 MethodId = arg
                     .SymbolSerializer
                     .GetMethodSpecId(methodSymbol),
@@ -214,7 +220,25 @@
 
         public override AstBase VisitAttribute(BoundAttribute node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitAwaitExpression(BoundAwaitExpression node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitAwaitExpression(BoundAwaitExpression node, SerializationContext arg)
+        {
+            var getAwaiterMethod = (MethodCallExpression)Visit(node.AwaitableInfo.GetAwaiter, arg);
+            var expression = (ExpressionSer)Visit(node.Expression, arg);
+
+            getAwaiterMethod.Instance = expression;
+
+            return new AwaitExpression()
+            {
+                GetAwaiterMethod = getAwaiterMethod,
+                Expression = expression
+            };
+        }
+
+        public override AstBase VisitAwaitableValuePlaceholder(BoundAwaitableValuePlaceholder node, SerializationContext arg)
+        {
+            return null;
+        }
+
 
         public override AstBase VisitBadExpression(BoundBadExpression node, SerializationContext arg) => null;
 

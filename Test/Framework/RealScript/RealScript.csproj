@@ -38,6 +38,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="TestAsyncAwait.cs" />
     <Compile Include="ConstructorTests.cs" />
     <Compile Include="DelegateBlocks.cs" />
     <Compile Include="DupInstructionBlocks.cs" />

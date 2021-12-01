@@ -1,62 +1,44 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="TaskAwaiter.cs" company="">
-//     Copyright (c) . All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
-
-namespace System.Runtime.CompilerServices
+﻿namespace System.Runtime.CompilerServices
 {
     using System;
 
-    /// <summary>
-    /// Definition for TaskAwaiter
-    /// </summary>
-    public struct TaskAwaiter : ICriticalNotifyCompletion
+    public struct TaskAwaiter : INotifyCompletion
     {
-        private readonly Action<Action> _addCompletors;
-        private readonly Action _resultGetter;
+        private readonly Promise _promise;
 
-        public TaskAwaiter(
-            Action<Action> addCompletors,
-            Action resultGetter)
+        internal TaskAwaiter(Promise promise)
         {
-            _addCompletors = addCompletors;
-            _resultGetter = resultGetter;
+            _promise = promise;
         }
 
-        public void GetResult()
-            => _resultGetter();
+        // TODO(Vijay): Set it to true when promise is completed
+        public bool IsCompleted => false;
 
         public void OnCompleted(Action continuation)
-            => _addCompletors?.Invoke(continuation);
-
-        public void UnsafeOnCompleted(Action continuation)
-            => _addCompletors?.Invoke(continuation);
+        {
+            _promise.Then(continuation);
+        }
     }
 
-    /// <summary>
-    /// Definition for TaskAwaiter
-    /// </summary>
-    public struct TaskAwaiter<TResult> : ICriticalNotifyCompletion
+    public struct TaskAwaiter<TResult> : INotifyCompletion
     {
-        private readonly Action<Action> _addCompletors;
-        private readonly Func<TResult> _resultGetter;
+        private readonly Promise<TResult> _promise;
 
-        public TaskAwaiter(
-            Action<Action> addCompletors,
-            Func<TResult> resultGetter)
+        internal TaskAwaiter(Promise<TResult> promise)
         {
-            _addCompletors = addCompletors;
-            _resultGetter = resultGetter;
+            _promise = promise;
+        }
+
+        // TODO(Vijay): Set it to true when promise is completed
+        public bool IsCompleted => false;
+
+        public void OnCompleted(Action continuation)
+        {
         }
 
         public TResult GetResult()
-            => _resultGetter();
-
-        public void OnCompleted(Action continuation)
-            => _addCompletors?.Invoke(continuation);
-
-        public void UnsafeOnCompleted(Action continuation)
-            => _addCompletors?.Invoke(continuation);
+        {
+            return default;
+        }
     }
 }

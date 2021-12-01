@@ -343,6 +343,12 @@ namespace NScript.Converter.ExpressionsConverter
                         typeof(TupleDeconstructExpression),
                         ExpressionConverterBase.SimplifyConverter<TupleDeconstructExpression>(
                             TupleDeconstructConverter.Convert)
+                    },
+
+                    {
+                        typeof(AwaitExpression),
+                        ExpressionConverterBase.SimplifyConverter<AwaitExpression>(
+                            AwaitExpressionConverter.Convert)
                     }
                 };
 

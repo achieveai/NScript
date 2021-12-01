@@ -29,10 +29,12 @@ namespace NScript.CLR.AST
         /// <param name="isStaticBlock">if set to <c>true</c> [is static block].</param>
         /// <param name="ownerType">Type of the owner.</param>
         public TopLevelBlock(
-            MethodReference methodReference)
+            MethodReference methodReference,
+            BlockKind kind = BlockKind.Regular)
         {
             this.ownerType = methodReference.DeclaringType;
             this.returnType = methodReference.ReturnType;
+            this.Kind = kind;
         }
 
         /// <summary>
@@ -58,6 +60,9 @@ namespace NScript.CLR.AST
                 return this.ownerType;
             }
         }
+
+        public BlockKind Kind
+        { get; private set; }
 
         /// <summary>
         /// Gets the root block.
@@ -91,5 +96,13 @@ namespace NScript.CLR.AST
             get { return this.delegateClass; }
             internal set { this.delegateClass = value; }
         }
+    }
+
+    [Flags]
+    public enum BlockKind
+    {
+        Regular = 1 << 0,
+        Iterator = 1 << 1,
+        Async = 1 << 2,
     }
 }
