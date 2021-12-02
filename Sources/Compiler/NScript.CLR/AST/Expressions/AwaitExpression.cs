@@ -12,17 +12,17 @@
             ClrContext context,
             Location location,
             Expression expression,
-            Expression getAwaiterMethodExpression)
+            Expression getAwaiterCallExpression)
             : base(context, location)
         {
             Expression = expression;
-            GetAwaiterMethodExpression = getAwaiterMethodExpression;
+            GetAwaiterCallExpression = getAwaiterCallExpression;
         }
 
         public Expression Expression
         { get; private set; }
 
-        public Expression GetAwaiterMethodExpression
+        public Expression GetAwaiterCallExpression
         { get; private set; }
 
         public override TypeReference ResultType => Expression.ResultType;

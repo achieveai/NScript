@@ -906,7 +906,7 @@ namespace JsCsc.Lib.Serialization
     public class AwaitExpression
         : ExpressionSer
     {
-        public ExpressionSer GetAwaiterMethod { get; set; }
+        public MethodCallExpression GetAwaiterMethodCall { get; set; }
         public ExpressionSer Expression { get; set; }
     }
 

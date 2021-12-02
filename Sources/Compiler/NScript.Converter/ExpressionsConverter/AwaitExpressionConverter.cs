@@ -11,7 +11,7 @@
             AwaitExpression awaitExpression)
         {
             var awaitable = awaitExpression.Expression;
-            var getAwaiterCall = awaitExpression.GetAwaiterMethodExpression;
+            var getAwaiterCall = awaitExpression.GetAwaiterCallExpression;
             return new JST.AwaitExpression(
                 awaitable.Location,
                 methodConverter.Scope,
@@ -22,7 +22,6 @@
         {
             var tyDef = awaitable.ResultType.Resolve();
             var clrKnownReferences = methodScopeConverter.ClrKnownReferences;
-            var knownReferences = methodScopeConverter.KnownReferences;
 
             if (tyDef == clrKnownReferences.PromiseType || tyDef == clrKnownReferences.PromiseGenericTypeReference)
             {
@@ -30,20 +29,7 @@
             }
             else
             {
-                var methodRef = ((MethodReferenceExpression)getAwaiterMethodCall.MethodReference).MethodReference;
-                // return ExpressionConverterBase.Convert(methodScopeConverter, getAwaiterMethodCall);
-                // TODO(Vijay): Non-Generic case
-                var getAwaiterMethodRef = clrKnownReferences.GetAwaiterMethodReference(tyDef);
-                var methodIdentifier = methodScopeConverter.ResolveStaticMember(methodRef);
-                var methodExpression = new JST.IdentifierExpression(methodIdentifier[0], methodScopeConverter.Scope);
-
-                var awaitableJST = ExpressionConverterBase.Convert(methodScopeConverter, awaitable);
-
-                return new JST.MethodCallExpression(
-                    awaitable.Location,
-                    methodScopeConverter.Scope,
-                    methodExpression,
-                    new List<JST.Expression>() { awaitableJST });
+                return ExpressionConverterBase.Convert(methodScopeConverter, getAwaiterMethodCall);
             }
         }
     }

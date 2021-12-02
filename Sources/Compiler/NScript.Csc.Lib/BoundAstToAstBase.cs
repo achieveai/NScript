@@ -220,23 +220,25 @@
 
         public override AstBase VisitAttribute(BoundAttribute node, SerializationContext arg) => throw new NotImplementedException();
 
+        private AstBase AwaitableValue
+        { get; set; }
+
         public override AstBase VisitAwaitExpression(BoundAwaitExpression node, SerializationContext arg)
         {
-            var getAwaiterMethod = (MethodCallExpression)Visit(node.AwaitableInfo.GetAwaiter, arg);
-            var expression = (ExpressionSer)Visit(node.Expression, arg);
-
-            getAwaiterMethod.Instance = expression;
-
-            return new AwaitExpression()
+            var expr = (ExpressionSer)Visit(node.Expression, arg);
+            this.AwaitableValue = expr;
+            var methodCall = (MethodCallExpression)Visit(node.AwaitableInfo.GetAwaiter, arg);
+            var ret = new AwaitExpression()
             {
-                GetAwaiterMethod = getAwaiterMethod,
-                Expression = expression
+                GetAwaiterMethodCall = methodCall,
+                Expression = expr
             };
+            return ret;
         }
 
         public override AstBase VisitAwaitableValuePlaceholder(BoundAwaitableValuePlaceholder node, SerializationContext arg)
         {
-            return null;
+            return AwaitableValue;
         }
 
 

@@ -23,9 +23,11 @@
         public static async Promise<string> Test3()
         {
             var cls = new MyClass(Test2());
-            return (await cls).ToString();
-            // var x = await cls;
-            // return x.ToString();
+            var nativeArray = new NativeArray<Promise<int>>(2);
+            nativeArray[0] = Test1();
+            nativeArray[1] = Test2();
+            var tmp = await nativeArray;
+            return (await cls).ToString() + tmp;
         }
     }
 
@@ -41,6 +43,14 @@
         public TaskAwaiter<int> GetAwaiter()
         {
             return promise.GetAwaiter();
+        }
+    }
+
+    public static class ArrayExt
+    {
+        public static TaskAwaiter<NativeArray<T>> GetAwaiter<T>(this NativeArray<Promise<T>> nativeArray)
+        {
+            return Promise<T>.All(nativeArray).GetAwaiter();
         }
     }
 }

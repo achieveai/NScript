@@ -72,10 +72,8 @@ namespace System
                 });
         }
 
-        public TaskAwaiter GetAwaiter()
-        {
-            return new TaskAwaiter(this);
-        }
+        [Script("return this;")]
+        public extern TaskAwaiter GetAwaiter();
     }
 
     [IgnoreNamespace]
@@ -142,10 +140,8 @@ namespace System
 
         public extern Promise<T> Catch<E>(Action<E> onRejected);
 
-        public TaskAwaiter<T> GetAwaiter()
-        {
-            return new TaskAwaiter<T>(this);
-        }
+        [Script("return this;")]
+        public extern TaskAwaiter<T> GetAwaiter();
     }
 
     public class PromiseBuilder<T>: IAsyncStateMachine

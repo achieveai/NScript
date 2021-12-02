@@ -234,7 +234,7 @@ namespace JsCsc.Lib
             _clrContext,
             LocFromJObject(jObject),
             ParseExpression(jObject.Expression),
-            ParseExpression(jObject.GetAwaiterMethod));
+            ParseExpression(jObject.GetAwaiterMethodCall));
 
         private Node ParseTypeCast(Serialization.TypeCastExpression jObject)
         {
