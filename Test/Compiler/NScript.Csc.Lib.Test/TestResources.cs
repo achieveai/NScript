@@ -233,6 +233,7 @@
                         @"Testing\TestClass.cs",
                         @"Testing\TestEngine.cs",
                         @"Threading\Interlocked.cs",
+                        @"Threading\Task.cs",
                         @"Type.cs",
                         @"UInt16.cs",
                         @"UInt32.cs",

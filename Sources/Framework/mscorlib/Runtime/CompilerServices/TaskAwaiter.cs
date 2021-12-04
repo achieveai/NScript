@@ -1,6 +1,7 @@
 ﻿namespace System.Runtime.CompilerServices
 {
     using System;
+    using System.ComponentModel;
 
     public struct TaskAwaiter : INotifyCompletion
     {
@@ -29,13 +30,15 @@
             _promise = promise;
         }
 
-        // TODO(Vijay): Set it to true when promise is completed
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool IsCompleted => false;
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public void OnCompleted(Action continuation)
         {
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public TResult GetResult()
         {
             return default;

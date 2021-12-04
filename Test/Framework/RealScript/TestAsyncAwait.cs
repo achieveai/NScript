@@ -2,12 +2,14 @@
 {
     using System;
     using System.Runtime.CompilerServices;
+    using System.Threading;
 
     public class TestAsyncAwait
     {
         public static void Main()
         {
             Test3().Then(Console.WriteLine);
+            Test5();
         }
 
         public static async Promise<int> Test1()
@@ -28,6 +30,16 @@
             nativeArray[1] = Test2();
             var tmp = await nativeArray;
             return (await cls).ToString() + tmp;
+        }
+        
+        public static async Task<int> Test4()
+        {
+            return 90;
+        }
+
+        public static async Task<int> Test5()
+        {
+            return await Test4();
         }
     }
 

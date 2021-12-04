@@ -12,7 +12,7 @@ namespace System
     /// <summary>
     /// Definition for Promise
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("Promise")]
     public class Promise
     {
         public static extern Promise<T> Resolve<T>(T value);
@@ -76,7 +76,7 @@ namespace System
         public extern TaskAwaiter GetAwaiter();
     }
 
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("Promise")]
     [AsyncMethodBuilderAttribute(typeof(PromiseBuilder<>))]
     public class Promise<T>
     {

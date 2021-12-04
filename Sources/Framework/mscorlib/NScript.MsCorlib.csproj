@@ -511,6 +511,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Threading\Interlocked.cs" />
+    <Compile Include="Threading\Task.cs" />
     <Compile Include="Type.cs">
       <SubType>Code</SubType>
     </Compile>

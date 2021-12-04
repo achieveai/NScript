@@ -19,6 +19,8 @@
         [DataRow(TestClassNameStr, "Test1", "TestReferenceType.js", TestType.All)]
         [DataRow(TestClassNameStr, "Test2", "TestReferenceType.js", TestType.All)]
         [DataRow(TestClassNameStr, "Test3", "TestReferenceType.js", TestType.All)]
+        [DataRow(TestClassNameStr, "Test4", "TestReferenceType.js", TestType.All)]
+        [DataRow(TestClassNameStr, "Test5", "TestReferenceType.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

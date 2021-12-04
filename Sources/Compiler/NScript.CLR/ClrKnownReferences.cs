@@ -17,6 +17,7 @@ using Mono.Cecil;
     {
         public const string MSCorlibStr = "mscorlib";
         public const string SystemStr = "System";
+        public const string ThreadingNamespaceStr = "System.Threading";
         public const string CompilerServicesStr = "System.Runtime.CompilerServices";
 
         private readonly ClrContext clrContext;
@@ -183,6 +184,8 @@ using Mono.Cecil;
         private TypeReference typedReference;
         private TypeReference promiseType;
         private TypeReference promiseGenericTypeReference;
+        private TypeReference taskTypeReference;
+        private TypeReference taskGenericTypeReference;
         private TypeReference taskAwaiterTypeReference;
         private TypeReference taskAwaiterGenericTypeReference;
 
@@ -791,6 +794,36 @@ using Mono.Cecil;
                 }
 
                 return promiseGenericTypeReference;
+            }
+        }
+
+        public TypeReference TaskTypeReference
+        {
+            get
+            {
+                if (taskTypeReference == null)
+                {
+                    taskTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.ThreadingNamespaceStr,
+                        "Task");
+                }
+
+                return taskTypeReference;
+            }
+        }
+
+        public TypeReference TaskGenericTypeReference
+        {
+            get
+            {
+                if (taskGenericTypeReference == null)
+                {
+                    taskGenericTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.ThreadingNamespaceStr,
+                        "Task`1");
+                }
+
+                return taskGenericTypeReference;
             }
         }
 

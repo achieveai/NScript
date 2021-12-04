@@ -1,8 +1,9 @@
 ﻿namespace NScript.Converter.ExpressionsConverter
 {
     using CLR.AST;
+    using Mono.Cecil;
+    using NScript.CLR;
     using NScript.Converter.TypeSystemConverter;
-    using System.Collections.Generic;
 
     public class AwaitExpressionConverter
     {
@@ -20,17 +21,28 @@
 
         private static JST.Expression GetJSTAwaitableExpr(Expression awaitable, MethodCallExpression getAwaiterMethodCall,IMethodScopeConverter methodScopeConverter)
         {
-            var tyDef = awaitable.ResultType.Resolve();
+            var ty = awaitable.ResultType;
+
+            return IsPromiseLike(ty, methodScopeConverter)
+                ? ExpressionConverterBase.Convert(methodScopeConverter, awaitable)
+                : ExpressionConverterBase.Convert(methodScopeConverter, getAwaiterMethodCall);
+        }
+
+        private static bool IsPromiseLike(TypeReference ty, IMethodScopeConverter methodScopeConverter)
+        {
             var clrKnownReferences = methodScopeConverter.ClrKnownReferences;
 
-            if (tyDef == clrKnownReferences.PromiseType || tyDef == clrKnownReferences.PromiseGenericTypeReference)
-            {
-                return ExpressionConverterBase.Convert(methodScopeConverter, awaitable);
-            }
-            else
-            {
-                return ExpressionConverterBase.Convert(methodScopeConverter, getAwaiterMethodCall);
-            }
+            var x = TypeHelpers.IsSameDefinition(ty, clrKnownReferences.PromiseType)
+                || TypeHelpers.IsSameDefinition(ty, clrKnownReferences.PromiseGenericTypeReference)
+                || TypeHelpers.IsSameDefinition(ty, clrKnownReferences.TaskTypeReference)
+                || TypeHelpers.IsSameDefinition(ty, clrKnownReferences.TaskGenericTypeReference);
+
+            return x;
+
+            /*return ty == clrKnownReferences.PromiseType
+                || ty == clrKnownReferences.PromiseGenericTypeReference
+                || ty == clrKnownReferences.TaskTypeReference
+                || ty == clrKnownReferences.TaskGenericTypeReference;*/
         }
     }
 }
