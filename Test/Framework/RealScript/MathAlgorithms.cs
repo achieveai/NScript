@@ -28,6 +28,9 @@ namespace RealScript
 
         [Script(@"console.info(o.@{[mscorlib]System.Object::ToString()}());")]
         public static extern void WriteLine(object o);
+
+        [Script("console.setTimeout(action, delay);")]
+        public static extern void SetTimeout(Action action, int delay);
     }
 
     /// <summary>

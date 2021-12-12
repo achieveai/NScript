@@ -13,8 +13,11 @@ namespace System
     /// Definition for Promise
     /// </summary>
     [IgnoreNamespace, ScriptName("Promise")]
+    [AsyncMethodBuilder(typeof(PromiseBuilder<>))]
     public class Promise
     {
+        public extern Promise(Action<Action, Action<object>> callback);
+
         public static extern Promise<T> Resolve<T>(T value);
         public static extern Promise<T> Resolve<T>(Promise<T> value);
 
@@ -77,7 +80,7 @@ namespace System
     }
 
     [IgnoreNamespace, ScriptName("Promise")]
-    [AsyncMethodBuilderAttribute(typeof(PromiseBuilder<>))]
+    [AsyncMethodBuilder(typeof(PromiseBuilder<>))]
     public class Promise<T>
     {
         public extern Promise(Action<Action<T>, Action<object>> callback);

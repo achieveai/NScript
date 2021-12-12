@@ -6,8 +6,10 @@
 
 namespace NScript.Converter.Test.JsExecutionTests
 {
+    using Microsoft.ClearScript;
     using System;
     using System.Collections.Generic;
+    using System.Threading;
 
     /// <summary>
     /// Definition for JsConsole
@@ -29,6 +31,11 @@ namespace NScript.Converter.Test.JsExecutionTests
         public List<string> LogLines
         {
             get { return this.logLines; }
+        }
+
+        public void setTimeout(ScriptObject func, int delay) {
+            var timer = new Timer(_ => func.Invoke(false));
+            timer.Change(delay, Timeout.Infinite);
         }
     }
 }

@@ -28,6 +28,7 @@ namespace NScript.Converter.Test.JsExecutionTests
 
         [TestCategory("CI")]
         [DataTestMethod]
+        [TestMethod]
         [DataRow(TestType.Debug, "FactorialCalculator", "Main")]
         [DataRow(TestType.Debug, "GetMin", "RunTest")]
         [DataRow(TestType.Debug, "QuickSort", "RunTest")]
@@ -37,19 +38,31 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "TestDelegates", "Main")]
         [DataRow(TestType.Debug, "TestGenerics", "Main")]
         [DataRow(TestType.Debug, "NullableTests", "Main")]
-        [DataRow(TestType.Debug, "TestAsyncAwait", "Main")]
+        [DataRow(TestType.Debug, "TestAsyncAwait", "Main", true)]
         public void TestMcs(
                 TestType testType,
                 string className,
-                string entryPointMethod)
+                string entryPointMethod,
+                bool isAsyncEntryPoint = false)
         {
             if ((testType & TestType.Debug) == TestType.Debug)
             {
-                JsExecutionHelper.ExecuteScript(
-                    className,
-                    true,
-                    Tuple.Create(className, entryPointMethod),
-                    true);
+                if (isAsyncEntryPoint)
+                {
+                    JsExecutionHelper.ExecuteAsyncScript(
+                        className,
+                        true,
+                        Tuple.Create(className, entryPointMethod),
+                        true).Wait();
+                }
+                else
+                {
+                    JsExecutionHelper.ExecuteScript(
+                        className,
+                        true,
+                        Tuple.Create(className, entryPointMethod),
+                        true);
+                }
             }
 
             if ((testType & TestType.Retail) == TestType.Retail)

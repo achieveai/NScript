@@ -17,7 +17,10 @@
 
         public void OnCompleted(Action continuation)
         {
-            _promise.Then(continuation);
+        }
+
+        public void GetResult()
+        {
         }
     }
 

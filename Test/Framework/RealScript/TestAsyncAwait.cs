@@ -6,14 +6,15 @@
 
     public class TestAsyncAwait
     {
-        public static void Main()
+        public static async void Main()
         {
-            Test3().Then(Console.WriteLine);
-            Test5();
+            var res = await Test3();
+            Console.WriteLine(res);
         }
 
         public static async Promise<int> Test1()
         {
+            await Utilities.Delay(2000);
             return 12;
         }
 
@@ -24,22 +25,13 @@
 
         public static async Promise<string> Test3()
         {
+            Console.WriteLine("Test3");
             var cls = new MyClass(Test2());
             var nativeArray = new NativeArray<Promise<int>>(2);
             nativeArray[0] = Test1();
             nativeArray[1] = Test2();
             var tmp = await nativeArray;
             return (await cls).ToString() + tmp;
-        }
-        
-        public static async Task<int> Test4()
-        {
-            return 90;
-        }
-
-        public static async Task<int> Test5()
-        {
-            return await Test4();
         }
     }
 
@@ -58,11 +50,27 @@
         }
     }
 
-    public static class ArrayExt
+    public static class ArrayExtensions
     {
         public static TaskAwaiter<NativeArray<T>> GetAwaiter<T>(this NativeArray<Promise<T>> nativeArray)
         {
             return Promise<T>.All(nativeArray).GetAwaiter();
+        }
+
+        public static TaskAwaiter<NativeArray> GetAwaiter(this (Promise, Promise) tupl)
+        {
+            return Promise.All(tupl.Item1, tupl.Item2).GetAwaiter();
+        }
+    }
+
+    public static class Utilities
+    {
+        public static Promise Delay(int delay)
+        {
+            return new Promise((resolve, reject) =>
+            {
+                Console.SetTimeout(() => resolve(), delay);
+            });
         }
     }
 }
