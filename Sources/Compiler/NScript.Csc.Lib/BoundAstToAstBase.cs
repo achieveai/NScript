@@ -36,21 +36,16 @@
                 ? null
                 : Visit((BoundBlock)boundNode, arg, methodSymbol, initializers);
 
-            var kind = 0;
-            if (methodSymbol.IsIterator) kind |= (int)Kind.Iterator;
-            if (methodSymbol.IsAsync) kind |= (int)Kind.Async;
-            if (kind == 0) kind = (int)Kind.Regular;
-
             // TODO: Make note of [Script] Attribute in case of empty body.
             var rv = new MethodBody
             {
-                Kind = (Kind)kind,
                 MethodId = arg
                     .SymbolSerializer
                     .GetMethodSpecId(methodSymbol),
                 Body = parameterBlock,
                 FileName = boundNode?.SyntaxTree.FilePath,
-                Location = boundNode?.Syntax.GetSerLoc()
+                Location = boundNode?.Syntax.GetSerLoc(),
+                BlockKind = GetBlockKind(methodSymbol)
             };
 
             return rv;
@@ -94,7 +89,8 @@
             {
                 Location = node.Syntax.GetSerLoc(),
                 Id = ++id,
-                LocalFunctions = new List<string>()
+                LocalFunctions = new List<string>(),
+                BlockKind = GetBlockKind(methodSymbol)
             };
 
             _ = scopeBlockStack.AddFirst((rv.Id, node, rv.LocalFunctions));
@@ -1871,6 +1867,12 @@
             }
 
             return (StatementSer)ser;
+        }
+
+        private BlockKind GetBlockKind(MethodSymbol symbol)
+        {
+            return (BlockKind)((symbol.IsAsync ? (int)BlockKind.Async : 0)
+                | (symbol.IsIterator ? (int)BlockKind.Iterator : 0));
         }
     }
 }

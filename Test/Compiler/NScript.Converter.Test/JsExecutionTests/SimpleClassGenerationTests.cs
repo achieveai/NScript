@@ -40,10 +40,10 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "NullableTests", "Main")]
         [DataRow(TestType.Debug, "TestAsyncAwait", "Main", true)]
         public void TestMcs(
-                TestType testType,
-                string className,
-                string entryPointMethod,
-                bool isAsyncEntryPoint = false)
+            TestType testType,
+            string className,
+            string entryPointMethod,
+            bool isAsyncEntryPoint = false)
         {
             if ((testType & TestType.Debug) == TestType.Debug)
             {

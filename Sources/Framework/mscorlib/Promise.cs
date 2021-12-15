@@ -13,7 +13,7 @@ namespace System
     /// Definition for Promise
     /// </summary>
     [IgnoreNamespace, ScriptName("Promise")]
-    [AsyncMethodBuilder(typeof(PromiseBuilder<>))]
+    [AsyncMethodBuilder(typeof(PromiseBuilder))]
     public class Promise
     {
         public extern Promise(Action<Action, Action<object>> callback);
@@ -81,7 +81,7 @@ namespace System
 
     [IgnoreNamespace, ScriptName("Promise")]
     [AsyncMethodBuilder(typeof(PromiseBuilder<>))]
-    public class Promise<T>
+    public class Promise<T>: Promise
     {
         public extern Promise(Action<Action<T>, Action<object>> callback);
 
@@ -141,10 +141,48 @@ namespace System
 
         public extern Promise<T> Catch<E>(Func<E, Promise<T>> onRejected);
 
-        public extern Promise<T> Catch<E>(Action<E> onRejected);
+        public extern new Promise<T> Catch<E>(Action<E> onRejected);
 
         [Script("return this;")]
-        public extern TaskAwaiter<T> GetAwaiter();
+        public extern new TaskAwaiter<T> GetAwaiter();
+    }
+
+    public class PromiseBuilder: IAsyncStateMachine
+    {
+        public Promise Task { get; private set; }
+
+        public static PromiseBuilder Create()
+        {
+            return new PromiseBuilder();
+        }
+
+        public void SetException(Exception e)
+        {
+        }
+
+        public void SetResult()
+        {
+        }
+
+        public void AwaitOnCompleted<TAwaiter,TStateMachine> (ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : System.Runtime.CompilerServices.INotifyCompletion where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
+
+        public void AwaitUnsafeOnCompleted<TAwaiter,TStateMachine> (ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : System.Runtime.CompilerServices.ICriticalNotifyCompletion where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
+
+        public void Start<TStateMachine> (ref TStateMachine stateMachine) where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
+
+        public void MoveNext()
+        {
+        }
+
+        public void SetStateMachine(IAsyncStateMachine stateMachine)
+        {
+        }
     }
 
     public class PromiseBuilder<T>: IAsyncStateMachine
@@ -170,22 +208,18 @@ namespace System
 
         public void AwaitUnsafeOnCompleted<TAwaiter,TStateMachine> (ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : System.Runtime.CompilerServices.ICriticalNotifyCompletion where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
         {
-
         }
 
         public void Start<TStateMachine> (ref TStateMachine stateMachine) where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
         {
-
         }
 
         public void MoveNext()
         {
-            throw new NotImplementedException();
         }
 
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
-            throw new NotImplementedException();
         }
     }
 }

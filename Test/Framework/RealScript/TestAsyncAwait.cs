@@ -2,7 +2,6 @@
 {
     using System;
     using System.Runtime.CompilerServices;
-    using System.Threading;
 
     public class TestAsyncAwait
     {
@@ -10,6 +9,8 @@
         {
             var res = await Test3();
             Console.WriteLine(res);
+            await Test4();
+            await Test5();
         }
 
         public static async Promise<int> Test1()
@@ -33,6 +34,32 @@
             var tmp = await nativeArray;
             return (await cls).ToString() + tmp;
         }
+
+        public static async Promise Test4()
+        {
+            Func<Promise<int>> func = async () => 1;
+
+            Compare(1, await func(), (a, b) => a == b);
+        }
+
+        public static async Promise Test5()
+        {
+            async Promise<int> LocalFunc() => 1;
+
+            Compare(1, await LocalFunc(), (a, b) => a == b);
+        }
+
+        private static void Compare<T>(T lhs, T rhs, Func<T, T, bool> compare)
+        {
+            if (compare(lhs, rhs))
+            {
+                Console.WriteLine("This should be printed");
+            }
+            else
+            {
+                Console.WriteLine("This should not be printed");
+            }
+        }
     }
 
     public class MyClass
@@ -55,11 +82,6 @@
         public static TaskAwaiter<NativeArray<T>> GetAwaiter<T>(this NativeArray<Promise<T>> nativeArray)
         {
             return Promise<T>.All(nativeArray).GetAwaiter();
-        }
-
-        public static TaskAwaiter<NativeArray> GetAwaiter(this (Promise, Promise) tupl)
-        {
-            return Promise.All(tupl.Item1, tupl.Item2).GetAwaiter();
         }
     }
 

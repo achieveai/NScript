@@ -1163,6 +1163,8 @@ namespace JsCsc.Lib.Serialization
         public List<ParameterSer> Parameters { get; set; }
 
         public bool IsMethodOwned { get; set; }
+
+        public BlockKind BlockKind { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -1195,9 +1197,9 @@ namespace JsCsc.Lib.Serialization
 
     [Flags]
     [Serializable]
-    public enum Kind
+    public enum BlockKind
     {
-        Regular = 1 << 0,
+        Regular = 0,
         Iterator = 1 << 1,
         Async = 1 << 2
     }
@@ -1210,18 +1212,13 @@ namespace JsCsc.Lib.Serialization
     {
         public int MethodId { get; set; }
 
-        public string FileName { get; set; }
+        public BlockKind BlockKind { get; set; }
 
-        public Kind Kind { get; set; }
+        public string FileName { get; set; }
 
         public ParameterBlock Body { get; set; }
 
         public LocationSer ScriptBlockLocation { get; set; }
-
-        public MethodBody()
-        {
-            Kind = Kind.Regular;
-        }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

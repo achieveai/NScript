@@ -930,7 +930,8 @@ namespace NScript.Converter.TypeSystemConverter
                     Scope,
                     identifierScope,
                     identifierScope.ParameterIdentifiers,
-                    delegateFunctionNameId);
+                    delegateFunctionNameId,
+                    parameterBlock.IsAsync);
 
                 rv.AddStatements(statements);
 

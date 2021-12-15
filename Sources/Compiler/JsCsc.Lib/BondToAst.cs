@@ -65,7 +65,7 @@ namespace JsCsc.Lib
                         var methodBlockObject = jObject.Body;
                         if (methodBlockObject != null)
                         {
-                            var rv = new TopLevelBlock(method, (BlockKind)((int)jObject.Kind))
+                            var rv = new TopLevelBlock(method)
                             {
                                 RootBlock = (ParameterBlock)ParseNode(methodBlockObject)
                             };
@@ -654,7 +654,8 @@ namespace JsCsc.Lib
                         LocFromJObject(jObject),
                         vc.GetCapturedVariables(),
                         vc.GetParamBlockVariables(),
-                        vc.GetLocalFunctionVariables());
+                        vc.GetLocalFunctionVariables(),
+                        (BlockKind)jObject.BlockKind);
 
                     statements.ForEach(_ => rv.AddStatement(_));
 

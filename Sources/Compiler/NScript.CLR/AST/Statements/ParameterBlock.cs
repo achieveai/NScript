@@ -6,10 +6,18 @@
 
 namespace NScript.CLR.AST
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using NScript.Utils;
-    using Mono.Cecil;
+
+    [Flags]
+    public enum BlockKind
+    {
+        Regular = 0,
+        Iterator = 1 << 1,
+        Async = 1 << 2,
+    }
 
     /// <summary>
     /// Definition for ParameterBlock
@@ -30,7 +38,8 @@ namespace NScript.CLR.AST
             List<(LocalVariable variable, bool isUsed)> variables,
             (List<Variable> escapingVars, List<ParameterVariable> paras, ThisVariable thisVar)
                 paramBlockVariables,
-            List<LocalFunctionVariable> localFunctionNames)
+            List<LocalFunctionVariable> localFunctionNames,
+            BlockKind blockKind = (BlockKind)0)
             : base(context, location, variables, localFunctionNames)
         {
             this.readonlyVariables =
@@ -38,6 +47,8 @@ namespace NScript.CLR.AST
 
             this.readonlyEscapingVariables =
                 new ReadOnlyCollection<Variable>(this.escapingVariables);
+
+            this.BlockKind = blockKind;
 
             if (paramBlockVariables.escapingVars != null)
             { paramBlockVariables.escapingVars.ForEach(_ => this.escapingVariables.Add(_)); }
@@ -67,6 +78,13 @@ namespace NScript.CLR.AST
                 }
             }
         }
+
+        public BlockKind BlockKind
+        { get; private set; }
+
+        public bool IsAsync => (BlockKind.Async & BlockKind) == BlockKind.Async;
+
+        public bool IsIterator => (BlockKind.Iterator & BlockKind) == BlockKind.Iterator;
 
         public IList<ParameterVariable> Parameters
         {

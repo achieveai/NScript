@@ -384,7 +384,10 @@ namespace NScript.Converter
             rootBlock = topLevelBlock != null
                 ? topLevelBlock.RootBlock
                 : null;
-            kind = topLevelBlock.Kind;
+            kind = rootBlock == null
+                ? BlockKind.Regular
+                : rootBlock.BlockKind;
+
             return true;
         }
 
