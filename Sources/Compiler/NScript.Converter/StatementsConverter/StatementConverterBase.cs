@@ -130,6 +130,11 @@ namespace NScript.Converter.StatementsConverter
                 StatementConverterBase.SimplifyConverter<CLR.AST.LocalMethodStatement>(
                     LocalFunctionStatementConverter.Convert));
 
+            returnValue.Add(
+                typeof(CLR.AST.YieldStatement),
+                StatementConverterBase.SimplifyConverter<CLR.AST.YieldStatement>(
+                    YieldConverter.Convert));
+
             return returnValue;
         }
 

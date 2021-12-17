@@ -109,8 +109,8 @@ namespace NScript.Converter
         /// <summary>
         /// .
         /// </summary>
-        private readonly Dictionary<MethodDefinition, Func<TopLevelBlock>> methodAstMapping
-            = new Dictionary<MethodDefinition, Func<TopLevelBlock>>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>> methodAstMapping
+            = new Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// .
@@ -372,7 +372,7 @@ namespace NScript.Converter
             out ParameterBlock rootBlock,
             out BlockKind kind)
         {
-            Func<TopLevelBlock> func;
+            Func<Tuple<TopLevelBlock, BlockKind>> func;
             rootBlock = null;
             kind = BlockKind.Regular;
             if (!this.methodAstMapping.TryGetValue(method, out func))
@@ -380,13 +380,12 @@ namespace NScript.Converter
                 return false;
             }
 
-            var topLevelBlock = func != null ? func() : null;
+            var (topLevelBlock, blockKind) = func != null ? func() : null;
             rootBlock = topLevelBlock != null
                 ? topLevelBlock.RootBlock
                 : null;
-            kind = rootBlock == null
-                ? BlockKind.Regular
-                : rootBlock.BlockKind;
+
+            kind = blockKind;
 
             return true;
         }

@@ -19,6 +19,7 @@ namespace RealScript
             NullableTests.TestNull();
             NullableTests.TestLiftingNonNullArgs();
             NullableTests.TestLiftingNullArgs();
+            NullableTests.TestNullCoalescing();
         }
 
         private static void TestNonNull()
@@ -49,6 +50,28 @@ namespace RealScript
             int? n1 = (int?)1;
             int? n2 = null;
             LogNullable(n1 + n2);
+        }
+
+        private static void TestNullCoalescing()
+        {
+            // int
+            Console.WriteLine("Testing Null Coalescing operator");
+            int? i = 0;
+            Console.WriteLine("i = " + (i ?? 1).ToString());
+            i = null;
+            Console.WriteLine("i = " + (i ?? 1).ToString());
+
+            // bool
+            bool? b = false;
+            Console.WriteLine("b = " + (b ?? true).ToString());
+            b = null;
+            Console.WriteLine("b = " + (b ?? true).ToString());
+
+            // string
+            string? s = "";
+            Console.WriteLine("s.Length = " + (s ?? "Empty").Length);
+            s = null;
+            Console.WriteLine("s.Length = " + (s ?? "Empty").Length);
         }
 
         private static void LogNullable<T>(Nullable<T> nt) where T : struct

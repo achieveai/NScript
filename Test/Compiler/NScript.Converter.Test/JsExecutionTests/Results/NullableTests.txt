@@ -26,3 +26,10 @@ Recast nullable has no value
 Nullable fails casting to underlying value
 Exception Message: Cannot read property 'toString' of null
 Value or default is 0
+Testing Null Coalescing operator
+i = 0
+i = 1
+b = false
+b = true
+s.Length = 0
+s.Length = 5

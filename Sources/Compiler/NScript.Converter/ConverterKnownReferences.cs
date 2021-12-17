@@ -171,6 +171,12 @@ namespace NScript.Converter
         /// </summary>
         private TypeReference scriptNameAttribute;
 
+        private TypeReference generatorWrapperType;
+
+        private TypeReference generatorWrapperGenericType;
+
+        private TypeReference nativeGeneratorType;
+
         /// <summary>
         /// Backing field for NativeArrayType.
         /// </summary>
@@ -295,6 +301,12 @@ namespace NScript.Converter
         /// Backing field for MoveNextEnumeratorMethod.
         /// </summary>
         private MethodReference moveNextEnumeratorMethod;
+
+        private MethodReference generatorWrapperCtor;
+
+        private MethodReference generatorWrapperGenericCtor;
+
+        private MethodReference nativeGeneratorCtor;
 
         /// <summary>
         /// Backing field for ArrayImplNativeArrayCtor.
@@ -613,6 +625,50 @@ namespace NScript.Converter
             }
         }
 
+        public TypeReference GeneratorWrapper
+        {
+            get
+            {
+                if (this.generatorWrapperType == null)
+                {
+                    this.generatorWrapperType = GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "GeneratorWrapper");
+                }
+
+                return this.generatorWrapperType;
+            }
+        }
+
+        public TypeReference GeneratorWrapperGeneric
+        {
+            get
+            {
+                if (this.generatorWrapperGenericType == null)
+                {
+                    this.generatorWrapperGenericType = GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "GeneratorWrapper`1");
+                }
+
+                return this.generatorWrapperGenericType;
+            }
+        }
+
+        public TypeReference NativeGenerator
+        {
+            get
+            {
+                if (this.nativeGeneratorType != null)
+                {
+                    return this.nativeGeneratorType;
+                }
+
+                return this.nativeGeneratorType = this.GetTypeReference(
+                    ClrKnownReferences.SystemStr,
+                    "NativeGenerator");
+            }
+        }
         /// <summary>
         /// Gets the native array.
         /// </summary>
@@ -1413,6 +1469,56 @@ namespace NScript.Converter
                 }
 
                 return this.delegateRemoveMethod;
+            }
+        }
+
+        public MethodReference NativeGeneratorCtor
+        {
+            get
+            {
+                if (this.nativeGeneratorCtor != null)
+                {
+                    return this.nativeGeneratorCtor;
+                }
+
+                return this.nativeGeneratorCtor = this.GetMethodReference(
+                    ".ctor",
+                    this.ClrReferences.Void,
+                    this.NativeGenerator);
+            }
+        }
+
+        public MethodReference GeneratorWrapperCtor
+        {
+            get
+            {
+                if (this.generatorWrapperCtor != null)
+                {
+                    return this.generatorWrapperCtor;
+                }
+
+                return this.generatorWrapperCtor = this.GetMethodReference(
+                    ".ctor",
+                    ClrReferences.Void,
+                    GeneratorWrapper,
+                    ClrReferences.Object);
+            }
+        }
+
+        public MethodReference GeneratorWrapperGenericCtor
+        {
+            get
+            {
+                if (this.generatorWrapperGenericCtor != null)
+                {
+                    return this.generatorWrapperGenericCtor;
+                }
+
+                return this.generatorWrapperGenericCtor = this.GetMethodReference(
+                    ".ctor",
+                    ClrReferences.Void,
+                    GeneratorWrapperGeneric,
+                    ClrReferences.Object);
             }
         }
 

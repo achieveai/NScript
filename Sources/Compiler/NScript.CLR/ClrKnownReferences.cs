@@ -181,6 +181,7 @@ using Mono.Cecil;
 
         private MethodReference initializeArrayReference;
         private MethodReference arrayLengthGetter;
+        private MethodReference nullOrUndefinedCheck;
         private TypeReference typedReference;
         private TypeReference promiseType;
         private TypeReference promiseGenericTypeReference;
@@ -910,6 +911,27 @@ using Mono.Cecil;
                 }
 
                 return this.arrayLengthGetter;
+            }
+        }
+
+        public MethodReference NullOrUndefinedCheck
+        {
+            get
+            {
+                if (this.nullOrUndefinedCheck != null)
+                { return this.nullOrUndefinedCheck; }
+
+                var objectDef = Object.Resolve();
+
+                foreach (var method in objectDef.Methods)
+                {
+                    if (method.Name == "IsNullOrUndefined")
+                    {
+                        return this.nullOrUndefinedCheck = method;
+                    }
+                }
+
+                throw new InvalidProgramException("Object.IsNullOrUndefined could not be resolved");
             }
         }
 

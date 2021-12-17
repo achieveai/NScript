@@ -43,7 +43,7 @@ namespace JsCsc.Lib
 
         public MethodDefinition CurrentMethod => _currentMethod;
 
-        public Tuple<MethodDefinition, Func<TopLevelBlock>> ParseMethodBody(
+        public Tuple<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>> ParseMethodBody(
             Serialization.MethodBody jObject)
         {
             var method = DeserializeMethod(jObject.MethodId).Resolve();
@@ -51,7 +51,7 @@ namespace JsCsc.Lib
             if (method.Name == "GenericMethodCall3")
             { }
 
-            return new Tuple<MethodDefinition, Func<TopLevelBlock>>(
+            return new Tuple<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>>(
                 method,
                 () =>
                 {
@@ -63,6 +63,7 @@ namespace JsCsc.Lib
                     try
                     {
                         var methodBlockObject = jObject.Body;
+                        var blockKind = (BlockKind)((int)jObject.BlockKind);
                         if (methodBlockObject != null)
                         {
                             var rv = new TopLevelBlock(method)
@@ -72,10 +73,10 @@ namespace JsCsc.Lib
                             _currentMethod = null;
                             _currentMethodFileName = null;
 
-                            return rv;
+                            return new Tuple<TopLevelBlock, BlockKind>(rv, blockKind);
                         }
                         else
-                        { return null; }
+                        { return new Tuple<TopLevelBlock, BlockKind>(null, blockKind); }
                     }
                     finally
                     {
@@ -803,6 +804,11 @@ namespace JsCsc.Lib
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
+
+        private Node ParseYieldBreak(Serialization.YieldBreakStatement jObject) => new YieldStatement(
+            _clrContext,
+            LocFromJObject(jObject),
+            null);
 
         private Node ParseIterator(Serialization.IteratorBlock jObject) => new InlineIteratorExpression(
                 _clrContext,
@@ -1960,6 +1966,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.YieldStatement),
                     (a) => ParseYield((Serialization.YieldStatement)a)
+                },
+                {
+                    typeof(Serialization.YieldBreakStatement),
+                    (a) => ParseYieldBreak((Serialization.YieldBreakStatement)a)
                 },
                 {
                     typeof(Serialization.IteratorBlock),
