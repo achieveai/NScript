@@ -25,6 +25,19 @@
         public Expression GetAwaiterCallExpression
         { get; private set; }
 
-        public override TypeReference ResultType => Expression.ResultType;
+        public override TypeReference ResultType
+        {
+            get
+            {
+                if (Expression.ResultType == Context.KnownReferences.PromiseType)
+                {
+                    return Context.KnownReferences.Void;
+                }
+                else
+                {
+                    return Expression.ResultType.GetGenericArguments()[0];
+                }
+            }
+        }
     }
 }

@@ -11,11 +11,12 @@
             Console.WriteLine(res);
             await Test4();
             await Test5();
+            await Test6();
         }
 
         public static async Promise<int> Test1()
         {
-            await Utilities.Delay(2000);
+            await Utilities.Delay(200);
             return 12;
         }
 
@@ -47,6 +48,19 @@
             async Promise<int> LocalFunc() => 1;
 
             Compare(1, await LocalFunc(), (a, b) => a == b);
+        }
+
+        public static async Promise Test6()
+        {
+            Func<Promise<string>> ff = async () =>
+            {
+                await Utilities.Delay(100);
+                return "asdf";
+            };
+
+            var (a, b) = await Utilities.WhenAll(Test1(), ff());
+            Console.WriteLine(a);
+            Console.WriteLine(b);
         }
 
         private static void Compare<T>(T lhs, T rhs, Func<T, T, bool> compare)
@@ -93,6 +107,12 @@
             {
                 Console.SetTimeout(() => resolve(), delay);
             });
+        }
+
+        public static async Promise<(T1, T2)> WhenAll<T1, T2>(Promise<T1> p1, Promise<T2> p2)
+        {
+            await Promise.All(p1, p2);
+            return (await p1, await p2);
         }
     }
 }
