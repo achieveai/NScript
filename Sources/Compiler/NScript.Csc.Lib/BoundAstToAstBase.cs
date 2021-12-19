@@ -623,7 +623,11 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
 
-        public override AstBase VisitDiscardExpression(BoundDiscardExpression node, SerializationContext arg) => throw new InvalidOperationException();
+        public override AstBase VisitDiscardExpression(BoundDiscardExpression node, SerializationContext arg) =>
+            new DiscardExpression
+            {
+                Location = node.Syntax.GetSerLoc(),
+            };
 
         public override AstBase VisitDoStatement(BoundDoStatement node, SerializationContext arg)
             => new DoStatement

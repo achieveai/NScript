@@ -61,33 +61,86 @@ namespace NScript.Converter.ExpressionsConverter
             bool addTailExpr = false)
         {
             var expressions = new List<JST.Expression>(lhs.Count());
+            var tupleArgs = new List<JST.Expression>(lhs.Count());
 
             foreach (var (expr, tupleArg) in lhs.Zip(rhs.TupleArgs))
             {
                 if (expr is TupleLiteral lit)
                 {
                     var decons = new TupleDeconstructExpression(expr.Context, expr.Location, lit.TupleArgs, tupleArg);
-                    expressions.Add(InternalConvert(scopeConverter, decons));
+                    var tmpVar = new JST.IdentifierExpression(
+                        scopeConverter.GetTempVariable(),
+                        scopeConverter.Scope);
+
+                    expressions.Add(
+                        new JST.BinaryExpression(
+                            expr.Location,
+                            scopeConverter.Scope,
+                            JST.BinaryOperator.Assignment,
+                            tmpVar,
+                            InternalConvert(scopeConverter, decons, true)));
+
+                    tupleArgs.Add(tmpVar);
                     continue;
                 }
 
-                var jsLhs = ExpressionConverterBase.Convert(scopeConverter, expr);
+                var jsLhs = expr switch
+                {
+                    DiscardExpression => new JST.IdentifierExpression(
+                        scopeConverter.GetTempVariable(),
+                        scopeConverter.Scope),
+                    _ => ExpressionConverterBase.Convert(scopeConverter, expr)
+                };
+
                 var jsRhs = ExpressionConverterBase.Convert(scopeConverter, tupleArg);
 
-                expressions.Add(
-                    new JST.BinaryExpression(
+                if (!(expr is VariableReference) && !(expr is DiscardExpression))
+                {
+                    // When lhs is property we need to make sure we dont 'get' it multiple times,
+                    // And only set it once
+
+                    var tmpVar = new JST.IdentifierExpression(
+                        scopeConverter.GetTempVariable(),
+                        scopeConverter.Scope);
+
+                    var assignment = new JST.BinaryExpression(
                         rhs.Location,
                         scopeConverter.Scope,
                         JST.BinaryOperator.Assignment,
-                        jsLhs,
-                        jsRhs));
+                        tmpVar,
+                        jsRhs);
+
+                    expressions.Add(assignment);
+
+                    expressions.Add(
+                        new JST.BinaryExpression(
+                            rhs.Location,
+                            scopeConverter.Scope,
+                            JST.BinaryOperator.Assignment,
+                            jsLhs,
+                            tmpVar));
+
+                    tupleArgs.Add(tmpVar);
+                }
+                else
+                {
+                    expressions.Add(
+                        new JST.BinaryExpression(
+                            rhs.Location,
+                            scopeConverter.Scope,
+                            JST.BinaryOperator.Assignment,
+                            jsLhs,
+                            jsRhs));
+                    tupleArgs.Add(jsLhs);
+                }
             }
 
             // Finally add the tuple literal, since the tuple deconstruct expression evaluates
             // to the tupleLiteral
             if (addTailExpr)
             {
-                expressions.Add(ExpressionConverterBase.Convert(scopeConverter, rhs));
+                expressions.Add(TupleLiteralConverter.ConstructTupleLiteral(scopeConverter, tupleArgs, resultType));
+                // expressions.Add(ExpressionConverterBase.Convert(scopeConverter, rhs));
             }
 
             return new JST.ExpressionsList(
@@ -165,6 +218,11 @@ namespace NScript.Converter.ExpressionsConverter
 
             foreach (var (expr, (field, ty)) in lhs.Zip(rhsTy.Resolve().Fields.Zip(rhsTy.GetGenericArguments())))
             {
+                if (expr is DiscardExpression)
+                {
+                    continue;
+                }
+
                 var itemAccess = CreateItemAccessExpression(scopeConverter, rhs, field);
 
                 if (expr is TupleLiteral literal)

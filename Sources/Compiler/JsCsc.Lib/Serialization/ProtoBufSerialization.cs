@@ -582,6 +582,14 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
+    public class DiscardExpression
+        : ExpressionSer
+    {
+    }
+
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
     public class ArrayCreationExpression
         : ExpressionSer
     {

@@ -1390,6 +1390,10 @@ namespace JsCsc.Lib
                 LocFromJObject(jObject),
                 DeserializeType(jObject.Type));
 
+        private Node ParseDiscardExpression(Serialization.DiscardExpression jObject) => new DiscardExpression(
+            _clrContext,
+            LocFromJObject(jObject));
+
         private Node ParseTempVariableAddressReference(Serialization.TempVariableRefExpression jObject) => ParseVariableReference(jObject);
 
         private Node ParseTempVariableReference(Serialization.TempVariableRefExpression jObject) => ParseVariableReference(jObject);
@@ -2146,6 +2150,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.TupleCreationExpression),
                     (a) => ParseTupleCreation((Serialization.TupleCreationExpression)a)
+                },
+                {
+                    typeof(Serialization.DiscardExpression),
+                    (a) => ParseDiscardExpression((Serialization.DiscardExpression)a)
                 },
                 {
                     typeof(Serialization.AwaitExpression),

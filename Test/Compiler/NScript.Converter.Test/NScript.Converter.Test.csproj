@@ -14,6 +14,7 @@
   <ItemGroup>
     <None Remove="JsExecutionTests\Results\TestAsyncAwait.txt" />
     <None Remove="JsExecutionTests\Results\YieldReturnTests.txt" />
+    <None Remove="JsExecutionTests\Results\TupleTests.txt" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestBuiltinValueTypes.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericReferenceType.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericValueType.js" />
@@ -28,6 +29,7 @@
     <None Remove="MethodConverterTests\Regressions\ShrPrecedenceRegression.js" />
     <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
     <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
+    <None Remove="MethodConverterTests\TupleTests\TestDiscard.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTempVarCreation.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTupleDecons.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTupleReturn.js" />
@@ -56,6 +58,7 @@
   <ItemGroup>
     <EmbeddedResource Include="JsExecutionTests\Results\TestAsyncAwait.txt" />
     <EmbeddedResource Include="JsExecutionTests\Results\YieldReturnTests.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\TupleTests.txt" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestBuiltinValueTypes.js" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestGenericReferenceType.js" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestReferenceType.js" />
@@ -71,6 +74,7 @@
     <EmbeddedResource Include="MethodConverterTests\Regressions\ShrPrecedenceRegression.js" />
     <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
     <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
+    <EmbeddedResource Include="MethodConverterTests\TupleTests\TestDiscard.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestTempVarCreation.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestTupleDecons.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestTupleReturn.js" />
