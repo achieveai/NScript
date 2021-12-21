@@ -40,6 +40,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "NullableTests", "Main")]
         [DataRow(TestType.Debug, "TupleTests", "Main")]
         [DataRow(TestType.Debug, "YieldReturnTests", "Main")]
+        [DataRow(TestType.Debug, "TestStdlib", "Main")]
         [DataRow(TestType.Debug, "TestAsyncAwait", "Main", true)]
         public void TestMcs(
             TestType testType,
