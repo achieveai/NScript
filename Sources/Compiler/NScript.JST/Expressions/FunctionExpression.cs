@@ -46,6 +46,10 @@ namespace NScript.JST
         /// </summary>
         private readonly IIdentifier name;
 
+        private readonly bool isAsync;
+
+        private readonly bool isGenerator;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionExpression"/> class.
         /// </summary>
@@ -59,7 +63,9 @@ namespace NScript.JST
             IdentifierScope outerScope,
             IdentifierScope innerScope,
             IEnumerable<IIdentifier> parameters,
-            IIdentifier name)
+            IIdentifier name,
+            bool isAsync = false,
+            bool isGenerator = false)
             : base(location, outerScope)
         {
             this.innerScope = innerScope;
@@ -73,6 +79,8 @@ namespace NScript.JST
             this.statements = new List<Statement>();
             this.readonlyStatements = new ReadOnlyCollection<Statement>(this.statements);
             this.readonlyIdentifiers = new ReadOnlyCollection<IIdentifier>(this.parameters);
+            this.isAsync = isAsync;
+            this.isGenerator = isGenerator;
         }
 
         /// <summary>
@@ -176,7 +184,9 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
+            if (isAsync) writer.Write(Keyword.Async);
             writer.Write(Keyword.Function);
+            if (isGenerator) writer.Write(Symbols.Multiply);
 
             if (this.name != null)
             {

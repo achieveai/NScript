@@ -280,6 +280,7 @@
                 @"FlagsAttribute.cs",
                 @"Func.cs",
                 @"Function.cs",
+                @"GeneratorWrapper.cs",
                 @"IDisposable.cs",
                 @"IEquatable.cs",
                 @"Int16.cs",
@@ -293,6 +294,7 @@
                 @"MulticastDelegate.cs",
                 @"Nullable.cs",
                 @"NativeArray.cs",
+                @"NativeGenerator.cs",
                 @"Number.cs",
                 @"NumberFormatInfo.cs",
                 @"Object.cs",
@@ -595,7 +597,8 @@
                 @"Class1.cs",
                 @"ConstructorTests.cs",
                 @"NullableTests.cs",
-                @"TestDefaultExpr.cs"
+                @"TestDefaultExpr.cs",
+                @"TestAsyncAwait.cs"
             };
 
             TestAssemblyLoader.DllBuilder.Build(

@@ -109,8 +109,8 @@ namespace NScript.Converter
         /// <summary>
         /// .
         /// </summary>
-        private readonly Dictionary<MethodDefinition, Func<TopLevelBlock>> methodAstMapping
-            = new Dictionary<MethodDefinition, Func<TopLevelBlock>>(MemberReferenceComparer.Instance);
+        private readonly Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>> methodAstMapping
+            = new Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>>(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// .
@@ -231,8 +231,9 @@ namespace NScript.Converter
                     foreach (var item in fullAst.Methods)
                     {
                         var tuple = bondToAst.ParseMethodBody(item);
+                        var (methodDef, func) = tuple;
                         // tupl.Item2();
-                        this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
+                        this.methodAstMapping.Add(methodDef, func);
                     }
 
                     // stopWatch.Stop();
@@ -368,19 +369,24 @@ namespace NScript.Converter
         /// </returns>
         public bool TryGetMethodAst(
             MethodDefinition method,
-            out ParameterBlock rootBlock)
+            out ParameterBlock rootBlock,
+            out BlockKind kind)
         {
-            Func<TopLevelBlock> func;
+            Func<Tuple<TopLevelBlock, BlockKind>> func;
             rootBlock = null;
+            kind = BlockKind.Regular;
             if (!this.methodAstMapping.TryGetValue(method, out func))
             {
                 return false;
             }
 
-            var topLevelBlock = func != null ? func() : null;
+            var (topLevelBlock, blockKind) = func != null ? func() : null;
             rootBlock = topLevelBlock != null
                 ? topLevelBlock.RootBlock
                 : null;
+
+            kind = blockKind;
+
             return true;
         }
 

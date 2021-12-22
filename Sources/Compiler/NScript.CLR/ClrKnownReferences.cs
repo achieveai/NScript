@@ -17,6 +17,7 @@ using Mono.Cecil;
     {
         public const string MSCorlibStr = "mscorlib";
         public const string SystemStr = "System";
+        public const string ThreadingNamespaceStr = "System.Threading";
         public const string CompilerServicesStr = "System.Runtime.CompilerServices";
 
         private readonly ClrContext clrContext;
@@ -180,7 +181,14 @@ using Mono.Cecil;
 
         private MethodReference initializeArrayReference;
         private MethodReference arrayLengthGetter;
+        private MethodReference nullOrUndefinedCheck;
         private TypeReference typedReference;
+        private TypeReference promiseType;
+        private TypeReference promiseGenericTypeReference;
+        private TypeReference taskTypeReference;
+        private TypeReference taskGenericTypeReference;
+        private TypeReference taskAwaiterTypeReference;
+        private TypeReference taskAwaiterGenericTypeReference;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClrKnownReferences"/> class.
@@ -760,6 +768,112 @@ using Mono.Cecil;
             }
         }
 
+        public TypeReference PromiseType
+        {
+            get
+            {
+                if (promiseType == null)
+                {
+                    promiseType = this.GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "Promise");
+                }
+
+                return promiseType;
+            }
+        }
+
+        public TypeReference PromiseGenericTypeReference
+        {
+            get
+            {
+                if (promiseGenericTypeReference == null)
+                {
+                    promiseGenericTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "Promise`1");
+                }
+
+                return promiseGenericTypeReference;
+            }
+        }
+
+        public TypeReference TaskTypeReference
+        {
+            get
+            {
+                if (taskTypeReference == null)
+                {
+                    taskTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.ThreadingNamespaceStr,
+                        "Task");
+                }
+
+                return taskTypeReference;
+            }
+        }
+
+        public TypeReference TaskGenericTypeReference
+        {
+            get
+            {
+                if (taskGenericTypeReference == null)
+                {
+                    taskGenericTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.ThreadingNamespaceStr,
+                        "Task`1");
+                }
+
+                return taskGenericTypeReference;
+            }
+        }
+
+        public TypeReference TaskAwaiterTypeReference
+        {
+            get
+            {
+                if (taskAwaiterTypeReference == null)
+                {
+                    taskAwaiterTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "TaskAwaiter");
+                }
+
+                return taskAwaiterTypeReference;
+            }
+        }
+
+        public TypeReference TaskAwaiterGenericTypeReference
+        {
+            get
+            {
+                if (taskAwaiterGenericTypeReference == null)
+                {
+                    taskAwaiterGenericTypeReference = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "TaskAwaiter`1");
+                }
+
+                return taskAwaiterGenericTypeReference;
+            }
+        }
+
+        // TODO(Vijay): Non-Generic case
+        public MethodReference GetAwaiterMethodReference(TypeReference declaringType)
+        {
+            var typeDef = declaringType.Resolve();
+            foreach(var method in typeDef.Methods)
+            {
+                if(method.Name == "GetAwaiter")
+                {
+                    return method;
+                }
+            }
+            return null;
+            // this.GetMethodReference("GetAwaiter", TaskAwaiterGenericTypeReference, declaringType);
+        }
+
+
         /// <summary>
         /// Gets the initialize array reference.
         /// </summary>
@@ -797,6 +911,27 @@ using Mono.Cecil;
                 }
 
                 return this.arrayLengthGetter;
+            }
+        }
+
+        public MethodReference NullOrUndefinedCheck
+        {
+            get
+            {
+                if (this.nullOrUndefinedCheck != null)
+                { return this.nullOrUndefinedCheck; }
+
+                var objectDef = Object.Resolve();
+
+                foreach (var method in objectDef.Methods)
+                {
+                    if (method.Name == "IsNullOrUndefined")
+                    {
+                        return this.nullOrUndefinedCheck = method;
+                    }
+                }
+
+                throw new InvalidProgramException("Object.IsNullOrUndefined could not be resolved");
             }
         }
 

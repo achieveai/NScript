@@ -582,6 +582,14 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
+    public class DiscardExpression
+        : ExpressionSer
+    {
+    }
+
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
     public class ArrayCreationExpression
         : ExpressionSer
     {
@@ -902,6 +910,15 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class AwaitExpression
+        : ExpressionSer
+    {
+        public MethodCallExpression GetAwaiterMethodCall { get; set; }
+        public ExpressionSer Expression { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(154, typeof(YieldStatement))]
     [Serializable]
     public class StatementExpressionSer
@@ -1154,6 +1171,8 @@ namespace JsCsc.Lib.Serialization
         public List<ParameterSer> Parameters { get; set; }
 
         public bool IsMethodOwned { get; set; }
+
+        public BlockKind BlockKind { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -1184,12 +1203,24 @@ namespace JsCsc.Lib.Serialization
         public ParameterBlock Block { get; set; }
     }
 
+    [Flags]
+    [Serializable]
+    public enum BlockKind
+    {
+        Regular = 0,
+        Iterator = 1 << 1,
+        Async = 1 << 2
+    }
+
+
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class MethodBody
         : AstBase
     {
         public int MethodId { get; set; }
+
+        public BlockKind BlockKind { get; set; }
 
         public string FileName { get; set; }
 

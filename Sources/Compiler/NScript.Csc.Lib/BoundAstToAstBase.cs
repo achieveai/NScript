@@ -44,7 +44,8 @@
                     .GetMethodSpecId(methodSymbol),
                 Body = parameterBlock,
                 FileName = boundNode?.SyntaxTree.FilePath,
-                Location = boundNode?.Syntax.GetSerLoc()
+                Location = boundNode?.Syntax.GetSerLoc(),
+                BlockKind = GetBlockKind(methodSymbol)
             };
 
             return rv;
@@ -88,7 +89,8 @@
             {
                 Location = node.Syntax.GetSerLoc(),
                 Id = ++id,
-                LocalFunctions = new List<string>()
+                LocalFunctions = new List<string>(),
+                BlockKind = GetBlockKind(methodSymbol)
             };
 
             _ = scopeBlockStack.AddFirst((rv.Id, node, rv.LocalFunctions));
@@ -214,7 +216,27 @@
 
         public override AstBase VisitAttribute(BoundAttribute node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitAwaitExpression(BoundAwaitExpression node, SerializationContext arg) => throw new NotImplementedException();
+        private AstBase AwaitableValue
+        { get; set; }
+
+        public override AstBase VisitAwaitExpression(BoundAwaitExpression node, SerializationContext arg)
+        {
+            var expr = (ExpressionSer)Visit(node.Expression, arg);
+            this.AwaitableValue = expr;
+            var methodCall = (MethodCallExpression)Visit(node.AwaitableInfo.GetAwaiter, arg);
+            var ret = new AwaitExpression()
+            {
+                GetAwaiterMethodCall = methodCall,
+                Expression = expr
+            };
+            return ret;
+        }
+
+        public override AstBase VisitAwaitableValuePlaceholder(BoundAwaitableValuePlaceholder node, SerializationContext arg)
+        {
+            return AwaitableValue;
+        }
+
 
         public override AstBase VisitBadExpression(BoundBadExpression node, SerializationContext arg) => null;
 
@@ -601,7 +623,11 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
 
-        public override AstBase VisitDiscardExpression(BoundDiscardExpression node, SerializationContext arg) => throw new InvalidOperationException();
+        public override AstBase VisitDiscardExpression(BoundDiscardExpression node, SerializationContext arg) =>
+            new DiscardExpression
+            {
+                Location = node.Syntax.GetSerLoc(),
+            };
 
         public override AstBase VisitDoStatement(BoundDoStatement node, SerializationContext arg)
             => new DoStatement
@@ -1845,6 +1871,12 @@
             }
 
             return (StatementSer)ser;
+        }
+
+        private BlockKind GetBlockKind(MethodSymbol symbol)
+        {
+            return (BlockKind)((symbol.IsAsync ? (int)BlockKind.Async : 0)
+                | (symbol.IsIterator ? (int)BlockKind.Iterator : 0));
         }
     }
 }

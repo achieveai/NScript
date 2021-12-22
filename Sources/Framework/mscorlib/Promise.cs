@@ -12,9 +12,12 @@ namespace System
     /// <summary>
     /// Definition for Promise
     /// </summary>
-    [IgnoreNamespace]
+    [IgnoreNamespace, ScriptName("Promise")]
+    [AsyncMethodBuilder(typeof(PromiseBuilder))]
     public class Promise
     {
+        public extern Promise(Action<Action, Action<object>> callback);
+
         public static extern Promise<T> Resolve<T>(T value);
         public static extern Promise<T> Resolve<T>(Promise<T> value);
 
@@ -72,49 +75,13 @@ namespace System
                 });
         }
 
-        public TaskAwaiter GetAwaiter()
-        {
-            Action onCompletions = null;
-            Exception exception = null;
-            bool completed = false;
-
-            Action complete = () =>
-            {
-                completed = true;
-                onCompletions?.Invoke();
-            };
-
-            this.Then<Exception>(
-                complete,
-                (ex) =>
-                {
-                    exception = ex;
-                    complete();
-                });
-
-            return new TaskAwaiter(
-                (onComplete) =>
-                {
-                    if (onCompletions == null)
-                    { onCompletions = onComplete; }
-                    else
-                    { onCompletions += onComplete; }
-                },
-                () =>
-                {
-                    if (!completed)
-                    { throw new Exception("Task not complete"); }
-
-                    if (exception != null)
-                    { throw exception; }
-
-                    return;
-                });
-        }
+        [Script("return this;")]
+        public extern TaskAwaiter GetAwaiter();
     }
 
-    [IgnoreNamespace, IgnoreGenericArguments, ScriptName("Promise")]
-    public class Promise<T> : Promise
+    [IgnoreNamespace, ScriptName("Promise")]
+    [AsyncMethodBuilder(typeof(PromiseBuilder<>))]
+    public class Promise<T>: Promise
     {
         public extern Promise(Action<Action<T>, Action<object>> callback);
 
@@ -176,49 +143,83 @@ namespace System
 
         public extern new Promise<T> Catch<E>(Action<E> onRejected);
 
-        public new TaskAwaiter<T> GetAwaiter()
+        [Script("return this;")]
+        public extern new TaskAwaiter<T> GetAwaiter();
+    }
+
+    public class PromiseBuilder: IAsyncStateMachine
+    {
+        public Promise Task { get; private set; }
+
+        public static PromiseBuilder Create()
         {
-            Action onCompletions = null;
-            Exception exception = null;
-            T result = default(T);
-            bool completed = false;
+            return new PromiseBuilder();
+        }
 
-            Action complete = () =>
-            {
-                completed = true;
-                onCompletions?.Invoke();
-            };
+        public void SetException(Exception e)
+        {
+        }
 
-            this.Then<Exception>(
-                (res) =>
-                {
-                    result = res;
-                    complete();
-                },
-                (ex) =>
-                {
-                    exception = ex;
-                    complete();
-                });
+        public void SetResult()
+        {
+        }
 
-            return new TaskAwaiter<T>(
-                (onComplete) =>
-                {
-                    if (onCompletions == null)
-                    { onCompletions = onComplete; }
-                    else
-                    { onCompletions += onComplete; }
-                },
-                () =>
-                {
-                    if (!completed)
-                    { throw new Exception("Task not complete"); }
+        public void AwaitOnCompleted<TAwaiter,TStateMachine> (ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : System.Runtime.CompilerServices.INotifyCompletion where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
 
-                    if (exception != null)
-                    { throw exception; }
+        public void AwaitUnsafeOnCompleted<TAwaiter,TStateMachine> (ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : System.Runtime.CompilerServices.ICriticalNotifyCompletion where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
 
-                    return result;
-                });
+        public void Start<TStateMachine> (ref TStateMachine stateMachine) where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
+
+        public void MoveNext()
+        {
+        }
+
+        public void SetStateMachine(IAsyncStateMachine stateMachine)
+        {
+        }
+    }
+
+    public class PromiseBuilder<T>: IAsyncStateMachine
+    {
+        public Promise<T> Task { get; private set; }
+
+        public static PromiseBuilder<T> Create()
+        {
+            return new PromiseBuilder<T>();
+        }
+
+        public void SetException(Exception e)
+        {
+        }
+
+        public void SetResult(T Result)
+        {
+        }
+
+        public void AwaitOnCompleted<TAwaiter,TStateMachine> (ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : System.Runtime.CompilerServices.INotifyCompletion where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
+
+        public void AwaitUnsafeOnCompleted<TAwaiter,TStateMachine> (ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : System.Runtime.CompilerServices.ICriticalNotifyCompletion where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
+
+        public void Start<TStateMachine> (ref TStateMachine stateMachine) where TStateMachine : System.Runtime.CompilerServices.IAsyncStateMachine
+        {
+        }
+
+        public void MoveNext()
+        {
+        }
+
+        public void SetStateMachine(IAsyncStateMachine stateMachine)
+        {
         }
     }
 }

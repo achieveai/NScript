@@ -16,6 +16,7 @@ namespace NScript.CLR.Test
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using JsCsc.Lib.Serialization;
+    using BlockKind = AST.BlockKind;
 
     /// <summary>
     /// Definition for DllBuilder
@@ -46,8 +47,8 @@ namespace NScript.CLR.Test
 
         HashSet<string> loadedDlls = new HashSet<string>();
         ClrContext context = new ClrContext();
-        Dictionary<MethodDefinition, Func<TopLevelBlock>> blockMaps =
-            new Dictionary<MethodDefinition, Func<TopLevelBlock>>(new MemberReferenceComparer());
+        Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>> blockMaps =
+            new Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>>(new MemberReferenceComparer());
 
         public DllBuilder()
         {
@@ -60,9 +61,8 @@ namespace NScript.CLR.Test
 
         public TopLevelBlock GetTopLevelBlock(MethodDefinition methodDefinition)
         {
-            Func<TopLevelBlock> rv;
-            this.blockMaps.TryGetValue(methodDefinition, out rv);
-            return rv();
+            this.blockMaps.TryGetValue(methodDefinition, out var rv);
+            return rv().Item1;
         }
 
         public void Build(string outFileName, string sourceFilesPath, string[] sourceFiles, string[] references, bool isDebug, string keyFile = null)

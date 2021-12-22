@@ -159,6 +159,8 @@ namespace NScript.Converter.TypeSystemConverter
 
         private IIdentifier conditionalAccessTempVariable = null;
 
+        private BlockKind _kind;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MethodConverter"/> class.
         /// </summary>
@@ -271,6 +273,10 @@ namespace NScript.Converter.TypeSystemConverter
                 throw;
             }
         }
+
+        public bool IsIterator => (_kind & BlockKind.Iterator) == BlockKind.Iterator;
+
+        public bool IsAsync => (_kind & BlockKind.Async) == BlockKind.Async;
 
         /// <summary>
         /// Gets the scope.
@@ -928,7 +934,8 @@ namespace NScript.Converter.TypeSystemConverter
                     Scope,
                     identifierScope,
                     identifierScope.ParameterIdentifiers,
-                    delegateFunctionNameId);
+                    delegateFunctionNameId,
+                    parameterBlock.IsAsync);
 
                 rv.AddStatements(statements);
 
@@ -1226,8 +1233,83 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
-            functionExpression.AddStatements(statements);
+            if (IsIterator)
+            {
+                HandleIterator(functionExpression, statements);
+            }
+            else
+            {
+                functionExpression.AddStatements(statements);
+            }
+
             return functionExpression;
+        }
+
+        private void HandleIterator(
+            FunctionExpression outerFunction,
+            List<Statement> statements)
+        {
+            scopeStack.AddFirst(new IdentifierScope(Scope));
+            try
+            {
+                var generatorShell = GetGeneratorShell();
+                generatorShell.AddStatements(statements);
+                MethodReference ctor;
+                JST.Expression jstCtor;
+
+                if (MethodDefinition.ReturnType.IsSameDefinition(KnownReferences.IEnumerable)
+                    || MethodDefinition.ReturnType.IsSameDefinition(KnownReferences.IEnumerator))
+                {
+                    ctor = KnownReferences.GeneratorWrapperCtor;
+                    jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
+                }
+                else
+                {
+                    ctor = KnownReferences
+                        .GeneratorWrapperGenericCtor
+                        .FixGenericTypeArguments(MethodDefinition.ReturnType);
+                    jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
+
+                    if (MethodDefinition.ReturnType.ContainsGenericParameter)
+                    {
+                        var idfier = ResolveFactory(ctor)[0];
+                        var ty = ResolveTypeToExpression(
+                            KnownReferences.GeneratorWrapperGeneric.Resolve()
+                            .FixGenericTypeArguments(
+                                MethodDefinition.ReturnType),
+                            Scope);
+
+                        var tyCall = new MethodCallExpression(
+                            null,
+                            Scope,
+                            ty,
+                            MethodDefinition.ReturnType.GetGenericArguments().Select(
+                                genericParam => IdentifierExpression.Create(null,
+                                Scope, this.Resolve(genericParam)))
+                            .ToArray());
+
+                        var expr = new BinaryExpression(
+                            null,
+                            Scope,
+                            BinaryOperator.Assignment,
+                            new IdentifierExpression(idfier, Scope),
+                            tyCall);
+
+                        outerFunction.AddStatement(
+                            new ExpressionStatement(null, outerFunction.Scope, expr));
+                    }
+                }
+
+                var wrapperCallExpression = new MethodCallExpression(
+                    null, Scope, jstCtor, generatorShell);
+
+                outerFunction.AddStatement(
+                    new JST.ReturnStatement(null, outerFunction.Scope, wrapperCallExpression));
+            }
+            finally
+            {
+                scopeStack.RemoveFirst();
+            }
         }
 
         /// <summary>
@@ -1370,6 +1452,18 @@ namespace NScript.Converter.TypeSystemConverter
             return ConvertCST();
         }
 
+        private FunctionExpression GetGeneratorShell()
+        {
+            return new FunctionExpression(
+                null,
+                Scope,
+                new IdentifierScope(Scope, new List<string>(), false),
+                new List<IIdentifier>(),
+                null,
+                IsAsync,
+                true);
+        }
+
         /// <summary>
         /// Gets function expression shell.
         /// </summary>
@@ -1397,7 +1491,8 @@ namespace NScript.Converter.TypeSystemConverter
                 typeConverter.Scope,
                 Scope,
                 Scope.ParameterIdentifiers,
-                functionName);
+                functionName,
+                !IsIterator && IsAsync);
 
             return returnValue;
         }
@@ -1924,8 +2019,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns></returns>
         private ParameterBlock GetRootBlock()
         {
-            if (RuntimeManager.Context.TryGetMethodAst(methodDefinition, out var rv))
+            if (RuntimeManager.Context.TryGetMethodAst(methodDefinition, out var rv, out var kind))
             {
+                _kind = kind;
                 usingMcs = true;
                 return rv;
             }

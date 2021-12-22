@@ -68,7 +68,7 @@ namespace NScript.CLR.AST
         /// <value>The type of the result.</value>
         public override TypeReference ResultType
         {
-            get { return this.FirstChoice.ResultType; }
+            get { return this.Alternate.ResultType; }
         }
 
         /// <summary>

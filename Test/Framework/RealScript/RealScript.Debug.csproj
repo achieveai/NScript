@@ -67,6 +67,7 @@
     <Compile Include="StructClass.cs" />
     <Compile Include="SwitchTest.cs" />
     <Compile Include="TestArithmetics.cs" />
+    <Compile Include="TestAsyncAwait.cs" />
     <Compile Include="TestCompilerGeneratedStuff.cs" />
     <Compile Include="TestControlFlow.cs" />
     <Compile Include="TestDefaultExpr.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="TestInitializers.cs" />
     <Compile Include="TestPsudoType.cs" />
     <Compile Include="TestReferenceClass.cs" />
+    <Compile Include="TestStdlib.cs" />
     <Compile Include="TupleTests.cs" />
     <Compile Include="WhileLoopBlocks.cs" />
     <Compile Include="YieldReturnTests.cs" />

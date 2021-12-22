@@ -376,6 +376,16 @@ namespace NScript.JST
     public enum Keyword
     {
         /// <summary>
+        /// async keyword
+        /// </summary>
+        Async,
+
+        /// <summary>
+        /// await keyword
+        /// </summary>
+        Await,
+
+        /// <summary>
         /// break keyword
         /// </summary>
         Break,

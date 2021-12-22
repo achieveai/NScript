@@ -14,6 +14,8 @@ namespace NScript.Converter.Test.JsExecutionTests
     using NScript.Converter.TypeSystemConverter;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Mono.Cecil;
+    using Microsoft.ClearScript.JavaScript;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Definition for JsExecutionHelper
@@ -86,6 +88,47 @@ namespace NScript.Converter.Test.JsExecutionTests
                 // engine.SetDebugMode(true);
                 engine.AddHostObject("console", jsConsole);
                 engine.Execute(script);
+            }
+
+            string outputContent = "NScript.Converter.Test.JsExecutionTests.Results." + output + ".txt";
+            outputContent = ConverterTestHelpers.GetResourceString(outputContent);
+
+            if (!string.IsNullOrEmpty(outputContent))
+            {
+                output = outputContent;
+            }
+
+            string consoleString = JsExecutionHelper.GetConsoleString(jsConsole);
+            System.Diagnostics.Debug.WriteLine("==================== Script Console ====================");
+            System.Diagnostics.Debug.WriteLine(consoleString);
+
+            Assert.AreEqual(
+                output,
+                consoleString);
+        }
+
+        public static async Task ExecuteAsyncScript(
+            string output,
+            bool isDebug,
+            Tuple<string, string> entryPoint,
+            bool isMcs = false)
+        {
+            JsConsole jsConsole = new JsConsole();
+            // Jint.JintEngine engine = new Jint.JintEngine(Jint.Options.Ecmascript3);
+            using (var engine = new Microsoft.ClearScript.V8.V8ScriptEngine())
+            {
+                string script = JsExecutionHelper.GetScript(
+                    isDebug,
+                    isMcs,
+                    entryPoint);
+                System.Diagnostics.Debug.WriteLine("==================== Script generated ====================");
+                System.Diagnostics.Debug.WriteLine(script);
+
+                // engine.SetDebugMode(true);
+                engine.AddHostObject("console", jsConsole);
+                var x = engine.Evaluate(script);
+                var tsk = (x as object).ToTask();
+                await tsk;
             }
 
             string outputContent = "NScript.Converter.Test.JsExecutionTests.Results." + output + ".txt";
