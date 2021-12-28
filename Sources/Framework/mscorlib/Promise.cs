@@ -16,9 +16,12 @@ namespace System
     [AsyncMethodBuilder(typeof(PromiseBuilder))]
     public class Promise
     {
+        public extern Promise();
+
         public extern Promise(Action<Action, Action<object>> callback);
 
         public static extern Promise<T> Resolve<T>(T value);
+
         public static extern Promise<T> Resolve<T>(Promise<T> value);
 
         public static extern Promise<T> Reject<T>(T value);
