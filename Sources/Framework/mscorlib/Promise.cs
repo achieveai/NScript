@@ -25,9 +25,13 @@ namespace System
         public static extern Promise<T> Resolve<T>(Promise<T> value);
 
         public static extern Promise<T> Reject<T>(T value);
+
         public static extern Promise<NativeArray> All(NativeArray<Promise> values);
+
         public static extern Promise<NativeArray> All(params Promise[] values);
+
         public static extern Promise Race(NativeArray<Promise> promises);
+
         public static extern Promise Race(params Promise[] promises);
 
         public extern Promise Then(Action onFulfilled);
