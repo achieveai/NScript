@@ -211,16 +211,12 @@
         [IntrinsicOperator]
         public extern static bool operator !=(string s1, string s2);
 
-        [ScriptAlias("replaceAll")]
         public extern string Replace(string oldText, string replaceText);
 
-        [ScriptAlias("replaceAll")]
         public extern string Replace(RegularExpression oldText, string replaceText);
 
-        [ScriptAlias("replace")]
         public extern string ReplaceFirst(string oldText, string replaceText);
 
-        [ScriptAlias("replace")]
         public extern string ReplaceFirst(RegularExpression oldText, string replaceText);
 
         public string[] Split(char ch)
