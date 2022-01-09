@@ -25,7 +25,6 @@ namespace NScript.Converter.Test.JsExecutionTests
             TestAssemblyLoader.LoadAssemblies();
         }
 
-
         [TestCategory("CI")]
         [DataTestMethod]
         [TestMethod]
@@ -40,14 +39,18 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "NullableTests", "Main")]
         [DataRow(TestType.Debug, "TupleTests", "Main")]
         [DataRow(TestType.Debug, "YieldReturnTests", "Main")]
-        [DataRow(TestType.Debug, "TestStdlib", "Main")]
-        [DataRow(TestType.Debug, "TestAsyncAwait", "Main", true)]
+        [DataRow(TestType.Debug, "TestStdlib", "Main", true)]
+        [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true)]
         public void TestMcs(
             TestType testType,
             string className,
             string entryPointMethod,
+            bool isDisabled = false,
             bool isAsyncEntryPoint = false)
         {
+            if (isDisabled)
+            { return; }
+
             if ((testType & TestType.Debug) == TestType.Debug)
             {
                 if (isAsyncEntryPoint)

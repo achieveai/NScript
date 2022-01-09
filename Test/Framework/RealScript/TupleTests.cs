@@ -37,7 +37,6 @@ namespace RealScript
         private static (int, (int, int), string) FuncReturningTuple()
             => (0, (1, 2), "rand");
 
-
         // MARK: Execution Tests
 
         public static void Main()
@@ -45,6 +44,8 @@ namespace RealScript
             Test1();
             Test2();
             Test3();
+            Test4();
+            Test5();
         }
 
         private static void Test1()
@@ -82,6 +83,25 @@ namespace RealScript
             var mid = ((a, (b, c), d) = (1, (1, 2), 2)).Item2;
             Console.WriteLine(mid.Item1);
             Console.WriteLine(mid.Item2);
+        }
+
+        private static void Test4()
+        {
+            var (a, b) = new MyClass(null);
+            Console.WriteLine(a);
+            Console.WriteLine(b);
+        }
+
+        private static void Test5()
+        {
+            var (a, b) = new GenericResponse<int>()
+            {
+                Object = 1,
+                IsError = false
+            };
+
+            Console.WriteLine(a);
+            Console.WriteLine(b);
         }
 
         private static (int, int) FunctionWithSideEffects1()

@@ -102,6 +102,12 @@
         {
             return promise.GetAwaiter();
         }
+
+        public void Deconstruct(out int item1, out string item2)
+        {
+            item1 = 1;
+            item2 = "asdf";
+        }
     }
 
     public static class ArrayExtensions

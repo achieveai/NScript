@@ -67,7 +67,8 @@ namespace NScript.Converter.ExpressionsConverter
             {
                 if (expr is TupleLiteral lit)
                 {
-                    var decons = new TupleDeconstructExpression(expr.Context, expr.Location, lit.TupleArgs, tupleArg);
+                    // TODO: Check
+                    var decons = new TupleDeconstructExpression(expr.Context, expr.Location, lit.TupleArgs, tupleArg, false);
                     var tmpVar = new JST.IdentifierExpression(
                         scopeConverter.GetTempVariable(),
                         scopeConverter.Scope);
