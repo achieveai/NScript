@@ -16,6 +16,11 @@
     <None Remove="JsExecutionTests\Results\TestStdlib.txt" />
     <None Remove="JsExecutionTests\Results\YieldReturnTests.txt" />
     <None Remove="JsExecutionTests\Results\TupleTests.txt" />
+    <None Remove="MethodConverterTests\AsyncAwait\Test1.js" />
+    <None Remove="MethodConverterTests\AsyncAwait\Test2.js" />
+    <None Remove="MethodConverterTests\AsyncAwait\Test3.js" />
+    <None Remove="MethodConverterTests\AsyncAwait\Test4.js" />
+    <None Remove="MethodConverterTests\AsyncAwait\Test5.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestBuiltinValueTypes.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericReferenceType.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericValueType.js" />
@@ -61,6 +66,11 @@
     <EmbeddedResource Include="JsExecutionTests\Results\TestStdlib.txt" />
     <EmbeddedResource Include="JsExecutionTests\Results\YieldReturnTests.txt" />
     <EmbeddedResource Include="JsExecutionTests\Results\TupleTests.txt" />
+    <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test1.js" />
+    <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test2.js" />
+    <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test3.js" />
+    <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test4.js" />
+    <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test5.js" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestBuiltinValueTypes.js" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestGenericReferenceType.js" />
     <EmbeddedResource Include="MethodConverterTests\DefaultExpressions\TestReferenceType.js" />
