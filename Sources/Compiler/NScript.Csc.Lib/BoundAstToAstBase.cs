@@ -1053,7 +1053,8 @@
             {
                 Location = node.Syntax.GetSerLoc(),
                 Left = (ExpressionSer)Visit(node.LeftOperand, arg),
-                Right = (ExpressionSer)Visit(node.RightOperand, arg)
+                Right = (ExpressionSer)Visit(node.RightOperand, arg),
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
 
         public override AstBase VisitObjectCreationExpression(BoundObjectCreationExpression node, SerializationContext arg)

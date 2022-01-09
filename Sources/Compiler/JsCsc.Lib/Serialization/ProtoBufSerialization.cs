@@ -802,6 +802,8 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Left { get; set; }
 
         public ExpressionSer Right { get; set; }
+
+        public int Type { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

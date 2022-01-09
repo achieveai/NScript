@@ -26,6 +26,8 @@ namespace NScript.CLR.AST
         /// </summary>
         private Expression alternate;
 
+        private readonly TypeReference resultType;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NullConditional"/> class.
         /// </summary>
@@ -37,11 +39,13 @@ namespace NScript.CLR.AST
             ClrContext context,
             Location location,
             Expression firstChoice,
-            Expression alternate)
+            Expression alternate,
+            TypeReference resultType)
             : base(context, location)
         {
             this.firstChoice = firstChoice;
             this.alternate = alternate;
+            this.resultType = resultType;
         }
 
         /// <summary>
@@ -67,9 +71,7 @@ namespace NScript.CLR.AST
         /// </summary>
         /// <value>The type of the result.</value>
         public override TypeReference ResultType
-        {
-            get { return this.Alternate.ResultType; }
-        }
+            => resultType;
 
         /// <summary>
         /// Processes the through pipeline.

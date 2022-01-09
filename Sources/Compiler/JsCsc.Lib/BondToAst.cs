@@ -798,7 +798,8 @@ namespace JsCsc.Lib
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Left),
-                ParseExpression(jObject.Right));
+                ParseExpression(jObject.Right),
+                DeserializeType(jObject.Type));
 
         private Node ParseYield(Serialization.YieldStatement jObject) => new YieldStatement(
                 _clrContext,

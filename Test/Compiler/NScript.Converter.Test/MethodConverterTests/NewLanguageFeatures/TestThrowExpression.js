@@ -1,5 +1,5 @@
 ﻿function Lang7Features__TestThrowExpression(num) {
   var rv, stmtTemp1;
-  rv = (stmtTemp1 = num) ? stmtTemp1 : (throw ArgumentNullException_factory("num"));
+  rv = Object__IsNullOrUndefined(stmtTemp1 = num) ? (throw ArgumentNullException_factory("num")) : stmtTemp1;
   return rv;
 }
