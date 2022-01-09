@@ -1,9 +1,9 @@
 ﻿function TupleTests__TestTempVarCreation() {
   var a, b, c, x, j, k, l, tmp, stmtTemp1;
   a = 1, b = 2, c = 3, {
-    item1: 1,
-    item2: 2,
-    item3: 3
+    item1: a,
+    item2: b,
+    item3: c
   };
   x = {
     item1: a,
