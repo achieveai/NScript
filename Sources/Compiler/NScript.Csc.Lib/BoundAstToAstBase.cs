@@ -594,15 +594,46 @@
 
         public override AstBase VisitDeclarationPattern(BoundDeclarationPattern node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitDeconstructionAssignmentOperator(BoundDeconstructionAssignmentOperator node, SerializationContext arg)
-            => new DeconstructTupleAssignment
+        public override AstBase VisitDeconstructionAssignmentOperator(
+            BoundDeconstructionAssignmentOperator node,
+            SerializationContext arg)
+        {
+            var lhsArgs = node.Left.Arguments
+                .Select(tupleArg => (ExpressionSer)this.Visit(tupleArg, arg))
+                .ToList();
+            var rightExpr = (ExpressionSer)Visit(node.Right, arg);
+
+            // When rhs type has a `Deconstruct` method
+            if (node.Right.SymbolOpt != null)
+            {
+                var isExtensionMethod = node.Right.SymbolOpt.IsExtensionMethod;
+                var args = isExtensionMethod
+                    ? new List<MethodCallArg>() { new MethodCallArg() { Value = rightExpr } }
+                    : new List<MethodCallArg>();
+
+                args.AddRange(lhsArgs.Select(_ =>
+                    new MethodCallArg()
+                    {
+                        Value = _,
+                        IsByRef = true
+                    }));
+
+                rightExpr = new MethodCallExpression()
+                {
+                    Instance = isExtensionMethod ? null : rightExpr,
+                    Method = arg.SymbolSerializer.GetMethodSpecId(node.Right.SymbolOpt),
+                    Arguments = args
+                };
+            }
+
+            return new DeconstructTupleAssignment
             {
                 Location = node.Syntax.GetSerLoc(),
-                LHSArgs = node.Left.Arguments
-                    .Select(tupleArg => (ExpressionSer)this.Visit(tupleArg, arg))
-                    .ToList(),
-                RightTuple = (ExpressionSer)this.Visit(node.Right, arg),
+                LHSArgs = lhsArgs,
+                RightExpr = rightExpr,
+                IsMethodCall = node.Right.SymbolOpt != null
             };
+        }
 
         public override AstBase VisitDeconstructionVariablePendingInference(DeconstructionVariablePendingInference node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1053,7 +1084,8 @@
             {
                 Location = node.Syntax.GetSerLoc(),
                 Left = (ExpressionSer)Visit(node.LeftOperand, arg),
-                Right = (ExpressionSer)Visit(node.RightOperand, arg)
+                Right = (ExpressionSer)Visit(node.RightOperand, arg),
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
 
         public override AstBase VisitObjectCreationExpression(BoundObjectCreationExpression node, SerializationContext arg)

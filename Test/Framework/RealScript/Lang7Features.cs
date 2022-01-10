@@ -64,5 +64,46 @@ namespace RealScript
             }
             return sum;
         }
+
+        public static void TestSwitchPatternMatching_1()
+        {
+            int [] l = { 1, 2, 3, 90 };
+            object age = 90;
+            string ageBlock = null;
+            switch ((int)age)
+            {
+                case 50:
+                    ageBlock = "the big five-oh";
+                    break;
+                case var testAge when l.Contains(testAge):
+                    ageBlock = "octogenarian";
+                    break;
+                case var testAge when ((testAge >= 90) & (testAge <= 99)):
+                    ageBlock = "nonagenarian";
+                    break;
+                case var testAge when (testAge >= 100):
+                    ageBlock = "centenarian";
+                    break;
+                default:
+                    ageBlock = "just old";
+                    break;
+            }
+        }
+
+        public static void TestSwitchPatternMatching_2()
+        {
+            object o = "asdf";
+            switch (o)
+            {
+                case var obj when obj.Equals(12):
+                    break;
+                case string obj when obj.Length < 3:
+                    break;
+                case string _:
+                    break;
+                default:
+                    throw new InvalidProgramException();
+            }
+        }
     }
 }

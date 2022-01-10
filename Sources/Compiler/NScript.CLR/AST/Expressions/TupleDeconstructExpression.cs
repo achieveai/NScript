@@ -20,16 +20,20 @@ namespace NScript.CLR.AST
             ClrContext context,
             Utils.Location location,
             Expression[] leftExpressions,
-            Expression rightExpression)
+            Expression rightExpression,
+            bool isMethodCall)
             : base(context, location)
         {
             LeftExpressions = leftExpressions;
             RightExpression = rightExpression;
+            IsMethodCall = isMethodCall;
         }
 
         public Expression[] LeftExpressions { get; }
 
         public Expression RightExpression { get; }
+
+        public readonly bool IsMethodCall;
 
         public override bool Equals(object obj)
             => obj is TupleDeconstructExpression tupleDeconstruct

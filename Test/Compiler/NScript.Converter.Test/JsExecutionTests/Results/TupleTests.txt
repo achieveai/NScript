@@ -22,3 +22,7 @@ SideEffect1
 2
 1
 2
+1
+asdf
+1
+false

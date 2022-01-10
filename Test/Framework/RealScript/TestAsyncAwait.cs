@@ -12,6 +12,7 @@
             await Test4();
             await Test5();
             await Test6();
+            await Test7();
         }
 
         public static async Promise<int> Test1()
@@ -63,6 +64,18 @@
             Console.WriteLine(b);
         }
 
+        public static async Promise Test7()
+        {
+            Console.WriteLine(await Sum(
+                await Test1(),
+                await Sum(
+                    await Test1() + 22,
+                    await Test2() + 78)));
+        }
+
+        public static async Promise<int> Sum(int a, int b)
+            => a + b;
+
         private static void Compare<T>(T lhs, T rhs, Func<T, T, bool> compare)
         {
             if (compare(lhs, rhs))
@@ -88,6 +101,12 @@
         public TaskAwaiter<int> GetAwaiter()
         {
             return promise.GetAwaiter();
+        }
+
+        public void Deconstruct(out int item1, out string item2)
+        {
+            item1 = 1;
+            item2 = "asdf";
         }
     }
 

@@ -49,6 +49,7 @@
     <Compile Include="ForLoopBlocks.cs" />
     <Compile Include="FuncRegressions.cs" />
     <Compile Include="GenericCollections.cs" />
+    <Compile Include="GenericResponse.cs" />
     <Compile Include="GenericSamples.cs" />
     <Compile Include="IfBlocks.cs" />
     <Compile Include="InlineComplexStatements.cs" />

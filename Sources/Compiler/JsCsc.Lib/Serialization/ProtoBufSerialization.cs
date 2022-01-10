@@ -422,7 +422,9 @@ namespace JsCsc.Lib.Serialization
     {
         public List<ExpressionSer> LHSArgs { get; set; }
 
-        public ExpressionSer RightTuple { get; set; }
+        public ExpressionSer RightExpr { get; set; }
+
+        public bool IsMethodCall { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -802,6 +804,8 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Left { get; set; }
 
         public ExpressionSer Right { get; set; }
+
+        public int Type { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

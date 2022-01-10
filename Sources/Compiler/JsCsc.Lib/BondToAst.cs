@@ -798,7 +798,8 @@ namespace JsCsc.Lib
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Left),
-                ParseExpression(jObject.Right));
+                ParseExpression(jObject.Right),
+                DeserializeType(jObject.Type));
 
         private Node ParseYield(Serialization.YieldStatement jObject) => new YieldStatement(
                 _clrContext,
@@ -2174,8 +2175,9 @@ namespace JsCsc.Lib
             return new TupleDeconstructExpression(
                 _clrContext,
                 LocFromJObject(tupleDeconstruct),
-                this.ParseExpressions(tupleDeconstruct.LHSArgs),
-                this.ParseExpression(tupleDeconstruct.RightTuple));
+                ParseExpressions(tupleDeconstruct.LHSArgs),
+                ParseExpression(tupleDeconstruct.RightExpr),
+                tupleDeconstruct.IsMethodCall);
         }
 
         private Node ParseTupleLiteral(Serialization.TupleLiteral tupleLiteral)
