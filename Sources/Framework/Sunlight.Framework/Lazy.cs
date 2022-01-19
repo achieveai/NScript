@@ -13,10 +13,9 @@ namespace Sunlight.Framework
     /// </summary>
     public class Lazy<T> where T : class
     {
-        Func<T> factory;
-        T value;
-        bool isValueCreated;
-        Action createdCallbacks;
+        private Func<T> factory;
+        private T value;
+        private Action createdCallbacks;
 
         public Lazy(Func<T> factory)
         {
