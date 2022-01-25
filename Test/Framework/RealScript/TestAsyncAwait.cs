@@ -13,6 +13,8 @@
             await Test5();
             await Test6();
             await Test7();
+            await Test8();
+            await Test9();
         }
 
         public static async Promise<int> Test1()
@@ -73,16 +75,36 @@
                     await Test2() + 78)));
         }
 
+        public static async Promise Test8()
+        {
+            var nativeArray = new NativeArray<Promise<int>>(2);
+            nativeArray[0] = Test1();
+            nativeArray[1] = Test2();
+            var tmp = (await nativeArray)[0];
+            var tmp2 = (await nativeArray).Join(",").Length;
+            Compare(tmp2, 5, (a, b) => a == b);
+            Compare(tmp, 12, (a, b) => a == b);
+        }
+
+        public static async Promise Test9()
+        {
+            var (x, y) = (await Test1(), await GetInt());
+            Compare(x, 12, (a, b) => a == b);
+            Compare(y, 678, (a, b) => a == b);
+        }
+
         public static async Promise<int> Sum(int a, int b)
             => a + b;
 
+        public static async Promise<int> GetInt()
+        {
+            await Utilities.Delay(0);
+            return 678;
+        }
+
         private static void Compare<T>(T lhs, T rhs, Func<T, T, bool> compare)
         {
-            if (compare(lhs, rhs))
-            {
-                Console.WriteLine("This should be printed");
-            }
-            else
+            if (!compare(lhs, rhs))
             {
                 Console.WriteLine("This should not be printed");
             }
