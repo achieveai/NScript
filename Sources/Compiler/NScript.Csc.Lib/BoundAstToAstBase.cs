@@ -1106,7 +1106,19 @@
             var method = node.Constructor.IsDefaultValueTypeConstructor()
                 ? 0
                 : arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
-            var arguments = ToArgs(node.Constructor, node.Arguments, arg);
+
+            IList<BoundExpression> args = node.Arguments;
+
+            if (node.ArgsToParamsOpt != null && node.ArgsToParamsOpt.Length != 0)
+            {
+                args = node.ArgsToParamsOpt
+                    .Zip(node.Arguments)
+                    .OrderBy(_ => _.First)
+                    .Select(_ => _.Second)
+                    .ToList();
+            }
+
+            var arguments = ToArgs(node.Constructor, args, arg);
 
             if (node.InitializerExpressionOpt == null)
             {
