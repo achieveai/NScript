@@ -26,6 +26,7 @@
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericReferenceType.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericValueType.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestReferenceType.js" />
+    <None Remove="MethodConverterTests\MethodArgument\Main.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\DefaultLiteralExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\SumPositiveNumbers.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestNestedFunctionCrossReferenced.js" />
@@ -47,6 +48,9 @@
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
       <Visible>False</Visible>
     </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MethodConverterTests\MethodArgument\Main.js" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">

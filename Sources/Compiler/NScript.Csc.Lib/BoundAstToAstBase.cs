@@ -337,11 +337,22 @@
             var isStatic = node.Method.ContainingSymbol.IsStatic
                 || node.Method.IsStatic;
 
+            IList<BoundExpression> args = node.Arguments;
+
+            if (node.ArgsToParamsOpt != null && node.ArgsToParamsOpt.Length != 0)
+            {
+                args = node.ArgsToParamsOpt
+                    .Zip(node.Arguments)
+                    .OrderBy(_ => _.First)
+                    .Select(_ => _.Second)
+                    .ToList();
+            }
+
             if (node.Method.MethodKind == MethodKind.DelegateInvoke)
             {
                 return new DelegateInvocationExpression
                 {
-                    Arguments = ToArgs(node.Method, node.Arguments, arg),
+                    Arguments = ToArgs(node.Method, args, arg),
                     Location = node.Syntax.Location.GetSerLoc(),
                     Instance = (ExpressionSer)Visit(node.ReceiverOpt, arg)
                 };
@@ -354,7 +365,7 @@
                     MethodName = node.Method.Name,
                     ReturnType = arg.SymbolSerializer.GetTypeSpecId(
                                 node.Method.ReturnType),
-                    Arguments = ToArgs(node.Method, node.Arguments, arg),
+                    Arguments = ToArgs(node.Method, args, arg),
                     TypeParameters = new List<int>(),
                     Location = node.Syntax.Location.GetSerLoc(),
                 };
@@ -364,7 +375,7 @@
             {
                 Method = arg.SymbolSerializer.GetMethodSpecId(
                         node.Method),
-                Arguments = ToArgs(node.Method, node.Arguments, arg),
+                Arguments = ToArgs(node.Method, args, arg),
                 Location = node.Syntax.Location.GetSerLoc(),
                 Instance = !isStatic
                         ? (ExpressionSer)Visit(node.ReceiverOpt, arg)

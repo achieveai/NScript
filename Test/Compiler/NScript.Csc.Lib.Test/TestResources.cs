@@ -394,7 +394,8 @@
                         @"ConstructorTests.cs",
                         @"NullableTests.cs",
                         @"TestDefaultExpr.cs",
-                        @"TestAsyncAwait.cs"
+                        @"TestAsyncAwait.cs",
+                        @"TestMethodArguments.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
@@ -451,7 +452,8 @@
                         @"ConstructorTests.cs",
                         @"NullableTests.cs",
                         @"TestDefaultExpr.cs",
-                        @"TestAsyncAwait.cs"
+                        @"TestAsyncAwait.cs",
+                        @"TestMethodArguments.cs"
                     },
                     @"Test\Framework\RealScript",
                     new string[] { "mscorlib", "system.core", "microsoft.csharp" },
