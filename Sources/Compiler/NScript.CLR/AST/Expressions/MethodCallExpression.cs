@@ -43,12 +43,14 @@ namespace NScript.CLR.AST
             ClrContext context,
             Location location,
             Expression methodReference,
+            List<int> argumentOrderOpt = null,
             params Expression[] parameters)
             : base(context, location)
         {
             this.methodReference = methodReference;
             this.parameters.AddRange(parameters);
             this.readonlyParameters = new ReadOnlyCollection<Expression>(this.parameters);
+            ArgumentOrderOpt = argumentOrderOpt;
         }
 
         /// <summary>
@@ -89,6 +91,9 @@ namespace NScript.CLR.AST
                 return this.readonlyParameters;
             }
         }
+
+        public List<int> ArgumentOrderOpt
+        { get; private set; }
 
         /// <summary>
         /// Gets the type of the result.

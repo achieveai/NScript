@@ -291,6 +291,8 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Instance { get; set; }
 
         public List<MethodCallArg> Arguments { get; set; }
+
+        public List<int> ArgumentOrderOpt { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -305,6 +307,8 @@ namespace JsCsc.Lib.Serialization
         public List<int> TypeParameters { get; set; }
 
         public List<MethodCallArg> Arguments { get; set; }
+
+        public List<int> ArgumentOrderOpt { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -519,6 +523,8 @@ namespace JsCsc.Lib.Serialization
         public ExpressionSer Instance { get; set; }
 
         public List<MethodCallArg> Arguments { get; set; }
+
+        public List<int> ArgumentOrderOpt { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

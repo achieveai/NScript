@@ -198,6 +198,7 @@ namespace JsCsc.Lib
                     null,
                     lfv,
                     DeserializeType(jObject.ReturnType)),
+                jObject.ArgumentOrderOpt,
                 ParseArguments(jObject.Arguments));
         }
 
@@ -213,6 +214,7 @@ namespace JsCsc.Lib
                 GetMethodReferenceExpression(
                     instance,
                     methodReference),
+                jObject.ArgumentOrderOpt,
                 ParseArguments(jObject.Arguments));
         }
 
@@ -921,6 +923,7 @@ namespace JsCsc.Lib
                 _clrContext,
                 LocFromJObject(jObject),
                 DeserializeMethod(methodObj),
+                jObject.ArgumentOrderOpt,
                 ParseArguments(jObject.Arguments));
         }
 
@@ -1032,7 +1035,8 @@ namespace JsCsc.Lib
                 new NewObjectExpression(
                     _clrContext,
                     LocFromJObject(jObject),
-                    DeserializeMethod(jObject.Method));
+                    DeserializeMethod(jObject.Method),
+                    null);
 
             var setters = initializerArray
                 .Select(
@@ -1046,6 +1050,7 @@ namespace JsCsc.Lib
                             _clrContext,
                             LocFromJObject(mc),
                             methodReferenceExpression,
+                            null,
                             ParseArguments(mc.Arguments));
                     })
                 .ToList();
@@ -1140,6 +1145,7 @@ namespace JsCsc.Lib
                         _clrContext,
                         LocFromJObject(jObject),
                         DeserializeMethod(jObject.Method),
+                        null,
                         args),
                 setters); ;
         }
@@ -1376,6 +1382,7 @@ namespace JsCsc.Lib
                 GetMethodReferenceExpression(
                     instance,
                     methodReference),
+                null,
                 args);
         }
 
@@ -1384,6 +1391,7 @@ namespace JsCsc.Lib
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Instance),
+                jObject.ArgumentOrderOpt,
                 ParseArguments(jObject.Arguments));
 
         private Node ParseDefaultValue(Serialization.DefaultValueExpr jObject) => new DefaultValueExpression(

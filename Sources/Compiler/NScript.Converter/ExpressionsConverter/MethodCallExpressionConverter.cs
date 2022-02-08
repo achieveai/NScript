@@ -53,7 +53,8 @@ namespace NScript.Converter.ExpressionsConverter
                             localMethodReferenceExpression.Variable.Name),
                         methodConverter.Scope),
                     null,
-                    methodCallExpression.Parameters);
+                    methodCallExpression.Parameters,
+                    methodCallExpression.ArgumentOrderOpt);
             }
 
             return MethodCallExpressionConverter.ConvertInternal(
@@ -193,13 +194,29 @@ namespace NScript.Converter.ExpressionsConverter
                         methodReferenceExpression.Location,
                         methodConverter.Scope);
                 }
+                
+                var (args, toPreInject) = ReorderArgs(
+                    methodConverter,
+                    methodCallExpression.Parameters,
+                    methodCallExpression.ArgumentOrderOpt);
 
-                return MethodCallExpressionConverter.CreateMethodCallExpression(
+                var methodCall = CreateMethodCallExpression(
                     methodCallContext,
-                    methodCallExpression.Parameters.Select(
-                        exp => ExpressionConverterBase.Convert(methodConverter, exp)).ToArray(),
+                    args.ToArray(),
                     methodConverter,
                     methodConverter.RuntimeManager);
+
+                if (toPreInject == null)
+                {
+                    return methodCall;
+                }
+
+                toPreInject.Add(methodCall);
+
+                return new JST.ExpressionsList(
+                    methodCallExpression.Location,
+                    methodConverter.Scope,
+                    toPreInject.ToArray());
             }
 
             GenericInstanceMethod genericMethod =
@@ -217,15 +234,17 @@ namespace NScript.Converter.ExpressionsConverter
                     && methodConverter.RuntimeManager.Context.HasGenericArguments(genericMethod)
                     ? genericMethod.GenericArguments
                     : null,
-                methodCallExpression.Parameters);
+                methodCallExpression.Parameters,
+                methodCallExpression.ArgumentOrderOpt);
         }
 
-        private static JST.MethodCallExpression SimpleMethodCallConverter(
+        private static JST.Expression SimpleMethodCallConverter(
             IMethodScopeConverter methodConverter,
             Location location,
             JST.Expression methodReference,
             IList<TypeReference> methodGenericArguments,
-            IList<Expression> parameters)
+            IList<Expression> parameters,
+            IList<int> argumentOrderOpt)
         {
             List<JST.Expression> genericArguments = null;
             List<JST.Expression> argumentExpressions = null;
@@ -249,15 +268,29 @@ namespace NScript.Converter.ExpressionsConverter
                 argumentExpressions = new List<JST.Expression>();
             }
 
-            argumentExpressions.AddRange(
-                parameters.Select(
-                    exp => ExpressionConverterBase.Convert(methodConverter, exp)));
+            var (args, toPreInject) = ReorderArgs(methodConverter, parameters, argumentOrderOpt);
 
-            return new JST.MethodCallExpression(
+            argumentExpressions.AddRange(args);
+
+            var methodCallExpr = new JST.MethodCallExpression(
                 location,
                 methodConverter.Scope,
                 methodReference,
                 argumentExpressions);
+
+            if (toPreInject != null)
+            {
+                toPreInject.Add(methodCallExpr);
+
+                return new JST.ExpressionsList(
+                    location,
+                    methodConverter.Scope,
+                    toPreInject.ToArray());
+            }
+            else
+            {
+                return methodCallExpr;
+            }
         }
 
         /// <summary>
@@ -700,6 +733,74 @@ namespace NScript.Converter.ExpressionsConverter
                     converter.RuntimeManager.ResolveScriptAlias(
                         methodName)),
                 arguments);
+        }
+
+        public static (List<JST.Expression> Args, List<JST.Expression> ToPreInject) ReorderArgs(
+            IMethodScopeConverter methodConverter,
+            IList<Expression> arguments,
+            IList<int> argumentOrderOpt)
+        {
+            var args = arguments
+                .Select(exp => ExpressionConverterBase.Convert(methodConverter, exp))
+                .ToList();
+
+            if (argumentOrderOpt == null)
+            {
+                // Early return in case arguments are in the right order.
+                return (args, null);
+            }
+
+            var argumentOrder = argumentOrderOpt;
+            var tmpIdentifiders = new List<JST.IIdentifier>();
+
+            // Create temp vars for all those arguments not in order
+            // and replace the argument at that position with the temp var
+
+            var expressionList = new List<JST.Expression>();
+            for (int i = 0; i < argumentOrder.Count; i++)
+            {
+                if (argumentOrder[i] != i)
+                {
+                    if (args[i] is JST.LiteralExpression)
+                    {
+                        // No temp var required when dealing with literals
+                        // since no side effect will be observed
+
+                        continue;
+                    }
+
+                    var tmpIdentifier = methodConverter.GetTempVariable();
+                    var tmpVar = new JST.IdentifierExpression(
+                        tmpIdentifier,
+                        methodConverter.Scope);
+
+                    tmpIdentifiders.Add(tmpIdentifier);
+
+                    var assignment = new JST.BinaryExpression(
+                        null,
+                        methodConverter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        tmpVar,
+                        args[i]);
+
+                    // Inject side-effect calls in left-to-right order
+                    expressionList.Add(assignment);
+
+                    args[i] = tmpVar;
+                }
+            }
+
+            // Make arguments in correct order
+            var orderedArgs = argumentOrder
+                .Zip(args)
+                .OrderBy(_ => _.Item1)
+                .Select(_ => _.Item2)
+                .ToList();
+
+            // Release all temp identifiers used.
+            tmpIdentifiders.ForEach(methodConverter.ReleaseTempVariable);
+
+            return (orderedArgs, expressionList);
         }
     }
 }

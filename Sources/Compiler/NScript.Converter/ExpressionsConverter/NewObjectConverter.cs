@@ -51,15 +51,31 @@ namespace NScript.Converter.ExpressionsConverter
                         newObjectExpression.Location);
                 }
 
+                var (args, toPreInject) = MethodCallExpressionConverter.ReorderArgs(
+                    methodConverter,
+                    newObjectExpression.Parameters,
+                    newObjectExpression.ArgumentOrderOpt);
+
                 // Call into factory methods that will create and return the type.
-                return new JST.MethodCallExpression(
+                var methodCallExpression = new JST.MethodCallExpression(
                     newObjectExpression.Location,
                     methodConverter.Scope,
                     JST.IdentifierExpression.Create(
                         newObjectExpression.Location,
                         methodConverter.Scope,
                         methodConverter.ResolveFactory(methodReference)),
-                    newObjectExpression.Parameters.Select(exp => ExpressionConverterBase.Convert(methodConverter, exp)).ToArray());
+                    args.ToArray());
+
+                if (toPreInject == null)
+                {
+                    return methodCallExpression;
+                }
+
+                toPreInject.Add(methodCallExpression);
+                return new JST.ExpressionsList(
+                    newObjectExpression.Location,
+                    methodConverter.Scope,
+                    toPreInject);
             }
             else
             {
@@ -73,14 +89,30 @@ namespace NScript.Converter.ExpressionsConverter
                     return new JST.InlineObjectInitializer(newObjectExpression.Location, methodConverter.Scope);
                 }
 
-                return new JST.NewObjectExpression(
+                var (args, toPreInject) = MethodCallExpressionConverter.ReorderArgs(
+                    methodConverter,
+                    newObjectExpression.Parameters,
+                    newObjectExpression.ArgumentOrderOpt);
+
+                var expr = new JST.NewObjectExpression(
                     newObjectExpression.Location,
                     methodConverter.Scope,
                     JST.IdentifierExpression.Create(
                         newObjectExpression.Location,
                         methodConverter.Scope,
                         methodConverter.Resolve(methodReference.DeclaringType)),
-                    newObjectExpression.Parameters.Select(exp => ExpressionConverterBase.Convert(methodConverter, exp)).ToArray());
+                    args.ToArray());
+
+                if (toPreInject == null)
+                {
+                    return expr;
+                }
+
+                toPreInject.Add(expr);
+                return new JST.ExpressionsList(
+                    newObjectExpression.Location,
+                    methodConverter.Scope,
+                    toPreInject);
             }
         }
 

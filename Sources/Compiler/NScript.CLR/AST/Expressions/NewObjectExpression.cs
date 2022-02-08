@@ -27,11 +27,13 @@ namespace NScript.CLR.AST
             ClrContext context,
             Location location,
             MethodReference constructor,
+            List<int> argumentOrderOpt,
             params Expression[] constructorArguments)
             : base(
                 context,
                 location,
                 new ConstructorReferenceExpression(context, location, constructor),
+                argumentOrderOpt,
                 constructorArguments)
         {
         }

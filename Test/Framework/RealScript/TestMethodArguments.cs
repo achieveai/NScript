@@ -2,6 +2,8 @@
 {
     class TestMethodArguments
     {
+        private static int gv = 0;
+
         public static void Main()
         {
             ClassMethod1(b: "asdf", a: 12);
@@ -14,7 +16,12 @@
 
             var n = new NestedClass(c: 90, a: 12, b: "asdf");
             n = new NestedClass(c: "clkj", a: "asdf", b: 2, d: "dflkj");
+
+            ClassMethod2(b: MutateGV(), a: MutateGV());
+            n = new NestedClass(e: MutateGV(), a: MutateGV(), b: "uioyuiy");
         }
+
+        public static int MutateGV() => ++gv;
 
         private static void ClassMethod1(int a, string b, MyClass c1 = null) { }
 

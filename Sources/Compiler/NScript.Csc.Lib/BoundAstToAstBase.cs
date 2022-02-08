@@ -337,24 +337,20 @@
             var isStatic = node.Method.ContainingSymbol.IsStatic
                 || node.Method.IsStatic;
 
-            IList<BoundExpression> args = node.Arguments;
-
-            if (node.ArgsToParamsOpt != null && node.ArgsToParamsOpt.Length != 0)
-            {
-                args = node.ArgsToParamsOpt
-                    .Zip(node.Arguments)
-                    .OrderBy(_ => _.First)
-                    .Select(_ => _.Second)
-                    .ToList();
-            }
+            var argumentOrdering =(node.ArgsToParamsOpt != null
+                && node.ArgsToParamsOpt.Length != 0
+                && IsJumbled(node.ArgsToParamsOpt.ToList()))
+                ? node.ArgsToParamsOpt.ToList()
+                : null;
 
             if (node.Method.MethodKind == MethodKind.DelegateInvoke)
             {
                 return new DelegateInvocationExpression
                 {
-                    Arguments = ToArgs(node.Method, args, arg),
+                    Arguments = ToArgs(node.Method, node.Arguments, arg),
                     Location = node.Syntax.Location.GetSerLoc(),
-                    Instance = (ExpressionSer)Visit(node.ReceiverOpt, arg)
+                    Instance = (ExpressionSer)Visit(node.ReceiverOpt, arg),
+                    ArgumentOrderOpt = argumentOrdering
                 };
             }
 
@@ -365,9 +361,10 @@
                     MethodName = node.Method.Name,
                     ReturnType = arg.SymbolSerializer.GetTypeSpecId(
                                 node.Method.ReturnType),
-                    Arguments = ToArgs(node.Method, args, arg),
+                    Arguments = ToArgs(node.Method, node.Arguments, arg),
                     TypeParameters = new List<int>(),
                     Location = node.Syntax.Location.GetSerLoc(),
+                    ArgumentOrderOpt = argumentOrdering
                 };
             }
 
@@ -375,11 +372,12 @@
             {
                 Method = arg.SymbolSerializer.GetMethodSpecId(
                         node.Method),
-                Arguments = ToArgs(node.Method, args, arg),
+                Arguments = ToArgs(node.Method, node.Arguments, arg),
                 Location = node.Syntax.Location.GetSerLoc(),
                 Instance = !isStatic
                         ? (ExpressionSer)Visit(node.ReceiverOpt, arg)
-                        : null
+                        : null,
+                ArgumentOrderOpt = argumentOrdering
             };
         }
 
@@ -1107,27 +1105,23 @@
                 ? 0
                 : arg.SymbolSerializer.GetMethodSpecId(node.Constructor);
 
-            IList<BoundExpression> args = node.Arguments;
-
-            if (node.ArgsToParamsOpt != null && node.ArgsToParamsOpt.Length != 0)
-            {
-                args = node.ArgsToParamsOpt
-                    .Zip(node.Arguments)
-                    .OrderBy(_ => _.First)
-                    .Select(_ => _.Second)
-                    .ToList();
-            }
-
-            var arguments = ToArgs(node.Constructor, args, arg);
+            var arguments = ToArgs(node.Constructor, node.Arguments, arg);
 
             if (node.InitializerExpressionOpt == null)
             {
+                var argumentOrdering =(node.ArgsToParamsOpt != null
+                    && node.ArgsToParamsOpt.Length != 0
+                    && IsJumbled(node.ArgsToParamsOpt.ToList()))
+                    ? node.ArgsToParamsOpt.ToList()
+                    : null;
+
                 return new NewExpression
                 {
                     Location = location,
                     Type = type,
                     Method = method,
-                    Arguments = arguments
+                    Arguments = arguments,
+                    ArgumentOrderOpt = argumentOrdering
                 };
             }
 
@@ -1932,6 +1926,20 @@
         {
             return (BlockKind)((symbol.IsAsync ? (int)BlockKind.Async : 0)
                 | (symbol.IsIterator ? (int)BlockKind.Iterator : 0));
+        }
+
+        private static bool IsJumbled(IList<int> list)
+        {
+            var prev = list[0];
+            for (int i = 1; i < list.Count; i++)
+            {
+                if (prev > list[i])
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
