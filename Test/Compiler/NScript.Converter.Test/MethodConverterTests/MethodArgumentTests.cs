@@ -16,7 +16,10 @@
         }
 
         [DataTestMethod]
-        [DataRow(TestClassNameStr, "Main", "Main.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestConstructor", "Constructor.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestLocalMethod", "LocalMethod.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestInstanceMethods", "InstanceMethod.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestStaticMethods", "StaticMethods.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

@@ -337,7 +337,7 @@
             var isStatic = node.Method.ContainingSymbol.IsStatic
                 || node.Method.IsStatic;
 
-            var argumentOrdering =(node.ArgsToParamsOpt != null
+            var argumentOrdering = (node.ArgsToParamsOpt != null
                 && node.ArgsToParamsOpt.Length != 0
                 && IsJumbled(node.ArgsToParamsOpt.ToList()))
                 ? node.ArgsToParamsOpt.ToList()
@@ -1109,7 +1109,7 @@
 
             if (node.InitializerExpressionOpt == null)
             {
-                var argumentOrdering =(node.ArgsToParamsOpt != null
+                var argumentOrdering = (node.ArgsToParamsOpt != null
                     && node.ArgsToParamsOpt.Length != 0
                     && IsJumbled(node.ArgsToParamsOpt.ToList()))
                     ? node.ArgsToParamsOpt.ToList()
@@ -1930,10 +1930,9 @@
 
         private static bool IsJumbled(IList<int> list)
         {
-            var prev = list[0];
             for (int i = 1; i < list.Count; i++)
             {
-                if (prev > list[i])
+                if (list[i-1] > list[i])
                 {
                     return true;
                 }

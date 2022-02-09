@@ -1050,7 +1050,7 @@ namespace JsCsc.Lib
                             _clrContext,
                             LocFromJObject(mc),
                             methodReferenceExpression,
-                            null,
+                            objectExpression.ArgumentOrderOpt,
                             ParseArguments(mc.Arguments));
                     })
                 .ToList();
@@ -1145,7 +1145,7 @@ namespace JsCsc.Lib
                         _clrContext,
                         LocFromJObject(jObject),
                         DeserializeMethod(jObject.Method),
-                        null,
+                        jObject.ArgumentOrderOpt,
                         args),
                 setters); ;
         }
