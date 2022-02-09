@@ -32,17 +32,10 @@
         {
             var clrKnownReferences = methodScopeConverter.ClrKnownReferences;
 
-            var x = TypeHelpers.IsSameDefinition(ty, clrKnownReferences.PromiseType)
+            return TypeHelpers.IsSameDefinition(ty, clrKnownReferences.PromiseType)
                 || TypeHelpers.IsSameDefinition(ty, clrKnownReferences.PromiseGenericTypeReference)
                 || TypeHelpers.IsSameDefinition(ty, clrKnownReferences.TaskTypeReference)
                 || TypeHelpers.IsSameDefinition(ty, clrKnownReferences.TaskGenericTypeReference);
-
-            return x;
-
-            /*return ty == clrKnownReferences.PromiseType
-                || ty == clrKnownReferences.PromiseGenericTypeReference
-                || ty == clrKnownReferences.TaskTypeReference
-                || ty == clrKnownReferences.TaskGenericTypeReference;*/
         }
     }
 }

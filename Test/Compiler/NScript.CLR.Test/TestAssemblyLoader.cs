@@ -598,7 +598,8 @@
                 @"ConstructorTests.cs",
                 @"NullableTests.cs",
                 @"TestDefaultExpr.cs",
-                @"TestAsyncAwait.cs"
+                @"TestAsyncAwait.cs",
+                @"TestMethodArguments.cs"
             };
 
             TestAssemblyLoader.DllBuilder.Build(

@@ -12,6 +12,12 @@ namespace NScript.JST
 
         public Expression YieldValueOpt { get; private set; }
 
+        public override Precedence Precedence =>
+            Precedence.Comma;
+
+        public override OperatorPlacement OperatorPlacement =>
+            OperatorPlacement.Prefix;
+
         public override void Write(JSWriter writer)
         {
             writer.Write(Keyword.Yield);

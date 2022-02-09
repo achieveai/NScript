@@ -4,10 +4,10 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class AsyncAwaitTests
+    public class MethodArgumentTests
     {
-        private const string TestClassNameStr = @"TestAsyncAwait";
-        private const string TestFilesNSStr = @"NScript.Converter.Test.MethodConverterTests.AsyncAwait.";
+        private const string TestClassNameStr = @"TestMethodArguments";
+        private const string TestFilesNSStr = @"NScript.Converter.Test.MethodConverterTests.MethodArgument.";
 
         [TestInitialize]
         public void Setup()
@@ -16,12 +16,10 @@
         }
 
         [DataTestMethod]
-        [DataRow(TestClassNameStr, "Test1", "Test1.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test2", "Test2.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test3", "Test3.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test4", "Test4.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test5", "Test5.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test8", "Test8.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestConstructor", "Constructor.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestLocalMethod", "LocalMethod.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestInstanceMethods", "InstanceMethod.js", TestType.All)]
+        [DataRow(TestClassNameStr, "TestStaticMethods", "StaticMethods.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(

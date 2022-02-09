@@ -1,7 +1,5 @@
 ﻿Test3
 1212,12
-This should be printed
-This should be printed
 12
 asdf
 136

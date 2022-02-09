@@ -76,6 +76,7 @@
     <Compile Include="TestGeneric.cs" />
     <Compile Include="TestInheritence.cs" />
     <Compile Include="TestInitializers.cs" />
+    <Compile Include="TestMethodArguments.cs" />
     <Compile Include="TestPsudoType.cs" />
     <Compile Include="TestReferenceClass.cs" />
     <Compile Include="TestStdlib.cs" />

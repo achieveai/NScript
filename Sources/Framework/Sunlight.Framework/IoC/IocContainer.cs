@@ -130,7 +130,7 @@ namespace Sunlight.Framework
             }
         }
 
-        public LazyAsync<T> ResolveAsyn<T>() where T : class
+        public LazyAsync<T> ResolveAsync<T>() where T : class
         {
             var rv = this.TryResolveAsync<T>();
             if (rv == null)
@@ -148,7 +148,7 @@ namespace Sunlight.Framework
             try
             {
                 TypeRegistry typeRegistry = null;
-                if (this.factoryMap.TryGetValue(typeof(T).TypeId, out typeRegistry))
+                if (this.asyncFactoryMap.TryGetValue(typeof(T).TypeId, out typeRegistry))
                 { return typeRegistry.GetValue<LazyAsync<T>>(this); }
 
                 return null;

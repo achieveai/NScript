@@ -15,6 +15,11 @@ namespace NScript.JST
         public Expression Expression
         { get; private set; }
 
+        public override Precedence Precedence
+            => Precedence.Comma;
+
+        public override OperatorPlacement OperatorPlacement => OperatorPlacement.Prefix;
+
         public override void Write(JSWriter writer)
         {
             writer.Write(Keyword.Await);
