@@ -787,7 +787,9 @@
             {
                 rv = new FieldExpression
                 {
-                    Field = arg.SymbolSerializer.GetFieldSpecId(node.FieldSymbol),
+                    Field = arg.SymbolSerializer.GetFieldSpecId(
+                        node.FieldSymbol.CorrespondingTupleField
+                        ?? node.FieldSymbol),
                     Instance = !node.FieldSymbol.IsStatic
                       ? (ExpressionSer)Visit(node.ReceiverOpt, arg)
                       : null

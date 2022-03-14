@@ -26,6 +26,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
+        [DataRow(TestClassNameStr, "TestNamed", "TestNamed.js", TestType.All)]
         [DataRow(TestClassNameStr, "TestTupleDecons", "TestTupleDecons.js", TestType.All)]
         [DataRow(TestClassNameStr, "TestTupleReturn", "TestTupleReturn.js", TestType.All)]
         [DataRow(TestClassNameStr, "TestTempVarCreation", "TestTempVarCreation.js", TestType.All)]

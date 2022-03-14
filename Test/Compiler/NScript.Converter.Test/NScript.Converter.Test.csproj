@@ -43,6 +43,7 @@
     <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
     <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
     <None Remove="MethodConverterTests\TupleTests\TestDiscard.js" />
+    <None Remove="MethodConverterTests\TupleTests\TestNamed.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTempVarCreation.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTupleDecons.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTupleReturn.js" />
@@ -57,6 +58,7 @@
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\LocalMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\StaticMethods.js" />
+    <EmbeddedResource Include="MethodConverterTests\TupleTests\TestNamed.js" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
