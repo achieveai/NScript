@@ -118,18 +118,21 @@
                             .scopedIdentifiers
                             .Where(ident => !ident.ShouldEnforceSuggestion)
                             .Concat(scope.ParameterIdentifiers ?? Enumerable.Empty<SimpleIdentifier>())
-                            .OrderByDescending(ident => ident.UsageCount)))
+                            .OrderByDescending(ident => ident.UsageCount))
+                    .ToArray())
                 {
                     if (pair.Item1 != null)
                     {
                         pair.Item1.Add(pair.Item2);
                         _identifierToNode.Add(pair.Item2, pair.Item1);
+                        _names.Remove(pair.Item1);
+                        _names.Add(pair.Item1);
                     }
                     else
                     {
                         var nn = new NameNode(pair.Item2);
-                        _names.Add(nn);
                         _identifierToNode.Add(pair.Item2, nn);
+                        _names.Add(nn);
                     }
                 }
             }

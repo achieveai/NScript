@@ -74,7 +74,6 @@
             ReservedNamesUsed = ReservedNames
                 .Select(NameToIntId)
                 .Where(id => id >= 0)
-                .Concat(new[] {-1})
                 .OrderBy(id => id)
                 .ToImmutableArray();
         }
@@ -118,6 +117,9 @@
             {
                 idx = ~idx;
             }
+
+            if (idx != 0 || ReservedNamesUsed[idx] <= id)
+            { idx++; }
 
             // Return accounting for all the keywords that
             // we can't assign to.
