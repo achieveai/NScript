@@ -65,8 +65,7 @@
 
         private readonly ImmutableHashSet<string> ReservedNames;
 
-        public CountToNamer(
-            IEnumerable<string> reservedNames)
+        public CountToNamer(IEnumerable<string> reservedNames)
         {
             ReservedNames = Keywords
                 .Concat(reservedNames)
@@ -75,6 +74,7 @@
             ReservedNamesUsed = ReservedNames
                 .Select(NameToIntId)
                 .Where(id => id >= 0)
+                .Concat(new[] {-1})
                 .OrderBy(id => id)
                 .ToImmutableArray();
         }
@@ -118,8 +118,6 @@
             {
                 idx = ~idx;
             }
-
-            idx++;
 
             // Return accounting for all the keywords that
             // we can't assign to.

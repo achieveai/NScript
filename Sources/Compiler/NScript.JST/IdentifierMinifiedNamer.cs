@@ -6,23 +6,37 @@
 
     partial class IdentifierScope
     {
-        private class ClosuredIdentifierNamer
+        public class IdentifierMinifiedNamer
         {
-            private HashSet<string> _usedNames = new HashSet<string>();
-            private SortedSet<NameNode> _names = new SortedSet<NameNode>();
-            private Dictionary<SimpleIdentifier, NameNode> _identifierToNode = new Dictionary<SimpleIdentifier, NameNode>();
+            private readonly bool _releaseNaming;
+            private readonly HashSet<string> _usedNames = new HashSet<string>();
+            private readonly SortedSet<NameNode> _names = new SortedSet<NameNode>();
+            private readonly Dictionary<SimpleIdentifier, NameNode> _identifierToNode = new Dictionary<SimpleIdentifier, NameNode>();
 
-            public ClosuredIdentifierNamer(IdentifierScope rootScope)
+            private IdentifierMinifiedNamer(
+                IdentifierScope rootScope,
+                bool releaseNaming)
             {
+                _releaseNaming = releaseNaming;
                 if (rootScope.IsExecutionScope)
                 {
                     ProcessExecutionScope(rootScope);
-                    this.AssignNamesToNodes();
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    ProcessTypeScope(rootScope);
                 }
+
+                AssignNamesToNodes();
+            }
+
+            public static void MinifyNames(
+                IdentifierScope rootScope,
+                bool releaseNaming = false)
+            {
+                _ = new IdentifierMinifiedNamer(
+                    rootScope,
+                    releaseNaming);
             }
 
             public string GetName(SimpleIdentifier ident)
@@ -32,7 +46,9 @@
                     return ident.SuggestedName;
                 }
 
-                return ident.SuggestedName + "_" + _identifierToNode[ident].Name;
+                return _releaseNaming
+                    ? _identifierToNode[ident].Name
+                    : ident.SuggestedName + "_" + _identifierToNode[ident].Name;
             }
 
             private void ProcessExecutionScope(IdentifierScope scope)
@@ -43,7 +59,40 @@
                     .Where(ident => ident.OwnerScope != scope)
                     .ToHashSet();
 
+                ProcessScope(scope, conflictingNames);
 
+                foreach (var child in scope.ChildScopes)
+                {
+                    ProcessExecutionScope(child);
+                }
+            }
+
+            private void ProcessTypeScope(IdentifierScope scope)
+            {
+                HashSet<SimpleIdentifier> conflictingNames = new HashSet<SimpleIdentifier>();
+                scope.assignedNames = this.GetName;
+
+                var parentScope = scope.ParentScope;
+                while(parentScope != null)
+                {
+                    foreach (var ident in parentScope.scopedIdentifiers)
+                    {
+                        conflictingNames.Add(ident);
+                    }
+                }
+
+                ProcessScope(scope, conflictingNames);
+
+                foreach (var child in scope.ChildScopes)
+                {
+                    ProcessExecutionScope(child);
+                }
+            }
+
+            private void ProcessScope(
+                IdentifierScope scope,
+                HashSet<SimpleIdentifier> conflictingNames)
+            {
                 var localIdentToNameCount = scope
                     .scopedIdentifiers
                     .Where(ident =>
@@ -58,7 +107,7 @@
                     })
                     .Count(ident => !ident.ShouldEnforceSuggestion);
 
-                var parameterIdentToNameCount = scope.ParameterIdentifiers.Count;
+                var parameterIdentToNameCount = scope.ParameterIdentifiers?.Count ?? 0;
 
                 foreach (var pair in _names
                     .Reverse()
@@ -68,7 +117,7 @@
                         scope
                             .scopedIdentifiers
                             .Where(ident => !ident.ShouldEnforceSuggestion)
-                            .Concat(scope.ParameterIdentifiers)
+                            .Concat(scope.ParameterIdentifiers ?? Enumerable.Empty<SimpleIdentifier>())
                             .OrderByDescending(ident => ident.UsageCount)))
                 {
                     if (pair.Item1 != null)
@@ -82,11 +131,6 @@
                         _names.Add(nn);
                         _identifierToNode.Add(pair.Item2, nn);
                     }
-                }
-
-                foreach (var child in scope.ChildScopes)
-                {
-                    ProcessExecutionScope(child);
                 }
             }
 

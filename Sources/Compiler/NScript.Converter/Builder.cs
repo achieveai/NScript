@@ -188,13 +188,11 @@ namespace NScript.Converter
                 System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
-                    new IdentifierScope.ReadableIdentifierNamer(
-                        runtimeManager.Scope);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, false);
                 stopWatch.Stop();
                 System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
                 stopWatch.Restart();
-                new IdentifierScope.ReadableIdentifierNamer(
-                    runtimeManager.JSBaseObjectScopeManager.InstanceScope);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, false);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
                 JSWriter writer = new JSWriter(true, false);
