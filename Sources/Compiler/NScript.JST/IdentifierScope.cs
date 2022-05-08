@@ -113,8 +113,7 @@ namespace NScript.JST
         /// Initializes a new instance of the <see cref="IdentifierScope"/> class.
         /// </summary>
         /// <param name="isExecutionScope">if set to <c>true</c> [is execution scope].</param>
-        public IdentifierScope(
-            bool isExecutionScope)
+        public IdentifierScope(bool isExecutionScope)
         {
             this.isExecutionScope = isExecutionScope;
 
@@ -134,8 +133,7 @@ namespace NScript.JST
         /// Initializes a new instance of the <see cref="IdentifierScope"/> class.
         /// </summary>
         /// <param name="parentScope">The parent scope.</param>
-        public IdentifierScope(
-            IdentifierScope parentScope)
+        public IdentifierScope(IdentifierScope parentScope)
         {
             if (parentScope == null)
             {
@@ -212,64 +210,24 @@ namespace NScript.JST
         public bool IsExecutionScope
         { get { return this.isExecutionScope; } }
 
-        /// <summary>
-        /// Gets the parent scope.
-        /// </summary>
-        /// <value>The parent scope.</value>
         public IdentifierScope ParentScope
-        {
-            get
-            {
-                return this.parentScope;
-            }
-        }
+            => this.parentScope;
 
-        /// <summary>
-        /// Gets the parameter identifiers.
-        /// </summary>
-        /// <value>The parameter identifiers.</value>
         public IList<SimpleIdentifier> ParameterIdentifiers
-        {
-            get
-            {
-                return this.readonlyParameterIdentifiers;
-            }
-        }
+            => this.readonlyParameterIdentifiers;
 
-        /// <summary>
-        /// Gets the scoped identifiers.
-        /// </summary>
-        /// <value>The scoped identifiers.</value>
         public IList<SimpleIdentifier> ScopedIdentifiers
-        {
-            get
-            {
-                return this.readonlyScopedIdentifiers;
-            }
-        }
+            =>   this.readonlyScopedIdentifiers;
 
-        /// <summary>
-        /// Gets the used local identifiers.
-        /// </summary>
-        /// <value>The used local identifiers.</value>
         public IList<SimpleIdentifier> UsedLocalIdentifiers
-        {
-            get { return this.readonlyUsedLocalIdentifiers; }
-        }
+            => this.readonlyUsedLocalIdentifiers;
 
-        /// <summary>
-        /// Gets the child scopes.
-        /// </summary>
-        /// <value>The child scopes.</value>
+        public IList<SimpleIdentifier> UsedIdentifiers
+            => this.readonlyUsedIdentifiers;
+
         public IList<IdentifierScope> ChildScopes
-        {
-            get { return this.readonlyChildScopes; }
-        }
+            => this.readonlyChildScopes;
 
-        /// <summary>
-        /// Adds the identifier.
-        /// </summary>
-        /// <param name="identifier">The identifier.</param>
         internal void AddIdentifier(SimpleIdentifier identifier)
         {
             if (identifier.ShouldEnforceSuggestion)

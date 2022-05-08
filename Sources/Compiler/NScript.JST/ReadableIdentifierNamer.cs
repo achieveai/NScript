@@ -31,6 +31,12 @@ namespace NScript.JST
 
             public ReadableIdentifierNamer(IdentifierScope rootScopes)
             {
+                if (rootScopes.IsExecutionScope)
+                {
+                    var closuredNamer = new ClosuredIdentifierNamer(rootScopes);
+                    return;
+                }
+
                 this.ProcessScopes(
                     rootScopes,
                     this.CollectSimpleIdentifiers);
