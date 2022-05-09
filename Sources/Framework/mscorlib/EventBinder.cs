@@ -247,16 +247,16 @@ namespace System
             this.target = null;
         }
 
-        [Script(@"this.target.addEventListener(evtName, cb, isCapture);")]
+        [Script(@"this.[mscorlib]System.EventBinder::target.addEventListener(evtName, cb, isCapture);")]
         private extern void AddEventListener(string evtName, Action<object> cb, bool isCapture);
 
-        [Script(@"this.target.atachEvent('on' + evtName, cb);")]
+        [Script(@"this.@{[mscorlib]System.EventBinder::target}.atachEvent('on' + evtName, cb);")]
         private extern void AttachEvent(string evtName, Action cb);
 
-        [Script(@"this.target.removeEventListener(evtName, cb, isCapture);")]
+        [Script(@"this.@{[mscorlib]System.EventBinder::target}.removeEventListener(evtName, cb, isCapture);")]
         private extern void RemoveEventListener(string evtName, Action<object> cb, bool isCapture);
 
-        [Script(@"this.target.detachEvent('on' + evtName, cb);")]
+        [Script(@"this.@{[mscorlib]System.EventBinder::target}.detachEvent('on' + evtName, cb);")]
         private extern void DetachEvent(string evtName, Action cb);
 
         [Script("return !(!element.addEventListener);")]

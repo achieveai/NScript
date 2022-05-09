@@ -7,7 +7,7 @@
     <CopyReferences>True</CopyReferences>
     <GenerateJs>True</GenerateJs>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)\bin\netcoreapp3.1\</NScriptBinPath>
+    <NScriptBinPath>$(NScriptToolSetPath)\bin\net6.0\</NScriptBinPath>
     <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\NScript)</NScriptToolSetPath>
     <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\NScript)</NScriptToolSetPath>
     <OutputPath>bin\$(Configuration)</OutputPath>
