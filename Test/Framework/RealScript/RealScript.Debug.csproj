@@ -1,17 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+﻿<Project Sdk="NScript.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{142D8B13-3EED-43A9-96BD-353FFA72E536}</ProjectGuid>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <NoStdLib>True</NoStdLib>
     <CopyReferences>True</CopyReferences>
     <TemplateFile>Properties\Script.jst</TemplateFile>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RealScript.Debug</RootNamespace>
     <AssemblyName>RealScript.Debug</AssemblyName>
@@ -38,75 +31,15 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BasicBlockTestFunctions.cs" />
-    <Compile Include="BasicStatements.cs" />
-    <Compile Include="ConstructorTests.cs" />
-    <Compile Include="DelegateBlocks.cs" />
-    <Compile Include="DupInstructionBlocks.cs" />
-    <Compile Include="DynamicTest.cs" />
-    <Compile Include="EnumTypes.cs" />
-    <Compile Include="ExceptionHandlerSamples.cs" />
-    <Compile Include="ForLoopBlocks.cs" />
-    <Compile Include="FuncRegressions.cs" />
-    <Compile Include="GenericCollections.cs" />
-    <Compile Include="GenericResponse.cs" />
-    <Compile Include="GenericSamples.cs" />
-    <Compile Include="IfBlocks.cs" />
-    <Compile Include="InlineComplexStatements.cs" />
-    <Compile Include="JsScriptImport.cs" />
-    <Compile Include="Lang7Features.cs" />
-    <Compile Include="Lang8Features.cs" />
-    <Compile Include="Lang9Features.cs" />
-    <Compile Include="LoopTests.cs" />
-    <Compile Include="MathAlgorithms.cs" />
-    <Compile Include="NewLanguageFeatures.cs" />
-    <Compile Include="NullableTests.cs" />
-    <Compile Include="NumberOperations.cs" />
-    <Compile Include="ScriptSharpCompat.cs" />
-    <Compile Include="SimpleInterfaceTest.cs" />
-    <Compile Include="SimpleTypes.cs" />
-    <Compile Include="StructClass.cs" />
-    <Compile Include="SwitchTest.cs" />
-    <Compile Include="TestArithmetics.cs" />
-    <Compile Include="TestAsyncAwait.cs" />
-    <Compile Include="TestCompilerGeneratedStuff.cs" />
-    <Compile Include="TestControlFlow.cs" />
-    <Compile Include="TestDefaultExpr.cs" />
-    <Compile Include="TestDelegates.cs" />
-    <Compile Include="TestGeneric.cs" />
-    <Compile Include="TestInheritence.cs" />
-    <Compile Include="TestInitializers.cs" />
-    <Compile Include="TestMethodArguments.cs" />
-    <Compile Include="TestPsudoType.cs" />
-    <Compile Include="TestReferenceClass.cs" />
-    <Compile Include="TestStdlib.cs" />
-    <Compile Include="TupleTests.cs" />
-    <Compile Include="WhileLoopBlocks.cs" />
-    <Compile Include="YieldReturnTests.cs" />
-    <Content Include="Properties\Project.FxCop" />
-    <Content Include="Properties\Script.jst" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Class1.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="RealScript.il" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Sources\Framework\Microsoft.CSharp\Microsoft.CSharp.csproj">
-      <Project>{30070734-422b-4c24-be3f-906e2ae03a12}</Project>
-      <Name>Microsoft.CSharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj">
-      <Project>{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}</Project>
-      <Name>NScript.MsCorlib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Sources\Framework\System.Core\System.Core.csproj">
-      <Project>{30070734-422b-4c24-be3f-906e2ae03a10}</Project>
-      <Name>System.Core</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\Sources\Framework\Microsoft.CSharp\Microsoft.CSharp.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Core\System.Core.csproj" />
   </ItemGroup>
   <!--
   <Import Project="$(ProgramFiles)\nStuff\ScriptSharp\v1.0\nStuff.ScriptSharp.targets" />
   -->
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!--<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />-->
 </Project>

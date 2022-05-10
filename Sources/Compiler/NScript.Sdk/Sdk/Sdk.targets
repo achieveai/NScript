@@ -1,0 +1,42 @@
+﻿<Project>
+	<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+	<PropertyGroup>
+		<NoStandardLib>true</NoStandardLib>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+		<Ext>dll</Ext>
+	</PropertyGroup>
+	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
+		<MsBuild
+			Condition="$(GenerateJs) == True"
+			Projects="$(MSBuildProjectFile)"
+			Targets="ScriptGenerate" /> 
+	</Target>
+	<Target Name="ScriptGenerate"
+			Inputs="$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext);@(ReferencePath)"
+			Outputs="$(OutputPath)$(AssemblyName).js"
+			DependsOnTargets="$(CoreCompile)"
+			Condition="$(GenerateJs) == True">
+
+		<Message
+			Text="Running NScript to produce $(OutputPath)$(AssemblyName).js."/>
+
+		<PropertyGroup>
+			<Refs>&quot;@(ReferencePath->'%(identity)','&quot;,&quot;')&quot;</Refs>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<ScriptGenerateOption Include="-outJs &quot;$(OutputPath)$(AssemblyName).js&quot;"/>
+			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
+			<ScriptGenerateOption Include="-references $(Refs)"/>
+			<ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
+			<ScriptGenerateOption Include="-pluginHintPath &quot;$(NScriptBinPath);&quot;" Condition="'$(PluginConfig)' != ''"/>
+			<ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)&quot;"/>
+		</ItemGroup>
+		
+		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
+
+	</Target>
+</Project>

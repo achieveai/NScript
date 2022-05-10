@@ -1,0 +1,19 @@
+﻿<Project Sdk="NScript.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <NoStdLib>True</NoStdLib>
+    <NoStandardLibraries>True</NoStandardLibraries>
+    <CopyReferences>True</CopyReferences>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SunlightUnit</RootNamespace>
+    <AssemblyName>SunlightUnit</AssemblyName>
+    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
+    <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)</NScriptBinPath>
+    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
+    <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661; 0067</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="mscorlib" />
+  </ItemGroup>
+</Project>

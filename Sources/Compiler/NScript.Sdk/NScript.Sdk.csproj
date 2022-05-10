@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackageType>MSBuildSdk</PackageType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
+  </PropertyGroup>
+
+  <Target Name="_WriteSharedFiles"
+            AfterTargets="Build">
+        <PropertyGroup>
+            <_GlobalJson>
+                <![CDATA[
+{
+  "$schema": "https://json.schemastore.org/global.json",
+  "msbuild-sdks": {
+    "NScript.Sdk": "$(Version)"
+  }
+}
+                ]]>
+            </_GlobalJson>
+            <_NuGetConfig>
+                <![CDATA[
+<configuration>
+    <config>
+        <add key="globalPackagesFolder" value="$(PackageRestorePath)" />
+    </config>
+    <packageSources>
+        <add key="foo-sdk" value="$(PackageOutputPath)" />
+    </packageSources>
+</configuration>
+                ]]>
+            </_NuGetConfig>
+        </PropertyGroup>
+
+        <WriteLinesToFile File="../../../global.json"
+                          Lines="$(_GlobalJson)"
+                          Overwrite="true"
+                          WriteOnlyWhenDifferent="true" />
+        <WriteLinesToFile File="../../../nuget.config"
+                          Lines="$(_NuGetConfig)"
+                          Overwrite="true"
+                          WriteOnlyWhenDifferent="true" />
+    </Target>
+
+  <ItemGroup>
+    <None Include="Sdk/*" Pack="true" PackagePath="%(RelativeDir)" />
+  </ItemGroup>
+
+    <Target Name="_ClearPackageCache"
+          AfterTargets="Build">
+      <PropertyGroup>
+          <_PackageDirectory>$(PackageRestorePath)$(PackageId.ToLowerInvariant())</_PackageDirectory>
+      </PropertyGroup>
+
+      <RemoveDir Directories="$(_PackageDirectory)"
+                  Condition="Exists('$(_PackageDirectory)')" />
+    </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NScript\NScript.csproj" />
+    <ProjectReference Include="..\JsCsc\JsCsc.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyExtrasToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="CopyExtrasToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ToolStuff)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/*" />
+  </ItemGroup>
+
+</Project>

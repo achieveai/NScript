@@ -12,7 +12,7 @@ namespace Sunlight.Framework.UI.Attributes
     /// Definition for TemplateBehaviorAttribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class TemplateBehaviorAttribute
+    public class TemplateBehaviorAttribute : Attribute
     {
         private string behaviorName;
         public TemplateBehaviorAttribute(string behaviorName)

@@ -1,0 +1,8 @@
+﻿<Project>
+	<Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+	<PropertyGroup>
+		<CscToolExe>$(MSBuildThisFileDirectory)../tools/net6.0/Csc.exe</CscToolExe>
+		<TargetFramework>net6.0</TargetFramework>
+		<JsOutputPath>.\</JsOutputPath>
+	</PropertyGroup>
+</Project>

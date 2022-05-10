@@ -110,11 +110,7 @@ namespace NScript.Converter
                     this.typeConverterPlugins);
                 runtimeManager = new RuntimeScopeManager(converterContext);
                 methodDefinitionsToEmit = new List<MethodDefinition>();
-
-                entryPoint =
-                    Path.GetExtension(mainAssembly) == ".exe"
-                        ? this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly))
-                        : null;
+                entryPoint = this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly));
             }
             catch(System.Exception ex)
             {

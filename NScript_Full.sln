@@ -5,7 +5,6 @@ VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Setup", "Sources\Setup\Setup.wixproj", "{9E20DA0B-348E-4E84-A5CB-E63956E51016}"
 	ProjectSection(ProjectDependencies) = postProject
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914} = {F0BE2454-EEE9-4194-AB93-D6B9E3D23914}
 		{05F0565E-2A8F-4FEE-A9CE-44499D295905} = {05F0565E-2A8F-4FEE-A9CE-44499D295905}
 		{2F761E61-2724-492E-B79F-C64D9B032613} = {2F761E61-2724-492E-B79F-C64D9B032613}
 		{1619FBAF-D0C6-4D3A-8484-3F81BF70944B} = {1619FBAF-D0C6-4D3A-8484-3F81BF70944B}
@@ -71,42 +70,44 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.MsCorlib", "Sources\Framework\mscorlib\NScript.MsCorlib.csproj", "{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.MsCorlib", "Sources\Framework\mscorlib\NScript.MsCorlib.csproj", "{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2F761E61-2724-492E-B79F-C64D9B032613} = {2F761E61-2724-492E-B79F-C64D9B032613}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Core", "Sources\Framework\System.Core\System.Core.csproj", "{30070734-422B-4C24-BE3F-906E2AE03A10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Core", "Sources\Framework\System.Core\System.Core.csproj", "{30070734-422B-4C24-BE3F-906E2AE03A10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CSharp", "Sources\Framework\Microsoft.CSharp\Microsoft.CSharp.csproj", "{30070734-422B-4C24-BE3F-906E2AE03A12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CSharp", "Sources\Framework\Microsoft.CSharp\Microsoft.CSharp.csproj", "{30070734-422B-4C24-BE3F-906E2AE03A12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Dynamic", "Sources\Framework\System.Dynamic\System.Dynamic.csproj", "{C57A61D9-4E45-41BB-AE75-933FBA9A9079}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Dynamic", "Sources\Framework\System.Dynamic\System.Dynamic.csproj", "{C57A61D9-4E45-41BB-AE75-933FBA9A9079}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Web", "Sources\Framework\System.Web\System.Web.csproj", "{3520779C-829E-4276-9163-CA65490449F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Web", "Sources\Framework\System.Web\System.Web.csproj", "{3520779C-829E-4276-9163-CA65490449F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Web.Html", "Sources\Framework\System.Web.Html\System.Web.Html.csproj", "{A60706FF-08D7-4320-99F9-A2413275CDF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Web.Html", "Sources\Framework\System.Web.Html\System.Web.Html.csproj", "{A60706FF-08D7-4320-99F9-A2413275CDF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Windows", "Sources\Framework\WinRT\Windows.csproj", "{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Windows", "Sources\Framework\WinRT\Windows.csproj", "{0EB34C67-4E1F-4D7B-A1E0-16061A857DEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework", "Sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj", "{650BBE9A-D0C5-4590-A82A-8E63C664A893}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework", "Sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj", "{650BBE9A-D0C5-4590-A82A-8E63C664A893}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI", "Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj", "{650BBE9A-D0C5-4590-A82A-8E63C664A894}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.UI", "Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj", "{650BBE9A-D0C5-4590-A82A-8E63C664A894}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{641EC57C-4A93-4710-8469-5D379A0E0B7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealScript", "Test\Framework\RealScript\RealScript.csproj", "{BA7A45C0-990C-4BD0-B0C0-4984054576E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealScript", "Test\Framework\RealScript\RealScript.csproj", "{BA7A45C0-990C-4BD0-B0C0-4984054576E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealScript.Debug", "Test\Framework\RealScript\RealScript.Debug.csproj", "{142D8B13-3EED-43A9-96BD-353FFA72E536}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealScript.Debug", "Test\Framework\RealScript\RealScript.Debug.csproj", "{142D8B13-3EED-43A9-96BD-353FFA72E536}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.Test", "Test\Framework\Sunlight.Framework.Test\Sunlight.Framework.Test.csproj", "{5702ADA9-6583-4019-ADA1-A48CCC3F53EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.Test", "Test\Framework\Sunlight.Framework.Test\Sunlight.Framework.Test.csproj", "{5702ADA9-6583-4019-ADA1-A48CCC3F53EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sunlight.Framework.UI.Test", "Test\Framework\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.UI.Test", "Test\Framework\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{05F0565E-2A8F-4FEE-A9CE-44499D295905} = {05F0565E-2A8F-4FEE-A9CE-44499D295905}
 		{1F04F790-76C3-45A4-980E-62A506633BF8} = {1F04F790-76C3-45A4-980E-62A506633BF8}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SunlightUnit", "Test\Framework\TestRunner\SunlightUnit.csproj", "{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Sdk", "Sources\Compiler\NScript.SDK\NScript.Sdk.csproj", "{20673638-49F1-45AB-888E-6721EFFAE544}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SunlightUnit", "Sources\Framework\SunlightUnit\SunlightUnit.csproj", "{688E02E6-FD92-4FD1-9484-033459E61D61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -384,14 +385,22 @@ Global
 		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|x86.ActiveCfg = Release|Any CPU
 		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}.Release|x86.Build.0 = Release|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Debug|x86.Build.0 = Debug|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Release|x86.ActiveCfg = Release|Any CPU
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914}.Release|x86.Build.0 = Release|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Debug|x86.Build.0 = Debug|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Release|x86.ActiveCfg = Release|Any CPU
+		{20673638-49F1-45AB-888E-6721EFFAE544}.Release|x86.Build.0 = Release|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Debug|x86.Build.0 = Debug|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Release|x86.ActiveCfg = Release|Any CPU
+		{688E02E6-FD92-4FD1-9484-033459E61D61}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -435,7 +444,8 @@ Global
 		{142D8B13-3EED-43A9-96BD-353FFA72E536} = {641EC57C-4A93-4710-8469-5D379A0E0B7A}
 		{5702ADA9-6583-4019-ADA1-A48CCC3F53EA} = {641EC57C-4A93-4710-8469-5D379A0E0B7A}
 		{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB} = {641EC57C-4A93-4710-8469-5D379A0E0B7A}
-		{F0BE2454-EEE9-4194-AB93-D6B9E3D23914} = {641EC57C-4A93-4710-8469-5D379A0E0B7A}
+		{20673638-49F1-45AB-888E-6721EFFAE544} = {159B8E2A-E38A-411C-A798-F5EB41047019}
+		{688E02E6-FD92-4FD1-9484-033459E61D61} = {E2815404-3C9B-4873-AAA1-696B75755BDF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {583A0EE8-123E-4527-835C-EF2149A86292}
