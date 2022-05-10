@@ -21,7 +21,7 @@
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\netcoreapp3.1\</NScriptBinPath>
+    <NScriptBinPath>$(NScriptToolSetPath)bin\net6.0\</NScriptBinPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

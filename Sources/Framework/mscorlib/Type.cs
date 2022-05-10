@@ -220,7 +220,7 @@
             if (type.@{[mscorlib]System.Type::IsNullable} && instance === null) {
               return null;
             } else if (type.@{[mscorlib]System.Type::IsStruct}) {
-              return instance.@{[mscorlib]System.Type::boxedValue};
+              return instance.@{[mscorlib]System.ValueType::boxedValue};
             } else {
               return instance;
             }")]

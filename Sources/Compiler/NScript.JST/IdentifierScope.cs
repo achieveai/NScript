@@ -103,6 +103,7 @@ namespace NScript.JST
         /// </summary>
         private readonly Dictionary<string, List<SimpleIdentifier>> identifierNameGroups =
             new Dictionary<string, List<SimpleIdentifier>>();
+        private readonly string scopeName;
 
         /// <summary>
         /// Parent scope.
@@ -122,6 +123,10 @@ namespace NScript.JST
                 this.paramaterIdentifiers = new List<SimpleIdentifier>();
                 this.readonlyParameterIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.paramaterIdentifiers);
             }
+            else
+            {
+                this.scopeName = "JSObject instance";
+            }
 
             this.readonlyUsedLocalIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.usedLocalIdentifiers);
             this.readonlyScopedIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.scopedIdentifiers);
@@ -133,13 +138,16 @@ namespace NScript.JST
         /// Initializes a new instance of the <see cref="IdentifierScope"/> class.
         /// </summary>
         /// <param name="parentScope">The parent scope.</param>
-        public IdentifierScope(IdentifierScope parentScope)
+        public IdentifierScope(
+            IdentifierScope parentScope,
+            string scopeName = default)
         {
             if (parentScope == null)
             {
-                throw new System.ArgumentNullException("parentScope");
+                throw new ArgumentNullException("parentScope");
             }
 
+            this.scopeName = scopeName;
             this.parentScope = parentScope;
             this.isExecutionScope = parentScope.isExecutionScope;
             this.parentScope.childScopes.Add(this);

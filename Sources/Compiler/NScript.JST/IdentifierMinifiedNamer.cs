@@ -79,13 +79,15 @@
                     {
                         conflictingNames.Add(ident);
                     }
+
+                    parentScope = parentScope.parentScope;
                 }
 
                 ProcessScope(scope, conflictingNames);
 
                 foreach (var child in scope.ChildScopes)
                 {
-                    ProcessExecutionScope(child);
+                    ProcessTypeScope(child);
                 }
             }
 

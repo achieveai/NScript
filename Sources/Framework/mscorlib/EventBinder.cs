@@ -247,7 +247,7 @@ namespace System
             this.target = null;
         }
 
-        [Script(@"this.[mscorlib]System.EventBinder::target.addEventListener(evtName, cb, isCapture);")]
+        [Script(@"this.@{[mscorlib]System.EventBinder::target}.addEventListener(evtName, cb, isCapture);")]
         private extern void AddEventListener(string evtName, Action<object> cb, bool isCapture);
 
         [Script(@"this.@{[mscorlib]System.EventBinder::target}.atachEvent('on' + evtName, cb);")]

@@ -123,10 +123,14 @@ namespace NScript.Converter
             this.context = context;
             this.typeDefinition = typeDefinition;
             this.scope = inherit
-                ? new IdentifierScope(baseInstanceMemberScope)
+                ? new IdentifierScope(
+                    baseInstanceMemberScope,
+                    this.typeDefinition.FullName + "_Inst")
                 : baseInstanceMemberScope;
             this.staticMemberScope = inherit
-                ? new IdentifierScope(baseStaticMemberScope)
+                ? new IdentifierScope(
+                    baseStaticMemberScope,
+                    this.typeDefinition.FullName + "_Static")
                 : baseStaticMemberScope;
 
             this.MapMethods();
@@ -150,8 +154,12 @@ namespace NScript.Converter
             this.parentScopeManager = parentScopeManager;
             this.typeDefinition = typeDefinition;
 
-            this.scope = new IdentifierScope(this.parentScopeManager.scope);
-            this.staticMemberScope = new IdentifierScope(this.parentScopeManager.staticMemberScope.ParentScope);
+            this.scope = new IdentifierScope(
+                this.parentScopeManager.scope,
+                this.typeDefinition.FullName + "_Inst");
+            this.staticMemberScope = new IdentifierScope(
+                this.parentScopeManager.staticMemberScope.ParentScope,
+                this.typeDefinition.FullName + "Static");
 
             this.MapMethods();
         }

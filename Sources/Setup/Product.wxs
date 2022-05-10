@@ -197,12 +197,12 @@
 				<File Source="$(var.ToolsetBinDir)\XwmlParser.dll.config"/>
 				<File Source="$(var.ToolsetBinDir)\XwmlParser.pdb"/>
 			</Component>
-			<Component Id="BinComponentX86" Directory="INSTALLFOLDER_BIN_X86" Guid="{D971F92B-CC87-4559-807E-55BA14DD944F}">
+			<!--<Component Id="BinComponentX86" Directory="INSTALLFOLDER_BIN_X86" Guid="{D971F92B-CC87-4559-807E-55BA14DD944F}">
 				<File Source="$(var.ToolsetBinDir)\x86\ClearScriptV8-32.dll"/>
 				<File Source="$(var.ToolsetBinDir)\x86\v8-base-ia32.dll"/>
 				<File Source="$(var.ToolsetBinDir)\x86\v8-ia32.dll"/>
 				<File Source="$(var.ToolsetBinDir)\x86\v8-libcpp-ia32.dll"/>
-			</Component>
+			</Component>-->
 			<Component Id="BinComponentRURU" Directory="INSTALLFOLDER_BIN_RU_RU" Guid="{D971F92B-CC87-4559-807E-55BA14DD945F}">
                 <File Source="$(var.ToolsetBinDir)\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" />
 			</Component>
