@@ -41,7 +41,10 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 if (this.readerIdentifier == null)
                 {
-                    this.readerIdentifier = SimpleIdentifier.CreateScopeIdentifier(this.identifierScope, "read", false);
+                    this.readerIdentifier = SimpleIdentifier.CreateScopeIdentifier(
+                        this.identifierScope,
+                        "read",
+                        false);
                 }
 
                 return this.readerIdentifier;

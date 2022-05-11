@@ -267,6 +267,7 @@ namespace NScript.Converter.Test
                 methodDefinition);
 
             var functionExpression = methodConverter.MethodFunctionExpression;
+            // IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeScopeManager.Scope);
             string functionStr = ConverterTestHelpers.GetScriptString(functionExpression);
 
             ConverterTestHelpers.CheckScriptValues(

@@ -53,9 +53,8 @@
 
             private void ProcessExecutionScope(IdentifierScope scope)
             {
-                HashSet<SimpleIdentifier> conflictingNames = new HashSet<SimpleIdentifier>();
                 scope.assignedNames = this.GetName;
-                scope.UsedIdentifiers
+                HashSet<SimpleIdentifier> conflictingNames = scope.UsedIdentifiers
                     .Where(ident => ident.OwnerScope != scope)
                     .ToHashSet();
 
