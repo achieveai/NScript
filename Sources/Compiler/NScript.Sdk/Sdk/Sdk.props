@@ -4,5 +4,6 @@
 		<CscToolExe>$(MSBuildThisFileDirectory)../tools/net6.0/Csc.exe</CscToolExe>
 		<TargetFramework>net6.0</TargetFramework>
 		<JsOutputPath>.\</JsOutputPath>
+    <NScriptBinPath>$(MSBuildThisFileDirectory)../tools/net6.0/</NScriptBinPath>
 	</PropertyGroup>
 </Project>

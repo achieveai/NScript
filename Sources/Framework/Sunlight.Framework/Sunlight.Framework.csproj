@@ -7,8 +7,11 @@
     <AssemblyName>Sunlight.Framework</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
     <NScriptBinPath>$(NScriptToolSetPath)bin\netcoreapp3.1\</NScriptBinPath>
+    <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
+    <PackageOutputPath>$(NScriptToolSetPath)</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -61,6 +61,7 @@ TDSparser/TDSparser/HammerJs.cs
 *.un~
 *.ide
 /NScriptToolSet/lib
+/NScriptToolSet/*.nupkg
 /.vs/
 Test/Framework/TestWebApplication/GeneratedScripts/*
 /.vs/NScript/v15/Server/sqlite3/storage.ide-wal

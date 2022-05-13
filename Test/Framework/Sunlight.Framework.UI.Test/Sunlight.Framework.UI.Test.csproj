@@ -1,4 +1,4 @@
-<Project Sdk="NScript.Sdk">
+﻿<Project Sdk="NScript.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,20 +7,19 @@
     <AssemblyName>Sunlight.Framework.UI.Test</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
     <NScriptBinPath>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\</NScriptBinPath>
-    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
+    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
     <NoWarn>0824</NoWarn>
     <PluginConfig>PluginConfig.xml</PluginConfig>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
-    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
-    <ProjectReference Include="..\..\..\sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj" />
-    <ProjectReference Include="..\..\..\sources\Framework\Sunlight.Framework\Sunlight.Framework.UI.csproj" />
-    <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj" />
-    <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj" />
-    <ProjectReference Include="..\..\..\Sources\Framework\SunlightUnit\SunlightUnit.csproj" />
+    <PackageReference Include="mscorlib" Version="1.0.0" />
+    <PackageReference Include="Sunlight.Framework.UI" Version="1.0.0" />
+    <PackageReference Include="Sunlight.Framework" Version="1.0.0" />
+    <PackageReference Include="System.Web.Html" Version="1.0.0" />
+    <PackageReference Include="System.Web" Version="1.0.0" />
+    <PackageReference Include="SunlightUnit" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PluginConfig.xml" />

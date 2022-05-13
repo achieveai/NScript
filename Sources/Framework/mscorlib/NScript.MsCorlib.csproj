@@ -7,8 +7,10 @@
     <AssemblyName>mscorlib</AssemblyName>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
+    <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath>
     <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</NScriptBinPath>
-    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
-    <PackageOutputDir>$(NScriptToolSetPath)</PackageOutputDir>
+    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
+    <PackageOutputPath>$(NScriptToolSetPath)</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>

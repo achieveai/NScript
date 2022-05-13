@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json.schemastore.org/global.json",
+  "msbuild-sdks": {
+    "NScript.Sdk": "1.0.0"
+  }
+}

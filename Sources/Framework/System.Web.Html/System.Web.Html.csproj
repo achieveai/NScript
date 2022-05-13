@@ -7,9 +7,11 @@
     <AssemblyName>System.Web.Html</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
     <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)</NScriptBinPath>
+    <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
-    <PackageOutputDir>$(NScriptToolSetPath)</PackageOutputDir>
+    <PackageOutputPath>$(NScriptToolSetPath)</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

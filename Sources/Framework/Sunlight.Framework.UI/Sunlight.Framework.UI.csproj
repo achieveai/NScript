@@ -7,12 +7,15 @@
     <AssemblyName>Sunlight.Framework.UI</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
     <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</NScriptBinPath>
+    <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
+    <PackageOutputPath>$(NScriptToolSetPath)</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="mscorlib" />
-    <PackageReference Include="Sunlight.Framework" />
-    <PackageReference Include="System.Web.Html" />
+    <PackageReference Include="mscorlib" Version="1.0.0" />
+    <PackageReference Include="Sunlight.Framework" Version="1.0.0" />
+    <PackageReference Include="System.Web.Html" Version="1.0.0" />
   </ItemGroup>
 </Project>
