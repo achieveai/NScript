@@ -8,8 +8,7 @@
     <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
   </PropertyGroup>
 
-  <Target Name="_WriteSharedFiles"
-            AfterTargets="Build">
+  <Target Name="_WriteSharedFiles" AfterTargets="Build">
         <PropertyGroup>
             <_GlobalJson>
                 <![CDATA[
@@ -35,36 +34,26 @@
             </_NuGetConfig>
         </PropertyGroup>
 
-        <WriteLinesToFile File="../../Framework/global.json"
-                          Lines="$(_GlobalJson)"
-                          Overwrite="true"
-                          WriteOnlyWhenDifferent="true" />
-        <WriteLinesToFile File="../../Framework/nuget.config"
-                          Lines="$(_NuGetConfig)"
-                          Overwrite="true"
-                          WriteOnlyWhenDifferent="true" />
-        <WriteLinesToFile File="../../../Test/Framework/global.json"
-                          Lines="$(_GlobalJson)"
-                          Overwrite="true"
-                          WriteOnlyWhenDifferent="true" />
-        <WriteLinesToFile File="../../../Test/Framework/nuget.config"
-                          Lines="$(_NuGetConfig)"
-                          Overwrite="true"
-                          WriteOnlyWhenDifferent="true" />
+        <WriteLinesToFile File="../../Framework/global.json" Lines="$(_GlobalJson)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <WriteLinesToFile File="../../Framework/nuget.config" Lines="$(_NuGetConfig)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <WriteLinesToFile File="../../../Test/Framework/global.json" Lines="$(_GlobalJson)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <WriteLinesToFile File="../../../Test/Framework/nuget.config" Lines="$(_NuGetConfig)" Overwrite="true" WriteOnlyWhenDifferent="true" />
     </Target>
 
   <ItemGroup>
     <None Include="Sdk/*" Pack="true" PackagePath="%(RelativeDir)" />
   </ItemGroup>
 
-    <Target Name="_ClearPackageCache"
-          AfterTargets="Build">
+  <ItemGroup>
+    <Content Include="$(NScriptToolsetDir)/TestStuff/**/*" Pack="true" PackagePath="TestStuff/" />
+  </ItemGroup>
+
+    <Target Name="_ClearPackageCache" AfterTargets="Build">
       <PropertyGroup>
           <_PackageDirectory>$(PackageRestorePath)$(PackageId.ToLowerInvariant())</_PackageDirectory>
       </PropertyGroup>
 
-      <RemoveDir Directories="$(_PackageDirectory)"
-                  Condition="Exists('$(_PackageDirectory)')" />
+      <RemoveDir Directories="$(_PackageDirectory)" Condition="Exists('$(_PackageDirectory)')" />
     </Target>
 
   <ItemGroup>

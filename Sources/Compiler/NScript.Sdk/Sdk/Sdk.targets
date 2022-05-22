@@ -39,4 +39,18 @@
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
 
 	</Target>
+
+	<Target Name="AfterCompile"
+          DependsOnTargets="$(CoreCompile)"
+          Condition="$(IsTestProject) == True">
+
+    <Copy
+      SourceFiles="@(TestStuff)"
+      DestinationFolder="bin\Debug\net6.0" />
+
+    <ItemGroup>
+      <TestStuff Include="$(MSBuildThisFileDirectory)../TestStuff/net6.0/**/*" />
+    </ItemGroup>
+	</Target>
+
 </Project>
