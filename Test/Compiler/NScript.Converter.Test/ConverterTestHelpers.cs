@@ -210,7 +210,8 @@ namespace NScript.Converter.Test
             string className,
             string methodName,
             TestType testType,
-            bool isMcs = false)
+            bool isMcs = false,
+            bool minifyFuncName = false)
         {
             string script = ConverterTestHelpers.GetResourceString(testjsFile);
 
@@ -221,7 +222,8 @@ namespace NScript.Converter.Test
                     methodName,
                     true,
                     script,
-                    isMcs);
+                    isMcs,
+                    minifyFuncName);
             }
 
             if ((testType & TestType.Retail) != 0)
@@ -231,7 +233,8 @@ namespace NScript.Converter.Test
                     methodName,
                     false,
                     script,
-                    isMcs);
+                    isMcs,
+                    minifyFuncName);
             }
         }
 
@@ -247,7 +250,8 @@ namespace NScript.Converter.Test
             string methodName,
             bool isDebug,
             string script,
-            bool isMcs = false)
+            bool isMcs = false,
+            bool minifyFuncNames = false)
         {
             MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
                 className,
@@ -267,7 +271,17 @@ namespace NScript.Converter.Test
                 methodDefinition);
 
             var functionExpression = methodConverter.MethodFunctionExpression;
-            // IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeScopeManager.Scope);
+            if (minifyFuncNames)
+            {
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeScopeManager.Scope,
+                    !isDebug);
+
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeScopeManager.JSBaseObjectScopeManager.InstanceScope,
+                    !isDebug);
+            }
+
             string functionStr = ConverterTestHelpers.GetScriptString(functionExpression);
 
             ConverterTestHelpers.CheckScriptValues(

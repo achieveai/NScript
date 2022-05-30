@@ -142,5 +142,12 @@ namespace RealScript
         {
             return (a << 16) + (b << 8) + c;
         }
+
+        public static int ArrayIndexOfName(
+            string[] strArray,
+            bool isNeg)
+        {
+            return isNeg && strArray.Length > 0? strArray.IndexOf("-1") : -1;
+        }
     }
 }

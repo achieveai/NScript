@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<?define ProductVersion="1.1.0.0002" ?>
+	<?define ProductVersion="1.1.0.0003" ?>
 	<?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
-	<?define ToolsetBinDir="$(var.SolutionDir)NScriptToolset\bin\net6.0" ?>
+	<?define ToolsetBinDir="$(var.SolutionDir)NScriptToolset\bin\net5.0" ?>
 
 	<Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
@@ -37,6 +37,7 @@
 									<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB" Name="lib">
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_2_1" Name="netcoreapp2.1"/>
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_3_0" Name="netcoreapp3.0"/>
+										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_5_0" Name="net5.0"/>
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_6_0" Name="net6.0"/>
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_STD_2_0" Name="netstandard2.0"/>
 									</Directory>
@@ -228,11 +229,11 @@
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\System.Security.Cryptography.Pkcs.dll" Id="WinNetCoreApp30CryptographyPkcs"/>
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" Id="WindowsCoreApp30WindowsExtensions"/>
 			</Component>
-			<!--<Component Id="BinComponentWinNetStd2_0" Directory="INSTALLFOLDER_BIN_WIN_NET_STD_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD953F}">
-				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" Id="NetStdRegistry"/>
+			<Component Id="BinComponentWinNetStd2_0" Directory="INSTALLFOLDER_BIN_WIN_NET_STD_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD953F}">
+				<!--<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" Id="NetStdRegistry"/>-->
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\System.Private.ServiceModel.dll" Id="WinNetStd20ServiceModel"/>
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" Id="WinNetStd20ProtectedData"/>
-			</Component>-->
+			</Component>
 
 			<Component Id="BinComponentWinX86Native" Directory="INSTALLFOLDER_BIN_WIN_X86_NATIVE" Guid="{D971F92B-CC87-4559-807E-55BA14DD957F}">
 				<File Source="$(var.ToolsetBinDir)\runtimes\win-x86\native\ClearScriptV8.win-x86.dll" />

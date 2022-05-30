@@ -25,29 +25,36 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
-        [DataRow(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.All)]
-        [DataRow(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoopsMcs.js", TestType.All)]
-        [DataRow(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All)]
-        [DataRow(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All)]
-        [DataRow("JsScriptImport", "GetAndSetIndexerProperty", "GetAndSetIndexerPropertyMcs.js", TestType.All)]
-        [DataRow(TestClassNameStr, "CollapsingForInIfRegression", "CollapsingForInIfRegression.js", TestType.All)]
-        [DataRow(TestClassNameStr, "RegressionWithLastIndexOfString", "RegressionWithLastIndexOfString.js", TestType.All)]
-        [DataRow(TestClassNameStr, "OddNativeArrayPushBehavior", "OddNativeArrayPushBehavior.js", TestType.All)]
-        [DataRow(TestClassNameStr, "DeclarationWithOut", "DeclarationWithOut.js", TestType.All)]
-        [DataRow("BasicStatements", "RegressionFlagsOr", "RegressionFlagsOr.js", TestType.All)]
-        [DataRow("BasicStatements", "RegressionFlagsOrWithNullable", "RegressionFlagsOrNullable.js", TestType.All)]
-        [DataRow("BasicStatements", "RegressionFlagsOrAssign", "RegressionFlagsOrAssign.js", TestType.All)]
-        [DataRow("BasicStatements", "RegressionFlagsOr2", "RegressionFlagsOr2.js", TestType.All)]
-        [DataRow("BasicStatements", "RegressionFlagsOrAssign2", "RegressionFlagsOrAssign2.js", TestType.All)]
-        [DataRow(TestClassNameStr, "ShrPrecedenceRegression", "ShrPrecedenceRegression.js", TestType.All)]
-        public void TestMcs(string className, string methodName, string resourceName, TestType testType)
+        [DataRow(TestClassNameStr, "IfElseInForBlock", "IfElseInForBlock.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "NestedWhileLoops", "NestedWhileLoopsMcs.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "EscapesInString", "EscapesInString.js", TestType.All, false)]
+        [DataRow("JsScriptImport", "GetAndSetIndexerProperty", "GetAndSetIndexerPropertyMcs.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "CollapsingForInIfRegression", "CollapsingForInIfRegression.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "RegressionWithLastIndexOfString", "RegressionWithLastIndexOfString.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "OddNativeArrayPushBehavior", "OddNativeArrayPushBehavior.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "DeclarationWithOut", "DeclarationWithOut.js", TestType.All, false)]
+        [DataRow("BasicStatements", "RegressionFlagsOr", "RegressionFlagsOr.js", TestType.All, false)]
+        [DataRow("BasicStatements", "RegressionFlagsOrWithNullable", "RegressionFlagsOrNullable.js", TestType.All, false)]
+        [DataRow("BasicStatements", "RegressionFlagsOrAssign", "RegressionFlagsOrAssign.js", TestType.All, false)]
+        [DataRow("BasicStatements", "RegressionFlagsOr2", "RegressionFlagsOr2.js", TestType.All, false)]
+        [DataRow("BasicStatements", "RegressionFlagsOrAssign2", "RegressionFlagsOrAssign2.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "ShrPrecedenceRegression", "ShrPrecedenceRegression.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "ArrayIndexOfName", "ArrayIndexOfName.js", TestType.Debug, true)]
+        public void TestMcs(
+            string className,
+            string methodName,
+            string resourceName,
+            TestType testType,
+            bool testMinifiedNames)
         {
             ConverterTestHelpers.RunTest(
                 TestFilesNSStr + resourceName,
                 className,
                 methodName,
                 testType,
-                true);
+                true,
+                testMinifiedNames);
         }
     }
 }

@@ -221,7 +221,7 @@ function List(T, _callStatiConstructor) {
     nativeArray = this.nativeArray;
     length = nativeArray.length;
     for (i = 0; i < length; i++)
-      array.setValue(i + index, Type__BoxTypeInstance(T, nativeArray[i]));
+      array.sv(i + index, Type__BoxTypeInstance(T, nativeArray[i]));
   };
   ptyp_.toArray = function List$1__ToArray() {
     return ArrayG$1_$T$_.__ctor(this.nativeArray.slice(0, this.nativeArray.length));

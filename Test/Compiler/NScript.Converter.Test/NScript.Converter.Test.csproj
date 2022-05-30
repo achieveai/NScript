@@ -38,6 +38,7 @@
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestThrowExpression.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleReturn.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\TestTupleUnfolding.js" />
+    <None Remove="MethodConverterTests\Regressions\ArrayIndexOfName.js" />
     <None Remove="MethodConverterTests\SimpleConverters\ReturnChar.js" />
     <None Remove="MethodConverterTests\Regressions\ShrPrecedenceRegression.js" />
     <None Remove="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
@@ -57,6 +58,7 @@
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\LocalMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\StaticMethods.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\ArrayIndexOfName.js" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
