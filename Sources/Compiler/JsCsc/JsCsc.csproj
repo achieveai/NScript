@@ -13,7 +13,7 @@
     <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NScript.csc.lib\NScript.csc.lib.csproj" />
+    <ProjectReference Include="..\NScript.Csc.Lib\NScript.csc.lib.csproj" />
     <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj" />
   </ItemGroup>
 </Project>

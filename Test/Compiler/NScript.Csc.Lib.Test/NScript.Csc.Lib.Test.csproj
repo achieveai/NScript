@@ -17,7 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(CompilerSources)\JsCsc.Lib\JsCsc.Lib.csproj" />
-    <ProjectReference Include="$(CompilerSources)\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.Csc.Lib\NScript.csc.lib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.12.0" />
