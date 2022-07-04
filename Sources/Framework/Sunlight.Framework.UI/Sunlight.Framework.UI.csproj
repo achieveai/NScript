@@ -5,8 +5,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Sunlight.Framework.UI</RootNamespace>
     <AssemblyName>Sunlight.Framework.UI</AssemblyName>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>

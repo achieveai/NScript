@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <IsPackable>true</IsPackable>
-    <OutputPath>$(NScriptToolsetDir)</OutputPath>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageType>MSBuildSdk</PackageType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
@@ -83,7 +83,7 @@
   </Target>
 
   <ItemGroup>
-    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/**/*" />
+    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/*" />
   </ItemGroup>
 
   <ItemGroup>

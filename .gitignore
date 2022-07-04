@@ -61,6 +61,7 @@ TDSparser/TDSparser/HammerJs.cs
 *.un~
 *.ide
 /NScriptToolSet/lib
+/NScriptToolSet/lib/**/*
 /NScriptToolSet/*.nupkg
 /NScriptToolSet/TestStuff
 /.vs/

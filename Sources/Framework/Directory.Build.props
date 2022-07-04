@@ -1,9 +1,9 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
-    <OutputPath>$(NScriptToolsetDir)</OutputPath>
+    <OutputPath>$(NScriptToolsetDir)\lib</OutputPath>
     <FrameworkTFM>net6.0</FrameworkTFM>
     <Dependencies>$(MSBuildThisFileDirectory)/../../Dependencies</Dependencies>
-    <NScriptToolSetPath>..\..\NScriptToolSet\</NScriptToolSetPath>
+    <!-- <NScriptToolSetPath>..\..\NScriptToolSet\</NScriptToolSetPath> -->
   </PropertyGroup>
 </Project>

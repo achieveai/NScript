@@ -47,7 +47,7 @@
 
 	</Target>
 
-	<Target Name="AfterCompile"
+  <!--<Target Name="AfterCompile"
           DependsOnTargets="$(CoreCompile)"
           Condition="$(IsTestProject) == True">
 
@@ -58,6 +58,6 @@
     <ItemGroup>
       <TestStuff Include="$(MSBuildThisFileDirectory)../TestStuff/net6.0/**/*" />
     </ItemGroup>
-	</Target>
+	</Target>-->
 
 </Project>
