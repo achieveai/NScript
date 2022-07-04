@@ -8,6 +8,13 @@
 		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
 		<Ext>dll</Ext>
 	</PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(MSBuildThisFileDirectory)../lib/*.dll">
+      <HintPath>$(MSBuildThisFileDirectory)lib</HintPath>
+    </Reference>
+  </ItemGroup>
+
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
 		<MsBuild
 			Condition="$(GenerateJs) == True"
@@ -35,7 +42,7 @@
 			<ScriptGenerateOption Include="-pluginHintPath &quot;$(NScriptBinPath);&quot;" Condition="'$(PluginConfig)' != ''"/>
 			<ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)&quot;"/>
 		</ItemGroup>
-		
+
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
 
 	</Target>

@@ -34,9 +34,12 @@
     <EmbeddedResource Include="RealScript.il" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="1.0.0" />
+    <!--<PackageReference Include="Microsoft.CSharp" Version="1.0.0" />
     <PackageReference Include="mscorlib" Version="1.0.0" />
-    <PackageReference Include="System.Core" Version="1.0.0" />
+    <PackageReference Include="System.Core" Version="1.0.0" />-->
+    <ProjectReference Include="../../../Sources/Framework/mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/System.Core/System.Core.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/Microsoft.CSharp/Microsoft.CSharp.csproj" />
   </ItemGroup>
   <!--
   <Import Project="$(ProgramFiles)\nStuff\ScriptSharp\v1.0\nStuff.ScriptSharp.targets" />

@@ -1,21 +1,19 @@
-﻿<Project Sdk="NScript.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(FrameworkTFM)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Sunlight.Framework</RootNamespace>
     <AssemblyName>Sunlight.Framework</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\netcoreapp3.1\</NScriptBinPath>
-    <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <PackageOutputPath>$(NScriptToolSetPath)</PackageOutputPath>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="mscorlib" Version="1.0.0" />
-    <PackageReference Include="System.Web" Version="1.0.0" />
+    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../System.Web/System.Web.csproj" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <IsPackable>true</IsPackable>
+    <OutputPath>$(NScriptToolsetDir)</OutputPath>
     <PackageType>MSBuildSdk</PackageType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
@@ -44,9 +45,9 @@
     <None Include="Sdk/*" Pack="true" PackagePath="%(RelativeDir)" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <Content Include="$(NScriptToolsetDir)/TestStuff/**/*" Pack="true" PackagePath="TestStuff/" />
-  </ItemGroup>
+  </ItemGroup>-->
 
     <Target Name="_ClearPackageCache" AfterTargets="Build">
       <PropertyGroup>
@@ -63,6 +64,7 @@
 
   <PropertyGroup>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyExtrasToPackage</TargetsForTfmSpecificBuildOutput>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CopyLibStuff</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <Target Name="CopyExtrasToPackage" DependsOnTargets="ResolveReferences">
@@ -71,8 +73,21 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="CopyLibStuff" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(LibStuff)">
+        <!--<FinalOutputPath>$(NScriptToolsetDir)/lib</FinalOutputPath>-->
+        <PackagePath>lib</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <LibStuff Include="$(NScriptToolsetDir)/lib/*" />
   </ItemGroup>
 
 </Project>

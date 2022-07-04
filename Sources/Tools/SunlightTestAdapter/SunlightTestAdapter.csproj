@@ -12,8 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.2.0" />
-    <PackageReference Include="SunlightUnit" Version="1.0.0" PrivateAssets="all" />
     <PackageReference Include="PuppeteerSharp" Version="7.0.0" PrivateAssets="all" />
+    <Reference Include="$(NScriptToolsetDir)/lib/SunlightUnit.dll" />
   </ItemGroup>
 
 </Project>

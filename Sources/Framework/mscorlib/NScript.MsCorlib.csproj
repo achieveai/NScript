@@ -1,16 +1,22 @@
-﻿<Project Sdk="NScript.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(FrameworkTFM)</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>System</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoStdLib>true</NoStdLib>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
+    <!-- <AdditionalExplicitAssemblyReferences /> -->
+    <SkipCommonResourcesIncludes>true</SkipCommonResourcesIncludes>
+    <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>mscorlib</AssemblyName>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath>
+    <!-- <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath> -->
     <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</NScriptBinPath>
     <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
-    <PackageOutputPath>$(NScriptToolSetPath)</PackageOutputPath>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>

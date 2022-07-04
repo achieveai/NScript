@@ -1,21 +1,19 @@
-﻿<Project Sdk="NScript.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(FrameworkTFM)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Sunlight.Framework.UI</RootNamespace>
     <AssemblyName>Sunlight.Framework.UI</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</NScriptBinPath>
-    <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
-    <PackageOutputPath>$(NScriptToolSetPath)</PackageOutputPath>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="mscorlib" Version="1.0.0" />
-    <PackageReference Include="Sunlight.Framework" Version="1.0.0" />
-    <PackageReference Include="System.Web.Html" Version="1.0.0" />
+    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../Sunlight.Framework/Sunlight.Framework.csproj" />
+    <ProjectReference Include="../System.Web.Html/System.Web.Html.csproj" />
   </ItemGroup>
 </Project>

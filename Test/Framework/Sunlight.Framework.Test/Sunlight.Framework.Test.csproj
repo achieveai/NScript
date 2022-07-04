@@ -14,11 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="mscorlib" Version="1.0.0" />
-    <PackageReference Include="Sunlight.Framework" Version="1.0.0" />
-    <PackageReference Include="System.Web.Html" Version="1.0.0" />
-    <PackageReference Include="System.Web" Version="1.0.0" />
-    <PackageReference Include="SunlightUnit" Version="1.0.0" />
+    <ProjectReference Include="../../../Sources/Framework/mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/Sunlight.Framework/Sunlight.Framework.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/System.Web/System.Web.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/System.Web.Html/System.Web.Html.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/SunlightUnit/SunlightUnit.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PluginConfig.xml">
