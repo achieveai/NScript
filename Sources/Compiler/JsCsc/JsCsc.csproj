@@ -3,7 +3,7 @@
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Exe</OutputType>
-    <AssemblyName>Csc</AssemblyName>
+    <AssemblyName>csc</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
     <StartupObject>JsCsc.Program</StartupObject>

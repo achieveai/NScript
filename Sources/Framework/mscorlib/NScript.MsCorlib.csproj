@@ -14,6 +14,6 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>mscorlib</AssemblyName>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <!-- <CscToolPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</CscToolPath> -->
+    <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath>
   </PropertyGroup>
 </Project>

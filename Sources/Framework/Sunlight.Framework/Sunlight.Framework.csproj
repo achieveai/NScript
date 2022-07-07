@@ -8,6 +8,7 @@
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath>
   </PropertyGroup>
 
   <ItemGroup>

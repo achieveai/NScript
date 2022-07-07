@@ -9,6 +9,7 @@
     <NoStdLib>true</NoStdLib>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />

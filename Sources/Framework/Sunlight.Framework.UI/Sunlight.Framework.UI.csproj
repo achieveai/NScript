@@ -7,6 +7,7 @@
     <AssemblyName>Sunlight.Framework.UI</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath>
   </PropertyGroup>
 
   <ItemGroup>
