@@ -35,8 +35,6 @@
             </_NuGetConfig>
         </PropertyGroup>
 
-        <WriteLinesToFile File="../../Framework/global.json" Lines="$(_GlobalJson)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-        <WriteLinesToFile File="../../Framework/nuget.config" Lines="$(_NuGetConfig)" Overwrite="true" WriteOnlyWhenDifferent="true" />
         <WriteLinesToFile File="../../../Test/Framework/global.json" Lines="$(_GlobalJson)" Overwrite="true" WriteOnlyWhenDifferent="true" />
         <WriteLinesToFile File="../../../Test/Framework/nuget.config" Lines="$(_NuGetConfig)" Overwrite="true" WriteOnlyWhenDifferent="true" />
     </Target>
@@ -44,10 +42,6 @@
   <ItemGroup>
     <None Include="Sdk/*" Pack="true" PackagePath="%(RelativeDir)" />
   </ItemGroup>
-
-  <!--<ItemGroup>
-    <Content Include="$(NScriptToolsetDir)/TestStuff/**/*" Pack="true" PackagePath="TestStuff/" />
-  </ItemGroup>-->
 
     <Target Name="_ClearPackageCache" AfterTargets="Build">
       <PropertyGroup>
@@ -76,14 +70,14 @@
   <Target Name="CopyLibStuff" DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(LibStuff)">
-        <!--<FinalOutputPath>$(NScriptToolsetDir)/lib</FinalOutputPath>-->
         <PackagePath>lib</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
 
   <ItemGroup>
-    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/*" />
+    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/**/*"
+               Exclude="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/ref/*"/>
   </ItemGroup>
 
   <ItemGroup>
