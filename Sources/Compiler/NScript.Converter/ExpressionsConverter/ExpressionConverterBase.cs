@@ -349,6 +349,12 @@ namespace NScript.Converter.ExpressionsConverter
                         typeof(AwaitExpression),
                         ExpressionConverterBase.SimplifyConverter<AwaitExpression>(
                             AwaitExpressionConverter.Convert)
+                    },
+
+                    {
+                        typeof(InterpolatedStringExpression),
+                        SimplifyConverter<InterpolatedStringExpression>(
+                            InterpolatedStringExpressionConverter.Convert)
                     }
                 };
 

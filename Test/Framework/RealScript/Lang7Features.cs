@@ -14,6 +14,12 @@ namespace RealScript
     /// </summary>
     public static class Lang7Features
     {
+        public static void TestStringInterpolation()
+        {
+            var i = 12;
+            var x = $"{i} asd";
+        }
+
         public static (int a, int b) TestTupleReturn(int x, int y)
         {
             return (x, y);

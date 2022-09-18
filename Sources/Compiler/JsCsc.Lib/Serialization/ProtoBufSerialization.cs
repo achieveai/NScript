@@ -261,6 +261,13 @@ namespace JsCsc.Lib.Serialization
     public class StringLiteralExpression : ExpressionSer
     { public string Value { get; set; } }
 
+    [Serializable]
+    public class InterpolatedStringExpression : ExpressionSer
+    {
+        public List<ExpressionSer> Parts
+        { get; set; }
+    }
+
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class DecimalLiteralExpression : ExpressionSer

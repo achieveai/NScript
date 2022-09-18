@@ -873,7 +873,15 @@
 
         public override AstBase VisitInstrumentationPayloadRoot(BoundInstrumentationPayloadRoot node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitInterpolatedString(BoundInterpolatedString node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitInterpolatedString(BoundInterpolatedString node, SerializationContext arg)
+        {
+            return new InterpolatedStringExpression
+            {
+                Parts = node.Parts
+                    .Select(part => Visit(part, arg) as ExpressionSer)
+                    .ToList()
+            };
+        }
 
         public override AstBase VisitIsOperator(BoundIsOperator node, SerializationContext arg)
             => new IsExpression
@@ -1319,7 +1327,10 @@
                     .ToList()
             };
 
-        public override AstBase VisitStringInsert(BoundStringInsert node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitStringInsert(BoundStringInsert node, SerializationContext arg)
+        {
+            return Visit(node.Value, arg);
+        }
 
         public override AstBase VisitSwitchLabel(BoundSwitchLabel node, SerializationContext arg)
         {

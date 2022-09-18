@@ -239,6 +239,14 @@ namespace JsCsc.Lib
             ParseExpression(jObject.Expression),
             ParseExpression(jObject.GetAwaiterMethodCall));
 
+        private Node ParseInterpolatedStringExpression(Serialization.InterpolatedStringExpression jObject)
+            => new InterpolatedStringExpression(
+                _clrContext,
+                LocFromJObject(jObject),
+                jObject.Parts
+                    .Select(part => ParseExpression(part))
+                    .ToList());
+
         private Node ParseTypeCast(Serialization.TypeCastExpression jObject)
         {
             if (jObject.IsUnbox)
@@ -2167,6 +2175,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.AwaitExpression),
                     (a) => ParseAwaitExpr((Serialization.AwaitExpression)a)
+                },
+                {
+                    typeof(Serialization.InterpolatedStringExpression),
+                    (a) => ParseInterpolatedStringExpression((Serialization.InterpolatedStringExpression)a)
                 }
             };
 
