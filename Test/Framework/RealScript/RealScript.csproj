@@ -1,4 +1,4 @@
-﻿<Project Sdk="NScript.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
@@ -10,6 +10,7 @@
     <AssemblyName>RealScript</AssemblyName>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <OutputPath>$(ProjectDir)..\bin\</OutputPath>
     <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
@@ -34,15 +35,8 @@
     <EmbeddedResource Include="RealScript.il" />
   </ItemGroup>
   <ItemGroup>
-    <!--<PackageReference Include="Microsoft.CSharp" Version="1.0.0" />
-    <PackageReference Include="mscorlib" Version="1.0.0" />
-    <PackageReference Include="System.Core" Version="1.0.0" />-->
     <ProjectReference Include="../../../Sources/Framework/mscorlib/NScript.MsCorlib.csproj" />
     <ProjectReference Include="../../../Sources/Framework/System.Core/System.Core.csproj" />
     <ProjectReference Include="../../../Sources/Framework/Microsoft.CSharp/Microsoft.CSharp.csproj" />
   </ItemGroup>
-  <!--
-  <Import Project="$(ProgramFiles)\nStuff\ScriptSharp\v1.0\nStuff.ScriptSharp.targets" />
-  -->
-  <!--<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />-->
 </Project>

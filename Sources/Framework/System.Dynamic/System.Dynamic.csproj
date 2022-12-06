@@ -1,15 +1,15 @@
 ﻿<Project Sdk="NScript.Sdk">
   <PropertyGroup>
+    <TargetFramework>$(FrameworkTFM)</TargetFramework>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>System</RootNamespace>
     <AssemblyName>System.Dynamic</AssemblyName>
-    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoStdLib>true</NoStdLib>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</NScriptBinPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
+    <!-- <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath> -->
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj" />

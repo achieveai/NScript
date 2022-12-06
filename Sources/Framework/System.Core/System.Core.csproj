@@ -1,15 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>System</RootNamespace>
-    <AssemblyName>System.Core</AssemblyName>
     <TargetFramework>$(FrameworkTFM)</TargetFramework>
     <OutputType>Library</OutputType>
+    <RootNamespace>System</RootNamespace>
+    <AssemblyName>System.Core</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <NoStdLib>true</NoStdLib>
+    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath>
+    <!-- <OutputPath>$(NScriptToolSetPath)lib\</OutputPath> -->
+    <!-- <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath> -->
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />

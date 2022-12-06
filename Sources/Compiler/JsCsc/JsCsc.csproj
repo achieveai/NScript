@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -13,7 +13,6 @@
     <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NScript.Csc.Lib\NScript.csc.lib.csproj" />
-    <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj" />
+    <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
   </ItemGroup>
 </Project>

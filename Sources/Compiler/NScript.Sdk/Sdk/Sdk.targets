@@ -21,21 +21,22 @@
 			Projects="$(MSBuildProjectFile)"
 			Targets="ScriptGenerate" /> 
 	</Target>
-	<Target Name="ScriptGenerate"
-			Inputs="$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext);@(ReferencePath)"
-			Outputs="$(OutputPath)$(AssemblyName).js"
-			DependsOnTargets="$(CoreCompile)"
-			Condition="$(GenerateJs) == True">
 
-		<Message
-			Text="Running NScript to produce $(OutputPath)$(AssemblyName).js."/>
+	<Target
+		Name="ScriptGenerate"
+		Inputs="$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext);@(ReferencePath)"
+		Outputs="$(JsOutputPath)$(AssemblyName).js"
+		DependsOnTargets="$(CoreCompile)"
+		Condition="$(GenerateJs) == True">
+
+		<Message Text="Running NScript to produce $(OutputPath)$(AssemblyName).js."/>
 
 		<PropertyGroup>
 			<Refs>&quot;@(ReferencePath->'%(identity)','&quot;,&quot;')&quot;</Refs>
 		</PropertyGroup>
 
 		<ItemGroup>
-			<ScriptGenerateOption Include="-outJs &quot;$(OutputPath)$(AssemblyName).js&quot;"/>
+			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)$(AssemblyName).js&quot;"/>
 			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
 			<ScriptGenerateOption Include="-references $(Refs)"/>
 			<ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
@@ -46,18 +47,5 @@
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
 
 	</Target>
-
-  <!--<Target Name="AfterCompile"
-          DependsOnTargets="$(CoreCompile)"
-          Condition="$(IsTestProject) == True">
-
-    <Copy
-      SourceFiles="@(TestStuff)"
-      DestinationFolder="bin\Debug\net6.0" />
-
-    <ItemGroup>
-      <TestStuff Include="$(MSBuildThisFileDirectory)../TestStuff/net6.0/**/*" />
-    </ItemGroup>
-	</Target>-->
 
 </Project>
