@@ -6,7 +6,7 @@
 
 namespace NScript.Converter.Test.TypeConverterTests
 {
-    using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>

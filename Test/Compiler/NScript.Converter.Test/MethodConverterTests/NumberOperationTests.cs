@@ -9,7 +9,7 @@ namespace NScript.Converter.Test.MethodConverterTests
     using System;
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
 
     /// <summary>
     /// Definition for NumberOperationTests

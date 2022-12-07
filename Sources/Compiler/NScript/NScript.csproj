@@ -21,6 +21,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
     <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+    <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="obj\**" />

@@ -10,7 +10,8 @@ namespace NScript.Converter.Test
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
-    using NScript.CLR.Test;
+    // using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

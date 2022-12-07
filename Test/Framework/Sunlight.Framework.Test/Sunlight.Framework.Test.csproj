@@ -6,27 +6,15 @@
     <RootNamespace>Sunlight.Framework.Test</RootNamespace>
     <AssemblyName>Sunlight.Framework.Test</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
+    <NScriptBinPath>$(NScriptToolSetPath)\bin\net6.0\</NScriptBinPath>
     <GenerateJs>True</GenerateJs>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../Sources/Framework/mscorlib/NScript.MsCorlib.csproj" />
-    <ProjectReference Include="../../../Sources/Framework/Sunlight.Framework/Sunlight.Framework.csproj" />
-    <ProjectReference Include="../../../Sources/Framework/System.Web/System.Web.csproj" />
-    <ProjectReference Include="../../../Sources/Framework/System.Web.Html/System.Web.Html.csproj" />
-    <ProjectReference Include="../../../Sources/Framework/SunlightUnit/SunlightUnit.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="PluginConfig.xml">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <PropertyGroup>
-    <PostBuildEvent>copy *.js ..\..\..\TestWebApplication\GeneratedScripts
-		copy *.map ..\..\..\TestWebApplication\GeneratedScripts
-		copy *.ashx ..\..\..\TestWebApplication\GeneratedScripts
-	</PostBuildEvent>
-  </PropertyGroup>
 </Project>

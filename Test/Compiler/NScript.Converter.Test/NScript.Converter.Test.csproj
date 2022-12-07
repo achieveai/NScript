@@ -73,7 +73,7 @@
     <ProjectReference Include="$(CompilerSources)\NScript.Converter\NScript.Converter.csproj" />
     <ProjectReference Include="$(CompilerSources)\NScript.JST\NScript.JS.AST.csproj" />
     <ProjectReference Include="$(CompilerSources)\NScript.Utils\NScript.Utils.csproj" />
-    <ProjectReference Include="$(CompilerTestSources)\NScript.CLR.Test\NScript.CLR.Test.csproj" />
+    <!-- <ProjectReference Include="$(CompilerTestSources)\NScript.CLR.Test\NScript.CLR.Test.csproj" /> -->
     <ProjectReference Include="$(CompilerTestSources)\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj" />
   </ItemGroup>
   <ItemGroup>

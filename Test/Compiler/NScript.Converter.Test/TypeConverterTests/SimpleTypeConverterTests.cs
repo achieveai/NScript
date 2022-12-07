@@ -9,7 +9,7 @@ namespace NScript.Converter.Test.TypeConverterTests
     using System;
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
 
     /// <summary>
     /// Definition for SimpleTypeConverterTests

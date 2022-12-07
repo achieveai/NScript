@@ -7,11 +7,11 @@
 		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
 		<Ext>dll</Ext>
-    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(MSBuildThisFileDirectory)\..</NScriptToolSetPath>
-    <PluginConfig Condition=" '$(PluginConfig)' == '' ">$(NScriptBinPath)/PluginConfig.xml</PluginConfig>
-    <NScriptBinPath>$(NScriptToolSetPath)/tools/net6.0/</NScriptBinPath>
+    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(MSBuildThisFileDirectory)\..\</NScriptToolSetPath>
+    <NScriptBinPath Condition=" '$(NScriptBinPath)' == '' ">$(NScriptToolSetPath)\tools\net6.0\</NScriptBinPath>
+    <PluginConfig Condition=" '$(PluginConfig)' == '' ">$(NScriptBinPath)\PluginConfig.xml</PluginConfig>
     <CscToolExe>$(NScriptBinPath)\csc.exe</CscToolExe>
-    <NScriptExe>$(NScriptBinPath)/NScript.exe</NScriptExe>
+    <NScriptExe>$(NScriptBinPath)\NScript.exe</NScriptExe>
 	</PropertyGroup>
 
   <ItemGroup>

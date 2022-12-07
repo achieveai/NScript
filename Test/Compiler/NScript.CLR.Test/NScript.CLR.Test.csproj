@@ -3,6 +3,7 @@
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">

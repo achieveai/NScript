@@ -11,6 +11,7 @@
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <Prefer32Bit>true</Prefer32Bit>
     <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+    <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
