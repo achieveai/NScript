@@ -3,17 +3,18 @@
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <NoStdLib>True</NoStdLib>
-    <CopyReferences>True</CopyReferences>
+    <!-- <CopyReferences>True</CopyReferences> -->
     <TemplateFile>Properties\Script.jst</TemplateFile>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RealScript</RootNamespace>
     <AssemblyName>RealScript</AssemblyName>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <OutputPath>$(ProjectDir)..\bin\</OutputPath>
     <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <ErrorReport>prompt</ErrorReport>

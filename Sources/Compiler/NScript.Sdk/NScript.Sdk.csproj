@@ -35,8 +35,6 @@
             </_NuGetConfig>
         </PropertyGroup>
 
-        <WriteLinesToFile File="../../../Test/Framework/global.json" Lines="$(_GlobalJson)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-        <WriteLinesToFile File="../../../Test/Framework/nuget.config" Lines="$(_NuGetConfig)" Overwrite="true" WriteOnlyWhenDifferent="true" />
     </Target>
 
   <ItemGroup>
@@ -76,8 +74,7 @@
   </Target>
 
   <ItemGroup>
-    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/**/*"
-               Exclude="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/ref/*"/>
+    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/**/*" Exclude="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/ref/*" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,8 +6,6 @@
     <RootNamespace>Sunlight.Framework.Test</RootNamespace>
     <AssemblyName>Sunlight.Framework.Test</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <OutputPath>$(NScriptToolSetPath)\lib\</OutputPath>
-    <NScriptBinPath>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)</NScriptBinPath>
     <GenerateJs>True</GenerateJs>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>

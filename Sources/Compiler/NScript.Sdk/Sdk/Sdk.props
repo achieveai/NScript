@@ -1,11 +1,7 @@
 ﻿<Project>
 	<Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 	<PropertyGroup>
-    <CscToolExe>$(MSBuildThisFileDirectory)\..\tools\net6.0\csc.exe</CscToolExe>
-	<TargetFramework>net6.0</TargetFramework>
-	<JsOutputPath>.\</JsOutputPath>
-    <NScriptBinPath>$(MSBuildThisFileDirectory)../tools/net6.0/</NScriptBinPath>
-    <NScriptExe>$(NScriptBinPath)/NScript.exe</NScriptExe>
-	<PluginConfig>$(MSBuildThisFileDirectory)../tools/net6.0/PluginConfig.xml</PluginConfig>
+    <TargetFramework>net6.0</TargetFramework>
+    <JsOutputPath>.\</JsOutputPath>
 	</PropertyGroup>
 </Project>
