@@ -1,4 +1,5 @@
-﻿<Project Sdk="NScript.Sdk">
+﻿<Project>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.props" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -17,4 +18,6 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />
 </Project>
