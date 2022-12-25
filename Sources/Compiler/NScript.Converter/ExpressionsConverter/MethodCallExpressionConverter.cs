@@ -149,28 +149,26 @@ namespace NScript.Converter.ExpressionsConverter
                         methodReferenceExpression.Location,
                         overrideMethod ?? virtualRefExpression.MethodReference,
                         boxedExpression.BoxedExpression);
-
-                    virtualRefExpression = null;
                 }
             }
 
             if (methodReferenceExpression != null)
             {
-                JST.Expression thisExpression = null;
                 MethodCallContext methodCallContext;
 
                 if (methodReferenceExpression.LeftExpression != null)
                 {
+                    JST.Expression thisExpression;
                     // Let's generate static method for the method that we want to call.
                     // Value type methods are all implemented as static methods.
                     if (methodDefinition.IsVirtual
                         && methodReferenceExpression.MethodReference.DeclaringType.IsValueOrEnum()
-                        && methodReferenceExpression.LeftExpression is LoadAddressExpression)
+                        && methodReferenceExpression.LeftExpression is LoadAddressExpression expression)
                     {
                         thisExpression =
                             ExpressionConverterBase.Convert(
                                 methodConverter,
-                                ((LoadAddressExpression)methodReferenceExpression.LeftExpression)
+                                expression
                                     .NestedExpression);
                     }
                     else
@@ -194,7 +192,7 @@ namespace NScript.Converter.ExpressionsConverter
                         methodReferenceExpression.Location,
                         methodConverter.Scope);
                 }
-                
+
                 var (args, toPreInject) = ReorderArgs(
                     methodConverter,
                     methodCallExpression.Parameters,
@@ -334,7 +332,7 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             MethodDefinition methodDefinition = methodReference.Resolve();
-            TypeDefinition declaringTypeDefinition = methodDefinition != null ? methodDefinition.DeclaringType : null;
+            TypeDefinition declaringTypeDefinition = methodDefinition?.DeclaringType;
             bool isExtendedOrPsudo = runtimeManager.Context.IsExtended(declaringTypeDefinition)
                 || runtimeManager.Context.IsPsudoType(declaringTypeDefinition);
             if (methodReference.HasThis
@@ -348,7 +346,7 @@ namespace NScript.Converter.ExpressionsConverter
                     || methodReference.Resolve().CustomAttributes.SelectAttribute(
                             runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) != null))
             {
-                genericArguments = genericArguments ?? new List<JST.Expression>();
+                genericArguments ??= new List<JST.Expression>();
 
                 if (arguments != null)
                 {

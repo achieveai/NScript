@@ -110,29 +110,29 @@ namespace NScript.Converter
         /// .
         /// </summary>
         private readonly Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>> methodAstMapping
-            = new Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>>(MemberReferenceComparer.Instance);
+            = new(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// .
         /// </summary>
         private readonly Dictionary<TypeDefinition, TypeKind> typeKindMapping
-            = new Dictionary<TypeDefinition, TypeKind>(MemberReferenceComparer.Instance);
+            = new(MemberReferenceComparer.Instance);
 
         /// <summary>
         /// The resource name mapping.
         /// </summary>
         private readonly Dictionary<ModuleDefinition, Dictionary<string, string>> resourceNameMapping
-            = new Dictionary<ModuleDefinition, Dictionary<string, string>>();
+            = new();
 
         /// <summary>
         /// The errors.
         /// </summary>
-        private readonly List<Tuple<Location, string>> errors = new List<Tuple<Location, string>>();
+        private readonly List<Tuple<Location, string>> errors = new();
 
         /// <summary>
         /// The warnings.
         /// </summary>
-        private readonly List<Tuple<Location, string>> warnings = new List<Tuple<Location, string>>();
+        private readonly List<Tuple<Location, string>> warnings = new();
 
         /// <summary>
         /// The method converter plugins.
@@ -171,37 +171,31 @@ namespace NScript.Converter
                 {
                     if (resource.Name == "$$JstInfo$$")
                     {
-                        using (var stream = ((EmbeddedResource)resource).GetResourceStream())
-                        {
-                            fullAst = Serializer.Deserialize(
-                                stream,
-                                Serializer.SerializationKind.Json);
-                        }
+                        using var stream = ((EmbeddedResource)resource).GetResourceStream();
+                        fullAst = Serializer.Deserialize(
+                            stream,
+                            Serializer.SerializationKind.Json);
                     }
                     if (resource.Name == "$$BstInfo$$")
                     {
-                        using (var stream = ((EmbeddedResource)resource).GetResourceStream())
-                        {
-                            fullAst = Serializer.Deserialize(
-                                stream,
-                                Serializer.SerializationKind.NetSerializer);
-                        }
+                        using var stream = ((EmbeddedResource)resource).GetResourceStream();
+                        fullAst = Serializer.Deserialize(
+                            stream,
+                            Serializer.SerializationKind.NetSerializer);
                     }
                     else if (resource.Name == "$$ResInfo$$")
                     {
                         EmbeddedResource embededResource = (EmbeddedResource)resource;
 
-                        using (var stream = embededResource.GetResourceStream())
+                        using var stream = embededResource.GetResourceStream();
+                        if (stream.Length > 0)
                         {
-                            if (stream.Length > 0)
-                            {
-                                StreamReader streamReader = new StreamReader(stream);
-                                string tmp = streamReader.ReadToEnd();
-                                stream.Position = 0;
+                            StreamReader streamReader = new(stream);
+                            string tmp = streamReader.ReadToEnd();
+                            stream.Position = 0;
 
-                                JsonTextReader reader = new JsonTextReader(streamReader);
-                                resourceFileNameMap = (JObject)JObject.ReadFrom(reader);
-                            }
+                            JsonTextReader reader = new(streamReader);
+                            resourceFileNameMap = (JObject)JObject.ReadFrom(reader);
                         }
                     }
                 }
@@ -240,7 +234,7 @@ namespace NScript.Converter
                     // bondCost += stopWatch.Elapsed.TotalSeconds;
                 }
 
-                Dictionary<string, string> resourceNameMap = new Dictionary<string, string>();
+                Dictionary<string, string> resourceNameMap = new();
                 if (resourceFileNameMap != null)
                 {
                     foreach (var item in resourceFileNameMap.Properties())
@@ -567,16 +561,13 @@ namespace NScript.Converter
         /// </returns>
         public bool IsImplemented(IMemberDefinition memberDefinition)
         {
-            FieldDefinition fieldDef = memberDefinition as FieldDefinition;
-            if (fieldDef != null)
+            if (memberDefinition is FieldDefinition fieldDef)
             { return this.IsImplemented(fieldDef); }
 
-            MethodDefinition methodDef = memberDefinition as MethodDefinition;
-            if (methodDef != null)
+            if (memberDefinition is MethodDefinition methodDef)
             { return this.IsImplemented(methodDef); }
 
-            PropertyDefinition propDef = memberDefinition as PropertyDefinition;
-            if (propDef != null)
+            if (memberDefinition is PropertyDefinition propDef)
             { return this.IsImplemented(propDef); }
 
             throw new NotSupportedException();
@@ -663,7 +654,7 @@ namespace NScript.Converter
                 && (!methodDefinition.HasBody || methodDefinition.Body.Instructions.Count == 0)
                 && !methodDefinition.DeclaringType.IsInterface
                 && !methodDefinition.IsAbstract
-                && null == methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.ScriptAttribute);
+                && methodDefinition.CustomAttributes.SelectAttribute(this.KnownReferences.ScriptAttribute) == null;
         }
 
         /// <summary>
@@ -720,8 +711,8 @@ namespace NScript.Converter
         /// </returns>
         public bool IsAnonymousDelegateWrapper(TypeDefinition typeDefinition)
         {
-            if (null != typeDefinition.CustomAttributes.SelectAttribute(
-                    this.ClrKnownReferences.CompilerGeneratedAttribute))
+            if (typeDefinition.CustomAttributes.SelectAttribute(
+                    this.ClrKnownReferences.CompilerGeneratedAttribute) != null)
             {
                 return ConverterContext.GeneratedTypeNameRegex.IsMatch(typeDefinition.Name);
             }
@@ -752,7 +743,7 @@ namespace NScript.Converter
                 throw new InvalidProgramException();
             }
 
-            bool isParentExtended = this.IsExtended(memberDefinition.DeclaringType);
+            _ = this.IsExtended(memberDefinition.DeclaringType);
             isFixedName = false;
             isAlias = false;
 
@@ -775,7 +766,7 @@ namespace NScript.Converter
                 isFixedName = true;
                 return (string)attribute.ConstructorArguments[0].Value;
             }
-            else if ((attribute = memberDefinition.CustomAttributes.SelectAttribute(
+            else if ((_ = memberDefinition.CustomAttributes.SelectAttribute(
                 this.KnownReferences.PreserveCaseAttribute)) != null)
             {
                 isFixedName = true;
@@ -826,7 +817,7 @@ namespace NScript.Converter
                         isFixedName = true;
                         return (string)attribute.ConstructorArguments[0].Value;
                     }
-                    else if ((attribute = propertyDefinition.CustomAttributes.SelectAttribute(
+                    else if ((_ = propertyDefinition.CustomAttributes.SelectAttribute(
                         this.KnownReferences.PreserveCaseAttribute)) != null)
                     {
                         isFixedName = true;
