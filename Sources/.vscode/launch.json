@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // Use IntelliSense to find out which attributes exist for C# debugging
+            // Use hover for the description of the existing attributes
+            // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/../NScriptToolSet/bin/net6.0/NScript.dll",
+            "args": [
+                "-outJs",
+                "bin/Debug/NeetPG.js",
+                "-entryAssembly",
+                "obj/Debug/NeetPG.exe",
+                "-references",
+                "C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/ChartJs/bin/Debug/ChartJs.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/ClientLogging/bin/Debug/ClientLogging.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/CordovaPlugins/bin/Debug/CordovaPlugins.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/FrappeCharts/bin/Debug/FrappeCharts.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/Game/bin/Debug/Game.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/GoogleAnalytics/bin/Debug/GoogleAnalytics.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/HammerJs/bin/Debug/HammerJs.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/IndexedDB/bin/Debug/IndexedDB.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/ManifestInstaller/bin/Debug/ManifestInstaller.exe,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/ManifestService/bin/Debug/ManifestService.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/McqdbClient/bin/Debug/McqdbClient.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/McqdbClientCommon/bin/Debug/McqdbClientCommon.dll,C:/Users/gautamb/source/repos/NScript_test/lib/mscorlib.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/OfflineSupport/bin/Debug/OfflineSupport.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/QuillJs/bin/Debug/QuillJs.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/RRWeb/bin/Debug/RRWeb.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/ServiceWorker/bin/Debug/ServiceWorker.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/Shaka/bin/Debug/Shaka.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/SocialPlugins/bin/Debug/SocialPlugins.dll,C:/Users/gautamb/source/repos/NScript_test/lib/Sunlight.Framework.dll,C:/Users/gautamb/source/repos/NScript_test/lib/Sunlight.Framework.UI.dll,C:/Users/gautamb/source/repos/NScript_test/lib/System.Web.dll,C:/Users/gautamb/source/repos/NScript_test/lib/System.Web.Html.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/WebSocket.WebClient/bin/Debug/WebSocket.WebClient.dll,C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/WebStore/bin/Debug/WebStore.dll",
+                "-pluginConfig",
+                "PluginConfig.xml",
+                "-pluginHintPath",
+                "C:/Users/gautamb/source/repos/NScript_test/bin",
+                "-referenceHintPath",
+                "C:/Users/gautamb/source/repos/NScript_test/lib"
+            ],
+            "cwd": "C:/Users/gautamb/source/repos/MCQdbDEV/src/Client/NeetPG/",
+            // "cwd": "${workspaceFolder}/Compiler/NScript",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+}

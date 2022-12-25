@@ -110,9 +110,9 @@
 
                 var parameterIdentToNameCount = scope.ParameterIdentifiers?.Count ?? 0;
 
-                foreach (var pair in _names
+                var mergedList = _names
                     .Reverse()
-                    .Where(nn => !conflictingNames.Any(ident => nn.HashIdentifier(ident)))
+                    .Where(nn => !conflictingNames.Any(ident => nn.HasIdentifier(ident)))
                     .Take(localIdentToNameCount + parameterIdentToNameCount)
                     .Merge(
                         scope
@@ -120,13 +120,19 @@
                             .Where(ident => !ident.ShouldEnforceSuggestion)
                             .Concat(scope.ParameterIdentifiers ?? Enumerable.Empty<SimpleIdentifier>())
                             .OrderByDescending(ident => ident.UsageCount))
-                    .ToArray())
+                    .ToArray();
+
+                foreach (var pair in mergedList)
                 {
                     if (pair.Item1 != null)
                     {
+                        // We remove and add back to put pair.Item1 at right
+                        // position in sortedSet.
+                        // Also remove before adding new Item to _names.
+                        _names.Remove(pair.Item1);
+
                         pair.Item1.Add(pair.Item2);
                         _identifierToNode.Add(pair.Item2, pair.Item1);
-                        _names.Remove(pair.Item1);
                         _names.Add(pair.Item1);
                     }
                     else
@@ -152,15 +158,19 @@
 
             private class NameNode : IComparable<NameNode>
             {
+                static int S_hashIdCount = 0;
+
                 private int _useCount;
                 private int _nameId = -1;
                 private string _name;
+                private int _hashId = 0;
                 private HashSet<SimpleIdentifier> _identifiers = new HashSet<SimpleIdentifier>();
 
                 public NameNode(SimpleIdentifier ident)
                 {
                     _identifiers.Add(ident);
                     _useCount += ident.UsageCount;
+                    _hashId = System.Threading.Interlocked.Increment(ref S_hashIdCount);
                 }
 
                 public int UseCount => _useCount;
@@ -184,7 +194,7 @@
                     _name = name;
                 }
 
-                public bool HashIdentifier(SimpleIdentifier identifier)
+                public bool HasIdentifier(SimpleIdentifier identifier)
                     => _identifiers.Contains(identifier);
 
                 public int CompareTo(NameNode other)
@@ -209,7 +219,7 @@
                         return _identifiers.Count.CompareTo(other._identifiers.Count);
                     }
 
-                    return GetHashCode().CompareTo(other.GetHashCode());
+                    return _hashId.CompareTo(other._hashId);
                 }
 
                 [System.Diagnostics.Conditional("Debug")]

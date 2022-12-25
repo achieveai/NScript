@@ -9,6 +9,7 @@
     {
         const string FirstCharMap = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const string CharMap = FirstCharMap + "0123456789";
+
         private static readonly ImmutableArray<string> Keywords = new[]
             {
                 // Keywords
@@ -60,7 +61,9 @@
                 "textarea", "top",  "unescape", "untaint",
                 "window",
             }.ToImmutableArray();
+
         private static readonly ImmutableArray<int> CharToIdx = RmapCharMap();
+
         private readonly ImmutableArray<int> ReservedNamesUsed;
 
         private readonly ImmutableHashSet<string> ReservedNames;
@@ -77,21 +80,15 @@
                 .OrderBy(id => id)
                 .ToImmutableArray();
         }
-        
 
         public static int NameToIntId(string name)
         {
             int rv = 0;
-            for (int idx = 0; idx < name.Length; idx++)
+            int charRange = 1;
+            for (int idx = 1; idx < name.Length; idx++)
             {
-                if (idx == 1)
-                {
-                    rv *= FirstCharMap.Length;
-                }
-                else
-                {
-                    rv *= CharMap.Length;
-                }
+                rv *= CharMap.Length;
+                charRange *= CharMap.Length;
 
                 if (name[idx] > 127
                     || CharToIdx[name[idx]] < 0)
@@ -107,7 +104,13 @@
                 }
             }
 
-            return rv;
+            var leadingNum = CharToIdx[name[0]];
+            var firstCharRange = 1;
+            while(firstCharRange < charRange) {
+                firstCharRange *= FirstCharMap.Length;
+            }
+
+            return rv + (leadingNum * firstCharRange);
         }
 
         public string IntIdToName(int id)
@@ -128,25 +131,30 @@
 
         private static string IntIdToNameInternal(int id)
         {
-            List<char> chars = new List<char>();
-            int LastDivisorChange = CharMap.Length * FirstCharMap.Length;
+            int bigMod = FirstCharMap.Length;
 
-            while(id >= FirstCharMap.Length)
-            {
-                chars.Add((char)(CharMap[id % CharMap.Length]));
-                if (id < LastDivisorChange)
-                {
-                    id /= FirstCharMap.Length;
-                }
-                else
-                {
-                    id /= CharMap.Length;
-                }
+            while(id >= bigMod) {
+                bigMod *= FirstCharMap.Length;
             }
 
-            chars.Add(FirstCharMap[id]);
+            List<char> chars = new();
+            bigMod /= FirstCharMap.Length;
+            var modChar = 1;
+            while (modChar < bigMod) {
+                modChar *= CharMap.Length;
+            }
+
+            var modRemainder = id % bigMod;
+            while(modChar > 1)
+            {
+                chars.Add(CharMap[modRemainder % CharMap.Length]);
+                modChar /= CharMap.Length;
+                modRemainder /= CharMap.Length;
+            }
+
+            chars.Add(FirstCharMap[id / bigMod]);
             chars.Reverse();
-            return new String(chars.ToArray());
+            return new string(chars.ToArray());
         }
 
         private static ImmutableArray<int> RmapCharMap()
