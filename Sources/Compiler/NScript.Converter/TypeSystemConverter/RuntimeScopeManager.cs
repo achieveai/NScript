@@ -152,7 +152,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeScopeManager"/> class.
         /// </summary>
-        public RuntimeScopeManager(ConverterContext context)
+        public RuntimeScopeManager(
+            ConverterContext context,
+            bool instanceAsStatic = false)
         {
             Context = context;
             JSBaseObjectScopeManager = new JSBaseObjectIdentifierManager(this);
@@ -163,7 +165,7 @@ namespace NScript.Converter.TypeSystemConverter
                 false);
             InitializeKnownGlobalIdentifiers();
 
-            ImplementInstanceAsStatic = true;
+            ImplementInstanceAsStatic = instanceAsStatic;
         }
 
         /// <summary>
@@ -206,11 +208,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <value>
         /// <c>true</c> if [implement instance as static]; otherwise, <c>false</c>.
         /// </value>
-        public bool ImplementInstanceAsStatic
-        {
-            get;
-            set;
-        }
+        public bool ImplementInstanceAsStatic { get; }
 
         public Statement GetVariableDeclarations()
         {

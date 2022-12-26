@@ -335,9 +335,15 @@ namespace NScript.Converter.ExpressionsConverter
             TypeDefinition declaringTypeDefinition = methodDefinition?.DeclaringType;
             bool isExtendedOrPsudo = runtimeManager.Context.IsExtended(declaringTypeDefinition)
                 || runtimeManager.Context.IsPsudoType(declaringTypeDefinition);
+
+            // $TODO$ Currently we're not converting methods on Generic Types to static.
+            // Fix this in later pass.
             if (methodReference.HasThis
                 && !((methodReference.DeclaringType.IsValueOrEnum()
-                        || runtimeManager.ImplementInstanceAsStatic)
+                        || (runtimeManager.ImplementInstanceAsStatic
+                            && !declaringTypeDefinition.HasGenericParameters
+                            && !declaringTypeDefinition.IsInterface
+                            && !callContext.IsVirtual))
                     && (!isExtendedOrPsudo
                         || runtimeManager.Context.IsImplemented(methodDefinition)))
                 && (callContext.IsVirtual
@@ -575,22 +581,6 @@ namespace NScript.Converter.ExpressionsConverter
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Literals the converter.
-        /// </summary>
-        /// <param name="converter">The converter.</param>
-        /// <param name="methodCallExpression">The method call expression.</param>
-        /// <returns></returns>
-        private static JST.Expression LiteralConverter(
-            IMethodScopeConverter converter,
-            MethodCallExpression methodCallExpression)
-        {
-            return new JST.ScriptLiteralExpression(
-                methodCallExpression.Location,
-                converter.Scope,
-                ((StringLiteral)methodCallExpression.Parameters[0]).String);
         }
 
         /// <summary>

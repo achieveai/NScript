@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace System
 {
+    [ImportedType]
     public class NativeGenerator
     {
         [ScriptAlias("next")]

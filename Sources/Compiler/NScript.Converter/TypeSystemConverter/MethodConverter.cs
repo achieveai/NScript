@@ -328,7 +328,9 @@ namespace NScript.Converter.TypeSystemConverter
                         && (context.IsExtended(typeConverter.TypeDefinition)
                             || context.IsPsudoType(typeConverter.TypeDefinition)
                             || typeConverter.AllStaticMethods
-                            || RuntimeManager.ImplementInstanceAsStatic)
+                            || (RuntimeManager.ImplementInstanceAsStatic
+                                && !methodDefinition.DeclaringType.HasGenericParameters
+                                && !methodDefinition.DeclaringType.IsInterface))
                         && methodDefinition.CustomAttributes.SelectAttribute(
                                 KnownReferences.KeepInstanceUsageAttribute) == null)
                     || !methodDefinition.HasThis;
@@ -1604,7 +1606,11 @@ namespace NScript.Converter.TypeSystemConverter
                         Scope,
                         ResolveThis(Scope, null),
                         new JST.IdentifierExpression(Resolve(fieldReference), Scope)),
-                new JST.IdentifierExpression(Scope.ParameterIdentifiers[0], Scope));
+                new JST.IdentifierExpression(
+                    HasStaticImplementation && this.methodDefinition.HasThis
+                    ? Scope.ParameterIdentifiers[1]
+                    : Scope.ParameterIdentifiers[0],
+                    Scope));
 
             statements.Add(
                 JST.ExpressionStatement.CreateAssignmentExpression(

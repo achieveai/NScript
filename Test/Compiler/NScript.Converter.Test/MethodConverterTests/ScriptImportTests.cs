@@ -31,7 +31,9 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TemplateNamespace + "Simple0ArgScript.js",
                 ScriptImportTests.TestClassNameStr,
                 "Simple0ArgScript",
-                TestType.All);
+                TestType.All,
+                false,
+                false);
         }
 
         [DataTestMethod]
@@ -41,7 +43,9 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TemplateNamespace + "Simple1ArgScript.js",
                 ScriptImportTests.TestClassNameStr,
                 "Simple1ArgScript",
-                TestType.All);
+                TestType.All,
+                false,
+                false);
         }
 
         [DataTestMethod]
@@ -51,7 +55,9 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TemplateNamespace + "SimpleStatic1ArgCsMethodCall.js",
                 ScriptImportTests.TestClassNameStr,
                 "SimpleStatic1ArgCsMethodCall",
-                TestType.All);
+                TestType.All,
+                false,
+                false);
         }
 
         [DataTestMethod]
@@ -61,7 +67,9 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TemplateNamespace + "SimpleCsMethodCall.js",
                 ScriptImportTests.TestClassNameStr,
                 "SimpleCsMethodCall",
-                TestType.All);
+                TestType.All,
+                false,
+                false);
         }
 
         [DataTestMethod]
@@ -72,7 +80,8 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TestClassNameStr,
                 "AccessStringElement",
                 TestType.All,
-                true);
+                true,
+                false);
         }
 
         [DataTestMethod]
@@ -83,7 +92,8 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TestClassNameStr,
                 "CheckFooBar",
                 TestType.All,
-                true);
+                true,
+                false);
         }
 
         [DataTestMethod]
@@ -94,7 +104,8 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TestClassNameStr,
                 "GetSomething",
                 TestType.All,
-                true);
+                true,
+                false);
         }
 
         [DataTestMethod]
@@ -105,7 +116,8 @@ namespace NScript.Converter.Test.MethodConverterTests
                 ScriptImportTests.TestClassNameStr,
                 "TestExternGenericCall",
                 TestType.All,
-                true);
+                true,
+                false);
         }
 
         [DataTestMethod]
@@ -116,7 +128,8 @@ namespace NScript.Converter.Test.MethodConverterTests
                 "System.Collections.Generic.List`1",
                 "Add",
                 TestType.All,
-                true);
+                true,
+                false);
         }
     }
 }

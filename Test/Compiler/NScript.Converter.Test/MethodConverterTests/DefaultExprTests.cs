@@ -28,7 +28,8 @@
                 className,
                 methodName,
                 testType,
-                true);
+                true,
+                false);
         }
     }
 }

@@ -36,7 +36,7 @@ namespace System
         private NativeGenerator _generator;
         private NativeGenerator.NextObject _current;
 
-        [Script("this.@{[mscorlib]System.GeneratorWrapper::_generator} = generatorFunction();")]
+        [Script("this.@{[mscorlib]System.GeneratorWrapper`1::_generator} = generatorFunction();")]
         public extern GeneratorWrapper(object generatorFunction);
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
@@ -53,7 +53,7 @@ namespace System
         
         public T Current
         {
-            [Script("this.@{[mscorlib]System.GeneratorWrapper::_current}.value")]
+            [Script("this.@{[mscorlib]System.GeneratorWrapper`1::_current}.value")]
             get;
         }
 

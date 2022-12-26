@@ -16,6 +16,7 @@ namespace NScript.Converter.Test.JsExecutionTests
     using Mono.Cecil;
     using Microsoft.ClearScript.JavaScript;
     using System.Threading.Tasks;
+    using NScript.JST;
 
     /// <summary>
     /// Definition for JsExecutionHelper
@@ -31,10 +32,17 @@ namespace NScript.Converter.Test.JsExecutionTests
         public static string GetScript(
             bool isDebug,
             bool isMcs,
-            Tuple<string, string> entryPoint)
+            Tuple<string, string> entryPoint,
+            bool minify = true,
+            bool instanceAsStatic = false)
         {
             RuntimeScopeManager runtimeScopeManager = new RuntimeScopeManager(
-                new ConverterContext(isMcs ? TestAssemblyLoader.McsContext : TestAssemblyLoader.Context));
+                new ConverterContext(
+                    isMcs
+                    ? TestAssemblyLoader.McsContext
+                    : TestAssemblyLoader.Context),
+                    instanceAsStatic);
+
             MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
                 entryPoint.Item1,
                 entryPoint.Item2,
@@ -58,6 +66,17 @@ namespace NScript.Converter.Test.JsExecutionTests
                         new JST.Expression[0],
                         runtimeScopeManager.GetTypeConverter(methodDefinition.DeclaringType.Resolve()),
                         runtimeScopeManager)));
+
+            if (minify)
+            {
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeScopeManager.Scope,
+                    !isDebug);
+
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeScopeManager.JSBaseObjectScopeManager.InstanceScope,
+                    !isDebug);
+            }
 
             return ConverterTestHelpers.GetScriptString(statements);
         }
