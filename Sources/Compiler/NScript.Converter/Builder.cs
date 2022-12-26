@@ -50,6 +50,10 @@ namespace NScript.Converter
         /// </summary>
         private readonly ITypeConverterPlugin[] typeConverterPlugins;
 
+        private readonly int jsParts;
+
+        private readonly bool release;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -61,9 +65,11 @@ namespace NScript.Converter
         /// <param name="methodConverterPlugins"> The method converter plugins. </param>
         public Builder(
             string jsScript,
+            int jsParts,
             string mainAssembly,
             string[] references,
-            IConverterPlugin[] plugins)
+            IConverterPlugin[] plugins,
+            bool release)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -74,6 +80,8 @@ namespace NScript.Converter
                 .ToArray<IMethodConverterPlugin>();
             this.typeConverterPlugins = (from p in plugins where p is IRuntimeConverterPlugin select p as ITypeConverterPlugin)
                 .ToArray<ITypeConverterPlugin>();
+            this.jsParts = jsParts;
+            this.release = release;
         }
 
         /// <summary>
@@ -188,11 +196,11 @@ namespace NScript.Converter
                 System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, false);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, this.release);
                 stopWatch.Stop();
                 System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
                 stopWatch.Restart();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, false);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, this.release);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
                 JSWriter writer = new JSWriter(true, false);
