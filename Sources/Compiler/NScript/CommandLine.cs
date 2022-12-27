@@ -44,7 +44,8 @@
                 parseOptions.JsParts,
                 parseOptions.EntryAssembly,
                 parseOptions.ReferenceDlls.ToArray(),
-                plugins.ToArray());
+                plugins.ToArray(),
+                parseOptions.Release);
 
             _ = builder.Execute();
 

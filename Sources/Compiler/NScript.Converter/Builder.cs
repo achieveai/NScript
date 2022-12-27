@@ -116,7 +116,10 @@ namespace NScript.Converter
                     clrContext,
                     this.methodConverterPlugins,
                     this.typeConverterPlugins);
-                runtimeManager = new RuntimeScopeManager(converterContext);
+                runtimeManager = new RuntimeScopeManager(
+                    converterContext,
+                    this.release);
+
                 methodDefinitionsToEmit = new List<MethodDefinition>();
 
                 entryPoint =
@@ -193,7 +196,7 @@ namespace NScript.Converter
                             new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
                 }
 
-                System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+                var stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
                 IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, this.release);
@@ -203,7 +206,7 @@ namespace NScript.Converter
                 IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, this.release);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
-                JSWriter writer = new JSWriter(true, false);
+                var writer = new JSWriter(true, this.release);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
                 {
@@ -218,7 +221,11 @@ namespace NScript.Converter
                     }
                 }
 
-                writer.Write(this.jsScript, string.Format("SrcMapper.ashx?js={0}&fname=", Path.GetFileName(this.jsScript)));
+                writer.Write(
+                    this.jsScript,
+                    string.Format(
+                        "SrcMapper.ashx?js={0}&fname=",
+                        Path.GetFileName(this.jsScript)));
             }
             catch(ConverterLocationException ex)
             {
