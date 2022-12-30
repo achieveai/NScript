@@ -126,10 +126,6 @@ function Type__InitializeBaseInterfaces(type) {
 };
 function Type_factory() {
   var this_;
-  this_ = Function.getDefaultValue();
-};
-function Type_factory() {
-  var this_;
   this_ = new Function();
   this_.__ctor();
   return this_;

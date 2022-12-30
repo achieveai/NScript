@@ -283,12 +283,12 @@ namespace NScript.Converter.TypeSystemConverter
                             prototype,
                             new IdentifierExpression(this.TypeScopeManager.ResolveVirtualMethod(method), this.Scope));
 
-                    Expression implementedFunctionExpress =
-                        new IndexExpression(
-                            null,
-                            this.Scope,
-                            prototype,
-                            new IdentifierExpression(this.TypeScopeManager.ResolveMethod(method), this.Scope));
+                    var methodConverter = this.GetMethodConverter(method);
+
+                    Expression implementedFunctionExpress = methodConverter.GenerateInstancedCall(
+                        prototype,
+                        null,
+                        this.Scope);
 
                     if (isFixedName)
                     {
@@ -441,17 +441,24 @@ namespace NScript.Converter.TypeSystemConverter
                                 functionScope,
                                 thisAssignmentExpression));
 
+                        bool isStaticConstructor = RuntimeManager.ImplementInstanceAsStatic && !this.TypeDefinition.IsGeneric();
                         MethodCallExpression constructorCallExpression = new MethodCallExpression(
                             null,
                             functionScope,
-                            new IndexExpression(
+                            isStaticConstructor
+                            ? new IdentifierExpression(
+                                    this.RuntimeManager.ResolveFunctionName(function),
+                                    functionScope)
+                            : new IndexExpression(
                                 null,
                                 functionScope,
                                 thisObjectExpression,
                                 new IdentifierExpression(
                                     this.Resolve(function),
                                     functionScope)),
-                                functionScope.ParameterIdentifiers.Select(arg => new IdentifierExpression(arg, functionScope)).ToArray());
+                            (isStaticConstructor
+                                ? new List<JST.Expression> { thisObjectExpression }
+                                : new List<JST.Expression>()).Concat(functionScope.ParameterIdentifiers.Select(arg => new IdentifierExpression(arg, functionScope))).ToArray());
 
                         factoryFunction.AddStatement(
                             new ExpressionStatement(

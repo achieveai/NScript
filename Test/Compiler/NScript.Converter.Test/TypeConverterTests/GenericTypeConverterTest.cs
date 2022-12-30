@@ -33,15 +33,24 @@ namespace NScript.Converter.Test.TypeConverterTests
         /// Tests the type of the simple static.
         /// </summary>
         [DataTestMethod]
-        [DataRow(TestType.Debug)]
-        // [DataRow(TestType.Retail)]
-        public void TestGenericTypeMcs(TestType testType)
+        [DataRow("GenericListType.js", TestType.Debug, new []{"List`1"}, false)]
+        [DataRow("GenericListType.static.js", TestType.Debug, new []{"List`1"}, true)]
+        [DataRow("SystemGenericListType.js", TestType.Debug, new []{"System.Collections.Generic.List`1"}, false)]
+        [DataRow("SystemGenericListType.static.js", TestType.Debug, new []{"System.Collections.Generic.List`1"}, true)]
+        [DataRow("GenericInterfaceInheritance.js", TestType.Debug, new []{"TestGenericB"}, false)]
+        [DataRow("GenericInterfaceInheritance.static.js", TestType.Debug, new []{"TestGenericB"}, true)]
+        public void TestGenericTypeMcs(
+            string resourceName,
+            TestType testType,
+            string[] classNames,
+            bool instanceAsStatic = false)
         {
             TypeConverterHelper.RunTest(
-                GenericTypeConverterTest.TestFilesNSStr + "GenericListType.js",
+                TestFilesNSStr + resourceName,
                 testType,
                 true,
-                "List`1");
+                instanceAsStatic,
+                classNames);
         }
     }
 }

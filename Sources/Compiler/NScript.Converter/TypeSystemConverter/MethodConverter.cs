@@ -187,27 +187,19 @@ namespace NScript.Converter.TypeSystemConverter
                         methodDefinition));
             }
 
-            var argumentNames = new List<string>();
+            // If we are going for static, then we promote 
+            // this to parameter. Else if this method is StaticImplementation
+            // because of Pseudo or extended types (in which case constructor is interesting),
+            // then also we can have real static implementation
+            // Note: Struct constructors are special cases here. They don't take this_ argument,
+            var insertThisAsArgument = (IsInstanceStatic || (HasStaticImplementation && this.methodDefinition.HasThis))
+                && !(typeConverter.TypeDefinition.IsValueOrEnum() && IsConstructor);
 
-            if (hasGenericArguments)
-            {
-                argumentNames.AddRange(methodDefinition.GenericParameters.Select(g => g.Name));
-            }
-
-            if (HasStaticImplementation
-                && this.methodDefinition.HasThis
-                && !IsConstructor)
-            {
-                argumentNames.Add(ThisArgument);
-            }
-
-            var argumentsStartIndex = argumentNames.Count;
-            argumentNames.AddRange(methodDefinition.Parameters.Select(a => a.Name));
-
-            methodScope = new IdentifierScope(
+            var (methodScope, argumentsStartIndex) = GetMethodScope(
                 typeConverter.Scope,
-                argumentNames,
-                false);
+                insertThisAsArgument);
+
+            this.methodScope = methodScope;
 
             scopeStack.AddFirst(methodScope);
 
@@ -233,8 +225,9 @@ namespace NScript.Converter.TypeSystemConverter
                     methodScope.ParameterIdentifiers[argumentsStartIndex + argumentIndex]);
             }
 
-            if (HasStaticImplementation
-                && this.methodDefinition.HasThis)
+            // Note this did not have "IsConstructor" check for extended and pseudo types.
+            // Todo: understand this discprency
+            if (IsInstanceStatic || (HasStaticImplementation && this.methodDefinition.HasThis))
             {
                 if (this.methodDefinition.GenericParameters.Count != argumentsStartIndex)
                 {
@@ -272,6 +265,29 @@ namespace NScript.Converter.TypeSystemConverter
 
                 throw;
             }
+        }
+
+        private (IdentifierScope, int argumentsStartIndex) GetMethodScope(
+            IdentifierScope parentScope,
+            bool thisAsArgument)
+        {
+            var argumentNames = new List<string>();
+            if (hasGenericArguments)
+            {
+                argumentNames.AddRange(methodDefinition.GenericParameters.Select(g => g.Name));
+            }
+
+            if (thisAsArgument) { argumentNames.Add(ThisArgument); }
+
+            var argumentStartIndex = argumentNames.Count;
+            argumentNames.AddRange(methodDefinition.Parameters.Select(a => a.Name));
+
+            return (
+                new IdentifierScope(
+                    parentScope,
+                    argumentNames,
+                    false),
+                argumentStartIndex);
         }
 
         public bool IsIterator => (_kind & BlockKind.Iterator) == BlockKind.Iterator;
@@ -327,13 +343,17 @@ namespace NScript.Converter.TypeSystemConverter
         public bool HasStaticImplementation => (methodDefinition.HasThis
                         && (context.IsExtended(typeConverter.TypeDefinition)
                             || context.IsPsudoType(typeConverter.TypeDefinition)
-                            || typeConverter.AllStaticMethods
-                            || (RuntimeManager.ImplementInstanceAsStatic
-                                && !methodDefinition.DeclaringType.HasGenericParameters
-                                && !methodDefinition.DeclaringType.IsInterface))
+                            || typeConverter.AllStaticMethods)
                         && methodDefinition.CustomAttributes.SelectAttribute(
                                 KnownReferences.KeepInstanceUsageAttribute) == null)
                     || !methodDefinition.HasThis;
+
+        public bool IsInstanceStatic => methodDefinition.HasThis
+            && (RuntimeManager.ImplementInstanceAsStatic || this.typeConverter.TypeDefinition.IsValueOrEnum())
+            && !methodDefinition.DeclaringType.HasGenericParameters
+            && !methodDefinition.DeclaringType.IsInterface
+            && methodDefinition.CustomAttributes.SelectAttribute(
+                    KnownReferences.KeepInstanceUsageAttribute) == null;
 
         /// <summary>
         /// Gets a value indicating whether this instance is global static implementation.
@@ -341,7 +361,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <value>
         /// <c>true</c> if this instance is global static implementation; otherwise, <c>false</c>.
         /// </value>
-        public bool IsGlobalStaticImplementation => HasStaticImplementation
+        public bool IsGlobalStaticImplementation => (HasStaticImplementation || IsInstanceStatic)
                     && !typeConverter.IsGenericLike;
 
         /// <summary>
@@ -382,10 +402,10 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             return new JST.MethodCallExpression(
-                        null,
-                        scope,
-                        JST.IdentifierExpression.Create(null, scope, converter.ResolveFactory(constructorMethod)),
-                        expression);
+                null,
+                scope,
+                JST.IdentifierExpression.Create(null, scope, converter.ResolveFactory(constructorMethod)),
+                expression);
         }
 
         /// <summary>
@@ -1110,7 +1130,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="methodReference">The method reference.</param>
         /// <returns>Method name identifier.</returns>
-        private IIdentifier GetMethodName(MethodReference methodReference) => typeConverter.RuntimeManager.ResolveFunctionName(methodReference);
+        private IIdentifier GetMethodName(MethodReference methodReference)
+            => typeConverter.RuntimeManager.ResolveFunctionName(methodReference);
 
         /// <summary>
         /// Gets the constructor default initialization statement.
@@ -1196,7 +1217,57 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             returnValue.AddRange(scopeBlock.Statements);
+
             return returnValue;
+        }
+
+        public JST.Expression GenerateInstancedCall(
+            JST.Expression prototypeExpr,
+            IIdentifier thisExpression,
+            IdentifierScope scope)
+        {
+            if (this.IsInstanceStatic)
+            {
+                var (innerScope, argsStartIdx) = this.GetMethodScope(scope, false);
+                var func = new FunctionExpression(
+                    null,
+                    scope,
+                    innerScope,
+                    innerScope.ParameterIdentifiers,
+                    null);
+
+                var methodArgs = innerScope.ParameterIdentifiers.Take(argsStartIdx)
+                    .Select(ident => new IdentifierExpression(ident, innerScope))
+                    .Concat(new[] { thisExpression != null
+                        ? new IdentifierExpression(thisExpression, innerScope) as JST.Expression
+                        : new ThisExpression(null, innerScope)
+                    })
+                    .Concat(innerScope.ParameterIdentifiers.Skip(argsStartIdx)
+                        .Select(ident => new IdentifierExpression(ident, innerScope)))
+                    .ToArray();
+                var methodCallExpression = new JST.MethodCallExpression(
+                    null,
+                    innerScope,
+                    new IdentifierExpression(this.GetSelfFunctionName(), innerScope),
+                    methodArgs);
+
+                func.AddStatement(
+                    methodDefinition.ReturnType.IsSameDefinition(ClrKnownReferences.Void)
+                        ? new ExpressionStatement(null, innerScope, methodCallExpression) as Statement
+                        : new ReturnStatement(null, innerScope, methodCallExpression));
+
+                return func;
+            }
+            else
+            {
+                return new IndexExpression(
+                    null,
+                    scope,
+                    prototypeExpr,
+                    new IdentifierExpression(
+                        this.typeConverter.Resolve(methodDefinition),
+                        scope));
+            }
         }
 
         /// <summary>
@@ -1421,7 +1492,9 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
-            if (IsConstructor && thisIdentifier != null)
+            if (IsConstructor
+                && this.typeConverter.TypeDefinition.IsValueOrEnum()
+                && thisIdentifier != null)
             {
                 // We are in struct constructor. So we need to initialize this.
                 statements.Insert(
@@ -1474,19 +1547,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         private FunctionExpression GetFunctionExpressionShell()
         {
-            var functionName = GetMethodName(methodDefinition);
-
-            if (IsGlobalStaticImplementation)
-            {
-                if (IsConstructor && HasStaticImplementation)
-                {
-                    functionName = RuntimeManager.ResolveFactory(methodDefinition);
-                }
-                else
-                {
-                    functionName = RuntimeManager.ResolveStatic(methodDefinition);
-                }
-            }
+            IIdentifier functionName = GetSelfFunctionName();
 
             var returnValue = new FunctionExpression(
                 null,
@@ -1497,6 +1558,16 @@ namespace NScript.Converter.TypeSystemConverter
                 !IsIterator && IsAsync);
 
             return returnValue;
+        }
+
+        private IIdentifier GetSelfFunctionName()
+        {
+
+            return !IsGlobalStaticImplementation
+                ? GetMethodName(methodDefinition)
+                : IsConstructor && HasStaticImplementation
+                ? RuntimeManager.ResolveFactory(methodDefinition)
+                : RuntimeManager.ResolveStatic(methodDefinition);
         }
 
         /// <summary>
@@ -1607,7 +1678,7 @@ namespace NScript.Converter.TypeSystemConverter
                         ResolveThis(Scope, null),
                         new JST.IdentifierExpression(Resolve(fieldReference), Scope)),
                 new JST.IdentifierExpression(
-                    HasStaticImplementation && this.methodDefinition.HasThis
+                    IsInstanceStatic
                     ? Scope.ParameterIdentifiers[1]
                     : Scope.ParameterIdentifiers[0],
                     Scope));

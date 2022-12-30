@@ -31,6 +31,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All, true)]
         [DataRow("GenericRegressions", "TestGenericMethodCalls", "GenericMethodCalls.js", TestType.All, false)]
         [DataRow("GenericRegressions", "TestGenericMethodCalls", "GenericMethodCalls.js", TestType.All, true)]
+        [DataRow("TestGenerics", "TestRecursiveTypes", "GenericRecursiveCalls.js", TestType.All, false)]
+        [DataRow("TestGenerics", "TestRecursiveTypes", "GenericRecursiveCalls.static.js", TestType.All, true)]
         [DataRow(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "GenericMethodCall", "GenericMethodCall.static.js", TestType.All, true)]
         [DataRow(TestClassNameStr, "GenericMethodCall2", "GenericMethodCall2.js", TestType.All, false)]

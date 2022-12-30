@@ -339,7 +339,7 @@ namespace NScript.JSParser.Test
                 "b", "a", "c");
         }
 
-        // [TestMethod]
+        [TestMethod]
         public void TestFooBar()
         {
             JSParserAndGeneratorHelper.ParseAndGenerateTest(
@@ -352,6 +352,15 @@ namespace NScript.JSParser.Test
                 "var rv, baseType, types, key;\r\nrv = {\r\n};\r\nbaseType = type[\"instance mscorlib__System.Type#BaseType\"];\r\nif (baseType != null) {\r\n  types = baseType[\"instance mscorlib__System.Type#baseTypes\"];\r\n  key[baseType] = baseType;\r\n  for (key in types)\r\n    rv[key] = types[key];\r\n}\r\nif (interfaces != null) {\r\n  for (key = 0; key < interfaces.length; key++)\r\n    rv[interfaces[key]] = interfaces[key];\r\n  type[\"instance mscorlib__System.Type#BaseType\"] = rv;\r\n}",
                 "baseType",
                 "typeName", "parentType");
+        }
+
+        [TestMethod]
+        public void TestReleaseWriter()
+        {
+            JSParserAndGeneratorHelper.ParseAndGenerateTest(
+                "var a = 10, b = 11;",
+                "var a,b;a=10,b=11;",
+                true);
         }
     }
 }

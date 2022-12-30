@@ -23,6 +23,19 @@ namespace NScript.JSParser.Test
             string jsOut,
             params string[] argsNames)
         {
+            ParseAndGenerateTest(
+                jsIn,
+                jsOut,
+                false,
+                argsNames);
+        }
+
+        public static void ParseAndGenerateTest(
+            string jsIn,
+            string jsOut,
+            bool isOptimized,
+            params string[] argsNames)
+        {
             IdentifierScope globalScope = new IdentifierScope(true);
             IdentifierScope scope = new IdentifierScope(
                 globalScope,
@@ -34,7 +47,7 @@ namespace NScript.JSParser.Test
                 scope,
                 new TestTypeResolver(scope));
 
-            JSWriter writer = new JSWriter(true, false);
+            JSWriter writer = new JSWriter(true, isOptimized);
 
             if (scope.UsedLocalIdentifiers.Count > 0)
             {

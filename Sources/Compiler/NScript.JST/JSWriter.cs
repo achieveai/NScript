@@ -805,7 +805,7 @@ namespace NScript.JST
                     prevToken.Type != TokenType.Newline &&
                     prevToken.Type != TokenType.Space)
                 {
-                    this.InsertSpace(node, false);
+                    this.InsertSpace(node, true);
                 }
             }
             else
@@ -1024,7 +1024,7 @@ namespace NScript.JST
                     prevToken.Type != TokenType.Newline &&
                     prevToken.Type != TokenType.Space)
                 {
-                    this.InsertSpace(node, false);
+                    this.InsertSpace(node, true);
                 }
             }
             else

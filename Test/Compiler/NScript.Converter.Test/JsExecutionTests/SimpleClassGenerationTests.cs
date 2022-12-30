@@ -28,25 +28,39 @@ namespace NScript.Converter.Test.JsExecutionTests
         [TestCategory("CI")]
         [DataTestMethod]
         [TestMethod]
-        [DataRow(TestType.Debug, "FactorialCalculator", "Main")]
-        [DataRow(TestType.Debug, "GetMin", "RunTest")]
-        [DataRow(TestType.Debug, "QuickSort", "RunTest")]
-        [DataRow(TestType.Debug, "TestArithmetics", "Main")]
-        [DataRow(TestType.Debug, "TestControlFlow", "Main")]
-        [DataRow(TestType.Debug, "TestInitializer", "Main")]
-        [DataRow(TestType.Debug, "TestDelegates", "Main")]
-        [DataRow(TestType.Debug, "TestGenerics", "Main")]
-        [DataRow(TestType.Debug, "NullableTests", "Main")]
-        [DataRow(TestType.Debug, "TupleTests", "Main")]
-        [DataRow(TestType.Debug, "YieldReturnTests", "Main")]
-        [DataRow(TestType.Debug, "TestStdlib", "Main", true)]
-        [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true)]
+        [DataRow(TestType.Debug, "FactorialCalculator", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "FactorialCalculator", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "GetMin", "RunTest", false, false, false)]
+        [DataRow(TestType.Debug, "GetMin", "RunTest", false, false, true)]
+        [DataRow(TestType.Debug, "QuickSort", "RunTest", false, false, false)]
+        [DataRow(TestType.Debug, "QuickSort", "RunTest", false, false, true)]
+        [DataRow(TestType.Debug, "TestArithmetics", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "TestArithmetics", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "TestControlFlow", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "TestControlFlow", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "TestInitializer", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "TestInitializer", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "TestDelegates", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "TestDelegates", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "TestGenerics", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "TestGenerics", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "NullableTests", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "NullableTests", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "TupleTests", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "TupleTests", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "YieldReturnTests", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "YieldReturnTests", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "TestStdlib", "Main", true, false, false)]
+        [DataRow(TestType.Debug, "TestStdlib", "Main", true, false, true)]
+        [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true, false)]
+        [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true, true)]
         public void TestMcs(
             TestType testType,
             string className,
             string entryPointMethod,
             bool isDisabled = false,
-            bool isAsyncEntryPoint = false)
+            bool isAsyncEntryPoint = false,
+            bool instanceAsStatic = false)
         {
             if (isDisabled)
             { return; }
@@ -59,7 +73,8 @@ namespace NScript.Converter.Test.JsExecutionTests
                         className,
                         true,
                         Tuple.Create(className, entryPointMethod),
-                        true).Wait();
+                        true,
+                        instanceAsStatic).Wait();
                 }
                 else
                 {
@@ -67,7 +82,8 @@ namespace NScript.Converter.Test.JsExecutionTests
                         className,
                         true,
                         Tuple.Create(className, entryPointMethod),
-                        true);
+                        true,
+                        instanceAsStatic);
                 }
             }
 
@@ -77,7 +93,8 @@ namespace NScript.Converter.Test.JsExecutionTests
                     className,
                     false,
                     Tuple.Create(className, entryPointMethod),
-                    true);
+                    true,
+                    instanceAsStatic);
             }
         }
     }

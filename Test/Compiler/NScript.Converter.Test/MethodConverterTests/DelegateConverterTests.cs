@@ -29,6 +29,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "AddEvent", "AddEvent.static.js", TestType.All, true)]
         [DataRow(TestClassNameStr, "CallEvent", "CallEvent.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "ClearEvent", "ClearEvent.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "InstanceDelegate", "InstanceReferencingDelegate.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "InstanceDelegate", "InstanceReferencingDelegate.static.js", TestType.All, true)]
         [DataRow(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegateMcs.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "InstanceReferencingDelegate", "InstanceReferencingDelegateMcs.static.js", TestType.All, true)]
         [DataRow(TestClassNameStr, "IntDelegateTaker", "IntDelegateTaker.js", TestType.All, false)]

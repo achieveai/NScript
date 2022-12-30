@@ -116,7 +116,10 @@ namespace NScript.Converter.ExpressionsConverter
                     converter.Scope));
 
             if (!isVirtualCall
-                && expression.Method.MethodReference.DeclaringType.IsValueOrEnum())
+                && !MethodCallExpressionConverter.IsMethodInstanceCall(
+                    expression.Method.MethodReference,
+                    converter.RuntimeManager,
+                    isVirtualCall))
             {
                 switch (expression.Method.LeftExpression)
                 {

@@ -33,6 +33,7 @@
     <None Remove="MethodConverterTests\DefaultExpressions\TestGenericValueType.js" />
     <None Remove="MethodConverterTests\DefaultExpressions\TestReferenceType.js" />
     <None Remove="MethodConverterTests\DelegateConverters\AddEvent.static.js" />
+    <None Remove="MethodConverterTests\DelegateConverters\InstanceReferencingDelegate.js" />
     <None Remove="MethodConverterTests\DelegateConverters\InstanceReferencingDelegate.static.js" />
     <None Remove="MethodConverterTests\DelegateConverters\InstanceReferencingDelegateMcs.static.js" />
     <None Remove="MethodConverterTests\DelegateConverters\IntDelegateTaker.static.js" />
@@ -53,6 +54,8 @@
     <None Remove="MethodConverterTests\DupInstructionConverters\PropertyOpAssignmentOperation.static.js" />
     <None Remove="MethodConverterTests\GenericTests\GenericMethodCall.static.js" />
     <None Remove="MethodConverterTests\GenericTests\GenericMethodCall2.static.js" />
+    <None Remove="MethodConverterTests\GenericTests\GenericRecursiveCalls.js" />
+    <None Remove="MethodConverterTests\GenericTests\GenericRecursiveCalls.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\CallMethodWithInlineSettersElement.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\ProcessItems.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\ReturnInlineConstIntArray.static.js" />
@@ -99,6 +102,17 @@
     <None Remove="MethodConverterTests\TupleTests\TestTempVarCreation.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTupleDecons.js" />
     <None Remove="MethodConverterTests\TupleTests\TestTupleReturn.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\GenericInterfaceInheritance.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\GenericInterfaceInheritance.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\GenericListType.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\SameNameInstanceAndStaticMethod.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\SecondOrderInterfaceInherit.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\SimpleFullVirtual.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\SimpleInstanceType.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\SystemGenericListType.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\SystemGenericListType.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\VirtualBase.static.js" />
+    <None Remove="TypeConverterTests\SimpleTypeConverter\VirtualOverride.static.js" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -112,6 +126,8 @@
     <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\RemoveTestEvent.static.js" />
     <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\SetAutoProperty.static.js" />
     <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\TestEventAddRemove.static.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\InstanceReferencingDelegate.js" />
+    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\InstanceReferencingDelegate.static.js" />
     <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\FunctionCallWithInlineAssignment.static.js" />
     <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\InlineOpAssignment.static.js" />
     <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\LocalOpAssignmentOperation.static.js" />
@@ -125,6 +141,8 @@
     <EmbeddedResource Include="MethodConverterTests\DupInstructionConverters\PropertyOpAssignmentOperation.static.js" />
     <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCall.static.js" />
     <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCall2.static.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericRecursiveCalls.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericRecursiveCalls.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\CallMethodWithInlineSettersElement.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ProcessItems.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnInlineConstIntArray.static.js" />
@@ -155,6 +173,17 @@
     <EmbeddedResource Include="MethodConverterTests\Regressions\NativeGeneratorNext.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\CheckType.static.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\Complex3IfCondition.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\GenericInterfaceInheritance.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\GenericInterfaceInheritance.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\GenericListType.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SameNameInstanceAndStaticMethod.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SecondOrderInterfaceInherit.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SimpleFullVirtual.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SimpleInstanceType.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SystemGenericListType.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\SystemGenericListType.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\VirtualBase.static.js" />
+    <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\VirtualOverride.static.js" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
@@ -236,7 +265,6 @@
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\PassObjectFieldByRef.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\PassArrayElementByRef.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\AccessRefArgument.js" />
-    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\InstanceReferencingDelegate.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\StaticReferencingDelegate.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\IntDelegateTaker.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\LocalAndInstanceReferencingDelegate.js" />
@@ -421,7 +449,6 @@
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnStrDict2.js" />
     <Content Include="Staging.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\AddEvent.static.js" />
-    <EmbeddedResource Include="MethodConverterTests\DelegateConverters\InstanceReferencingDelegate.static.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\InstanceReferencingDelegateMcs.static.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\IntDelegateTaker.static.js" />
     <EmbeddedResource Include="MethodConverterTests\DelegateConverters\LocalAndInstanceReferencingDelegateMcs.static.js" />

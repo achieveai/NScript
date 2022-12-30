@@ -848,7 +848,11 @@ namespace NScript.Converter.TypeSystemConverter
 
                 if (converter.IsGlobalStaticImplementation)
                 {
-                    statements.Add(new ExpressionStatement(null, this.Scope, converter.MethodFunctionExpression));
+                    statements.Add(
+                        new ExpressionStatement(
+                            null,
+                            this.Scope,
+                            converter.MethodFunctionExpression));
                 }
                 else
                 {
@@ -1058,10 +1062,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 var typeExpr = this.ResolveTypeToExpression(this.typeDefinition, this.Scope);
                 var identifierTypeExpr = typeExpr as IdentifierExpression;
-                IIdentifier typeIdentifier = identifierTypeExpr != null
-                    ? identifierTypeExpr.Identifier
-                    : null;
-
+                var typeIdentifier = identifierTypeExpr?.Identifier;
                 var constructorExpr = this.CreateConstructorFunction(typeIdentifier);
 
                 // Add the constructor.
@@ -1161,21 +1162,15 @@ namespace NScript.Converter.TypeSystemConverter
         /// Creates the constructor function.
         /// </summary>
         /// <returns></returns>
-        protected virtual Expression CreateConstructorFunction(
-            IIdentifier typeName)
-        {
-            IdentifierScope innerScope = new IdentifierScope(this.Scope);
-            Expression objExpression = new FunctionExpression(
+        protected virtual Expression CreateConstructorFunction(IIdentifier typeName)
+            => new FunctionExpression(
                 null,
                 this.Scope,
-                innerScope,
+                new IdentifierScope(this.Scope),
                 new List<IIdentifier>(),
                 typeName ?? SimpleIdentifier.CreateScopeIdentifier(
                     this.Scope,
                     this.typeDefinition.FullName, false));
-
-            return objExpression;
-        }
 
         /// <summary>
         /// Initializes the type id.

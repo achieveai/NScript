@@ -192,7 +192,7 @@ function ArrayG(T, _callStatiConstructor) {
     return ArrayG$1_$T$_.__ctor(this.innerArray.slice(0, this.innerArray.length));
   };
   ptyp_.contains = function ArrayG$1__Contains(item) {
-    return this.iof(item) >= 0;
+    return this.indexOf(item) >= 0;
   };
   ptyp_.indexOf = function ArrayG$1__IndexOf(item) {
     if (!T.isInstanceOfType(item))
