@@ -852,7 +852,11 @@ namespace NScript.JST
                             return;
                         }
                         break;
-                    default:
+                    case Keyword.If:
+                    case Keyword.While:
+                    case Keyword.Do:
+                    case Keyword.For:
+                    case Keyword.Catch:
                         this.InsertSpace(node, false);
                         break;
                 }

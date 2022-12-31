@@ -81,38 +81,6 @@
                 .ToImmutableArray();
         }
 
-        public static int NameToIntId(string name)
-        {
-            int rv = 0;
-            int charRange = 1;
-            for (int idx = 1; idx < name.Length; idx++)
-            {
-                rv *= CharMap.Length;
-                charRange *= CharMap.Length;
-
-                if (name[idx] > 127
-                    || CharToIdx[name[idx]] < 0)
-                {
-                    return -1;
-                }
-
-                rv += CharToIdx[name[idx]];
-
-                if (rv < 0)
-                {
-                    return -1;
-                }
-            }
-
-            var leadingNum = CharToIdx[name[0]];
-            var firstCharRange = 1;
-            while(firstCharRange < charRange) {
-                firstCharRange *= FirstCharMap.Length;
-            }
-
-            return rv + (leadingNum * firstCharRange);
-        }
-
         public string IntIdToName(int id)
         {
             var idx = ReservedNamesUsed.BinarySearch(id);
@@ -129,32 +97,38 @@
             return IntIdToNameInternal(id + idx);
         }
 
-        private static string IntIdToNameInternal(int id)
+
+        public static int NameToIntId(string str)
         {
-            int bigMod = FirstCharMap.Length;
+            int rv;
+            int idx;
 
-            while(id >= bigMod) {
-                bigMod *= FirstCharMap.Length;
+            rv = FirstCharMap.IndexOf(str[0]);
+            idx = 1;
+
+            while (idx < str.Length) {
+                rv *= CharMap.Length;
+                rv += CharMap.IndexOf(str[idx]);
+                idx++;
             }
 
+            return rv;
+        }
+
+        public static string IntIdToNameInternal(int id)
+        {
             List<char> chars = new();
-            bigMod /= FirstCharMap.Length;
-            var modChar = 1;
-            while (modChar < bigMod) {
-                modChar *= CharMap.Length;
+            while(id >= FirstCharMap.Length) {
+                chars.Add(CharMap[id % CharMap.Length]);
+                id /= CharMap.Length;
             }
 
-            var modRemainder = id % bigMod;
-            while(modChar > 1)
-            {
-                chars.Add(CharMap[modRemainder % CharMap.Length]);
-                modChar /= CharMap.Length;
-                modRemainder /= CharMap.Length;
+            if (id < FirstCharMap.Length) {
+                chars.Add(FirstCharMap[id]);
             }
 
-            chars.Add(FirstCharMap[id / bigMod]);
             chars.Reverse();
-            return new string(chars.ToArray());
+            return new String(chars.ToArray());
         }
 
         private static ImmutableArray<int> RmapCharMap()
