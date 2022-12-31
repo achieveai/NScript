@@ -126,11 +126,10 @@ function NativeArray$1__op_Implicit(n) {
 };
 function ArrayG(T, _callStatiConstructor) {
   var ArrayG$1_$T$_, T$5b$5d_$T$_, Enumerator_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, __initTracker;
-  if (ArrayG[T.typeId])
-    return ArrayG[T.typeId];
-  ArrayG[T.typeId] = function System__ArrayG$1() {
+  if (ArrayG["9" + T.typeId])
+    return ArrayG["9" + T.typeId];
+  ArrayG["9" + T.typeId] = ArrayG$1_$T$_ = function System__ArrayG$1() {
   };
-  ArrayG$1_$T$_ = ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = ArrayG;
   ArrayG$1_$T$_.typeId = "g$" + T.typeId + "$";

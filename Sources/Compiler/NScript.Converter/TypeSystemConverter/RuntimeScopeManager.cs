@@ -20,6 +20,8 @@ namespace NScript.Converter.TypeSystemConverter
     /// </summary>
     public class RuntimeScopeManager
     {
+        public const string GenericFirstTypeIndexPrefix = "9";
+
         /// <summary>
         /// Regex pattern to find all the generic arg counts. This is used in replacing
         /// this annoying pattern to create friendly names for generics.
@@ -146,6 +148,8 @@ namespace NScript.Converter.TypeSystemConverter
 
         /// <summary>
         /// Used to keep track of all the typeIds used.
+        /// Note: This should start at a value greater than all the method/field names
+        /// on Function object.
         /// </summary>
         private int typeIdsUsed = 0;
 
@@ -744,18 +748,34 @@ namespace NScript.Converter.TypeSystemConverter
                     var genericArguments = typeReference.GetGenericArguments();
                     if (genericArguments != null)
                     {
-                        foreach (var genericParam in genericArguments)
+                        for (int iGeneric = 0; iGeneric < genericArguments.Count; iGeneric++)
                         {
+                            var genericParam = genericArguments[iGeneric];
+                            JST.Expression innerIndex = new IndexExpression(
+                                null,
+                                scope,
+                                resolveTypeToExpressionHelper(genericParam, scope, initializeRefsAndStaticCtor),
+                                new IdentifierExpression(
+                                    JSBaseObjectScopeManager.TypeId, scope));
+
+                            if (iGeneric == 0)
+                            {
+                                // Note: we need to add 'GenericFirstTypeIndexPrefix' to first generic lookup index, or else we risk
+                                // clashing the names with method / field name on 'Function' class.
+                                // This normally happens when full minification is turned on.
+                                innerIndex = new BinaryExpression(
+                                    null,
+                                    this.Scope,
+                                    BinaryOperator.Plus,
+                                    new StringLiteralExpression(this.Scope, GenericFirstTypeIndexPrefix),
+                                    innerIndex);
+                            }
+
                             rv = new IndexExpression(
                                 null,
                                 scope,
                                 rv,
-                                new IndexExpression(
-                                    null,
-                                    scope,
-                                    resolveTypeToExpressionHelper(genericParam, scope, initializeRefsAndStaticCtor),
-                                    new IdentifierExpression(
-                                        JSBaseObjectScopeManager.TypeId, scope)));
+                                innerIndex);
                         }
                     }
 

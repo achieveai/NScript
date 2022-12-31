@@ -206,4 +206,35 @@ namespace RealScript
             bool isW3wc = GenericRegressions.IsW3wc(this.target);
         }
     }
+
+    public class MultiArgGeneric<T, U>
+        where T : new()
+        where U : new()
+    {
+        public static T t;
+        public static U u;
+
+        public MultiArgGeneric() { }
+
+        public string GetValue()
+        {
+            return t.ToString() + u.ToString();
+        }
+    }
+
+    public class MultiArgGeneric<T, U, V>
+        : MultiArgGeneric<T, U>
+        where T : new()
+        where U : new()
+        where V : new()
+    {
+        public static V v;
+
+        public MultiArgGeneric() { }
+
+        public string GetValue()
+        {
+            return base.GetValue() + v.ToString();
+        }
+    }
 }

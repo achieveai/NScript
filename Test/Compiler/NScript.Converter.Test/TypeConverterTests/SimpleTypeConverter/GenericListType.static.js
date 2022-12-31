@@ -1,10 +1,9 @@
 ﻿function List(T, _callStatiConstructor) {
   var List$1_$T$_, IList$1_$T$_;
-  if (List[T.typeId])
-    return List[T.typeId];
-  List[T.typeId] = function RealScript__List$1() {
+  if (List["9" + T.typeId])
+    return List["9" + T.typeId];
+  List["9" + T.typeId] = List$1_$T$_ = function RealScript__List$1() {
   };
-  List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
   List$1_$T$_.typeId = "b$" + T.typeId + "$";
@@ -58,3 +57,4 @@
   Type__RegisterReferenceType(List$1_$T$_, "RealScript.List`1<" + T.fullName + ">", Object, [IList$1_$T$_]);
   return List$1_$T$_;
 };
+

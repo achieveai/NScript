@@ -38,11 +38,10 @@ ptyp_.__ctor = function GenericSamples____ctor() {
 Type__RegisterReferenceType(GenericSamples, "RealScript.GenericSamples", Object, []);
 function List(T, _callStatiConstructor) {
   var List$1_$T$_, IList$1_$T$_;
-  if (List[T.typeId])
-    return List[T.typeId];
-  List[T.typeId] = function RealScript__List$1() {
+  if (List["9" + T.typeId])
+    return List["9" + T.typeId];
+  List["9" + T.typeId] = List$1_$T$_ = function RealScript__List$1() {
   };
-  List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
   List$1_$T$_.typeId = "c$" + T.typeId + "$";

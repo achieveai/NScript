@@ -33,6 +33,8 @@ namespace NScript.Converter.Test.TypeConverterTests
         /// Tests the type of the simple static.
         /// </summary>
         [DataTestMethod]
+        [DataRow("MultipleArgumentGeneric.js", TestType.Debug, new []{"MultiArgGeneric`2", "MultiArgGeneric`3"}, false)]
+        [DataRow("MultipleArgumentGeneric.static.js", TestType.Debug, new []{"MultiArgGeneric`2", "MultiArgGeneric`3"}, true)]
         [DataRow("GenericListType.js", TestType.Debug, new []{"List`1"}, false)]
         [DataRow("GenericListType.static.js", TestType.Debug, new []{"List`1"}, true)]
         [DataRow("SystemGenericListType.js", TestType.Debug, new []{"System.Collections.Generic.List`1"}, false)]
