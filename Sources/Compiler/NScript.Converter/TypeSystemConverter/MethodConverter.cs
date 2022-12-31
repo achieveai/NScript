@@ -193,7 +193,7 @@ namespace NScript.Converter.TypeSystemConverter
             // then also we can have real static implementation
             // Note: Struct constructors are special cases here. They don't take this_ argument,
             var insertThisAsArgument = (IsInstanceStatic || (HasStaticImplementation && this.methodDefinition.HasThis))
-                && !(typeConverter.TypeDefinition.IsValueOrEnum() && IsConstructor);
+                && !IsFactory;
 
             var (methodScope, argumentsStartIndex) = GetMethodScope(
                 typeConverter.Scope,
@@ -347,6 +347,11 @@ namespace NScript.Converter.TypeSystemConverter
                         && methodDefinition.CustomAttributes.SelectAttribute(
                                 KnownReferences.KeepInstanceUsageAttribute) == null)
                     || !methodDefinition.HasThis;
+
+        public bool IsFactory => (IsConstructor
+            && HasStaticImplementation
+            && methodDefinition.HasThis
+            && typeConverter.TypeDefinition.IsValueOrEnum());
 
         public bool IsInstanceStatic => methodDefinition.HasThis
             && (RuntimeManager.ImplementInstanceAsStatic || this.typeConverter.TypeDefinition.IsValueOrEnum())
@@ -1137,7 +1142,11 @@ namespace NScript.Converter.TypeSystemConverter
         /// Gets the constructor default initialization statement.
         /// </summary>
         /// <returns></returns>
-        private Statement GetConstructorDefaultInitializationStatement() => new ExpressionStatement(
+        private Statement GetConstructorDefaultInitializationStatement()
+            // Essentially only Struct constructors can directly be converted into
+            // Factories.
+            // Extended Types, can't do that we inherited type may need this constructor.
+            => new ExpressionStatement(
                 null,
                 Scope,
                 new BinaryExpression(
@@ -1203,9 +1212,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             var returnValue = new List<Statement>();
-            if (IsConstructor
-                && thisIdentifier != null
-                && Scope.UsedLocalIdentifiers.Contains(thisIdentifier))
+            if (IsFactory)
             {
                 // We are in struct constructor. So we need to initialize this.
                 returnValue.Add(GetConstructorDefaultInitializationStatement());
@@ -1299,10 +1306,6 @@ namespace NScript.Converter.TypeSystemConverter
                         statements = plugin.GetOverwrite(this);
                         functionExpression.AddStatements(statements);
                         return functionExpression;
-
-                    case IntrestLevel.None:
-                    default:
-                        break;
                 }
             }
 
@@ -1492,11 +1495,10 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
-            if (IsConstructor
-                && this.typeConverter.TypeDefinition.IsValueOrEnum()
-                && thisIdentifier != null)
+            if (IsFactory)
             {
-                // We are in struct constructor. So we need to initialize this.
+                // In case of struct or ExtendedTypes, we convert the constructor to factory.
+                // Essentially there is no way for us to effectively have instance based constructor.
                 statements.Insert(
                     0,
                     GetConstructorDefaultInitializationStatement());
@@ -1547,17 +1549,14 @@ namespace NScript.Converter.TypeSystemConverter
         /// </returns>
         private FunctionExpression GetFunctionExpressionShell()
         {
-            IIdentifier functionName = GetSelfFunctionName();
 
-            var returnValue = new FunctionExpression(
+            return new FunctionExpression(
                 null,
                 typeConverter.Scope,
                 Scope,
                 Scope.ParameterIdentifiers,
-                functionName,
+                GetSelfFunctionName(),
                 !IsIterator && IsAsync);
-
-            return returnValue;
         }
 
         private IIdentifier GetSelfFunctionName()
@@ -1565,7 +1564,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             return !IsGlobalStaticImplementation
                 ? GetMethodName(methodDefinition)
-                : IsConstructor && HasStaticImplementation
+                : IsFactory
                 ? RuntimeManager.ResolveFactory(methodDefinition)
                 : RuntimeManager.ResolveStatic(methodDefinition);
         }

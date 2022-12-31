@@ -341,6 +341,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="statements">The statements.</param>
         private void CreateFactories(List<Statement> statements)
         {
+            // In C# we have constructor overloads, but in JS we can only new up the object one way.
+            // To bridge this gap, instead of newing an object, we call it's factory. This allows us to
+            // get constructor overload functionality.
             if (!this.Context.IsJsonType(this.TypeDefinition)
                 && !this.TypeDefinition.IsAbstract)
             {
@@ -398,6 +401,11 @@ namespace NScript.Converter.TypeSystemConverter
                         functionScope.ParameterIdentifiers,
                         functionName);
 
+                    if (methodConverter?.IsFactory == true)
+                    {
+                        throw new InvalidProgramException("Only struct types can have constructors as factories");
+                    }
+
                     // If we extend object, and instruction count is 3, this means that
                     // this is empty constructor.
                     if (methodConverter == null
@@ -441,7 +449,7 @@ namespace NScript.Converter.TypeSystemConverter
                                 functionScope,
                                 thisAssignmentExpression));
 
-                        bool isStaticConstructor = RuntimeManager.ImplementInstanceAsStatic && !this.TypeDefinition.IsGeneric();
+                        bool isStaticConstructor = methodConverter.HasStaticImplementation || methodConverter.IsInstanceStatic;
                         MethodCallExpression constructorCallExpression = new MethodCallExpression(
                             null,
                             functionScope,
