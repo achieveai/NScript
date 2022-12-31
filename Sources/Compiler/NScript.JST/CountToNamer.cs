@@ -13,14 +13,14 @@
         private static readonly ImmutableArray<string> Keywords = new[]
             {
                 // Keywords
-                "abstract", "arguments",    "await",    "boolean",
+                "abstract", "arguments", "await", "async", "boolean",
                 "break",    "byte", "case", "catch",
                 "char", "class",    "const",    "continue",
                 "debugger", "default",  "delete",   "do",
                 "double",   "else", "enum", "eval",
                 "export",   "extends",  "false",    "final",
                 "finally",  "float",    "for",  "function",
-                "goto", "if",   "implements",   "import",
+                "goto", "if", "in",   "implements",   "import",
                 "in",   "instanceof",   "int",  "interface",
                 "let",  "long", "native",   "new",
                 "null", "package",  "private",  "protected",
