@@ -199,14 +199,14 @@ namespace NScript.Converter
                 var stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, this.release);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, false);
                 stopWatch.Stop();
                 System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
                 stopWatch.Restart();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, this.release);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, false);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
-                var writer = new JSWriter(true, this.release);
+                var writer = new JSWriter(true, false);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
                 {

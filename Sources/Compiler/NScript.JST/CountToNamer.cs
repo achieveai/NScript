@@ -83,18 +83,28 @@
 
         public string IntIdToName(int id)
         {
-            var idx = ReservedNamesUsed.BinarySearch(id);
-            if (idx < 0)
-            {
-                idx = ~idx;
-            }
+            int idx = 0, prev_idx = 0;
+            do{
+                prev_idx = idx;
+                idx = ReservedNamesUsed.BinarySearch(id + prev_idx);
+                if (idx < 0)
+                {
+                    idx = ~idx;
+                }
 
-            if (idx != 0 || ReservedNamesUsed[idx] <= id)
-            { idx++; }
+                if (ReservedNamesUsed[idx] <= id + prev_idx)
+                { idx++; }
+
+            } while(prev_idx < idx);
 
             // Return accounting for all the keywords that
             // we can't assign to.
-            return IntIdToNameInternal(id + idx);
+            var rv = IntIdToNameInternal(id + idx);
+            if (rv == "in")
+            {
+            }
+
+            return rv;
         }
 
 
