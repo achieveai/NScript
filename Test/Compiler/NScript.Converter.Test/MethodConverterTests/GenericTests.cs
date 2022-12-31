@@ -25,6 +25,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
+        [DataRow("GenericRegressions", "AddEvent", "IgnoreGenericParamsRegression.static.js", TestType.All, true)]
         [DataRow("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All, false)]
         [DataRow("GenericRegressions", "GenericStructBoxing", "GenericStructBoxing.js", TestType.All, true)]
         [DataRow("GenericRegressions", "TestGenericInterfacePropertyCall", "GenericInterfacePropertyCallMcs.js", TestType.All, false)]

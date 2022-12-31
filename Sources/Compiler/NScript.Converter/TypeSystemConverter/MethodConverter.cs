@@ -229,18 +229,19 @@ namespace NScript.Converter.TypeSystemConverter
             // Todo: understand this discprency
             if (IsInstanceStatic || (HasStaticImplementation && this.methodDefinition.HasThis))
             {
-                if (this.methodDefinition.GenericParameters.Count != argumentsStartIndex)
+                var genericParameterCount = hasGenericArguments
+                    ? this.methodDefinition.GenericParameters.Count
+                    : 0;
+
+                if (genericParameterCount + 1 == argumentsStartIndex)
                 {
-                    thisIdentifier = methodScope.ParameterIdentifiers[
-                        this.methodDefinition.GenericParameters.Count];
-                }
-                else if (this.methodDefinition.CustomAttributes.SelectAttribute(
-                        KnownReferences.IgnoreGenericArgumentsAttribute) != null)
-                {
-                    thisIdentifier = methodScope.ParameterIdentifiers[0];
+                    thisIdentifier = methodScope.ParameterIdentifiers[genericParameterCount];
                 }
                 else
                 {
+                    // For static constructors, we will initialize thisIdentifier as local
+                    // variable, and create it using defaultValue. i.e. thisIdentifier
+                    // is not passed as parameter.
                     thisIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                         methodScope,
                         ThisArgument,

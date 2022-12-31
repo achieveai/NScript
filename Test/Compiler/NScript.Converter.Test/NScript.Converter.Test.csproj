@@ -56,6 +56,7 @@
     <None Remove="MethodConverterTests\GenericTests\GenericMethodCall2.static.js" />
     <None Remove="MethodConverterTests\GenericTests\GenericRecursiveCalls.js" />
     <None Remove="MethodConverterTests\GenericTests\GenericRecursiveCalls.static.js" />
+    <None Remove="MethodConverterTests\GenericTests\IgnoreGenericParamsRegression.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\CallMethodWithInlineSettersElement.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\ProcessItems.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\ReturnInlineConstIntArray.static.js" />
@@ -143,6 +144,7 @@
     <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericMethodCall2.static.js" />
     <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericRecursiveCalls.js" />
     <EmbeddedResource Include="MethodConverterTests\GenericTests\GenericRecursiveCalls.static.js" />
+    <EmbeddedResource Include="MethodConverterTests\GenericTests\IgnoreGenericParamsRegression.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\CallMethodWithInlineSettersElement.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ProcessItems.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnInlineConstIntArray.static.js" />
