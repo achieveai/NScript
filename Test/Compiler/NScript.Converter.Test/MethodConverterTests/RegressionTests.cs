@@ -25,6 +25,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
+        [DataRow("BasicStatements", "TestRefs", "ReferenceWriteScopeClash.js", TestType.Debug, true, false)]
+        [DataRow("BasicStatements", "TestRefs", "ReferenceWriteScopeClash.Retail.js", TestType.Retail, true, false)]
         [DataRow("BasicStatements", "RegressionFlagsOr", "RegressionFlagsOr.js", TestType.All, false, false)]
         [DataRow("BasicStatements", "RegressionFlagsOr", "RegressionFlagsOr.js", TestType.All, false, true)]
         [DataRow("BasicStatements", "RegressionFlagsOr2", "RegressionFlagsOr2.js", TestType.All, false, false)]

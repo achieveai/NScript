@@ -1,10 +1,10 @@
 ﻿function FuncRegressions__DeclarationWithOut(dict) {
   var func;
   if (dict.tryGetValue("foo", {
-    read: function() {
+    rd: function() {
       return func;
     },
-    write: function(arg0) {
+    wt: function(arg0) {
       return func = arg0;
     }
   }))

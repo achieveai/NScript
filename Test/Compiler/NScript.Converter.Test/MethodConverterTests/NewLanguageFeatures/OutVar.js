@@ -1,10 +1,10 @@
 ﻿function NewLanguageFeatures__OutVarParam(dict, str) {
   var value;
   if (dict.V_TryGetValue_b$c_d$(str, {
-    read: function() {
+    rd: function() {
       return value;
     },
-    write: function(arg0) {
+    wt: function(arg0) {
       return value = arg0;
     }
   }))

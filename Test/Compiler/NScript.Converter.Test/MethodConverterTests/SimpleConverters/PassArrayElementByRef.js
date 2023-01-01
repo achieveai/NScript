@@ -1,10 +1,10 @@
 ﻿function BasicStatements__PassArrayElementByRef(intArray) {
   BasicStatements__AccessRefArgument(10, (function(arg0, arg1) {
     return {
-      read: function() {
+      rd: function() {
         return arg0[arg1];
       },
-      write: function(arg0a) {
+      wt: function(arg0a) {
         return arg0[arg1] = arg0a;
       }
     };

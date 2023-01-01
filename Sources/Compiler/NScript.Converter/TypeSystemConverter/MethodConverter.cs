@@ -120,6 +120,14 @@ namespace NScript.Converter.TypeSystemConverter
             new LinkedList<IdentifierScope>();
 
         /// <summary>
+        /// Stack of all the alive identifierScopes that are owned by MethodConverter.
+        /// Note: MethodConverter expects scopeStack to be built over this stack,
+        /// in other words, bottom of scopeStack should always be selfScopeStack.
+        /// </summary>
+        private readonly LinkedList<IdentifierScope> selfScopeStack =
+            new LinkedList<IdentifierScope>();
+
+        /// <summary>
         /// Tempvariables used for instatement operations. These are mostly
         /// used around expansion of OpAssignments or Property post/pre fix operations.
         /// </summary>
@@ -201,7 +209,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             this.methodScope = methodScope;
 
-            scopeStack.AddFirst(methodScope);
+            PushJsScope(methodScope);
 
             if (hasGenericArguments)
             {
@@ -369,6 +377,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// </value>
         public bool IsGlobalStaticImplementation => (HasStaticImplementation || IsInstanceStatic)
                     && !typeConverter.IsGenericLike;
+
+        private IdentifierScope SelfCreateScope =>
+            selfScopeStack.First.Value;
 
         /// <summary>
         /// Generates a wrapper expression.
@@ -923,7 +934,7 @@ namespace NScript.Converter.TypeSystemConverter
                         identifierScope.ParameterIdentifiers[iParam]);
                 }
 
-                scopeStack.AddFirst(identifierScope);
+                PushJsScope(identifierScope);
                 var statements = new List<Statement>();
                 try
                 {
@@ -942,7 +953,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
                 finally
                 {
-                    scopeStack.RemoveFirst();
+                    PopJsScope();
                 }
 
                 var delegateFunctionNameId =
@@ -990,6 +1001,32 @@ namespace NScript.Converter.TypeSystemConverter
         /// Pops the scope block.
         /// </summary>
         public void PopScopeBlock() => scopeBlocksStack.RemoveFirst();
+
+        void IMethodScopeConverter.PushJsScope(JST.IdentifierScope scope)
+            => scopeStack.AddFirst(scope);
+
+        public void PopJsScope()
+        {
+            if (scopeStack.First?.Value == selfScopeStack.First?.Value)
+            {
+                selfScopeStack.RemoveFirst();
+            }
+
+            scopeStack.RemoveFirst();
+        }
+
+        private void PushJsScope(JST.IdentifierScope scope)
+        {
+            if (scopeStack.First?.Value != selfScopeStack.First?.Value)
+            {
+                // Looks like somehow we've nesting scopes created by
+                // conversion methods and methodConverter created scopes.
+                throw new InvalidProgramException();
+            }
+
+            scopeStack.AddFirst(scope);
+            selfScopeStack.AddFirst(scope);
+        }
 
         /// <summary>
         /// Fixes the this variable.
@@ -1326,7 +1363,7 @@ namespace NScript.Converter.TypeSystemConverter
             FunctionExpression outerFunction,
             List<Statement> statements)
         {
-            scopeStack.AddFirst(new IdentifierScope(Scope));
+            PushJsScope(new IdentifierScope(Scope));
             try
             {
                 var generatorShell = GetGeneratorShell();
@@ -1385,7 +1422,7 @@ namespace NScript.Converter.TypeSystemConverter
             }
             finally
             {
-                scopeStack.RemoveFirst();
+                PopJsScope();
             }
         }
 
@@ -2119,7 +2156,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             var scopeNode = scopeBlocksStack.First;
             var parameterNode = parameterBlocksStack.First;
-            var identifierScopeNode = scopeStack.First;
+            var identifierScopeNode = selfScopeStack.First;
             var localsNode = localVariableToIdentifierMapStack.First;
             var variableNamesGivenNode = variableNamesGivenStack.First;
 

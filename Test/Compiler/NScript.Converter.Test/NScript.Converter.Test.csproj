@@ -93,6 +93,8 @@
     <None Remove="MethodConverterTests\Regressions\ArrayIndexOfName.js" />
     <None Remove="MethodConverterTests\Regressions\ArrayIndexOfName.static.js" />
     <None Remove="MethodConverterTests\Regressions\NativeGeneratorNext.js" />
+    <None Remove="MethodConverterTests\Regressions\ReferenceWriteScopeClash.js" />
+    <None Remove="MethodConverterTests\Regressions\ReferenceWriteScopeClash.Retail.js" />
     <None Remove="MethodConverterTests\SimpleConverters\CheckType.static.js" />
     <None Remove="MethodConverterTests\SimpleConverters\Complex3IfCondition.static.js" />
     <None Remove="MethodConverterTests\SimpleConverters\ReturnChar.js" />
@@ -175,6 +177,8 @@
     <EmbeddedResource Include="MethodConverterTests\Regressions\ArrayIndexOfName.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\ArrayIndexOfName.static.js" />
     <EmbeddedResource Include="MethodConverterTests\Regressions\NativeGeneratorNext.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\ReferenceWriteScopeClash.js" />
+    <EmbeddedResource Include="MethodConverterTests\Regressions\ReferenceWriteScopeClash.Retail.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\CheckType.static.js" />
     <EmbeddedResource Include="MethodConverterTests\SimpleConverters\Complex3IfCondition.static.js" />
     <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\GenericInterfaceInheritance.js" />
