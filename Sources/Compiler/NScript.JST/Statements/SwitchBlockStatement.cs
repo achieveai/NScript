@@ -6,8 +6,9 @@
 
 namespace NScript.JST
 {
-    using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
     using NScript.Utils;
 
     /// <summary>
@@ -41,7 +42,13 @@ namespace NScript.JST
         {
             this.statementValue = statementValue;
             this.caseBlocks = caseBlocks;
+            CaseBlocks = new ReadOnlyCollection<KeyValuePair<List<Expression>, Statement>>(caseBlocks);
         }
+
+        public ReadOnlyCollection<KeyValuePair<List<Expression>, Statement>> CaseBlocks
+        { get; }
+
+        public Expression Key => statementValue;
 
         /// <summary>
         /// Serializes the specified serializer.

@@ -12,4 +12,7 @@
     <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
     <ProjectReference Include="..\SourceMap\SourceMap.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Optimizers\" />
+  </ItemGroup>
 </Project>

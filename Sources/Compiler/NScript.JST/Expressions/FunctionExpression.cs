@@ -92,6 +92,12 @@ namespace NScript.JST
             get { return this.name; }
         }
 
+        public IdentifierScope InnerScope => innerScope;
+
+        public bool IsAsync => this.isAsync;
+
+        public bool IsGenerator => this.isGenerator;
+
         /// <summary>
         /// Gets the parameters.
         /// </summary>
