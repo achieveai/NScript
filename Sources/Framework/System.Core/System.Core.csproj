@@ -8,13 +8,21 @@
     <NoStdLib>true</NoStdLib>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <!-- <OutputPath>$(NScriptToolSetPath)lib\</OutputPath> -->
-    <!-- <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath> -->
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <PackageId>NScript.System.Core</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
   </ItemGroup>
+    <ItemGroup>
+      <None Include="$(OutputPath)$(AssemblyName).pdb">
+        <Pack>true</Pack>
+        <PackagePath>lib\$(TargetFramework)</PackagePath>
+      </None>
+    </ItemGroup>
 </Project>

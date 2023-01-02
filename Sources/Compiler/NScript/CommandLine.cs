@@ -3,10 +3,11 @@
     using System;
     using System.Collections.Generic;
     using NScript.Converter;
+    using NScript.Csc.Lib;
 
     internal static class CommandLine
     {
-        private static void Main(string[] args)
+        public static int RunCs2jsc(string[] args)
         {
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
@@ -49,7 +50,7 @@
 
             stopWatch.Stop();
             System.Console.WriteLine("TimeTaken: {0}ms", stopWatch.ElapsedMilliseconds);
-            System.Environment.Exit(0);
+            return 0;
         }
     }
 }

@@ -1,7 +1,7 @@
 {	"version": "3",
 	"file": "GeneratedScriptsSunlight.Framework.Test.js",
 	"sourceRoot": "GeneratedScriptsSunlight.Framework.Test.ashx",
-	"sources": ["C$/Users/Name/source/repos/cs2jsc1/master/Test/Framework/Sunlight.Framework.Test/GeneratedScriptsSunlight.Framework.Test.js",
+	"sources": ["c$/Users/Name/source/repos/cs2jsc1/master/Test/Framework/Sunlight.Framework.Test/GeneratedScriptsSunlight.Framework.Test.js",
 		"C$/Users/Name/source/repos/cs2jsc1/master/Test/Framework/Sunlight.Framework.Test/ContainerTests.cs",
 		"C$/Users/Name/source/repos/cs2jsc1/master/Test/Framework/Sunlight.Framework.Test/EventBusTests.cs",
 		"C$/Users/Name/source/repos/cs2jsc1/master/Test/Framework/Sunlight.Framework.Test/ObservableCollectionTests.cs",

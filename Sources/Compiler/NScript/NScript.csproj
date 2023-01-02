@@ -20,8 +20,9 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
-    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
+    <!-- <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath> -->
     <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>
+    <PackAsTool>true</PackAsTool>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="obj\**" />
@@ -32,6 +33,7 @@
     <ProjectReference Include="..\NScript.Converter\NScript.Converter.csproj" />
     <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj" />
     <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
+    <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="PluginConfig.xml">

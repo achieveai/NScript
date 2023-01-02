@@ -8,6 +8,7 @@
     <AssemblyName>Sunlight.Framework.UI.Test</AssemblyName>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
     <NScriptBinPath>$(NScriptToolSetPath)\bin\net6.0\</NScriptBinPath>
+    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\JsCsc.exe</CscToolExe>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
     <NoWarn>0824</NoWarn>

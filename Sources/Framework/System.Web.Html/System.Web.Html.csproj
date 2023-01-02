@@ -11,8 +11,10 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <!-- <OutputPath>$(NScriptToolSetPath)lib\</OutputPath> -->
     <!-- <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath> -->
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <PackageId>NScript.System.Web.Html</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,4 +23,10 @@
     <ProjectReference Include="../System.Web/System.Web.csproj" />
     <ProjectReference Include="../Microsoft.CSharp/Microsoft.CSharp.csproj" />
   </ItemGroup>
+    <ItemGroup>
+      <None Include="$(OutputPath)$(AssemblyName).pdb">
+        <Pack>true</Pack>
+        <PackagePath>lib\$(TargetFramework)</PackagePath>
+      </None>
+    </ItemGroup>
 </Project>

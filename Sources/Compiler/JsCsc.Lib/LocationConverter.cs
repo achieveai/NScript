@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+/*
 namespace JsCsc.Lib
 {
     using System;
@@ -1152,3 +1153,4 @@ namespace JsCsc.Lib
         #endregion IMonoAstVisitor<Location> Members
     }
 }
+*/

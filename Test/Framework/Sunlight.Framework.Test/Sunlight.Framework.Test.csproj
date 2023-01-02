@@ -11,6 +11,7 @@
     <GenerateJs>True</GenerateJs>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
+    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\JsCsc.exe</CscToolExe>
   </PropertyGroup>
 
   <ItemGroup>

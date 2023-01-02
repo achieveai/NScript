@@ -1,0 +1,1 @@
+dotnet tool run NScript cs2jsc %*

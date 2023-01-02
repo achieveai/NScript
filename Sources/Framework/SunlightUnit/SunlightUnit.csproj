@@ -13,7 +13,7 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <!-- <OutputPath>$(NScriptToolSetPath)lib\</OutputPath> -->
     <!-- <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath> -->
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\JsCsc.exe</CscToolExe>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
 

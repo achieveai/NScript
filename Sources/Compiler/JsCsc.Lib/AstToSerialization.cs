@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+/*
 namespace JsCsc.Lib
 {
     using System;
@@ -1996,3 +1997,5 @@ namespace JsCsc.Lib
         }
     }
 }
+
+*/

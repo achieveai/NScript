@@ -198,7 +198,7 @@ namespace NScript
                     case CurrentOption.References:
                         referenceDllsOption = args[iArg];
                         break;
-                    case CurrentOption.ReferenceHintPaths:
+                    // case CurrentOption.ReferenceHintPaths:
                     case CurrentOption.PluginHintPaths:
                         {
                             var paths = args[iArg].Trim();

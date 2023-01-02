@@ -10,7 +10,7 @@
     <AssemblyName>RealScript</AssemblyName>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\JsCsc.exe</CscToolExe>
     <OutputPath>$(ProjectDir)..\bin\</OutputPath>
     <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
