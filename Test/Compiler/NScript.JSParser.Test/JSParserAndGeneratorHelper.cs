@@ -91,5 +91,69 @@ namespace NScript.JSParser.Test
 
             Assert.AreEqual(jsOut, js);
         }
+
+        public static void CompareJstTokens(
+            ScopeBlock scopeBlock,
+            string resourceName)
+        {
+            var otherBlock = ReadJstFromResourceScript(resourceName);
+            var leftScript = GetJsFromScopeBlock(scopeBlock);
+            var rightScript = GetJsFromScopeBlock(otherBlock);
+
+            if (leftScript != rightScript)
+            {
+                Console.WriteLine("====== LeftScript ================================> ");
+                Console.WriteLine(leftScript);
+                Console.WriteLine("====== RightScript ==================================> ");
+                Console.WriteLine(rightScript);
+            }
+
+            Assert.AreEqual(
+                leftScript,
+                rightScript);
+        }
+
+        public static ScopeBlock ReadJstFromResourceScript(string resourceName)
+        {
+            var jsScript = GetResourceString(resourceName);
+            IdentifierScope globalScope = new IdentifierScope(true);
+
+            return Parser.Parse(
+                jsScript,
+                globalScope,
+                new TestTypeResolver(globalScope));
+        }
+
+        private static string GetJsFromScopeBlock(ScopeBlock scopeBlock)
+        {
+            var leftWriter = new JSWriter(true, false);
+            leftWriter.Write(scopeBlock);
+
+            var stringStreamLeft = new StringWriter();
+            leftWriter.Write(stringStreamLeft);
+
+            return stringStreamLeft.ToString();
+        }
+
+        /// <summary>
+        /// Gets the resource string.
+        /// </summary>
+        /// <param name="resourceName">Name of the resource.</param>
+        /// <returns>string from resource, if exists, else null.</returns>
+        public static string GetResourceString(
+            string resourceName)
+        {
+            using (var stream = typeof(JSParserAndGeneratorHelper)
+                .Assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream != null)
+                {
+                    TextReader reader = new StreamReader(stream);
+                    return reader.ReadToEnd().Trim();
+                }
+            }
+
+            return null;
+        }
     }
 }

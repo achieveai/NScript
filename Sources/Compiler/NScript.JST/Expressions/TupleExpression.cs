@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-
-namespace NScript.JST
+﻿namespace NScript.JST
 {
-    class TupleExpression: Expression
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
+    public class TupleExpression: Expression
     {
         private readonly IList<Expression> arguments;
 

@@ -1,421 +1,133 @@
 ﻿namespace NScript.JST.Visitors
 {
-    internal interface IJstVisitor
+    using System;
+
+    public interface IJstVisitor
     {
         void VisitArrayLiteralExpression(ArrayLiteralExpression expr)
-        {
-            foreach (var item in expr.Elements)
-            {
-                DispatchExpression(item);
-            }
-        }
+            => JstVisitorExtension.VisitArrayLiteralExpressionExt(this, expr);
 
         void VisitAwaitExpression(AwaitExpression expr)
-        {
-            DispatchExpression(expr.Expression);
-        }
+            => JstVisitorExtension.VisitAwaitExpressionExt(this, expr);
 
         void VisitBinaryExpression(BinaryExpression expr)
-        {
-            DispatchExpression(expr.Left);
-            DispatchExpression(expr.Right);
-        }
+            => JstVisitorExtension.VisitBinaryExpressionExt(this, expr);
 
         void VisitBooleanLiteralExpression(BooleanLiteralExpression expr)
-        {
-        }
+            => JstVisitorExtension.VisitBooleanLiteralExpressionExt(this, expr);
 
         void VisitConditionalOperatorExpression(ConditionalOperatorExpression expr)
-        {
-            DispatchExpression(expr.Condition);
-            DispatchExpression(expr.TrueExpression);
-            DispatchExpression(expr.FalseExpression);
-        }
+            => JstVisitorExtension.VisitConditionalOperatorExpressionExt(this, expr);
 
         void VisitDoubleLiteralExpression(DoubleLiteralExpression expr)
-        {
-        }
+            => JstVisitorExtension.VisitDoubleLiteralExpressionExt(this, expr);
 
         void VisitExpressionList(ExpressionsList expr)
-        {
-            for(var item in expr.Expressions)
-            {
-                DispatchExpression(item);
-            }
-        }
+            => JstVisitorExtension.VisitExpressionListExt(this, expr);
 
         void VisitFunctionExpression(FunctionExpression expr)
-        {
-            for(var item in expr.Statements)
-            {
-                DispatchStatement(item);
-            }
-        }
+            => JstVisitorExtension.VisitFunctionExpressionExt(this, expr);
 
         void VisitIdentifierExpression(IdentifierExpression expr)
-        {
-        }
+            => JstVisitorExtension.VisitIdentifierExpressionExt(this, expr);
 
         void VisitIdentifierStringExpression(IdentifierStringExpression expr)
-        {
-            DispatchExpression(expr.Expression);
-        }
+            => JstVisitorExtension.VisitIdentifierStringExpressionExt(this, expr);
 
         void VisitIndexExpression(IndexExpression expr)
-        {
-            DispatchExpression(expr.LeftExpression);
-            DispatchExpression(expr.RightExpression);
-        }
+            => JstVisitorExtension.VisitIndexExpressionExt(this, expr);
 
         void VisitInlineNewArrayInitializationExpression(InlineNewArrayInitialization expr)
-        {
-            foreach (var item in expr.Values)
-            {
-                DispatchExpression(item);
-            }
-        }
+            => JstVisitorExtension.VisitInlineNewArrayInitializationExpressionExt(this, expr);
 
         void VisitInlineObjectInitializerExpression(InlineObjectInitializer expr)
-        {
-            foreach (var item in expr.Initializers)
-            {
-                DispatchExpression(item.Item1);
-                DispatchExpression(item.Item2);
-            }
-        }
+            => JstVisitorExtension.VisitInlineObjectInitializerExpressionExt(this, expr);
 
         void VisitMethodCallExpression(MethodCallExpression expr)
-        {
-            DispatchExpression(expr.MethodExpression);
-            foreach (var arg in expr.Arguments)
-            {
-                DispatchExpression(arg);
-            }
-        }
+            => JstVisitorExtension.VisitMethodCallExpressionExt(this, expr);
 
         void VisitNewArrayExpression(NewArrayExpression expr)
-        {
-            DispatchExpression(expr.Size);
-        }
+            => JstVisitorExtension.VisitNewArrayExpressionExt(this, expr);
 
         void VisitNewObjectExpression(NewObjectExpression expr)
-        {
-            DispatchExpression(expr.ObjectAccessExpression);
-            foreach (var arg in expr.Arguments)
-            {
-                DispatchExpression(arg);
-            }
-        }
+            => JstVisitorExtension.VisitNewObjectExpressionExt(this, expr);
 
         void VisitNullLiteralExpression(NullLiteralExpression expr)
-        {
-        }
+            => JstVisitorExtension.VisitNullLiteralExpressionExt(this, expr);
 
         void VisitNumberLiteralExpression(NumberLiteralExpression expr)
-        {
-        }
+            => JstVisitorExtension.VisitNumberLiteralExpressionExt(this, expr);
 
         void VisitScriptLiteralExpression(ScriptLiteralExpression expr)
-        {
-            foreach (var arg in expr.LiteralArguments)
-            {
-                DispatchExpression(arg);
-            }
-        }
+            => JstVisitorExtension.VisitScriptLiteralExpressionExt(this, expr);
 
         void VisitStringLiteralExpression(StringLiteralExpression expr)
-        {
-        }
+            => JstVisitorExtension.VisitStringLiteralExpressionExt(this, expr);
 
         void VisitThisExpression(ThisExpression expr)
-        {
-        }
+            => JstVisitorExtension.VisitThisExpressionExt(this, expr);
 
         void VisitThrowExpression(ThrowExpression throwExpression)
-        {
-            DispatchExpression(throwExpression.Expression);
-        }
+            => JstVisitorExtension.VisitThrowExpressionExt(this, throwExpression);
 
         void VisitTupleExpression(TupleExpression expr)
-        {
-            foreach (var arg in expr.Arguments)
-            {
-                DispatchExpression(arg);
-            }
-        }
+            => JstVisitorExtension.VisitTupleExpressionExt(this, expr);
 
         void VisitUnaryExpression(UnaryExpression expr)
-        {
-            DispatchExpression(expr.NestedExpression);
-        }
+            => JstVisitorExtension.VisitUnaryExpressionExt(this, expr);
 
         void VisitYieldExpression(YieldExpression expr)
-        {
-            if (expr.YieldValueOpt != null)
-            {
-                DispatchExpression(expr.YieldValueOpt);
-            }
-        }
+            => JstVisitorExtension.VisitYieldExpressionExt(this, expr);
 
         void DispatchExpression(Expression expr)
-        {
-            switch(expr)
-            {
-                case ArrayLiteralExpression arrayLiteralExpression:
-                    VisitArrayLiteralExpression(arrayLiteralExpression);
-                    break;
-                case AwaitExpression awaitExpression:
-                    VisitAwaitExpression(awaitExpression);
-                    break;
-                case BinaryExpression binaryExpression:
-                    VisitBinaryExpression(binaryExpression);
-                    break;
-                case BooleanLiteralExpression booleanLiteralExpression:
-                    VisitBooleanLiteralExpression(booleanLiteralExpression);
-                    break;
-                case ConditionalOperatorExpression conditionalOperatorExpression:
-                    VisitConditionalOperatorExpression(conditionalOperatorExpression);
-                    break;
-                case DoubleLiteralExpression doubleLiteralExpression:
-                    VisitDoubleLiteralExpression(doubleLiteralExpression);
-                    break;
-                case ExpressionsList expressionsList:
-                    VisitExpressionList(expressionsList);
-                    break;
-                case FunctionExpression functionExpression:
-                    VisitFunctionExpression(functionExpression);
-                    break;
-                case IdentifierExpression identifierExpression:
-                    VisitIdentifierExpression(identifierExpression);
-                    break;
-                case IdentifierStringExpression identifierStringExpression:
-                    VisitIdentifierStringExpression(identifierStringExpression);
-                    break;
-                case IndexExpression indexExpression:
-                    VisitIndexExpression(indexExpression);
-                    break;
-                case InlineNewArrayInitialization inlineNewArrayInitialization:
-                    VisitInlineNewArrayInitializationExpression(inlineNewArrayInitialization);
-                    break;
-                case InlineObjectInitializer inlineObjectInitializer:
-                    VisitInlineObjectInitializerExpression(inlineObjectInitializer);
-                    break;
-                case MethodCallExpression methodCallExpression:
-                    VisitMethodCallExpression(methodCallExpression);
-                    break;
-                case NewArrayExpression newArrayExpression:
-                    VisitNewArrayExpression(newArrayExpression);
-                    break;
-                case NewObjectExpression newObjectExpression:
-                    VisitNewObjectExpression(newObjectExpression);
-                    break;
-                case NullLiteralExpression nullLiteralExpression:
-                    VisitNullLiteralExpression(nullLiteralExpression);
-                    break;
-                case NumberLiteralExpression numberLiteralExpression:
-                    VisitNumberLiteralExpression(numberLiteralExpression);
-                    break;
-                case ScriptLiteralExpression scriptLiteralExpression:
-                    VisitScriptLiteralExpression(scriptLiteralExpression);
-                    break;
-                case ScriptLiteralExpression scriptLiteralExpression:
-                    VisitScriptLiteralExpression(scriptLiteralExpression);
-                    break;
-                case ThisExpression thisExpression:
-                    VisitThisExpression(thisExpression);
-                    break;
-                case ThrowExpression throwExpression:
-                    VisitThrowExpression(throwExpression);
-                    break;
-                case TupleExpression tupleExpression:
-                    VisitTupleExpression(tupleExpression);
-                    break;
-                case UnaryExpression unaryExpression:
-                    VisitUnaryExpression(unaryExpression);
-                    break;
-                case YieldExpression yieldExpression:
-                    VisitYieldExpression(yieldExpression);
-                    break;
-                default: throw new NotImplementedException();
-            }
-        }
+            => JstVisitorExtension.DispatchExpressionExt(this, expr);
 
         void VisitBreakStatement(BreakStatement breakStatement)
-        { }
+            => JstVisitorExtension.VisitBreakStatementExt(this, breakStatement);
 
         void VisitContinueStatement(ContinueStatement continueStatement)
-        {
-        }
+            => JstVisitorExtension.VisitContinueStatementExt(this, continueStatement);
 
         void VisitCatchHandler(CatchHandler catchHandler)
-        {
-            if (catchHandler.Identifier != null)
-            {
-                DispatchExpression(catchHandler.Identifier);
-            }
-
-            DispatchStatement(catchHandler.CatchBlock);
-        }
+            => JstVisitorExtension.VisitCatchHandlerExt(this, catchHandler);
 
         void VisitDoWhileLoop(DoWhileLoop doWhileLoop)
-        {
-            DispatchStatement(doWhileLoop.Loop);
-            DispatchExpression(doWhileLoop.Condition);
-        }
+            => JstVisitorExtension.VisitDoWhileLoopExt(this, doWhileLoop);
 
         void VisitExpressionStatement(ExpressionStatement expressionStatement)
-        {
-            DispatchExpression(expressionStatement.Expression);
-        }
+            => JstVisitorExtension.VisitExpressionStatementExt(this, expressionStatement);
 
         void VisitForInLoop(ForInLoop forLoop)
-        {
-            DispatchStatement(forLoop.Loop);
-            DispatchExpression(forLoop.Collection);
-            DispatchExpression(forLoop.Key);
-        }
+            => JstVisitorExtension.VisitForInLoopExt(this, forLoop);
 
         void VisitForLoop(ForLoop forLoop)
-        {
-            DispatchStatement(forLoop.InitializationBlock);
-            DispatchExpression(forLoop.Condition);
-            DispatchStatement(forLoop.Loop);
-            DispatchStatement(forLoop.IncrementBlock);
-        }
+            => JstVisitorExtension.VisitForLoopExt(this, forLoop);
 
         void VisitIfBlockStatement(IfBlockStatement ifBlockStatement)
-        {
-            DispatchExpression(ifBlockStatement.Condition);
-            DispatchStatement(ifBlockStatement.TrueBlock);
-            if (ifBlockStatement.FalseBlock != null)
-            {
-                DispatchStatement(ifBlockStatement.FalseBlock);
-            }
-        }
+            => JstVisitorExtension.VisitIfBlockStatementExt(this, ifBlockStatement);
 
         void VisitInitializerStatement(InitializerStatement initializerStatement)
-        {
-            foreach (var init in initializerStatement.Initializers)
-            {
-                DispatchExpression(init);
-            }
-        }
+            => JstVisitorExtension.VisitInitializerStatementExt(this, initializerStatement);
 
         void VisitReturnStatement(ReturnStatement returnStatement)
-        {
-            if (returnStatement.ReturnExpression != null)
-            {
-                DispatchExpression(returnStatement.ReturnExpression);
-            }
-        }
+            => JstVisitorExtension.VisitReturnStatementExt(this, returnStatement);
 
         void VisitScopeBlock(ScopeBlock scopeBlock)
-        {
-            foreach (var statement in scopeBlock.Statements)
-            {
-                DispatchStatement(statement);
-            }
-        }
+            => JstVisitorExtension.VisitScopeBlockExt(this, scopeBlock);
 
         void VisitSwitchBlockStatement(SwitchBlockStatement switchBlockStatement)
-        {
-            DispatchExpression(switchBlockStatement.Key);
-            foreach (var caseBlock in switchBlockStatement.CaseBlocks)
-            {
-                foreach(var caseExpr in caseBlock.Key)
-                {
-                    DispatchExpression(caseExpr);
-                }
-
-                DispatchStatement(caseBlock.Value);
-            }
-        }
+            => JstVisitorExtension.VisitSwitchBlockStatementExt(this, switchBlockStatement);
 
         void VisitTryCatchFinallyBlock(TryCatchFinalyBlock tryCatchFinalyBlock)
-        {
-            DispatchStatement(tryCatchFinalyBlock.Try);
-            if (tryCatchFinalyBlock.Catch != null)
-            {
-                VisitCatchHandler(tryCatchFinalyBlock.Catch);
-            }
-
-            if (tryCatchFinalyBlock.Finally != null)
-            {
-                DispatchStatement(tryCatchFinalyBlock.Finally);
-            }
-        }
+            => JstVisitorExtension.VisitTryCatchFinallyBlockExt(this, tryCatchFinalyBlock);
 
         void VisitVarInitializerStatement(VarInitializerStatement varInitializerStatement)
-        {
-            foreach (var item in varInitializerStatement.Initializers)
-            {
-                DispatchExpression(item);
-            }
-        }
+            => JstVisitorExtension.VisitVarInitializerStatementExt(this, varInitializerStatement);
 
         void VisitWhileLoop(WhileLoop whileLoop)
-        {
-            if (whileLoop.Condition!= null)
-            {
-                DispatchExpression(whileLoop.Condition);
-            }
-
-            DispatchStatement(whileLoop.Loop);
-        }
-
+            => JstVisitorExtension.VisitWhileLoopExt(this, whileLoop);
 
         void DispatchStatement(Statement statement)
-        {
-            switch(statement)
-            {
-                case BreakStatement breakStatement:
-                    VisitBinaryExpression(breakStatement);
-                    break;
-                case CatchHandler catchHandler:
-                    VisitCatchHandler(catchHandler);
-                    break;
-                case ContinueStatement continueStatement:
-                    VisitContinueStatement(continueStatement);
-                    break;
-                case DoWhileLoop doWhileLoop:
-                    VisitDoWhileLoop(doWhileLoop);
-                    break;
-                case ExpressionStatement expressionStatement:
-                    VisitExpressionStatement(expressionStatement);
-                    break;
-                case ForInLoop forInLoop:
-                    VisitForInLoop(forInLoop);
-                    break;
-                case ForLoop forLoop:
-                    VisitForLoop(forLoop);
-                    break;
-                case IfBlockStatement ifBlockStatement:
-                    VisitIfBlockStatement(ifBlockStatement);
-                    break;
-                case InitializerStatement initializerStatement:
-                    VisitInitializerStatement(initializerStatement);
-                    break;
-                case ReturnStatement returnStatement:
-                    VisitReturnStatement(returnStatement);
-                    break;
-                case ScopeBlock scopeBlock:
-                    VisitScopeBlock(scopeBlock);
-                    break;
-                case SwitchBlockStatement switchBlockStatement:
-                    VisitSwitchBlockStatement(switchBlockStatement);
-                    break;
-                case TryCatchFinalyBlock tryCatchFinalyBlock:
-                    VisitTryCatchFinallyBlock(tryCatchFinalyBlock);
-                    break;
-                case VarInitializerStatement varInitializerStatement:
-                    VisitVarInitializerStatement(varInitializerStatement);
-                    break;
-                case WhileLoop whileLoop:
-                    VisitWhileLoop(whileLoop);
-                    break;
-                default: throw new NotImplementedException();
-
-            }
-        }
+            => JstVisitorExtension.DispatchStatementExt(this, statement);
     }
 }

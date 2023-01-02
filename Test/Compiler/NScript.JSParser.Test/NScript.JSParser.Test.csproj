@@ -4,6 +4,12 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="InlineOptimizers\SimpleInlinableMethods.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="InlineOptimizers\SimpleInlinableMethods.js" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Update="System.Core" />
     <Reference Update="System.Xml.Linq" />
   </ItemGroup>
@@ -14,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
