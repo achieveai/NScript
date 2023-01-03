@@ -1,4 +1,4 @@
-﻿namespace NScript
+﻿namespace NScript.Lib
 {
     using System;
     using System.Collections.Generic;
@@ -6,9 +6,9 @@
     using NScript.Converter.Plugins;
     using XwmlParser;
 
-    internal static class CommandLine
+    public static class NScriptCompiler
     {
-        public static int RunCs2jsc(string[] args)
+        public static int Compile(string[] args)
         {
             ParseOptions parseOptions = ParseOptions.ParseArgs(args);
 

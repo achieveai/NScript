@@ -1,5 +1,5 @@
 ﻿(function(){
-var TestObservabelCollectionTransformer___notificationCount, TestObservabelCollectionTransformer___expectedCounts, List_$Int32$_, TestObservabelCollectionTransformer___expectedIndexes, TestObservabelCollectionTransformer___list, List_$Number$_, ObservableCollection_$Int32$_, ObservableCollection_$Number$_, HeaderInjectableTransformer_$Number_x_Number$_, ArrayG_$Int32$_, TestObservabelCollectionTransformer___listTransformer, ObservableCollectionGenerator_$Number_x_String$_, ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, Type__typeMapping, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_;
+var TestObservabelCollectionTransformer___notificationCount, TestObservabelCollectionTransformer___expectedCounts, List_$Int32$_, TestObservabelCollectionTransformer___expectedIndexes, TestObservabelCollectionTransformer___list, List_$Number$_, ObservableCollection_$Int32$_, ObservableCollection_$Number$_, HeaderInjectableTransformer_$Number_x_Number$_, ArrayG_$Int32$_, TestObservabelCollectionTransformer___listTransformer, ObservableCollectionGenerator_$Number_x_String$_, ArrayG_$String$_, ArrayG_$Func_$Object_x_Object$_$_, Type__typeMapping, StringDictionary_$TypeRegistry$_, StringDictionary_$Function$_, StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_, ArrayG_$Object$_, ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_, ptyp_, Func_$Object_x_Object$_, Action_$INotifyPropertyChanged_x_String$_, tmplStore;
 Function.typeId = "m";
 Type__typeMapping = null;
 function Type__AsType(this_, instance) {
@@ -3655,6 +3655,17 @@ Action_$INotifyPropertyChanged_x_String$_._tri();
 StringDictionary_$Action_$INotifyPropertyChanged_x_String$_$_._tri();
 ArrayG_$Object$_._tri();
 ArrayG_$Action_$INotifyPropertyChanged_x_String$_$_._tri();
+tmplStore = [];
+function DocStorageGetter(doc) {
+  var style;
+  if (!doc.stateStore) {
+    doc.stateStore = [];
+    style = doc.createElement("style");
+    style.textContent = "";
+    doc.head.appendChild(style);
+  }
+  return doc.stateStore;
+};
 QUnit.module("Sunlight.Framework.Test.ContainerTests", {
 });
 QUnit.test("TestRegisterResolve", ContainerTests__TestRegisterResolve);

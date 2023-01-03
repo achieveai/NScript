@@ -4946,42 +4946,6 @@ StringDictionary_$Function$_._tri();
 ArrayG_$Number$_._tri();
 KeyValuePair_$String_x_Int32$_._tri();
 StringDictionary_$Int32$_._tri();
-QUnit.module("Sunlight.Framework.UI.Test.LiveBinderTests", {
-  "before": LiveBinderTests__Setup
-});
-QUnit.test("TestLiveBinderOnActivate", LiveBinderTests__TestLiveBinderOnActivate);
-QUnit.test("TestLiveBinderOnChange", LiveBinderTests__TestLiveBinderOnChange);
-QUnit.test("TestLiveBinderMultiOnActivate", LiveBinderTests__TestLiveBinderMultiOnActivate);
-QUnit.test("TestLiveBinderMultiOnChange", LiveBinderTests__TestLiveBinderMultiOnChange);
-QUnit.test("TestTwoWayLiveBinderOnChange", LiveBinderTests__TestTwoWayLiveBinderOnChange);
-QUnit.test("TestTwoWayLiveBinderMultiOnChangeWithConverters", LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters);
-QUnit.module("Sunlight.Framework.UI.Test.NScriptsTemplateTests", {
-  "before": NScriptsTemplateTests__Setup
-});
-QUnit.test("Test", NScriptsTemplateTests__Test);
-QUnit.test("TestApplySkin", NScriptsTemplateTests__TestApplySkin);
-QUnit.test("TestCssBinder", NScriptsTemplateTests__TestCssBinder);
-QUnit.test("TestStyleBinder", NScriptsTemplateTests__TestStyleBinder);
-QUnit.test("TestAttrBinder", NScriptsTemplateTests__TestAttrBinder);
-QUnit.test("TestPropertyBinder", NScriptsTemplateTests__TestPropertyBinder);
-QUnit.module("Sunlight.Framework.UI.Test.ManualTemplateTests", {
-  "before": ManualTemplateTests__Setup
-});
-QUnit.test("Test", ManualTemplateTests__Test);
-QUnit.module("Sunlight.Framework.UI.Test.SkinBinderHelperTests", {
-});
-QUnit.test("TestSimpleBinder", SkinBinderHelperTests__TestSimpleBinder);
-QUnit.test("TestAttrBinding", SkinBinderHelperTests__TestAttrBinding);
-QUnit.test("TestStyleBinding", SkinBinderHelperTests__TestStyleBinding);
-QUnit.test("TestTextContentBinding", SkinBinderHelperTests__TestTextContentBinding);
-QUnit.module("Sunlight.Framework.UI.Test.TestListView", {
-  "before": TestListView__Setup
-});
-QUnit.test("TestChildSkin", TestListView__TestChildSkin);
-QUnit.test("TestHeaderSkin", TestListView__TestHeaderSkin);
-QUnit.module("Sunlight.Framework.UI.Test.UIElementTests", {
-});
-QUnit.test("TestNewUIElement", UIElementTests__TestNewUIElement);
 function Test$5cTemplates$5cTestTemplate1_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {
@@ -5168,5 +5132,41 @@ function DocStorageGetter(doc) {
   }
   return doc.stateStore;
 };
+QUnit.module("Sunlight.Framework.UI.Test.LiveBinderTests", {
+  "before": LiveBinderTests__Setup
+});
+QUnit.test("TestLiveBinderOnActivate", LiveBinderTests__TestLiveBinderOnActivate);
+QUnit.test("TestLiveBinderOnChange", LiveBinderTests__TestLiveBinderOnChange);
+QUnit.test("TestLiveBinderMultiOnActivate", LiveBinderTests__TestLiveBinderMultiOnActivate);
+QUnit.test("TestLiveBinderMultiOnChange", LiveBinderTests__TestLiveBinderMultiOnChange);
+QUnit.test("TestTwoWayLiveBinderOnChange", LiveBinderTests__TestTwoWayLiveBinderOnChange);
+QUnit.test("TestTwoWayLiveBinderMultiOnChangeWithConverters", LiveBinderTests__TestTwoWayLiveBinderMultiOnChangeWithConverters);
+QUnit.module("Sunlight.Framework.UI.Test.NScriptsTemplateTests", {
+  "before": NScriptsTemplateTests__Setup
+});
+QUnit.test("Test", NScriptsTemplateTests__Test);
+QUnit.test("TestApplySkin", NScriptsTemplateTests__TestApplySkin);
+QUnit.test("TestCssBinder", NScriptsTemplateTests__TestCssBinder);
+QUnit.test("TestStyleBinder", NScriptsTemplateTests__TestStyleBinder);
+QUnit.test("TestAttrBinder", NScriptsTemplateTests__TestAttrBinder);
+QUnit.test("TestPropertyBinder", NScriptsTemplateTests__TestPropertyBinder);
+QUnit.module("Sunlight.Framework.UI.Test.ManualTemplateTests", {
+  "before": ManualTemplateTests__Setup
+});
+QUnit.test("Test", ManualTemplateTests__Test);
+QUnit.module("Sunlight.Framework.UI.Test.SkinBinderHelperTests", {
+});
+QUnit.test("TestSimpleBinder", SkinBinderHelperTests__TestSimpleBinder);
+QUnit.test("TestAttrBinding", SkinBinderHelperTests__TestAttrBinding);
+QUnit.test("TestStyleBinding", SkinBinderHelperTests__TestStyleBinding);
+QUnit.test("TestTextContentBinding", SkinBinderHelperTests__TestTextContentBinding);
+QUnit.module("Sunlight.Framework.UI.Test.TestListView", {
+  "before": TestListView__Setup
+});
+QUnit.test("TestChildSkin", TestListView__TestChildSkin);
+QUnit.test("TestHeaderSkin", TestListView__TestHeaderSkin);
+QUnit.module("Sunlight.Framework.UI.Test.UIElementTests", {
+});
+QUnit.test("TestNewUIElement", UIElementTests__TestNewUIElement);
 })();
 //# sourceMappingURL=GeneratedScriptsSunlight.Framework.UI.Test.map

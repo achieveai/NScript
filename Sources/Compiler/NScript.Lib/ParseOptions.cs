@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace NScript
+namespace NScript.Lib
 {
     using System;
     using System.Collections.Generic;
