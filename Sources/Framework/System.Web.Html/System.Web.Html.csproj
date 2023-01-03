@@ -9,8 +9,6 @@
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <!-- <OutputPath>$(NScriptToolSetPath)lib\</OutputPath> -->
-    <!-- <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath> -->
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <PackageId>NScript.System.Web.Html</PackageId>

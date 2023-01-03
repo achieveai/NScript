@@ -4,13 +4,8 @@
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
-    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Decompiler\**" />
-    <EmbeddedResource Remove="Decompiler\**" />
-    <None Remove="Decompiler\**" />
-  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private">
       <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
@@ -22,12 +17,8 @@
       <HintPath>$(Dependencies)\Mono.Cecil.Private.Pdb.dll</HintPath>
     </Reference>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <!-- <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" /> -->
-  </ItemGroup>
-  <PropertyGroup />
 </Project>

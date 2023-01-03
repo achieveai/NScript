@@ -10,15 +10,9 @@
 		<NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(MSBuildThisFileDirectory)\..\</NScriptToolSetPath>
 		<NScriptBinPath Condition=" '$(NScriptBinPath)' == '' ">$(NScriptToolSetPath)\tools\net6.0\</NScriptBinPath>
 		<PluginConfig Condition=" '$(PluginConfig)' == '' ">$(NScriptBinPath)\PluginConfig.xml</PluginConfig>
-		<CscToolExe Condition=" '$(CscToolExe)' == '' ">csc.cmd</CscToolExe>
-		<NScriptExe Condition=" '$(CscToolExe)' == '' ">nscript.cmd</NScriptExe>
+		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
+		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
 	</PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="$(NScriptToolSetPath)/lib/*.dll">
-      <HintPath>$(MSBuildThisFileDirectory)lib</HintPath>
-    </Reference>
-  </ItemGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
 		<MsBuild

@@ -6,79 +6,10 @@
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageType>MSBuildSdk</PackageType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
   </PropertyGroup>
-
-  <Target Name="_WriteSharedFiles" AfterTargets="Build">
-        <PropertyGroup>
-            <_GlobalJson>
-                <![CDATA[
-{
-  "$schema": "https://json.schemastore.org/global.json",
-  "msbuild-sdks": {
-    "NScript.Sdk": "$(Version)"
-  }
-}
-                ]]>
-            </_GlobalJson>
-            <_NuGetConfig>
-                <![CDATA[
-<configuration>
-    <config>
-        <add key="globalPackagesFolder" value="$(PackageRestorePath)" />
-    </config>
-    <packageSources>
-        <add key="foo-sdk" value="$(PackageOutputPath)" />
-    </packageSources>
-</configuration>
-                ]]>
-            </_NuGetConfig>
-        </PropertyGroup>
-
-    </Target>
 
   <ItemGroup>
     <None Include="Sdk/*" Pack="true" PackagePath="%(RelativeDir)" />
   </ItemGroup>
-
-    <Target Name="_ClearPackageCache" AfterTargets="Build">
-      <PropertyGroup>
-          <_PackageDirectory>$(PackageRestorePath)$(PackageId.ToLowerInvariant())</_PackageDirectory>
-      </PropertyGroup>
-
-      <RemoveDir Directories="$(_PackageDirectory)" Condition="Exists('$(_PackageDirectory)')" />
-    </Target>
-<!-- 
-  <ItemGroup>
-    <ProjectReference Include="..\NScript\NScript.csproj" />
-    <ProjectReference Include="..\JsCsc\JsCsc.csproj" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyExtrasToPackage</TargetsForTfmSpecificBuildOutput>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CopyLibStuff</TargetsForTfmSpecificContentInPackage>
-  </PropertyGroup>
-
-  <Target Name="CopyExtrasToPackage" DependsOnTargets="ResolveReferences">
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(ToolStuff)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="CopyLibStuff" DependsOnTargets="ResolveReferences">
-    <ItemGroup>
-      <TfmSpecificPackageFile Include="@(LibStuff)">
-        <PackagePath>lib</PackagePath>
-      </TfmSpecificPackageFile>
-    </ItemGroup>
-  </Target>
-
-  <ItemGroup>
-    <ToolStuff Include="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/**/*" Exclude="$(NScriptToolsetDir)/bin/$(CompilerNetFramework)/ref/*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <LibStuff Include="$(NScriptToolsetDir)/lib/*" />
-  </ItemGroup> -->
 
 </Project>

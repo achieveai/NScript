@@ -8,21 +8,24 @@ namespace NScript
     {
         public static int Main(string[] args)
         {
-            Console.WriteLine($"Tool args (len: {args.Length}): ");
-            for (var i = 0; i < args.Length; i++)
-            {
-                Console.Write($"arg{i}: ");
-                Console.WriteLine(args[i]);
-            }
             if (args[0] == "csc")
             {
-                args[0] = "dotnet.exe";
                 return CscCompiler.Main(args.Skip(1).ToArray());
             }
-            else
+            else if (args[0] == "cs2jsc")
             {
                 return CommandLine.RunCs2jsc(args.Skip(1).ToArray());
             }
+            else
+            {
+                PrintUsage();
+                return 0;
+            }
+        }
+
+        public static void PrintUsage()
+        {
+            Console.WriteLine("Usage: NScript <csc | cs2jsc> <arguments>");
         }
     }
 }

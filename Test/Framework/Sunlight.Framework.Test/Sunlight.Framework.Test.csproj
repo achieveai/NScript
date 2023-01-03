@@ -11,13 +11,23 @@
     <GenerateJs>True</GenerateJs>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
-    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\JsCsc.exe</CscToolExe>
+    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <NScriptExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\NScript.exe</NScriptExe>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="PluginConfig.xml">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\SunlightUnit\SunlightUnit.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
   </ItemGroup>
 
   <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />

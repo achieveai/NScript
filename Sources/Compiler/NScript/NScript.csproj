@@ -3,26 +3,12 @@
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Exe</OutputType>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
     <!-- <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath> -->
     <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>
     <PackAsTool>true</PackAsTool>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="obj\**" />
@@ -34,6 +20,8 @@
     <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj" />
     <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
     <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
+    <ProjectReference Include="..\XwmlParser\XwmlParser.csproj" />
+    <ProjectReference Include="..\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="PluginConfig.xml">

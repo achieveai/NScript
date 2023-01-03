@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <NoStdLib>True</NoStdLib>
     <NoStandardLibraries>false</NoStandardLibraries>
     <CopyReferences>True</CopyReferences>
     <GenerateJs>True</GenerateJs>
     <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)\bin\netcoreapp3.1\</NScriptBinPath>
-    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\NScript)</NScriptToolSetPath>
-    <NScriptToolSetPath Condition=" '$(NScriptToolSetPath)' == '' ">$(Registry:HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\NScript)</NScriptToolSetPath>
+    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <OutputPath>bin\$(Configuration)</OutputPath>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <JsOutputPath>$(ProjectDir)..\TestWebApplication\GeneratedScripts</JsOutputPath>
@@ -23,7 +21,7 @@
     <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj" />
-    <ProjectReference Include="..\TestRunner\SunlightUnit.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\SunlightUnit\SunlightUnit.csproj" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
   <PropertyGroup>

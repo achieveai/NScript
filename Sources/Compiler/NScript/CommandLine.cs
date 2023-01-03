@@ -3,53 +3,41 @@
     using System;
     using System.Collections.Generic;
     using NScript.Converter;
-    using NScript.Csc.Lib;
+    using NScript.Converter.Plugins;
+    using XwmlParser;
 
     internal static class CommandLine
     {
         public static int RunCs2jsc(string[] args)
         {
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
             ParseOptions parseOptions = ParseOptions.ParseArgs(args);
 
             if (parseOptions == null)
             {
                 ParseOptions.PrintUsage();
                 _ = Console.ReadKey();
+                return 1;
             }
 
-            List<IConverterPlugin> plugins = new List<IConverterPlugin>();
-
-            var pluginsInfos = new List<PluginLoadInfo>();
-
-            if (parseOptions.PluginConfigFileName != null)
+            var plugins = new List<IConverterPlugin>()
             {
-                pluginsInfos = PluginLoadInfo.LoadPluginInfos(
-                    parseOptions.PluginConfigFileName,
-                    parseOptions.PluginHintPaths);
-            }
+                new XwmlTemplatingPlugin(),
+                new TestGenerator()
+            };
 
-            foreach (var pluginInfo in pluginsInfos)
-            {
-                var plugin = pluginInfo.GetScriptPlugin();
-
-                if (plugin != null)
-                {
-                    plugins.Add(plugin);
-                }
-            }
-
-            Converter.Builder builder = new Converter.Builder(
+            var builder = new Builder(
                 parseOptions.JsFileName,
                 parseOptions.EntryAssembly,
                 parseOptions.ReferenceDlls.ToArray(),
                 plugins.ToArray());
 
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             _ = builder.Execute();
 
             stopWatch.Stop();
-            System.Console.WriteLine("TimeTaken: {0}ms", stopWatch.ElapsedMilliseconds);
+            System.Console.WriteLine("TimeTaken[cs2jsc]: {0}ms", stopWatch.ElapsedMilliseconds);
             return 0;
         }
     }

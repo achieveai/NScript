@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-/*
 namespace JsCsc.Lib
 {
     using Mono.CSharp;
@@ -493,4 +492,3 @@ namespace JsCsc.Lib
         T Visit(DelegateInvocation statement);
     }
 }
-*/

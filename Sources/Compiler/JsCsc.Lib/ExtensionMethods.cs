@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-/*
 namespace JsCsc.Lib
 {
     using NScript.Utils;
@@ -131,4 +130,3 @@ namespace JsCsc.Lib
         }
     }
 }
-*/
