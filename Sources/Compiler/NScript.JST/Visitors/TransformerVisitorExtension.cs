@@ -111,7 +111,8 @@
                 expr.Location,
                 expr.Scope,
                 self.DispatchExpression(expr.LeftExpression),
-                self.DispatchExpression(expr.RightExpression));
+                self.DispatchExpression(expr.RightExpression),
+                expr.ForceIndexer);
 
         public static Expression VisitInlineNewArrayInitializationExpressionExt(this ITransformerVisitor self, InlineNewArrayInitialization expr)
             => new InlineNewArrayInitialization(
