@@ -4,6 +4,8 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="InlineOptimizers\MethodDisappearingRegression1.js" />
+    <None Remove="InlineOptimizers\MethodDisappearingRegression1_Post.js" />
     <None Remove="InlineOptimizers\ProxyMethodRegressions.js" />
     <None Remove="InlineOptimizers\ProxyMethodRegressions.yaml" />
     <None Remove="InlineOptimizers\ProxyMethodRegressions_Post.js" />
@@ -12,6 +14,8 @@
     <None Remove="InlineOptimizers\SimpleProxyFixerUsageCount.yaml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="InlineOptimizers\MethodDisappearingRegression1.js" />
+    <EmbeddedResource Include="InlineOptimizers\MethodDisappearingRegression1_Post.js" />
     <EmbeddedResource Include="InlineOptimizers\ProxyMethodRegressions.js" />
     <EmbeddedResource Include="InlineOptimizers\ProxyMethodRegressions.yaml" />
     <EmbeddedResource Include="InlineOptimizers\ProxyMethodRegressions_Post.js" />

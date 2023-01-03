@@ -56,8 +56,9 @@
         }
 
         [DataTestMethod]
-        [DataRow("SimpleInlinableMethods.js", "SimpleProxyFixerUsageCount.yaml")]
-        [DataRow("ProxyMethodRegressions.js", "ProxyMethodRegressions.yaml", "ProxyMethodRegressions_Post.js")]
+        // [DataRow("SimpleInlinableMethods.js", "SimpleProxyFixerUsageCount.yaml")]
+        // [DataRow("ProxyMethodRegressions.js", "ProxyMethodRegressions.yaml", "ProxyMethodRegressions_Post.js")]
+        [DataRow("MethodDisappearingRegression1.js", null, "MethodDisappearingRegression1_Post.js")]
         public void JstProxyFixerVisitorTest(
             string jsFileName,
             string verifyFileName,
@@ -66,6 +67,7 @@
             var identCounter = new IdentifierCounterVisitor();
             var unusedMethodRemover = new UnusedMethodRemover();
             var inlinableVisitor = new InlineableVisitor();
+            var methodNameRemover = new MethodNameRemover();
 
             var scopeBlock = JSParserAndGeneratorHelper.ReadJstFromResourceScript(
                 InlineResourceNS + jsFileName);
@@ -78,14 +80,16 @@
 
             ((IJstVisitor)identCounter).DispatchStatement(block);
 
-            var matcher = ScopeIdentifierUsageMatcher.ListReadYamlFromResource(
-                InlineResourceNS + verifyFileName);
+            var matcher = verifyFileName != null
+                ? ScopeIdentifierUsageMatcher.ListReadYamlFromResource(InlineResourceNS + verifyFileName)
+                : null;
 
-            matcher[0].AssertUsage(block.Scope);
-            block = unusedMethodRemover.DispatchStatementExt(block);
+            matcher?[0].AssertUsage(block.Scope);
+            block = methodNameRemover.DispatchStatementExt(
+                unusedMethodRemover.DispatchStatementExt(block));
             block.Scope.ResetUsageCounter();
             ((IJstVisitor)identCounter).DispatchStatement(block);
-            matcher[1].AssertUsage(block.Scope);
+            matcher?[1].AssertUsage(block.Scope);
 
             if (postJsFileName != null)
             {

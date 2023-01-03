@@ -95,20 +95,20 @@ namespace NScript.JSParser.Test
             string resourceName)
         {
             var otherBlock = ReadJstFromResourceScript(resourceName);
-            var leftScript = GetJsFromScopeBlock(scopeBlock);
-            var rightScript = GetJsFromScopeBlock(otherBlock);
+            var actualScript = GetJsFromScopeBlock(scopeBlock);
+            var expectedScript = GetJsFromScopeBlock(otherBlock);
 
-            if (leftScript != rightScript)
+            if (actualScript != expectedScript)
             {
-                Console.WriteLine("====== LeftScript ================================> ");
-                Console.WriteLine(leftScript);
-                Console.WriteLine("====== RightScript ==================================> ");
-                Console.WriteLine(rightScript);
+                Console.WriteLine("====== ExpectedScript ================================> ");
+                Console.WriteLine(expectedScript);
+                Console.WriteLine("====== ActualScript ==================================> ");
+                Console.WriteLine(actualScript);
             }
 
             Assert.AreEqual(
-                leftScript,
-                rightScript);
+                expectedScript,
+                actualScript);
         }
 
         public static ScopeBlock ReadJstFromResourceScript(string resourceName)
