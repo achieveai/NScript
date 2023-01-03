@@ -15,6 +15,7 @@
             => identifierExpression.Identifier is SimpleIdentifier identifier
                 && _inlinableInfo.TryGetValue(identifier, out var capture)
                 && capture.SimpleMethodProxy
+                && IsAccessible((SimpleIdentifier)capture.ProxyMethodIdentifier, identifierExpression.Scope)
                 ? VisitIdentifierExpression(
                     // Note: we have to make sure a proxy method is not pointing to another proxy method.
                     new IdentifierExpression(
@@ -25,5 +26,20 @@
                     identifierExpression.Identifier,
                     identifierExpression.Scope,
                     identifierExpression.Location);
+
+        private static bool IsAccessible(
+            SimpleIdentifier proxyIdentifier,
+            IdentifierScope currentScope)
+        {
+            while(currentScope != null) {
+                if (proxyIdentifier.OwnerScope == currentScope) {
+                    return true;
+                }
+
+                currentScope = currentScope.ParentScope;
+            }
+
+            return false;
+        }
     }
 }

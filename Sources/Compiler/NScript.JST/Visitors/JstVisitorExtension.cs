@@ -223,6 +223,9 @@
                 case ScriptLiteralExpression scriptLiteralExpression:
                     self.VisitScriptLiteralExpression(scriptLiteralExpression);
                     break;
+                case StringLiteralExpression stringLiteralExpression:
+                    self.VisitStringLiteralExpression(stringLiteralExpression);
+                    break;
                 case ThisExpression thisExpression:
                     self.VisitThisExpression(thisExpression);
                     break;
@@ -237,6 +240,8 @@
                     break;
                 case YieldExpression yieldExpression:
                     self.VisitYieldExpression(yieldExpression);
+                    break;
+                case null:
                     break;
                 default: throw new NotImplementedException();
             }
@@ -420,6 +425,8 @@
                     break;
                 case WhileLoop whileLoop:
                     self.VisitWhileLoop(whileLoop);
+                    break;
+                case null:
                     break;
                 default: throw new NotImplementedException();
 

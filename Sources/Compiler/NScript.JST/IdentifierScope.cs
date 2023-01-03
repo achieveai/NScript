@@ -243,7 +243,7 @@ namespace NScript.JST
             this.usedIdentifiers.Clear();
             this.usedIdentifiersSet.Clear();
             this.usedLocalIdentifiers.Clear();
-            this.ParameterIdentifiers.ForEach(parm => parm.ResetUsage());
+            this.paramaterIdentifiers?.ForEach(parm => parm.ResetUsage());
             this.scopedIdentifiers.ForEach(si => si.ResetUsage());
             this.childScopes.ForEach(cs => cs.ResetUsageCounter());
         }

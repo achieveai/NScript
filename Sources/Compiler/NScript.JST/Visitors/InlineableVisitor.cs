@@ -61,9 +61,12 @@
                     leakedScopes.ProxyMethodIdentifier = proxyMethod;
                 }
 
-                Functions.Add(
-                    funcExpression.Name,
-                    leakedScopes);
+                if (!Functions.ContainsKey(funcExpression.Name))
+                {
+                    Functions.Add(
+                        funcExpression.Name,
+                        leakedScopes);
+                }
             }
         }
 
@@ -97,14 +100,14 @@
                             && funcScope.ParameterIdentifiers.Contains(simpleIdent))
                         {
                             var parmIdx = funcScope.ParameterIdentifiers.IndexOf(simpleIdent);
-                            if (!funcScopeInfo.ParameterUsed.Contains(parmIdx))
+                            if (!funcScopeInfo.ParameterUses.ContainsKey(parmIdx))
                             {
                                 funcScopeInfo.ParameterUsed.Add(parmIdx);
                                 funcScopeInfo.ParameterUses.Add(parmIdx, 1);
                             }
                             else
                             {
-                                funcScopeInfo.ParameterUsed[parmIdx]++;
+                                funcScopeInfo.ParameterUses[parmIdx]++;
                             }
                         }
 

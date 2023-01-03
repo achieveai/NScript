@@ -129,9 +129,18 @@
 
             foreach (var item in expr.Initializers)
             {
-                rv.AddInitializer(
-                    (item.Item1 as IdentifierExpression).Identifier,
-                    self.DispatchExpression(item.Item2));
+                switch (item.Item1) {
+                    case IdentifierExpression identExp:
+                        rv.AddInitializer(
+                            identExp.Identifier,
+                            self.DispatchExpression(item.Item2));
+                        break;
+                    case StringLiteralExpression strExp:
+                        rv.AddInitializer(
+                            strExp.LiteralString,
+                            self.DispatchExpression(item.Item2));
+                        break;
+                }
             }
 
             return rv;
@@ -256,6 +265,8 @@
                     return self.VisitNumberLiteralExpression(numberLiteralExpression);
                 case ScriptLiteralExpression scriptLiteralExpression:
                     return self.VisitScriptLiteralExpression(scriptLiteralExpression);
+                case StringLiteralExpression stringLiteralExpression:
+                    return self.VisitStringLiteralExpression(stringLiteralExpression);
                 case ThisExpression thisExpression:
                     return self.VisitThisExpression(thisExpression);
                 case ThrowExpression throwExpression:
@@ -266,6 +277,8 @@
                     return self.VisitUnaryExpression(unaryExpression);
                 case YieldExpression yieldExpression:
                     return self.VisitYieldExpression(yieldExpression);
+                case null:
+                    return null;
                 default: throw new NotImplementedException();
             }
         }
@@ -436,6 +449,8 @@
                     return self.VisitWhileLoop(whileLoop);
                 case EmptyStatement blankStatement:
                     return self.VisitEmptyStatement(blankStatement);
+                case null:
+                    return null;
                 default: throw new NotImplementedException();
             }
         }
