@@ -5,6 +5,7 @@
 
     using NScript.JST.Visitors;
     using System.Linq;
+    using NScript.JST;
 
     [TestClass]
     public class JstOptimizerTests
@@ -54,15 +55,20 @@
             matchers[2].AssertUsage(scopeBlock.Scope);
         }
 
-        [TestMethod]
-        public void JstProxyFixerVisitorTest()
+        [DataTestMethod]
+        [DataRow("SimpleInlinableMethods.js", "SimpleProxyFixerUsageCount.yaml")]
+        [DataRow("ProxyMethodRegressions.js", "ProxyMethodRegressions.yaml", "ProxyMethodRegressions_Post.js")]
+        public void JstProxyFixerVisitorTest(
+            string jsFileName,
+            string verifyFileName,
+            string postJsFileName = null)
         {
             var identCounter = new IdentifierCounterVisitor();
             var unusedMethodRemover = new UnusedMethodRemover();
             var inlinableVisitor = new InlineableVisitor();
 
             var scopeBlock = JSParserAndGeneratorHelper.ReadJstFromResourceScript(
-                InlineResourceNS + "SimpleInlinableMethods.js");
+                InlineResourceNS + jsFileName);
             ((IJstVisitor)inlinableVisitor).DispatchStatement(scopeBlock);
 
             var proxyFixer = new ProxyFixer(inlinableVisitor.Functions);
@@ -73,13 +79,20 @@
             ((IJstVisitor)identCounter).DispatchStatement(block);
 
             var matcher = ScopeIdentifierUsageMatcher.ListReadYamlFromResource(
-                InlineResourceNS + "SimpleProxyFixerUsageCount.yaml");
+                InlineResourceNS + verifyFileName);
 
             matcher[0].AssertUsage(block.Scope);
-            block = unusedMethodRemover.DispatchStatementExt(scopeBlock);
+            block = unusedMethodRemover.DispatchStatementExt(block);
             block.Scope.ResetUsageCounter();
             ((IJstVisitor)identCounter).DispatchStatement(block);
             matcher[1].AssertUsage(block.Scope);
+
+            if (postJsFileName != null)
+            {
+                JSParserAndGeneratorHelper.CompareJstTokens(
+                    block as ScopeBlock,
+                    InlineResourceNS + postJsFileName);
+            }
         }
     }
 }

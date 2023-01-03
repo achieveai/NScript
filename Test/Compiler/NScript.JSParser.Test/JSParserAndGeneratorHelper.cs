@@ -7,8 +7,6 @@
 namespace NScript.JSParser.Test
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NScript.JST;
     using System.IO;
@@ -124,7 +122,7 @@ namespace NScript.JSParser.Test
                 new TestTypeResolver(globalScope));
         }
 
-        private static string GetJsFromScopeBlock(ScopeBlock scopeBlock)
+        public static string GetJsFromScopeBlock(ScopeBlock scopeBlock)
         {
             var leftWriter = new JSWriter(true, false);
             leftWriter.Write(scopeBlock);

@@ -88,6 +88,8 @@
         public void AssertUsage(IdentifierScope scope)
         {
             Assert.IsTrue(IsMatch(scope));
+            CheckUsages(scope);
+
             scope.ChildScopes
                 .ForEach(scope =>
                 {
@@ -116,6 +118,15 @@
         {
             var jsScript = JSParserAndGeneratorHelper.GetResourceString(resourceFileName);
             return S_deserializer.Deserialize<ScopeIdentifierUsageMatcher>(jsScript);
+        }
+
+        private void CheckUsages(IdentifierScope scope)
+        {
+            scope.ParameterIdentifiers.ForEach(
+                ident => Assert.AreEqual(
+                    UsedIdentifiers[ident.SuggestedName],
+                    ident.UsageCount,
+                    $"Usage for {ident.SuggestedName}"));
         }
     }
 }

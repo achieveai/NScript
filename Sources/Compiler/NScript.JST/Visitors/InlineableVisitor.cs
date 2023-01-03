@@ -49,7 +49,11 @@
                     {
                         MethodCallExpression callExpr => callExpr.MethodExpression is IdentifierExpression identifier
                             && identifier.Identifier is SimpleIdentifier simpleIdentifier
-                            && !callExpr.Arguments.Any(expr => expr is not IdentifierExpression)
+                            && callExpr.Arguments // All the parameters should be in same positions (trailing could be missing)
+                                .Select((a,i) => a is IdentifierExpression identExpr
+                                    && identExpr.Identifier is SimpleIdentifier simpleIdent
+                                    && funcExpression.Parameters.IndexOf(simpleIdent) == i)
+                                .All(t => t)
                             ? simpleIdentifier : null,
                         _ => null,
                     };

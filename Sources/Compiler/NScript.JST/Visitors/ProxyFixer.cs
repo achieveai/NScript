@@ -12,20 +12,30 @@
         }
 
         public Expression VisitIdentifierExpression(IdentifierExpression identifierExpression)
-            => identifierExpression.Identifier is SimpleIdentifier identifier
+        {
+            if (identifierExpression.Identifier is SimpleIdentifier identifier
                 && _inlinableInfo.TryGetValue(identifier, out var capture)
-                && capture.SimpleMethodProxy
-                && IsAccessible((SimpleIdentifier)capture.ProxyMethodIdentifier, identifierExpression.Scope)
-                ? VisitIdentifierExpression(
-                    // Note: we have to make sure a proxy method is not pointing to another proxy method.
-                    new IdentifierExpression(
-                        capture.ProxyMethodIdentifier,
+                )
+            {
+                return capture.SimpleMethodProxy
+                    && IsAccessible((SimpleIdentifier)capture.ProxyMethodIdentifier, identifierExpression.Scope)
+                    ? VisitIdentifierExpression(
+                        // Note: we have to make sure a proxy method is not pointing to another proxy method.
+                        new IdentifierExpression(
+                            capture.ProxyMethodIdentifier,
+                            identifierExpression.Scope,
+                            identifierExpression.Location))
+                    : new IdentifierExpression(
+                        identifierExpression.Identifier,
                         identifierExpression.Scope,
-                        identifierExpression.Location))
-                : new IdentifierExpression(
-                    identifierExpression.Identifier,
-                    identifierExpression.Scope,
-                    identifierExpression.Location);
+                        identifierExpression.Location);
+            }
+
+            return new IdentifierExpression(
+                        identifierExpression.Identifier,
+                        identifierExpression.Scope,
+                        identifierExpression.Location);
+        }
 
         private static bool IsAccessible(
             SimpleIdentifier proxyIdentifier,
