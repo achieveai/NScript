@@ -202,19 +202,19 @@ namespace NScript.Converter
                     var identCounter = new IdentifierCounterVisitor();
                     var unusedMethodRemover = new UnusedMethodRemover();
                     var inlinableVisitor = new InlineableVisitor();
+                    var methodNameRemover = new MethodNameRemover();
 
                     statements.ForEach(((IJstVisitor)inlinableVisitor).DispatchStatement);
                     var proxyFixer = new ProxyFixer(inlinableVisitor.Functions);
                     statements = statements
-                        .Select(((ITransformerVisitor)proxyFixer).DispatchStatement)
-                        .ToList();
+                        .ConvertAll(((ITransformerVisitor)proxyFixer).DispatchStatement);
 
                     runtimeManager.Scope.ResetUsageCounter();
                     runtimeManager.JSBaseObjectScopeManager.InstanceScope.ResetUsageCounter();
                     statements.ForEach(((IJstVisitor)identCounter).DispatchStatement);
                     statements = statements
-                        .Select(((ITransformerVisitor)unusedMethodRemover).DispatchStatement)
-                        .ToList();
+                        .ConvertAll(((ITransformerVisitor)methodNameRemover).DispatchStatement)
+                        .ConvertAll(((ITransformerVisitor)unusedMethodRemover).DispatchStatement);
                 }
 
                 var stopWatch = new System.Diagnostics.Stopwatch();
