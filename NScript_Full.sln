@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsCsc", "Sources\Compiler\J
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsCsc.Lib", "Sources\Compiler\JsCsc.Lib\JsCsc.Lib.csproj", "{CCF76780-E1CB-4EC8-832B-1378CAF0B694}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript", "Sources\Compiler\NScript\NScript.csproj", "{1619FBAF-D0C6-4D3A-8484-3F81BF70944B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cs2Jsc", "Sources\Compiler\NScript\Cs2Jsc.csproj", "{1619FBAF-D0C6-4D3A-8484-3F81BF70944B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.CLR", "Sources\Compiler\NScript.CLR\NScript.CLR.csproj", "{B23A005D-3573-44BE-B27D-E5080675A3B7}"
 EndProject
@@ -127,9 +127,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Sdk", "Sources\Comp
 		{A60706FF-08D7-4320-99F9-A2413275CDF6} = {A60706FF-08D7-4320-99F9-A2413275CDF6}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cs2Jsc", "Sources\Compiler\Cs2Jsc\Cs2Jsc.csproj", "{4E349C71-4777-49D0-AFF2-07BF5C215C41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript", "Sources\Compiler\Cs2Jsc\NScript.csproj", "{4E349C71-4777-49D0-AFF2-07BF5C215C41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cs2Jsc.Lib", "Sources\Compiler\Cs2Jsc.Lib\Cs2Jsc.Lib.csproj", "{0BA648BB-6E4B-49FC-BBFE-A373EE51B6DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Lib", "Sources\Compiler\Cs2Jsc.Lib\NScript.Lib.csproj", "{0BA648BB-6E4B-49FC-BBFE-A373EE51B6DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
