@@ -205,12 +205,16 @@ namespace NScript.Converter
 
                     statements.ForEach(((IJstVisitor)inlinableVisitor).DispatchStatement);
                     var proxyFixer = new ProxyFixer(inlinableVisitor.Functions);
-                    statements.ForEach(((IJstVisitor)proxyFixer).DispatchStatement);
+                    statements = statements
+                        .Select(((ITransformerVisitor)proxyFixer).DispatchStatement)
+                        .ToList();
 
                     runtimeManager.Scope.ResetUsageCounter();
                     runtimeManager.JSBaseObjectScopeManager.InstanceScope.ResetUsageCounter();
                     statements.ForEach(((IJstVisitor)identCounter).DispatchStatement);
-                    statements.ForEach(((IJstVisitor)unusedMethodRemover).DispatchStatement);
+                    statements = statements
+                        .Select(((ITransformerVisitor)unusedMethodRemover).DispatchStatement)
+                        .ToList();
                 }
 
                 var stopWatch = new System.Diagnostics.Stopwatch();
