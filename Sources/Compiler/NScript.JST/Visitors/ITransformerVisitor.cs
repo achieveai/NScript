@@ -92,6 +92,9 @@
         Statement VisitDoWhileLoop(DoWhileLoop doWhileLoop)
             => TransformerVisitorExtension.VisitDoWhileLoopExt(this, doWhileLoop);
 
+        Statement VisitEmptyStatement(EmptyStatement statement)
+            => TransformerVisitorExtension.VisitEmptyStatementExt(this, statement);
+
         Statement VisitExpressionStatement(ExpressionStatement expressionStatement)
             => TransformerVisitorExtension.VisitExpressionStatementExt(this, expressionStatement);
 

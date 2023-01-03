@@ -293,6 +293,9 @@
                 self.DispatchExpression(doWhileLoop.Condition),
                 self.DispatchStatement(doWhileLoop.Loop));
 
+        public static Statement VisitEmptyStatementExt(this ITransformerVisitor self, EmptyStatement statement)
+            => new EmptyStatement(statement.Location, statement.Scope);
+
         public static Statement VisitExpressionStatementExt(this ITransformerVisitor self, ExpressionStatement expressionStatement)
             => new ExpressionStatement(
                 expressionStatement.Location,
@@ -348,6 +351,7 @@
                 scopeBlock.Scope,
                 scopeBlock.Statements
                     .Select(self.DispatchStatement)
+                    .Where(item => item != null && item is not EmptyStatement)
                     .ToList());
 
         public static Statement VisitSwitchBlockStatementExt(this ITransformerVisitor self, SwitchBlockStatement switchBlockStatement)
@@ -360,6 +364,7 @@
                         KeyValuePair.Create(
                             caseBlock.Key
                                 .Select(self.DispatchExpression)
+                                .Where(item => item != null)
                                 .ToList(),
                             self.DispatchStatement(caseBlock.Value)))
                     .ToList());
@@ -385,6 +390,7 @@
                 varInitializerStatement.Scope,
                 varInitializerStatement.Initializers
                     .Select(self.DispatchExpression)
+                    .Where(i => i != null)
                     .ToList());
 
         public static Statement VisitWhileLoopExt(this ITransformerVisitor self, WhileLoop whileLoop)
@@ -428,6 +434,8 @@
                     return self.VisitTryCatchFinallyBlock(tryCatchFinalyBlock);
                 case WhileLoop whileLoop:
                     return self.VisitWhileLoop(whileLoop);
+                case EmptyStatement blankStatement:
+                    return self.VisitEmptyStatement(blankStatement);
                 default: throw new NotImplementedException();
             }
         }

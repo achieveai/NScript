@@ -1,0 +1,12 @@
+﻿- Decls: "add:4; add2:1; add3:2; isMatch:1"
+  SubMatchers:
+  - Params:  "i:2; j:2"
+  - Params:  "l:2; r:2"
+  - Params: "i1:2; j:2"
+  - Params:  "i:2; j:2; k:2"
+- Decls: "add:1; add2:0; add3:1; isMatch:0"
+  SubMatchers:
+  - Params:  "i:2; j:2"
+  - Params:  "l:0; r:0"
+  - Params: "i1:0; j:0"
+  - Params:  "i:2; j:2; k:2"

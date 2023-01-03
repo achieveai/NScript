@@ -14,6 +14,7 @@ namespace NScript.Converter
     using NScript.Utils;
     using Mono.Cecil;
     using System.Linq;
+    using NScript.JST.Visitors;
 
     /// <summary>
     /// Definition for Builder.
@@ -196,14 +197,30 @@ namespace NScript.Converter
                             new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
                 }
 
+                if (release)
+                {
+                    var identCounter = new IdentifierCounterVisitor();
+                    var unusedMethodRemover = new UnusedMethodRemover();
+                    var inlinableVisitor = new InlineableVisitor();
+
+                    statements.ForEach(((IJstVisitor)inlinableVisitor).DispatchStatement);
+                    var proxyFixer = new ProxyFixer(inlinableVisitor.Functions);
+                    statements.ForEach(((IJstVisitor)proxyFixer).DispatchStatement);
+
+                    runtimeManager.Scope.ResetUsageCounter();
+                    runtimeManager.JSBaseObjectScopeManager.InstanceScope.ResetUsageCounter();
+                    statements.ForEach(((IJstVisitor)identCounter).DispatchStatement);
+                    statements.ForEach(((IJstVisitor)unusedMethodRemover).DispatchStatement);
+                }
+
                 var stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, false);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, this.release);
                 stopWatch.Stop();
                 System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
                 stopWatch.Restart();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, false);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, this.release);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
                 var writer = new JSWriter(true, false);

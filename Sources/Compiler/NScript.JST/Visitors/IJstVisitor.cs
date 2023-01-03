@@ -94,6 +94,9 @@
         void VisitDoWhileLoop(DoWhileLoop doWhileLoop)
             => JstVisitorExtension.VisitDoWhileLoopExt(this, doWhileLoop);
 
+        void VisitEmptyStatement(EmptyStatement emptyStatement)
+            => JstVisitorExtension.VisitEmptyStatementExt(this, emptyStatement);
+
         void VisitExpressionStatement(ExpressionStatement expressionStatement)
             => JstVisitorExtension.VisitExpressionStatementExt(this, expressionStatement);
 

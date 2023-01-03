@@ -8,59 +8,60 @@
 
     public class InlineableVisitor : IJstVisitor
     {
-        Dictionary<IIdentifier, FuncStackCapture> functions = new();
-        Stack<FuncStackCapture> identfierScopes = new();
+        readonly Stack<FuncStackCapture> _identifierScopes = new();
 
-        public Dictionary<IIdentifier, FuncStackCapture> Functions => functions;
+        public Dictionary<IIdentifier, FuncStackCapture> Functions { get; } = new();
 
         public void VisitFunctionExpression(FunctionExpression funcExpression)
         {
-            identfierScopes.Push(new()
+            _identifierScopes.Push(new()
             {
                 FunctionExpression = funcExpression,
             });
 
             this.VisitFunctionExpressionExt(funcExpression);
 
-            var leakedScopes = identfierScopes.Pop();
+            var leakedScopes = _identifierScopes.Pop();
 
             if (funcExpression.Name != null)
             {
-                bool simpleMethodCall = false;
+                SimpleIdentifier proxyMethod = null;
                 // If no parameter is used more than once,
                 // and the order of use of parameters is exactly as passed in.
                 var simpleInlinableMethod = !leakedScopes.ParameterUses.Any(kv => kv.Value > 1)
-                    && !leakedScopes.ParameterUsed.Pairwise((l, r) => l < r).Any(v => !v);
+                    && leakedScopes.ParameterUsed.Pairwise((l, r) => l < r).All(v => v);
 
                 leakedScopes.SimpleInlinableMethod = simpleInlinableMethod;
                 leakedScopes.MethodName = funcExpression.Name.GetName();
 
                 if (funcExpression.Statements.Count == 1)
                 {
-                    simpleMethodCall = ((funcExpression.Statements[0] switch
+                    proxyMethod = funcExpression.Statements[0] switch
                     {
                         ScopeBlock scopeBlock => scopeBlock.Statements.Count == 1 ? scopeBlock.Statements[0] : null,
                         Statement stmt => stmt
-                    }) switch
+                    } switch
                     {
                         ReturnStatement returnStatement => returnStatement.ReturnExpression as MethodCallExpression,
                         ExpressionStatement exprStatement => exprStatement.Expression as MethodCallExpression,
                         _ => null
-                    }) switch
+                    } switch
                     {
                         MethodCallExpression callExpr => callExpr.MethodExpression is IdentifierExpression identifier
-                            && identifier.Identifier is SimpleIdentifier
-                            && !callExpr.Arguments.Any(expr => expr is not IdentifierExpression),
-                        _ => false,
+                            && identifier.Identifier is SimpleIdentifier simpleIdentifier
+                            && !callExpr.Arguments.Any(expr => expr is not IdentifierExpression)
+                            ? simpleIdentifier : null,
+                        _ => null,
                     };
                 }
 
-                if (simpleMethodCall && simpleInlinableMethod)
+                if (proxyMethod != null && simpleInlinableMethod)
                 {
                     leakedScopes.SimpleMethodProxy = true;
+                    leakedScopes.ProxyMethodIdentifier = proxyMethod;
                 }
 
-                functions.Add(
+                Functions.Add(
                     funcExpression.Name,
                     leakedScopes);
             }
@@ -74,12 +75,12 @@
 
         public void VisitThisExpression(ThisExpression expr)
         {
-            identfierScopes.Peek().UsesThis = true;
+            _identifierScopes.Peek().UsesThis = true;
         }
 
         private void VisitIdentifier(IIdentifier identifier)
         {
-            if (identifier.IsEmpty)
+            if (_identifierScopes.Count == 0)
             {
                 return;
             }
@@ -89,7 +90,7 @@
                 case SimpleIdentifier simpleIdent:
                     {
                         var scope = simpleIdent.OwnerScope;
-                        var funcScopeInfo = identfierScopes.Peek();
+                        var funcScopeInfo = _identifierScopes.Peek();
                         var funcScope = funcScopeInfo.FunctionExpression.Scope;
 
                         if (scope == funcScope
@@ -143,6 +144,8 @@
             public bool UsesThis { get; set; }
 
             public bool SimpleInlinableMethod { get; set; }
+
+            public IIdentifier ProxyMethodIdentifier { get; set; }
 
             public string MethodName { get; set; }
 

@@ -265,6 +265,9 @@
             self.DispatchExpression(doWhileLoop.Condition);
         }
 
+        public static void VisitEmptyStatementExt(this IJstVisitor self, EmptyStatement emptyStatement)
+        { }
+
         public static void VisitExpressionStatementExt(this IJstVisitor self, ExpressionStatement expressionStatement)
         {
             self.DispatchExpression(expressionStatement.Expression);
@@ -381,6 +384,9 @@
                     break;
                 case DoWhileLoop doWhileLoop:
                     self.VisitDoWhileLoop(doWhileLoop);
+                    break;
+                case EmptyStatement emptyStatement:
+                    self.VisitEmptyStatement(emptyStatement);
                     break;
                 case ExpressionStatement expressionStatement:
                     self.VisitExpressionStatement(expressionStatement);

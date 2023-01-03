@@ -5,9 +5,13 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="InlineOptimizers\SimpleInlinableMethods.js" />
+    <None Remove="InlineOptimizers\SimpleInlinableUsageCountTest.yaml" />
+    <None Remove="InlineOptimizers\SimpleProxyFixerUsageCount.yaml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="InlineOptimizers\SimpleInlinableMethods.js" />
+    <EmbeddedResource Include="InlineOptimizers\SimpleInlinableUsageCountTest.yaml" />
+    <EmbeddedResource Include="InlineOptimizers\SimpleProxyFixerUsageCount.yaml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Update="System.Core" />
@@ -26,5 +30,6 @@
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
+    <PackageReference Include="YamlDotNet" Version="12.3.1" />
   </ItemGroup>
 </Project>
