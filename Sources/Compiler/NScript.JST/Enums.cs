@@ -580,7 +580,7 @@ namespace NScript.JST
         /// <summary>
         /// { symbol
         /// </summary>
-        BrackedOpenCurly,
+        BracketOpenCurly,
 
         /// <summary>
         /// } symbol

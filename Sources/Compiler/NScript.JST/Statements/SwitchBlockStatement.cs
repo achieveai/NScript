@@ -94,7 +94,7 @@ namespace NScript.JST
                 .Write(this.statementValue)
                 .Write(Symbols.BracketCloseRound)
                 .EnterScope()
-                .Write(Symbols.BrackedOpenCurly);
+                .Write(Symbols.BracketOpenCurly);
 
             foreach (var keyValuePair in this.caseBlocks)
             {

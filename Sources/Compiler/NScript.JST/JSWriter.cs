@@ -615,7 +615,7 @@ namespace NScript.JST
                     return "&";
                 case Symbols.AndEquals:
                     return "&=";
-                case Symbols.BrackedOpenCurly:
+                case Symbols.BracketOpenCurly:
                     return "{";
                 case Symbols.BracketCloseCurly:
                     return "}";
@@ -964,7 +964,7 @@ namespace NScript.JST
 
                         break;
 
-                    case Symbols.BrackedOpenCurly:
+                    case Symbols.BracketOpenCurly:
                         if (!this.HasSpaceBefore(node))
                         {
                             this.InsertSpace(node, true);
@@ -972,6 +972,17 @@ namespace NScript.JST
 
                         break;
                     case Symbols.BracketCloseCurly:
+                        {
+                            var token = this.GetNonOptimizableTokenBefore(node);
+                            if (token != null
+                                && token is SymbolToken symToken
+                                && symToken.Symbol == Symbols.BracketOpenCurly)
+                            {
+                                this.InsertSpace(node, true);
+                                break;
+                            }
+                        }
+
                         this.tokens.AddBefore(
                             node,
                             new LinkedListNode<TokenBase>(

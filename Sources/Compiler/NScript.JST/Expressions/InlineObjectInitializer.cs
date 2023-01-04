@@ -109,7 +109,7 @@ namespace NScript.JST
         {
             if (this.initializers.Count > 0)
             {
-                _ = writer.Write(Symbols.BrackedOpenCurly)
+                _ = writer.Write(Symbols.BracketOpenCurly)
                     .EnterScope();
 
                 for (int initializerIndex = 0;
@@ -143,7 +143,7 @@ namespace NScript.JST
             }
             else
             {
-                _ = writer.Write(Symbols.BrackedOpenCurly)
+                _ = writer.Write(Symbols.BracketOpenCurly)
                     .Write(Symbols.BracketCloseCurly);
             }
         }

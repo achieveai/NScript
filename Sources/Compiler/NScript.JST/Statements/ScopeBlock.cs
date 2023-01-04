@@ -91,7 +91,7 @@ namespace NScript.JST
             if (this.Statements.Count > 1
                 || forceBraces)
             {
-                writer.Write(Symbols.BrackedOpenCurly)
+                writer.Write(Symbols.BracketOpenCurly)
                     .EnterScope();
 
                 foreach (var statement in this.Statements)

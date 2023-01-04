@@ -19,7 +19,6 @@
 
         public override void Write(JSWriter writer)
         {
-            writer.Write(Symbols.SemiColon);
         }
     }
 }
