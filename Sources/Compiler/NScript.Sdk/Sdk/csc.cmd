@@ -1,1 +1,1 @@
-dotnet tool run NScript csc %*
+dotnet Cs2Jsc csc %*
