@@ -92,6 +92,12 @@ namespace NScript.JST
             get { return this.name; }
         }
 
+        public IdentifierScope InnerScope => innerScope;
+
+        public bool IsAsync => this.isAsync;
+
+        public bool IsGenerator => this.isGenerator;
+
         /// <summary>
         /// Gets the parameters.
         /// </summary>
@@ -204,8 +210,20 @@ namespace NScript.JST
                 writer.Write(this.parameters[argumentIndex]);
             }
 
+            if (this.Statements.Count == 0
+                || this.Statements.Count == 1
+                    && this.Statements[0] is ScopeBlock scopeBlock
+                    && scopeBlock.Statements.Count == 0)
+            {
+                writer.Write(Symbols.BracketCloseRound)
+                    .Write(Symbols.BracketOpenCurly)
+                    .Write(Symbols.BracketCloseCurly);
+
+                return;
+            }
+
             writer.Write(Symbols.BracketCloseRound)
-                .Write(Symbols.BrackedOpenCurly)
+                .Write(Symbols.BracketOpenCurly)
                 .EnterScope();
 
             if (this.innerScope.UsedLocalIdentifiers.Count > 0)

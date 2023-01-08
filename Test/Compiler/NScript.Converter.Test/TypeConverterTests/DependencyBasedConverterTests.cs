@@ -40,6 +40,7 @@ namespace NScript.Converter.Test.TypeConverterTests
             TypeConverterHelper.RunTest(
                 DependencyBasedConverterTests.TestFilesNSStr + "SimpleStaticDependencyType.js",
                 TestType.All,
+                false,
                 Tuple.Create("SimpleStaticType", "GetField"));
         }
 
@@ -52,6 +53,7 @@ namespace NScript.Converter.Test.TypeConverterTests
             TypeConverterHelper.RunTest(
                 DependencyBasedConverterTests.TestFilesNSStr + "SimpleInstanceDependencyType.js",
                 TestType.All,
+                false,
                 Tuple.Create("SimpleInstanceType", "GetField"));
         }
     }

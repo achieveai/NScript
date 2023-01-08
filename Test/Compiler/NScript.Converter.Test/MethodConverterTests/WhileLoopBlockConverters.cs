@@ -26,11 +26,11 @@ namespace NScript.Converter.Test.MethodConverterTests
 
         [DataTestMethod]
         [DataRow(TestClassNameStr, "DoWhileLoop", "DoWhileLoop.js", TestType.All)]
-        [DataRow(TestClassNameStr, "WhileLoop", "WhileLoop.js", TestType.All)]
         [DataRow(TestClassNameStr, "DoWhilePaddedLoop", "DoWhilePaddedLoop.js", TestType.All)]
-        [DataRow(TestClassNameStr, "WhilePaddedLoop", "WhilePaddedLoop.js", TestType.All)]
+        [DataRow(TestClassNameStr, "WhileLoop", "WhileLoop.js", TestType.All)]
         [DataRow(TestClassNameStr, "WhileLoopWithBreak", "WhileLoopWithBreak.js", TestType.All)]
         [DataRow(TestClassNameStr, "WhileLoopWithContinue", "WhileLoopWithContinue.js", TestType.Debug)]
+        [DataRow(TestClassNameStr, "WhilePaddedLoop", "WhilePaddedLoop.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -38,7 +38,9 @@ namespace NScript.Converter.Test.MethodConverterTests
                 className,
                 methodName,
                 testType,
-                true);
+                true,
+                false,
+                false);
         }
     }
 }

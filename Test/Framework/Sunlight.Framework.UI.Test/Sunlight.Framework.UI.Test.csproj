@@ -6,9 +6,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Sunlight.Framework.UI.Test</RootNamespace>
     <AssemblyName>Sunlight.Framework.UI.Test</AssemblyName>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
-    <NScriptExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\NScript.exe</NScriptExe>
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
     <NoWarn>0824</NoWarn>

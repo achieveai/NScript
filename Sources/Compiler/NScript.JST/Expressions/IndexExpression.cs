@@ -87,6 +87,8 @@ namespace NScript.JST
             }
         }
 
+        public bool ForceIndexer => forceIndexer;
+
         /// <summary>
         /// Gets the precedence.
         /// </summary>

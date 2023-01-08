@@ -27,9 +27,11 @@
 
             var builder = new Builder(
                 parseOptions.JsFileName,
+                parseOptions.JsParts,
                 parseOptions.EntryAssembly,
                 parseOptions.ReferenceDlls.ToArray(),
-                plugins.ToArray());
+                plugins.ToArray(),
+                parseOptions.Release);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();

@@ -34,12 +34,13 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "GetSomething", "GetSomething.js", TestType.All)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
-            /*ConverterTestHelpers.RunTest(
+            ConverterTestHelpers.RunTest(
                 TestFilesNSStr + resourceName,
                 className,
                 methodName,
                 testType,
-                true);*/
+                true,
+                false);
         }
     }
 }

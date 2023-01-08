@@ -31,7 +31,9 @@ namespace NScript.Converter.Test.MethodConverterTests
                 YieldReturn.TestFilesNSStr + fileName,
                 "YieldReturnTests.<GetEnumeratorNestedFor>d__5",
                 "MoveNext",
-                testType);
+                testType,
+                false,
+                false);
         }
     }
 }

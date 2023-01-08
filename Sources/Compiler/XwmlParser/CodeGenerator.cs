@@ -298,11 +298,12 @@ namespace XwmlParser
             methodRef = methodRef.FixGenericTypeArguments(
                 propertyReference.DeclaringType);
 
+            var methodDefinition = methodRef.Resolve();
             return MethodCallExpressionConverter.CreateMethodCallExpression(
                 new MethodCallContext(
                     instanceExpression,
                     methodRef,
-                    methodRef.Resolve().IsVirtual),
+                    methodDefinition.IsVirtual && !methodDefinition.IsFinal),
                 new Expression[] {
                     valueExpression
                 },
@@ -800,12 +801,13 @@ namespace XwmlParser
                 }
             }
 
+            var methodDefinition = methodReference.Resolve();
             expression =
                 MethodCallExpressionConverter.CreateMethodCallExpression(
                     new MethodCallContext(
                         expression,
                         methodReference,
-                        methodReference.Resolve().IsVirtual),
+                        methodDefinition.IsVirtual && !methodDefinition.IsFinal),
                     args,
                     this.Resolver,
                     this.scopeManager);

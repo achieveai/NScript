@@ -9,11 +9,11 @@
     }
     case 1: {
       Class1__GetMoreStatic(action);
-      this.simpleIntSwitch(oldItems.V_get_Length());
+      this.simpleIntSwitch(oldItems.gl());
       break;
     }
     case 2: {
-      for (index = 0; index < newItems.V_get_Length(); ++index) {
+      for (index = 0; index < newItems.gl(); ++index) {
         if (!!this.oldItems)
           this.oldItems.set_item(changeIndex + index, newItems.get_item(index));
         this.newItems.set_item(changeIndex + index, newItems.get_item(index));
@@ -21,8 +21,8 @@
       break;
     }
     case 4: {
-      Class1__GetMoreStatic(this.newItems.V_get_Length());
-      for (index = 0; index < this.newItems.V_get_Length(); ++index)
+      Class1__GetMoreStatic(this.newItems.gl());
+      for (index = 0; index < this.newItems.gl(); ++index)
         this.oldItems.set_item(index, newItems.get_item(index));
       break;
     }

@@ -26,27 +26,42 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
-        [DataRow("get_InlineProp", "InlineProp.js", TestType.All)]
-        [DataRow("AddNum", "AddNum.js", TestType.All)]
-        [DataRow("NameofField", "NameofField.js", TestType.All)]
-        [DataRow("get_InitProp", "InitProp.js", TestType.All)]
-        [DataRow("OutVarParam", "OutVar.js", TestType.All)]
-        [DataRow("TestConditionalAccess", "TestConditionalAccess.js", TestType.All)]
-        [DataRow("TestConditionalAccess2", "TestConditionalAccess2.js", TestType.All)]
-        [DataRow("TestConditionalInvoke", "TestConditionalInvoke.js", TestType.All)]
-        [DataRow("TestNestedFunction", "TestNestedFunction.js", TestType.All)]
-        [DataRow("TestNestedFunctionCrossReferenced", "TestNestedFunctionCrossReferenced.js", TestType.All)]
-        [DataRow("TestNestedFunctionScoped", "TestNestedFunctionScoped.js", TestType.All)]
-        [DataRow("CallWithDefaultParameter", "CallWithDefaultParameter.js", TestType.All)]
-        [DataRow("DiscardVariable", "DiscardVariable.js", TestType.All)]
-        public void Test(string methodName, string resourceName, TestType testType)
+        [DataRow("AddNum", "AddNum.js", TestType.All, false)]
+        [DataRow("AddNum", "AddNum.static.js", TestType.All, true)]
+        [DataRow("CallWithDefaultParameter", "CallWithDefaultParameter.js", TestType.All, false)]
+        [DataRow("CallWithDefaultParameter", "CallWithDefaultParameter.js", TestType.All, true)]
+        [DataRow("DiscardVariable", "DiscardVariable.js", TestType.All, false)]
+        [DataRow("DiscardVariable", "DiscardVariable.js", TestType.All, true)]
+        [DataRow("NameofField", "NameofField.js", TestType.All, false)]
+        [DataRow("NameofField", "NameofField.static.js", TestType.All, true)]
+        [DataRow("OutVarParam", "OutVar.js", TestType.All, false)]
+        [DataRow("OutVarParam", "OutVar.static.js", TestType.All, true)]
+        [DataRow("TestConditionalAccess", "TestConditionalAccess.js", TestType.All, false)]
+        [DataRow("TestConditionalAccess", "TestConditionalAccess.static.js", TestType.All, true)]
+        [DataRow("TestConditionalAccess2", "TestConditionalAccess2.js", TestType.All, false)]
+        [DataRow("TestConditionalAccess2", "TestConditionalAccess2.static.js", TestType.All, true)]
+        [DataRow("TestConditionalInvoke", "TestConditionalInvoke.js", TestType.All, false)]
+        [DataRow("TestConditionalInvoke", "TestConditionalInvoke.js", TestType.All, true)]
+        [DataRow("TestNestedFunction", "TestNestedFunction.js", TestType.All, false)]
+        [DataRow("TestNestedFunction", "TestNestedFunction.static.js", TestType.All, true)]
+        [DataRow("TestNestedFunctionCrossReferenced", "TestNestedFunctionCrossReferenced.js", TestType.All, false)]
+        [DataRow("TestNestedFunctionCrossReferenced", "TestNestedFunctionCrossReferenced.static.js", TestType.All, true)]
+        [DataRow("TestNestedFunctionScoped", "TestNestedFunctionScoped.js", TestType.All, false)]
+        [DataRow("TestNestedFunctionScoped", "TestNestedFunctionScoped.static.js", TestType.All, true)]
+        [DataRow("get_InitProp", "InitProp.js", TestType.All, false)]
+        [DataRow("get_InitProp", "InitProp.static.js", TestType.All, true)]
+        [DataRow("get_InlineProp", "InlineProp.js", TestType.All, false)]
+        [DataRow("get_InlineProp", "InlineProp.static.js", TestType.All, true)]
+        public void Test(string methodName, string resourceName, TestType testType, bool isInstanceStatic)
         {
             ConverterTestHelpers.RunTest(
                 NewFeatureConverters.TestFilesNSStr + resourceName,
                 NewFeatureConverters.TestClassNameStr,
                 methodName,
                 testType,
-                true);
+                true,
+                false,
+                isInstanceStatic);
         }
 
         public async Task<int> NoTestAsync()

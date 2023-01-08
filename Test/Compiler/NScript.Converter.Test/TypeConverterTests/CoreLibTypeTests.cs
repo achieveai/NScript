@@ -67,6 +67,7 @@ namespace NScript.Converter.Test.TypeConverterTests
                 CoreLibTypeTests.TestFilesNSStr + resourceName,
                 TestType.All,
                 true,
+                false,
                 classNames);
         }
     }

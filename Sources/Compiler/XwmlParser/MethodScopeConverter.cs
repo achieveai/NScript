@@ -6,6 +6,8 @@
 
 namespace XwmlParser
 {
+    using JavaScriptEngineSwitcher.Core;
+
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
     using System;
@@ -68,6 +70,10 @@ namespace XwmlParser
         {
             throw new NotImplementedException();
         }
+
+        public void PushJsScope(IdentifierScope scope) => throw new NotImplementedException();
+
+        public void PopJsScope() => throw new NotImplementedException();
 
         public NScript.JST.IIdentifier GetTempVariable()
         {

@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <CscToolExe>$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
+        <NScriptExe>$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
+    </PropertyGroup>
+</Project>

@@ -8,6 +8,8 @@ namespace NScript.JST
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
     using NScript.Utils;
 
     /// <summary>
@@ -31,6 +33,7 @@ namespace NScript.JST
             IdentifierScope scope)
             : base(location, scope)
         {
+            Initializers = new ReadOnlyCollection<Tuple<Expression,Expression>>(initializers);
         }
 
         /// <summary>
@@ -83,6 +86,9 @@ namespace NScript.JST
             }
         }
 
+        public IReadOnlyList<Tuple<Expression, Expression>> Initializers
+        { get; }
+
         /// <summary>
         /// Serializes the specified serializer.
         /// </summary>
@@ -103,7 +109,7 @@ namespace NScript.JST
         {
             if (this.initializers.Count > 0)
             {
-                _ = writer.Write(Symbols.BrackedOpenCurly)
+                _ = writer.Write(Symbols.BracketOpenCurly)
                     .EnterScope();
 
                 for (int initializerIndex = 0;
@@ -137,7 +143,7 @@ namespace NScript.JST
             }
             else
             {
-                _ = writer.Write(Symbols.BrackedOpenCurly)
+                _ = writer.Write(Symbols.BracketOpenCurly)
                     .Write(Symbols.BracketCloseCurly);
             }
         }

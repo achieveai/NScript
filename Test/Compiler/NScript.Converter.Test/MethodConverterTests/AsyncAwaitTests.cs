@@ -17,20 +17,28 @@
         }
 
         [DataTestMethod]
-        [DataRow(TestClassNameStr, "Test1", "Test1.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test2", "Test2.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test3", "Test3.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test4", "Test4.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test5", "Test5.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Test8", "Test8.js", TestType.All)]
-        public void TestMcs(string className, string methodName, string resourceName, TestType testType)
+        [DataRow(TestClassNameStr, "Test1", "Test1.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Test2", "Test2.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Test3", "Test3.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Test4", "Test4.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Test5", "Test5.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Test8", "Test8.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Test3", "Test3.static.js", TestType.All, true)]
+        public void TestMcs(
+            string className,
+            string methodName,
+            string resourceName,
+            TestType testType,
+            bool isInstanceAsStatic)
         {
             ConverterTestHelpers.RunTest(
                 TestFilesNSStr + resourceName,
                 className,
                 methodName,
                 testType,
-                true);
+                true,
+                false,
+                isInstanceAsStatic);
         }
     }
 }

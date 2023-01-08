@@ -1,21 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NScript.JST
+﻿namespace NScript.JST
 {
-    class TupleExpression: Expression
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
+    public class TupleExpression: Expression
     {
         private readonly IList<Expression> arguments;
+
         private readonly IList<string> parameterNames;
 
-        TupleExpression(NScript.Utils.Location location, IdentifierScope scope,
-            IList<string> parameterNames, IList<Expression> arguments)
+        public TupleExpression(
+            NScript.Utils.Location location,
+            IdentifierScope scope,
+            IList<string> parameterNames,
+            IList<Expression> arguments)
             : base(location, scope)
         {
             this.parameterNames = parameterNames;
             this.arguments = arguments;
+            Arguments = new ReadOnlyCollection<Expression>(arguments);
+            ParameterNames = new ReadOnlyCollection<string>(parameterNames);
         }
+
+        public ReadOnlyCollection<Expression> Arguments { get; }
+
+        public ReadOnlyCollection<string> ParameterNames { get; }
 
         public override void Write(JSWriter writer)
         {

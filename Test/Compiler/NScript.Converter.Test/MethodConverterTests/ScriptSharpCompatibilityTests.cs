@@ -26,53 +26,27 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
-        public void TestReturnIntrinsicProperty()
+        [DataRow(TestClassNameStr, "GetDictionary", "GetDictionary.js", TestType.All, false, false)]
+        [DataRow(TestClassNameStr, "ReturnIntrinsicIndexer", "ReturnIntrinsicIndexer.js", TestType.All, false, false)]
+        [DataRow(TestClassNameStr, "ReturnIntrinsicProperty", "ReturnIntrinsicProperty.js", TestType.All, false, false)]
+        [DataRow(TestClassNameStr, "SetIntrinsicIndexer", "SetIntrinsicIndexer.js", TestType.All, false, false)]
+        [DataRow(TestClassNameStr, "DelegateCombine", "DelegateCombine.js", TestType.All, false, false)]
+        public void TestMcs(
+            string className,
+            string methodName,
+            string resourceName,
+            TestType testType,
+            bool testMinifiedNames,
+            bool instanceAsStatic)
         {
             ConverterTestHelpers.RunTest(
-                ScriptSharpCompatibilityTests.TemplateNamespace + "ReturnIntrinsicProperty.js",
-                ScriptSharpCompatibilityTests.TestClassNameStr,
-                "ReturnIntrinsicProperty",
-                TestType.All);
-        }
-
-        [DataTestMethod]
-        public void TestReturnIntrinsicIndexer()
-        {
-            ConverterTestHelpers.RunTest(
-                ScriptSharpCompatibilityTests.TemplateNamespace + "ReturnIntrinsicIndexer.js",
-                ScriptSharpCompatibilityTests.TestClassNameStr,
-                "ReturnIntrinsicIndexer",
-                TestType.All);
-        }
-
-        [DataTestMethod]
-        public void TestSetIntrinsicIndexer()
-        {
-            ConverterTestHelpers.RunTest(
-                ScriptSharpCompatibilityTests.TemplateNamespace + "SetIntrinsicIndexer.js",
-                ScriptSharpCompatibilityTests.TestClassNameStr,
-                "SetIntrinsicIndexer",
-                TestType.All);
-        }
-
-        [DataTestMethod]
-        public void TestGetDictionary()
-        {
-            ConverterTestHelpers.RunTest(
-                ScriptSharpCompatibilityTests.TemplateNamespace + "GetDictionary.js",
-                ScriptSharpCompatibilityTests.TestClassNameStr,
-                "GetDictionary",
-                TestType.All);
-        }
-
-        [DataTestMethod]
-        public void TestDelegateCombine()
-        {
-            ConverterTestHelpers.RunTest(
-                ScriptSharpCompatibilityTests.TemplateNamespace + "DelegateCombine.js",
-                ScriptSharpCompatibilityTests.TestClassNameStr,
-                "DelegateCombine",
-                TestType.All);
+                TemplateNamespace + resourceName,
+                className,
+                methodName,
+                testType,
+                true,
+                testMinifiedNames,
+                instanceAsStatic);
         }
     }
 }

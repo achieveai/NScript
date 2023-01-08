@@ -8,7 +8,7 @@
       ageBlock = "the big five-oh";
       break;
     }
-    case(testAge = Type__AsType(Int32, stmtTemp1)) != null && l.contains(Type__BoxTypeInstance(Int32, testAge)): {
+    case(testAge = Type__AsType(Int32, stmtTemp1)) != null && l.cons(Type__BoxTypeInstance(Int32, testAge)): {
       ageBlock = "octogenarian";
       break;
     }

@@ -7,16 +7,8 @@
 
     public static class Utils
     {
-        /// <summary>
-        /// The character mapping.
-        /// </summary>
         private const string charMapping = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-        /// <summary>
-        /// Toes the JS string.
-        /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <returns>fixed string for JS.</returns>
         public static string ToJSString(string str)
         {
             if (str == null)
@@ -48,11 +40,6 @@
             return strBuilder.ToString();
         }
 
-        /// <summary>
-        /// Toes the JS identifier.
-        /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <returns>fixed string for identifier.</returns>
         public static string ToJSIdentifier(string str)
         {
             StringBuilder strBuilder = new StringBuilder(str.Length);
@@ -144,11 +131,6 @@
             return true;
         }
 
-        /// <summary>
-        /// Gets the compressed int.
-        /// </summary>
-        /// <param name="i">The number to encode.</param>
-        /// <returns>string encoded i (encoded using [a-z][a-zA-Z]*)</returns>
         public static string GetCompressedInt(int i)
         {
             StringBuilder retValue = new StringBuilder();
@@ -172,6 +154,47 @@
 
 
             return retValue.ToString();
+        }
+
+        public static IEnumerable<Tuple<TLeft, TRight>> Merge<TLeft, TRight>(
+            this IEnumerable<TLeft> left,
+            IEnumerable<TRight> right)
+            => left.Merge(
+                right,
+                (l, r) => Tuple.Create(l, r));
+
+        public static IEnumerable<TResult> Merge<TLeft, TRight, TResult>(
+            this IEnumerable<TLeft> left,
+            IEnumerable<TRight> right,
+            Func<TLeft, TRight, TResult> resultSelector)
+        {
+            var leftIter = left.GetEnumerator();
+            var rightIter = right.GetEnumerator();
+            var rightMore = true;
+            var leftMore = true;
+
+            while(true)
+            {
+                leftMore = leftMore && leftIter.MoveNext();
+                rightMore = rightMore && rightIter.MoveNext();
+
+                if (leftMore && rightMore)
+                {
+                    yield return resultSelector(leftIter.Current, rightIter.Current);
+                }
+                else if (rightMore)
+                {
+                    yield return resultSelector(default, rightIter.Current);
+                }
+                else if (leftMore)
+                {
+                    yield return resultSelector(leftIter.Current, default);
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
     }
 }

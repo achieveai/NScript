@@ -74,7 +74,7 @@ namespace NScript.Converter.ExpressionsConverter
             FieldReferenceExpression fieldReference)
         {
             IdentifierScope objectBuilderScope = new IdentifierScope(converter.Scope, 1);
-            JST.FunctionExpression objectBuilderFunction = new FunctionExpression(
+            FunctionExpression objectBuilderFunction = new FunctionExpression(
                 fieldReference.Location,
                 converter.Scope,
                 objectBuilderScope,
@@ -99,11 +99,11 @@ namespace NScript.Converter.ExpressionsConverter
                                     objectBuilderFunction.Location,
                                     scope,
                                     converter.ResolveStaticMember(fieldRef))
-                                : (JST.Expression)new JST.IndexExpression(
+                                : (JST.Expression)new IndexExpression(
                                     objectBuilderFunction.Location,
                                     scope,
-                                    new JST.IdentifierExpression(objectRefIdentifier, scope),
-                                    new JST.IdentifierExpression(converter.Resolve(fieldReference.FieldReference), scope));
+                                    new IdentifierExpression(objectRefIdentifier, scope),
+                                    new IdentifierExpression(converter.Resolve(fieldReference.FieldReference), scope));
                         })));
 
             JST.Expression objectRefExpression;
@@ -140,7 +140,7 @@ namespace NScript.Converter.ExpressionsConverter
             ArrayElementExpression arrayElementExpression)
         {
             IdentifierScope objectBuilderScope = new IdentifierScope(converter.Scope, 2);
-            JST.FunctionExpression objectBuilderFunction = new FunctionExpression(
+            FunctionExpression objectBuilderFunction = new FunctionExpression(
                 arrayElementExpression.Location,
                 converter.Scope,
                 objectBuilderScope,
@@ -158,11 +158,11 @@ namespace NScript.Converter.ExpressionsConverter
                         converter,
                         objectBuilderScope,
                         objectBuilderFunction.Location,
-                        (scope) => (JST.Expression)new JST.IndexExpression(
+                        (scope) => (JST.Expression)new IndexExpression(
                             objectBuilderFunction.Location,
                             scope,
-                            new JST.IdentifierExpression(arrayRefIdentifier, objectBuilderScope),
-                            new JST.IdentifierExpression(arrayIndexIdentifier, objectBuilderScope),
+                            new IdentifierExpression(arrayRefIdentifier, objectBuilderScope),
+                            new IdentifierExpression(arrayIndexIdentifier, objectBuilderScope),
                             true))));
 
             JST.Expression arrayRefExpression = ExpressionConverterBase.Convert(
@@ -196,25 +196,27 @@ namespace NScript.Converter.ExpressionsConverter
             Location location,
             Func<IdentifierScope, JST.Expression> expressionCreator)
         {
-            JST.InlineObjectInitializer initializer = new InlineObjectInitializer(
+            var initializer = new InlineObjectInitializer(
                 location,
                 parentScope);
 
             IdentifierScope innerScope =
                 new IdentifierScope(parentScope);
 
-            JST.FunctionExpression func = new JST.FunctionExpression(
+            var func = new FunctionExpression(
                 initializer.Location,
                 parentScope,
                 innerScope,
                 innerScope.ParameterIdentifiers,
                 null);
 
+            converter.PushJsScope(innerScope);
             func.AddStatement(
                 new JST.ReturnStatement(
                     func.Location,
                     innerScope,
                     expressionCreator(innerScope)));
+            converter.PopJsScope();
 
             initializer.AddInitializer(
                 converter.RuntimeManager.ReferenceManager.ReaderIdentifier,
@@ -223,13 +225,14 @@ namespace NScript.Converter.ExpressionsConverter
             innerScope = new IdentifierScope(parentScope, 1);
             SimpleIdentifier setterArgument = innerScope.ParameterIdentifiers[0];
 
-            func = new JST.FunctionExpression(
+            func = new FunctionExpression(
                 initializer.Location,
                 parentScope,
                 innerScope,
                 innerScope.ParameterIdentifiers,
                 null);
 
+            converter.PushJsScope(innerScope);
             func.AddStatement(
                 new JST.ReturnStatement(
                     func.Location,
@@ -240,6 +243,7 @@ namespace NScript.Converter.ExpressionsConverter
                         JST.BinaryOperator.Assignment,
                         expressionCreator(innerScope),
                         new IdentifierExpression(setterArgument, innerScope))));
+            converter.PopJsScope();
 
             initializer.AddInitializer(
                 converter.RuntimeManager.ReferenceManager.WriterIdentifier,

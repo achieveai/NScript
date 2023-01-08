@@ -8,6 +8,8 @@ namespace NScript.JST
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
     using NScript.Utils;
 
     /// <summary>
@@ -41,7 +43,12 @@ namespace NScript.JST
         {
             this.literal = literal;
             this.literalArguments = literalArguments;
+            LiteralArguments = new ReadOnlyCollection<Expression>(literalArguments);
         }
+
+        public string Literal => literal;
+
+        public ReadOnlyCollection<Expression> LiteralArguments { get; }
 
         public override Precedence Precedence
         {

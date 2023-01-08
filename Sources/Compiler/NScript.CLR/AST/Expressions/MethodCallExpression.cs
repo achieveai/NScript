@@ -103,22 +103,17 @@ namespace NScript.CLR.AST
         {
             get
             {
-                MethodReferenceExpression methodReferenceExpression = this.methodReference as MethodReferenceExpression;
-
-                if (methodReferenceExpression != null)
+                if (this.methodReference is MethodReferenceExpression methodReferenceExpression)
                 {
                     return methodReferenceExpression.MethodReference.ReturnType;
                 }
 
-                ConstructorReferenceExpression constructorReferenceExpression = this.methodReference as ConstructorReferenceExpression;
-                if (constructorReferenceExpression != null)
+                if (this.methodReference is ConstructorReferenceExpression constructorReferenceExpression)
                 {
                     return constructorReferenceExpression.Constructor.DeclaringType;
                 }
 
-                TypeReference leftExpressionType = this.MethodReference.ResultType as TypeReference;
-
-                if (leftExpressionType != null
+                if (this.MethodReference.ResultType is TypeReference leftExpressionType
                     && this.KnownReferences.MulticastDelegate.IsSameDefinition(leftExpressionType.Resolve().BaseType))
                 {
                     MethodDefinition invokeMethodDefinition = null;
@@ -185,9 +180,7 @@ namespace NScript.CLR.AST
         /// </returns>
         public override bool Equals(object obj)
         {
-            MethodCallExpression right = obj as MethodCallExpression;
-
-            if (right == null
+            if (obj is not MethodCallExpression right
                 || !this.MethodReference.Equals(right.MethodReference)
                 || this.Parameters.Count != right.Parameters.Count)
             {

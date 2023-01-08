@@ -26,24 +26,35 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
-        [DataRow(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All)]
-        [DataRow(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All)]
-        [DataRow(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All)]
-        [DataRow(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All)]
-        [DataRow(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All)]
-        [DataRow(TestClassNameStr2, "GetFooValue", "StructPropertyInvokeMcs.js", TestType.Debug)]
-        [DataRow(TestClassNameStr, ".ctor", "Constructor.js", TestType.All)]
-        [DataRow(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All)]
-        [DataRow(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All)]
-        [DataRow("EnumUsingClass", "GetStr", "EnumToString.js", TestType.All)]
-        public void TestMcs(string className, string methodName, string resourceName, TestType testType)
+        [DataRow("EnumUsingClass", "GetStr", "EnumToString.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, ".ctor", "Constructor.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, ".ctor", "Constructor.js", TestType.All, true)]
+        [DataRow(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "CallStructOverride", "CallStructOverride.js", TestType.All, true)]
+        [DataRow(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Foo", "InterfaceImplMethod.js", TestType.All, true)]
+        [DataRow(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "GetFunc", "StructDelegate.js", TestType.All, true)]
+        [DataRow(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Simple0ArgObjectAccessMethod", "Simple0ArgObjectAccessMethod.js", TestType.All, true)]
+        [DataRow(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "ToString", "OverridenMethod.js", TestType.All, true)]
+        [DataRow(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All, false)]
+        [DataRow(TestClassNameStr2, ".ctor", "ScriptedConstructor.js", TestType.All, true)]
+        [DataRow(TestClassNameStr2, "GetFooValue", "StructPropertyInvokeMcs.js", TestType.Debug, false)]
+        [DataRow(TestClassNameStr2, "GetFooValue", "StructPropertyInvokeMcs.js", TestType.Debug, true)]
+        [DataRow(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All, false)]
+        [DataRow(TestClassNameStr2, "GetScriptedInt", "ScriptedMethod.js", TestType.All, true)]
+        public void TestMcs(string className, string methodName, string resourceName, TestType testType, bool instanceAsStatic)
         {
             ConverterTestHelpers.RunTest(
                 TestFilesNSStr + resourceName,
                 className,
                 methodName,
                 testType,
-                true);
+                true,
+                false,
+                instanceAsStatic);
         }
     }
 }

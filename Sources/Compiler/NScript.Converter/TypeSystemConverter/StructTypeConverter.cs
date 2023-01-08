@@ -267,7 +267,6 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>
         /// Maps to virtual.
         /// </summary>
-        /// <param name="statements">The statements.</param>
         /// <param name="prototype">The prototype.</param>
         /// <param name="virtualBase">The virtual base.</param>
         /// <param name="method">The method.</param>

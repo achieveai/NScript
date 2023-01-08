@@ -11,4 +11,7 @@
     <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
     <ProjectReference Include="..\SourceMap\SourceMap.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="morelinq" Version="3.3.2" />
+  </ItemGroup>
 </Project>

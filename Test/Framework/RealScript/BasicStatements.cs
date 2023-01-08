@@ -252,5 +252,10 @@ namespace RealScript
         {
             obj.FlagEnum =  obj.FlagEnum | FlagEnum.Two;
         }
+
+        public void TestRefs(int a, int b)
+        {
+            TestControlFlow.Swap(ref a, ref b);
+        }
     }
 }

@@ -25,15 +25,15 @@ namespace NScript.Converter.Test.MethodConverterTests
         }
 
         [DataTestMethod]
+        [DataRow(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForDebug.js", TestType.Debug)]
+        [DataRow(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValues.js", TestType.Debug)]
         [DataRow(TestClassNameStr, "SimpleIntSwitch", "SimpleIntSwitch.js", TestType.All)]
+        [DataRow(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
         [DataRow(TestClassNameStr, "SwitchPatternMatching", "SwitchPatternMatching.js", TestType.All)]
         [DataRow(TestClassNameStr, "SwitchScopeTest", "SwitchScopeTest.js", TestType.All)]
-        [DataRow(TestClassNameStr, "SwitchOnlyFunction", "SwitchOnlyFunction.js", TestType.Debug)]
         [DataRow(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturn.js", TestType.Debug)]
         [DataRow(TestClassNameStr, "SwitchWithReturn", "SwitchWithReturnRetail.js", TestType.Retail)]
         [DataRow(TestClassNameStr, "SwitchWithReturnsOnly", "SwitchWithReturnOnlyRetail.js", TestType.Retail)]
-        [DataRow(TestClassNameStr, "RegressSwitchWithFor", "RegressSwitchWithForDebug.js", TestType.Debug)]
-        [DataRow(TestClassNameStr, "RegressionContinousSwitchValues", "RegressionContinousSwitchValues.js", TestType.Debug)]
         public void TestMcs(string className, string methodName, string resourceName, TestType testType)
         {
             ConverterTestHelpers.RunTest(
@@ -41,7 +41,9 @@ namespace NScript.Converter.Test.MethodConverterTests
                 className,
                 methodName,
                 testType,
-                true);
+                true,
+                false,
+                false);
         }
     }
 }

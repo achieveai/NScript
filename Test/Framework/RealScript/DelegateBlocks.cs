@@ -94,6 +94,11 @@ namespace RealScript
             return this.IntDelegateTaker("Foo", delegate(int i) { return i + j + this.intVariable + k; });
         }
 
+        public Func<int, int> InstanceDelegate()
+        {
+            return this.LocalAndInstanceReferencingDelegateM;
+        }
+
         public int IntDelegateTaker(string str, IntFunction func)
         {
             return func(str.Length);

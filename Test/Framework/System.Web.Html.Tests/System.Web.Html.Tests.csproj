@@ -6,8 +6,6 @@
     <NoStandardLibraries>false</NoStandardLibraries>
     <CopyReferences>True</CopyReferences>
     <GenerateJs>True</GenerateJs>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet</NScriptToolSetPath>
-    <CscToolExe>$(NScriptToolSetPath)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <OutputPath>bin\$(Configuration)</OutputPath>
     <PluginConfig>PluginConfig.xml</PluginConfig>
     <JsOutputPath>$(ProjectDir)..\TestWebApplication\GeneratedScripts</JsOutputPath>

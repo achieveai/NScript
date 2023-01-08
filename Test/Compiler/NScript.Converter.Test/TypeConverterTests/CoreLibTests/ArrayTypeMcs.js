@@ -16,6 +16,9 @@ function ArrayImpl__Sort(T, array, comparator) {
 ptyp_ = ArrayImpl.prototype;
 ptyp_.__ctor = function ArrayImpl____ctor() {
 };
+ptyp_.system__Collections__IEnumerable__GetEnumerator = function ArrayImpl__System__Collections__IEnumerable__GetEnumerator() {
+  return this.genum();
+};
 ptyp_.system__Collections__IList__get_IsFixedSize = function ArrayImpl__System__Collections__IList__get_IsFixedSize() {
   return true;
 };
@@ -23,10 +26,10 @@ ptyp_.system__Collections__IList__get_IsReadOnly = function ArrayImpl__System__C
   return false;
 };
 ptyp_.system__Collections__IList__get_Item = function ArrayImpl__System__Collections__IList__get_Item(index) {
-  return this.V_GetValue(index);
+  return this.gv(index);
 };
 ptyp_.system__Collections__IList__set_Item = function ArrayImpl__System__Collections__IList__set_Item(index, value) {
-  this.V_SetValue(index, value);
+  this.sv(index, value);
 };
 ptyp_.system__Collections__IList__Add = function ArrayImpl__System__Collections__IList__Add(value) {
   throw NotSupportedException_factory();
@@ -44,29 +47,27 @@ ptyp_.system__Collections__IList__RemoveAt = function ArrayImpl__System__Collect
   throw NotSupportedException_factory();
 };
 ptyp_.system__Collections__ICollection__get_Count = function ArrayImpl__System__Collections__ICollection__get_Count() {
-  return this.V_get_Length();
+  return this.gl();
 };
-ptyp_.V_get_IsFixedSize_d = ptyp_.system__Collections__IList__get_IsFixedSize;
-ptyp_.V_get_IsReadOnly_d = ptyp_.system__Collections__IList__get_IsReadOnly;
-ptyp_.V_get_Item_d = ptyp_.system__Collections__IList__get_Item;
-ptyp_.V_set_Item_d = ptyp_.system__Collections__IList__set_Item;
-ptyp_.V_Add_d = ptyp_.system__Collections__IList__Add;
-ptyp_.V_Clear_d = ptyp_.system__Collections__IList__Clear;
-ptyp_.V_Insert_d = ptyp_.system__Collections__IList__Insert;
-ptyp_.V_Remove_d = ptyp_.system__Collections__IList__Remove;
-ptyp_.V_RemoveAt_d = ptyp_.system__Collections__IList__RemoveAt;
-ptyp_.V_get_Count_e = ptyp_.system__Collections__ICollection__get_Count;
-ptyp_.V_Contains_d = function(arg0) {
-  return this.V_Contains(arg0);
+ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
+ptyp_.V_get_IsFixedSize_e = ptyp_.system__Collections__IList__get_IsFixedSize;
+ptyp_.V_get_IsReadOnly_e = ptyp_.system__Collections__IList__get_IsReadOnly;
+ptyp_.V_get_Item_e = ptyp_.system__Collections__IList__get_Item;
+ptyp_.V_set_Item_e = ptyp_.system__Collections__IList__set_Item;
+ptyp_.V_Add_e = ptyp_.system__Collections__IList__Add;
+ptyp_.V_Clear_e = ptyp_.system__Collections__IList__Clear;
+ptyp_.V_Insert_e = ptyp_.system__Collections__IList__Insert;
+ptyp_.V_Remove_e = ptyp_.system__Collections__IList__Remove;
+ptyp_.V_RemoveAt_e = ptyp_.system__Collections__IList__RemoveAt;
+ptyp_.V_get_Count_f = ptyp_.system__Collections__ICollection__get_Count;
+ptyp_.V_Contains_e = function(arg0) {
+  return this.cons(arg0);
 };
-ptyp_.V_IndexOf_d = function(arg0) {
-  return this.V_IndexOf(arg0);
+ptyp_.V_IndexOf_e = function(arg0) {
+  return this.iof(arg0);
 };
-ptyp_.V_CopyTo_e = function(arg0, arg1) {
-  return this.V_CopyTo(arg0, arg1);
-};
-ptyp_.V_GetEnumerator_f = function() {
-  return this.V_GetEnumerator();
+ptyp_.V_CopyTo_f = function(arg0, arg1) {
+  return this.cpt(arg0, arg1);
 };
 Type__RegisterReferenceType(ArrayImpl, "System.ArrayImpl", Object, [IList, ICollection, IEnumerable]);
 function NativeArray$1__GetNativeArray(array) {
@@ -125,11 +126,10 @@ function NativeArray$1__op_Implicit(n) {
 };
 function ArrayG(T, _callStatiConstructor) {
   var ArrayG$1_$T$_, T$5b$5d_$T$_, Enumerator_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, __initTracker;
-  if (ArrayG[T.typeId])
-    return ArrayG[T.typeId];
-  ArrayG[T.typeId] = function System__ArrayG$1() {
+  if (ArrayG["9" + T.typeId])
+    return ArrayG["9" + T.typeId];
+  ArrayG["9" + T.typeId] = ArrayG$1_$T$_ = function System__ArrayG$1() {
   };
-  ArrayG$1_$T$_ = ArrayG[T.typeId];
   ArrayG$1_$T$_.genericParameters = [T];
   ArrayG$1_$T$_.genericClosure = ArrayG;
   ArrayG$1_$T$_.typeId = "g$" + T.typeId + "$";
@@ -191,7 +191,7 @@ function ArrayG(T, _callStatiConstructor) {
     return ArrayG$1_$T$_.__ctor(this.innerArray.slice(0, this.innerArray.length));
   };
   ptyp_.contains = function ArrayG$1__Contains(item) {
-    return this.V_IndexOf(item) >= 0;
+    return this.indexOf(item) >= 0;
   };
   ptyp_.indexOf = function ArrayG$1__IndexOf(item) {
     if (!T.isInstanceOfType(item))
@@ -260,16 +260,16 @@ function ArrayG(T, _callStatiConstructor) {
   ptyp_["V_Clear_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___Clear;
   ptyp_["V_Remove_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___Remove;
   ptyp_["V_GetEnumerator_" + IEnumerable$1_$T$_.typeId] = ptyp_.system__Collections__Generic__IEnumerable_$T$___GetEnumerator;
-  ptyp_.V_get_Length = ptyp_.get_length;
-  ptyp_.V_Clone = ptyp_.clone;
-  ptyp_.V_Contains = ptyp_.contains;
-  ptyp_.V_GetEnumerator = ptyp_.getEnumerator;
-  ptyp_.V_IndexOf = ptyp_.indexOf;
-  ptyp_.V_IndexOfa = ptyp_.indexOfa;
-  ptyp_.V_Reverse = ptyp_.reverse;
-  ptyp_.V_GetValue = ptyp_.getValue;
-  ptyp_.V_SetValue = ptyp_.setValue;
-  ptyp_.V_CopyTo = ptyp_.copyToa;
+  ptyp_.gl = ptyp_.get_length;
+  ptyp_.cl = ptyp_.clone;
+  ptyp_.cons = ptyp_.contains;
+  ptyp_.genum = ptyp_.getEnumerator;
+  ptyp_.iof = ptyp_.indexOf;
+  ptyp_.iof1 = ptyp_.indexOfa;
+  ptyp_.rev = ptyp_.reverse;
+  ptyp_.gv = ptyp_.getValue;
+  ptyp_.sv = ptyp_.setValue;
+  ptyp_.cpt = ptyp_.copyToa;
   ptyp_["V_get_Item_" + IList$1_$T$_.typeId] = ptyp_.get_item;
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
   ptyp_["V_IndexOf_" + IList$1_$T$_.typeId] = ptyp_.indexOfb;

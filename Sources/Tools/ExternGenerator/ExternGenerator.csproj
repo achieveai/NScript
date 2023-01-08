@@ -7,13 +7,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private">
-      <HintPath>..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
+      <HintPath>..\..\..\Dependencies\Mono.Cecil.Private.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Private.Mdb">
-      <HintPath>..\..\Dependencies\Mono.Cecil.Private.Mdb.dll</HintPath>
+      <HintPath>..\..\..\Dependencies\Mono.Cecil.Private.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Private.Pdb">
-      <HintPath>..\..\Dependencies\Mono.Cecil.Private.Pdb.dll</HintPath>
+      <HintPath>..\..\..\Dependencies\Mono.Cecil.Private.Pdb.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

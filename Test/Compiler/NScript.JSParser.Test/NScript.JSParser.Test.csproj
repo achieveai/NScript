@@ -4,6 +4,26 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="InlineOptimizers\MethodDisappearingRegression1.js" />
+    <None Remove="InlineOptimizers\MethodDisappearingRegression1_Post.js" />
+    <None Remove="InlineOptimizers\ProxyMethodRegressions.js" />
+    <None Remove="InlineOptimizers\ProxyMethodRegressions.yaml" />
+    <None Remove="InlineOptimizers\ProxyMethodRegressions_Post.js" />
+    <None Remove="InlineOptimizers\SimpleInlinableMethods.js" />
+    <None Remove="InlineOptimizers\SimpleInlinableUsageCountTest.yaml" />
+    <None Remove="InlineOptimizers\SimpleProxyFixerUsageCount.yaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="InlineOptimizers\MethodDisappearingRegression1.js" />
+    <EmbeddedResource Include="InlineOptimizers\MethodDisappearingRegression1_Post.js" />
+    <EmbeddedResource Include="InlineOptimizers\ProxyMethodRegressions.js" />
+    <EmbeddedResource Include="InlineOptimizers\ProxyMethodRegressions.yaml" />
+    <EmbeddedResource Include="InlineOptimizers\ProxyMethodRegressions_Post.js" />
+    <EmbeddedResource Include="InlineOptimizers\SimpleInlinableMethods.js" />
+    <EmbeddedResource Include="InlineOptimizers\SimpleInlinableUsageCountTest.yaml" />
+    <EmbeddedResource Include="InlineOptimizers\SimpleProxyFixerUsageCount.yaml" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Update="System.Core" />
     <Reference Update="System.Xml.Linq" />
   </ItemGroup>
@@ -14,10 +34,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
+    <PackageReference Include="YamlDotNet" Version="12.3.1" />
   </ItemGroup>
 </Project>

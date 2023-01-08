@@ -124,14 +124,12 @@ function Type__InitializeBaseInterfaces(type) {
     type.baseInterfaces = rv;
   }
 };
-function Type_factory() {
-  var this_;
-  this_ = Function.getDefaultValue();
+function Type____ctor(this_) {
 };
 function Type_factory() {
   var this_;
   this_ = new Function();
-  this_.__ctor();
+  Type____ctor(this_);
   return this_;
 };
 Function.defaultConstructor = Type_factory;

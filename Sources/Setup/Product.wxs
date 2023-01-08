@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<?define ProductVersion="1.1.0.0001" ?>
+	<?define ProductVersion="1.1.0.0003" ?>
 	<?define ToolsetDir="$(var.SolutionDir)NScriptToolset" ?>
-	<?define ToolsetBinDir="$(var.SolutionDir)NScriptToolset\bin\netcoreapp3.1" ?>
+	<?define ToolsetBinDir="$(var.SolutionDir)NScriptToolset\bin\net5.0" ?>
 
 	<Product Id="*" Name="nScript" Language="1033" Version="$(var.ProductVersion)" Manufacturer="nScript" UpgradeCode="0a6c98fa-0f44-4eec-bf91-def0b8e463f0">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
@@ -37,6 +37,8 @@
 									<Directory Id="INSTALLFOLDER_BIN_RUNTIME_UNIX_LIB" Name="lib">
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_2_1" Name="netcoreapp2.1"/>
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_3_0" Name="netcoreapp3.0"/>
+										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_5_0" Name="net5.0"/>
+										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_CORE_6_0" Name="net6.0"/>
 										<Directory Id="INSTALLFOLDER_BIN_UNIX_NET_STD_2_0" Name="netstandard2.0"/>
 									</Directory>
 								</Directory>
@@ -95,127 +97,119 @@
 			</Component>
 
 			<Component Id="BinComponent" Directory="INSTALLFOLDER_BIN" Guid="{8BD2DB67-D657-490D-89F6-1B28FDBF16D5}">
-				<File Source="$(var.ToolsetBinDir)\AdvancedStringBuilder.dll" />
-				<File Source="$(var.ToolsetBinDir)\Antlr3.Runtime.dll" />
-				<File Source="$(var.ToolsetBinDir)\Autoprefixer.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\Autoprefixer.dll" />
-				<File Source="$(var.ToolsetBinDir)\Autoprefixer.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\Autoprefixer.pdb" />
-				<File Source="$(var.ToolsetBinDir)\ClearScript.Core.dll" />
-				<File Source="$(var.ToolsetBinDir)\ClearScript.V8.dll" />
-				<File Source="$(var.ToolsetBinDir)\ClearScript.Windows.Core.dll" />
-				<File Source="$(var.ToolsetBinDir)\ClearScript.Windows.dll" />
-				<File Source="$(var.ToolsetBinDir)\ClearScriptV8.ICU.dat" />
-				<File Source="$(var.ToolsetBinDir)\Csc.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\Csc.dll" />
-				<File Source="$(var.ToolsetBinDir)\Csc.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\Csc.exe" />
-				<File Source="$(var.ToolsetBinDir)\Csc.pdb" />
-				<File Source="$(var.ToolsetBinDir)\Csc.runtimeconfig.dev.json" />
-				<File Source="$(var.ToolsetBinDir)\Csc.runtimeconfig.json" />
-				<File Source="$(var.ToolsetBinDir)\CssParser.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\CssParser.dll" />
-				<File Source="$(var.ToolsetBinDir)\CssParser.pdb" />
-				<File Source="$(var.ToolsetBinDir)\HtmlAgilityPack.dll" />
-				<File Source="$(var.ToolsetBinDir)\JavaScriptEngineSwitcher.Core.dll" />
-				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.dll" />
-				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.pdb" />
-				<File Source="$(var.ToolsetBinDir)\mcs.dll" />
-				<File Source="$(var.ToolsetBinDir)\mcs.pdb" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.Build.Framework.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.Build.Tasks.Core.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.Build.Utilities.Core.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.CSharp.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.CSharp.pdb" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.CSharp.xml" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.pdb" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.xml" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.Extensions.DependencyInjection.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.NET.StringTools.dll" />
-				<File Source="$(var.ToolsetBinDir)\Microsoft.Win32.Registry.dll" Id="CommonRegistry"/>
-				<File Source="$(var.ToolsetBinDir)\Microsoft.Win32.SystemEvents.dll" Id="CommonSystemEvents" />
-				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.dll" />
-				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Mdb.dll" />
-				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Mdb.pdb" />
-				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.pdb" />
-				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Pdb.dll" />
-				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Pdb.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NetSerializer.dll" />
-				<File Source="$(var.ToolsetBinDir)\Newtonsoft.Json.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.CLR.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.CLR.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.CLR.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NScript.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\NScript.exe" />
-				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NScript.JST.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.JST.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.JST.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NScript.pdb" />
-				<File Source="$(var.ToolsetBinDir)\NScript.runtimeconfig.dev.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.runtimeconfig.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Utils.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Utils.dll" />
-				<File Source="$(var.ToolsetBinDir)\NScript.Utils.pdb" />
-				<File Source="$(var.ToolsetBinDir)\PluginConfig.xml" />
-				<File Source="$(var.ToolsetBinDir)\protobuf-net.dll" />
-				<File Source="$(var.ToolsetBinDir)\SourceMap.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\SourceMap.dll" />
-				<File Source="$(var.ToolsetBinDir)\SourceMap.pdb" />
-				<File Source="$(var.ToolsetBinDir)\System.CodeDom.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Collections.Immutable.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.ComponentModel.Composition.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Configuration.ConfigurationManager.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Drawing.Common.dll" Id="CommonDrawingCommon"/>
-				<File Source="$(var.ToolsetBinDir)\System.Reflection.Metadata.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Resources.Extensions.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Runtime.CompilerServices.Unsafe.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Security.AccessControl.dll" Id="CommonAccessControl"/>
-				<File Source="$(var.ToolsetBinDir)\System.Security.Cryptography.Pkcs.dll" Id="CommonCryptographyPkcs"/>
-				<File Source="$(var.ToolsetBinDir)\System.Security.Cryptography.ProtectedData.dll" Id="CommonProtectedData"/>
-				<File Source="$(var.ToolsetBinDir)\System.Security.Cryptography.Xml.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Security.Permissions.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Security.Principal.Windows.dll" Id="CommonPrincipal"/>
-				<File Source="$(var.ToolsetBinDir)\System.ServiceModel.dll" Id="CommonServiceModel"/>
-				<File Source="$(var.ToolsetBinDir)\System.ServiceModel.Primitives.dll" />
-				<File Source="$(var.ToolsetBinDir)\System.Windows.Extensions.dll" Id="CommonWindowsExtensions"/>
-				<File Source="$(var.ToolsetBinDir)\XwmlParser.deps.json" />
-				<File Source="$(var.ToolsetBinDir)\XwmlParser.dll" />
-				<File Source="$(var.ToolsetBinDir)\XwmlParser.dll.config" />
-				<File Source="$(var.ToolsetBinDir)\XwmlParser.pdb" />
+				<File Source="$(var.ToolsetBinDir)\AdvancedStringBuilder.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Antlr3.Runtime.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Autoprefixer.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\Autoprefixer.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Autoprefixer.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\Autoprefixer.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\ClearScript.Core.dll"/>
+				<File Source="$(var.ToolsetBinDir)\ClearScript.V8.dll"/>
+				<File Source="$(var.ToolsetBinDir)\ClearScript.Windows.Core.dll"/>
+				<File Source="$(var.ToolsetBinDir)\ClearScript.Windows.dll"/>
+				<File Source="$(var.ToolsetBinDir)\ClearScriptV8.ICU.dat"/>
+				<File Source="$(var.ToolsetBinDir)\Csc.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\Csc.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Csc.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\Csc.exe"/>
+				<File Source="$(var.ToolsetBinDir)\Csc.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\Csc.runtimeconfig.json"/>
+				<File Source="$(var.ToolsetBinDir)\CssParser.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\CssParser.dll"/>
+				<File Source="$(var.ToolsetBinDir)\CssParser.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\HtmlAgilityPack.dll"/>
+				<File Source="$(var.ToolsetBinDir)\JavaScriptEngineSwitcher.Core.dll"/>
+				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.dll"/>
+				<File Source="$(var.ToolsetBinDir)\JsCsc.Lib.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\mcs.dll"/>
+				<File Source="$(var.ToolsetBinDir)\mcs.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Build.Framework.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Build.Tasks.Core.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Build.Utilities.Core.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.CSharp.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.CSharp.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.CSharp.xml"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.CodeAnalysis.xml"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Extensions.DependencyInjection.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.NET.StringTools.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Microsoft.Win32.SystemEvents.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Mdb.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Mdb.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Pdb.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Mono.Cecil.Private.Pdb.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NetSerializer.dll"/>
+				<File Source="$(var.ToolsetBinDir)\Newtonsoft.Json.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.CLR.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.CLR.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.CLR.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Converter.Plugins.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.csc.lib.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.exe"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.JSParser.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.JST.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.JST.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.JST.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.runtimeconfig.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Utils.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Utils.dll"/>
+				<File Source="$(var.ToolsetBinDir)\NScript.Utils.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\PluginConfig.xml"/>
+				<File Source="$(var.ToolsetBinDir)\protobuf-net.dll"/>
+				<File Source="$(var.ToolsetBinDir)\SourceMap.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\SourceMap.dll"/>
+				<File Source="$(var.ToolsetBinDir)\SourceMap.pdb"/>
+				<File Source="$(var.ToolsetBinDir)\System.CodeDom.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.ComponentModel.Composition.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Configuration.ConfigurationManager.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Drawing.Common.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Resources.Extensions.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Security.Cryptography.Pkcs.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Security.Cryptography.ProtectedData.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Security.Cryptography.Xml.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Security.Permissions.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.ServiceModel.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.ServiceModel.Primitives.dll"/>
+				<File Source="$(var.ToolsetBinDir)\System.Windows.Extensions.dll"/>
+				<File Source="$(var.ToolsetBinDir)\XwmlParser.deps.json"/>
+				<File Source="$(var.ToolsetBinDir)\XwmlParser.dll"/>
+				<File Source="$(var.ToolsetBinDir)\XwmlParser.dll.config"/>
+				<File Source="$(var.ToolsetBinDir)\XwmlParser.pdb"/>
 			</Component>
-			<Component Id="BinComponentX86" Directory="INSTALLFOLDER_BIN_X86" Guid="{D971F92B-CC87-4559-807E-55BA14DD944F}">
-				<File Source="$(var.ToolsetBinDir)\x86\ClearScriptV8-32.dll" />
-				<File Source="$(var.ToolsetBinDir)\x86\v8-base-ia32.dll" />
-				<File Source="$(var.ToolsetBinDir)\x86\v8-ia32.dll" />
-				<File Source="$(var.ToolsetBinDir)\x86\v8-libcpp-ia32.dll" />
-			</Component>
+			<!--<Component Id="BinComponentX86" Directory="INSTALLFOLDER_BIN_X86" Guid="{D971F92B-CC87-4559-807E-55BA14DD944F}">
+				<File Source="$(var.ToolsetBinDir)\x86\ClearScriptV8-32.dll"/>
+				<File Source="$(var.ToolsetBinDir)\x86\v8-base-ia32.dll"/>
+				<File Source="$(var.ToolsetBinDir)\x86\v8-ia32.dll"/>
+				<File Source="$(var.ToolsetBinDir)\x86\v8-libcpp-ia32.dll"/>
+			</Component>-->
 			<Component Id="BinComponentRURU" Directory="INSTALLFOLDER_BIN_RU_RU" Guid="{D971F92B-CC87-4559-807E-55BA14DD945F}">
                 <File Source="$(var.ToolsetBinDir)\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" />
 			</Component>
-			<Component Id="BinComponentUnixNetCoreApp2_1" Directory="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_2_1" Guid="{D971F92B-CC87-4559-807E-55BA14DD947F}">
+			<!--<Component Id="BinComponentUnixNetCoreApp2_1" Directory="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_2_1" Guid="{D971F92B-CC87-4559-807E-55BA14DD947F}">
 				<File Source="$(var.ToolsetBinDir)\runtimes\unix\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" Id="UnixCoreApp21Principal"/>
-			</Component>
+			</Component>-->
 			<Component Id="BinComponentUnixNetCoreApp3_0" Directory="INSTALLFOLDER_BIN_UNIX_NET_CORE_APP_3_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD948F}">
 				<File Source="$(var.ToolsetBinDir)\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll" Id="UnixCoreApp31DrawingCommon"/>
 			</Component>
@@ -223,12 +217,12 @@
 				<File Source="$(var.ToolsetBinDir)\runtimes\unix\lib\netstandard2.0\System.Private.ServiceModel.dll" Id="UnixNetStd20ServiceModel"/>
 			</Component>
 
-			<Component Id="BinComponentWinNetCoreApp2_0" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD950F}">
+			<!--<Component Id="BinComponentWinNetCoreApp2_0" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD950F}">
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp2.0\System.Security.AccessControl.dll" Id="WinCoreApp20AccessControl"/>
-			</Component>
-			<Component Id="BinComponentWinNetCoreApp2_1" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_2_1" Guid="{D971F92B-CC87-4559-807E-55BA14DD951F}">
-				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" Id="WinCoreApp21Principal"/>
-			</Component>
+			</Component>-->
+			<!--<Component Id="BinComponentWinNetCoreApp2_1" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_2_1" Guid="{D971F92B-CC87-4559-807E-55BA14DD951F}">
+				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\System.Security.Principal.Windows.dll" Id="WinCoreApp21Principal"/>
+			</Component>-->
 			<Component Id="BinComponentWinNetCoreApp3_0" Directory="INSTALLFOLDER_BIN_WIN_NET_CORE_APP_3_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD952F}">
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll"  Id="CoreApp31SystemEvents"/>
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" Id="WinCoreApp31DrawingCommon"/>
@@ -236,7 +230,7 @@
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" Id="WindowsCoreApp30WindowsExtensions"/>
 			</Component>
 			<Component Id="BinComponentWinNetStd2_0" Directory="INSTALLFOLDER_BIN_WIN_NET_STD_2_0" Guid="{D971F92B-CC87-4559-807E-55BA14DD953F}">
-				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" Id="NetStdRegistry"/>
+				<!--<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" Id="NetStdRegistry"/>-->
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\System.Private.ServiceModel.dll" Id="WinNetStd20ServiceModel"/>
 				<File Source="$(var.ToolsetBinDir)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" Id="WinNetStd20ProtectedData"/>
 			</Component>

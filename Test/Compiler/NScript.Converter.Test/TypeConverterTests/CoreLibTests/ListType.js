@@ -61,11 +61,10 @@ function NativeArray$1__op_Implicit(n) {
 };
 function List(T, _callStatiConstructor) {
   var List$1_$T$_, ArrayG$1_$T$_, T$5b$5d_$T$_, ListEnumerator$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, __initTracker;
-  if (List[T.typeId])
-    return List[T.typeId];
-  List[T.typeId] = function System__Collections__Generic__List$1() {
+  if (List["9" + T.typeId])
+    return List["9" + T.typeId];
+  List["9" + T.typeId] = List$1_$T$_ = function System__Collections__Generic__List$1() {
   };
-  List$1_$T$_ = List[T.typeId];
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
   List$1_$T$_.typeId = "f$" + T.typeId + "$";
@@ -221,7 +220,7 @@ function List(T, _callStatiConstructor) {
     nativeArray = this.nativeArray;
     length = nativeArray.length;
     for (i = 0; i < length; i++)
-      array.setValue(i + index, Type__BoxTypeInstance(T, nativeArray[i]));
+      array.sv(i + index, Type__BoxTypeInstance(T, nativeArray[i]));
   };
   ptyp_.toArray = function List$1__ToArray() {
     return ArrayG$1_$T$_.__ctor(this.nativeArray.slice(0, this.nativeArray.length));

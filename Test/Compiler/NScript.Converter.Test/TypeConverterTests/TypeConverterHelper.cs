@@ -35,6 +35,7 @@ namespace NScript.Converter.Test.TypeConverterTests
                 testJsFile,
                 testType,
                 false,
+                false,
                 classNames);
         }
 
@@ -48,6 +49,7 @@ namespace NScript.Converter.Test.TypeConverterTests
             string testJsFile,
             TestType testType,
             bool isMcs,
+            bool instanceAsStatic,
             params string[] classNames)
         {
             string script = ConverterTestHelpers.GetResourceString(testJsFile);
@@ -58,7 +60,8 @@ namespace NScript.Converter.Test.TypeConverterTests
                     script,
                     true,
                     classNames,
-                    isMcs);
+                    isMcs,
+                    instanceAsStatic);
             }
 
             if ((testType & TestType.Retail) != 0)
@@ -67,7 +70,8 @@ namespace NScript.Converter.Test.TypeConverterTests
                     script,
                     false,
                     classNames,
-                    isMcs);
+                    isMcs,
+                    instanceAsStatic);
             }
         }
 
@@ -80,6 +84,7 @@ namespace NScript.Converter.Test.TypeConverterTests
         public static void RunTest(
             string testJsFile,
             TestType testType,
+            bool instanceAsStatic,
             params Tuple<string, string>[] methodTuples)
         {
             string script = ConverterTestHelpers.GetResourceString(testJsFile);
@@ -89,7 +94,8 @@ namespace NScript.Converter.Test.TypeConverterTests
                 TypeConverterHelper.RunTest(
                     script,
                     true,
-                    methodTuples);
+                    methodTuples,
+                    instanceAsStatic);
             }
 
             if ((testType & TestType.Retail) != 0)
@@ -97,7 +103,8 @@ namespace NScript.Converter.Test.TypeConverterTests
                 TypeConverterHelper.RunTest(
                     script,
                     false,
-                    methodTuples);
+                    methodTuples,
+                    instanceAsStatic);
             }
         }
 
@@ -111,11 +118,15 @@ namespace NScript.Converter.Test.TypeConverterTests
             string script,
             bool isDebug,
             string[] classNames,
-            bool isMcs = false)
+            bool isMcs = false,
+            bool instaceAsStatic = false)
         {
             List<JST.Statement> statements = new List<JST.Statement>();
             RuntimeScopeManager runtimeScopeManager = new RuntimeScopeManager(
-                isMcs ? ConverterTestHelpers.McsContext : ConverterTestHelpers.DasmContext);
+                isMcs
+                ? ConverterTestHelpers.McsContext
+                : ConverterTestHelpers.DasmContext,
+                instaceAsStatic);
 
             foreach (var className in classNames)
             {
@@ -142,7 +153,8 @@ namespace NScript.Converter.Test.TypeConverterTests
         private static void RunTest(
             string script,
             bool isDebug,
-            Tuple<string, string>[] methodTuples)
+            Tuple<string, string>[] methodTuples,
+            bool instanceAsStatic)
         {
             MethodDefinition[] methodDefinitions = new MethodDefinition[methodTuples.Length];
             for (int tupleIndex = 0; tupleIndex < methodTuples.Length; tupleIndex++)
@@ -154,7 +166,8 @@ namespace NScript.Converter.Test.TypeConverterTests
             }
 
             RuntimeScopeManager scopeManager = new RuntimeScopeManager(
-                new ConverterContext(TestAssemblyLoader.Context));
+                new ConverterContext(TestAssemblyLoader.Context),
+                instanceAsStatic);
             var statements = scopeManager.Convert(methodDefinitions);
 
             ConverterTestHelpers.CheckScriptValues(

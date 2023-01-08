@@ -105,8 +105,8 @@ namespace NScript.Converter.TypeSystemConverter
         {
             this.context = runtimeScopeManager.Context;
             this.instanceBaseIdentifiers = new IdentifierScope(false);
-            this.staticBaseIdentifiers = new IdentifierScope(this.instanceBaseIdentifiers);
-            IdentifierScope objectStaticTypeScope = new IdentifierScope(this.staticBaseIdentifiers);
+            this.staticBaseIdentifiers = new IdentifierScope(this.instanceBaseIdentifiers, "staticBaseIdentifiers");
+            IdentifierScope objectStaticTypeScope = new IdentifierScope(this.staticBaseIdentifiers, "objectStaticTypeScope");
 
             this.objectTypeScopeManager = new TypeScopeManager(
                 this.context,

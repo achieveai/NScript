@@ -7,8 +7,6 @@
 namespace NScript.JSParser.Test
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NScript.JST;
     using System.IO;
@@ -23,6 +21,19 @@ namespace NScript.JSParser.Test
             string jsOut,
             params string[] argsNames)
         {
+            ParseAndGenerateTest(
+                jsIn,
+                jsOut,
+                false,
+                argsNames);
+        }
+
+        public static void ParseAndGenerateTest(
+            string jsIn,
+            string jsOut,
+            bool isOptimized,
+            params string[] argsNames)
+        {
             IdentifierScope globalScope = new IdentifierScope(true);
             IdentifierScope scope = new IdentifierScope(
                 globalScope,
@@ -34,7 +45,7 @@ namespace NScript.JSParser.Test
                 scope,
                 new TestTypeResolver(scope));
 
-            JSWriter writer = new JSWriter(true, false);
+            JSWriter writer = new JSWriter(true, isOptimized);
 
             if (scope.UsedLocalIdentifiers.Count > 0)
             {
@@ -77,6 +88,70 @@ namespace NScript.JSParser.Test
             string js = strWriter.ToString().Trim();
 
             Assert.AreEqual(jsOut, js);
+        }
+
+        public static void CompareJstTokens(
+            ScopeBlock scopeBlock,
+            string resourceName)
+        {
+            var otherBlock = ReadJstFromResourceScript(resourceName);
+            var actualScript = GetJsFromScopeBlock(scopeBlock);
+            var expectedScript = GetJsFromScopeBlock(otherBlock);
+
+            if (actualScript != expectedScript)
+            {
+                Console.WriteLine("====== ExpectedScript ================================> ");
+                Console.WriteLine(expectedScript);
+                Console.WriteLine("====== ActualScript ==================================> ");
+                Console.WriteLine(actualScript);
+            }
+
+            Assert.AreEqual(
+                expectedScript,
+                actualScript);
+        }
+
+        public static ScopeBlock ReadJstFromResourceScript(string resourceName)
+        {
+            var jsScript = GetResourceString(resourceName);
+            IdentifierScope globalScope = new IdentifierScope(true);
+
+            return Parser.Parse(
+                jsScript,
+                globalScope,
+                new TestTypeResolver(globalScope));
+        }
+
+        public static string GetJsFromScopeBlock(ScopeBlock scopeBlock)
+        {
+            var leftWriter = new JSWriter(true, false);
+            leftWriter.Write(scopeBlock);
+
+            var stringStreamLeft = new StringWriter();
+            leftWriter.Write(stringStreamLeft);
+
+            return stringStreamLeft.ToString();
+        }
+
+        /// <summary>
+        /// Gets the resource string.
+        /// </summary>
+        /// <param name="resourceName">Name of the resource.</param>
+        /// <returns>string from resource, if exists, else null.</returns>
+        public static string GetResourceString(
+            string resourceName)
+        {
+            using (var stream = typeof(JSParserAndGeneratorHelper)
+                .Assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream != null)
+                {
+                    TextReader reader = new StreamReader(stream);
+                    return reader.ReadToEnd().Trim();
+                }
+            }
+
+            return null;
         }
     }
 }

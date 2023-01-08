@@ -2,10 +2,10 @@
   var j;
   j = 10;
   return BasicStatements__AccessRefArgument(i, {
-    read: function() {
+    rd: function() {
       return j;
     },
-    write: function(arg0) {
+    wt: function(arg0) {
       return j = arg0;
     }
   }) + j;

@@ -282,5 +282,10 @@ namespace NScript.JST
         {
             this.isFunctionName = true;
         }
+
+        internal void ResetUsage()
+        {
+            usageCount = 0;
+        }
     }
 }

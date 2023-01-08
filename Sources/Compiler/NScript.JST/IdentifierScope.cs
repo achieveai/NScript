@@ -6,6 +6,8 @@
 
 namespace NScript.JST
 {
+    using MoreLinq;
+
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -103,6 +105,7 @@ namespace NScript.JST
         /// </summary>
         private readonly Dictionary<string, List<SimpleIdentifier>> identifierNameGroups =
             new Dictionary<string, List<SimpleIdentifier>>();
+        private readonly string scopeName;
 
         /// <summary>
         /// Parent scope.
@@ -113,8 +116,7 @@ namespace NScript.JST
         /// Initializes a new instance of the <see cref="IdentifierScope"/> class.
         /// </summary>
         /// <param name="isExecutionScope">if set to <c>true</c> [is execution scope].</param>
-        public IdentifierScope(
-            bool isExecutionScope)
+        public IdentifierScope(bool isExecutionScope)
         {
             this.isExecutionScope = isExecutionScope;
 
@@ -122,6 +124,10 @@ namespace NScript.JST
             {
                 this.paramaterIdentifiers = new List<SimpleIdentifier>();
                 this.readonlyParameterIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.paramaterIdentifiers);
+            }
+            else
+            {
+                this.scopeName = "JSObject instance";
             }
 
             this.readonlyUsedLocalIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.usedLocalIdentifiers);
@@ -135,13 +141,15 @@ namespace NScript.JST
         /// </summary>
         /// <param name="parentScope">The parent scope.</param>
         public IdentifierScope(
-            IdentifierScope parentScope)
+            IdentifierScope parentScope,
+            string scopeName = default)
         {
             if (parentScope == null)
             {
-                throw new System.ArgumentNullException("parentScope");
+                throw new ArgumentNullException("parentScope");
             }
 
+            this.scopeName = scopeName;
             this.parentScope = parentScope;
             this.isExecutionScope = parentScope.isExecutionScope;
             this.parentScope.childScopes.Add(this);
@@ -212,64 +220,34 @@ namespace NScript.JST
         public bool IsExecutionScope
         { get { return this.isExecutionScope; } }
 
-        /// <summary>
-        /// Gets the parent scope.
-        /// </summary>
-        /// <value>The parent scope.</value>
         public IdentifierScope ParentScope
-        {
-            get
-            {
-                return this.parentScope;
-            }
-        }
+            => this.parentScope;
 
-        /// <summary>
-        /// Gets the parameter identifiers.
-        /// </summary>
-        /// <value>The parameter identifiers.</value>
         public IList<SimpleIdentifier> ParameterIdentifiers
-        {
-            get
-            {
-                return this.readonlyParameterIdentifiers;
-            }
-        }
+            => this.readonlyParameterIdentifiers;
 
-        /// <summary>
-        /// Gets the scoped identifiers.
-        /// </summary>
-        /// <value>The scoped identifiers.</value>
         public IList<SimpleIdentifier> ScopedIdentifiers
-        {
-            get
-            {
-                return this.readonlyScopedIdentifiers;
-            }
-        }
+            =>   this.readonlyScopedIdentifiers;
 
-        /// <summary>
-        /// Gets the used local identifiers.
-        /// </summary>
-        /// <value>The used local identifiers.</value>
         public IList<SimpleIdentifier> UsedLocalIdentifiers
-        {
-            get { return this.readonlyUsedLocalIdentifiers; }
-        }
+            => this.readonlyUsedLocalIdentifiers;
 
-        /// <summary>
-        /// Gets the child scopes.
-        /// </summary>
-        /// <value>The child scopes.</value>
+        public IList<SimpleIdentifier> UsedIdentifiers
+            => this.readonlyUsedIdentifiers;
+
         public IList<IdentifierScope> ChildScopes
+            => this.readonlyChildScopes;
+
+        public void ResetUsageCounter()
         {
-            get { return this.readonlyChildScopes; }
+            this.usedIdentifiers.Clear();
+            this.usedIdentifiersSet.Clear();
+            this.usedLocalIdentifiers.Clear();
+            this.paramaterIdentifiers?.ForEach(parm => parm.ResetUsage());
+            this.scopedIdentifiers.ForEach(si => si.ResetUsage());
+            this.childScopes.ForEach(cs => cs.ResetUsageCounter());
         }
 
-        /// <summary>
-        /// Adds the identifier.
-        /// </summary>
-        /// <param name="identifier">The identifier.</param>
         internal void AddIdentifier(SimpleIdentifier identifier)
         {
             if (identifier.ShouldEnforceSuggestion)

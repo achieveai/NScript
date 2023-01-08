@@ -48,6 +48,16 @@ namespace NScript.Lib
         private string pluginConfigFileName;
 
         /// <summary>
+        /// Number of Javascripts to create.
+        /// </summary>
+        private int jsParts = 1;
+
+        /// <summary>
+        /// Is Script created for release (fully minified)?
+        /// </summary>
+        private bool release = false;
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
         /// </summary>
         private ParseOptions()
@@ -60,10 +70,7 @@ namespace NScript.Lib
         /// <value>
         /// The name of the js file.
         /// </value>
-        public string JsFileName
-        {
-            get { return this.jsFileName; }
-        }
+        public string JsFileName => this.jsFileName;
 
         /// <summary>
         /// Gets or sets the name of the main file.
@@ -71,26 +78,17 @@ namespace NScript.Lib
         /// <value>
         /// The name of the main file.
         /// </value>
-        public string EntryAssembly
-        {
-            get { return this.entryAssembly; }
-        }
+        public string EntryAssembly => this.entryAssembly;
 
         /// <summary>
         /// Gets the reference DLLS.
         /// </summary>
-        public List<string> ReferenceDlls
-        {
-            get { return this.referenceDlls; }
-        }
+        public List<string> ReferenceDlls => this.referenceDlls;
 
         /// <summary>
         /// Gets the reference path.
         /// </summary>
-        public List<string> ReferencePath
-        {
-            get { return this.referencePath; }
-        }
+        public List<string> ReferencePath => this.referencePath;
 
         /// <summary>
         /// Gets the name of the plugin config file.
@@ -98,16 +96,22 @@ namespace NScript.Lib
         /// <value>
         /// The name of the plugin config file.
         /// </value>
-        public string PluginConfigFileName
-        { get { return this.pluginConfigFileName; } }
+        public string PluginConfigFileName => this.pluginConfigFileName;
 
         /// <summary>
         /// Gets the plugin hint paths.
         /// </summary>
-        public List<string> PluginHintPaths
-        {
-            get { return this.pluginHintPath; }
-        }
+        public List<string> PluginHintPaths => this.pluginHintPath;
+
+        /// <summary>
+        /// Number of js files to create.
+        /// </summary>
+        public int JsParts => this.jsParts;
+
+        /// <summary>
+        /// Is script ready for relase (i.e. fully minified).
+        /// </summary>
+        public bool Release => this.release;
 
         /// <summary>
         /// Parses the args.
@@ -183,6 +187,12 @@ namespace NScript.Lib
                     case "-referencehintpath":
                         option = CurrentOption.ReferenceHintPaths;
                         continue;
+                    case "-jsparts":
+                        option = CurrentOption.JsParts;
+                        continue;
+                    case "-release":
+                        options.release = true;
+                        continue;
                     default:
                         break;
                 }
@@ -219,6 +229,14 @@ namespace NScript.Lib
                             }
                             break;
                         }
+                    case CurrentOption.JsParts:
+                        if (!int.TryParse(args[iArg], out options.jsParts)
+                            || options.jsParts > 10 || options.jsParts <= 0)
+                        {
+                            Logger.Instance.LogError("JsParts not int or invalid");
+                            return null;
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -411,6 +429,7 @@ namespace NScript.Lib
             ReferenceHintPaths,
             PluginConf,
             PluginHintPaths,
+            JsParts,
         }
     }
 }

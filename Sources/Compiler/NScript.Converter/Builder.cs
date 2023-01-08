@@ -14,6 +14,7 @@ namespace NScript.Converter
     using NScript.Utils;
     using Mono.Cecil;
     using System.Linq;
+    using NScript.JST.Visitors;
 
     /// <summary>
     /// Definition for Builder.
@@ -50,6 +51,10 @@ namespace NScript.Converter
         /// </summary>
         private readonly ITypeConverterPlugin[] typeConverterPlugins;
 
+        private readonly int jsParts;
+
+        private readonly bool release;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -61,9 +66,11 @@ namespace NScript.Converter
         /// <param name="methodConverterPlugins"> The method converter plugins. </param>
         public Builder(
             string jsScript,
+            int jsParts,
             string mainAssembly,
             string[] references,
-            IConverterPlugin[] plugins)
+            IConverterPlugin[] plugins,
+            bool release)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -74,6 +81,8 @@ namespace NScript.Converter
                 .ToArray<IMethodConverterPlugin>();
             this.typeConverterPlugins = (from p in plugins where p is IRuntimeConverterPlugin select p as ITypeConverterPlugin)
                 .ToArray<ITypeConverterPlugin>();
+            this.jsParts = jsParts;
+            this.release = release;
         }
 
         /// <summary>
@@ -108,7 +117,10 @@ namespace NScript.Converter
                     clrContext,
                     this.methodConverterPlugins,
                     this.typeConverterPlugins);
-                runtimeManager = new RuntimeScopeManager(converterContext);
+                runtimeManager = new RuntimeScopeManager(
+                    converterContext,
+                    this.release);
+
                 methodDefinitionsToEmit = new List<MethodDefinition>();
                 entryPoint = this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly));
             }
@@ -181,19 +193,37 @@ namespace NScript.Converter
                             new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
                 }
 
-                System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+                if (release)
+                {
+                    var identCounter = new IdentifierCounterVisitor();
+                    var unusedMethodRemover = new UnusedMethodRemover();
+                    var inlinableVisitor = new InlineableVisitor();
+                    var methodNameRemover = new MethodNameRemover();
+
+                    statements.ForEach(((IJstVisitor)inlinableVisitor).DispatchStatement);
+                    var proxyFixer = new ProxyFixer(inlinableVisitor.Functions);
+                    statements = statements
+                        .ConvertAll(((ITransformerVisitor)proxyFixer).DispatchStatement);
+
+                    runtimeManager.Scope.ResetUsageCounter();
+                    runtimeManager.JSBaseObjectScopeManager.InstanceScope.ResetUsageCounter();
+                    statements.ForEach(((IJstVisitor)identCounter).DispatchStatement);
+                    statements = statements
+                        .ConvertAll(((ITransformerVisitor)methodNameRemover).DispatchStatement)
+                        .ConvertAll(((ITransformerVisitor)unusedMethodRemover).DispatchStatement);
+                }
+
+                var stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
-                    new IdentifierScope.ReadableIdentifierNamer(
-                        runtimeManager.Scope);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, this.release);
                 stopWatch.Stop();
                 System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
                 stopWatch.Restart();
-                new IdentifierScope.ReadableIdentifierNamer(
-                    runtimeManager.JSBaseObjectScopeManager.InstanceScope);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, this.release);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
-                JSWriter writer = new JSWriter(true, false);
+                var writer = new JSWriter(true, false);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
                 {
@@ -208,7 +238,11 @@ namespace NScript.Converter
                     }
                 }
 
-                writer.Write(this.jsScript, string.Format("SrcMapper.ashx?js={0}&fname=", Path.GetFileName(this.jsScript)));
+                writer.Write(
+                    this.jsScript,
+                    string.Format(
+                        "SrcMapper.ashx?js={0}&fname=",
+                        Path.GetFileName(this.jsScript)));
             }
             catch(ConverterLocationException ex)
             {

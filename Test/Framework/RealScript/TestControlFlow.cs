@@ -126,7 +126,7 @@ namespace RealScript
             Console.WriteLine("b = " + b);
         }
 
-        static void Swap(ref int a, ref int b)
+        public static void Swap(ref int a, ref int b)
         {
             var t = a;
             a = b;

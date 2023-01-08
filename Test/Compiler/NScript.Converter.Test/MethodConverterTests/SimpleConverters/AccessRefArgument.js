@@ -1,4 +1,4 @@
 ﻿function BasicStatements__AccessRefArgument(i1, testOut) {
-  testOut.write(i1 + 10 + testOut.read());
+  testOut.wt(i1 + 10 + testOut.rd());
   return i1;
 }

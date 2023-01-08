@@ -16,17 +16,12 @@ namespace NScript.JST
         /// <summary>
         /// Backing field for tokens.
         /// </summary>
-        private readonly LinkedList<TokenBase> tokens = new LinkedList<TokenBase>();
-
-        /// <summary>
-        /// Backing field for isOptimized.
-        /// </summary>
-        private readonly bool isOptimized;
+        private readonly LinkedList<TokenBase> tokens = new();
 
         /// <summary>
         /// Stack for all the locations on the stack.
         /// </summary>
-        private readonly Stack<Location> locationStack = new Stack<Location>();
+        private readonly Stack<Location> locationStack = new();
 
         /// <summary>
         /// tracking field for scope depth.
@@ -42,7 +37,7 @@ namespace NScript.JST
             bool isIndented,
             bool isOptimized)
         {
-            this.isOptimized = isOptimized;
+            IsOptimized = isOptimized;
         }
 
         /// <summary>
@@ -51,13 +46,7 @@ namespace NScript.JST
         /// <value>
         /// <c>true</c> if this instance is optimized; otherwise, <c>false</c>.
         /// </value>
-        public bool IsOptimized
-        {
-            get
-            {
-                return this.isOptimized;
-            }
-        }
+        public bool IsOptimized { get; }
 
         /// <summary>
         /// Writes the new line.
@@ -223,8 +212,7 @@ namespace NScript.JST
         /// <returns>Self</returns>
         public JSWriter Write(IIdentifier identifier)
         {
-            SimpleIdentifier simpleIdentifier = identifier as SimpleIdentifier;
-            if (simpleIdentifier != null)
+            if (identifier is SimpleIdentifier)
             {
                 this.tokens.AddLast(
                     new LinkedListNode<TokenBase>(
@@ -340,14 +328,12 @@ namespace NScript.JST
         /// <param name="sourceRoot"> Source root. </param>
         public void Write(string jsFileName, string sourceRoot)
         {
-            using (StreamWriter streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8))
-            {
-                this.Write(
-                    streamWriter,
-                    Path.GetFileName(jsFileName),
-                    Path.GetDirectoryName(jsFileName),
-                    true);
-            }
+            using var streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8);
+            this.Write(
+                streamWriter,
+                Path.GetFileName(jsFileName),
+                Path.GetDirectoryName(jsFileName),
+                true);
         }
 
         /// <summary>
@@ -629,7 +615,7 @@ namespace NScript.JST
                     return "&";
                 case Symbols.AndEquals:
                     return "&=";
-                case Symbols.BrackedOpenCurly:
+                case Symbols.BracketOpenCurly:
                     return "{";
                 case Symbols.BracketCloseCurly:
                     return "}";
@@ -819,7 +805,7 @@ namespace NScript.JST
                     prevToken.Type != TokenType.Newline &&
                     prevToken.Type != TokenType.Space)
                 {
-                    this.InsertSpace(node, false);
+                    this.InsertSpace(node, true);
                 }
             }
             else
@@ -912,7 +898,7 @@ namespace NScript.JST
                 }
             }
 
-            if (!this.isOptimized)
+            if (!this.IsOptimized)
             {
                 switch (symbolToken.Symbol)
                 {
@@ -978,7 +964,7 @@ namespace NScript.JST
 
                         break;
 
-                    case Symbols.BrackedOpenCurly:
+                    case Symbols.BracketOpenCurly:
                         if (!this.HasSpaceBefore(node))
                         {
                             this.InsertSpace(node, true);
@@ -986,6 +972,17 @@ namespace NScript.JST
 
                         break;
                     case Symbols.BracketCloseCurly:
+                        {
+                            var token = this.GetNonOptimizableTokenBefore(node);
+                            if (token != null
+                                && token is SymbolToken symToken
+                                && symToken.Symbol == Symbols.BracketOpenCurly)
+                            {
+                                this.InsertSpace(node, true);
+                                break;
+                            }
+                        }
+
                         this.tokens.AddBefore(
                             node,
                             new LinkedListNode<TokenBase>(
@@ -1042,7 +1039,7 @@ namespace NScript.JST
                     prevToken.Type != TokenType.Newline &&
                     prevToken.Type != TokenType.Space)
                 {
-                    this.InsertSpace(node, false);
+                    this.InsertSpace(node, true);
                 }
             }
             else
@@ -1148,7 +1145,7 @@ namespace NScript.JST
                     case TokenType.Space:
                         return node.Value;
                     case TokenType.Newline:
-                        if (!this.isOptimized)
+                        if (!this.IsOptimized)
                         {
                             return node.Value;
                         }
@@ -1180,7 +1177,7 @@ namespace NScript.JST
                     case TokenType.Space:
                         return node.Value;
                     case TokenType.Newline:
-                        if (!this.isOptimized)
+                        if (!this.IsOptimized)
                         {
                             return node.Value;
                         }
@@ -1198,7 +1195,7 @@ namespace NScript.JST
         /// <returns>stringified version of the line.</returns>
         private string GetNewLineString(int scopeDepth)
         {
-            if (!this.isOptimized)
+            if (!this.IsOptimized)
             {
                 StringBuilder strBuilder = new StringBuilder();
 
