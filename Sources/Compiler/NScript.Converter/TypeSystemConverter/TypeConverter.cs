@@ -41,6 +41,8 @@ namespace NScript.Converter.TypeSystemConverter
     /// </summary>
     public abstract class TypeConverter : IResolver
     {
+        private const string TypeIdIdx = "typeIdx";
+
         /// <summary>
         /// Backing field for TypeDefinition.
         /// </summary>
@@ -274,6 +276,25 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         protected abstract MethodReference TypeRegistrationMethod
         { get; }
+
+        protected IIdentifier GenericTypeIdIdx
+        {
+            get
+            {
+                if (!this.IsGenericLike)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                if (!this.localVariableToIdentifierMap.TryGetValue(TypeIdIdx, out var rv))
+                {
+                    rv = SimpleIdentifier.CreateScopeIdentifier(this.Scope, TypeIdIdx, false);
+                    this.localVariableToIdentifierMap[TypeIdIdx] = rv;
+                }
+
+                return rv;
+            }
+        }
 
         /// <summary>
         /// Creates the specified runtime scope manager.
@@ -848,7 +869,11 @@ namespace NScript.Converter.TypeSystemConverter
 
                 if (converter.IsGlobalStaticImplementation)
                 {
-                    statements.Add(new ExpressionStatement(null, this.Scope, converter.MethodFunctionExpression));
+                    statements.Add(
+                        new ExpressionStatement(
+                            null,
+                            this.Scope,
+                            converter.MethodFunctionExpression));
                 }
                 else
                 {
@@ -1058,10 +1083,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 var typeExpr = this.ResolveTypeToExpression(this.typeDefinition, this.Scope);
                 var identifierTypeExpr = typeExpr as IdentifierExpression;
-                IIdentifier typeIdentifier = identifierTypeExpr != null
-                    ? identifierTypeExpr.Identifier
-                    : null;
-
+                var typeIdentifier = identifierTypeExpr?.Identifier;
                 var constructorExpr = this.CreateConstructorFunction(typeIdentifier);
 
                 // Add the constructor.
@@ -1072,6 +1094,25 @@ namespace NScript.Converter.TypeSystemConverter
                             null,
                             this.Scope,
                             constructorExpr));
+                }
+                else if (this.IsGenericLike)
+                {
+                    // Add shortcut for the current type's self reference, so that we can
+                    // keep using self reference of created type.
+                    statements.Add(
+                        ExpressionStatement.CreateAssignmentExpression(
+                            this.ResolveTypeToExpression(
+                                this.typeDefinition,
+                                this.Scope),
+                            new BinaryExpression(
+                                null,
+                                this.Scope,
+                                BinaryOperator.Assignment,
+                                IdentifierExpression.Create(
+                                    null,
+                                    this.Scope,
+                                    this.Resolve(this.typeDefinition)),
+                                constructorExpr)));
                 }
                 else
                 {
@@ -1084,18 +1125,6 @@ namespace NScript.Converter.TypeSystemConverter
 
             if (this.IsGenericLike)
             {
-                // Add shortcut for the current type's self reference, so that we can
-                // keep using self reference of created type.
-                statements.Add(
-                    ExpressionStatement.CreateAssignmentExpression(
-                        IdentifierExpression.Create(
-                            null,
-                            this.Scope,
-                            this.Resolve(this.typeDefinition)),
-                        this.ResolveTypeToExpression(
-                            this.typeDefinition,
-                            this.Scope)));
-
                 this.localTypeReferencesInitialized.Add(this.typeDefinition);
 
                 if (!this.typeDefinition.IsStatic())
@@ -1161,21 +1190,15 @@ namespace NScript.Converter.TypeSystemConverter
         /// Creates the constructor function.
         /// </summary>
         /// <returns></returns>
-        protected virtual Expression CreateConstructorFunction(
-            IIdentifier typeName)
-        {
-            IdentifierScope innerScope = new IdentifierScope(this.Scope);
-            Expression objExpression = new FunctionExpression(
+        protected virtual Expression CreateConstructorFunction(IIdentifier typeName)
+            => new FunctionExpression(
                 null,
                 this.Scope,
-                innerScope,
+                new IdentifierScope(this.Scope),
                 new List<IIdentifier>(),
                 typeName ?? SimpleIdentifier.CreateScopeIdentifier(
                     this.Scope,
                     this.typeDefinition.FullName, false));
-
-            return objExpression;
-        }
 
         /// <summary>
         /// Initializes the type id.
@@ -1207,6 +1230,7 @@ namespace NScript.Converter.TypeSystemConverter
                             this.Scope,
                             "_"));
                 }
+
                 idExpression = new BinaryExpression(
                     null,
                     this.Scope,
@@ -1741,19 +1765,31 @@ namespace NScript.Converter.TypeSystemConverter
                         this.runtimeScopeManager.ResolveType(this.typeDefinition));
                 }
 
+                JST.Expression indexPart = new IndexExpression(
+                    null,
+                    this.Scope,
+                    new IdentifierExpression(
+                        this.Scope.ParameterIdentifiers[argumentIndex],
+                        this.Scope),
+                    new IdentifierExpression(
+                        this.RuntimeManager.JSBaseObjectScopeManager.TypeId,
+                        this.Scope));
+
+                if (argumentIndex== 0)
+                {
+                    indexPart = new BinaryExpression(
+                        null,
+                        this.Scope,
+                        BinaryOperator.Plus,
+                        new StringLiteralExpression(this.Scope, RuntimeScopeManager.GenericFirstTypeIndexPrefix),
+                        indexPart);
+                }
+
                 typePath = new IndexExpression(
                     null,
                     this.Scope,
                     typePath,
-                    new IndexExpression(
-                        null,
-                        this.Scope,
-                        new IdentifierExpression(
-                            this.Scope.ParameterIdentifiers[argumentIndex],
-                            this.Scope),
-                        new IdentifierExpression(
-                            this.RuntimeManager.JSBaseObjectScopeManager.TypeId,
-                            this.Scope)));
+                    indexPart);
 
                 typePathPart.Add(typePath);
 

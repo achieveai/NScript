@@ -97,6 +97,9 @@ namespace NScript.Converter.ExpressionsConverter
                     : null;
 
             var methodDefinition = methodReferenceExpression?.MethodReference.Resolve();
+            // Risky Move. TODO$: Validate this is working fine.
+            bool isVirtualCall = methodReferenceExpression is VirtualMethodReferenceExpression
+                && !methodDefinition.IsFinal;
 
             if (boxedExpression != null)
             {
@@ -149,28 +152,26 @@ namespace NScript.Converter.ExpressionsConverter
                         methodReferenceExpression.Location,
                         overrideMethod ?? virtualRefExpression.MethodReference,
                         boxedExpression.BoxedExpression);
-
-                    virtualRefExpression = null;
                 }
             }
 
             if (methodReferenceExpression != null)
             {
-                JST.Expression thisExpression = null;
                 MethodCallContext methodCallContext;
 
                 if (methodReferenceExpression.LeftExpression != null)
                 {
+                    JST.Expression thisExpression;
                     // Let's generate static method for the method that we want to call.
                     // Value type methods are all implemented as static methods.
-                    if (methodDefinition.IsVirtual
+                    if (isVirtualCall
                         && methodReferenceExpression.MethodReference.DeclaringType.IsValueOrEnum()
-                        && methodReferenceExpression.LeftExpression is LoadAddressExpression)
+                        && methodReferenceExpression.LeftExpression is LoadAddressExpression expression)
                     {
                         thisExpression =
                             ExpressionConverterBase.Convert(
                                 methodConverter,
-                                ((LoadAddressExpression)methodReferenceExpression.LeftExpression)
+                                expression
                                     .NestedExpression);
                     }
                     else
@@ -194,7 +195,7 @@ namespace NScript.Converter.ExpressionsConverter
                         methodReferenceExpression.Location,
                         methodConverter.Scope);
                 }
-                
+
                 var (args, toPreInject) = ReorderArgs(
                     methodConverter,
                     methodCallExpression.Parameters,
@@ -308,10 +309,15 @@ namespace NScript.Converter.ExpressionsConverter
             RuntimeScopeManager runtimeManager)
         {
             MethodReference methodReference = callContext.Method;
+            var methodDefinition = methodReference.Resolve();
+
+            // Risky Move. TODO$: Validate this is working fine.
+            bool isVirtualCall = callContext.IsVirtual && !methodDefinition.IsFinal;
+
 
             // Compiler generated code won't go in here. It's template parser generated code that
             // goes in this.
-            if (callContext.IsVirtual)
+            if (isVirtualCall)
             { methodReference = runtimeManager.Context.ClrContext.GetBaseSlotForVirtual(methodReference); }
 
             if (methodReference.HasThis && callContext.ThisExpression == null)
@@ -333,22 +339,12 @@ namespace NScript.Converter.ExpressionsConverter
                             resolver.Resolve(exp))).ToList();
             }
 
-            MethodDefinition methodDefinition = methodReference.Resolve();
-            TypeDefinition declaringTypeDefinition = methodDefinition != null ? methodDefinition.DeclaringType : null;
-            bool isExtendedOrPsudo = runtimeManager.Context.IsExtended(declaringTypeDefinition)
-                || runtimeManager.Context.IsPsudoType(declaringTypeDefinition);
-            if (methodReference.HasThis
-                && !((methodReference.DeclaringType.IsValueOrEnum()
-                        || runtimeManager.ImplementInstanceAsStatic)
-                    && (!isExtendedOrPsudo
-                        || runtimeManager.Context.IsImplemented(methodDefinition)))
-                && (callContext.IsVirtual
-                    || !isExtendedOrPsudo
-                    || !runtimeManager.Context.IsImplemented(methodDefinition)
-                    || methodReference.Resolve().CustomAttributes.SelectAttribute(
-                            runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) != null))
+            if (IsMethodInstanceCall(
+                methodReference,
+                runtimeManager,
+                isVirtualCall))
             {
-                genericArguments = genericArguments ?? new List<JST.Expression>();
+                genericArguments ??= new List<JST.Expression>();
 
                 if (arguments != null)
                 {
@@ -580,22 +576,6 @@ namespace NScript.Converter.ExpressionsConverter
         }
 
         /// <summary>
-        /// Literals the converter.
-        /// </summary>
-        /// <param name="converter">The converter.</param>
-        /// <param name="methodCallExpression">The method call expression.</param>
-        /// <returns></returns>
-        private static JST.Expression LiteralConverter(
-            IMethodScopeConverter converter,
-            MethodCallExpression methodCallExpression)
-        {
-            return new JST.ScriptLiteralExpression(
-                methodCallExpression.Location,
-                converter.Scope,
-                ((StringLiteral)methodCallExpression.Parameters[0]).String);
-        }
-
-        /// <summary>
         /// Strings the concat converter.
         /// </summary>
         /// <param name="converter">The converter.</param>
@@ -801,6 +781,38 @@ namespace NScript.Converter.ExpressionsConverter
             tmpIdentifiders.ForEach(methodConverter.ReleaseTempVariable);
 
             return (orderedArgs, expressionList);
+        }
+
+        public static bool IsMethodInstanceCall(
+            MethodReference methodReference,
+            RuntimeScopeManager runtimeManager,
+            bool isVirtualCall)
+        {
+
+            // $TODO$ Currently we're not converting methods on Generic Types to static.
+            // Fix this in later pass.
+            var methodDefinition = methodReference.Resolve();
+            isVirtualCall = isVirtualCall && !methodDefinition.IsFinal;
+
+            TypeDefinition declaringTypeDefinition = methodDefinition.DeclaringType;
+            bool isExtendedOrPsudo = runtimeManager.Context.IsExtended(declaringTypeDefinition)
+                || runtimeManager.Context.IsPsudoType(declaringTypeDefinition);
+
+            return methodReference.HasThis
+                && !((methodReference.DeclaringType.IsValueOrEnum()
+                        || (runtimeManager.ImplementInstanceAsStatic
+                            && !declaringTypeDefinition.HasGenericParameters
+                            && !declaringTypeDefinition.IsInterface
+                            && !isVirtualCall
+                            && methodDefinition.CustomAttributes.SelectAttribute(
+                            runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) == null))
+                    && (!isExtendedOrPsudo
+                        || runtimeManager.Context.IsImplemented(methodDefinition)))
+                && (isVirtualCall
+                    || !isExtendedOrPsudo
+                    || !runtimeManager.Context.IsImplemented(methodDefinition)
+                    || methodDefinition.CustomAttributes.SelectAttribute(
+                            runtimeManager.Context.KnownReferences.KeepInstanceUsageAttribute) != null);
         }
     }
 }

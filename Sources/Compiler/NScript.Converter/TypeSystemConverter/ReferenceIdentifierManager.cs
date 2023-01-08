@@ -43,7 +43,7 @@ namespace NScript.Converter.TypeSystemConverter
                 {
                     this.readerIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                         this.identifierScope,
-                        "read",
+                        "rd",
                         false);
                 }
 
@@ -64,7 +64,7 @@ namespace NScript.Converter.TypeSystemConverter
                     this.writerIdentifier =
                         SimpleIdentifier.CreateScopeIdentifier(
                             this.identifierScope,
-                            "write",
+                            "wt",
                             false);
                 }
 

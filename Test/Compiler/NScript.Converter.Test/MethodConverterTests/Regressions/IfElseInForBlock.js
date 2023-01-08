@@ -1,7 +1,7 @@
 ﻿function FuncRegressions__IfElseInForBlock(array) {
   var rv, i;
   rv = "[";
-  for (i = 0; i < array.V_get_Length(); ++i)
+  for (i = 0; i < array.gl(); ++i)
     if (i > 0)
       rv = rv + "," + array.get_item(i);
     else

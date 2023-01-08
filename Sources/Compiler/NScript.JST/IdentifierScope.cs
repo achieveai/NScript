@@ -6,6 +6,8 @@
 
 namespace NScript.JST
 {
+    using MoreLinq;
+
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -235,6 +237,16 @@ namespace NScript.JST
 
         public IList<IdentifierScope> ChildScopes
             => this.readonlyChildScopes;
+
+        public void ResetUsageCounter()
+        {
+            this.usedIdentifiers.Clear();
+            this.usedIdentifiersSet.Clear();
+            this.usedLocalIdentifiers.Clear();
+            this.paramaterIdentifiers?.ForEach(parm => parm.ResetUsage());
+            this.scopedIdentifiers.ForEach(si => si.ResetUsage());
+            this.childScopes.ForEach(cs => cs.ResetUsageCounter());
+        }
 
         internal void AddIdentifier(SimpleIdentifier identifier)
         {

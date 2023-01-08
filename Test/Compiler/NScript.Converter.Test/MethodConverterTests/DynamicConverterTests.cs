@@ -39,7 +39,8 @@ namespace NScript.Converter.Test.MethodConverterTests
                 className,
                 methodName,
                 testType,
-                true);
+                true,
+                false);
         }
     }
 }

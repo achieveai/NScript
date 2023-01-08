@@ -31,7 +31,7 @@ namespace NScript.Converter.StatementsConverter
 
             foreach (var keyValuePair in statement.CaseBlocks)
             {
-                List<JST.Expression> cases = new List<JST.Expression>(keyValuePair.Key.Count);
+                List<JST.Expression> cases = new(keyValuePair.Key.Count);
 
                 for (int literalIndex = 0; literalIndex < keyValuePair.Key.Count; literalIndex++)
                 {
@@ -131,13 +131,6 @@ namespace NScript.Converter.StatementsConverter
             RegularSwitchValue
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="converter"></param>
-        /// <param name="switchValue"></param>
-        /// <param name="conversionVariant"></param>
-        /// <returns>(jsSwitchValue, reusableSwitchValue)</returns>
         private static (JST.Expression, JST.Expression) ConvertSwitchValue(IMethodScopeConverter converter, Expression switchValue, ConversionVariant conversionVariant)
         {
             var jsSwitchValue = ExpressionConverterBase.Convert(converter, switchValue);
@@ -155,8 +148,7 @@ namespace NScript.Converter.StatementsConverter
                 _ => true
             };
 
-            JST.Expression reusableSwitchValue = null;
-
+            JST.Expression reusableSwitchValue;
             if (shouldRequireTempVariable)
             {
                 var tempVarExpr = new JST.IdentifierExpression(converter.GetTempVariable(), converter.Scope);

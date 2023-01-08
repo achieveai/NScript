@@ -6,7 +6,9 @@
 
 namespace RealScript
 {
+    using System;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
 
     public class TestGeneric<T>
     {
@@ -133,8 +135,10 @@ namespace RealScript
         }
     }
 
-    public static class GenericRegressions
+    public class GenericRegressions
     {
+        string target;
+
         public static void GenericStructBoxing(IDictionary<string, int> dict)
         {
             var tmp_ = dict.GetEnumerator();
@@ -186,6 +190,51 @@ namespace RealScript
             tmp.Foo(tmp2);
             tmp.Foo<int>(tmp2);
             tmp.Foo<long>(tmp2, tmp1);
+        }
+
+        public static bool IsW3wc(string target)
+        {
+            return true;
+        }
+
+        [IgnoreGenericArguments]
+        public void AddEvent<T, U>(
+            string name,
+            Action<T, U> action,
+            bool onCapture = false)
+        {
+            bool isW3wc = GenericRegressions.IsW3wc(this.target);
+        }
+    }
+
+    public class MultiArgGeneric<T, U>
+        where T : new()
+        where U : new()
+    {
+        public static T t;
+        public static U u;
+
+        public MultiArgGeneric() { }
+
+        public string GetValue()
+        {
+            return t.ToString() + u.ToString();
+        }
+    }
+
+    public class MultiArgGeneric<T, U, V>
+        : MultiArgGeneric<T, U>
+        where T : new()
+        where U : new()
+        where V : new()
+    {
+        public static V v;
+
+        public MultiArgGeneric() { }
+
+        public string GetValue()
+        {
+            return base.GetValue() + v.ToString();
         }
     }
 }

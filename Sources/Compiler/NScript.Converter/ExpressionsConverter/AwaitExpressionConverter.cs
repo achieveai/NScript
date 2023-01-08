@@ -5,7 +5,7 @@
     using NScript.CLR;
     using NScript.Converter.TypeSystemConverter;
 
-    public class AwaitExpressionConverter
+    public static class AwaitExpressionConverter
     {
         public static JST.Expression Convert(
             IMethodScopeConverter methodConverter,

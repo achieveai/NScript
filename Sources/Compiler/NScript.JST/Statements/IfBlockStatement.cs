@@ -119,7 +119,7 @@ namespace NScript.JST
             if (this.FalseBlock != null
                 && this.ShouldForceIfBlockEncapsulation(this.TrueBlock))
             {
-                writer.Write(Symbols.BrackedOpenCurly)
+                writer.Write(Symbols.BracketOpenCurly)
                     .Write(this.trueBlock)
                     .Write(Symbols.BracketCloseCurly);
             }

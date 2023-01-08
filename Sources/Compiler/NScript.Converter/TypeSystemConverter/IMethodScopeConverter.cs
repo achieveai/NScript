@@ -27,6 +27,10 @@
 
         void PopScopeBlock();
 
+        void PushJsScope(JST.IdentifierScope scope);
+
+        void PopJsScope();
+
         JST.IIdentifier GetTempVariable();
 
         JST.IIdentifier GetConditionalAccessTempVariable();

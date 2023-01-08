@@ -20,6 +20,8 @@ namespace NScript.Converter.TypeSystemConverter
     /// </summary>
     public class RuntimeScopeManager
     {
+        public const string GenericFirstTypeIndexPrefix = "9";
+
         /// <summary>
         /// Regex pattern to find all the generic arg counts. This is used in replacing
         /// this annoying pattern to create friendly names for generics.
@@ -51,31 +53,10 @@ namespace NScript.Converter.TypeSystemConverter
                 RegexOptions.Compiled);
 
         /// <summary>
-        /// Backing field for Context.
-        /// </summary>
-        private readonly ConverterContext context;
-
-        /// <summary>
-        /// Backing field for ReusablePrototypeIdentifier;
-        /// </summary>
-        private readonly IIdentifier reusablePrototypeIdentifier;
-
-        /// <summary>
         /// Global namespace manager.
         /// </summary>
         private readonly NamespaceManager globalNamespaceManager =
             new NamespaceManager();
-
-        /// <summary>
-        /// Backing field for Dependency Analyzer.
-        /// </summary>
-        private readonly DependencyAnalyzer dependencyAnalyzer;
-
-        /// <summary>
-        /// Backing field for ReferenceIdentifierManager
-        /// </summary>
-        private readonly ReferenceIdentifierManager referenceIdentifierManager =
-            new ReferenceIdentifierManager();
 
         /// <summary>
         /// mapping from type reference to identifier used for the type.
@@ -100,11 +81,6 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         private readonly Dictionary<TypeDefinition, TypeScopeManager> typeScopes =
             new Dictionary<TypeDefinition, TypeScopeManager>(MemberReferenceComparer.Instance);
-
-        /// <summary>
-        /// Backing field for JSBaseObjectScopeManager
-        /// </summary>
-        private readonly JSBaseObjectIdentifierManager jsBaseObjectScopeManager;
 
         /// <summary>
         /// Backing field for typeIdMap.
@@ -172,22 +148,28 @@ namespace NScript.Converter.TypeSystemConverter
 
         /// <summary>
         /// Used to keep track of all the typeIds used.
+        /// Note: This should start at a value greater than all the method/field names
+        /// on Function object.
         /// </summary>
         private int typeIdsUsed = 0;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeScopeManager"/> class.
         /// </summary>
-        public RuntimeScopeManager(ConverterContext context)
+        public RuntimeScopeManager(
+            ConverterContext context,
+            bool instanceAsStatic = false)
         {
-            this.context = context;
-            jsBaseObjectScopeManager = new JSBaseObjectIdentifierManager(this);
-            dependencyAnalyzer = new DependencyAnalyzer(this.context);
-            reusablePrototypeIdentifier = SimpleIdentifier.CreateScopeIdentifier(
+            Context = context;
+            JSBaseObjectScopeManager = new JSBaseObjectIdentifierManager(this);
+            DependencyAnalyzer = new DependencyAnalyzer(Context);
+            ReusablePrototypeIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                 globalNamespaceManager.Scope,
                 "ptyp_",
                 false);
             InitializeKnownGlobalIdentifiers();
+
+            ImplementInstanceAsStatic = instanceAsStatic;
         }
 
         /// <summary>
@@ -199,29 +181,30 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>
         /// Gets the context.
         /// </summary>
-        public ConverterContext Context => context;
+        public ConverterContext Context { get; }
 
         /// <summary>
         /// Gets the reusable prototype identifier.
         /// </summary>
         /// <value>The reusable prototype identifier.</value>
-        public IIdentifier ReusablePrototypeIdentifier => reusablePrototypeIdentifier;
+        public IIdentifier ReusablePrototypeIdentifier { get; }
 
         /// <summary>
         /// Gets the reference manager.
         /// </summary>
         /// <value>The reference manager.</value>
-        public ReferenceIdentifierManager ReferenceManager => referenceIdentifierManager;
+        public ReferenceIdentifierManager ReferenceManager { get; } =
+            new ReferenceIdentifierManager();
 
         /// <summary>
         /// Gets the dependency analyzer.
         /// </summary>
-        public DependencyAnalyzer DependencyAnalyzer => dependencyAnalyzer;
+        public DependencyAnalyzer DependencyAnalyzer { get; }
 
         /// <summary>
         /// Gets the JS base object scope manager.
         /// </summary>
-        public JSBaseObjectIdentifierManager JSBaseObjectScopeManager => jsBaseObjectScopeManager;
+        public JSBaseObjectIdentifierManager JSBaseObjectScopeManager { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [implement instance as static].
@@ -229,11 +212,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <value>
         /// <c>true</c> if [implement instance as static]; otherwise, <c>false</c>.
         /// </value>
-        public bool ImplementInstanceAsStatic
-        {
-            get;
-            set;
-        }
+        public bool ImplementInstanceAsStatic { get; }
 
         public Statement GetVariableDeclarations()
         {
@@ -305,7 +284,7 @@ namespace NScript.Converter.TypeSystemConverter
                         (typeConverter, statements) =>
                         {
                             foreach (var dependentTypeReference in
-                                dependencyAnalyzer.TypeToTypeReferences[typeConverter.TypeDefinition])
+                                DependencyAnalyzer.TypeToTypeReferences[typeConverter.TypeDefinition])
                             {
                                 var genericArguments = typeReference.GetGenericArguments();
                                 var fixedDependent = dependentTypeReference.FixGenericTypeArguments(
@@ -354,7 +333,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             // Now let's initialize all the Generic global symbols that will be used somewhere inside the
             // methods.
-            foreach (var typeReference in dependencyAnalyzer.GetOrderedGenericTypeDependencies(typeReferenceIdentifiers.Keys))
+            foreach (var typeReference in DependencyAnalyzer.GetOrderedGenericTypeDependencies(typeReferenceIdentifiers.Keys))
             {
                 if (typeReferencesRegistered.Contains(typeReference)
                     || !typesToRegister.Contains(typeReference.Resolve())
@@ -436,7 +415,7 @@ namespace NScript.Converter.TypeSystemConverter
                             (typeConverter, statements) =>
                             {
                                 foreach (var dependent in
-                                    dependencyAnalyzer.TypeToTypeReferences[typeConverter.TypeDefinition])
+                                    DependencyAnalyzer.TypeToTypeReferences[typeConverter.TypeDefinition])
                                 {
                                     if (dependent == null
                                         || dependent.IsGenericParameter
@@ -460,8 +439,8 @@ namespace NScript.Converter.TypeSystemConverter
                                     typeReferencesRegistered.Add(dependentTypeReference);
                                     typesInitializedInOrder.Add(dependentTypeReference);
 
-                                    if (!context.HasIgnoreNamespaceAttribute(dependentTypeReference.Resolve())
-                                        && !context.IsExtended(dependentTypeReference.Resolve()))
+                                    if (!Context.HasIgnoreNamespaceAttribute(dependentTypeReference.Resolve())
+                                        && !Context.IsExtended(dependentTypeReference.Resolve()))
                                     {
                                         statements.Add(
                                             new ExpressionStatement(
@@ -517,13 +496,13 @@ namespace NScript.Converter.TypeSystemConverter
 
                 // Now let's initialize all the Generic global symbols that will be used somewhere inside the
                 // methods.
-                foreach (var typeReference in dependencyAnalyzer.GetOrderedGenericTypeDependencies(typeReferenceIdentifiers.Keys))
+                foreach (var typeReference in DependencyAnalyzer.GetOrderedGenericTypeDependencies(typeReferenceIdentifiers.Keys))
                 {
                     if (typeReferencesRegistered.Contains(typeReference)
                         || !typesDefinitionsUsed.ContainsKey(typeReference.Resolve())
                         || typeReference.GetGenericTypeScope().HasValue
-                        || context.IsImportedType(typeReference.Resolve())
-                        || context.IsJsonType(typeReference.Resolve()))
+                        || Context.IsImportedType(typeReference.Resolve())
+                        || Context.IsJsonType(typeReference.Resolve()))
                     {
                         continue;
                     }
@@ -652,9 +631,9 @@ namespace NScript.Converter.TypeSystemConverter
         {
             var typeDefinition = typeReference.Resolve();
 
-            if (context.IsJsonType(typeDefinition))
+            if (Context.IsJsonType(typeDefinition))
             {
-                typeReference = context.ClrKnownReferences.Object;
+                typeReference = Context.ClrKnownReferences.Object;
             }
 
             typeReference = Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
@@ -673,8 +652,8 @@ namespace NScript.Converter.TypeSystemConverter
                 }
 
                 var nameSpace = globalNamespaceManager;
-                var isExtended = context.IsExtended(typeReference)
-                    || context.IsPsudoType(typeDefinition);
+                var isExtended = Context.IsExtended(typeReference)
+                    || Context.IsPsudoType(typeDefinition);
 
                 // Imported types do not have generic symbols.
                 //
@@ -703,7 +682,7 @@ namespace NScript.Converter.TypeSystemConverter
                 {
                     if (isExtended
                         && !string.IsNullOrEmpty(typeName.Item1)
-                        && !context.HasIgnoreNamespaceAttribute(typeDefinition))
+                        && !Context.HasIgnoreNamespaceAttribute(typeDefinition))
                     {
                         nameSpace = nameSpace.GetNamespace(typeName.Item1, true);
                     }
@@ -756,7 +735,7 @@ namespace NScript.Converter.TypeSystemConverter
             typeReference = Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
 
             var typeDef = typeReference.Resolve();
-            if ((typeDef == null || !context.IsPsudoType(typeDef))
+            if ((typeDef == null || !Context.IsPsudoType(typeDef))
                 && typeReferenceBase.GetGenericTypeScope().HasValue)
             {
                 if (initializeRefsAndStaticCtor == null)
@@ -769,18 +748,34 @@ namespace NScript.Converter.TypeSystemConverter
                     var genericArguments = typeReference.GetGenericArguments();
                     if (genericArguments != null)
                     {
-                        foreach (var genericParam in genericArguments)
+                        for (int iGeneric = 0; iGeneric < genericArguments.Count; iGeneric++)
                         {
+                            var genericParam = genericArguments[iGeneric];
+                            JST.Expression innerIndex = new IndexExpression(
+                                null,
+                                scope,
+                                resolveTypeToExpressionHelper(genericParam, scope, initializeRefsAndStaticCtor),
+                                new IdentifierExpression(
+                                    JSBaseObjectScopeManager.TypeId, scope));
+
+                            if (iGeneric == 0)
+                            {
+                                // Note: we need to add 'GenericFirstTypeIndexPrefix' to first generic lookup index, or else we risk
+                                // clashing the names with method / field name on 'Function' class.
+                                // This normally happens when full minification is turned on.
+                                innerIndex = new BinaryExpression(
+                                    null,
+                                    this.Scope,
+                                    BinaryOperator.Plus,
+                                    new StringLiteralExpression(this.Scope, GenericFirstTypeIndexPrefix),
+                                    innerIndex);
+                            }
+
                             rv = new IndexExpression(
                                 null,
                                 scope,
                                 rv,
-                                new IndexExpression(
-                                    null,
-                                    scope,
-                                    resolveTypeToExpressionHelper(genericParam, scope, initializeRefsAndStaticCtor),
-                                    new IdentifierExpression(
-                                        JSBaseObjectScopeManager.TypeId, scope)));
+                                innerIndex);
                         }
                     }
 
@@ -991,7 +986,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             var typeDef = methodDefinition.DeclaringType.Resolve();
             if ((typeDef.IsGenericInstance || typeDef.HasGenericParameters)
-                && !context.IsPsudoType(typeDef))
+                && !Context.IsPsudoType(typeDef))
             {
                 throw new InvalidOperationException(
                     "Can't resolve (static) method to global identifier if method is on generic type.");
@@ -1105,13 +1100,13 @@ namespace NScript.Converter.TypeSystemConverter
         {
             if (!typeScopes.TryGetValue(typeDefinition, out var returnValue))
             {
-                if (typeDefinition.IsSameDefinition(context.ClrKnownReferences.Object))
+                if (typeDefinition.IsSameDefinition(Context.ClrKnownReferences.Object))
                 {
-                    returnValue = jsBaseObjectScopeManager.ObjecTypeScopeManager;
+                    returnValue = JSBaseObjectScopeManager.ObjecTypeScopeManager;
                 }
-                else if (typeDefinition.IsSameDefinition(context.ClrKnownReferences.TypeType))
+                else if (typeDefinition.IsSameDefinition(Context.ClrKnownReferences.TypeType))
                 {
-                    returnValue = jsBaseObjectScopeManager.TypeTypeScopeManager;
+                    returnValue = JSBaseObjectScopeManager.TypeTypeScopeManager;
                 }
                 else
                 {
@@ -1128,7 +1123,7 @@ namespace NScript.Converter.TypeSystemConverter
                     else
                     {
                         returnValue = new TypeScopeManager(
-                            context,
+                            Context,
                             typeDefinition,
                             JSBaseObjectScopeManager.InstanceScope,
                             JSBaseObjectScopeManager.StaticScope);
@@ -1319,7 +1314,7 @@ namespace NScript.Converter.TypeSystemConverter
             // generic type with generic parameters.
             if (typeReference.GetGenericTypeScope() != null)
             {
-                var typeName = context.GetTypeName(typeReference);
+                var typeName = Context.GetTypeName(typeReference);
 
                 return RuntimeScopeManager.GetSplitName(typeName);
             }
@@ -1334,7 +1329,7 @@ namespace NScript.Converter.TypeSystemConverter
                     typeNameBuilder,
                     (typeDef, strBuilder) =>
                     {
-                        var typeName = context.GetTypeName(typeDef);
+                        var typeName = Context.GetTypeName(typeDef);
 
                         if (typeName != null)
                         {
@@ -1455,24 +1450,24 @@ namespace NScript.Converter.TypeSystemConverter
                     }
                 }
 
-                dependencyAnalyzer.AddTypeForAnalysis(typeDefinition);
+                DependencyAnalyzer.AddTypeForAnalysis(typeDefinition);
 
                 if (typesDefinitionsUsed.TryGetValue(typeDefinition, out var typeConverter))
                 {
                     continue;
                 }
 
-                if (typeDefinition == context.ClrKnownReferences.Object)
+                if (typeDefinition == Context.ClrKnownReferences.Object)
                 {
                     usedMembersToProcess.Enqueue(
-                        context.KnownReferences.ToStringMethod);
+                        Context.KnownReferences.ToStringMethod);
                 }
 
                 typeConverter = TypeConverter.Create(this, typeDefinition, true);
                 typesDefinitionsUsed.Add(typeDefinition, typeConverter);
 
                 // Now let's add all the dependencies of the class.
-                dependencyAnalyzer.GetTypeReferenceDependencies(new TypeDefinition[] { typeDefinition })
+                DependencyAnalyzer.GetTypeReferenceDependencies(new TypeDefinition[] { typeDefinition })
                     .ForEach(tr => usedTypeReferencesToProcess.Enqueue(tr));
             }
         }

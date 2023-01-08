@@ -68,6 +68,10 @@ namespace NScript.JST
             get { return this.expressions; }
         }
 
+        public string PrependString => this.prependString;
+
+        public string AppendString => this.appendString;
+
         /// <summary>
         /// Gets the precedence.
         /// </summary>

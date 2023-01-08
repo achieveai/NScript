@@ -120,11 +120,23 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.WriteNewLine()
-                .EnterLocation(this.Location)
-                .Write(this.Expression)
-                .Write(Symbols.SemiColon)
-                .LeaveLocation();
+            if (this.Expression == null)
+            {
+                return;
+            }
+            if (this.Expression is FunctionExpression funcExpression)
+            {
+                writer.WriteNewLine()
+                    .Write(funcExpression);
+            }
+            else
+            {
+                writer.WriteNewLine()
+                    .EnterLocation(this.Location)
+                    .Write(this.Expression)
+                    .Write(Symbols.SemiColon)
+                    .LeaveLocation();
+            }
         }
     }
 }

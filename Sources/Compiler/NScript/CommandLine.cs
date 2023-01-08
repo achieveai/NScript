@@ -39,11 +39,13 @@
                 }
             }
 
-            Converter.Builder builder = new Converter.Builder(
+            var builder = new Builder(
                 parseOptions.JsFileName,
+                parseOptions.JsParts,
                 parseOptions.EntryAssembly,
                 parseOptions.ReferenceDlls.ToArray(),
-                plugins.ToArray());
+                plugins.ToArray(),
+                parseOptions.Release);
 
             _ = builder.Execute();
 

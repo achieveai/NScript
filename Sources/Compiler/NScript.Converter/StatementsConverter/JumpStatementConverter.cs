@@ -13,7 +13,7 @@ namespace NScript.Converter.StatementsConverter
     /// <summary>
     /// Definition for JumpStatementConverter
     /// </summary>
-    public class JumpStatementConverter
+    public static class JumpStatementConverter
     {
         /// <summary>
         /// Converts the specified converter.

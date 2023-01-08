@@ -80,7 +80,7 @@ namespace NScript.Converter.Test
             {
                 if (stream != null)
                 {
-                    System.IO.TextReader reader = new System.IO.StreamReader(stream);
+                    TextReader reader = new StreamReader(stream);
                     return reader.ReadToEnd().Trim();
                 }
             }
@@ -94,11 +94,11 @@ namespace NScript.Converter.Test
         /// <param name="statements">The statements.</param>
         /// <returns>Returns script string.</returns>
         public static string GetScriptString(
-            IList<JST.Statement> statements)
+            IList<Statement> statements)
         {
             StringBuilder strBuilder = new StringBuilder();
             StringWriter writer = new StringWriter(strBuilder);
-            JST.JSWriter jsWriter = new JST.JSWriter(
+            JSWriter jsWriter = new JSWriter(
                     true,
                     false);
 
@@ -121,7 +121,7 @@ namespace NScript.Converter.Test
         {
             StringBuilder strBuilder = new StringBuilder();
             StringWriter writer = new StringWriter(strBuilder);
-            JST.JSWriter jsWriter = new JST.JSWriter(
+            JSWriter jsWriter = new JSWriter(
                     true,
                     false);
 
@@ -171,47 +171,13 @@ namespace NScript.Converter.Test
         /// <param name="testType">Type of the test.</param>
         /// <param name="script">The script.</param>
         public static void RunTest(
-            string className,
-            string methodName,
-            TestType testType,
-            string script,
-            bool isMcs)
-        {
-            if ((testType & TestType.Debug) != 0)
-            {
-                ConverterTestHelpers.RunTest(
-                    className,
-                    methodName,
-                    true,
-                    script,
-                    isMcs);
-            }
-
-            if ((testType & TestType.Retail) != 0)
-            {
-                ConverterTestHelpers.RunTest(
-                    className,
-                    methodName,
-                    false,
-                    script,
-                    isMcs);
-            }
-        }
-
-        /// <summary>
-        /// Runs the test.
-        /// </summary>
-        /// <param name="className">Name of the class.</param>
-        /// <param name="methodName">Name of the method.</param>
-        /// <param name="testType">Type of the test.</param>
-        /// <param name="script">The script.</param>
-        public static void RunTest(
             string testjsFile,
             string className,
             string methodName,
             TestType testType,
-            bool isMcs = false,
-            bool minifyFuncName = false)
+            bool isMcs,
+            bool minifyFuncName,
+            bool instanceAsStatic = true)
         {
             string script = ConverterTestHelpers.GetResourceString(testjsFile);
 
@@ -223,7 +189,8 @@ namespace NScript.Converter.Test
                     true,
                     script,
                     isMcs,
-                    minifyFuncName);
+                    minifyFuncName,
+                    instanceAsStatic);
             }
 
             if ((testType & TestType.Retail) != 0)
@@ -234,7 +201,8 @@ namespace NScript.Converter.Test
                     false,
                     script,
                     isMcs,
-                    minifyFuncName);
+                    minifyFuncName,
+                    instanceAsStatic);
             }
         }
 
@@ -250,8 +218,9 @@ namespace NScript.Converter.Test
             string methodName,
             bool isDebug,
             string script,
-            bool isMcs = false,
-            bool minifyFuncNames = false)
+            bool isMcs,
+            bool minifyFuncNames,
+            bool instatnceAsStatic)
         {
             MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
                 className,
@@ -260,7 +229,8 @@ namespace NScript.Converter.Test
                 isMcs);
 
             RuntimeScopeManager runtimeScopeManager = new RuntimeScopeManager(
-                isMcs ? ConverterTestHelpers.McsContext : ConverterTestHelpers.DasmContext);
+                isMcs ? ConverterTestHelpers.McsContext : ConverterTestHelpers.DasmContext,
+                instatnceAsStatic);
 
             TypeConverter typeConverter = TypeConverter.Create(
                 runtimeScopeManager,

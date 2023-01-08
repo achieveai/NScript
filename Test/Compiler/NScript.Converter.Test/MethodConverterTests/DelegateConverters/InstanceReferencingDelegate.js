@@ -1,3 +1,3 @@
-﻿function DelegateBlocks__InstanceReferencingDelegate() {
-  return Delegate__Create("instanceReferencingDelegate_Helper", this);
+﻿function DelegateBlocks__InstanceDelegate() {
+  return Delegate__Create("localAndInstanceReferencingDelegateM", this);
 }

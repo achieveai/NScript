@@ -283,12 +283,12 @@ namespace NScript.Converter.TypeSystemConverter
                             prototype,
                             new IdentifierExpression(this.TypeScopeManager.ResolveVirtualMethod(method), this.Scope));
 
-                    Expression implementedFunctionExpress =
-                        new IndexExpression(
-                            null,
-                            this.Scope,
-                            prototype,
-                            new IdentifierExpression(this.TypeScopeManager.ResolveMethod(method), this.Scope));
+                    var methodConverter = this.GetMethodConverter(method);
+
+                    Expression implementedFunctionExpress = methodConverter.GenerateInstancedCall(
+                        prototype,
+                        null,
+                        this.Scope);
 
                     if (isFixedName)
                     {
@@ -341,6 +341,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="statements">The statements.</param>
         private void CreateFactories(List<Statement> statements)
         {
+            // In C# we have constructor overloads, but in JS we can only new up the object one way.
+            // To bridge this gap, instead of newing an object, we call it's factory. This allows us to
+            // get constructor overload functionality.
             if (!this.Context.IsJsonType(this.TypeDefinition)
                 && !this.TypeDefinition.IsAbstract)
             {
@@ -398,6 +401,11 @@ namespace NScript.Converter.TypeSystemConverter
                         functionScope.ParameterIdentifiers,
                         functionName);
 
+                    if (methodConverter?.IsFactory == true)
+                    {
+                        throw new InvalidProgramException("Only struct types can have constructors as factories");
+                    }
+
                     // If we extend object, and instruction count is 3, this means that
                     // this is empty constructor.
                     if (methodConverter == null
@@ -441,17 +449,24 @@ namespace NScript.Converter.TypeSystemConverter
                                 functionScope,
                                 thisAssignmentExpression));
 
+                        bool isStaticConstructor = methodConverter.HasStaticImplementation || methodConverter.IsInstanceStatic;
                         MethodCallExpression constructorCallExpression = new MethodCallExpression(
                             null,
                             functionScope,
-                            new IndexExpression(
+                            isStaticConstructor
+                            ? new IdentifierExpression(
+                                    this.RuntimeManager.ResolveFunctionName(function),
+                                    functionScope)
+                            : new IndexExpression(
                                 null,
                                 functionScope,
                                 thisObjectExpression,
                                 new IdentifierExpression(
                                     this.Resolve(function),
                                     functionScope)),
-                                functionScope.ParameterIdentifiers.Select(arg => new IdentifierExpression(arg, functionScope)).ToArray());
+                            (isStaticConstructor
+                                ? new List<JST.Expression> { thisObjectExpression }
+                                : new List<JST.Expression>()).Concat(functionScope.ParameterIdentifiers.Select(arg => new IdentifierExpression(arg, functionScope))).ToArray());
 
                         factoryFunction.AddStatement(
                             new ExpressionStatement(

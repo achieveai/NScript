@@ -16,6 +16,7 @@ namespace NScript.Converter.Test.JsExecutionTests
     using Mono.Cecil;
     using Microsoft.ClearScript.JavaScript;
     using System.Threading.Tasks;
+    using NScript.JST;
 
     /// <summary>
     /// Definition for JsExecutionHelper
@@ -31,10 +32,17 @@ namespace NScript.Converter.Test.JsExecutionTests
         public static string GetScript(
             bool isDebug,
             bool isMcs,
-            Tuple<string, string> entryPoint)
+            Tuple<string, string> entryPoint,
+            bool minify = true,
+            bool instanceAsStatic = false)
         {
             RuntimeScopeManager runtimeScopeManager = new RuntimeScopeManager(
-                new ConverterContext(isMcs ? TestAssemblyLoader.McsContext : TestAssemblyLoader.Context));
+                new ConverterContext(
+                    isMcs
+                    ? TestAssemblyLoader.McsContext
+                    : TestAssemblyLoader.Context),
+                    instanceAsStatic);
+
             MethodDefinition methodDefinition = TestAssemblyLoader.GetMethodDefinition(
                 entryPoint.Item1,
                 entryPoint.Item2,
@@ -59,6 +67,17 @@ namespace NScript.Converter.Test.JsExecutionTests
                         runtimeScopeManager.GetTypeConverter(methodDefinition.DeclaringType.Resolve()),
                         runtimeScopeManager)));
 
+            if (minify)
+            {
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeScopeManager.Scope,
+                    !isDebug);
+
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeScopeManager.JSBaseObjectScopeManager.InstanceScope,
+                    !isDebug);
+            }
+
             return ConverterTestHelpers.GetScriptString(statements);
         }
 
@@ -72,7 +91,8 @@ namespace NScript.Converter.Test.JsExecutionTests
             string output,
             bool isDebug,
             Tuple<string, string> entryPoint,
-            bool isMcs = false)
+            bool isMcs = false,
+            bool instanceAsStatic = false)
         {
             JsConsole jsConsole = new JsConsole();
             // Jint.JintEngine engine = new Jint.JintEngine(Jint.Options.Ecmascript3);
@@ -81,7 +101,9 @@ namespace NScript.Converter.Test.JsExecutionTests
                 string script = JsExecutionHelper.GetScript(
                     isDebug,
                     isMcs,
-                    entryPoint);
+                    entryPoint,
+                    true,
+                    instanceAsStatic);
                 System.Diagnostics.Debug.WriteLine("==================== Script generated ====================");
                 System.Diagnostics.Debug.WriteLine(script);
 
@@ -111,7 +133,8 @@ namespace NScript.Converter.Test.JsExecutionTests
             string output,
             bool isDebug,
             Tuple<string, string> entryPoint,
-            bool isMcs = false)
+            bool isMcs = false,
+            bool instanceAsStatic = false)
         {
             JsConsole jsConsole = new JsConsole();
             // Jint.JintEngine engine = new Jint.JintEngine(Jint.Options.Ecmascript3);
@@ -120,7 +143,10 @@ namespace NScript.Converter.Test.JsExecutionTests
                 string script = JsExecutionHelper.GetScript(
                     isDebug,
                     isMcs,
-                    entryPoint);
+                    entryPoint,
+                    true,
+                    instanceAsStatic);
+
                 System.Diagnostics.Debug.WriteLine("==================== Script generated ====================");
                 System.Diagnostics.Debug.WriteLine(script);
 
