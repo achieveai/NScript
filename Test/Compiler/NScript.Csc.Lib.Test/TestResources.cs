@@ -3,6 +3,7 @@
     using JsCsc.Lib.Serialization;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -17,7 +18,6 @@
                     "mscorlib.dll",
                     new string[] {
                         @"Activator.cs",
-                        @"AssemblyInfo.cs",
                         @"Action.cs",
                         @"Arguments.cs",
                         @"Array.cs",
@@ -389,7 +389,6 @@
                         @"TestCompilerGeneratedStuff.cs",
                         @"WhileLoopBlocks.cs",
                         @"YieldReturnTests.cs",
-                        @"Properties\AssemblyInfo.cs",
                         @"Class1.cs",
                         @"ConstructorTests.cs",
                         @"NullableTests.cs",
@@ -487,6 +486,8 @@
             { return rv; }
 
             var resources = sources[moduleName];
+            Console.WriteLine($"ModuleName: {moduleName}, resources: {resources}");
+
             string runtimeMetadataVersion = null;
             if (resources.refs.Select(_ => GetMethodMaps(_)).Count() == 0)
             { runtimeMetadataVersion = "v4.100.0"; }

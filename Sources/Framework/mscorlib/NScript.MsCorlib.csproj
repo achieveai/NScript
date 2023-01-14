@@ -14,7 +14,6 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <PackageId>NScript.MsCorlib</PackageId>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

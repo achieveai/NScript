@@ -241,6 +241,7 @@
     <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchPatternMatching.js" />
     <EmbeddedResource Include="MethodConverterTests\SwitchBlockConverters\SwitchScopeTest.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestDiscard.js" />
+    <EmbeddedResource Include="MethodConverterTests\TupleTests\TestNamed.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestTempVarCreation.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestTupleDecons.js" />
     <EmbeddedResource Include="MethodConverterTests\TupleTests\TestTupleReturn.js" />

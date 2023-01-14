@@ -1,4 +1,4 @@
-﻿namespace Cs2Jsc
+﻿namespace NScript
 {
     using NScript.Lib;
 

@@ -1,7 +1,15 @@
 ﻿<Project>
 	<Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 	<PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <JsOutputPath>.\</JsOutputPath>
+		<OutputType>Library</OutputType>
+		<JsOutputPath>.\</JsOutputPath>
+		<NoStandardLib>true</NoStandardLib>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+		<Ext>dll</Ext>
+		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
+		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
 	</PropertyGroup>
 </Project>
