@@ -10,7 +10,6 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <PackageId>NScript.Sunlight.Framework.UI</PackageId>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <NoStdLib>true</NoStdLib>
   </PropertyGroup>
 

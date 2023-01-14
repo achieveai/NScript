@@ -105,7 +105,6 @@ namespace NScript.CLR
         public void LoadAssembly(string assemblyPath, bool loadSymbols = false)
         {
             string directoryName = System.IO.Path.GetDirectoryName(assemblyPath);
-            Console.WriteLine($"LoadAssembly({assemblyPath})");
             if (!directoriesToLookAt.Contains(directoryName))
             {
                 assemblyResolver.AddSearchDirectory(directoryName);
@@ -131,7 +130,6 @@ namespace NScript.CLR
                 });
 
             string assemblyName = moduleDefinition.Assembly.Name.Name;
-            Console.WriteLine($"AssemblyName: {assemblyName}, moduleDefn = {moduleDefinition}");
 
             if (this.simpleNameToAssemblyName.ContainsKey(assemblyName.ToLowerInvariant()))
             {

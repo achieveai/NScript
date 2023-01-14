@@ -12,7 +12,6 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <PackageId>NScript.System.Web</PackageId>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />

@@ -3,13 +3,12 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<JsOutputPath>.\</JsOutputPath>
+		<TargetFramewok>netstandard2.1</TargetFramewok>
 		<NoStandardLib>true</NoStandardLib>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
 		<Ext>dll</Ext>
-		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
-		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
 	</PropertyGroup>
 </Project>

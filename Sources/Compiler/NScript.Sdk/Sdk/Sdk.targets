@@ -1,6 +1,11 @@
 ﻿<Project>
 	<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
+	<PropertyGroup>
+		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
+		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
+	</PropertyGroup>
+
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
 		<MsBuild
 			Condition="$(GenerateJs) == True"
@@ -15,19 +20,20 @@
 		DependsOnTargets="$(CoreCompile)"
 		Condition="$(GenerateJs) == True">
 
-		<Message Text="Running NScript to produce $(OutputPath)$(AssemblyName).js."/>
+		<Message Text="Running NScript to produce $(JsOutputPath)\$(AssemblyName).js."/>
 
 		<PropertyGroup>
 			<Refs>&quot;@(ReferencePath->'%(identity)','&quot;,&quot;')&quot;</Refs>
 		</PropertyGroup>
 
 		<ItemGroup>
-			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)$(AssemblyName).js&quot;"/>
+			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)\$(AssemblyName).js&quot;"/>
 			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
 			<ScriptGenerateOption Include="-references $(Refs)"/>
-			<ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
+			<!-- <ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
 			<ScriptGenerateOption Include="-pluginHintPath &quot;$(NScriptBinPath);&quot;" Condition="'$(PluginConfig)' != ''"/>
-			<ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)&quot;"/>
+			<ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)&quot;"/> -->
+			<ScriptGenerateOption Include="-release" Condition="'$(Configuration)' == 'Release'"/>
 		</ItemGroup>
 
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>

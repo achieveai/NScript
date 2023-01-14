@@ -89,8 +89,6 @@ namespace NScript.Csc.Lib
                 args,
                 analyzerLoader);
 
-            Console.WriteLine("CscArgs: " + string.Join('&', args));
-
             // if (compiler.Arguments.OutputFileName.Equals(
             //     "mscorlib.dll",
             //     StringComparison.InvariantCultureIgnoreCase))
