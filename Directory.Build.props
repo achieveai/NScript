@@ -8,6 +8,8 @@
     <SolutionDir>$(NScriptRoot)</SolutionDir>
     <TestOutputDir>$(NScriptRoot)/Test/TestBin</TestOutputDir>
     <CompilerNetFramework>net6.0</CompilerNetFramework>
+    <!--<CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <NScriptExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\nscript.exe</NScriptExe>-->
   </PropertyGroup>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>

@@ -592,7 +592,7 @@
                 case ConversionKind.StackAllocToSpanType:
                 case ConversionKind.PinnedObjectToPointer:
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException($"{node.ConversionKind} not supported.");
             }
         }
 

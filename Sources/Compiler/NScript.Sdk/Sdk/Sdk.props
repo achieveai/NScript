@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<JsOutputPath>.\</JsOutputPath>
-		<TargetFramewok>netstandard2.1</TargetFramewok>
+		<TargetFramework>netstandard2.1</TargetFramework>
 		<NoStandardLib>true</NoStandardLib>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>

@@ -8,7 +8,9 @@
     <AssemblyName>Sunlight.Framework.Test</AssemblyName>
     <GenerateJs>True</GenerateJs>
     <PluginConfig>PluginConfig.xml</PluginConfig>
-    <JsOutputPath>..\TestWebApplication\GeneratedScripts</JsOutputPath>
+    <JsOutputPath>../TestWebApplication/GeneratedScripts</JsOutputPath>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <NScriptExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\nscript.exe</NScriptExe>
   </PropertyGroup>
 
   <ItemGroup>
