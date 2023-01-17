@@ -401,8 +401,7 @@ namespace NScript.JST
 
             BatchTokensIntoFiles(
                 tokens,
-                writers.Length,
-                IsOptimized)
+                writers.Length)
                 .Index()
                 .ForEach((kvPair) =>
                 {
@@ -1285,27 +1284,8 @@ namespace NScript.JST
 
         private static IEnumerable<TokenBase[]> BatchTokensIntoFiles(
             LinkedList<TokenBase> tokens,
-            int nBuckets,
-            bool isOptimized)
+            int nBuckets)
         {
-            int GetTokenLength(TokenBase token)
-                => token.Type switch
-                {
-                    TokenType.Keyword => GetString(((KeywordToken)token).Keyword).Length,
-                    TokenType.Symbol => GetString(((SymbolToken)token).Symbol).Length,
-                    TokenType.Space => 1,
-                    TokenType.Newline => GetNewLineString(0, isOptimized).Length,
-                    TokenType.ScopeToken => 0,
-                    TokenType.IdentifierToken => GetString((GenericStrToken)token).Length,
-                    TokenType.NumToken => GetString((GenericStrToken)token).Length,
-                    TokenType.StrToken => GetString((GenericStrToken)token).Length,
-                    _ => 0,
-                };
-
-            // int totalBytes = tokens
-            //     .Select(GetTokenLength)
-            //     .Sum();
-
             int approxCountPerBatch = 1 + (nBuckets + tokens.Count - 1) / nBuckets;
             int startIdx = 0;
             while(nBuckets-- > 0)
@@ -1315,11 +1295,8 @@ namespace NScript.JST
                     .Skip(startIdx)
                     .TakeWhile(token =>
                     {
-                        // var tokenLength = GetTokenLength(token);
                         startIdx++;
-                        var rv = minToSend >= 0 || token.Type != TokenType.EndOfStatement;
-                        minToSend -= 1;
-                        return rv;
+                        return minToSend-- >= 0 || token.Type != TokenType.EndOfStatement;
                     })
                     .ToArray();
             }
