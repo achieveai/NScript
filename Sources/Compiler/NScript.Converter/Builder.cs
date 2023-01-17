@@ -227,7 +227,7 @@ namespace NScript.Converter
                 IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, this.release);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
-                var writer = new JSWriter(true, false);
+                var writer = new JSWriter(true, release);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
                 {
@@ -238,15 +238,11 @@ namespace NScript.Converter
                 {
                     if (statement != null)
                     {
-                        writer.Write(statement);
+                        writer.WriteTopLevelStatement(statement);
                     }
                 }
 
-                writer.Write(
-                    this.jsScript,
-                    string.Format(
-                        "SrcMapper.ashx?js={0}&fname=",
-                        Path.GetFileName(this.jsScript)));
+                writer.WriteToJs(jsScript, jsParts);
             }
             catch(ConverterLocationException ex)
             {

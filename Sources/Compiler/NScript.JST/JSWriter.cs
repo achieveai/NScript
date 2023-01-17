@@ -7,6 +7,10 @@ namespace NScript.JST
     using NScript.JST.Writer;
     using System.Text;
     using NScript.Utils;
+    using System.Linq;
+    using MoreLinq.Extensions;
+    using Microsoft.Win32;
+    using System.Text.Json;
 
     /// <summary>
     /// JSWriter is used to write javascript file.
@@ -321,18 +325,51 @@ namespace NScript.JST
             return this;
         }
 
+        public JSWriter WriteTopLevelStatement(JST.Node node)
+        {
+            var rv = this.Write(node);
+            this.tokens.AddLast(
+                new LinkedListNode<TokenBase>(
+                    new EndOfStatement(0)));
+            return rv;
+        }
+
         /// <summary>
         /// Writes script to jsFileName and map file to jsFileName.map with given sourceRoot.
         /// </summary>
         /// <param name="jsFileName"> Filename of the js file. </param>
         /// <param name="sourceRoot"> Source root. </param>
-        public void Write(string jsFileName, string sourceRoot)
+        public void WriteToJs(
+            string jsFileName,
+            int fileChunks = 1)
         {
-            using var streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8);
+            if (fileChunks <= 0)
+            {
+                throw new ArgumentException("fileChunks <= 0");
+            }
+
+            var writers = new StreamWriter[fileChunks];
+            var fileNameOnly = Path.GetFileNameWithoutExtension(jsFileName);
+            var directoryName = Path.GetDirectoryName(jsFileName);
+            if (fileChunks == 1)
+            {
+                writers[0] = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8);
+            }
+            else
+            {
+                for(var i = 0; i < fileChunks; ++i)
+                {
+                    writers[i] = new StreamWriter(
+                        Path.Combine(directoryName, GetFileNames(fileNameOnly, i, true).jsFileName),
+                        false,
+                        Encoding.UTF8);
+                }
+            }
+
             this.Write(
-                streamWriter,
-                Path.GetFileName(jsFileName),
-                Path.GetDirectoryName(jsFileName),
+                writers,
+                fileNameOnly,
+                directoryName,
                 true);
         }
 
@@ -345,173 +382,195 @@ namespace NScript.JST
             this.Write(writer, null, null, false);
         }
 
-        /// <summary>
-        /// Writes javascript to given writer with mapping file generated using jsFileName, sourceRoot
-        /// and mapFileName.
-        /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException"> Thrown when one or more arguments are outside
-        ///     the required range. </exception>
-        /// <param name="writer">      The writer. </param>
-        /// <param name="jsFileName">  Filename of the js file. </param>
-        /// <param name="sourceRoot">  Source root. </param>
-        /// <param name="mapFileName"> Filename of the map file. </param>
         private void Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap)
+        {
+            Write(
+                new[] { writer },
+                jsFileName,
+                outputDirectory,
+                outputMap);
+        }
+
+        private void Write(
+            TextWriter[] writers,
+            string jsFileName,
+            string outputDirectory,
+            bool outputMap)
         {
             this.ArrangeSpaces();
 
-            int scopeDepth = 0;
-            Location lastLocation = null;
-            int curLine = 0;
-            int curCol = 0;
-            var sourceMapping = new OwaSourceMapper.SourceMap();
-            if (jsFileName != null)
-            {
-                sourceMapping.File = jsFileName;
-            }
-
-            sourceMapping.AddMapping(
-                curLine,
-                0,
-                curLine,
-                0,
-                jsFileName);
-
-            if (jsFileName != null)
-            {
-                writer.Write("(function(){");
-            }
-
-            foreach (var token in this.tokens)
-            {
-                string str = string.Empty;
-
-                if (token.Type != TokenType.Space
-                    && token.Type != TokenType.Newline
-                    && token.Location != lastLocation)
+            BatchTokensIntoFiles(
+                tokens,
+                writers.Length,
+                IsOptimized)
+                .Index()
+                .ForEach((kvPair) =>
                 {
-                    if (lastLocation != null
-                        && lastLocation.EndLine != int.MaxValue)
-                    {
-                        sourceMapping.AddMapping(
-                            curLine,
-                            curCol,
-                            lastLocation.EndLine - 1,
-                            lastLocation.EndColumn - 1,
-                            lastLocation.FileName);
-                    }
+                    int idx = kvPair.Key;
+                    var tokens = kvPair.Value;
 
-                    lastLocation = token.Location;
+                    var writer = writers[idx];
 
-                    if (lastLocation == null
-                        || lastLocation.StartLine < 0
-                        || string.IsNullOrWhiteSpace(lastLocation.FileName))
-                    {
-                        sourceMapping.AddMapping(
-                            curLine,
-                            curCol,
-                            curLine,
-                            curCol,
-                            jsFileName);
-                    }
-                    else
-                    {
-                        sourceMapping.AddMapping(
-                            curLine,
-                            curCol,
-                            lastLocation.StartLine - 1,
-                            lastLocation.StartColumn - 1,
-                            lastLocation.FileName);
-                    }
-                }
+                    int scopeDepth = 0;
+                    Location lastLocation = null;
+                    int curLine = 0;
+                    int curCol = 0;
+                    var sourceMapping = new OwaSourceMapper.SourceMap();
 
-                switch (token.Type)
-                {
-                    case TokenType.Keyword:
-                        str = GetString(((KeywordToken) token).Keyword);
-                        break;
-                    case TokenType.Symbol:
-                        str = GetString(((SymbolToken) token).Symbol);
-                        break;
-                    case TokenType.Space:
-                        str = " ";
-                        break;
-                    case TokenType.Newline:
-                        str = this.GetNewLineString(scopeDepth);
-                        break;
-                    case TokenType.StrToken:
-                    case TokenType.NumToken:
-                    case TokenType.IdentifierToken:
-                        str = GetString((GenericStrToken) token);
-                        break;
-                    case TokenType.ScopeToken:
-                        if (!this.IsOptimized)
+                    if (jsFileName != null)
+                    {
+                        sourceMapping.File = GetFileNames(jsFileName, idx, writers.Length > 1).sourceMapFileName;
+
+                        if (writers.Length == 1)
                         {
-                            ScopeToken scopeToken = (ScopeToken) token;
+                            writer.Write("(function(){");
+                        }
+                    }
 
-                            if (scopeToken.IsExit)
+                    sourceMapping.AddMapping(
+                        curLine,
+                        curCol,
+                        curLine,
+                        curCol,
+                        jsFileName);
+
+                    foreach (var token in tokens)
+                    {
+                        var eosToken = token as EndOfStatement;
+                        if (eosToken != null)
+                        { continue; }
+
+                        string str = string.Empty;
+
+                        if (token.Type != TokenType.Space
+                            && token.Type != TokenType.Newline
+                            && token.Location != lastLocation)
+                        {
+                            if (lastLocation != null
+                                && lastLocation.EndLine != int.MaxValue)
                             {
-                                scopeDepth--;
+                                sourceMapping.AddMapping(
+                                    curLine,
+                                    curCol,
+                                    lastLocation.EndLine - 1,
+                                    lastLocation.EndColumn - 1,
+                                    lastLocation.FileName);
+                            }
+
+                            lastLocation = token.Location;
+
+                            if (lastLocation == null
+                                || lastLocation.StartLine < 0
+                                || string.IsNullOrWhiteSpace(lastLocation.FileName))
+                            {
+                                sourceMapping.AddMapping(
+                                    curLine,
+                                    curCol,
+                                    curLine,
+                                    curCol,
+                                    jsFileName);
                             }
                             else
                             {
-                                scopeDepth++;
+                                sourceMapping.AddMapping(
+                                    curLine,
+                                    curCol,
+                                    lastLocation.StartLine - 1,
+                                    lastLocation.StartColumn - 1,
+                                    lastLocation.FileName);
                             }
                         }
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
 
-                if (token.Type == TokenType.Newline)
-                {
-                    curLine++;
-                    curCol = str.Length - 2;
-                    lastLocation = null;
-                    sourceMapping.AddMapping(
-                        curLine,
-                        0,
-                        curLine,
-                        0,
-                        jsFileName);
-                }
-                else if (!string.IsNullOrEmpty(str))
-                {
-                    curCol += str.Length;
-                }
+                        switch (token.Type)
+                        {
+                            case TokenType.Keyword:
+                                str = GetString(((KeywordToken) token).Keyword);
+                                break;
+                            case TokenType.Symbol:
+                                str = GetString(((SymbolToken) token).Symbol);
+                                break;
+                            case TokenType.Space:
+                                str = " ";
+                                break;
+                            case TokenType.Newline:
+                                str = GetNewLineString(scopeDepth, this.IsOptimized);
+                                break;
+                            case TokenType.StrToken:
+                            case TokenType.NumToken:
+                            case TokenType.IdentifierToken:
+                                str = GetString((GenericStrToken) token);
+                                break;
+                            case TokenType.ScopeToken:
+                                if (!this.IsOptimized)
+                                {
+                                    ScopeToken scopeToken = (ScopeToken) token;
 
-                if (!string.IsNullOrEmpty(str))
-                {
-                    writer.Write(str);
-                }
-            }
+                                    if (scopeToken.IsExit)
+                                    {
+                                        scopeDepth--;
+                                    }
+                                    else
+                                    {
+                                        scopeDepth++;
+                                    }
+                                }
+                                break;
+                            case TokenType.EndOfStatement:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
 
-            if (jsFileName != null)
-            {
-                writer.Write("\r\n})();");
-                sourceMapping.AddMapping(
-                    ++curLine,
-                    0,
-                    curLine,
-                    0,
-                    jsFileName);
-            }
+                        if (token.Type == TokenType.Newline)
+                        {
+                            curLine++;
+                            curCol = str.Length - 2;
+                            lastLocation = null;
+                            sourceMapping.AddMapping(
+                                curLine,
+                                0,
+                                curLine,
+                                0,
+                                jsFileName);
+                        }
+                        else if (!string.IsNullOrEmpty(str))
+                        {
+                            curCol += str.Length;
+                        }
 
-            if (outputMap)
-            {
-                writer.WriteLine();
-                writer.Write("//# sourceMappingURL={0}", sourceMapping.MapFile);
-                sourceMapping.AddMapping(
-                    ++curLine,
-                    0,
-                    curLine,
-                    0,
-                    jsFileName);
-            }
+                        if (!string.IsNullOrEmpty(str))
+                        {
+                            writer.Write(str);
+                        }
+                    }
 
-            if (outputMap)
-            {
-                sourceMapping.Write(outputDirectory);
-            }
+                    if (jsFileName != null && writers.Length == 1)
+                    {
+                        writer.Write("\r\n})();");
+                        sourceMapping.AddMapping(
+                            ++curLine,
+                            0,
+                            curLine,
+                            0,
+                            jsFileName);
+                    }
+
+                    if (outputMap)
+                    {
+                        writer.WriteLine();
+                        writer.Write("//# sourceMappingURL={0}", sourceMapping.MapFile);
+                        sourceMapping.AddMapping(
+                            ++curLine,
+                            0,
+                            curLine,
+                            0,
+                            jsFileName);
+
+                        sourceMapping.Write(outputDirectory);
+                    }
+
+                    writer.Flush();
+                });
         }
 
         /// <summary>
@@ -777,6 +836,7 @@ namespace NScript.JST
                     case TokenType.Space:
                         break;
                     case TokenType.Newline:
+                    case TokenType.EndOfStatement:
                         break;
                     case TokenType.StrToken:
                     case TokenType.NumToken:
@@ -1188,14 +1248,9 @@ namespace NScript.JST
             return null;
         }
 
-        /// <summary>
-        /// Gets the new line string.
-        /// </summary>
-        /// <param name="scopeDepth">The scope depth.</param>
-        /// <returns>stringified version of the line.</returns>
-        private string GetNewLineString(int scopeDepth)
+        private static string GetNewLineString(int scopeDepth, bool isOptimized = false)
         {
-            if (!this.IsOptimized)
+            if (!isOptimized)
             {
                 StringBuilder strBuilder = new StringBuilder();
 
@@ -1211,6 +1266,63 @@ namespace NScript.JST
             }
 
             return string.Empty;
+        }
+
+        private static (string jsFileName, string sourceMapFileName) GetFileNames(
+            string jsFileName,
+            int fileIdx,
+            bool hasManyChunks)
+        {
+            if (fileIdx == 0 && !hasManyChunks)
+            {
+                return (jsFileName + ".js", jsFileName + ".map");
+            }
+
+            return (
+                $"{jsFileName}.{fileIdx}.js",
+                $"{jsFileName}.{fileIdx}.map");
+        }
+
+        private static IEnumerable<TokenBase[]> BatchTokensIntoFiles(
+            LinkedList<TokenBase> tokens,
+            int nBuckets,
+            bool isOptimized)
+        {
+            int GetTokenLength(TokenBase token)
+                => token.Type switch
+                {
+                    TokenType.Keyword => GetString(((KeywordToken)token).Keyword).Length,
+                    TokenType.Symbol => GetString(((SymbolToken)token).Symbol).Length,
+                    TokenType.Space => 1,
+                    TokenType.Newline => GetNewLineString(0, isOptimized).Length,
+                    TokenType.ScopeToken => 0,
+                    TokenType.IdentifierToken => GetString((GenericStrToken)token).Length,
+                    TokenType.NumToken => GetString((GenericStrToken)token).Length,
+                    TokenType.StrToken => GetString((GenericStrToken)token).Length,
+                    _ => 0,
+                };
+
+            // int totalBytes = tokens
+            //     .Select(GetTokenLength)
+            //     .Sum();
+
+            int approxCountPerBatch = 1 + (nBuckets + tokens.Count - 1) / nBuckets;
+            int startIdx = 0;
+            while(nBuckets-- > 0)
+            {
+                int minToSend = approxCountPerBatch;
+                yield return tokens
+                    .Skip(startIdx)
+                    .TakeWhile(token =>
+                    {
+                        // var tokenLength = GetTokenLength(token);
+                        startIdx++;
+                        var rv = minToSend >= 0 || token.Type != TokenType.EndOfStatement;
+                        minToSend -= 1;
+                        return rv;
+                    })
+                    .ToArray();
+            }
         }
     }
 }

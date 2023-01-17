@@ -50,5 +50,10 @@ namespace NScript.JST.Writer
         /// Scope Token.
         /// </summary>
         ScopeToken,
+
+        /// <summary>
+        /// Scope Token.
+        /// </summary>
+        EndOfStatement,
     }
 }
