@@ -89,16 +89,6 @@ namespace NScript.Csc.Lib
                 args,
                 analyzerLoader);
 
-            // if (compiler.Arguments.OutputFileName.Equals(
-            //     "mscorlib.dll",
-            //     StringComparison.InvariantCultureIgnoreCase))
-            // {
-            //     compiler.Arguments.EmitOptions = compiler
-            //         .Arguments
-            //         .EmitOptions
-            //         .WithRuntimeMetadataVersion("v4.100.191");
-            // }
-
             return ConsoleUtil.RunWithUtf8Output(
                 compiler.Arguments.Utf8Output,
                 textWriter,
