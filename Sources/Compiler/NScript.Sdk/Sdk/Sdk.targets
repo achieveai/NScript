@@ -30,9 +30,6 @@
 			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)\$(AssemblyName).js&quot;"/>
 			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
 			<ScriptGenerateOption Include="-references $(Refs)"/>
-			<!-- <ScriptGenerateOption Include="-pluginConfig &quot;$(PluginConfig)&quot;" Condition="'$(PluginConfig)' != ''"/>
-			<ScriptGenerateOption Include="-pluginHintPath &quot;$(NScriptBinPath);&quot;" Condition="'$(PluginConfig)' != ''"/>
-			<ScriptGenerateOption Include="-referenceHintPath &quot;$(MsBuildThisFileDirectory)&quot;"/> -->
 			<ScriptGenerateOption Include="-release" Condition="'$(Configuration)' == 'Release'"/>
 		</ItemGroup>
 
