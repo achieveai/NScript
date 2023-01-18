@@ -9,7 +9,12 @@ namespace NScript
     {
         public static int Main(string[] args)
         {
-            if (args[0] == "csc")
+            if (args.Length == 0)
+            {
+                PrintUsage();
+                return 0;
+            }
+            else if (args[0] == "csc")
             {
                 return CscCompiler.Main(args.Skip(1).ToArray());
             }
