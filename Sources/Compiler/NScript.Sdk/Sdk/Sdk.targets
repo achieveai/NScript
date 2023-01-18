@@ -20,7 +20,9 @@
 		DependsOnTargets="$(CoreCompile)"
 		Condition="$(GenerateJs) == True">
 
-		<Message Text="Running NScript to produce $(JsOutputPath)\$(AssemblyName).js."/>
+		<Message
+			Text="Running NScript to produce $(JsOutputPath)\$(AssemblyName).js."
+			Importance="high" />
 
 		<PropertyGroup>
 			<Refs>&quot;@(ReferencePath->'%(identity)','&quot;,&quot;')&quot;</Refs>

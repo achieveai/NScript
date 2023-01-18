@@ -19,6 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compiler", "Compiler", "{15
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{E2815404-3C9B-4873-AAA1-696B75755BDF}"
+	ProjectSection(SolutionItems) = preProject
+		Sources\Framework\Directory.Build.props = Sources\Framework\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autoprefixer", "Sources\Compiler\Autoprefixer\Autoprefixer.csproj", "{83DDF45B-CD99-4275-B07D-C7F00F0D0848}"
 EndProject
