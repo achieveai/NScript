@@ -1,20 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(FrameworkTFM)</TargetFramework>
-    <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.CSharp</RootNamespace>
     <AssemblyName>Microsoft.CSharp</AssemblyName>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoStdLib>true</NoStdLib>
-    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <PackageId>NScript.Microsoft.CSharp</PackageId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../System.Core/System.Core.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="$(OutputPath)$(AssemblyName).pdb">
@@ -23,8 +17,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
-    <ProjectReference Include="../System.Core/System.Core.csproj" />
-  </ItemGroup>
 </Project>

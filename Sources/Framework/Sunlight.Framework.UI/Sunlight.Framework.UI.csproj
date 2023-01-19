@@ -1,16 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>$(FrameworkTFM)</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RootNamespace>Sunlight.Framework.UI</RootNamespace>
     <AssemblyName>Sunlight.Framework.UI</AssemblyName>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <RootNamespace>Sunlight.Framework.UI</RootNamespace>
     <PackageId>NScript.Sunlight.Framework.UI</PackageId>
-    <NoStdLib>true</NoStdLib>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,10 +10,11 @@
     <ProjectReference Include="../Sunlight.Framework/Sunlight.Framework.csproj" />
     <ProjectReference Include="../System.Web.Html/System.Web.Html.csproj" />
   </ItemGroup>
-    <ItemGroup>
-      <None Include="$(OutputPath)$(AssemblyName).pdb">
-        <Pack>true</Pack>
-        <PackagePath>lib\$(TargetFramework)</PackagePath>
-      </None>
-    </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)$(AssemblyName).pdb">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

@@ -1,16 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(FrameworkTFM)</TargetFramework>
-    <OutputType>Library</OutputType>
-    <RootNamespace>System.Web.Html</RootNamespace>
     <AssemblyName>System.Web.Html</AssemblyName>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoStdLib>true</NoStdLib>
-    <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <RootNamespace>System.Web.Html</RootNamespace>
     <PackageId>NScript.System.Web.Html</PackageId>
   </PropertyGroup>
 
@@ -20,10 +11,11 @@
     <ProjectReference Include="../System.Web/System.Web.csproj" />
     <ProjectReference Include="../Microsoft.CSharp/Microsoft.CSharp.csproj" />
   </ItemGroup>
-    <ItemGroup>
-      <None Include="$(OutputPath)$(AssemblyName).pdb">
-        <Pack>true</Pack>
-        <PackagePath>lib\$(TargetFramework)</PackagePath>
-      </None>
-    </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)$(AssemblyName).pdb">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

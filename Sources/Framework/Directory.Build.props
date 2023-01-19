@@ -1,8 +1,17 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
-    <OutputPath>$(NScriptToolsetDir)\lib</OutputPath>
-    <FrameworkTFM>netstandard2.1</FrameworkTFM>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <LangVersion>7.3</LangVersion>
+    <NoStdLib>true</NoStdLib>
+    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661, 0067</NoWarn>
+    <OutputPath>$(NScriptToolsetDir)\lib</OutputPath>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>

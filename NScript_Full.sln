@@ -56,17 +56,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CssParser.Test", "Test\Compiler\CssParser.Test\CssParser.Test.csproj", "{149F5B38-CCBC-4AB6-A646-3B78440DEDEC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.CLR.Test", "Test\Compiler\NScript.CLR.Test\NScript.CLR.Test.csproj", "{2130FE05-E84B-4596-B05E-6B77A1CCC8A4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{142D8B13-3EED-43A9-96BD-353FFA72E536} = {142D8B13-3EED-43A9-96BD-353FFA72E536}
-		{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB} = {3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}
-		{BA7A45C0-990C-4BD0-B0C0-4984054576E2} = {BA7A45C0-990C-4BD0-B0C0-4984054576E2}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Converter.Test", "Test\Compiler\NScript.Converter.Test\NScript.Converter.Test.csproj", "{D488E3A6-342B-48B0-B11E-ADEE319DE6CC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{142D8B13-3EED-43A9-96BD-353FFA72E536} = {142D8B13-3EED-43A9-96BD-353FFA72E536}
-		{BA7A45C0-990C-4BD0-B0C0-4984054576E2} = {BA7A45C0-990C-4BD0-B0C0-4984054576E2}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Csc.Lib.Test", "Test\Compiler\NScript.Csc.Lib.Test\NScript.Csc.Lib.Test.csproj", "{C5D63095-39D9-4DC2-8A7E-3072300B945D}"
 EndProject
@@ -78,9 +69,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.MsCorlib", "Sources\Framework\mscorlib\NScript.MsCorlib.csproj", "{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2F761E61-2724-492E-B79F-C64D9B032613} = {2F761E61-2724-492E-B79F-C64D9B032613}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Core", "Sources\Framework\System.Core\System.Core.csproj", "{30070734-422B-4C24-BE3F-906E2AE03A10}"
 EndProject
@@ -96,7 +84,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.UI", "So
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{641EC57C-4A93-4710-8469-5D379A0E0B7A}"
 	ProjectSection(SolutionItems) = preProject
-		Directory.Build.props = Directory.Build.props
+		Test\Framework\Directory.build.props = Test\Framework\Directory.build.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealScript", "Test\Framework\RealScript\RealScript.csproj", "{BA7A45C0-990C-4BD0-B0C0-4984054576E2}"
@@ -104,31 +92,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealScript.Debug", "Test\Framework\RealScript\RealScript.Debug.csproj", "{142D8B13-3EED-43A9-96BD-353FFA72E536}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.Test", "Test\Framework\Sunlight.Framework.Test\Sunlight.Framework.Test.csproj", "{5702ADA9-6583-4019-ADA1-A48CCC3F53EA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{139FDB68-483A-46FA-98F2-62430D0A91E3} = {139FDB68-483A-46FA-98F2-62430D0A91E3}
-		{2F761E61-2724-492E-B79F-C64D9B032613} = {2F761E61-2724-492E-B79F-C64D9B032613}
-		{BF55BBAA-4C6C-4F95-9C58-B3AB567CC87C} = {BF55BBAA-4C6C-4F95-9C58-B3AB567CC87C}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sunlight.Framework.UI.Test", "Test\Framework\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj", "{F2D46857-7BBF-433C-ABBE-F9E9DF4CD1DB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{05F0565E-2A8F-4FEE-A9CE-44499D295905} = {05F0565E-2A8F-4FEE-A9CE-44499D295905}
-		{139FDB68-483A-46FA-98F2-62430D0A91E3} = {139FDB68-483A-46FA-98F2-62430D0A91E3}
-		{1F04F790-76C3-45A4-980E-62A506633BF8} = {1F04F790-76C3-45A4-980E-62A506633BF8}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SunlightUnit", "Sources\Framework\SunlightUnit\SunlightUnit.csproj", "{688E02E6-FD92-4FD1-9484-033459E61D61}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NScript.Sdk", "Sources\Compiler\NScript.Sdk\NScript.Sdk.csproj", "{139FDB68-483A-46FA-98F2-62430D0A91E3}"
-	ProjectSection(ProjectDependencies) = postProject
-		{30070734-422B-4C24-BE3F-906E2AE03A10} = {30070734-422B-4C24-BE3F-906E2AE03A10}
-		{30070734-422B-4C24-BE3F-906E2AE03A12} = {30070734-422B-4C24-BE3F-906E2AE03A12}
-		{3520779C-829E-4276-9163-CA65490449F1} = {3520779C-829E-4276-9163-CA65490449F1}
-		{3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB} = {3CFBE1AA-475A-46ED-8F46-62AE7F3B5CBB}
-		{650BBE9A-D0C5-4590-A82A-8E63C664A893} = {650BBE9A-D0C5-4590-A82A-8E63C664A893}
-		{650BBE9A-D0C5-4590-A82A-8E63C664A894} = {650BBE9A-D0C5-4590-A82A-8E63C664A894}
-		{A60706FF-08D7-4320-99F9-A2413275CDF6} = {A60706FF-08D7-4320-99F9-A2413275CDF6}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cs2Jsc", "Sources\Compiler\Cs2Jsc\Cs2Jsc.csproj", "{7248B0FC-8911-44E3-9C01-3EBCC0F7A235}"
 EndProject

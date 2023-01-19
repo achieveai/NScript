@@ -1,27 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>$(FrameworkTFM)</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RootNamespace>Sunlight.Framework</RootNamespace>
     <AssemblyName>Sunlight.Framework</AssemblyName>
-    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <RootNamespace>Sunlight.Framework</RootNamespace>
     <PackageId>NScript.Sunlight.Framework</PackageId>
-    <NoStdLib>true</NoStdLib>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
     <ProjectReference Include="../System.Web/System.Web.csproj" />
   </ItemGroup>
-    <ItemGroup>
-      <None Include="$(OutputPath)$(AssemblyName).pdb">
-        <Pack>true</Pack>
-        <PackagePath>lib\$(TargetFramework)</PackagePath>
-      </None>
-    </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)$(AssemblyName).pdb">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

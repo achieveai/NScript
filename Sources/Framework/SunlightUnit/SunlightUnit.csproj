@@ -1,18 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(FrameworkTFM)</TargetFramework>
-    <OutputType>Library</OutputType>
-    <NoStdLib>True</NoStdLib>
-    <NoStandardLibraries>True</NoStandardLibraries>
-    <CopyReferences>True</CopyReferences>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SunlightUnit</RootNamespace>
     <AssemblyName>SunlightUnit</AssemblyName>
-    <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661; 0067</NoWarn>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <RootNamespace>SunlightUnit</RootNamespace>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,1 +1,0 @@
-dotnet exec ../../../NScriptToolSet/bin/net6.0/Cs2Jsc.dll nscript %*
