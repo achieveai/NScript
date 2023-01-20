@@ -208,8 +208,9 @@
                 methodConverter.Scope,
                 methodConverter.ResolveThis(methodConverter.Scope, null),
                 new IdentifierExpression(
-                    methodConverter.RuntimeManager.Resolve(
-                        methodConverter.MethodDefinition.GetPropertyDefinition()),
+                    methodConverter.Resolve(MethodConverter.GetBackingField(
+                        propertyDefinition,
+                        methodConverter.ClrKnownReferences)),
                     methodConverter.Scope));
 
             if (methodConverter.MethodDefinition.IsGetter)
