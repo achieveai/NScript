@@ -4,6 +4,7 @@
 	<PropertyGroup>
 		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
 		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
+		<SkipMinification Condition="$(SkipMinification) == ''">false</SkipMinification>
 	</PropertyGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
@@ -32,7 +33,7 @@
 			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)\$(AssemblyName).js&quot;"/>
 			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
 			<ScriptGenerateOption Include="-references $(Refs)"/>
-			<ScriptGenerateOption Include="-release" Condition="'$(Configuration)' == 'Release'"/>
+			<ScriptGenerateOption Include="-release" Condition="'$(SkipMinification)' == 'false' and '$(Configuration)' == 'Release'"/>
 		</ItemGroup>
 
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
