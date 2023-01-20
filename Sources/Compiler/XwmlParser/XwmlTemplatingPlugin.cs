@@ -9,6 +9,8 @@
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.InteropServices;
 
     public class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
@@ -190,6 +192,15 @@
 
                 return null;
             }
+            else if (propertyDefinition.IsStatic())
+            {
+                methodConverter.RuntimeManager.Context.AddError(
+                    null,
+                    $"Autofire only valid on instance properties of {knownTemplateTypes.ObservableInterface.FullName}",
+                    false);
+
+                return null;
+            }
 
             var propName = propertyDefinition.Name;
             var propertyAccessor = new IndexExpression(
@@ -205,7 +216,7 @@
             {
                 return new List<Statement>
                 {
-                    new ExpressionStatement(
+                    new ReturnStatement(
                         null,
                         methodConverter.Scope,
                         propertyAccessor)
@@ -218,6 +229,34 @@
                     methodConverter.ResolveArgument(
                         methodConverter.MethodDefinition.Parameters[0].Name),
                     methodConverter.Scope);
+
+                var allPropertiesToFire = new List<string> { propertyDefinition.Name };
+
+                if (atrr.HasConstructorArguments)
+                {
+                    foreach (var arg in atrr.ConstructorArguments)
+                    {
+                        var val = ((CustomAttributeArgument[])arg.Value)
+                            .Select(arg => arg.Value as string);
+                        allPropertiesToFire.AddRange(val);
+                    }
+
+                    allPropertiesToFire = allPropertiesToFire.Distinct().ToList();
+                }
+
+                MethodCallExpression GetMethodCallFor(string propName)
+                    => new(
+                        null,
+                        methodConverter.Scope,
+                        new IndexExpression(
+                            null,
+                            methodConverter.Scope,
+                            methodConverter.ResolveThis(methodConverter.Scope, null),
+                            new IdentifierExpression(
+                                methodConverter.RuntimeManager.Resolve(
+                                    knownTemplateTypes.FirePropertyChangedMethodReference),
+                                    methodConverter.Scope)),
+                        new StringLiteralExpression(methodConverter.Scope, propName));
 
                 return new List<Statement>
                 {
@@ -234,33 +273,22 @@
                         trueBlock: new ScopeBlock(
                             null,
                             methodConverter.Scope,
-                            new List<Expression>
-                            {
-                                // prop = value
-                                new BinaryExpression(
-                                    null,
-                                    methodConverter.Scope,
-                                    BinaryOperator.Assignment,
-                                    propertyAccessor,
-                                    value),
-                                // this.FirePropertyChanged("propName")
-                                new MethodCallExpression(
-                                    null,
-                                    methodConverter.Scope,
-                                    new IndexExpression(
+                            statements: (new List<Expression>
+                                {
+                                    // prop = value
+                                    new BinaryExpression(
                                         null,
                                         methodConverter.Scope,
-                                        methodConverter.ResolveThis(methodConverter.Scope, null),
-                                        new IdentifierExpression(
-                                            methodConverter.RuntimeManager.Resolve(
-                                                knownTemplateTypes.FirePropertyChangedMethodReference),
-                                            methodConverter.Scope)),
-                                    new StringLiteralExpression(methodConverter.Scope, propName))
-                            }
-                            .ConvertAll(expr => (Statement)new ExpressionStatement(
-                                null,
-                                methodConverter.Scope,
-                                expr))),
+                                        BinaryOperator.Assignment,
+                                        propertyAccessor,
+                                        value)
+                                }
+                                .Concat(allPropertiesToFire.Select(GetMethodCallFor))
+                                .ToList()
+                                .ConvertAll(expr => (Statement)new ExpressionStatement(
+                                    null,
+                                    methodConverter.Scope,
+                                    expr)))),
                         null)
                 };
             }

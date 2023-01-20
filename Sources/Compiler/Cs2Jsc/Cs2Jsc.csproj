@@ -16,13 +16,8 @@
     <None Remove="obj\**" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NScript.Converter\NScript.Converter.csproj" />
-    <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj" />
-    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
     <ProjectReference Include="..\NScript.Lib\NScript.Lib.csproj" />
     <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
-    <ProjectReference Include="..\XwmlParser\XwmlParser.csproj" />
-    <ProjectReference Include="..\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="PluginConfig.xml">

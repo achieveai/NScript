@@ -5,8 +5,6 @@
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class AutoFireAttribute : Attribute
     {
-        public AutoFireAttribute()
-        {
-        }
+        public AutoFireAttribute(params string[] alsoFire) { }
     }
 }
