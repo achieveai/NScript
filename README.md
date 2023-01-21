@@ -8,9 +8,3 @@ In order to build this repository you will need to install following packages in
 You will also need to install Wix Toolset from [http://wixtoolset.org/releases/]
 
 Once above things are setup you should open Cs2JSC.sln project and build the project.
-
-### Terminology
-Cs2Jsc = Csc.Lib = NScript.Lib
-NScript = Csc.Lib + Cs2Jsc.Lib
-Csc = Exe(Csc.Lib)
-Cs2Jsc = Exe(Cs2Jsc.Lib)

@@ -10,7 +10,6 @@
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <Prefer32Bit>true</Prefer32Bit>
-    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
     <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>
   </PropertyGroup>
   <ItemGroup>

@@ -9,8 +9,8 @@
     <GenerateJs>True</GenerateJs>
     <JsOutputPath>../TestWebApplication/GeneratedScripts</JsOutputPath>
     <NoWarn>0824</NoWarn>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
-    <NScriptExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\nscript.exe</NScriptExe>
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <NScriptExe>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\nscript.exe</NScriptExe>
   </PropertyGroup>
   <ItemGroup>
     <None Include="PluginConfig.xml" />

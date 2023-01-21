@@ -6,7 +6,6 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

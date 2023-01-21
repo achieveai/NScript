@@ -4,7 +4,6 @@
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
-    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil.Private">
