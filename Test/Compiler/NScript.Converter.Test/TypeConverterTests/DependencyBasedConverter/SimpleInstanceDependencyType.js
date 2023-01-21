@@ -6,10 +6,9 @@ function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.baseType = parentType;
   this_.interfaces = parentType ? interfaces.concat(parentType.interfaces) : interfaces;
   if (!Type__typeMapping)
-    Type__typeMapping = {
-    };
+    Type__typeMapping = { };
   Type__typeMapping[this_.fullName] = this_;
-};
+}
 ptyp_ = Function.prototype;
 ptyp_.isClass = false;
 ptyp_.baseType = null;
@@ -22,8 +21,7 @@ ptyp_.getDefaultValue = function Type__GetDefaultValue() {
 Type__RegisterReferenceType(Function, "System.Type", Object, []);
 Object.typeId = "c";
 Type__RegisterReferenceType(Object, "System.Object", null, []);
-function SimpleInstanceType() {
-};
+function SimpleInstanceType() { }
 SimpleInstanceType.typeId = "d";
 ptyp_ = SimpleInstanceType.prototype;
 ptyp_.intField = 0;

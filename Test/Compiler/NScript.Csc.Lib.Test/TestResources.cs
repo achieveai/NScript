@@ -486,7 +486,6 @@
             { return rv; }
 
             var resources = sources[moduleName];
-            Console.WriteLine($"ModuleName: {moduleName}, resources: {resources}");
 
             string runtimeMetadataVersion = null;
             if (resources.refs.Select(_ => GetMethodMaps(_)).Count() == 0)

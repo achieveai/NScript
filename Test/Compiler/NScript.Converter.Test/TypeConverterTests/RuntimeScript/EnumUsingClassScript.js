@@ -1,6 +1,6 @@
-function SimpleEnumType(boxedValue) {
+    function SimpleEnumType(boxedValue) {
   this.boxedValue = boxedValue;
-};
+}
 SimpleEnumType.typeId = "b";
 SimpleEnumType__One = 1;
 SimpleEnumType__Two = 2;
@@ -15,20 +15,19 @@ SimpleEnumType.getDefaultValue = function() {
 };
 SimpleEnumType.prototype = new Enum();
 Type__RegisterEnum(SimpleEnumType, "RealScript.SimpleEnumType", false);
-function EnumUsingClass() {
-};
+function EnumUsingClass() { }
 EnumUsingClass.typeId = "c";
 EnumUsingClass__TestValue = 2;
 EnumUsingClass__Str = null;
 function EnumUsingClass____cctor() {
   EnumUsingClass__Str = Int32__ToString(SimpleStaticType__GetField());
-};
+}
 function EnumUsingClass_factory() {
   var this_;
   this_ = new EnumUsingClass();
   this_.__ctor();
   return this_;
-};
+}
 EnumUsingClass.defaultConstructor = EnumUsingClass_factory;
 ptyp_ = EnumUsingClass.prototype;
 ptyp_.testValue2 = 0;

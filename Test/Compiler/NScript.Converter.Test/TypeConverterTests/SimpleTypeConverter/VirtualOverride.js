@@ -1,12 +1,11 @@
-function VirtualOverride() {
-};
+function VirtualOverride() { }
 VirtualOverride.typeId = "b";
 function VirtualOverride_factory() {
   var this_;
   this_ = new VirtualOverride();
   this_.__ctora();
   return this_;
-};
+}
 VirtualOverride.defaultConstructor = VirtualOverride_factory;
 ptyp_ = new VirtualBase();
 VirtualOverride.prototype = ptyp_;

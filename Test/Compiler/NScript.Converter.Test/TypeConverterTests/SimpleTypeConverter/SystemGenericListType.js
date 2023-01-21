@@ -1,9 +1,8 @@
-﻿function List(T, _callStatiConstructor) {
+function List(T, _callStatiConstructor) {
   var List$1_$T$_, ArrayG$1_$T$_, T$5b$5d_$T$_, ListEnumerator$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, __initTracker;
   if (List["9" + T.typeId])
     return List["9" + T.typeId];
-  List["9" + T.typeId] = List$1_$T$_ = function System__Collections__Generic__List$1() {
-  };
+  List["9" + T.typeId] = List$1_$T$_ = function System__Collections__Generic__List$1() { };
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
   List$1_$T$_.typeId = "e$" + T.typeId + "$";
@@ -233,4 +232,4 @@
   if (_callStatiConstructor)
     List$1_$T$_._tri();
   return List$1_$T$_;
-};
+}

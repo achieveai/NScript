@@ -20,7 +20,7 @@
       item1: x,
       item2: y
     };
-  };
+  }
   a = ReturnNamedTuple().item1;
   b = ReturnNamedTuple().item2;
   a1 = ReturnNamedTuple().item1;
