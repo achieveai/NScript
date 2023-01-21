@@ -4,7 +4,10 @@
 	<PropertyGroup>
 		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
 		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
-		<SkipMinification Condition="$(SkipMinification) == ''">false</SkipMinification>
+		<Minify Condition="$(Minify) == '' and $(Configuration) == 'Release'">true</Minify>
+		<Uglify Condition="$(Uglify) == '' and $(Configuration) == 'Release'">true</Uglify>
+		<Minify Condition="$(Minify) == ''">false</Minify>
+		<Uglify Condition="$(Uglify) == ''">false</Uglify>
 	</PropertyGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
@@ -33,7 +36,8 @@
 			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)\$(AssemblyName).js&quot;"/>
 			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
 			<ScriptGenerateOption Include="-references $(Refs)"/>
-			<ScriptGenerateOption Include="-release" Condition="'$(SkipMinification)' == 'false' and '$(Configuration)' == 'Release'"/>
+			<ScriptGenerateOption Include="-minify" Condition="'$(Minify)' == 'true'" />
+			<ScriptGenerateOption Include="-uglify" Condition="'$(Uglify)' == 'true'" />
 		</ItemGroup>
 
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>

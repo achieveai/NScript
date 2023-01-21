@@ -31,7 +31,8 @@
                 parseOptions.EntryAssembly,
                 parseOptions.ReferenceDlls.ToArray(),
                 plugins.ToArray(),
-                parseOptions.Release);
+                parseOptions.Minify,
+                parseOptions.Uglify);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();

@@ -55,7 +55,9 @@ namespace NScript.Lib
         /// <summary>
         /// Is Script created for release (fully minified)?
         /// </summary>
-        private bool release = false;
+        private bool minify = false;
+
+        private bool uglify = false;
 
         /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
@@ -111,7 +113,9 @@ namespace NScript.Lib
         /// <summary>
         /// Is script ready for relase (i.e. fully minified).
         /// </summary>
-        public bool Release => this.release;
+        public bool Minify => this.minify;
+
+        public bool Uglify => this.uglify;
 
         /// <summary>
         /// Parses the args.
@@ -190,8 +194,11 @@ namespace NScript.Lib
                     case "-jsparts":
                         option = CurrentOption.JsParts;
                         continue;
-                    case "-release":
-                        options.release = true;
+                    case "-minify":
+                        options.minify = true;
+                        continue;
+                    case "-uglify":
+                        options.uglify = true;
                         continue;
                     default:
                         break;
