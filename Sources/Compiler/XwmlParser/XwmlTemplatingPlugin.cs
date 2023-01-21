@@ -208,9 +208,10 @@
                 methodConverter.Scope,
                 methodConverter.ResolveThis(methodConverter.Scope, null),
                 new IdentifierExpression(
-                    methodConverter.Resolve(MethodConverter.GetBackingField(
-                        propertyDefinition,
-                        methodConverter.ClrKnownReferences)),
+                    methodConverter.RuntimeManager.Resolve(
+                        MethodConverter.GetBackingField(
+                            propertyDefinition,
+                            methodConverter.ClrKnownReferences)),
                     methodConverter.Scope));
 
             if (methodConverter.MethodDefinition.IsGetter)
@@ -246,18 +247,29 @@
                 }
 
                 MethodCallExpression GetMethodCallFor(string propName)
-                    => new(
-                        null,
-                        methodConverter.Scope,
-                        new IndexExpression(
+                    => 
+                        methodConverter.RuntimeManager.ImplementInstanceAsStatic
+                        ? new(
                             null,
                             methodConverter.Scope,
+                            IdentifierExpression.Create(
+                                null,
+                                methodConverter.Scope,
+                                methodConverter.ResolveStaticMember(
+                                    knownTemplateTypes.FirePropertyChangedMethodReference)),
                             methodConverter.ResolveThis(methodConverter.Scope, null),
-                            new IdentifierExpression(
-                                methodConverter.RuntimeManager.Resolve(
-                                    knownTemplateTypes.FirePropertyChangedMethodReference),
+                            new StringLiteralExpression(methodConverter.Scope, propName))
+                        : new(
+                            null,
+                            methodConverter.Scope,
+                            new IndexExpression(
+                                null,
+                                methodConverter.Scope,
+                                methodConverter.ResolveThis(methodConverter.Scope, null),
+                                methodConverter.ResolveVirtualMethod(
+                                    knownTemplateTypes.FirePropertyChangedMethodReference,
                                     methodConverter.Scope)),
-                        new StringLiteralExpression(methodConverter.Scope, propName));
+                            new StringLiteralExpression(methodConverter.Scope, propName));
 
                 return new List<Statement>
                 {
@@ -290,7 +302,7 @@
                                     null,
                                     methodConverter.Scope,
                                     expr)))),
-                        null)
+                        falseBlock: null)
                 };
             }
         }
