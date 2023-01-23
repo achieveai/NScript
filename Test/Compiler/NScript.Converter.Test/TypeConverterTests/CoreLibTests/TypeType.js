@@ -1,14 +1,14 @@
-﻿Function.typeId = "b";
+Function.typeId = "b";
 Type__typeMapping = null;
 function Type__GetType(typeName) {
   return Type__CastType(Function, Type__typeMapping[typeName]);
-};
+}
 function Type__GetInterfaces(this_) {
   return this_.interfaces;
-};
+}
 function Type__AsType(this_, instance) {
   return this_.isInstanceOfType(instance) ? instance : null;
-};
+}
 function Type__CastType(this_, instance) {
   if (this_.isInstanceOfType(instance) || instance === null || typeof instance === "undefined") {
     if (this_.isStruct)
@@ -16,40 +16,38 @@ function Type__CastType(this_, instance) {
     return instance;
   }
   throw "InvalidCast to " + this_.fullName;
-};
+}
 function Type__ToLocaleString(this_) {
   return this_.fullName ? this_.fullName : this_.name;
-};
+}
 function Type__ToString(this_) {
   return this_.fullName ? this_.fullName : this_.name;
-};
+}
 function Type__AS(obj) {
   return obj;
-};
+}
 function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   this_.isClass = true;
   this_.fullName = typeName;
   this_.baseType = parentType;
   this_.interfaces = parentType ? interfaces.concat(parentType.interfaces) : interfaces;
   if (!Type__typeMapping)
-    Type__typeMapping = {
-    };
+    Type__typeMapping = { };
   Type__typeMapping[this_.fullName] = this_;
-};
+}
 function Type__RegisterStructType(this_, typeName, interfaces) {
   this_.isStruct = true;
   this_.fullName = typeName;
   this_.baseType = ValueType;
   this_.interfaces = interfaces;
   if (!Type__typeMapping)
-    Type__typeMapping = {
-    };
+    Type__typeMapping = { };
   Type__typeMapping[this_.fullName] = this_;
-};
+}
 function Type__RegisterInterface(this_, typeName) {
   this_.isInterface = true;
   this_.fullName = typeName;
-};
+}
 function Type__RegisterEnum(this_, typeName, isFlag) {
   var enumStrToValueMap, valueToStr, lowerStrToValue, key;
   this_.isEnum = true;
@@ -57,10 +55,8 @@ function Type__RegisterEnum(this_, typeName, isFlag) {
   this_.isFlagEnum = isFlag;
   this_.baseType = Enum;
   enumStrToValueMap = this_.enumStrToValueMap;
-  valueToStr = {
-  };
-  lowerStrToValue = {
-  };
+  valueToStr = { };
+  lowerStrToValue = { };
   for (key in enumStrToValueMap) {
     valueToStr[enumStrToValueMap[key]] = key;
     lowerStrToValue[key.toLowerCase()] = enumStrToValueMap[key];
@@ -68,10 +64,9 @@ function Type__RegisterEnum(this_, typeName, isFlag) {
   this_.enumValueToStrMap = valueToStr;
   this_.enumLowerStrToValueMap = lowerStrToValue;
   if (!Type__typeMapping)
-    Type__typeMapping = {
-    };
+    Type__typeMapping = { };
   Type__typeMapping[this_.fullName] = this_;
-};
+}
 function Type__BoxTypeInstance(type, instance) {
   if (type.isNullable)
     return type.nullableBox(instance);
@@ -79,7 +74,7 @@ function Type__BoxTypeInstance(type, instance) {
     return new type(instance);
   else
     return instance;
-};
+}
 function Type__UnBoxTypeInstance(type, instance) {
   if (type.isNullable && instance === null)
     return null;
@@ -87,7 +82,7 @@ function Type__UnBoxTypeInstance(type, instance) {
     return instance.boxedValue;
   else
     return instance;
-};
+}
 function Type__GetDefaultConstructor(type) {
   if (type.isStruct)
     return type.getDefaultValue;
@@ -97,17 +92,16 @@ function Type__GetDefaultConstructor(type) {
     return function() {
         return null;
     };
-};
+}
 function Type__GetDefaultValueStatic(type) {
   if (type.isStruct)
     return type.getDefaultValue();
   return null;
-};
+}
 function Type__InitializeBaseInterfaces(type) {
   var rv, baseType, baseInterfaces, key, interfaces;
   if (!type.baseInterfaces) {
-    rv = {
-    };
+    rv = { };
     baseType = type.baseType;
     if (baseType != null && baseType != Object) {
       if (baseType)
@@ -123,15 +117,14 @@ function Type__InitializeBaseInterfaces(type) {
         rv[interfaces[key].fullName] = interfaces[key];
     type.baseInterfaces = rv;
   }
-};
-function Type____ctor(this_) {
-};
+}
+function Type____ctor(this_) { }
 function Type_factory() {
   var this_;
   this_ = new Function();
   Type____ctor(this_);
   return this_;
-};
+}
 Function.defaultConstructor = Type_factory;
 ptyp_ = Function.prototype;
 ptyp_.isDelegate = false;

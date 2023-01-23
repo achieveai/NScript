@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SunlightUnit</AssemblyName>
+    <RootNamespace>SunlightUnit</RootNamespace>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
+  </ItemGroup>
+</Project>

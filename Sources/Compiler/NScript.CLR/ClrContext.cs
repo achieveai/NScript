@@ -130,6 +130,7 @@ namespace NScript.CLR
                 });
 
             string assemblyName = moduleDefinition.Assembly.Name.Name;
+
             if (this.simpleNameToAssemblyName.ContainsKey(assemblyName.ToLowerInvariant()))
             {
                 throw new ApplicationException("Assembly already loaded");

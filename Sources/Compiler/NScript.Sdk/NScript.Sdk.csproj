@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
+    <PackageType>MSBuildSdk</PackageType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Sdk/*" Pack="true" PackagePath="%(RelativeDir)" />
+  </ItemGroup>
+
+</Project>

@@ -59,9 +59,13 @@ namespace XwmlParser
 
         public readonly TypeReference SkinAttribute;
 
+        public readonly TypeReference AutoFireAttribute;
+
         public readonly TypeDefinition ElementRef;
 
         public readonly MethodReference CloneNodeMethodReference;
+
+        public readonly MethodReference FirePropertyChangedMethodReference;
 
         public readonly TypeDefinition ObservableInterface;
 
@@ -167,6 +171,9 @@ namespace XwmlParser
             this.SkinAttribute = clrContext.GetTypeDefinition(
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".SkinAttribute"));
 
+            this.AutoFireAttribute = clrContext.GetTypeDefinition(
+                Tuple.Create(uiFrameworkDll, attributesNamespace + ".AutoFireAttribute"));
+
             this.CssNameAttribute = clrContext.GetTypeDefinition(
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".CssNameAttribute"));
 
@@ -213,6 +220,12 @@ namespace XwmlParser
                 this.NodeRef,
                 clrKnownReferences.String,
                 clrKnownReferences.String).Resolve();
+
+            this.FirePropertyChangedMethodReference = clrContext.GetMethodReference(
+                "FirePropertyChanged",
+                clrKnownReferences.Void,
+                this.ObservableObject,
+                ClrKnownReference.String).Resolve();
 
             this.TextContentSetter = clrContext.GetMethodReference(
                 "SetTextContent",

@@ -11,8 +11,9 @@ namespace Sunlight.Framework.UI.Attributes
     /// <summary>
     /// Definition for SkinPartAttribute
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    /* [AttributeUsage(AttributeTargets.Field)]
     public class SkinPartAttribute : Attribute
     {
     }
+    */
 }

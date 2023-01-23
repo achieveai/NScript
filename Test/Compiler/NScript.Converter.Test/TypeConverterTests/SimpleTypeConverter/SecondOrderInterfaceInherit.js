@@ -1,12 +1,11 @@
-function SecondOrderInterfaceInherit() {
-};
+function SecondOrderInterfaceInherit() { }
 SecondOrderInterfaceInherit.typeId = "b";
 function SecondOrderInterfaceInherit_factory() {
   var this_;
   this_ = new SecondOrderInterfaceInherit();
   this_.__ctora();
   return this_;
-};
+}
 SecondOrderInterfaceInherit.defaultConstructor = SecondOrderInterfaceInherit_factory;
 ptyp_ = new InheritInterface();
 SecondOrderInterfaceInherit.prototype = ptyp_;

@@ -1,6 +1,6 @@
 function SimpleEnumType(boxedValue) {
   this.boxedValue = boxedValue;
-};
+}
 SimpleEnumType.typeId = "b";
 SimpleEnumType__One = 1;
 SimpleEnumType__Two = 2;

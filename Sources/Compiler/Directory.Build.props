@@ -1,7 +1,7 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
-    <OutputPath>$(NScriptToolsetDir)</OutputPath>
+    <OutputPath>$(NScriptToolsetDir)/bin/$(Configuration)</OutputPath>
     <Dependencies>$(MSBuildThisFileDirectory)/../../Dependencies</Dependencies>
   </PropertyGroup>
 </Project>

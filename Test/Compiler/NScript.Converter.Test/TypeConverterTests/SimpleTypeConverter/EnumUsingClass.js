@@ -1,17 +1,16 @@
-function EnumUsingClass() {
-};
+function EnumUsingClass() { }
 EnumUsingClass.typeId = "b";
 EnumUsingClass__TestValue = 2;
 EnumUsingClass__Str = null;
 function EnumUsingClass____cctor() {
   EnumUsingClass__Str = Int32__ToString(SimpleStaticType__GetField());
-};
+}
 function EnumUsingClass_factory() {
   var this_;
   this_ = new EnumUsingClass();
   this_.__ctor();
   return this_;
-};
+}
 EnumUsingClass.defaultConstructor = EnumUsingClass_factory;
 ptyp_ = EnumUsingClass.prototype;
 ptyp_.testValue2 = 0;

@@ -1,145 +1,18 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectType>local</ProjectType>
-    <ProjectVersion>7.10.3077</ProjectVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <NoStandardLibraries>false</NoStandardLibraries>
-    <NoStdLib>true</NoStdLib>
-    <ProjectGuid>{30070734-422B-4C24-BE3F-906E2AE03A10}</ProjectGuid>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <AssemblyName>System.Core</AssemblyName>
-    <DefaultClientScript>JScript</DefaultClientScript>
-    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
-    <DefaultTargetSchema>IE50</DefaultTargetSchema>
-    <DelaySign>false</DelaySign>
-    <OutputType>Library</OutputType>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NoVersioning>True</NoVersioning>
-    <AssemblyOriginatorKeyFile>..\mscorlib\mscorlibKey.snk</AssemblyOriginatorKeyFile>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <VSFrameworkOverride>Silverlight</VSFrameworkOverride>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <FileAlignment>512</FileAlignment>
     <RootNamespace>System</RootNamespace>
-    <SignAssembly>true</SignAssembly>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\net6.0\</NScriptBinPath>
-    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
-    <TargetFrameworkProfile />
+    <PackageId>NScript.System.Core</PackageId>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugSymbols>true</DebugSymbols>
-    <Optimize>false</Optimize>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DefineConstants>TRACE</DefineConstants>
-    <DebugSymbols>false</DebugSymbols>
-    <Optimize>true</Optimize>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>none</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
+
   <ItemGroup>
-    <None Include="..\mscorlib\mscorlibKey.snk" />
+    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Dynamic\BinaryOperationBinder.cs" />
-    <Compile Include="Dynamic\BindingRestrictions.cs" />
-    <Compile Include="Dynamic\CallInfo.cs" />
-    <Compile Include="Dynamic\ConvertBinder.cs" />
-    <Compile Include="Dynamic\CreateInstanceBinder.cs" />
-    <Compile Include="Dynamic\DeleteIndexBinder.cs" />
-    <Compile Include="Dynamic\DeleteMemberBinder.cs" />
-    <Compile Include="Dynamic\DynamicMetaObject.cs" />
-    <Compile Include="Dynamic\DynamicMetaObjectBinder.cs" />
-    <Compile Include="Dynamic\DynamicObject.cs" />
-    <Compile Include="Dynamic\ExpandoObject.cs" />
-    <Compile Include="Dynamic\GetIndexBinder.cs" />
-    <Compile Include="Dynamic\GetmemberBinder.cs" />
-    <Compile Include="Dynamic\IDynamicMetaObjectProvider.cs" />
-    <Compile Include="Dynamic\IInvokeOnGetBinder.cs" />
-    <Compile Include="Dynamic\InvokeBinder.cs" />
-    <Compile Include="Dynamic\InvokeMemberBinder.cs" />
-    <Compile Include="Dynamic\SetIndexBinder.cs" />
-    <Compile Include="Dynamic\SetMemberBinder.cs" />
-    <Compile Include="Dynamic\UnaryOperationBinder.cs" />
-    <Compile Include="Linq\Expressions\BinaryExpression.cs" />
-    <Compile Include="Linq\Expressions\BlockExpression.cs" />
-    <Compile Include="Linq\Expressions\CatchBlock.cs" />
-    <Compile Include="Linq\Expressions\ConditionalExpression.cs" />
-    <Compile Include="Linq\Expressions\ConstantExpression.cs" />
-    <Compile Include="Linq\Expressions\DebugInfoExpression.cs" />
-    <Compile Include="Linq\Expressions\DefaultExpression.cs" />
-    <Compile Include="Linq\Expressions\DynamicExpression.cs" />
-    <Compile Include="Linq\Expressions\DynamicExpressionVisitor.cs" />
-    <Compile Include="Linq\Expressions\ElementInit.cs" />
-    <Compile Include="Linq\Expressions\Expression.cs" />
-    <Compile Include="Linq\Expressions\ExpressionType.cs" />
-    <Compile Include="Linq\Expressions\ExpressionVisitor.cs" />
-    <Compile Include="Linq\Expressions\GotoExpression.cs" />
-    <Compile Include="Linq\Expressions\GotoExpressionKind.cs" />
-    <Compile Include="Linq\Expressions\IndexExpression.cs" />
-    <Compile Include="Linq\Expressions\InvocationExpression.cs" />
-    <Compile Include="Linq\Expressions\LabelExpression.cs" />
-    <Compile Include="Linq\Expressions\LabelTarget.cs" />
-    <Compile Include="Linq\Expressions\LambdaExpression.cs" />
-    <Compile Include="Linq\Expressions\ListInitExpression.cs" />
-    <Compile Include="Linq\Expressions\LoopExpression.cs" />
-    <Compile Include="Linq\Expressions\MemberAssignment.cs" />
-    <Compile Include="Linq\Expressions\MemberBinding.cs" />
-    <Compile Include="Linq\Expressions\MemberBindingType.cs" />
-    <Compile Include="Linq\Expressions\MemberExpression.cs" />
-    <Compile Include="Linq\Expressions\MemberInitExpression.cs" />
-    <Compile Include="Linq\Expressions\MemberListBinding.cs" />
-    <Compile Include="Linq\Expressions\MemberMemberBinding.cs" />
-    <Compile Include="Linq\Expressions\MethodCallExpression.cs" />
-    <Compile Include="Linq\Expressions\NewArrayExpression.cs" />
-    <Compile Include="Linq\Expressions\NewExpression.cs" />
-    <Compile Include="Linq\Expressions\ParameterExpression.cs" />
-    <Compile Include="Linq\Expressions\RuntimeVairablesExpression.cs" />
-    <Compile Include="Linq\Expressions\SwitchCase.cs" />
-    <Compile Include="Linq\Expressions\SwitchExpression.cs" />
-    <Compile Include="Linq\Expressions\SymbolDocumentInfo.cs" />
-    <Compile Include="Linq\Expressions\TryExpression.cs" />
-    <Compile Include="Linq\Expressions\TypeBinaryExpression.cs" />
-    <Compile Include="Linq\Expressions\UnaryExpression.cs" />
-    <Compile Include="Runtime\CompilerServices\CallSite.cs" />
-    <Compile Include="Runtime\CompilerServices\DynamicAttribute.cs" />
+    <None Include="$(OutputPath)$(AssemblyName).pdb">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </None>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
-      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
-      <Name>NScript.MsCorlib</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(NScriptToolSetPath)NScript.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent />
-    <PostBuildEvent />
-  </PropertyGroup>
 </Project>

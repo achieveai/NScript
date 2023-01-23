@@ -1,156 +1,18 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+﻿<Project Sdk="NScript.Sdk">
   <PropertyGroup>
-    <ProjectType>local</ProjectType>
-    <ProjectVersion>7.10.3077</ProjectVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <NoStandardLibraries>false</NoStandardLibraries>
-    <NoStdLib>true</NoStdLib>
-    <ProjectGuid>{C57A61D9-4E45-41BB-AE75-933FBA9A9079}</ProjectGuid>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <AssemblyName>System.Dynamic</AssemblyName>
-    <DefaultClientScript>JScript</DefaultClientScript>
-    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
-    <DefaultTargetSchema>IE50</DefaultTargetSchema>
-    <DelaySign>false</DelaySign>
+    <TargetFramework>$(FrameworkTFM)</TargetFramework>
     <OutputType>Library</OutputType>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NoVersioning>True</NoVersioning>
-    <AssemblyOriginatorKeyFile>..\mscorlib\mscorlibKey.snk</AssemblyOriginatorKeyFile>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <VSFrameworkOverride>Silverlight</VSFrameworkOverride>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <FileAlignment>512</FileAlignment>
     <RootNamespace>System</RootNamespace>
-    <SignAssembly>true</SignAssembly>
+    <AssemblyName>System.Dynamic</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoStdLib>true</NoStdLib>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\net6.0\</NScriptBinPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugSymbols>true</DebugSymbols>
-    <Optimize>false</Optimize>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DefineConstants>TRACE</DefineConstants>
-    <DebugSymbols>false</DebugSymbols>
-    <Optimize>true</Optimize>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>none</DebugType>
-    <ErrorReport>prompt</ErrorReport>
+    <!-- <CscToolPath>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\</CscToolPath> -->
+    <CscToolExe>$(NScriptToolsetDir)\bin\$(CompilerNetFramework)\csc.exe</CscToolExe>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="..\mscorlib\mscorlibKey.snk" />
+    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj" />
+    <ProjectReference Include="..\System.Core\System.Core.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Dynamic\ArgBuilder.cs" />
-    <Compile Include="Dynamic\Assert.cs" />
-    <Compile Include="Dynamic\BoolArgBuilder.cs" />
-    <Compile Include="Dynamic\BoundDispEvent.cs" />
-    <Compile Include="Dynamic\CollectionExtensions.cs" />
-    <Compile Include="Dynamic\ComBinder.cs" />
-    <Compile Include="Dynamic\ComBinderHelpers.cs" />
-    <Compile Include="Dynamic\ComDispIds.cs" />
-    <Compile Include="Dynamic\ComEventDesc.cs" />
-	<!--
-    <Compile Include="Dynamic\ComEventSink.cs" />
-    <Compile Include="Dynamic\ComEventSinkProxy.cs" />
-    <Compile Include="Dynamic\ComEventSinksContainer.cs" />
-	-->
-    <Compile Include="Dynamic\ComFallbackMetaObject.cs" />
-    <Compile Include="Dynamic\ComHresults.cs" />
-    <Compile Include="Dynamic\ComInvokeAction.cs" />
-    <Compile Include="Dynamic\ComInvokeBinder.cs" />
-    <Compile Include="Dynamic\ComMetaObject.cs" />
-	<!--<Compile Include="Dynamic\ComMethodDesc.cs" />-->
-    <Compile Include="Dynamic\ComObject.cs" />
-	<!--<Compile Include="Dynamic\ComRuntimeHelpers.cs" />
-    <Compile Include="Dynamic\ComTypeClassDesc.cs" />
-    <Compile Include="Dynamic\ComTypeDesc.cs" />
-    <Compile Include="Dynamic\ComTypeEnumDesc.cs" />
-    <Compile Include="Dynamic\ComTypeLibDesc.cs" />-->
-    <Compile Include="Dynamic\ComUnwrappedMetaObject.cs" />
-    <Compile Include="Dynamic\ContractUtils.cs" />
-    <Compile Include="Dynamic\ConversionArgBuilder.cs" />
-    <Compile Include="Dynamic\ConvertArgBuilder.cs" />
-    <Compile Include="Dynamic\ConvertibleArgBuilder.cs" />
-    <Compile Include="Dynamic\CurrencyArgBuilder.cs" />
-    <Compile Include="Dynamic\DateTimeArgBuilder.cs" />
-    <Compile Include="Dynamic\DispatchArgBuilder.cs" />
-	<!--<Compile Include="Dynamic\DispCallable.cs" />-->
-    <Compile Include="Dynamic\DispCallableMetaObject.cs" />
-    <Compile Include="Dynamic\Error.cs" />
-    <Compile Include="Dynamic\ErrorArgBuilder.cs" />
-    <Compile Include="Dynamic\ExcepInfo.cs" />
-    <Compile Include="Dynamic\Helpers.cs" />
-	<!--<Compile Include="Dynamic\IDispatch.cs" />
-    <Compile Include="Dynamic\IDispatchComObject.cs" />
-	<Compile Include="Dynamic\IDispatchEx.cs" />-->
-    <Compile Include="Dynamic\IDispatchForReflection.cs" />
-	<!--<Compile Include="Dynamic\IDispatchMetaObject.cs" />-->
-    <Compile Include="Dynamic\IDispatchMethodIndices.cs" />
-    <Compile Include="Dynamic\IProvideClassInfo.cs" />
-    <Compile Include="Dynamic\NativeMethods.cs" />
-    <Compile Include="Dynamic\NullArgBuilder.cs" />
-    <Compile Include="Dynamic\SimpleArgBuilder.cs" />
-    <Compile Include="Dynamic\SplatCallSite.cs" />
-    <Compile Include="Dynamic\SplatInvokeBinder.cs" />
-    <Compile Include="Dynamic\SR.cs" />
-	<!--<Compile Include="Dynamic\SRCategoryAttribute.cs" />
-	  <Compile Include="Dynamic\SRDescriptionAttribute.cs" />-->
-    <Compile Include="Dynamic\StringArgBuilder.cs" />
-    <Compile Include="Dynamic\Strings.cs" />
-    <Compile Include="Dynamic\TypeUtils.cs" />
-    <Compile Include="Dynamic\UnknownArgBuilder.cs" />
-	<!--<Compile Include="Dynamic\UnsafeMethods.cs" />
-    <Compile Include="Dynamic\VarEnumSelector.cs" />
-		<Compile Include="Dynamic\Variant.cs" />
-    <Compile Include="Dynamic\VariantArgBuilder.cs" />
-    <Compile Include="Dynamic\VariantArray.cs" />
-    <Compile Include="Dynamic\VariantArray1.cs" />
-    <Compile Include="Dynamic\VariantArray2.cs" />
-    <Compile Include="Dynamic\VariantArray4.cs" />
-    <Compile Include="Dynamic\VariantArray8.cs" />
-    <Compile Include="Dynamic\VariantBuilder.cs" />-->
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
-      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
-      <Name>NScript.MsCorlib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\System.Core\System.Core.csproj">
-      <Project>{30070734-422b-4c24-be3f-906e2ae03a10}</Project>
-      <Name>System.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(NScriptToolSetPath)NScript.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent />
-    <PostBuildEvent />
-  </PropertyGroup>
 </Project>

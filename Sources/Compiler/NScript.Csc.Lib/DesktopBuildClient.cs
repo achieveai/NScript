@@ -51,7 +51,9 @@ namespace NScript.Csc.Lib
             var buildPaths = new BuildPaths(clientDir: clientDir, workingDir: workingDir, sdkDir: sdkDir, tempDir: tempDir);
             var originalArguments = GetCommandLineArgs(arguments)
                 .Where(arg => !arg.TrimStart().StartsWith("/analyzerconfig:"));
-            return client.RunCompilation(originalArguments, buildPaths).ExitCode;
+            return client.RunCompilation(arguments.SelectMany(arg => {
+                return CommandLineParser.SplitCommandLineIntoArguments(arg, false);
+            }), buildPaths).ExitCode;
         }
 
         protected override int RunLocalCompilation(string[] arguments, BuildPaths buildPaths, TextWriter textWriter)

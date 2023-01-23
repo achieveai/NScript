@@ -9,6 +9,7 @@ namespace Sunlight.Framework.Test
     using System;
     using System.Collections.Generic;
     using Sunlight.Framework.Observables;
+    using Sunlight.Framework.UI.Attributes;
     using SunlightUnit;
 
     /// <summary>
@@ -66,6 +67,12 @@ namespace Sunlight.Framework.Test
                     }
                 }
             }
+
+            [AutoFire]
+            public string AutoFiredProp { get; set; }
+
+            [AutoFire(nameof(AutoFiredProp))]
+            public string AutoFiredProp1 { get; set; }
         }
 
         [Test]
@@ -120,6 +127,65 @@ namespace Sunlight.Framework.Test
 
             observableObject.StringProp = "2";
             assert.IsTrue(!cbCalled, "after removing change listner, callback should not be called.");
+        }
+
+        [Test]
+        public static void TestAutoFirePropertyChanged(Assert assert)
+        {
+            ObservableTestObject observableObject = new ObservableTestObject();
+            bool strChanged = false;
+            bool cbCalled = false;
+            Action<INotifyPropertyChanged, string> cb1 =
+                (sender, propName) =>
+                {
+                    strChanged = propName == "AutoFiredProp" && sender == observableObject;
+                    cbCalled = true;
+                };
+
+            observableObject.AddPropertyChangedListener("AutoFiredProp", cb1);
+            observableObject.AutoFiredProp = "1";
+
+            assert.IsTrue(strChanged, "change callback called");
+
+            strChanged = false;
+            cbCalled = false;
+
+            observableObject.IntProp = 1;
+            assert.IsTrue(!strChanged, "Auto fire change callback not called.");
+        }
+
+        [Test]
+        public static void TestAlsoFirePropertyChanged(Assert assert)
+        {
+            ObservableTestObject observableObject = new ObservableTestObject();
+            var strChanged = false;
+            var strChanged1 = false;
+
+            observableObject.AddPropertyChangedListener(
+                "AutoFiredProp",
+                (sender, propName) =>
+                {
+                    strChanged = propName == "AutoFiredProp" && sender == observableObject;
+                });
+
+            observableObject.AddPropertyChangedListener(
+                "AutoFiredProp1",
+                (sender, propName) =>
+                {
+                    strChanged1 = propName == "AutoFiredProp1" && sender == observableObject;
+                });
+
+            observableObject.AutoFiredProp1 = "2";
+
+            assert.IsTrue(strChanged, "change callback called");
+            assert.IsTrue(strChanged1, "change callback called");
+
+            strChanged = false;
+            strChanged1 = false;
+
+            observableObject.IntProp = 1;
+            assert.IsTrue(!strChanged, "Auto fire change callback not called.");
+            assert.IsTrue(!strChanged1, "Auto fire change callback not called.");
         }
     }
 }
