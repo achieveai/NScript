@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>System.Core</AssemblyName>
     <RootNamespace>System</RootNamespace>
-    <PackageId>NScript.System.Core</PackageId>
+    <PackageId>Mcqdb.NScript.System.Core</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

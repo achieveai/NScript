@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>Sunlight.Framework.UI</AssemblyName>
     <RootNamespace>Sunlight.Framework.UI</RootNamespace>
-    <PackageId>NScript.Sunlight.Framework.UI</PackageId>
+    <PackageId>Mcqdb.NScript.Sunlight.Framework.UI</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@
     <IsPackable>true</IsPackable>
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageType>MSBuildSdk</PackageType>
+    <PackageId>Mcqdb.NScript.Sdk</PackageId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 

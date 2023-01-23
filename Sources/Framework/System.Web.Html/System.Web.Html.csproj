@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>System.Web.Html</AssemblyName>
     <RootNamespace>System.Web.Html</RootNamespace>
-    <PackageId>NScript.System.Web.Html</PackageId>
+    <PackageId>Mcqdb.NScript.System.Web.Html</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

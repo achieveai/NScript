@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>mscorlib</AssemblyName>
     <RootNamespace>System</RootNamespace>
-    <PackageId>NScript.MsCorlib</PackageId>
+    <PackageId>Mcqdb.NScript.MsCorlib</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>Sunlight.Framework</AssemblyName>
     <RootNamespace>Sunlight.Framework</RootNamespace>
-    <PackageId>NScript.Sunlight.Framework</PackageId>
+    <PackageId>Mcqdb.NScript.Sunlight.Framework</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

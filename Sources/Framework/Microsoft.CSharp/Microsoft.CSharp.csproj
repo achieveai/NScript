@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.CSharp</RootNamespace>
     <AssemblyName>Microsoft.CSharp</AssemblyName>
-    <PackageId>NScript.Microsoft.CSharp</PackageId>
+    <PackageId>Mcqdb.NScript.Microsoft.CSharp</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
