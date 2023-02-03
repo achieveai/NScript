@@ -276,6 +276,11 @@ namespace NScript.Converter.ExpressionsConverter
                     },
 
                     {
+                        typeof(NullCoalsecingAssignmentExpression),
+                        SimplifyConverter<NullCoalsecingAssignmentExpression>(NullConditionalConverter.Convert)
+                    },
+
+                    {
                         typeof(InlineDelegateExpression),
                         ExpressionConverterBase.SimplifyConverter<InlineDelegateExpression>(
                             InlineDelegateExpressionConverter.Convert)

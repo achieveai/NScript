@@ -67,6 +67,7 @@
     <None Remove="MethodConverterTests\InlineInitializations\ReturnStrDict2.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\VarArgs.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\VarArgs2.static.js" />
+    <None Remove="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />
     <None Remove="MethodConverterTests\MethodArgument\Constructor.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
@@ -160,6 +161,7 @@
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnStrDict2.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs2.static.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\Constructor.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />

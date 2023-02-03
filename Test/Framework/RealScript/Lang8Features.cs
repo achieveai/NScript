@@ -13,5 +13,12 @@ namespace RealScript
     /// </summary>
     public class Lang8Features
     {
+        public static void NullCoalescingAssignment()
+        {
+            (int, int)? tupl = null;
+            tupl ??= (1, 2);
+
+            _ = (tupl ??= (3, 4)).Item1;
+        }
     }
 }

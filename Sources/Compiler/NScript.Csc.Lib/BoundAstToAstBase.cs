@@ -1099,6 +1099,14 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
 
+        public override AstBase VisitNullCoalescingAssignmentOperator(BoundNullCoalescingAssignmentOperator node, SerializationContext arg)
+            => new NullCoalescingAssignmentSer
+            {
+                Location = node.Syntax.GetSerLoc(),
+                Left = (ExpressionSer)Visit(node.LeftOperand, arg),
+                Right = (ExpressionSer)Visit(node.RightOperand, arg)
+            };
+
         public override AstBase VisitObjectCreationExpression(BoundObjectCreationExpression node, SerializationContext arg)
         {
             var location = node.Syntax.Location.GetSerLoc();

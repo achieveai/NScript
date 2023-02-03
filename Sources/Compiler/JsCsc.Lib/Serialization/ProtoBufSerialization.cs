@@ -816,6 +816,18 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
+    public class NullCoalescingAssignmentSer
+        : ExpressionSer
+    {
+        public ExpressionSer Left { get; set; }
+
+        public ExpressionSer Right { get; set; }
+
+        // public int Type { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
     public class UnaryExpression
         : ExpressionSer
     {

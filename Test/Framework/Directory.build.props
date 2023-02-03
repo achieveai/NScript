@@ -3,5 +3,6 @@
     <PropertyGroup>
         <CscToolExe>$(MSBuildThisFileDirectory)../../NScriptToolSet/bin/$(Configuration)/$(CompilerNetFramework)/csc.exe</CscToolExe>
         <NScriptExe>$(MSBuildThisFileDirectory)../../NScriptToolSet/bin/$(Configuration)/$(CompilerNetFramework)/nscript.exe</NScriptExe>
+        <LangVersion>8.0</LangVersion>
     </PropertyGroup>
 </Project>

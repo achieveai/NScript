@@ -803,6 +803,13 @@ namespace JsCsc.Lib
                 ParseExpression(jObject.Right),
                 DeserializeType(jObject.Type));
 
+        private Node ParseNullCoalascingAssignment(Serialization.NullCoalescingAssignmentSer jObject)
+            => new NullCoalsecingAssignmentExpression(
+                _clrContext,
+                LocFromJObject(jObject),
+                ParseExpression(jObject.Left),
+                ParseExpression(jObject.Right));
+
         private Node ParseYield(Serialization.YieldStatement jObject) => new YieldStatement(
                 _clrContext,
                 LocFromJObject(jObject),
@@ -1975,6 +1982,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.NullCoalescingOperatorSer),
                     (a) => ParseNullCoalascing((Serialization.NullCoalescingOperatorSer)a)
+                },
+                {
+                    typeof(Serialization.NullCoalescingAssignmentSer),
+                    (a) => ParseNullCoalascingAssignment(a as Serialization.NullCoalescingAssignmentSer)
                 },
                 {
                     typeof(Serialization.YieldStatement),
