@@ -6,10 +6,10 @@
 		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
 		<Minify Condition="$(Minify) == '' and $(Configuration) == 'Release'">true</Minify>
 		<Uglify Condition="$(Uglify) == '' and $(Configuration) == 'Release'">true</Uglify>
-		<Statify Condition="$(Uglify) == '' and $(Configuration) == 'Release'">true</Statify>
+		<Statify Condition="$(Statify) == '' and $(Configuration) == 'Release'">true</Statify>
 		<Minify Condition="$(Minify) == ''">false</Minify>
 		<Uglify Condition="$(Uglify) == ''">false</Uglify>
-		<Statify Condition="$(Uglify) == ''">false</Statify>
+		<Statify Condition="$(Statify) == ''">false</Statify>
 	</PropertyGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
