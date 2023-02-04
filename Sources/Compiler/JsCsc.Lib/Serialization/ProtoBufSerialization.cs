@@ -233,6 +233,15 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
+    public class IsPatternExpression : ExpressionSer
+    {
+        public ExpressionSer Lhs { get; set; }
+
+        public Pattern Pattern { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
     public class LongLiteralExpression : ExpressionSer
     { public long Value { get; set; } }
 
@@ -439,6 +448,26 @@ namespace JsCsc.Lib.Serialization
         public int Field { get; set; }
 
         public ExpressionSer Instance { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public abstract class Pattern : AstBase { }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class DeclarationPattern : Pattern
+    {
+        public ExpressionSer VariableAccess { get; set; }
+
+        public int Type { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class ConstantPattern : Pattern
+    {
+        public ExpressionSer ConstantExpression { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -1115,6 +1144,17 @@ namespace JsCsc.Lib.Serialization
         public int? DeclaredTypeOpt { get; set; }
     }
 
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class SwitchExpression
+        : StatementSer
+    {
+        public ExpressionSer SwitchExpr { get; set; }
+
+        public List<SwitchCaseLabel> Labels { get; set; }
+
+        public List<ExpressionSer> Expressions { get; set; }
+    }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]

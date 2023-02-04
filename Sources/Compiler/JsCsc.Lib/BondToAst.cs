@@ -838,6 +838,23 @@ namespace JsCsc.Lib
                 DeserializeType(jObject.Type),
                 TypeCheckType.IsType);
 
+        private Node ParseIsPattern(Serialization.IsPatternExpression jObject) => new IsPatternExpression(
+            _clrContext,
+            LocFromJObject(jObject),
+            ParseExpression(jObject.Lhs),
+            ParseNode(jObject.Pattern) as Pattern);
+
+        private Node ParseConstantPattern(Serialization.ConstantPattern jObject) => new ConstantPattern(
+            _clrContext,
+            LocFromJObject(jObject),
+            ParseExpression(jObject.ConstantExpression));
+
+        private Node ParseDeclarationPattern(Serialization.DeclarationPattern jObject) => new DeclarationPattern(
+            _clrContext,
+            LocFromJObject(jObject),
+            ParseExpression(jObject.VariableAccess),
+            DeserializeType(jObject.Type));
+
         private Node ParseAsExpr(Serialization.AsExpression jObject) => new TypeCheckExpression(
                 _clrContext,
                 LocFromJObject(jObject),
@@ -2002,6 +2019,18 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.IsExpression),
                     (a) => ParseIsExpr((Serialization.IsExpression)a)
+                },
+                {
+                    typeof(Serialization.IsPatternExpression),
+                    (a) => ParseIsPattern(a as Serialization.IsPatternExpression)
+                },
+                {
+                    typeof(Serialization.ConstantPattern),
+                    (a) => ParseConstantPattern(a as Serialization.ConstantPattern)
+                },
+                {
+                    typeof(Serialization.DeclarationPattern),
+                    (a) => ParseDeclarationPattern(a as Serialization.DeclarationPattern)
                 },
                 {
                     typeof(Serialization.AsExpression),

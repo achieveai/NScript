@@ -17,6 +17,7 @@ namespace NScript.Converter.Test.MethodConverterTests
 
         [DataTestMethod]
         [DataRow(TestClassNameStr, "NullCoalescingAssignment", "TestNullCoalescing.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IsPatternExpression", "TestIsPattern.js", TestType.All, false)]
         public void TestMcs(
             string className,
             string methodName,

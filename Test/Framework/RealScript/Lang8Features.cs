@@ -20,5 +20,20 @@ namespace RealScript
 
             _ = (tupl ??= (3, 4)).Item1;
         }
+
+        public static void IsPatternExpression()
+        {
+            var x = 90;
+            var t = x is 900;
+            var asdf = x is int z;
+
+            if (x is 900)
+            {
+            }
+            else if (x is int y)
+            {
+
+            }
+        }
     }
 }
