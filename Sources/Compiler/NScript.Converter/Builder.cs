@@ -57,6 +57,8 @@ namespace NScript.Converter
 
         private readonly bool uglify;
 
+        private readonly bool statify;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -73,7 +75,8 @@ namespace NScript.Converter
             string[] references,
             IConverterPlugin[] plugins,
             bool minify,
-            bool uglify)
+            bool uglify,
+            bool statify)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -87,6 +90,7 @@ namespace NScript.Converter
             this.jsParts = jsParts;
             this.minify = minify;
             this.uglify = uglify;
+            this.statify = statify;
         }
 
         /// <summary>
@@ -123,7 +127,7 @@ namespace NScript.Converter
                     this.typeConverterPlugins);
                 runtimeManager = new RuntimeScopeManager(
                     converterContext,
-                    this.minify);
+                    this.statify);
 
                 methodDefinitionsToEmit = new List<MethodDefinition>();
                 entryPoint = this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly));

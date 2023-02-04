@@ -6,8 +6,10 @@
 		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
 		<Minify Condition="$(Minify) == '' and $(Configuration) == 'Release'">true</Minify>
 		<Uglify Condition="$(Uglify) == '' and $(Configuration) == 'Release'">true</Uglify>
+		<Statify Condition="$(Uglify) == '' and $(Configuration) == 'Release'">true</Statify>
 		<Minify Condition="$(Minify) == ''">false</Minify>
 		<Uglify Condition="$(Uglify) == ''">false</Uglify>
+		<Statify Condition="$(Uglify) == ''">false</Statify>
 	</PropertyGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
@@ -38,6 +40,7 @@
 			<ScriptGenerateOption Include="-references $(Refs)"/>
 			<ScriptGenerateOption Include="-minify" Condition="'$(Minify)' == 'true'" />
 			<ScriptGenerateOption Include="-uglify" Condition="'$(Uglify)' == 'true'" />
+			<ScriptGenerateOption Include="-statify" Condition="'$(Statify)' == 'true'" />
 		</ItemGroup>
 
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
