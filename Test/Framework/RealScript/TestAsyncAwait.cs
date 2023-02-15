@@ -2,6 +2,7 @@
 {
     using System;
     using System.Runtime.CompilerServices;
+    using System.Threading;
 
     public class TestAsyncAwait
     {
@@ -15,6 +16,7 @@
             await Test7();
             await Test8();
             await Test9();
+            await Test10();
         }
 
         public static async Promise<int> Test1()
@@ -91,6 +93,11 @@
             var (x, y) = (await Test1(), await GetInt());
             Compare(x, 12, (a, b) => a == b);
             Compare(y, 678, (a, b) => a == b);
+        }
+
+        public static async Task Test10()
+        {
+            await Type.AS<Promise, Task>(Test9());
         }
 
         public static async Promise<int> Sum(int a, int b)

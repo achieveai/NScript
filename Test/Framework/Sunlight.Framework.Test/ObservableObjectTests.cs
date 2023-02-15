@@ -73,6 +73,9 @@ namespace Sunlight.Framework.Test
 
             [AutoFire(nameof(AutoFiredProp))]
             public string AutoFiredProp1 { get; set; }
+
+            [AutoFire]
+            public List<int> GenericProp { get; set; }
         }
 
         [Test]
@@ -161,6 +164,9 @@ namespace Sunlight.Framework.Test
             var strChanged = false;
             var strChanged1 = false;
 
+            observableObject.GenericProp = null;
+            var yyy = observableObject.GenericProp;
+
             observableObject.AddPropertyChangedListener(
                 "AutoFiredProp",
                 (sender, propName) =>
@@ -186,6 +192,29 @@ namespace Sunlight.Framework.Test
             observableObject.IntProp = 1;
             assert.IsTrue(!strChanged, "Auto fire change callback not called.");
             assert.IsTrue(!strChanged1, "Auto fire change callback not called.");
+        }
+
+        [Test]
+        public static void TestGenericPropertyFirePropertyChanged(Assert assert)
+        {
+            ObservableTestObject observableObject = new ObservableTestObject();
+            var changed = false;
+
+            observableObject.AddPropertyChangedListener(
+                "GenericProp",
+                (sender, propName) =>
+                {
+                    changed = propName == "GenericProp" && sender == observableObject;
+                });
+
+            observableObject.GenericProp = new List<int>();
+
+            assert.IsTrue(changed, "change callback called");
+
+            changed = false;
+
+            observableObject.IntProp = 1;
+            assert.IsTrue(!changed, "Auto fire change callback not called.");
         }
     }
 }

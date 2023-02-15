@@ -211,7 +211,7 @@ namespace Sunlight.Framework.UI.Helpers
             {
                 if (this.skinableParent.DataContext != this.dataContext)
                 {
-                    this.dataContext = this.skinableParent.DataContext;
+                    this.dataContext = this.skinableParent.Skin.DataContextType.AsType(this.skinableParent.DataContext);
                     this.dataContextUpdated = true;
                 }
             }
