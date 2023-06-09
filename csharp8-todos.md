@@ -15,3 +15,7 @@
 - ~~Unmanaged constructed types~~ (Irrelevant to JS target)
 - ~~Stackalloc in nested expressions~~ (Irrelevant to JS target)
 - ~~Enhancement of interpolated verbatim strings~~ (Free)
+
+Bug fixes:
+1. Generic get only properties doesn't work
+2. 

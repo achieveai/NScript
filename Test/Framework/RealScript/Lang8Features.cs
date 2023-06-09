@@ -32,8 +32,43 @@ namespace RealScript
             }
             else if (x is int y)
             {
-
             }
         }
+
+        public static void SwitchExpression()
+        {
+            var x = 90;
+            var y = (x) switch
+            {
+                100 => 200,
+                90 => 200,
+                _ => 900
+            };
+
+        }
+
+        internal enum Direction
+        {
+            Up,
+            Down,
+            Right,
+            Left
+        }
+
+        internal enum Orientation
+        {
+            North,
+            South,
+            East,
+            West
+        }
+
+        internal static Orientation ToOrientation(Direction direction) => direction switch
+        {
+            Direction.Up    => Orientation.North,
+            Direction.Right => Orientation.East,
+            Direction.Down  => Orientation.South,
+            _ => Orientation.West,
+        };
     }
 }

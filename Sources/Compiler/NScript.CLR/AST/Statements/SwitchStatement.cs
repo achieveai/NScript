@@ -15,70 +15,30 @@ namespace NScript.CLR.AST
     /// </summary>
     public class SwitchStatement : ScopeBlock
     {
-        /// <summary>
-        /// Backing field for StatementValue.
-        /// </summary>
-        private Expression statementValue;
-
-        /// <summary>
-        /// Backing field for CaseBlocks.
-        /// </summary>
-        private List<KeyValuePair<List<CaseLabel>, Statement>> caseBlocks;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SwitchStatement"/> class.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="location">The location.</param>
-        /// <param name="statementValue">The statement value.</param>
-        /// <param name="caseBlocks">The case blocks.</param>
         public SwitchStatement(
             ClrContext context,
             Location location,
-            Expression statementValue,
-            List<KeyValuePair<List<CaseLabel>, Statement>> caseBlocks,
+            Expression switchValue,
+            List<(List<CaseLabel>, Statement)> caseBlocks,
             List<(LocalVariable localVariable, bool isUsed)> variables,
             List<LocalFunctionVariable> localFunctionNames)
             : base(context, location, variables, localFunctionNames)
         {
-            this.statementValue = statementValue;
-            this.caseBlocks = caseBlocks;
+            SwitchValue = switchValue;
+            CaseBlocks = caseBlocks;
         }
 
         /// <summary>
         /// Gets the switch value.
         /// </summary>
         /// <value>The switch value.</value>
-        public Expression SwitchValue
-        {
-            get { return this.statementValue; }
-        }
+        public Expression SwitchValue { get;  }
 
         /// <summary>
         /// Gets the case blocks.
         /// </summary>
         /// <value>The case blocks.</value>
-        public List<KeyValuePair<List<CaseLabel>, Statement>> CaseBlocks
-        {
-            get { return this.caseBlocks; }
-        }
-
-        /// <summary>
-        /// Processes the through pipeline.
-        /// </summary>
-        /// <param name="processor">The processor.</param>
-        public override void ProcessThroughPipeline(IAstProcessor processor)
-        {
-            this.statementValue = (Expression) processor.Process(this.statementValue);
-
-            for (int caseBlockIndex = 0; caseBlockIndex < caseBlocks.Count; caseBlockIndex++)
-            {
-                this.caseBlocks[caseBlockIndex] =
-                    new KeyValuePair<List<CaseLabel>, Statement>(
-                        this.caseBlocks[caseBlockIndex].Key,
-                        (Statement) processor.Process(this.caseBlocks[caseBlockIndex].Value));
-            }
-        }
+        public List<(List<CaseLabel> cases, Statement block)> CaseBlocks { get; }
 
         /// <summary>
         /// Serializes the specified serialization info.
@@ -86,16 +46,16 @@ namespace NScript.CLR.AST
         /// <param name="serializationInfo">The serialization info.</param>
         public override void Serialize(Utils.ICustomSerializer serializationInfo)
         {
-            serializationInfo.AddValue("statement", this.statementValue);
+            serializationInfo.AddValue("statement", SwitchValue);
 
             serializationInfo.AddValue(
                 "caseBlocks",
-                this.caseBlocks,
-                (processor, kvPair) =>
+                CaseBlocks,
+                (processor, tupl) =>
                     {
                         serializationInfo.AddValue(
                             "caseIds",
-                            kvPair.Key,
+                            tupl.Item1,
                             (p, id) =>
                                 {
                                     if (id == null)
@@ -108,7 +68,7 @@ namespace NScript.CLR.AST
                                     }
                                 });
 
-                        processor.AddValue("block", kvPair.Value);
+                        processor.AddValue("block", tupl.Item2);
                     });
         }
     }

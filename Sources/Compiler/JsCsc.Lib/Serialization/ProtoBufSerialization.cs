@@ -1147,13 +1147,15 @@ namespace JsCsc.Lib.Serialization
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
     public class SwitchExpression
-        : StatementSer
+        : ExpressionSer
     {
         public ExpressionSer SwitchExpr { get; set; }
 
         public List<SwitchCaseLabel> Labels { get; set; }
 
         public List<ExpressionSer> Expressions { get; set; }
+
+        public int Type { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

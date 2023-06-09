@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <CscToolExe>$(NScriptToolsetDir)\bin\Debug\$(CompilerNetFramework)\csc.exe</CscToolExe>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <LangVersion>7.3</LangVersion>
     <NoStdLib>true</NoStdLib>

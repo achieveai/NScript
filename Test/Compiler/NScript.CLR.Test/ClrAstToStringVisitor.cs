@@ -445,10 +445,10 @@
                         .Select(_ =>
                         {
                             return string.Concat(
-                                _.Key
+                                _.Item1
                                     .Select(_k => GetSpaces(arg) + this.VisitCaseLabel(_k, arg) )
                                     .ToArray()) +
-                                this.Visit(_.Value, arg + 2);
+                                this.Visit(_.Item2, arg + 2);
                         })
                         .ToArray())
                 + GetSpaces(arg) + "}";

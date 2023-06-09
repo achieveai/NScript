@@ -1333,13 +1333,30 @@
 
             foreach (var switchArm in node.SwitchArms)
             {
-                var pattern = switchArm.Pattern switch
+                SwitchCaseLabel pattern = switchArm.Pattern switch
                 {
                     BoundConstantPattern constPattern =>
                         new SwitchConstCaseLabel
                         {
                             LabelValue = GetConstLiteral(constPattern.ConstantValue) as ExpressionSer
                         },
+
+                    BoundDeclarationPattern declarationPattern =>
+                        new SwitchDeclarationCaseLabel
+                        {
+                            LocalVariableOpt = ((BoundLocal?)declarationPattern.VariableAccess) != null
+                                ? ((LocalVariableRefExpression)VisitLocal((BoundLocal?)declarationPattern.VariableAccess, arg)).LocalVariable
+                                : null,
+
+                            DeclaredTypeOpt = arg.SymbolSerializer.GetTypeSpecId(declarationPattern.DeclaredType.Type),
+
+                            When = switchArm.WhenClause != null
+                                ? (ExpressionSer)Visit(switchArm.WhenClause, arg)
+                                : null,
+                        },
+
+                    BoundDiscardPattern _ => new SwitchDiscardCaseLabel { },
+
                     _ => throw new NotImplementedException($"{switchArm.Pattern.Kind} pattern not supported")
                 };
 
@@ -1354,6 +1371,7 @@
                 SwitchExpr = Visit(node.Expression, arg) as ExpressionSer,
                 Labels = arms,
                 Expressions = exprs,
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type),
             };
         }
 

@@ -360,7 +360,12 @@ namespace NScript.Converter.ExpressionsConverter
                         typeof(IsPatternExpression),
                         ExpressionConverterBase.SimplifyConverter<IsPatternExpression>(
                             IsPatternConverter.Convert)
-                    }
+                    },
+
+                    {
+                        typeof(SwitchExpression),
+                        SimplifyConverter<SwitchExpression>(SwitchExpressionConverter.Convert)
+                    },
                 };
 
             return returnValue;

@@ -490,17 +490,65 @@ namespace JsCsc.Lib
                 jObject.BlockId,
                 false);
 
+        private Node ParseSwitchExpression(Serialization.SwitchExpression jObject)
+        {
+            var switchValue = ParseExpression(jObject.SwitchExpr);
+
+            var kvs = jObject.Labels
+                .Zip(jObject.Expressions)
+                .Select(tupl =>
+                {
+                    var (label, expr) = tupl;
+
+                    CaseLabel labelRv = (label) switch
+                    {
+                        Serialization.SwitchConstCaseLabel constLabel =>
+                            new ConstCaseLabel(
+                                _clrContext,
+                                LocFromJObject(constLabel),
+                                ParseExpression(constLabel.LabelValue)),
+
+                        Serialization.SwitchDeclarationCaseLabel declarationLabel =>
+                            new DeclarationCaseLabel(
+                                _clrContext,
+                                null,
+                                declarationLabel.LocalVariableOpt != null
+                                    ? new VariableReference(
+                                        _clrContext,
+                                        null,
+                                        ParseLocalVariable(declarationLabel.LocalVariableOpt))
+                                    : null,
+                                DeserializeType(declarationLabel.DeclaredTypeOpt.Value),
+                                ParseExpression(declarationLabel.When)),
+
+                        Serialization.SwitchDiscardCaseLabel discardLabel =>
+                            new DiscardCaseLabel(_clrContext, LocFromJObject(discardLabel)),
+
+                        _ => throw new NotImplementedException($"{label.GetType().Name} in switch expressions is not supported")
+                    };
+
+                    return (labelRv, ParseExpression(expr));
+                });
+
+            return new SwitchExpression(
+                _clrContext,
+                LocFromJObject(jObject),
+                switchValue,
+                kvs.Select(kv => kv.labelRv).ToList(),
+                kvs.Select(kv => kv.Item2).ToList(),
+                DeserializeType(jObject.Type));
+        }
+
         private Node ParseSwitchStatement(Serialization.SwitchStatement jObject)
         {
             var variableCollector = new VariableCollector(jObject.BlockId);
             _ = scopeBlockStack.AddFirst((jObject.BlockId, variableCollector));
 
-            var caseBlocks =
-                new List<KeyValuePair<List<CaseLabel>, Statement>>();
+            var caseBlocks = new List<(List<CaseLabel>, Statement)>();
 
             var sectionArray = jObject.Blocks;
-            List<(LocalVariable localVariable, bool isUsed)> sectionVariables = new List<(LocalVariable localVariable, bool isUsed)>();
-            List<LocalFunctionVariable> sectionLocalFunctionNames = new List<LocalFunctionVariable>();
+            var sectionVariables = new List<(LocalVariable localVariable, bool isUsed)>();
+            var sectionLocalFunctionNames = new List<LocalFunctionVariable>();
 
             for (var iSection = 0; iSection < sectionArray.Count; iSection++)
             {
@@ -508,8 +556,7 @@ namespace JsCsc.Lib
                 var sectionObj = sectionArray[iSection].Block;
                 var labelJArray = sectionArray[iSection].Labels;
 
-                var labels =
-                    new List<CaseLabel>(labelJArray.Count);
+                var labels = new List<CaseLabel>(labelJArray.Count);
 
                 var sectionVariableCollector = new VariableCollector(section.BlockId);
                 _ = scopeBlockStack.AddFirst((section.BlockId, sectionVariableCollector));
@@ -553,10 +600,9 @@ namespace JsCsc.Lib
                     }
                 }
 
-                caseBlocks.Add(
-                    new KeyValuePair<List<CaseLabel>, Statement>(
-                        labels,
-                        ParseStatement(sectionObj)));
+                caseBlocks.Add((
+                    labels,
+                    ParseStatement(sectionObj)));
 
                 sectionVariables.AddRange(sectionVariableCollector.GetCapturedVariables());
                 sectionLocalFunctionNames.AddRange(sectionVariableCollector.GetLocalFunctionVariables());
@@ -1975,6 +2021,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.SwitchStatement),
                     (a) => ParseSwitchStatement((Serialization.SwitchStatement)a)
+                },
+                {
+                    typeof(Serialization.SwitchExpression),
+                    (a) => ParseSwitchExpression((Serialization.SwitchExpression)a)
                 },
                 {
                     typeof(Serialization.ExplicitBlockSer),

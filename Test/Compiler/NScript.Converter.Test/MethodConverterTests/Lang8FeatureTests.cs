@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NScript.Csc.Lib.Test;
+using System;
 
 namespace NScript.Converter.Test.MethodConverterTests
 {
@@ -18,6 +19,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataTestMethod]
         [DataRow(TestClassNameStr, "NullCoalescingAssignment", "TestNullCoalescing.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "IsPatternExpression", "TestIsPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "SwitchExpression", "TestIsPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "ToOrientation", "TestIsPattern.js", TestType.All, false)]
         public void TestMcs(
             string className,
             string methodName,

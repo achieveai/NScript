@@ -13,25 +13,42 @@ namespace NScript.CLR.AST
 
     public class DeclarationCaseLabel : CaseLabel
     {
-        public TypeReference TypeReference { get; }
-        public VariableReference? VariableOpt { get; }
-        public Expression? WhenExpressionOpt { get;  }
-        public DeclarationCaseLabel(ClrContext ctx, Location location, VariableReference? localVariableOpt, TypeReference ty, Expression? whenExpressionOpt)
+        public DeclarationCaseLabel(
+            ClrContext ctx,
+            Location location,
+            VariableReference? localVariableOpt,
+            TypeReference ty,
+            Expression? whenExpressionOpt)
             : base(ctx, location)
         {
-            this.VariableOpt = localVariableOpt;
-            this.TypeReference = ty;
-            this.WhenExpressionOpt = whenExpressionOpt;
+            VariableOpt = localVariableOpt;
+            TypeReference = ty;
+            WhenExpressionOpt = whenExpressionOpt;
         }
+
+        public TypeReference TypeReference { get; }
+
+        public VariableReference? VariableOpt { get; }
+
+        public Expression? WhenExpressionOpt { get;  }
+
     }
 
     public class ConstCaseLabel : CaseLabel
     {
-        public Expression ConstantExpression { get;  }
         public ConstCaseLabel(ClrContext ctx, Location location, Expression constantExpression)
             : base(ctx, location)
         {
-            this.ConstantExpression = constantExpression;
+            ConstantExpression = constantExpression;
         }
+
+        public Expression ConstantExpression { get;  }
+    }
+
+    public class DiscardCaseLabel : CaseLabel
+    {
+        public DiscardCaseLabel(ClrContext ctx, Location location)
+            : base(ctx, location)
+        { }
     }
 }
