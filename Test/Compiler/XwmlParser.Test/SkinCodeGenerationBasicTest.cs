@@ -7,9 +7,8 @@
 namespace XwmlParser.Test
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System;
     using System.Collections.Generic;
-    using FluentAssertions;
+    using System.IO;
 
     /// <summary>
     /// Definition for SkinCodeGenerationBasicTest
@@ -17,7 +16,8 @@ namespace XwmlParser.Test
     [TestClass]
     public class SkinCodeGenerationBasicTest
     {
-        XwmlParser.XwmlTemplatingPlugin plugin;
+        private XwmlParser.XwmlTemplatingPlugin plugin;
+
         /// <summary>
         /// Setups this instance.
         /// </summary>
@@ -26,13 +26,28 @@ namespace XwmlParser.Test
         {
             Helper.Initialize();
         }
+        [DataTestMethod]
+        [DataRow("TestDuplicateCss", null)]
+        public void TestDuplicateCss(string name, string templateId)
+        {
+            plugin = Helper.CreatePlugin(null);
+            Helper.LoadHtmlParser(name + ".html", plugin.ParserContext);
+            var identifier = plugin.CodeGenerator.GetTemplateGetterIdentifier(
+                (name + ".html")
+                + (templateId == null
+                    ? ""
+                    : ":" + templateId));
+            Assert.IsNotNull(identifier);
+            plugin.CodeGenerator.IterateParsing();
+            plugin.CodeGenerator.GetAllTemplateStatements();
+            Assert.IsTrue(plugin.CodeGenerator.HasDuplicateCssRule);
+        }
 
         /// <summary>
         /// Tests parser 1.
         /// </summary>
         /// <param name="bindingStr"> The binding string. </param>
         [DataTestMethod]
-        // [DataRow("TestCss", null)]
         // [DataRow("TestAttributeBinding", null)]
         // [DataRow("TestAttributeBindingNonObservable", null)]
         // [DataRow("TestSkinWithId", "test")]
@@ -57,6 +72,7 @@ namespace XwmlParser.Test
         // [DataRow("TestTextBindingWithConverter", null)]
         // [DataRow("TestTemplateBinding", null)]
         [DataRow("TestArrayBinding", null)]
+        [DataRow("TestCss", null)]
         public void TestParser1(string name, string templateId)
         {
             plugin = Helper.CreatePlugin(null);
@@ -70,7 +86,36 @@ namespace XwmlParser.Test
             Assert.IsNotNull(identifier);
             plugin.CodeGenerator.IterateParsing();
             var code = plugin.CodeGenerator.GetAllTemplateStatements();
+
+            //For debugging
+            File.WriteAllText("../../XwmlParser.Test/TemplateCode/GeneratedCode.js", Helper.ConvertCodeToString(code).Trim());
             Helper.CheckCode(name + ".js", code);
+        }
+
+        // [DataRow("JsName", array of html files, templateID)]
+        [DataTestMethod]
+        [DataRow("TestRemoveUnusedCss", new string[] { "TestRemoveUnusedCss1.html", "TestRemoveUnusedCss2.html" }, null)]
+        public void TestRemoveUnusedCss(string jsName, string[] htmlFiles, string templateId)
+        {
+            plugin = Helper.CreatePlugin(null);
+
+            foreach (var fileName in htmlFiles)
+            {
+                var identifier = plugin.CodeGenerator.GetTemplateGetterIdentifier(
+                    "Sunlight.Framework.UI.Test.Templates." + fileName
+                    + (templateId == null
+                        ? ""
+                        : ":" + templateId));
+                Assert.IsNotNull(identifier);
+            }
+
+            plugin.CodeGenerator.IterateParsing();
+            var code = plugin.CodeGenerator.GetAllTemplateStatements();
+
+            //For debugging
+            File.WriteAllText("../../XwmlParser.Test/TemplateCode/GeneratedCode.js", Helper.ConvertCodeToString(code).Trim());
+
+            Helper.CheckCode(jsName + ".js", code);
         }
     }
 }

@@ -49,7 +49,7 @@ namespace XwmlParser.Test
             }
         }
 
-        public string GetCssString()
+        public string GetCssString(List<string> usedCssClasses)
         {
             throw new NotImplementedException();
         }

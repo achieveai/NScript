@@ -15,6 +15,7 @@ namespace XwmlParser
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using XwmlParser.NodeInfos;
 
     /// <summary>
@@ -158,6 +159,18 @@ namespace XwmlParser
             }
 
             return rv;
+        }
+
+        public HashSet<string> GetUsedClasses()
+        {
+            var usedClasses = new HashSet<string>();
+
+            foreach (var childNode in skinNodeInfo.ChildNodes)
+            {
+                IterateChildNodesForClasses(childNode.Node, usedClasses);
+            }
+
+            return usedClasses;
         }
 
         public IdentifierScope Scope { get; set; }
@@ -608,6 +621,62 @@ namespace XwmlParser
                     new NumberLiteralExpression(
                         this.Scope,
                         this.binderInfoToExtraObjectMap.Count)));
+        }
+
+        private void IterateChildNodesForClasses(HtmlNode node, HashSet<string> usedClasses)
+        {
+            if (node.HasAttributes)
+            {
+                //check if "class" attribute is present
+                if (node.Attributes["class"] != null)
+                {
+                    var classes = node.Attributes["class"].Value;
+
+                    if (classes.Contains(' '))
+                    {
+                        usedClasses.UnionWith(classes.Split(' ').ToList());
+                    }
+                    else
+                    {
+                        usedClasses.Add(classes);
+                    }
+                }
+
+                foreach (var kvpair in node.Attributes)
+                {
+                    //check if contional class attribute is present eg. "class.hidden = {<conditon>}"
+                    var key = kvpair.OriginalName;
+                    var value = kvpair.Value.Trim();
+
+                    if (key.StartsWith("class."))
+                    {
+                        usedClasses.Add(key.Split('.')[1]);
+                    }
+
+                    //check if ItemCssClassName property is present
+                    if (key == "ItemCssClassName")
+                    {
+                        if(value.Contains(" "))
+                        {
+                            usedClasses.UnionWith(value.Split(" "));
+                        }
+                        else
+                        {
+                            usedClasses.Add(value);
+                        }
+                    }
+                }
+            }
+
+            if (node.ChildNodes.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var child in node.ChildNodes)
+            {
+                IterateChildNodesForClasses(child, usedClasses);
+            }
         }
 
         internal int GetBinderIndex(BinderInfo binderInfo)

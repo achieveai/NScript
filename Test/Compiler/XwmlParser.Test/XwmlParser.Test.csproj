@@ -39,6 +39,9 @@
     <None Include="TemplateCode\TestCss.min.js.map">
       <DependentUpon>TestCss.js</DependentUpon>
     </None>
+    <None Include="TemplateCode\TestRemoveUnusedCss.min.js.map">
+      <DependentUpon>TestRemoveUnusedCss.js</DependentUpon>
+    </None>
     <None Include="TemplateCode\TestCssBinding1.min.js.map">
       <DependentUpon>TestCssBinding1.js</DependentUpon>
     </None>
@@ -57,6 +60,15 @@
     <None Update="TemplateCode\TestTextBinding1.min.js.map">
       <DependentUpon>TestTextBinding1.js</DependentUpon>
     </None>
+    <None Update="TemplateCode\TestTextBinding1.min.js.map">
+      <DependentUpon>TestTextBinding1.js</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TemplateCode\TestDuplicateCss.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\TestDuplicateCss.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestTemplate1.html" />
@@ -93,6 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TemplateCode\TestDomEventBinding1.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TemplateCode\TestRemoveUnusedCss.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestAttributeBinding.html" />

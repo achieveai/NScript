@@ -4,14 +4,15 @@
 
 namespace XwmlParser
 {
+    using CssParser;
     using NScript.Converter;
     using NScript.JST;
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// CSS style sheet.
@@ -98,6 +99,78 @@ namespace XwmlParser
         /// The name of the resource.
         /// </value>
         public string ResourceName { get; private set; }
+
+        public bool CheckDuplicateCssRule()
+        {
+            var cssRuleSizeDict = new Dictionary<int, List<CssRule>>();
+
+            foreach (var rule in cssRules)
+            {
+                var hasComplexSelector = false;
+
+                foreach (var selector in rule.Selectors)
+                {
+                    if(selector.GetType() != typeof(CssClassName))
+                    {
+                        hasComplexSelector = true;
+                        break;
+                    }
+                }
+
+                if (hasComplexSelector)
+                { continue; }
+                
+                //put all css with same property count in 1 bucket to compare
+                if(!cssRuleSizeDict.TryGetValue(rule.Properties.Count, out var temp))
+                {
+                    cssRuleSizeDict[rule.Properties.Count] = new List<CssRule>();
+                }
+
+                cssRuleSizeDict[rule.Properties.Count].Add(rule);
+            }
+
+            var hasMultipleSameSizedCssRules = false;
+
+            foreach (var kvpair in cssRuleSizeDict)
+            {
+                var sameSizedCssRules = kvpair.Value;
+
+                if(sameSizedCssRules.Count < 2)
+                { continue; }
+
+                hasMultipleSameSizedCssRules = true;
+
+                for(int i = 0; i < sameSizedCssRules.Count - 1; i++)
+                {
+                    for(int j = i+1; j < sameSizedCssRules.Count; j++)
+                    {
+                        if (CompareCssRules(sameSizedCssRules[i], sameSizedCssRules[j]))
+                        {
+                            //TODO Partial CSS matches
+                            this.parserContext.ConverterContext.AddError(
+                                new Location(
+                                    ResourceName,
+                                    sameSizedCssRules[i].Selectors[0].Line,
+                                    sameSizedCssRules[i].Selectors[0].Col),
+                                string.Format(
+                                    "Class \"{0}\" has same properties as that of \"{1}\". Please reuse existing class",
+                                    string.Join(',', sameSizedCssRules[i].Selectors.Select(s => s.SelectorName)),
+                                    string.Join(',', sameSizedCssRules[j].Selectors.Select(s => s.SelectorName))),
+                                true);
+                            /*File.AppendAllText("D:/new_folder/Duplicate_css_errors.txt", string.Format(
+                                    "Class \"{0}\" has same properties as that of \"{1}\". Please reuse existing class." + Environment.NewLine,
+                                    i + " " + string.Join(',', sameSizedCssRules[i].Selectors.Select(s => s.SelectorName)),
+                                    j + " " + string.Join(',', sameSizedCssRules[j].Selectors.Select(s => s.SelectorName))));*/
+                        }
+                    }
+                }
+            }
+
+            if(!hasMultipleSameSizedCssRules)
+            { return false; }
+
+            return false;
+        }
 
         /// <summary>
         /// Gets CSS string.
@@ -329,6 +402,93 @@ namespace XwmlParser
             }
 
             this.classNames[cn.ClassName].Item1.AddUsage(null);
+        }
+
+        public void RemoveUnusedCssRules(List<string> usedCssClasses)
+        {
+            var newCssRules = new List<CssRule>();
+            for(int i=0; i<cssRules.Count; i++)
+            {
+                var cssRule = cssRules[i];
+                var newSelectors = new List<CssSelector>();
+
+                foreach(var selector in cssRule.Selectors)
+                {
+                    //currently only checking simple classnames
+                    if(selector.GetType() != typeof(CssClassName))
+                    {
+                        newSelectors.Add(selector);
+                        continue;
+                    }
+
+                    if (usedCssClasses.Contains(((CssClassName)selector).ClassName))
+                    {
+                        newSelectors.Add(selector);
+                    }
+                }
+
+                if(newSelectors.Count > 0)
+                {
+                    newCssRules.Add(new CssRule(newSelectors, cssRule.Properties));
+                }
+            }
+
+            cssRules = newCssRules;
+        }
+
+        private bool CompareCssRules(CssRule rule1, CssRule rule2)
+        {
+            if (rule1.Properties.Count != rule2.Properties.Count)
+            {
+                return false;
+            }
+
+            var properties1 = rule1.Properties.ToList();
+            properties1.Sort((l,r) => string.Compare(l.PropertyName, r.PropertyName));
+
+            var properties2 = rule2.Properties.ToList();
+            properties2.Sort((l,r) => string.Compare(l.PropertyName, r.PropertyName));
+
+            //currently only checking exact match (property order can be different)
+            for(int i=0;i < properties1.Count;i++)
+            {
+                if (properties1[i].PropertyName != properties2[i].PropertyName)
+                { return false; }
+
+                if (properties1[i].PropertyArgs.Count != properties2[i].PropertyArgs.Count)
+                { return false; }
+
+                if (properties1[i].Priority != properties2[i].Priority)
+                { return false; }
+
+                if (!CompareCssPropertyValues(
+                    properties1[i].PropertyArgs,
+                    properties2[i].PropertyArgs))
+                { return false; }
+            }
+
+            return true;
+        }
+
+        private bool CompareCssPropertyValues(IList<CssPropertyValueSet> set1, IList<CssPropertyValueSet> set2)
+        {
+            if(set1.Count != set2.Count)
+            { return false; }
+
+            for (int i = 0; i < set1.Count; i++)
+            {
+                if (set1[i].Values.Count != set2[i].Values.Count)
+                { return false; }
+
+                var values1 = set1[i].Values.ToList();
+                var values2 = set2[i].Values.ToList();
+                values1.Sort((l,r) => string.Compare(l.ToString(), r.ToString()));
+                values2.Sort((l,r) => string.Compare(l.ToString(), r.ToString()));
+
+                if(string.Join(' ', values1) != string.Join(' ', values2)) { return false; }
+            }
+
+            return true;
         }
     }
 }

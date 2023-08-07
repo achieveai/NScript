@@ -14,9 +14,9 @@ namespace XwmlParser
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using XwmlParser.Binding;
-    using XwmlParser.NodeInfos;
 
     /// <summary>
     /// Definition for CodeGenerator.
@@ -215,6 +215,9 @@ namespace XwmlParser
                 }
             }
         }
+
+        public bool HasDuplicateCssRule
+        { get; set; }
 
         /// <summary>
         /// Gets or sets a context for the parser.
@@ -1423,20 +1426,31 @@ namespace XwmlParser
                 looper(styleSheet);
             }
 
-            foreach (var styleSheet in dependencyOrderedList)
+            var documentCssString = new StringBuilder();
+            var usedClasses = new HashSet<string>();
+            foreach (var skinCodeGenerator in this.skinCodeGenerators.Keys)
             {
-                sb.Append(styleSheet.GetCssString());
-            }
+                var dc = skinCodeGenerator.HtmlParser.DocumentContext;
+                var documentUsedClasses = skinCodeGenerators[skinCodeGenerator].GetUsedClasses();
+                HasDuplicateCssRule = HasDuplicateCssRule || dc.CheckDuplicateCssRule();
 
-            foreach (var skinCodeGenerators in this.skinCodeGenerators.Keys)
-            {
-                var dc = skinCodeGenerators.HtmlParser.DocumentContext;
                 if (!documentContexts.Contains(dc))
                 {
                     documentContexts.Add(dc);
-                    sb.Append(dc.GetCssString());
+                    documentCssString.Append(dc.GetCssString(documentUsedClasses.ToList()));
                 }
+
+                usedClasses.UnionWith(documentUsedClasses);
             }
+
+            foreach (var styleSheet in dependencyOrderedList)
+            {
+                HasDuplicateCssRule = HasDuplicateCssRule || styleSheet.CheckDuplicateCssRule();
+                styleSheet.RemoveUnusedCssRules(usedClasses.ToList());
+                sb.Append(styleSheet.GetCssString());
+            }
+
+            sb.Append(documentCssString.ToString());
 
             return CssStyleSheet.Compiler.Prefix(
                 sb.ToString(),

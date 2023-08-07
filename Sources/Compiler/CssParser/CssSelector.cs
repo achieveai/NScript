@@ -6,8 +6,8 @@
 
 namespace CssParser
 {
-    using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// CSS selector.
@@ -24,6 +24,9 @@ namespace CssParser
             this.Line = line;
             this.Col = col;
         }
+
+        public abstract string SelectorName
+        { get; }
     }
 
     /// <summary>
@@ -72,6 +75,9 @@ namespace CssParser
         /// </value>
         public string ClassName
         { get { return this.className; } }
+
+        public override string SelectorName
+            => className;
     }
 
     /// <summary>
@@ -89,6 +95,9 @@ namespace CssParser
 
         public string Tag
         { get { return this.tagName; } }
+
+        public override string SelectorName
+            => tagName;
     }
 
     public class CssId : UnitSimpleCssSelector
@@ -102,6 +111,8 @@ namespace CssParser
 
         public string Id
         { get { return this.id; } }
+
+        public override string SelectorName => "";
     }
 
     public class AllSelector : UnitSimpleCssSelector
@@ -109,6 +120,8 @@ namespace CssParser
         public AllSelector(int line, int col)
             :base(line, col)
         { }
+
+        public override string SelectorName => "*";
     }
 
     public enum AttributeCondition
@@ -149,6 +162,34 @@ namespace CssParser
 
         public AttributeCondition Condition
         { get { return this.condition; } }
+
+        public override string SelectorName
+            => "[" + attribute + AttributeOperator + value + "]";
+
+        private string AttributeOperator
+        {
+            get
+            {
+                switch (condition)
+                {
+                    case AttributeCondition.None:
+                        return "";
+                    case AttributeCondition.Equal:
+                        return "=";
+                    case AttributeCondition.Contains:
+                        return "*=";
+                    case AttributeCondition.ContainsWord:
+                        return "~=";
+                    case AttributeCondition.StartsWith:
+                    case AttributeCondition.StartsWithWord:
+                        return "^=";
+                    case AttributeCondition.EndsWith:
+                        return "$=";
+                    default:
+                        return "";
+                }
+            }
+        }
     }
 
     public class PseudoSelector : UnitSimpleCssSelector
@@ -178,6 +219,11 @@ namespace CssParser
 
         public bool IsDouble
         { get { return this.isDouble; } }
+
+        public override string SelectorName
+            => IsDouble ? "::" : ":"
+            + name
+            + arg == null ? "" : "(" + arg + ")";
     }
 
     public class AndCssSelector : UnitCssSelector
@@ -189,6 +235,9 @@ namespace CssParser
         }
 
         public IList<UnitSimpleCssSelector> Selectors { get; private set; }
+
+        public override string SelectorName =>
+            string.Join("", Selectors.Select(s => s.SelectorName));
     }
 
     public class PseudoNestedSelector : UnitSimpleCssSelector
@@ -218,6 +267,11 @@ namespace CssParser
 
         public bool IsDouble
         { get { return this.isDouble; } }
+
+        public override string SelectorName
+            => name
+            + (IsDouble ? "::" : ":")
+            + nestedSelector.SelectorName;
     }
 
     public enum SelectorOp
@@ -247,5 +301,8 @@ namespace CssParser
 
         public List<SelectorOp> Ops
         { get { return this.ops; } }
+
+        public override string SelectorName =>
+            string.Join(' ', selectors.Select(s  => s.SelectorName));
     }
 }

@@ -16,6 +16,11 @@
     <None Include="PluginConfig.xml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Templates\TestRemoveUnusedCss1.css">
+      <DependentUpon>TestRemoveUnusedCss1.html</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Templates\TestRemoveUnusedCss1.html" />
+    <EmbeddedResource Include="Templates\TestRemoveUnusedCss2.html" />
     <EmbeddedResource Include="Templates\TestTemplate1.html" />
   </ItemGroup>
   <ItemGroup>

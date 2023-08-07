@@ -90,6 +90,16 @@ namespace XwmlParser
             }
         }
 
+        public bool CheckDuplicateCssRule()
+        {
+            if(documentCssScope == null)
+            {
+                return false;
+            }
+
+            return documentCssScope.CheckDuplicateCssRule();
+        }
+
         /// <summary>
         /// Gets full name.
         /// </summary>
@@ -160,10 +170,11 @@ namespace XwmlParser
         /// <returns>
         /// The CSS string.
         /// </returns>
-        public string GetCssString()
+        public string GetCssString(List<string> usedCssClasses)
         {
             if (this.documentCssScope != null)
             {
+                documentCssScope.RemoveUnusedCssRules(usedCssClasses);
                 return this.documentCssScope.GetCssString();
             }
 

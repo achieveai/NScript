@@ -21,7 +21,7 @@ namespace XwmlParser
         IClrResolver Resolver
         { get; }
 
-        string GetCssString();
+        string GetCssString(List<string> usedCssClasses);
 
         Tuple<string, string> GetFullName(string name);
     }

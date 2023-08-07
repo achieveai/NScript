@@ -1,0 +1,15 @@
+﻿.testClass {
+    color: black;
+}
+
+.testClassTwo, .unusedClass {
+    color: white;
+}
+
+.usedInFile2Class {
+    color: yellow;
+}
+
+.unusedClass {
+    background: red;
+}

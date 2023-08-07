@@ -39,7 +39,7 @@ namespace XwmlParser.Test
             {
                 var path = System.IO.Path.Combine(
                     System.IO.Path.GetDirectoryName(typeof(Helper).Assembly.Location),
-                    @"..\..\..\Sunlight.Framework.UI.Test\bin\Debug");
+                    @"..\..\..\Framework\Sunlight.Framework.UI.Test\bin\Debug\net6.0");
 
                 context = new ClrContext();
                 context.LoadAssembly(
