@@ -2,17 +2,10 @@
   <PropertyGroup>
     <AssemblyName>SunlightUnit</AssemblyName>
     <RootNamespace>SunlightUnit</RootNamespace>
-    <PackageId>Mcqdb.NScript.SunlightUnit</PackageId>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="$(OutputPath)$(AssemblyName).pdb">
-      <Pack>true</Pack>
-      <PackagePath>lib\$(TargetFramework)</PackagePath>
-    </None>
   </ItemGroup>
 </Project>

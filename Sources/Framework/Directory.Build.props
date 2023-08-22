@@ -12,11 +12,6 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <TargetFramework>netstandard2.1</TargetFramework>
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageVersion>1.0.2-alpha2</PackageVersion>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!--<GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
   </PropertyGroup>
 </Project>

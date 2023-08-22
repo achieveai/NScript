@@ -129,18 +129,6 @@ namespace NScript.CLR
                     SymbolReaderProvider = loadSymbols ? symbolReader : null
                 });
 
-            var hasBstInfo = moduleDefinition.Resources
-                .Where(res => res.Name == "$$BstInfo$$")
-                .Any();
-
-            if (!hasBstInfo)
-            {
-                // Early return when BstInfo is not present.
-                // This is done to skip loading assemblies which
-                // are not compiled with custom Roslyn compiler.
-                return;
-            }
-
             string assemblyName = moduleDefinition.Assembly.Name.Name;
 
             if (this.simpleNameToAssemblyName.ContainsKey(assemblyName.ToLowerInvariant()))
