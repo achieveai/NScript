@@ -155,39 +155,6 @@ namespace JsCsc.Lib
         public MethodReference GetMethodReference(Method methodImplementation)
         {
             return this.GetMethodReference((MethodSpec)methodImplementation.Spec);
-            /*
-            var rv = new MethodReference(
-                methodImplementation.Name,
-                this.GetTypeReference(methodImplementation.ReturnType),
-                this.GetTypeReference(methodImplementation.Parent));
-
-            for (int iParam = 0; iParam < methodImplementation.ParameterInfo.Count; iParam++)
-            {
-                ParameterAttributes attribute = ParameterAttributes.None;
-                var modFlags = methodImplementation.ParameterInfo.FixedParameters[iParam].ModFlags;
-                TypeReference parameterType = this.GetTypeReference(methodImplementation.ParameterInfo.Types[iParam]);
-
-                if ((modFlags & Parameter.Modifier.ISBYREF) == Parameter.Modifier.ISBYREF)
-                {
-                    attribute |= ParameterAttributes.Retval;
-                    parameterType = new ByReferenceType(parameterType);
-                }
-
-                if ((modFlags & Parameter.Modifier.OUT) == Parameter.Modifier.OUT)
-                {
-                    attribute |= ParameterAttributes.Out;
-                    parameterType = new ByReferenceType(parameterType);
-                }
-
-                rv.Parameters.Add(
-                    new ParameterDefinition(
-                        methodImplementation.ParameterInfo.FixedParameters[iParam].Name,
-                        attribute,
-                        parameterType));
-            }
-
-            return rv;
-             */
         }
 
         /// <summary>

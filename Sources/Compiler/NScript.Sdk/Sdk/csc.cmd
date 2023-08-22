@@ -1,0 +1,1 @@
+dotnet Cs2Jsc csc %*

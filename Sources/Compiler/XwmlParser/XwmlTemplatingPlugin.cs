@@ -1,5 +1,6 @@
 ﻿namespace XwmlParser
 {
+    using JavaScriptEngineSwitcher.Core;
     using Mono.Cecil;
     using NScript.CLR;
     using NScript.Converter;
@@ -8,6 +9,8 @@
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.InteropServices;
 
     public class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
@@ -34,7 +37,6 @@
             MethodDefinition methodDefinition,
             ConverterContext converterContext)
         {
-            var skinAttribute = this.knownTemplateTypes.SkinAttribute;
             PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
             if (propertyDefinition != null
                 && propertyDefinition.SetMethod == null
@@ -44,6 +46,12 @@
             {
                 return IntrestLevel.Overwrite;
             }
+            else if (propertyDefinition?.CustomAttributes?.SelectAttribute(
+                this.knownTemplateTypes.AutoFireAttribute) != null)
+            {
+                return IntrestLevel.Overwrite;
+            }
+
             else return IntrestLevel.None;
         }
 
@@ -65,41 +73,13 @@
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {
             var attr = methodConverter.MethodDefinition.GetPropertyDefinition()
-                .CustomAttributes.SelectAttribute(this.knownTemplateTypes.SkinAttribute);
+                .CustomAttributes.SelectAttribute(this.knownTemplateTypes.SkinAttribute)
+                ?? methodConverter.MethodDefinition.GetPropertyDefinition()
+                    .CustomAttributes.SelectAttribute(this.knownTemplateTypes.AutoFireAttribute);
 
-            var templateName = attr.ConstructorArguments[0].Value as string;
-
-            try
-            {
-                return new List<Statement>()
-                {
-                    new ReturnStatement(
-                        null,
-                        methodConverter.Scope,
-                        new MethodCallExpression(
-                            null,
-                            methodConverter.Scope,
-                            new IdentifierExpression(
-                                this.codeGenerator.GetTemplateGetterIdentifier(templateName),
-                                methodConverter.Scope)))
-                };
-            }
-            catch (ConverterLocationException ex)
-            {
-                this.codeGenerator.ParserContext.ConverterContext.AddError(
-                    ex.Location,
-                    ex.Message,
-                    false);
-            }
-            catch(ApplicationException ex)
-            {
-                this.codeGenerator.ParserContext.ConverterContext.AddError(
-                    null,
-                    ex.Message,
-                    false);
-            }
-
-            return null;
+            return attr.AttributeType.IsSame(this.knownTemplateTypes.AutoFireAttribute)
+                ? GetAutoFirePropertyOverwrite(methodConverter)
+                : GetSkinPropertyOverwrite(methodConverter);
         }
 
         public void Initialize(NScript.CLR.ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
@@ -152,6 +132,179 @@
         public List<Statement> GetPostJavascript()
         {
             return this.codeGenerator.GetAllTemplateStatements(); ;
+        }
+
+        private List<Statement> GetSkinPropertyOverwrite(MethodConverter methodConverter)
+        {
+            var attr = methodConverter.MethodDefinition.GetPropertyDefinition()
+                .CustomAttributes.SelectAttribute(knownTemplateTypes.SkinAttribute);
+
+            var templateName = attr.ConstructorArguments[0].Value as string;
+
+            try
+            {
+                return new List<Statement>()
+                {
+                    new ReturnStatement(
+                        null,
+                        methodConverter.Scope,
+                        new MethodCallExpression(
+                            null,
+                            methodConverter.Scope,
+                            new IdentifierExpression(
+                                this.codeGenerator.GetTemplateGetterIdentifier(templateName),
+                                methodConverter.Scope)))
+                };
+            }
+            catch (ConverterLocationException ex)
+            {
+                this.codeGenerator.ParserContext.ConverterContext.AddError(
+                    ex.Location,
+                    ex.Message,
+                    false);
+            }
+            catch(ApplicationException ex)
+            {
+                this.codeGenerator.ParserContext.ConverterContext.AddError(
+                    null,
+                    ex.Message,
+                    false);
+            }
+
+            return null;
+ 
+        }
+
+        private List<Statement> GetAutoFirePropertyOverwrite(MethodConverter methodConverter)
+        {
+            var propertyDefinition = methodConverter.MethodDefinition.GetPropertyDefinition();
+
+            var atrr = propertyDefinition.CustomAttributes.SelectAttribute(
+                knownTemplateTypes.AutoFireAttribute);
+
+            if (!propertyDefinition.DeclaringType.ImplementsInterface(
+                    this.knownTemplateTypes.ObservableInterface))
+            {
+                methodConverter.RuntimeManager.Context.AddError(
+                    null,
+                    $"Autofire only valid on classes implementing {knownTemplateTypes.ObservableInterface.FullName}",
+                    false);
+
+                return null;
+            }
+            else if (propertyDefinition.IsStatic())
+            {
+                methodConverter.RuntimeManager.Context.AddError(
+                    null,
+                    $"Autofire only valid on instance properties of {knownTemplateTypes.ObservableInterface.FullName}",
+                    false);
+
+                return null;
+            }
+
+            var propName = propertyDefinition.Name;
+            var propertyAccessor = new IndexExpression(
+                null,
+                methodConverter.Scope,
+                methodConverter.ResolveThis(methodConverter.Scope, null),
+                new IdentifierExpression(
+                    methodConverter.RuntimeManager.Resolve(
+                        MethodConverter.GetBackingField(
+                            propertyDefinition,
+                            methodConverter.ClrKnownReferences)),
+                    methodConverter.Scope));
+
+            if (methodConverter.MethodDefinition.IsGetter)
+            {
+                return new List<Statement>
+                {
+                    new ReturnStatement(
+                        null,
+                        methodConverter.Scope,
+                        propertyAccessor)
+                };
+            }
+            else
+            {
+                // value provided to the setter
+                var value = new IdentifierExpression(
+                    methodConverter.ResolveArgument(
+                        methodConverter.MethodDefinition.Parameters[0].Name),
+                    methodConverter.Scope);
+
+                var allPropertiesToFire = new List<string> { propertyDefinition.Name };
+
+                if (atrr.HasConstructorArguments)
+                {
+                    foreach (var arg in atrr.ConstructorArguments)
+                    {
+                        var val = ((CustomAttributeArgument[])arg.Value)
+                            .Select(arg => arg.Value as string);
+                        allPropertiesToFire.AddRange(val);
+                    }
+
+                    allPropertiesToFire = allPropertiesToFire.Distinct().ToList();
+                }
+
+                MethodCallExpression GetMethodCallFor(string propName)
+                    => 
+                        methodConverter.RuntimeManager.ImplementInstanceAsStatic
+                        ? new(
+                            null,
+                            methodConverter.Scope,
+                            IdentifierExpression.Create(
+                                null,
+                                methodConverter.Scope,
+                                methodConverter.ResolveStaticMember(
+                                    knownTemplateTypes.FirePropertyChangedMethodReference)),
+                            methodConverter.ResolveThis(methodConverter.Scope, null),
+                            new StringLiteralExpression(methodConverter.Scope, propName))
+                        : new(
+                            null,
+                            methodConverter.Scope,
+                            new IndexExpression(
+                                null,
+                                methodConverter.Scope,
+                                methodConverter.ResolveThis(methodConverter.Scope, null),
+                                methodConverter.ResolveVirtualMethod(
+                                    knownTemplateTypes.FirePropertyChangedMethodReference,
+                                    methodConverter.Scope)),
+                            new StringLiteralExpression(methodConverter.Scope, propName));
+
+                return new List<Statement>
+                {
+                    new IfBlockStatement(
+                        null,
+                        methodConverter.Scope,
+                        // prop == value
+                        condition: new BinaryExpression(
+                            null,
+                            methodConverter.Scope,
+                            BinaryOperator.StrictNotEquals,
+                            propertyAccessor,
+                            value),
+                        trueBlock: new ScopeBlock(
+                            null,
+                            methodConverter.Scope,
+                            statements: (new List<Expression>
+                                {
+                                    // prop = value
+                                    new BinaryExpression(
+                                        null,
+                                        methodConverter.Scope,
+                                        BinaryOperator.Assignment,
+                                        propertyAccessor,
+                                        value)
+                                }
+                                .Concat(allPropertiesToFire.Select(GetMethodCallFor))
+                                .ToList()
+                                .ConvertAll(expr => (Statement)new ExpressionStatement(
+                                    null,
+                                    methodConverter.Scope,
+                                    expr)))),
+                        falseBlock: null)
+                };
+            }
         }
     }
 }

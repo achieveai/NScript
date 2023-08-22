@@ -37,6 +37,33 @@ namespace RealScript
         private static (int, (int, int), string) FuncReturningTuple()
             => (0, (1, 2), "rand");
 
+        public static void TestNamed()
+        {
+            (int First, string Second) ReturnNamedTuple()
+            {
+                var tup = MyDummyTuple();
+                var (x, y) = (tup.First, tup.Second);
+                x = tup.Item1;
+                y = tup.Item2;
+
+                var list = new List<(string firstName, string lastName)>();
+                list.Add((firstName: "one", lastName: "ln"));
+                y = list[0].firstName;
+                y = list[0].lastName;
+
+                return (x, y);
+            }
+
+            var a = ReturnNamedTuple().First;
+            var b = ReturnNamedTuple().Second;
+
+            var a1 = ReturnNamedTuple().Item1;
+            var b1 = ReturnNamedTuple().Item2;
+        }
+
+        public static (int First, string Second) MyDummyTuple()
+            => (12, "second");
+
         // MARK: Execution Tests
 
         public static void Main()

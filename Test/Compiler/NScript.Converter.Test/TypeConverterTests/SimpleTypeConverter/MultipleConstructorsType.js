@@ -1,18 +1,17 @@
-function MultipleConstructorsType() {
-};
+function MultipleConstructorsType() { }
 MultipleConstructorsType.typeId = "b";
 function MultipleConstructorsType_factory(dbl) {
   var this_;
   this_ = new MultipleConstructorsType();
   this_.__ctor(dbl);
   return this_;
-};
+}
 function MultipleConstructorsType_factorya(i) {
   var this_;
   this_ = new MultipleConstructorsType();
   this_.__ctora(i);
   return this_;
-};
+}
 ptyp_ = MultipleConstructorsType.prototype;
 ptyp_.intField = 0;
 ptyp_.doubleField = 0;

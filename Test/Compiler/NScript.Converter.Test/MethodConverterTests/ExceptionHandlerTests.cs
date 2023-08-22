@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.MethodConverterTests
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
 
     /// <summary>
     /// Definition for ExceptionHandlerTests

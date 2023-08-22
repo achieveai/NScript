@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>Exe</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>
+    <PackAsTool>true</PackAsTool>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
+    <PackageId>Mcqdb.NScript.Cs2Jsc</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NScript.Lib\NScript.Lib.csproj" />
+    <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PluginConfig.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.10.0" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.10.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.10.0" />
+  </ItemGroup>
+</Project>

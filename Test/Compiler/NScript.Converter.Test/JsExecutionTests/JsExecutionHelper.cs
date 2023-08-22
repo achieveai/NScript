@@ -9,7 +9,8 @@ namespace NScript.Converter.Test.JsExecutionTests
     using System;
     using System.Collections.Generic;
     using System.Text;
-    using NScript.CLR.Test;
+    // using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
     using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

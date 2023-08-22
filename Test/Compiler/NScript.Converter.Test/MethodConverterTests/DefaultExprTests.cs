@@ -1,6 +1,7 @@
 ﻿namespace NScript.Converter.Test.MethodConverterTests
 {
-    using NScript.CLR.Test;
+    // using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

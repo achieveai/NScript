@@ -1,95 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{650BBE9A-D0C5-4590-A82A-8E63C664A893}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <NoStdLib>True</NoStdLib>
-    <NoStandardLibraries>false</NoStandardLibraries>
-    <CopyReferences>True</CopyReferences>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sunlight.Framework</RootNamespace>
     <AssemblyName>Sunlight.Framework</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\net6.0\</NScriptBinPath>
-    <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
-    <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661; 3001; 3002</NoWarn>
+    <RootNamespace>Sunlight.Framework</RootNamespace>
+    <PackageId>Mcqdb.NScript.Sunlight.Framework</PackageId>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="Attributes\DefaultDataBindingAttribute.cs" />
-    <Compile Include="Attributes\NonBindableAttribute.cs" />
-    <Compile Include="Binders\ContextBindableObject.cs" />
-    <Compile Include="Binders\DataBinder.cs" />
-    <Compile Include="Binders\DataBindingMode.cs" />
-    <Compile Include="Binders\IConverter.cs" />
-    <Compile Include="Binders\ISourceDataBinder.cs" />
-    <Compile Include="Binders\ITargetBinder.cs" />
-    <Compile Include="Binders\ITargetDataBinder.cs" />
-    <Compile Include="Binders\IValueConverter.cs" />
-    <Compile Include="Binders\OneTimeDataBinder.cs" />
-    <Compile Include="Binders\OneWayBinder.cs" />
-    <Compile Include="Binders\SourcePropertyBinder.cs" />
-    <Compile Include="Binders\TargetBinder.cs" />
-    <Compile Include="Binders\ValueConverter.cs" />
-    <Compile Include="EventBus.cs" />
-    <Compile Include="ExceptionHelpers.cs" />
-    <Compile Include="Factory.cs" />
-    <Compile Include="IoC\IocContainer.cs" />
-    <Compile Include="IoC\IocHelper.cs" />
-    <Compile Include="Lazy.cs" />
-    <Compile Include="LazyAsync.cs" />
-    <Compile Include="Observables\AttachedProperty.cs" />
-    <Compile Include="Observables\CollectionChangedAction.cs" />
-    <Compile Include="Observables\CollectionChangedEventArgs.cs" />
-    <Compile Include="Observables\ExtensibleObservableObject.cs" />
-    <Compile Include="Observables\HeaderInjectableTransformer.cs" />
-    <Compile Include="Observables\INotifyCollectionChanged.cs" />
-    <Compile Include="Observables\INotifyPropertyChanged.cs" />
-    <Compile Include="Observables\ObservableCollection.cs" />
-    <Compile Include="Observables\ObservableCollectionTransformer.cs" />
-    <Compile Include="Observables\ObservableObject.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TaskScheduler.cs" />
+    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../System.Web/System.Web.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\NScript.MsCorlib.csproj">
-      <Project>{3cfbe1aa-475a-46ed-8f46-62ae7f3b5cbb}</Project>
-      <Name>NScript.MsCorlib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\System.Web\System.Web.csproj">
-      <Project>{3520779c-829e-4276-9163-ca65490449f1}</Project>
-      <Name>System.Web</Name>
-    </ProjectReference>
+    <None Include="$(OutputPath)$(AssemblyName).pdb">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </None>
   </ItemGroup>
-  <Import Project="$(NScriptToolSetPath)NScript.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

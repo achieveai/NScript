@@ -1,0 +1,50 @@
+﻿<Project>
+	<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+	<PropertyGroup>
+		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
+		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
+		<Minify Condition="$(Minify) == '' and $(Configuration) == 'Release'">true</Minify>
+		<Uglify Condition="$(Uglify) == '' and $(Configuration) == 'Release'">true</Uglify>
+		<JsOptimize Condition="$(JsOptimize) == '' and $(Configuration) == 'Release'">true</JsOptimize>
+		<Minify Condition="$(Minify) == ''">false</Minify>
+		<Uglify Condition="$(Uglify) == ''">false</Uglify>
+		<JsOptimize Condition="$(JsOptimize) == ''">false</JsOptimize>
+	</PropertyGroup>
+
+	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
+		<MsBuild
+			Condition="$(GenerateJs) == True"
+			Projects="$(MSBuildProjectFile)"
+			Targets="ScriptGenerate" /> 
+	</Target>
+
+	<Target
+		Name="ScriptGenerate"
+		Inputs="$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext);@(ReferencePath)"
+		Outputs="$(JsOutputPath)$(AssemblyName).js"
+		DependsOnTargets="$(CoreCompile)"
+		Condition="$(GenerateJs) == True">
+
+		<Message
+			Text="Running NScript to produce $(JsOutputPath)\$(AssemblyName).js."
+			Importance="high" />
+
+		<PropertyGroup>
+			<Refs>&quot;@(ReferencePath->'%(identity)','&quot;,&quot;')&quot;</Refs>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)\$(AssemblyName).js&quot;"/>
+			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
+			<ScriptGenerateOption Include="-references $(Refs)"/>
+			<ScriptGenerateOption Include="-minify" Condition="'$(Minify)' == 'true'" />
+			<ScriptGenerateOption Include="-uglify" Condition="'$(Uglify)' == 'true'" />
+			<ScriptGenerateOption Include="-optimize" Condition="'$(JsOptimize)' == 'true'" />
+		</ItemGroup>
+
+		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
+
+	</Target>
+
+</Project>

@@ -53,7 +53,7 @@ namespace NScript.Converter
 
         private readonly int jsParts;
 
-        private readonly bool release;
+        private readonly (bool minify, bool uglify, bool optimize) scriptGenerateSettings;
 
         /// <summary>
         /// Constructor.
@@ -70,7 +70,7 @@ namespace NScript.Converter
             string mainAssembly,
             string[] references,
             IConverterPlugin[] plugins,
-            bool release)
+            (bool minify, bool uglify, bool optimize) scriptGenerateSettings)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -82,7 +82,7 @@ namespace NScript.Converter
             this.typeConverterPlugins = (from p in plugins where p is IRuntimeConverterPlugin select p as ITypeConverterPlugin)
                 .ToArray<ITypeConverterPlugin>();
             this.jsParts = jsParts;
-            this.release = release;
+            this.scriptGenerateSettings = scriptGenerateSettings;
         }
 
         /// <summary>
@@ -119,14 +119,10 @@ namespace NScript.Converter
                     this.typeConverterPlugins);
                 runtimeManager = new RuntimeScopeManager(
                     converterContext,
-                    this.release);
+                    instanceAsStatic: this.scriptGenerateSettings.optimize);
 
                 methodDefinitionsToEmit = new List<MethodDefinition>();
-
-                entryPoint =
-                    Path.GetExtension(mainAssembly) == ".exe"
-                        ? this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly))
-                        : null;
+                entryPoint = this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly));
             }
             catch(System.Exception ex)
             {
@@ -197,7 +193,7 @@ namespace NScript.Converter
                             new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(entryPoint), runtimeManager.Scope)));
                 }
 
-                if (release)
+                if (scriptGenerateSettings.optimize)
                 {
                     var identCounter = new IdentifierCounterVisitor();
                     var unusedMethodRemover = new UnusedMethodRemover();
@@ -220,14 +216,18 @@ namespace NScript.Converter
                 var stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.Scope, this.release);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeManager.Scope,
+                    scriptGenerateSettings.minify);
                 stopWatch.Stop();
                 System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
                 stopWatch.Restart();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(runtimeManager.JSBaseObjectScopeManager.InstanceScope, this.release);
+                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                    runtimeManager.JSBaseObjectScopeManager.InstanceScope,
+                    scriptGenerateSettings.minify);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
 
-                var writer = new JSWriter(true, release);
+                var writer = new JSWriter(true, scriptGenerateSettings.uglify);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
                 {

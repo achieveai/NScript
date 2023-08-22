@@ -5,7 +5,6 @@
     <AntlrGenCodeFileNames>AntlrGeneratedCodeFileListAbsolute.txt</AntlrGenCodeFileNames>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
-    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>TRACE;DEBUG;ANTLR_TRACE</DefineConstants>

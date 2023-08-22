@@ -1,28 +1,28 @@
-﻿Array.typeId = "b";
+Array.typeId = "b";
 function Array__Sort(T, array, comparator) {
   var ArrayG_$T$_;
   ArrayG_$T$_ = ArrayG(T, true);
   array.sort(comparator);
-};
+}
 Type__RegisterReferenceType(Array, "System.Array", Object, [IList, ICollection, IEnumerable]);
 function NativeArray$1__GetNativeArray(array) {
   return array ? array.innerArray : null;
-};
+}
 function NativeArray$1__GetNativeArraya(array) {
   return array ? array.nativeArray : null;
-};
+}
 function NativeArray$1__Concat(this_, arrays) {
   return this_.concat.apply(this_, arrays.nativeArray);
-};
+}
 function NativeArray$1__Concata(this_, array) {
   return this_.concat(array);
-};
+}
 function NativeArray$1__Concatb(this_, array, array2) {
   return this_.concat(array, array2);
-};
+}
 function NativeArray$1__Concatc(this_, array, array2, array3) {
   return this_.concat(array, array2, array3);
-};
+}
 function NativeArray$1__Splice(this_, index, howMany, elements) {
   var newArray, rv;
   newArray = elements.innerArray;
@@ -32,16 +32,16 @@ function NativeArray$1__Splice(this_, index, howMany, elements) {
   newArray.shift();
   newArray.shift();
   return rv;
-};
+}
 function NativeArray$1__IndexOf(this_, value, startIndex) {
   startIndex = startIndex < 0 ? 0 : startIndex;
   return this_.indexOf(value, startIndex);
-};
+}
 function NativeArray$1__InsertAt(this_, index, value) {
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
   this_.splice(index, 0, value);
-};
+}
 function NativeArray$1__InsertRangeAt(this_, index, values) {
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
@@ -50,21 +50,20 @@ function NativeArray$1__InsertRangeAt(this_, index, values) {
   this_.splice.apply(this_, values);
   values.shift();
   values.shift();
-};
+}
 function NativeArray$1__RemoveAt(this_, index) {
   if (index < 0 || index > this_.length)
     throw new Error("Index out of range");
   this_.splice(index, 1);
-};
+}
 function NativeArray$1__op_Implicit(n) {
   return !n ? null : n.get_innerArray();
-};
+}
 function List(T, _callStatiConstructor) {
   var List$1_$T$_, ArrayG$1_$T$_, T$5b$5d_$T$_, ListEnumerator$1_$T$_, IList$1_$T$_, ICollection$1_$T$_, IEnumerable$1_$T$_, __initTracker;
   if (List["9" + T.typeId])
     return List["9" + T.typeId];
-  List["9" + T.typeId] = List$1_$T$_ = function System__Collections__Generic__List$1() {
-  };
+  List["9" + T.typeId] = List$1_$T$_ = function System__Collections__Generic__List$1() { };
   List$1_$T$_.genericParameters = [T];
   List$1_$T$_.genericClosure = List;
   List$1_$T$_.typeId = "f$" + T.typeId + "$";
@@ -294,4 +293,4 @@ function List(T, _callStatiConstructor) {
   if (_callStatiConstructor)
     List$1_$T$_._tri();
   return List$1_$T$_;
-};
+}

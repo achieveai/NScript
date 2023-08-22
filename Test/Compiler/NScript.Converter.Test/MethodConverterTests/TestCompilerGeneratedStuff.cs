@@ -1,4 +1,4 @@
-﻿using NScript.CLR.Test;
+﻿using NScript.Csc.Lib.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NScript.Converter.Test.MethodConverterTests

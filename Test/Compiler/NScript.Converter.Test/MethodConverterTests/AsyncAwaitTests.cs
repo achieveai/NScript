@@ -1,6 +1,7 @@
 ﻿namespace NScript.Converter.Test.MethodConverterTests
 {
-    using NScript.CLR.Test;
+    // using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -22,6 +23,7 @@
         [DataRow(TestClassNameStr, "Test4", "Test4.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "Test5", "Test5.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "Test8", "Test8.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "Test10", "Test10.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "Test3", "Test3.static.js", TestType.All, true)]
         public void TestMcs(
             string className,

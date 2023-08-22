@@ -5,7 +5,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
     <NoWarn>3021</NoWarn>
-    <OutputPath>$(NScriptToolsetDir)\bin\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <AntlrPath>$(Dependencies)\Antlr</AntlrPath>

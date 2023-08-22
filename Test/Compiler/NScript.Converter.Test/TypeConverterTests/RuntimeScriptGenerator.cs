@@ -7,7 +7,7 @@
 namespace NScript.Converter.Test.TypeConverterTests
 {
     using System.Collections.Generic;
-    using NScript.CLR.Test;
+    using NScript.Csc.Lib.Test;
     using NScript.Converter.DependencyBuilder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Mono.Cecil;

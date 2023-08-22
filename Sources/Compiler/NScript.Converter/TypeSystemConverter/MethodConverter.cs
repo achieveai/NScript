@@ -1908,6 +1908,27 @@ namespace NScript.Converter.TypeSystemConverter
             }
         }
 
+        public static FieldDefinition GetBackingField(
+            PropertyDefinition propertyDefinition,
+            ClrKnownReferences clrKnownReferences)
+        {
+            var type = propertyDefinition.DeclaringType;
+
+            foreach (var field in type.Fields)
+            {
+                if (field.IsPrivate
+                    && field.Name.EndsWith("_BackingField")
+                    && field.CustomAttributes.Any(ca => ca.AttributeType.IsSameDefinition(clrKnownReferences.CompilerGeneratedAttribute))
+                    && TypeHelpers.IsSame(field.FieldType, propertyDefinition.PropertyType)
+                    && field.Name.Contains('<' + propertyDefinition.Name + '>'))
+                {
+                    return field;
+                }
+            }
+
+            throw new NotImplementedException($"Could not resolve backing field for Property: {propertyDefinition}");
+        }
+
         /// <summary>
         /// Generates a setter imported wrapper.
         /// </summary>
