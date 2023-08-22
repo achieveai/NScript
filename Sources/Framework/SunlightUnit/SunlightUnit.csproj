@@ -3,7 +3,6 @@
     <AssemblyName>SunlightUnit</AssemblyName>
     <RootNamespace>SunlightUnit</RootNamespace>
     <PackageId>Mcqdb.NScript.SunlightUnit</PackageId>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

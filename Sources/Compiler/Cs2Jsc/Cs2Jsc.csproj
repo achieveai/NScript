@@ -9,7 +9,8 @@
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageId>Mcqdb.NScript.Cs2Jsc</PackageId>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageVersion>$(NScriptPackageVersion)</PackageVersion>
+    <GeneratePackageOnBuild>$(GenerateNScriptPackages)</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="obj\**" />
