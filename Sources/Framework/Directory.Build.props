@@ -14,9 +14,9 @@
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageVersion>$(NScriptPackageVersion)</PackageVersion>
     <GeneratePackageOnBuild>$(GenerateNScriptPackages)</GeneratePackageOnBuild>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-		<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 </Project>
