@@ -6,6 +6,7 @@
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageType>MSBuildSdk</PackageType>
     <PackageId>Mcqdb.NScript.Sdk</PackageId>
+    <PackageVersion>1.0.2-alpha2</PackageVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 

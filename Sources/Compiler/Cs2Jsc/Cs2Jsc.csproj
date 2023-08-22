@@ -9,6 +9,7 @@
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageId>Mcqdb.NScript.Cs2Jsc</PackageId>
+    <PackageVersion>1.0.2-alpha2</PackageVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
