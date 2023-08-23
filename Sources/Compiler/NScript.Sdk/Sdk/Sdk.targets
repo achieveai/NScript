@@ -10,6 +10,7 @@
 		<Minify Condition="$(Minify) == ''">false</Minify>
 		<Uglify Condition="$(Uglify) == ''">false</Uglify>
 		<JsOptimize Condition="$(JsOptimize) == ''">false</JsOptimize>
+		<JsParts Condition="$(JsParts) == ''">1</JsParts>
 	</PropertyGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
@@ -38,6 +39,7 @@
 			<ScriptGenerateOption Include="-outJs &quot;$(JsOutputPath)\$(AssemblyName).js&quot;"/>
 			<ScriptGenerateOption Include="-entryAssembly &quot;$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext)&quot;"/>
 			<ScriptGenerateOption Include="-references $(Refs)"/>
+			<ScriptGenerateOption Include="-jsparts $(JsParts)" />
 			<ScriptGenerateOption Include="-minify" Condition="'$(Minify)' == 'true'" />
 			<ScriptGenerateOption Include="-uglify" Condition="'$(Uglify)' == 'true'" />
 			<ScriptGenerateOption Include="-optimize" Condition="'$(JsOptimize)' == 'true'" />
