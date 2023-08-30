@@ -586,6 +586,7 @@
 
                 case ConversionKind.ImplicitThrow:
                 case ConversionKind.Deconstruction:
+                case ConversionKind.SwitchExpression:
                     return Visit(node.Operand, arg);
 
                 case ConversionKind.ImplicitTupleLiteral:
@@ -611,7 +612,7 @@
             => new DeclarationPattern
             {
                 VariableAccess = Visit(node.VariableAccess, arg) as ExpressionSer,
-                Type = arg.SymbolSerializer.GetTypeSpecId(node.InputType),
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.NarrowedType),
                 Location = node.Syntax.GetSerLoc()
             };
 

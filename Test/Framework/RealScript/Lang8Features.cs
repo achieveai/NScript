@@ -33,6 +33,11 @@ namespace RealScript
             else if (x is int y)
             {
             }
+
+            BaseClass b = new SubClass();
+            if (b is SubClass sb)
+            {
+            }
         }
 
         public static void SwitchExpression()
@@ -45,6 +50,12 @@ namespace RealScript
                 _ => 900
             };
 
+            var str = x switch
+            {
+                1 => "1",
+                2 => "2",
+                _ => "10"
+            };
         }
 
         internal enum Direction
@@ -70,5 +81,15 @@ namespace RealScript
             Direction.Down  => Orientation.South,
             _ => Orientation.West,
         };
+
+        private class BaseClass
+        {
+            public int X { get; set; }
+        }
+
+        private class SubClass : BaseClass
+        {
+            public new int X { get; set; }
+        }
     }
 }

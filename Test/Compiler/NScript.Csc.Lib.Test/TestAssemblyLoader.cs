@@ -574,6 +574,7 @@
                 @"EnumTypes.cs",
                 @"InlineComplexStatements.cs",
                 @"JsScriptImport.cs",
+                @"Lang8FeatureExecutionTests.cs",
                 @"LoopTests.cs",
                 @"MathAlgorithms.cs",
                 @"NumberOperations.cs",

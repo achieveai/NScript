@@ -1,10 +1,6 @@
 ﻿using NScript.CLR.AST;
 using NScript.Converter.TypeSystemConverter;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NScript.Converter.ExpressionsConverter
 {
@@ -41,7 +37,9 @@ namespace NScript.Converter.ExpressionsConverter
 
                 var methodReference = converter.KnownReferences.AsTypeMethod;
 
-                var typeRefExpr = JST.IdentifierExpression.Create(null, converter.Scope,
+                var typeRefExpr = JST.IdentifierExpression.Create(
+                    null,
+                    converter.Scope,
                     converter.Resolve(ty));
 
                 var asTypeCall = MethodCallExpressionConverter.CreateMethodCallExpression(
@@ -65,7 +63,7 @@ namespace NScript.Converter.ExpressionsConverter
                     new JST.NullLiteralExpression(converter.Scope));
             }
 
-            throw new NotImplementedException();
+            throw new NotImplementedException($"IsPattern: {isPattern.Pattern.GetType().Name}");
         }
     }
 }
