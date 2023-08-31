@@ -15,7 +15,7 @@ namespace RealScript
         {
             if (MethodReturningInt() is var x)
             {
-                Console.WriteLine(string.Format("x is {0}", x));
+                Console.WriteLine(x.ToString());
             }
 
             if (new Derived() is BaseClass1)
@@ -29,7 +29,7 @@ namespace RealScript
             }
 
 
-            static int MethodReturningInt() => 12;
+            static int MethodReturningInt() => 0;
         }
 
         private static void TestSwitchExpression()

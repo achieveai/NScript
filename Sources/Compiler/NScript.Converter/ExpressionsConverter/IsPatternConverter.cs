@@ -1,4 +1,5 @@
-﻿using NScript.CLR.AST;
+﻿using NScript.CLR;
+using NScript.CLR.AST;
 using NScript.Converter.TypeSystemConverter;
 using System;
 
@@ -30,6 +31,23 @@ namespace NScript.Converter.ExpressionsConverter
                 var variableAccess = ExpressionConverterBase.Convert(
                     converter,
                     declarationPattern.VariableAccess);
+
+                // Early return when types match
+                if (declarationPattern.VariableAccess.ResultType.IsSame(declarationPattern.Type))
+                {
+                    // ((x = Something()) || true)
+                    return new JST.BinaryExpression(
+                        null,
+                        converter.Scope,
+                        JST.BinaryOperator.LogicalOr,
+                        new JST.BinaryExpression(
+                            null,
+                            converter.Scope,
+                            JST.BinaryOperator.Assignment,
+                            variableAccess,
+                            lhs),
+                        new JST.BooleanLiteralExpression(converter.Scope, true));
+                }
 
                 var ty = declarationPattern.Type;
 
@@ -63,7 +81,7 @@ namespace NScript.Converter.ExpressionsConverter
                     new JST.NullLiteralExpression(converter.Scope));
             }
 
-            throw new NotImplementedException($"IsPattern: {isPattern.Pattern.GetType().Name}");
+            throw new NotImplementedException($"Unsupported IsPattern variant: {isPattern.Pattern.GetType().Name}");
         }
     }
 }
