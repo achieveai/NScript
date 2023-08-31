@@ -50,8 +50,8 @@ namespace System
         }
 
         object IEnumerator.Current => _current.Value;
-        
-        public T Current
+
+        public extern T Current
         {
             [Script("this.@{[mscorlib]System.GeneratorWrapper`1::_current}.value")]
             get;

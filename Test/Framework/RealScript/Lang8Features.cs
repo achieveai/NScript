@@ -6,7 +6,7 @@
 
 namespace RealScript
 {
-    using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for Lan8Features
@@ -47,28 +47,18 @@ namespace RealScript
 
         }
 
-        internal enum Direction
+        public static async void TestAsyncForEach()
         {
-            Up,
-            Down,
-            Right,
-            Left
+            await foreach (var item in GetIntsAsync())
+            {
+                Console.WriteLine(item);
+            }
         }
 
-        internal enum Orientation
+        public static async IAsyncEnumerable<int> GetIntsAsync()
         {
-            North,
-            South,
-            East,
-            West
+            await Utilities.Delay(0);
+            yield return 1200;
         }
-
-        internal static Orientation ToOrientation(Direction direction) => direction switch
-        {
-            Direction.Up    => Orientation.North,
-            Direction.Right => Orientation.East,
-            Direction.Down  => Orientation.South,
-            _ => Orientation.West,
-        };
     }
 }

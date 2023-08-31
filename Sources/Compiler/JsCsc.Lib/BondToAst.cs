@@ -478,11 +478,16 @@ namespace JsCsc.Lib
                         .Select(_ => _.variable)
                         .FirstOrDefault();
 
+                    var getAwaiterMethodCall = jObject.GetAwaiterMethodCallOpt != null
+                        ? (MethodCallExpression)ParseExpression(jObject.GetAwaiterMethodCallOpt)
+                        : null;
+
                     return new ForEachLoop(
                         _clrContext,
                         LocFromJObject(jObject),
                         localVariable,
                         iterator,
+                        getAwaiterMethodCall,
                         body,
                         vc.GetCapturedVariables(),
                         vc.GetLocalFunctionVariables());

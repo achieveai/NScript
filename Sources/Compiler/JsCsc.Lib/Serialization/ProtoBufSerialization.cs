@@ -1108,6 +1108,8 @@ namespace JsCsc.Lib.Serialization
         new public StatementSer Loop { get; set; }
 
         public int BlockId { get; set; }
+
+        public MethodCallExpression GetAwaiterMethodCallOpt { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

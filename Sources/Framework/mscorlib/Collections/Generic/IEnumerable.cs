@@ -4,6 +4,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace System.Collections.Generic
 {
     /// <summary>
@@ -23,5 +26,17 @@ namespace System.Collections.Generic
         /// <returns>The element in the collection at the current position of the enumerator.</returns>
         new T Current
         { get; }
+    }
+
+    public interface IAsyncEnumerator<out T> : IAsyncDisposable
+    {
+        T Current { get; }
+
+        ValueTask<bool> MoveNextAsync();
+    }
+
+    public interface IAsyncEnumerable<out T>
+    {
+        IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default);
     }
 }

@@ -7,8 +7,7 @@
 namespace NScript.CLR
 {
     using System;
-    using System.Collections.Generic;
-using Mono.Cecil;
+    using Mono.Cecil;
 
     /// <summary>
     /// Definition for ClrKnownReferences
@@ -185,6 +184,7 @@ using Mono.Cecil;
         private TypeReference typedReference;
         private TypeReference promiseType;
         private TypeReference promiseGenericTypeReference;
+        private TypeReference valueTaskGenericTypeRefernce;
         private TypeReference taskTypeReference;
         private TypeReference taskGenericTypeReference;
         private TypeReference taskAwaiterTypeReference;
@@ -795,6 +795,21 @@ using Mono.Cecil;
                 }
 
                 return promiseGenericTypeReference;
+            }
+        }
+
+        public TypeReference ValueTaskGenericTypeRefernce
+        {
+            get
+            {
+                if (valueTaskGenericTypeRefernce == null)
+                {
+                    valueTaskGenericTypeRefernce  = this.GetTypeReference(
+                        "System.Threading.Tasks",
+                        "ValueTask`1");
+                }
+
+                return valueTaskGenericTypeRefernce ;
             }
         }
 

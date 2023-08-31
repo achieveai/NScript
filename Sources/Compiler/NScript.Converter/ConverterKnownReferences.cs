@@ -41,6 +41,16 @@ namespace NScript.Converter
         /// </summary>
         private TypeReference dictionaryEntry;
 
+        private TypeReference iAsyncEnumerableReference;
+
+        private TypeReference iAsyncEnumerableGenericReference;
+
+        private TypeReference iAsyncEnumeratorGenericReference;
+
+        private TypeReference iAsyncEnumeratorReference;
+
+        private TypeReference cancellationTokenReference;
+
         /// <summary>
         /// The ienumerable reference.
         /// </summary>
@@ -292,15 +302,21 @@ namespace NScript.Converter
         /// </summary>
         private MethodReference getEnumeratorIEnumerableMethod;
 
+        private MethodReference getAsyncEnumeratorIAsyncEnumerableMethod;
+
         /// <summary>
         /// Backing field for GetCurrentIEnumeratorMethod.
         /// </summary>
         private MethodReference getCurrentIEnumeratorMethod;
 
+        private MethodReference getCurrentIAsyncEnumeratorMethod;
+
         /// <summary>
         /// Backing field for MoveNextEnumeratorMethod.
         /// </summary>
         private MethodReference moveNextEnumeratorMethod;
+
+        private MethodReference moveNextAsyncIAsyncEnumeratorMethod;
 
         private MethodReference generatorWrapperCtor;
 
@@ -560,6 +576,81 @@ namespace NScript.Converter
         public ConverterKnownReferences(ClrContext clrContext)
         {
             this.clrContext = clrContext;
+        }
+
+        public TypeReference IAsyncEnumerable
+        {
+            get
+            {
+                if (iAsyncEnumerableReference == null)
+                {
+                    iAsyncEnumerableReference = this.GetTypeReference(
+                        ConverterKnownReferences.CollectionsStr,
+                        "IAsyncEnumerable");
+                }
+
+                return iAsyncEnumerableReference;
+            }
+        }
+
+        public TypeReference IAsyncEnumerableGeneric
+        {
+            get
+            {
+                if (iAsyncEnumerableGenericReference == null)
+                {
+                    iAsyncEnumerableGenericReference = GetTypeReference(
+                        GenericCollectionsStr,
+                        "IAsyncEnumerable`");
+                }
+
+                return iAsyncEnumerableGenericReference;
+            }
+        }
+
+        public TypeReference CancellationToken
+        {
+            get
+            {
+                if (cancellationTokenReference == null)
+                {
+                    cancellationTokenReference = this.GetTypeReference(
+                        "System.Threading",
+                        "CancellationToken");
+                }
+
+                return cancellationTokenReference;
+            }
+        }
+
+        public TypeReference IAsyncEnumerator
+        {
+            get
+            {
+                if (iAsyncEnumeratorReference == null)
+                {
+                    iAsyncEnumeratorReference = this.GetTypeReference(
+                        ConverterKnownReferences.CollectionsStr,
+                        "IAsyncEnumerator");
+                }
+
+                return iAsyncEnumeratorReference;
+            }
+        }
+
+        public TypeReference IAsyncEnumeratorGeneric
+        {
+            get
+            {
+                if (iAsyncEnumeratorGenericReference == null)
+                {
+                    iAsyncEnumeratorGenericReference  = this.GetTypeReference(
+                        GenericCollectionsStr,
+                        "IAsyncEnumerator`");
+                }
+
+                return iAsyncEnumeratorGenericReference;
+            }
         }
 
         /// <summary>
@@ -1259,6 +1350,23 @@ namespace NScript.Converter
             }
         }
 
+        public MethodReference GetAsyncEnumeratorIAsyncEnumerableMethod
+        {
+            get
+            {
+                if (this.getAsyncEnumeratorIAsyncEnumerableMethod == null)
+                {
+                    this.getAsyncEnumeratorIAsyncEnumerableMethod  = this.GetMethodReference(
+                        "GetAsyncEnumerator",
+                        this.IAsyncEnumerator,
+                        this.IAsyncEnumerable,
+                        CancellationToken);
+                }
+
+                return this.getAsyncEnumeratorIAsyncEnumerableMethod ;
+            }
+        }
+
         /// <summary>
         /// Gets the get current I enumerator method.
         /// </summary>
@@ -1278,6 +1386,42 @@ namespace NScript.Converter
                 }
 
                 return this.getCurrentIEnumeratorMethod;
+            }
+        }
+
+        public MethodReference GetCurrentIAsyncEnumeratorMethod
+        {
+            get
+            {
+                if (this.getCurrentIAsyncEnumeratorMethod == null)
+                {
+                    this.getCurrentIAsyncEnumeratorMethod = this.GetMethodReference(
+                        "get_Current",
+                        this.ClrReferences.Object,
+                        this.IAsyncEnumerator);
+                }
+
+                return this.getCurrentIAsyncEnumeratorMethod;
+            }
+        }
+
+        public MethodReference MoveNextAsyncIAsyncEnumeratorMethod
+        {
+            get
+            {
+                if (this.moveNextAsyncIAsyncEnumeratorMethod == null)
+                {
+                    var genericInstance = new GenericInstanceType(
+                        ClrReferences.ValueTaskGenericTypeRefernce);
+                    genericInstance.GenericArguments.Add(ClrReferences.Boolean);
+
+                    this.moveNextAsyncIAsyncEnumeratorMethod  = this.GetMethodReference(
+                        "MoveNextAsync",
+                        genericInstance,
+                        this.IAsyncEnumerator);
+                }
+
+                return this.moveNextAsyncIAsyncEnumeratorMethod;
             }
         }
 

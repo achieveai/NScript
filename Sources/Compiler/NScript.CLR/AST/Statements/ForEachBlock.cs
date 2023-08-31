@@ -8,6 +8,7 @@ namespace NScript.CLR.AST
 {
     using System;
     using System.Collections.Generic;
+    using Mono.Cecil;
     using NScript.Utils;
 
     /// <summary>
@@ -43,6 +44,7 @@ namespace NScript.CLR.AST
             Location location,
             LocalVariable iteratorVariable,
             Expression collection,
+            MethodCallExpression getAwaiterMethodCallExpressionOpt,
             ScopeBlock scope,
             List<(LocalVariable, bool)> variables,
             List<LocalFunctionVariable> localFunctionNames)
@@ -51,8 +53,19 @@ namespace NScript.CLR.AST
             this.iteratorVariable = iteratorVariable;
             this.collection = collection;
             this.scope = scope;
+            GetAwaiterMethodCallExpressionOpt = getAwaiterMethodCallExpressionOpt;
             base.AddStatement(scope);
         }
+
+        public TypeReference CollectionType
+            => collection.ResultType.HasGenericParameters
+                ? collection.ResultType.GetGenericArguments()[0]
+                : Context.KnownReferences.Object;
+
+        public TypeReference IteratorVariableType
+            => iteratorVariable.Type;
+
+        public bool IsAsync => GetAwaiterMethodCallExpressionOpt != null;
 
         /// <summary>
         /// Gets the variable.
@@ -77,6 +90,8 @@ namespace NScript.CLR.AST
         {
             get { return this.scope; }
         }
+
+        public MethodCallExpression GetAwaiterMethodCallExpressionOpt { get; }
 
         /// <summary>
         /// Adds the statement.

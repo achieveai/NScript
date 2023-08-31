@@ -31,6 +31,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         [TestMethod]
         [DataRow(TestType.Debug, "FactorialCalculator", "Main", false, false, false)]
         [DataRow(TestType.Debug, "FactorialCalculator", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "ForEachLoopTests", "Main", false, false, false)]
         [DataRow(TestType.Debug, "GetMin", "RunTest", false, false, false)]
         [DataRow(TestType.Debug, "GetMin", "RunTest", false, false, true)]
         [DataRow(TestType.Debug, "QuickSort", "RunTest", false, false, false)]

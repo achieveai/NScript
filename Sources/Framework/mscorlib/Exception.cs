@@ -2,6 +2,12 @@
 {
     using System.Collections;
     using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
+
+    public interface IAsyncDisposable
+    {
+        ValueTask DisposeAsync();
+    }
 
     [ScriptName("Error"), IgnoreNamespace, Extended]
     public class Exception

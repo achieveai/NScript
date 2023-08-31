@@ -151,32 +151,4 @@ namespace RealScript
             return isNeg && strArray.Length > 0? strArray.IndexOf("-1") : -1;
         }
     }
-
-    public class GeneratorWrapper
-    {
-        private NativeGenerator _generator;
-        private NativeGenerator.NextObject _current;
-
-        [Script("this.@{[mscorlib]System.GeneratorWrapper::_generator} = generatorFunction();")]
-        public extern GeneratorWrapper(object generatorFunction);
-
-        public object Current => _current.Value;
-
-        public object GetEnumerator()
-        {
-            return this;
-        }
-
-        public bool MoveNext()
-        {
-            this._current = this._generator.Next();
-            return !this._current.Done;
-        }
-
-        public void Reset()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
 }

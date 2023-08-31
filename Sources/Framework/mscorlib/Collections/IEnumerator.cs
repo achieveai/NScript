@@ -1,4 +1,6 @@
-﻿namespace System.Collections
+﻿using System.Threading.Tasks;
+
+namespace System.Collections
 {
     /// <summary>Supports a simple iteration over a nongeneric collection.</summary>
     /// <filterpriority>1</filterpriority>
@@ -23,5 +25,12 @@
         /// <exception cref="T:System.InvalidOperationException">The collection was modified after the enumerator was created. </exception>
         /// <filterpriority>2</filterpriority>
         void Reset();
+    }
+
+    public interface IAsyncEnumerator
+    {
+        object Current { get; }
+
+        ValueTask<bool> MoveNextAsync();
     }
 }

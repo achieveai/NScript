@@ -8,6 +8,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     internal class BoundAstToAstBase
         : BoundAstToNotImplemented<SerializationContext, AstBase>
@@ -225,12 +226,12 @@
             var expr = (ExpressionSer)Visit(node.Expression, arg);
             this.AwaitableValue = expr;
             var methodCall = (MethodCallExpression)Visit(node.AwaitableInfo.GetAwaiter, arg);
-            var ret = new AwaitExpression()
+
+            return new AwaitExpression
             {
                 GetAwaiterMethodCall = methodCall,
                 Expression = expr
             };
-            return ret;
         }
 
         public override AstBase VisitAwaitableValuePlaceholder(BoundAwaitableValuePlaceholder node, SerializationContext arg)
@@ -831,8 +832,17 @@
                         BlockId = id,
                         LocalVariableName = node.IterationVariables[0].Name,
                         Collection = (ExpressionSer)Visit(node.Expression, arg),
-                        Loop = VisitToStatement(node.Body, arg)
+                        Loop = VisitToStatement(node.Body, arg),
+                        GetAwaiterMethodCallOpt = node.AwaitOpt == null
+                            ? null
+                            : (MethodCallExpression)Visit(node.AwaitOpt.GetAwaiter, arg)
                     });
+
+        public static async IAsyncEnumerable<int> GetArr()
+        {
+            await Task.Delay(100);
+            yield return 12;
+        }
 
         public override AstBase VisitForStatement(BoundForStatement node, SerializationContext arg)
             => WrapInBlock(
