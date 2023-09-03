@@ -21,8 +21,8 @@
 
 	<Target
 		Name="ScriptGenerate"
-		Inputs="$(BaseIntermediateOutputPath)$(Configuration)\$(AssemblyName).$(Ext);@(ReferencePath)"
-		Outputs="$(JsOutputPath)$(AssemblyName).js"
+		Inputs="@(ReferencePath)"
+		Outputs="$(JsOutputPath)\$(AssemblyName).js"
 		DependsOnTargets="$(CoreCompile)"
 		Condition="$(GenerateJs) == True">
 
