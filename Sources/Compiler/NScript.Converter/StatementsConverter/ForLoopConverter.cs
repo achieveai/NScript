@@ -73,7 +73,6 @@ namespace NScript.Converter.StatementsConverter
                 var forLoopInitialization = GetForLoopInitialization(
                     converter,
                     forEachLoop,
-                    out var collectionTempIdentifierExpr,
                     out var enumeratorTempIdentifierExpr);
 
                 var condition = GetForLoopCondition(
@@ -239,7 +238,6 @@ namespace NScript.Converter.StatementsConverter
         private static JST.Statement GetForLoopInitialization(
             IMethodScopeConverter converter,
             ForEachLoop forEachLoop,
-            out JST.IdentifierExpression collectionTempIdentifier,
             out JST.IdentifierExpression enumeratorTempIdentifier)
         {
             var getAsyncEnumerator = forEachLoop.IsAsync;
@@ -258,15 +256,17 @@ namespace NScript.Converter.StatementsConverter
                 converter.GetTempVariable(),
                 converter.Scope);
 
-            collectionTempIdentifier= new JST.IdentifierExpression(
-                converter.GetTempVariable(),
-                converter.Scope);
+            JST.ExpressionStatement collectionAssignmentStatement = null;
 
-            // TODO: Collection assignment may not be required when we're sure of
-            // no side effects when evaluating the collection. i.e Variable
+            var collectionExpr = ExpressionConverterBase.Convert(converter, forEachLoop.Collection);
 
-            var collectionAssignmentStatement =
-                new JST.ExpressionStatement(
+            if (forEachLoop.Collection is not VariableReference)
+            {
+                var collectionTempIdentifier= new JST.IdentifierExpression(
+                    converter.GetTempVariable(),
+                    converter.Scope);
+
+                collectionAssignmentStatement = new JST.ExpressionStatement(
                     null,
                     converter.Scope,
                     new JST.BinaryExpression(
@@ -274,7 +274,10 @@ namespace NScript.Converter.StatementsConverter
                         converter.Scope,
                         JST.BinaryOperator.Assignment,
                         collectionTempIdentifier,
-                        ExpressionConverterBase.Convert(converter, forEachLoop.Collection)));
+                        collectionExpr));
+
+                collectionExpr = collectionTempIdentifier;
+            }
 
             var enumeratorAssignmentStatement = new JST.ExpressionStatement(
                 null,
@@ -290,20 +293,27 @@ namespace NScript.Converter.StatementsConverter
                         new JST.IndexExpression(
                             forEachLoop.Location,
                             converter.Scope,
-                            collectionTempIdentifier,
+                            collectionExpr,
                             converter.ResolveVirtualMethod(
                                 method,
                                 converter.Scope)),
                         new List<JST.Expression>())));
 
-            return new JST.ScopeBlock(
-                null,
-                converter.Scope,
-                new()
-                {
+            if (collectionAssignmentStatement == null)
+            {
+                return enumeratorAssignmentStatement;
+            }
+            else
+            {
+                return new JST.ScopeBlock(
+                    null,
+                    converter.Scope,
+                    new()
+                    {
                     collectionAssignmentStatement,
                     enumeratorAssignmentStatement
-                });
+                    });
+            }
         }
 
         private static JST.Expression GetForLoopCondition(
