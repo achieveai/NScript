@@ -57,11 +57,14 @@ namespace NScript.Converter
         /// The ienumerable reference.
         /// </summary>
         private TypeReference ienumerableReference;
+        private TypeReference ienumerableGenericReference;
 
         /// <summary>
         /// The ienumerator reference.
         /// </summary>
         private TypeReference ienumeratorReference;
+
+        private TypeReference ienumeratorGenericReference;
 
         /// <summary>
         /// The ignore namespace attribute.
@@ -665,12 +668,21 @@ namespace NScript.Converter
             }
         }
 
-        /// <summary>
-        /// Gets the I enumerator.
-        /// </summary>
-        /// <value>
-        /// The i enumerator.
-        /// </value>
+        public TypeReference IEnumerableGeneric
+        {
+            get
+            {
+                if (this.ienumerableGenericReference == null)
+                {
+                    this.ienumerableGenericReference = this.GetTypeReference(
+                        GenericCollectionsStr,
+                        "IEnumerable`1");
+                }
+
+                return ienumerableGenericReference;
+            }
+        }
+
         public TypeReference IEnumerator
         {
             get
@@ -685,6 +697,23 @@ namespace NScript.Converter
                 return ienumeratorReference;
             }
         }
+
+        public TypeReference IEnumeratorGeneric
+        {
+            get
+            {
+                if (this.ienumeratorGenericReference == null)
+                {
+                    this.ienumeratorGenericReference  = this.GetTypeReference(
+                        GenericCollectionsStr,
+                        "IEnumerator`1");
+                }
+
+                return ienumeratorGenericReference;
+            }
+        }
+
+
 
         /// <summary>
         /// Gets the dictionary entry.
