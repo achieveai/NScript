@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RealScript
 {
     public class Lang8FeatureExecutionTests
     {
-        public static void Main()
+        public static async void Main()
         {
             TestIsExpression();
             TestSwitchExpression();
             TestNullableReferenceTypes();
+            await TestAsyncForEach();
         }
 
         private static void TestIsExpression()
@@ -70,6 +72,36 @@ namespace RealScript
             b = new BaseClass1();
 
             BaseClass2 b2 = null;
+        }
+
+        private static async Promise TestAsyncForEach()
+        {
+            await foreach (var item in GetIntsAsync())
+            {
+                Console.WriteLine(item);
+            }
+
+            foreach (var item in GetInts())
+            {
+                Console.WriteLine(item);
+            }
+        }
+
+        private static async IAsyncEnumerable<int> GetIntsAsync()
+        {
+            var l = new System.Collections.Generic.List<int>() { 1, 2, 3 };
+
+            foreach (var item in l)
+            {
+                yield return item;
+                await Utilities.Delay(0);
+            }
+        }
+
+        private static IEnumerable<int> GetInts()
+        {
+            yield return 1;
+            yield return 2;
         }
 
         private class BaseClass1

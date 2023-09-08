@@ -27,10 +27,12 @@ namespace System.Collections
         void Reset();
     }
 
+    /*
     public interface IAsyncEnumerator
     {
         object Current { get; }
 
         ValueTask<bool> MoveNextAsync();
     }
+    */
 }

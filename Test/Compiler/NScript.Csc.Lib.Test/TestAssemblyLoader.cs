@@ -216,6 +216,7 @@
                 @"Action.cs",
                 @"Arguments.cs",
                 @"Array.cs",
+                @"AsyncGeneratorWrapper.cs",
                 @"Attribute.cs",
                 @"AttributeTargets.cs",
                 @"AttributeUsageAttribute.cs",

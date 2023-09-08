@@ -10,6 +10,8 @@ namespace NScript.Converter
     using NScript.CLR;
     using NScript.CLR.AST;
     using Mono.Cecil;
+    using MoreLinq;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Definition for ConverterKnownReferences.
@@ -182,8 +184,10 @@ namespace NScript.Converter
         private TypeReference scriptNameAttribute;
 
         private TypeReference generatorWrapperType;
+        private TypeReference asyncGeneratorWrapperType;
 
         private TypeReference generatorWrapperGenericType;
+        private TypeReference asyncGeneratorWrapperGenericType;
 
         private TypeReference nativeGeneratorType;
 
@@ -319,8 +323,10 @@ namespace NScript.Converter
         private MethodReference moveNextAsyncIAsyncEnumeratorMethod;
 
         private MethodReference generatorWrapperCtor;
+        private MethodReference asyncGeneratorWrapperCtor;
 
         private MethodReference generatorWrapperGenericCtor;
+        private MethodReference asyncGeneratorWrapperGenericCtor;
 
         private MethodReference nativeGeneratorCtor;
 
@@ -585,8 +591,8 @@ namespace NScript.Converter
                 if (iAsyncEnumerableReference == null)
                 {
                     iAsyncEnumerableReference = this.GetTypeReference(
-                        ConverterKnownReferences.CollectionsStr,
-                        "IAsyncEnumerable");
+                        ConverterKnownReferences.GenericCollectionsStr,
+                        "IAsyncEnumerable`1");
                 }
 
                 return iAsyncEnumerableReference;
@@ -630,26 +636,11 @@ namespace NScript.Converter
                 if (iAsyncEnumeratorReference == null)
                 {
                     iAsyncEnumeratorReference = this.GetTypeReference(
-                        ConverterKnownReferences.CollectionsStr,
-                        "IAsyncEnumerator");
+                        ConverterKnownReferences.GenericCollectionsStr,
+                        "IAsyncEnumerator`1");
                 }
 
                 return iAsyncEnumeratorReference;
-            }
-        }
-
-        public TypeReference IAsyncEnumeratorGeneric
-        {
-            get
-            {
-                if (iAsyncEnumeratorGenericReference == null)
-                {
-                    iAsyncEnumeratorGenericReference  = this.GetTypeReference(
-                        GenericCollectionsStr,
-                        "IAsyncEnumerator`");
-                }
-
-                return iAsyncEnumeratorGenericReference;
             }
         }
 
@@ -731,6 +722,21 @@ namespace NScript.Converter
             }
         }
 
+        public TypeReference AsyncGeneratorWrapper
+        {
+            get
+            {
+                if (this.asyncGeneratorWrapperType == null)
+                {
+                    this.asyncGeneratorWrapperType = GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "AsyncGeneratorWrapper`1");
+                }
+
+                return this.asyncGeneratorWrapperType;
+            }
+        }
+
         public TypeReference GeneratorWrapperGeneric
         {
             get
@@ -743,6 +749,21 @@ namespace NScript.Converter
                 }
 
                 return this.generatorWrapperGenericType;
+            }
+        }
+
+        public TypeReference AsyncGeneratorWrapperGeneric
+        {
+            get
+            {
+                if (this.asyncGeneratorWrapperGenericType == null)
+                {
+                    this.asyncGeneratorWrapperGenericType = GetTypeReference(
+                        ClrKnownReferences.SystemStr,
+                        "AsyncGeneratorWrapper`1");
+                }
+
+                return this.asyncGeneratorWrapperGenericType;
             }
         }
 
@@ -1356,9 +1377,14 @@ namespace NScript.Converter
             {
                 if (this.getAsyncEnumeratorIAsyncEnumerableMethod == null)
                 {
+                    GenericInstanceType nativeArray = new GenericInstanceType(
+                        IAsyncEnumerator);
+                    nativeArray.GenericArguments.Add(
+                        new GenericParameter(0, GenericParameterType.Type, IAsyncEnumerator.Module));
+
                     this.getAsyncEnumeratorIAsyncEnumerableMethod  = this.GetMethodReference(
                         "GetAsyncEnumerator",
-                        this.IAsyncEnumerator,
+                        nativeArray,
                         this.IAsyncEnumerable,
                         CancellationToken);
                 }
@@ -1393,36 +1419,39 @@ namespace NScript.Converter
         {
             get
             {
-                if (this.getCurrentIAsyncEnumeratorMethod == null)
+                if (this.getCurrentIAsyncEnumeratorMethod != null)
                 {
-                    this.getCurrentIAsyncEnumeratorMethod = this.GetMethodReference(
-                        "get_Current",
-                        this.ClrReferences.Object,
-                        this.IAsyncEnumerator);
+                    return this.getCurrentIAsyncEnumeratorMethod;
                 }
 
-                return this.getCurrentIAsyncEnumeratorMethod;
+                var def = IAsyncEnumerator.Resolve();
+                foreach (var method in def.Methods)
+                {
+                    if (method.Name == "get_Current")
+                    {
+                        return this.getCurrentIAsyncEnumeratorMethod = method;
+                    }
+                }
+
+                throw new InvalidProgramException("IAsyncEnumerator.Current could not be resolved");
             }
         }
 
-        public MethodReference MoveNextAsyncIAsyncEnumeratorMethod
+        public MethodReference GetMoveNextAsyncIAsyncEnumeratorMethod(TypeReference typeToFixWith)
         {
-            get
-            {
-                if (this.moveNextAsyncIAsyncEnumeratorMethod == null)
-                {
-                    var genericInstance = new GenericInstanceType(
-                        ClrReferences.ValueTaskGenericTypeRefernce);
-                    genericInstance.GenericArguments.Add(ClrReferences.Boolean);
+            var genericInstance = new GenericInstanceType(
+                ClrReferences.ValueTaskGenericTypeRefernce);
+            genericInstance.GenericArguments.Add(ClrReferences.Boolean);
 
-                    this.moveNextAsyncIAsyncEnumeratorMethod  = this.GetMethodReference(
-                        "MoveNextAsync",
-                        genericInstance,
-                        this.IAsyncEnumerator);
-                }
+            var enumerator = new GenericInstanceType(this.IAsyncEnumerator);
+            enumerator.GenericArguments.Add(typeToFixWith.GetGenericArguments()[0]);
 
-                return this.moveNextAsyncIAsyncEnumeratorMethod;
-            }
+            var rv = this.GetMethodReference(
+                "MoveNextAsync",
+                genericInstance,
+                enumerator);
+
+            return rv;
         }
 
         /// <summary>
@@ -1649,6 +1678,23 @@ namespace NScript.Converter
             }
         }
 
+        public MethodReference AsyncGeneratorWrapperCtor
+        {
+            get
+            {
+                if (this.asyncGeneratorWrapperCtor != null)
+                {
+                    return this.asyncGeneratorWrapperCtor;
+                }
+
+                return this.asyncGeneratorWrapperCtor = this.GetMethodReference(
+                    ".ctor",
+                    ClrReferences.Void,
+                    AsyncGeneratorWrapper,
+                    ClrReferences.Object);
+            }
+        }
+
         public MethodReference GeneratorWrapperGenericCtor
         {
             get
@@ -1666,6 +1712,23 @@ namespace NScript.Converter
             }
         }
 
+        public MethodReference AsyncGeneratorWrapperGenericCtor
+        {
+            get
+            {
+                if (this.asyncGeneratorWrapperGenericCtor != null)
+                {
+                    return this.asyncGeneratorWrapperGenericCtor;
+                }
+
+                return this.asyncGeneratorWrapperGenericCtor = this.GetMethodReference(
+                    ".ctor",
+                    ClrReferences.Void,
+                    AsyncGeneratorWrapperGeneric,
+                    ClrReferences.Object);
+            }
+        }
+
         /// <summary>
         /// Gets the array impl native array ctor.
         /// </summary>
@@ -1678,8 +1741,11 @@ namespace NScript.Converter
             {
                 if (this.arrayImplNativeArrayCtor == null)
                 {
-                    GenericInstanceType nativeArray = new GenericInstanceType(this.NativeArrayGeneric);
-                    nativeArray.GenericArguments.Add(new GenericParameter(0, GenericParameterType.Type, this.NativeArray.Module));
+                    GenericInstanceType nativeArray = new GenericInstanceType(
+                        this.NativeArrayGeneric);
+                    nativeArray.GenericArguments.Add(
+                        new GenericParameter(0, GenericParameterType.Type, this.NativeArray.Module));
+
                     this.arrayImplNativeArrayCtor = this.GetMethodReference(
                         ".ctor",
                         this.ClrReferences.Void,
@@ -1729,7 +1795,8 @@ namespace NScript.Converter
                         this.NativeArray,
                         this.NativeArray);
 
-                    this.getNativeArrayFromArray.GenericParameters.Add(new GenericParameter("T", this.getNativeArrayFromArray));
+                    this.getNativeArrayFromArray.GenericParameters.Add(
+                        new GenericParameter("T", this.getNativeArrayFromArray));
                     ArrayType arrayType = new ArrayType(new GenericParameter(0, GenericParameterType.Method, this.NativeArray.Module));
                     this.getNativeArrayFromArray.Parameters.Add(new ParameterDefinition(arrayType));
                 }
@@ -1755,9 +1822,11 @@ namespace NScript.Converter
                         this.NativeArray,
                         this.NativeArray);
 
-                    this.getNativeArrayFromList.GenericParameters.Add(new GenericParameter("T", this.getNativeArrayFromList));
+                    this.getNativeArrayFromList.GenericParameters.Add(
+                        new GenericParameter("T", this.getNativeArrayFromList));
                     GenericInstanceType listType = new GenericInstanceType(this.ListGeneric);
                     listType.GenericArguments.Add(new GenericParameter(0, GenericParameterType.Method, this.NativeArray.Module));
+
                     this.getNativeArrayFromList.Parameters.Add(new ParameterDefinition(listType));
                 }
 

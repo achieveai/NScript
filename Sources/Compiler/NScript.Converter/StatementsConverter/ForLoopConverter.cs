@@ -192,6 +192,11 @@ namespace NScript.Converter.StatementsConverter
                 ? converter.KnownReferences.GetCurrentIAsyncEnumeratorMethod
                 : converter.KnownReferences.GetCurrentIEnumeratorMethod;
 
+            if (isAsyncEnumerator)
+            {
+                getCurrentFunc = getCurrentFunc.FixGenericTypeArguments(forEachLoop.Collection.ResultType);
+            }
+
             JST.Expression rv = new JST.MethodCallExpression(
                 enumerator.Location,
                 converter.Scope,
@@ -206,8 +211,9 @@ namespace NScript.Converter.StatementsConverter
 
             // Here we can check if genericParameter is restricted to referenceTypes
             // but for now not needed.
-            if (expectedType.IsValueOrEnum()
-                || expectedType.IsGenericParameter)
+            if (getCurrentFunc == converter.KnownReferences.GetCurrentIEnumeratorMethod
+                && (expectedType.IsValueOrEnum()
+                || expectedType.IsGenericParameter))
             {
                 rv = MethodCallExpressionConverter.CreateMethodCallExpression(
                     new MethodCallContext(
@@ -235,12 +241,17 @@ namespace NScript.Converter.StatementsConverter
             out JST.IdentifierExpression collectionTempIdentifier,
             out JST.IdentifierExpression enumeratorTempIdentifier)
         {
-            var getAsyncEnumerator = forEachLoop.GetAwaiterMethodCallExpressionOpt is null;
+            var getAsyncEnumerator = forEachLoop.IsAsync;
 
             // TODO: Generic case
             var method = getAsyncEnumerator
-                ? converter.KnownReferences.GetEnumeratorIEnumerableMethod
-                : converter.KnownReferences.GetAsyncEnumeratorIAsyncEnumerableMethod;
+                ? converter.KnownReferences.GetAsyncEnumeratorIAsyncEnumerableMethod
+                : converter.KnownReferences.GetEnumeratorIEnumerableMethod;
+
+            if (getAsyncEnumerator)
+            {
+                method = method.FixGenericTypeArguments(forEachLoop.Collection.ResultType);
+            }
 
             enumeratorTempIdentifier = new JST.IdentifierExpression(
                 converter.GetTempVariable(),
@@ -297,8 +308,14 @@ namespace NScript.Converter.StatementsConverter
             ForEachLoop forEachLoop)
         {
             var method = forEachLoop.IsAsync
-                ? converter.KnownReferences.MoveNextAsyncIAsyncEnumeratorMethod
+                ? converter.KnownReferences.GetMoveNextAsyncIAsyncEnumeratorMethod(
+                    forEachLoop.Collection.ResultType)
                 : converter.KnownReferences.MoveNextEnumeratorMethod;
+
+            // if (forEachLoop.IsAsync)
+            // {
+            //     method = method.FixGenericTypeArguments(forEachLoop.Collection.ResultType);
+            // }
 
             JST.Expression rv = new JST.MethodCallExpression(
                 forEachLoop.Location,

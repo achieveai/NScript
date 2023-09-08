@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace System
 {
+    /*
     public class AsyncGeneratorWrapper : IAsyncEnumerator, IAsyncEnumerable
     {
         private NativeAsyncGenerator _generator;
@@ -28,19 +29,19 @@ namespace System
             return !_current.Done;
         }
     }
+    */
 
     public class AsyncGeneratorWrapper<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T>
     {
         private NativeAsyncGenerator _generator;
         private NativeAsyncGenerator.NextObject _current;
 
-        [Script("this.@{[mscorlib]System.GeneratorWrapper`1::_generator} = generatorFunction();")]
+        [Script("this.@{[mscorlib]System.AsyncGeneratorWrapper`1::_generator} = generatorFunction();")]
         public extern AsyncGeneratorWrapper(object generatorFunction);
 
-        public extern T Current
+        public T Current
         {
-            [Script("this.@{[mscorlib]System.AsyncGeneratorWrapper`1::_current}.value")]
-            get;
+            get => Type.AS<object, T>(_current.Value);
         }
 
         public ValueTask DisposeAsync()
@@ -51,11 +52,10 @@ namespace System
         public async ValueTask<bool> MoveNextAsync()
         {
             _current = await _generator.NextAsync();
-            return _current.Done;
+            return !_current.Done;
         }
 
-        IAsyncEnumerator<T> IAsyncEnumerable<T>.GetAsyncEnumerator(
-            CancellationToken _)
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken _)
         {
             return this;
         }
