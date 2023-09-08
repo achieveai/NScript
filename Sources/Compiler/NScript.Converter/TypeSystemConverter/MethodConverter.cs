@@ -1385,7 +1385,7 @@ namespace NScript.Converter.TypeSystemConverter
                 else
                 {
                     ctor = (IsAsync
-                        ? KnownReferences.AsyncGeneratorWrapperGenericCtor
+                        ? KnownReferences.AsyncGeneratorWrapperCtor
                         : KnownReferences.GeneratorWrapperGenericCtor)
                             .FixGenericTypeArguments(MethodDefinition.ReturnType);
 

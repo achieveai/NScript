@@ -45,10 +45,6 @@ namespace NScript.Converter
 
         private TypeReference iAsyncEnumerableReference;
 
-        private TypeReference iAsyncEnumerableGenericReference;
-
-        private TypeReference iAsyncEnumeratorGenericReference;
-
         private TypeReference iAsyncEnumeratorReference;
 
         private TypeReference cancellationTokenReference;
@@ -57,14 +53,11 @@ namespace NScript.Converter
         /// The ienumerable reference.
         /// </summary>
         private TypeReference ienumerableReference;
-        private TypeReference ienumerableGenericReference;
 
         /// <summary>
         /// The ienumerator reference.
         /// </summary>
         private TypeReference ienumeratorReference;
-
-        private TypeReference ienumeratorGenericReference;
 
         /// <summary>
         /// The ignore namespace attribute.
@@ -323,12 +316,10 @@ namespace NScript.Converter
         /// </summary>
         private MethodReference moveNextEnumeratorMethod;
 
-        private MethodReference moveNextAsyncIAsyncEnumeratorMethod;
-
         private MethodReference generatorWrapperCtor;
-        private MethodReference asyncGeneratorWrapperCtor;
 
         private MethodReference generatorWrapperGenericCtor;
+
         private MethodReference asyncGeneratorWrapperGenericCtor;
 
         private MethodReference nativeGeneratorCtor;
@@ -602,21 +593,6 @@ namespace NScript.Converter
             }
         }
 
-        public TypeReference IAsyncEnumerableGeneric
-        {
-            get
-            {
-                if (iAsyncEnumerableGenericReference == null)
-                {
-                    iAsyncEnumerableGenericReference = GetTypeReference(
-                        GenericCollectionsStr,
-                        "IAsyncEnumerable`");
-                }
-
-                return iAsyncEnumerableGenericReference;
-            }
-        }
-
         public TypeReference CancellationToken
         {
             get
@@ -668,21 +644,6 @@ namespace NScript.Converter
             }
         }
 
-        public TypeReference IEnumerableGeneric
-        {
-            get
-            {
-                if (this.ienumerableGenericReference == null)
-                {
-                    this.ienumerableGenericReference = this.GetTypeReference(
-                        GenericCollectionsStr,
-                        "IEnumerable`1");
-                }
-
-                return ienumerableGenericReference;
-            }
-        }
-
         public TypeReference IEnumerator
         {
             get
@@ -697,23 +658,6 @@ namespace NScript.Converter
                 return ienumeratorReference;
             }
         }
-
-        public TypeReference IEnumeratorGeneric
-        {
-            get
-            {
-                if (this.ienumeratorGenericReference == null)
-                {
-                    this.ienumeratorGenericReference  = this.GetTypeReference(
-                        GenericCollectionsStr,
-                        "IEnumerator`1");
-                }
-
-                return ienumeratorGenericReference;
-            }
-        }
-
-
 
         /// <summary>
         /// Gets the dictionary entry.
@@ -778,21 +722,6 @@ namespace NScript.Converter
                 }
 
                 return this.generatorWrapperGenericType;
-            }
-        }
-
-        public TypeReference AsyncGeneratorWrapperGeneric
-        {
-            get
-            {
-                if (this.asyncGeneratorWrapperGenericType == null)
-                {
-                    this.asyncGeneratorWrapperGenericType = GetTypeReference(
-                        ClrKnownReferences.SystemStr,
-                        "AsyncGeneratorWrapper`1");
-                }
-
-                return this.asyncGeneratorWrapperGenericType;
             }
         }
 
@@ -1707,23 +1636,6 @@ namespace NScript.Converter
             }
         }
 
-        public MethodReference AsyncGeneratorWrapperCtor
-        {
-            get
-            {
-                if (this.asyncGeneratorWrapperCtor != null)
-                {
-                    return this.asyncGeneratorWrapperCtor;
-                }
-
-                return this.asyncGeneratorWrapperCtor = this.GetMethodReference(
-                    ".ctor",
-                    ClrReferences.Void,
-                    AsyncGeneratorWrapper,
-                    ClrReferences.Object);
-            }
-        }
-
         public MethodReference GeneratorWrapperGenericCtor
         {
             get
@@ -1741,7 +1653,7 @@ namespace NScript.Converter
             }
         }
 
-        public MethodReference AsyncGeneratorWrapperGenericCtor
+        public MethodReference AsyncGeneratorWrapperCtor
         {
             get
             {
@@ -1753,7 +1665,7 @@ namespace NScript.Converter
                 return this.asyncGeneratorWrapperGenericCtor = this.GetMethodReference(
                     ".ctor",
                     ClrReferences.Void,
-                    AsyncGeneratorWrapperGeneric,
+                    AsyncGeneratorWrapper,
                     ClrReferences.Object);
             }
         }

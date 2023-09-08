@@ -262,6 +262,9 @@ namespace NScript.Converter.StatementsConverter
                 converter.GetTempVariable(),
                 converter.Scope);
 
+            // TODO: Collection assignment may not be required when we're sure of
+            // no side effects when evaluating the collection. i.e Variable
+
             var collectionAssignmentStatement =
                 new JST.ExpressionStatement(
                     null,

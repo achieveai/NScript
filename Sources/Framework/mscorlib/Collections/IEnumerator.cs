@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace System.Collections
+﻿namespace System.Collections
 {
     /// <summary>Supports a simple iteration over a nongeneric collection.</summary>
     /// <filterpriority>1</filterpriority>
@@ -26,13 +24,4 @@ namespace System.Collections
         /// <filterpriority>2</filterpriority>
         void Reset();
     }
-
-    /*
-    public interface IAsyncEnumerator
-    {
-        object Current { get; }
-
-        ValueTask<bool> MoveNextAsync();
-    }
-    */
 }

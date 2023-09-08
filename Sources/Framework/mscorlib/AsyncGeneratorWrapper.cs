@@ -1,35 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace System
+﻿namespace System
 {
-    /*
-    public class AsyncGeneratorWrapper : IAsyncEnumerator, IAsyncEnumerable
-    {
-        private NativeAsyncGenerator _generator;
-        private NativeAsyncGenerator.NextObject _current;
-
-        [Script("this.@{[mscorlib]System.GeneratorWrapper::_generator} = generatorFunction();")]
-        public extern AsyncGeneratorWrapper(object generatorFunction);
-
-        object IAsyncEnumerator.Current => _current.Value;
-
-        IAsyncEnumerator IAsyncEnumerable.GetAsyncEnumerator(
-            CancellationToken _)
-        {
-            return this;
-        }
-
-        async ValueTask<bool> IAsyncEnumerator.MoveNextAsync()
-        {
-            _current = await _generator.NextAsync();
-            return !_current.Done;
-        }
-    }
-    */
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public class AsyncGeneratorWrapper<T> : IAsyncEnumerator<T>, IAsyncEnumerable<T>
     {
