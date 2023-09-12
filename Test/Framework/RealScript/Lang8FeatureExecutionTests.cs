@@ -77,6 +77,11 @@ namespace RealScript
             (int, int)? tupl = null;
             tupl ??= (3, 4);
 
+            BaseClass2 b2 = new BaseClass2();
+            b2.Derived ??= new Derived { X = 42 };
+
+            Console.WriteLine(b2.Derived.X);
+
             Console.WriteLine(tupl.Value.Item1);
             Console.WriteLine(tupl.Value.Item2);
         }
@@ -124,7 +129,10 @@ namespace RealScript
             public int X { get; set; }
         }
 
-        private class BaseClass2 { }
+        private class BaseClass2
+        {
+            public Derived Derived { get; set; }
+        }
 
         private class Derived : BaseClass1 { }
 

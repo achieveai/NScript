@@ -21,5 +21,20 @@ namespace NScript.CLR.AST
         public Expression Right { get; private set; }
 
         public override TypeReference ResultType => Right.ResultType;
+
+        public BinaryExpression AsBinaryExpression()
+        {
+            return new BinaryExpression(
+                Context,
+                Location,
+                Left,
+                new NullConditional(
+                    Context,
+                    Location,
+                    Left,
+                    Right,
+                    ResultType),
+                BinaryOperator.Assignment);
+        }
     }
 }

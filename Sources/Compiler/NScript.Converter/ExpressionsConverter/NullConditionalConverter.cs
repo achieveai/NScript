@@ -85,22 +85,9 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             NullCoalsecingAssignmentExpression expression)
         {
-            var lhs = ExpressionConverterBase.Convert(converter, expression.Left);
-            var toAssign = Convert(
+            return ExpressionConverterBase.Convert(
                 converter,
-                new NullConditional(
-                    expression.Context,
-                    expression.Location,
-                    expression.Left,
-                    expression.Right,
-                    expression.ResultType));
-
-            return new JST.BinaryExpression(
-                lhs.Location,
-                converter.Scope,
-                JST.BinaryOperator.Assignment,
-                lhs,
-                toAssign);
+                expression.AsBinaryExpression());
         }
     }
 }
