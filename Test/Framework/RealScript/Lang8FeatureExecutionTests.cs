@@ -9,6 +9,7 @@ namespace RealScript
         {
             TestIsExpression();
             TestSwitchExpression();
+            TestNullCoalescingAssignment();
             TestNullableReferenceTypes();
             await TestAsyncForEach();
         }
@@ -64,6 +65,20 @@ namespace RealScript
                     _ => (l, r) => l - r
                 };
             }
+        }
+
+        private static void TestNullCoalescingAssignment()
+        {
+            BaseClass1 b = null;
+            b ??= new BaseClass1 { X = 88 };
+
+            Console.WriteLine(b.X);
+
+            (int, int)? tupl = null;
+            tupl ??= (3, 4);
+
+            Console.WriteLine(tupl.Value.Item1);
+            Console.WriteLine(tupl.Value.Item2);
         }
 
         private static void TestNullableReferenceTypes()
