@@ -32,3 +32,4 @@ t=Person(t=5, u=0, name=opq), a=Person(t=5, u=0, name=efg), Second=second
 Testing recursive types...
 1
 2
+pname
