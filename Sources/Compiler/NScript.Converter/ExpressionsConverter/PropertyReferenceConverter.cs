@@ -86,7 +86,7 @@ namespace NScript.Converter.ExpressionsConverter
                             && field.IsInitOnly
                             && field.Name.EndsWith("_BackingField")
                             && field.CustomAttributes.Any(ca => ca.AttributeType.IsSameDefinition(converter.ClrKnownReferences.CompilerGeneratedAttribute))
-                            && field.FieldType.Equals(propertyDefinition.PropertyType)
+                            && field.FieldType.IsSame(propertyDefinition.PropertyType)
                             && field.Name.Contains('<' + propertyDefinition.Name + '>'))
                         {
                             backingField = field;

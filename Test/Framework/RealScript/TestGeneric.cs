@@ -130,7 +130,8 @@ namespace RealScript
         {
             var w = new Wrapper<Person>(new Person("pname"));
             var person = w.Property;
-            Console.WriteLine(person.Name);
+            Console.WriteLine(person);
+            Console.WriteLine(person.Value.Name);
         }
 
         private static void TestSameInterfaceTwice<T>(T x)
@@ -233,10 +234,10 @@ namespace RealScript
         public Wrapper(T value)
         {
             Value = value;
-            Property = value;
+            Property = this;
         }
 
-        public T Property { get; }
+        public Wrapper<T> Property { get; }
 
         public override string ToString()
         {
