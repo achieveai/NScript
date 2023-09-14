@@ -1926,7 +1926,7 @@ namespace NScript.Converter.TypeSystemConverter
                 if (field.IsPrivate
                     && field.Name.EndsWith("_BackingField")
                     && field.CustomAttributes.Any(ca => ca.AttributeType.IsSameDefinition(clrKnownReferences.CompilerGeneratedAttribute))
-                    && field.FieldType.Equals(propertyDefinition.PropertyType)
+                    && TypeHelpers.IsSame(field.FieldType, propertyDefinition.PropertyType)
                     && field.Name.Contains('<' + propertyDefinition.Name + '>'))
                 {
                     return field;

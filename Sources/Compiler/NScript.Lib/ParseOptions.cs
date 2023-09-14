@@ -59,6 +59,8 @@ namespace NScript.Lib
 
         private bool uglify = false;
 
+        private bool optimize = false;
+
         /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
         /// </summary>
@@ -116,6 +118,8 @@ namespace NScript.Lib
         public bool Minify => this.minify;
 
         public bool Uglify => this.uglify;
+
+        public bool Optimize => this.optimize;
 
         /// <summary>
         /// Parses the args.
@@ -199,6 +203,9 @@ namespace NScript.Lib
                         continue;
                     case "-uglify":
                         options.uglify = true;
+                        continue;
+                    case "-optimize":
+                        options.optimize = true;
                         continue;
                     default:
                         break;

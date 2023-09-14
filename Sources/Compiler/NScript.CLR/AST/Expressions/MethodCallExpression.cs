@@ -105,7 +105,8 @@ namespace NScript.CLR.AST
             {
                 if (this.methodReference is MethodReferenceExpression methodReferenceExpression)
                 {
-                    return methodReferenceExpression.MethodReference.ReturnType;
+                    return methodReferenceExpression.MethodReference.ReturnType
+                        .FixGenericTypeArguments(methodReferenceExpression.MethodReference);
                 }
 
                 if (this.methodReference is ConstructorReferenceExpression constructorReferenceExpression)

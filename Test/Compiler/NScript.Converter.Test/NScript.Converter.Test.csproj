@@ -19,6 +19,7 @@
     <None Remove="JsExecutionTests\Results\YieldReturnTests.txt" />
     <None Remove="JsExecutionTests\Results\TupleTests.txt" />
     <None Remove="MethodConverterTests\AsyncAwait\Test1.js" />
+    <None Remove="MethodConverterTests\AsyncAwait\Test10.js" />
     <None Remove="MethodConverterTests\AsyncAwait\Test2.js" />
     <None Remove="MethodConverterTests\AsyncAwait\Test3.js" />
     <None Remove="MethodConverterTests\AsyncAwait\Test3.static.js" />
@@ -134,6 +135,7 @@
   <ItemGroup>
     <EmbeddedResource Include="JsExecutionTests\Results\ForEachLoopTests.txt" />
     <EmbeddedResource Include="JsExecutionTests\Results\Lang8FeatureExecutionTests.txt" />
+    <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test10.js" />
     <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test3.static.js" />
     <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\AddTestEvent.static.js" />
     <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\GetAutoProperty.static.js" />

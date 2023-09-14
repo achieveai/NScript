@@ -79,6 +79,8 @@ namespace NScript.CLR.AST
             }
         }
 
+        public override TypeReference ResultType => MethodReference.ReturnType;
+
         /// <summary>
         /// Serializes the specified serialization info.
         /// </summary>
