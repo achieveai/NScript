@@ -49,11 +49,11 @@ namespace System
             return this;
         }
 
-        object IEnumerator.Current => _current.Value;
-        
-        public T Current
+        object IEnumerator.Current => Current;
+
+        public extern T Current
         {
-            [Script("this.@{[mscorlib]System.GeneratorWrapper`1::_current}.value")]
+            [Script("return this.@{[mscorlib]System.GeneratorWrapper`1::_current}.value;")]
             get;
         }
 

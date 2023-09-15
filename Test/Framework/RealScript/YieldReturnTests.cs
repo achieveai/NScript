@@ -39,6 +39,11 @@ namespace RealScript
                 Console.WriteLine(el);
             }
 
+            foreach (var el in H<int>(1, 2, 3))
+            {
+                Console.WriteLine(el);
+            }
+
             foreach(var el in H<string>("first", "second", "third"))
             {
                 Console.WriteLine(el);
