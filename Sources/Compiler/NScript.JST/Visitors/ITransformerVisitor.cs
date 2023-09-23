@@ -65,9 +65,6 @@
         Expression VisitThisExpression(ThisExpression expr)
             => TransformerVisitorExtension.VisitThisExpressionExt(this, expr);
 
-        Expression VisitThrowExpression(ThrowExpression expr)
-            => TransformerVisitorExtension.VisitThrowExpressionExt(this, expr);
-
         Expression VisitTupleExpression(TupleExpression expr)
             => TransformerVisitorExtension.VisitTupleExpressionExt(this, expr);
 
@@ -118,6 +115,9 @@
 
         Statement VisitSwitchBlockStatement(SwitchBlockStatement switchBlockStatement)
             => TransformerVisitorExtension.VisitSwitchBlockStatementExt(this, switchBlockStatement);
+
+        Statement VisitThrowStatment(ThrowStatement throwStatement)
+            => TransformerVisitorExtension.VisitThrowStatementExt(this, throwStatement);
 
         Statement VisitTryCatchFinallyBlock(TryCatchFinalyBlock tryCatchFinalyBlock)
             => TransformerVisitorExtension.VisitTryCatchFinallyBlockExt(this, tryCatchFinalyBlock);

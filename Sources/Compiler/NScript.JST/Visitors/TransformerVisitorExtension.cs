@@ -196,12 +196,6 @@
                 expr.Location,
                 expr.Scope);
 
-        public static Expression VisitThrowExpressionExt(this ITransformerVisitor self, ThrowExpression expr)
-            => new ThrowExpression(
-                expr.Location,
-                expr.Scope,
-                self.DispatchExpression(expr.Expression));
-
         public static Expression VisitTupleExpressionExt(this ITransformerVisitor self, TupleExpression expr)
             => new TupleExpression(
                 expr.Location,
@@ -270,8 +264,6 @@
                     return self.VisitStringLiteralExpression(stringLiteralExpression);
                 case ThisExpression thisExpression:
                     return self.VisitThisExpression(thisExpression);
-                case ThrowExpression throwExpression:
-                    return self.VisitThrowExpression(throwExpression);
                 case TupleExpression tupleExpression:
                     return self.VisitTupleExpression(tupleExpression);
                 case UnaryExpression unaryExpression:
@@ -383,6 +375,12 @@
                             self.DispatchStatement(caseBlock.Value)))
                     .ToList());
 
+        public static Statement VisitThrowStatementExt(this ITransformerVisitor self, ThrowStatement throwStatement)
+            => new ThrowStatement(
+                throwStatement.Location,
+                throwStatement.Scope,
+                self.DispatchExpression(throwStatement.Expression));
+
         public static Statement VisitTryCatchFinallyBlockExt(this ITransformerVisitor self, TryCatchFinalyBlock tryCatchFinalyBlock)
             => new TryCatchFinalyBlock(
                 tryCatchFinalyBlock.Scope,
@@ -444,6 +442,8 @@
                     return self.VisitScopeBlock(scopeBlock);
                 case SwitchBlockStatement switchBlockStatement:
                     return self.VisitSwitchBlockStatement(switchBlockStatement);
+                case ThrowStatement throwStatement:
+                    return self.VisitThrowStatment(throwStatement);
                 case TryCatchFinalyBlock tryCatchFinalyBlock:
                     return self.VisitTryCatchFinallyBlock(tryCatchFinalyBlock);
                 case WhileLoop whileLoop:

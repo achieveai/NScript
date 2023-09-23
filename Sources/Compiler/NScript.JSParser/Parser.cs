@@ -138,15 +138,12 @@ namespace NScript.JSParser
                         tree,
                         resolver);
                 case JavaScriptParser.THROW:
-                    return new JST.ExpressionStatement(
+                    return new JST.ThrowStatement(
                         null,
                         resolver.Scope,
-                        new JST.ThrowExpression(
-                            null,
-                            resolver.Scope,
-                            Parser.ParseExpression(
-                                (CommonTree)tree.Children[0],
-                                resolver)));
+                        Parser.ParseExpression(
+                            (CommonTree)tree.Children[0],
+                            resolver));
                 case JavaScriptLexer.BREAK:
                     return new JST.BreakStatement(null, resolver.Scope);
                 default:

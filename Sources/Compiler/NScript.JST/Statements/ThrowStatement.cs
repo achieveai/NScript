@@ -6,42 +6,20 @@
 
 namespace NScript.JST
 {
-    using System;
-    using System.Collections.Generic;
     using NScript.Utils;
 
-    /// <summary>
-    /// Definition for ThrowExpression
-    /// </summary>
-    public class ThrowExpression : Expression
+    public class ThrowStatement : Statement
     {
-        /// <summary>
-        /// Backing field for InnerExpression.
-        /// </summary>
-        private Expression innerExpression;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ThrowExpression"/> class.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="scope">The scope.</param>
-        /// <param name="innerExpression">The inner expression.</param>
-        public ThrowExpression(
+        public ThrowStatement(
             Location location,
             IdentifierScope scope,
             Expression innerExpression)
             : base(location, scope)
         {
-            this.innerExpression = innerExpression;
+            Expression = innerExpression;
         }
 
-        /// <summary>
-        /// Gets the expression.
-        /// </summary>
-        public Expression Expression
-        {
-            get { return this.innerExpression; }
-        }
+        public Expression Expression { get; }
 
         /// <summary>
         /// Writes to the specified writer.
@@ -53,6 +31,7 @@ namespace NScript.JST
                 .EnterLocation(this.Location)
                 .Write(Keyword.Throw)
                 .Write(this.Expression)
+                .Write(Symbols.SemiColon)
                 .LeaveLocation();
         }
 

@@ -6,10 +6,10 @@
 
 namespace NScript.Converter.ExpressionsConverter
 {
-    using System;
-    using System.Collections.Generic;
     using NScript.Converter.TypeSystemConverter;
     using NScript.CLR.AST;
+    using System.Collections.Generic;
+    using NScript.JST;
 
     /// <summary>
     /// Definition for ThrowStatementConverter
@@ -26,12 +26,22 @@ namespace NScript.Converter.ExpressionsConverter
             IMethodScopeConverter converter,
             ThrowExpression statement)
         {
-            return new JST.ThrowExpression(
+            var shell = new JST.FunctionExpression(
                 statement.Location,
                 converter.Scope,
-                ExpressionConverterBase.Convert(
-                    converter,
-                    statement.Expression));
+                new IdentifierScope(converter.Scope),
+                new List<IIdentifier>(),
+                null);
+
+            shell.AddStatement(
+                new JST.ThrowStatement(
+                    statement.Location,
+                    converter.Scope,
+                    ExpressionConverterBase.Convert(
+                        converter,
+                        statement.Expression)));
+
+            return new JST.MethodCallExpression(statement.Location, converter.Scope, shell);
         }
     }
 }

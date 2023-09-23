@@ -136,7 +136,7 @@
         {
         }
 
-        public static void VisitThrowExpressionExt(this IJstVisitor self, ThrowExpression throwExpression)
+        public static void VisitThrowExpressionExt(this IJstVisitor self, ThrowStatement throwExpression)
         {
             self.DispatchExpression(throwExpression.Expression);
         }
@@ -228,9 +228,6 @@
                     break;
                 case ThisExpression thisExpression:
                     self.VisitThisExpression(thisExpression);
-                    break;
-                case ThrowExpression throwExpression:
-                    self.VisitThrowExpression(throwExpression);
                     break;
                 case TupleExpression tupleExpression:
                     self.VisitTupleExpression(tupleExpression);
@@ -419,6 +416,9 @@
                     break;
                 case SwitchBlockStatement switchBlockStatement:
                     self.VisitSwitchBlockStatement(switchBlockStatement);
+                    break;
+                case ThrowStatement throwStatement:
+                    self.VisitThrowExpression(throwStatement);
                     break;
                 case TryCatchFinalyBlock tryCatchFinalyBlock:
                     self.VisitTryCatchFinallyBlock(tryCatchFinalyBlock);
