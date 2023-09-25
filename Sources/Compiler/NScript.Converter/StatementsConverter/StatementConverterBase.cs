@@ -8,6 +8,7 @@ namespace NScript.Converter.StatementsConverter
 {
     using System;
     using System.Collections.Generic;
+    using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
 
     /// <summary>
@@ -119,6 +120,11 @@ namespace NScript.Converter.StatementsConverter
                 typeof (CLR.AST.SwitchStatement),
                 StatementConverterBase.SimplifyConverter<CLR.AST.SwitchStatement>(
                     SwitchStatementConverter.Convert));
+
+            returnValue.Add(
+                typeof(CLR.AST.ThrowStatement),
+                StatementConverterBase.SimplifyConverter<CLR.AST.ThrowStatement>(
+                    ThrowExpressionConverter.ConvertStatement));
 
             returnValue.Add(
                 typeof (CLR.AST.TryCatchFinally),

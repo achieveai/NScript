@@ -136,7 +136,7 @@
         {
         }
 
-        public static void VisitThrowExpressionExt(this IJstVisitor self, ThrowStatement throwExpression)
+        public static void VisitThrowStatementExt(this IJstVisitor self, ThrowStatement throwExpression)
         {
             self.DispatchExpression(throwExpression.Expression);
         }

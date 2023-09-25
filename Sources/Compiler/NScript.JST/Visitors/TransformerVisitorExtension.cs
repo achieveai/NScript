@@ -379,7 +379,8 @@
             => new ThrowStatement(
                 throwStatement.Location,
                 throwStatement.Scope,
-                self.DispatchExpression(throwStatement.Expression));
+                self.DispatchExpression(throwStatement.Expression),
+                throwStatement.WriteOnNewLine);
 
         public static Statement VisitTryCatchFinallyBlockExt(this ITransformerVisitor self, TryCatchFinalyBlock tryCatchFinalyBlock)
             => new TryCatchFinalyBlock(

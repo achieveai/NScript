@@ -1028,6 +1028,16 @@ namespace JsCsc.Lib.Serialization
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
+    public class ThrowStatement
+        : StatementSer
+    {
+        public bool NoUse { get; set; }
+
+        public ExpressionSer Expression { get; set; }
+    }
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
     public class EmptyStatementSer
         : StatementSer
     {

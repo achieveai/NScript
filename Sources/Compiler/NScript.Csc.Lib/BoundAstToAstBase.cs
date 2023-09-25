@@ -1501,16 +1501,12 @@
             };
 
         public override AstBase VisitThrowStatement(BoundThrowStatement node, SerializationContext arg)
-            => new StatementExpressionSer
+            => new ThrowStatement
             {
                 Location = node.Syntax.Location.GetSerLoc(),
-                Expression = new ThrowExpression
-                {
-                    Location = node.Syntax.Location.GetSerLoc(),
-                    Expression = node.ExpressionOpt != null
-                    ? (ExpressionSer)Visit(node.ExpressionOpt, arg)
-                    : null
-                }
+                Expression = node.ExpressionOpt == null
+                    ? throw new NotImplementedException("implicit rethrow is not supported")
+                    : (ExpressionSer)Visit(node.ExpressionOpt, arg)
             };
 
         public override AstBase VisitTryStatement(BoundTryStatement node, SerializationContext arg)

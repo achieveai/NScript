@@ -13,13 +13,17 @@ namespace NScript.JST
         public ThrowStatement(
             Location location,
             IdentifierScope scope,
-            Expression innerExpression)
+            Expression innerExpression,
+            bool writeOnNewLine)
             : base(location, scope)
         {
+            WriteOnNewLine = writeOnNewLine;
             Expression = innerExpression;
         }
 
         public Expression Expression { get; }
+
+        public bool WriteOnNewLine { get; }
 
         /// <summary>
         /// Writes to the specified writer.
@@ -27,6 +31,8 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
+            writer = WriteOnNewLine ? writer.WriteNewLine() : writer;
+
             writer
                 .EnterLocation(this.Location)
                 .Write(Keyword.Throw)

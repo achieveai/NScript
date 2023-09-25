@@ -143,7 +143,8 @@ namespace NScript.JSParser
                         resolver.Scope,
                         Parser.ParseExpression(
                             (CommonTree)tree.Children[0],
-                            resolver));
+                            resolver),
+                        writeOnNewLine: true);
                 case JavaScriptLexer.BREAK:
                     return new JST.BreakStatement(null, resolver.Scope);
                 default:

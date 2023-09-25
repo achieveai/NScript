@@ -387,7 +387,12 @@ namespace JsCsc.Lib
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
 
-        private Node ParseThrowStatment(Serialization.ThrowExpression jObject) => new ThrowExpression(
+        private Node ParseThrowExpression(Serialization.ThrowExpression jObject) => new ThrowExpression(
+                _clrContext,
+                LocFromJObject(jObject),
+                ParseExpression(jObject.Expression));
+
+        private Node ParseThrowStatment(Serialization.ThrowStatement jObject) => new ThrowStatement(
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
@@ -1993,7 +1998,11 @@ namespace JsCsc.Lib
                 },
                 {
                     typeof(Serialization.ThrowExpression),
-                    (a) => ParseThrowStatment((Serialization.ThrowExpression)a)
+                    (a) => ParseThrowExpression((Serialization.ThrowExpression)a)
+                },
+                {
+                    typeof(Serialization.ThrowStatement),
+                    (a) => ParseThrowStatment((Serialization.ThrowStatement)a)
                 },
                 {
                     typeof(Serialization.BreakStatement),
