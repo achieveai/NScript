@@ -183,7 +183,6 @@ namespace NScript.Converter
         private TypeReference asyncGeneratorWrapperType;
 
         private TypeReference generatorWrapperGenericType;
-        private TypeReference asyncGeneratorWrapperGenericType;
 
         private TypeReference nativeGeneratorType;
 

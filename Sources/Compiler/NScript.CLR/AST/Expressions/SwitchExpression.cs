@@ -22,10 +22,10 @@ namespace NScript.CLR.AST
 
         public override TypeReference ResultType { get; }
 
-        public Expression SwitchValue { get; set; }
+        public Expression SwitchValue { get; }
 
-        public List<CaseLabel> CaseLabels { get; set; }
+        public List<CaseLabel> CaseLabels { get; }
 
-        public List<Expression> Expressions { get; set; }
+        public List<Expression> Expressions { get; }
     }
 }

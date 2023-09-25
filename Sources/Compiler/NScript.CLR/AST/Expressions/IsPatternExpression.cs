@@ -11,9 +11,9 @@ namespace NScript.CLR.AST
             Pattern = pattern;
         }
 
-        public Expression Lhs { get; set; }
+        public Expression Lhs { get; }
 
-        public Pattern Pattern { get; set; }
+        public Pattern Pattern { get; }
 
         public override TypeReference ResultType => Context.KnownReferences.Boolean;
     }
@@ -33,9 +33,9 @@ namespace NScript.CLR.AST
             VariableAccess = variableAccess;
         }
 
-        public Expression VariableAccess { get; set; }
+        public Expression VariableAccess { get; }
 
-        public TypeReference Type { get; set; }
+        public TypeReference Type { get; }
     }
 
     public class ConstantPattern : Pattern
@@ -45,6 +45,6 @@ namespace NScript.CLR.AST
             ConstantExpression = constantExpression;
         }
 
-        public Expression ConstantExpression { get; set; }
+        public Expression ConstantExpression { get; }
     }
 }

@@ -1372,10 +1372,10 @@ namespace NScript.Converter.TypeSystemConverter
                 MethodReference ctor;
                 JST.Expression jstCtor;
 
-                if (MethodDefinition.ReturnType.Resolve().IsSameDefinition(
-                        KnownReferences.IEnumerable.Resolve())
-                    || MethodDefinition.ReturnType.Resolve().IsSameDefinition(
-                        KnownReferences.IEnumerator.Resolve()))
+                if (MethodDefinition.ReturnType.IsSameDefinition(
+                        KnownReferences.IEnumerable)
+                    || MethodDefinition.ReturnType.IsSameDefinition(
+                        KnownReferences.IEnumerator))
                 {
                     ctor = IsAsync
                         ? KnownReferences.AsyncGeneratorWrapperCtor
