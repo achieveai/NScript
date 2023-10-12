@@ -46,6 +46,14 @@ namespace RealScript
             Console.WriteLine(GetOperation(DayOfWeek.Tuesday)(23, 45));
             Console.WriteLine(GetOperation(DayOfWeek.Wednesday)(23, 45));
 
+            Console.WriteLine(WeekStr(DayOfWeek.Monday));
+            Console.WriteLine(WeekStr(DayOfWeek.Tuesday));
+            Console.WriteLine(WeekStr(DayOfWeek.Others));
+
+            Console.WriteLine(DayOfWeekFromString(WeekStr(DayOfWeek.Monday)));
+            Console.WriteLine(DayOfWeekFromString(WeekStr(DayOfWeek.Tuesday)));
+            Console.WriteLine(DayOfWeekFromString(WeekStr(DayOfWeek.Others)));
+
             static string NumberConverter(int num)
             {
                 return num switch
@@ -65,6 +73,24 @@ namespace RealScript
                     _ => (l, r) => l - r
                 };
             }
+
+            static string WeekStr(DayOfWeek day)
+                => day switch
+                {
+                    DayOfWeek.Monday => "Monday",
+                    DayOfWeek.Tuesday => "Tuesday",
+                    DayOfWeek.Wednesday => "Wednesday",
+                    _ => "Other Days"
+                };
+
+            static DayOfWeek DayOfWeekFromString(string str)
+                => str switch
+                {
+                    "Monday" => DayOfWeek.Monday,
+                    "Tuesday" => DayOfWeek.Tuesday,
+                    "Wednesday" => DayOfWeek.Wednesday,
+                    _ => DayOfWeek.Others
+                };
         }
 
         private static void TestNullCoalescingAssignment()
@@ -141,6 +167,7 @@ namespace RealScript
             Monday,
             Tuesday,
             Wednesday,
+            Others
         }
     }
 }
