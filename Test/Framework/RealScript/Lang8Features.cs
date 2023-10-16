@@ -44,7 +44,18 @@ namespace RealScript
             var isSubClass = b is SubClass;
         }
 
-        public static void SwitchExpression()
+        public static void SwitchEnumExpression()
+        {
+            var x = DayOfWeek.Monday;
+
+            var isTuesday = x switch
+            {
+                DayOfWeek.Tuesday => true,
+                _ => false
+            };
+        }
+
+        public static void SwitchConstantExpression()
         {
             var x = 90;
             var y = (x) switch
@@ -84,6 +95,13 @@ namespace RealScript
         private class SubClass : BaseClass
         {
             public new int X { get; set; }
+        }
+
+        internal enum DayOfWeek
+        {
+            Monday,
+            Tuesday,
+            Other
         }
     }
 }

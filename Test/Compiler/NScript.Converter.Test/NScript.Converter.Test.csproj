@@ -73,7 +73,8 @@
     <None Remove="MethodConverterTests\Lang8Features\IsConstantPattern.js" />
     <None Remove="MethodConverterTests\Lang8Features\IsDeclarationPattern.js" />
     <None Remove="MethodConverterTests\Lang8Features\IsVarPattern.js" />
-    <None Remove="MethodConverterTests\Lang8Features\SwitchExpression.js" />
+    <None Remove="MethodConverterTests\Lang8Features\SwitchConstantExpression.js" />
+    <None Remove="MethodConverterTests\Lang8Features\SwitchEnumExpression.js" />
     <None Remove="MethodConverterTests\Lang8Features\TestAsyncForEach.js" />
     <None Remove="MethodConverterTests\Lang8Features\TestIsPattern.js" />
     <None Remove="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />
@@ -176,7 +177,8 @@
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsConstantPattern.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsDeclarationPattern.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsVarPattern.js" />
-    <EmbeddedResource Include="MethodConverterTests\Lang8Features\SwitchExpression.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\SwitchConstantExpression.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\SwitchEnumExpression.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestAsyncForEach.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestIsPattern.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />

@@ -21,7 +21,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "IsConstantPattern", "IsConstantPattern.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "IsDeclarationPattern", "IsDeclarationPattern.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "IsVarPattern", "IsVarPattern.js", TestType.All, false)]
-        [DataRow(TestClassNameStr, "SwitchExpression", "SwitchExpression.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "SwitchConstantExpression", "SwitchConstantExpression.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "SwitchEnumExpression", "SwitchEnumExpression.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "TestAsyncForEach", "TestAsyncForEach.js", TestType.All, false)]
         public void TestMcs(
             string className,
