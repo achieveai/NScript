@@ -841,12 +841,6 @@
                             : (MethodCallExpression)Visit(node.AwaitOpt.GetAwaiter, arg)
                     });
 
-        public static async IAsyncEnumerable<int> GetArr()
-        {
-            await Task.Delay(100);
-            yield return 12;
-        }
-
         public override AstBase VisitForStatement(BoundForStatement node, SerializationContext arg)
             => WrapInBlock(
                 node,

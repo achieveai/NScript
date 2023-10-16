@@ -367,12 +367,11 @@
                 self.DispatchExpression(switchBlockStatement.Key),
                 switchBlockStatement.CaseBlocks
                     .Select(caseBlock =>
-                        KeyValuePair.Create(
-                            caseBlock.Key
-                                .Select(self.DispatchExpression)
-                                .Where(item => item != null)
-                                .ToList(),
-                            self.DispatchStatement(caseBlock.Value)))
+                        (caseBlock.cases
+                            .Select(self.DispatchExpression)
+                            .Where(item => item != null)
+                            .ToList(),
+                        self.DispatchStatement(caseBlock.block)))
                     .ToList());
 
         public static Statement VisitThrowStatementExt(this ITransformerVisitor self, ThrowStatement throwStatement)

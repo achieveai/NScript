@@ -19,7 +19,7 @@ namespace NScript.CLR.AST
             ClrContext context,
             Location location,
             Expression switchValue,
-            List<(List<Pattern>, Statement)> caseBlocks,
+            List<(List<Pattern> cases, Statement block)> caseBlocks,
             List<(LocalVariable localVariable, bool isUsed)> variables,
             List<LocalFunctionVariable> localFunctionNames)
             : base(context, location, variables, localFunctionNames)

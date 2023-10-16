@@ -30,21 +30,20 @@ namespace NScript.Converter.StatementsConverter
 
             converter.PushScopeBlock(statement);
 
-            var caseBlocks =
-                new List<KeyValuePair<List<JST.Expression>, JST.Statement>>(statement.CaseBlocks.Count);
+            var caseBlocks = new List<(List<JST.Expression>, JST.Statement)>();
 
             foreach (var keyValuePair in statement.CaseBlocks)
             {
-                List<JST.Expression> cases = new(keyValuePair.Item1.Count);
+                List<JST.Expression> cases = new(keyValuePair.cases.Count);
 
-                for (int literalIndex = 0; literalIndex < keyValuePair.Item1.Count; literalIndex++)
+                for (int literalIndex = 0; literalIndex < keyValuePair.cases.Count; literalIndex++)
                 {
-                    if (keyValuePair.Item1[literalIndex] != null)
+                    if (keyValuePair.cases[literalIndex] != null)
                     {
                         cases.Add(
                             Convert(
                                 converter,
-                                keyValuePair.Item1[literalIndex], reusableSwitchValue, conversionVariant));
+                                keyValuePair.cases[literalIndex], reusableSwitchValue, conversionVariant));
                     }
                     else
                     {
@@ -53,11 +52,10 @@ namespace NScript.Converter.StatementsConverter
                 }
 
                 caseBlocks.Add(
-                    new KeyValuePair<List<JST.Expression>, JST.Statement>(
-                        cases,
+                        (cases,
                         StatementConverterBase.Convert(
                             converter,
-                            keyValuePair.Item2)));
+                            keyValuePair.block)));
             }
 
             converter.PopScopeBlock();

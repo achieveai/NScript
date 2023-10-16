@@ -24,7 +24,7 @@ namespace NScript.JST
         /// <summary>
         /// Backing field for caseBlocks.
         /// </summary>
-        private List<KeyValuePair<List<Expression>, Statement>> caseBlocks;
+        private List<(List<Expression> cases, Statement block)> caseBlocks;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SwitchBlockStatement"/> class.
@@ -37,15 +37,15 @@ namespace NScript.JST
             Location location,
             IdentifierScope scope,
             Expression statementValue,
-            List<KeyValuePair<List<Expression>, Statement>> caseBlocks)
+            List<(List<Expression>, Statement)> caseBlocks)
             : base(location, scope)
         {
             this.statementValue = statementValue;
             this.caseBlocks = caseBlocks;
-            CaseBlocks = new ReadOnlyCollection<KeyValuePair<List<Expression>, Statement>>(caseBlocks);
+            CaseBlocks = new ReadOnlyCollection<(List<Expression>, Statement)>(caseBlocks);
         }
 
-        public ReadOnlyCollection<KeyValuePair<List<Expression>, Statement>> CaseBlocks
+        public ReadOnlyCollection<(List<Expression> cases, Statement block)> CaseBlocks
         { get; }
 
         public Expression Key => statementValue;
@@ -65,7 +65,7 @@ namespace NScript.JST
                     {
                         processor.AddValue(
                             "caseIds",
-                            kvPair.Key,
+                            kvPair.cases,
                             (p, id) =>
                                 {
                                     if (id == null)
@@ -78,7 +78,7 @@ namespace NScript.JST
                                     }
                                 });
 
-                        processor.AddValue("block", kvPair.Value);
+                        processor.AddValue("block", kvPair.block);
                     });
         }
 
@@ -98,8 +98,8 @@ namespace NScript.JST
 
             foreach (var keyValuePair in this.caseBlocks)
             {
-                if (keyValuePair.Key == null
-                    || keyValuePair.Key.Count == 0)
+                if (keyValuePair.cases == null
+                    || keyValuePair.cases.Count == 0)
                 {
                     writer.WriteNewLine()
                         .Write(Keyword.Default)
@@ -107,7 +107,7 @@ namespace NScript.JST
                 }
                 else
                 {
-                    foreach (var expression in keyValuePair.Key)
+                    foreach (var expression in keyValuePair.cases)
                     {
                         if (expression == null)
                         {
@@ -125,7 +125,7 @@ namespace NScript.JST
                     }
                 }
 
-                writer.Write(keyValuePair.Value);
+                writer.Write(keyValuePair.block);
             }
 
             writer.ExitScope()

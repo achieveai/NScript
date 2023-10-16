@@ -329,12 +329,12 @@
             self.DispatchExpression(switchBlockStatement.Key);
             foreach (var caseBlock in switchBlockStatement.CaseBlocks)
             {
-                foreach (var caseExpr in caseBlock.Key)
+                foreach (var caseExpr in caseBlock.cases)
                 {
                     self.DispatchExpression(caseExpr);
                 }
 
-                self.DispatchStatement(caseBlock.Value);
+                self.DispatchStatement(caseBlock.block);
             }
         }
 
