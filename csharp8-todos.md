@@ -18,4 +18,4 @@
 
 Bug fixes:
 1. Generic get only properties doesn't work
-2. 
+2. Fix throw expressions code generation
