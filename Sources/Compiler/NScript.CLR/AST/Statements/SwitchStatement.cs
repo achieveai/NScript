@@ -19,7 +19,7 @@ namespace NScript.CLR.AST
             ClrContext context,
             Location location,
             Expression switchValue,
-            List<(List<CaseLabel>, Statement)> caseBlocks,
+            List<(List<Pattern>, Statement)> caseBlocks,
             List<(LocalVariable localVariable, bool isUsed)> variables,
             List<LocalFunctionVariable> localFunctionNames)
             : base(context, location, variables, localFunctionNames)
@@ -38,7 +38,7 @@ namespace NScript.CLR.AST
         /// Gets the case blocks.
         /// </summary>
         /// <value>The case blocks.</value>
-        public List<(List<CaseLabel> cases, Statement block)> CaseBlocks { get; }
+        public List<(List<Pattern> cases, Statement block)> CaseBlocks { get; }
 
         /// <summary>
         /// Serializes the specified serialization info.

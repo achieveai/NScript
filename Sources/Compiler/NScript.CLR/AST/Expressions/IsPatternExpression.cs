@@ -5,7 +5,7 @@ namespace NScript.CLR.AST
 {
     public class IsPatternExpression : Expression
     {
-        public IsPatternExpression(ClrContext context, Location location, Expression lhs, CaseLabel pattern) : base(context, location)
+        public IsPatternExpression(ClrContext context, Location location, Expression lhs, Pattern pattern) : base(context, location)
         {
             Lhs = lhs;
             Pattern = pattern;
@@ -13,7 +13,7 @@ namespace NScript.CLR.AST
 
         public Expression Lhs { get; }
 
-        public CaseLabel Pattern { get; }
+        public Pattern Pattern { get; }
 
         public override TypeReference ResultType => Context.KnownReferences.Boolean;
     }

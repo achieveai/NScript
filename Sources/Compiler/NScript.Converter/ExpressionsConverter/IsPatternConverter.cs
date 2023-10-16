@@ -11,7 +11,7 @@ namespace NScript.Converter.ExpressionsConverter
         {
             var lhs = ExpressionConverterBase.Convert(converter, isPattern.Lhs);
 
-            if (isPattern.Pattern is ConstCaseLabel constantPattern)
+            if (isPattern.Pattern is ConstantPattern constantPattern)
             {
                 var constantExpression = ExpressionConverterBase.Convert(
                     converter,
@@ -24,7 +24,7 @@ namespace NScript.Converter.ExpressionsConverter
                     lhs,
                     constantExpression);
             }
-            else if (isPattern.Pattern is DeclarationCaseLabel declarationPattern)
+            else if (isPattern.Pattern is DeclarationPattern declarationPattern)
             {
                 // (x is Type2 y) ---- ((y = Type.AsType(Type2, typeof x)) != null)
 

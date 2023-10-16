@@ -510,16 +510,16 @@ namespace JsCsc.Lib
                 {
                     var (label, expr) = tupl;
 
-                    CaseLabel labelRv = (label) switch
+                    Pattern labelRv = (label) switch
                     {
-                        Serialization.SwitchConstCaseLabel constLabel =>
-                            new ConstCaseLabel(
+                        Serialization.ConstantPattern constLabel =>
+                            new ConstantPattern(
                                 _clrContext,
                                 LocFromJObject(constLabel),
                                 ParseExpression(constLabel.ConstantExpression)),
 
-                        Serialization.SwitchDeclarationCaseLabel declarationLabel =>
-                            new DeclarationCaseLabel(
+                        Serialization.DeclarationPattern declarationLabel =>
+                            new DeclarationPattern(
                                 _clrContext,
                                 null,
                                 declarationLabel.LocalVariableOpt != null
@@ -531,8 +531,8 @@ namespace JsCsc.Lib
                                 DeserializeType(declarationLabel.DeclaredType),
                                 ParseExpression(declarationLabel.When)),
 
-                        Serialization.SwitchDiscardCaseLabel discardLabel =>
-                            new DiscardCaseLabel(_clrContext, LocFromJObject(discardLabel)),
+                        Serialization.DiscardPattern discardLabel =>
+                            new DiscardPattern(_clrContext, LocFromJObject(discardLabel)),
 
                         _ => throw new NotImplementedException($"{label.GetType().Name} in switch expressions is not supported")
                     };
@@ -549,18 +549,18 @@ namespace JsCsc.Lib
                 DeserializeType(jObject.Type));
         }
 
-        private Node ParseCase(Serialization.SwitchCaseLabel label)
+        private Node ParseCase(Serialization.Pattern label)
         {
-            CaseLabel labelRv = label switch
+            Pattern labelRv = label switch
             {
-                Serialization.SwitchConstCaseLabel constLabel =>
-                    new ConstCaseLabel(
+                Serialization.ConstantPattern constLabel =>
+                    new ConstantPattern(
                         _clrContext,
                         LocFromJObject(constLabel),
                         ParseExpression(constLabel.ConstantExpression)),
 
-                Serialization.SwitchDeclarationCaseLabel declarationLabel =>
-                    new DeclarationCaseLabel(
+                Serialization.DeclarationPattern declarationLabel =>
+                    new DeclarationPattern(
                         _clrContext,
                         null,
                         declarationLabel.LocalVariableOpt != null
@@ -572,8 +572,8 @@ namespace JsCsc.Lib
                         DeserializeType(declarationLabel.DeclaredType),
                         ParseExpression(declarationLabel.When)),
 
-                Serialization.SwitchDiscardCaseLabel discardLabel =>
-                    new DiscardCaseLabel(_clrContext, LocFromJObject(discardLabel)),
+                Serialization.DiscardPattern discardLabel =>
+                    new DiscardPattern(_clrContext, LocFromJObject(discardLabel)),
 
                 _ => throw new NotImplementedException($"{label.GetType().Name} in switch expressions is not supported")
             };
@@ -586,7 +586,7 @@ namespace JsCsc.Lib
             var variableCollector = new VariableCollector(jObject.BlockId);
             _ = scopeBlockStack.AddFirst((jObject.BlockId, variableCollector));
 
-            var caseBlocks = new List<(List<CaseLabel>, Statement)>();
+            var caseBlocks = new List<(List<Pattern>, Statement)>();
 
             var sectionArray = jObject.Blocks;
             var sectionVariables = new List<(LocalVariable localVariable, bool isUsed)>();
@@ -598,7 +598,7 @@ namespace JsCsc.Lib
                 var sectionObj = sectionArray[iSection].Block;
                 var labelJArray = sectionArray[iSection].Labels;
 
-                var labels = new List<CaseLabel>(labelJArray.Count);
+                var labels = new List<Pattern>(labelJArray.Count);
 
                 var sectionVariableCollector = new VariableCollector(section.BlockId);
                 _ = scopeBlockStack.AddFirst((section.BlockId, sectionVariableCollector));
@@ -608,23 +608,23 @@ namespace JsCsc.Lib
                     var @case = labelJArray[iLabel];
                     switch (labelJArray[iLabel])
                     {
-                        case Serialization.SwitchConstCaseLabel sccl:
+                        case Serialization.ConstantPattern sccl:
                             labels.Add(
-                                new ConstCaseLabel(_clrContext, LocFromJObject(@case), ParseExpression(sccl.ConstantExpression)));
+                                new ConstantPattern(_clrContext, LocFromJObject(@case), ParseExpression(sccl.ConstantExpression)));
                             break;
 
-                        case Serialization.SwitchDiscardCaseLabel:
+                        case Serialization.DiscardPattern:
                         case null:
                             labels.Add(null);
                             break;
 
-                        case Serialization.SwitchDeclarationCaseLabel sdcl:
+                        case Serialization.DeclarationPattern sdcl:
                             var localVariableOpt = sdcl.LocalVariableOpt != null
                                 ? ParseLocalVariable(sdcl.LocalVariableOpt)
                                 : null;
 
                             labels.Add(
-                                new DeclarationCaseLabel(_clrContext,
+                                new DeclarationPattern(_clrContext,
                                 LocFromJObject(@case),
                                 localVariableOpt != null
                                     ? new VariableReference(
@@ -930,7 +930,7 @@ namespace JsCsc.Lib
             _clrContext,
             LocFromJObject(jObject),
             ParseExpression(jObject.Lhs),
-            ParseNode(jObject.Pattern) as CaseLabel);
+            ParseNode(jObject.Pattern) as Pattern);
 
         private Node ParseAsExpr(Serialization.AsExpression jObject) => new TypeCheckExpression(
                 _clrContext,
@@ -2058,16 +2058,16 @@ namespace JsCsc.Lib
                     (a) => ParseSwitchStatement((Serialization.SwitchStatement)a)
                 },
                 {
-                    typeof(Serialization.SwitchConstCaseLabel),
-                    (a) => ParseCase((Serialization.SwitchCaseLabel)a)
+                    typeof(Serialization.ConstantPattern),
+                    (a) => ParseCase((Serialization.Pattern)a)
                 },
                 {
-                    typeof(Serialization.SwitchDeclarationCaseLabel),
-                    (a) => ParseCase((Serialization.SwitchCaseLabel)a)
+                    typeof(Serialization.DeclarationPattern),
+                    (a) => ParseCase((Serialization.Pattern)a)
                 },
                 {
-                    typeof(Serialization.SwitchDiscardCaseLabel),
-                    (a) => ParseCase((Serialization.SwitchCaseLabel)a)
+                    typeof(Serialization.DiscardPattern),
+                    (a) => ParseCase((Serialization.Pattern)a)
                 },
                 {
                     typeof(Serialization.SwitchExpression),

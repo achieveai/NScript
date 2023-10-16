@@ -38,24 +38,24 @@ namespace NScript.Converter.ExpressionsConverter
                     switchValue)
                 : null;
 
-            var exprCondList = expression.CaseLabels
+            var exprCondList = expression.Patterns
                 .Zip(expression.Expressions)
                 .Select(tupl =>
                 {
                     var (label, expr) = tupl;
                     var jsCond = (label) switch
                     {
-                        ConstCaseLabel constCaseLabel => MakeConditionalExpression(
+                        ConstantPattern constCaseLabel => MakeConditionalExpression(
                             constCaseLabel,
                             methodConverter,
                             switchVarExpression),
 
-                        DeclarationCaseLabel dcl => MakeConditionalExpression(
+                        DeclarationPattern dcl => MakeConditionalExpression(
                             dcl,
                             methodConverter,
                             switchVarExpression),
 
-                        DiscardCaseLabel discardCaseLabel => new JST.BooleanLiteralExpression(methodConverter.Scope, true)
+                        DiscardPattern discardCaseLabel => new JST.BooleanLiteralExpression(methodConverter.Scope, true)
                     };
 
                     var jsExpr = ExpressionConverterBase.Convert(methodConverter, expr);
@@ -81,7 +81,7 @@ namespace NScript.Converter.ExpressionsConverter
         }
 
         public static JST.Expression MakeConditionalExpression(
-            ConstCaseLabel discardCaseLabel,
+            ConstantPattern discardCaseLabel,
             IMethodScopeConverter methodConverter,
             JST.Expression switchVar)
         {
@@ -94,7 +94,7 @@ namespace NScript.Converter.ExpressionsConverter
         }
 
         public static JST.Expression MakeConditionalExpression(
-            DeclarationCaseLabel dcl,
+            DeclarationPattern dcl,
             IMethodScopeConverter converter,
             JST.Expression reusableSwitchValue )
         {

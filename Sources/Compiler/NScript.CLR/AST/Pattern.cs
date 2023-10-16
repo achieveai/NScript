@@ -3,17 +3,17 @@ using NScript.Utils;
 
 namespace NScript.CLR.AST
 {
-    public abstract class CaseLabel: Node
+    public abstract class Pattern: Node
     {
-        protected CaseLabel(ClrContext ctx, Location location)
+        protected Pattern(ClrContext ctx, Location location)
             : base(ctx, location)
         {
         }
     }
 
-    public class DeclarationCaseLabel : CaseLabel
+    public class DeclarationPattern : Pattern
     {
-        public DeclarationCaseLabel(
+        public DeclarationPattern(
             ClrContext ctx,
             Location location,
             VariableReference? localVariableOpt,
@@ -34,9 +34,9 @@ namespace NScript.CLR.AST
 
     }
 
-    public class ConstCaseLabel : CaseLabel
+    public class ConstantPattern : Pattern
     {
-        public ConstCaseLabel(ClrContext ctx, Location location, Expression constantExpression)
+        public ConstantPattern(ClrContext ctx, Location location, Expression constantExpression)
             : base(ctx, location)
         {
             ConstantExpression = constantExpression;
@@ -45,9 +45,9 @@ namespace NScript.CLR.AST
         public Expression ConstantExpression { get;  }
     }
 
-    public class DiscardCaseLabel : CaseLabel
+    public class DiscardPattern : Pattern
     {
-        public DiscardCaseLabel(ClrContext ctx, Location location)
+        public DiscardPattern(ClrContext ctx, Location location)
             : base(ctx, location)
         { }
     }

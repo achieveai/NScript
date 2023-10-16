@@ -484,7 +484,7 @@
             };
 
         public override AstBase VisitConstantPattern(BoundConstantPattern node, SerializationContext arg)
-            => new SwitchConstCaseLabel
+            => new ConstantPattern
             {
                 ConstantExpression = GetConstantValue(node.ConstantValue.Value) as ExpressionSer,
                 Location = node.Syntax.GetSerLoc()
@@ -610,7 +610,7 @@
             => this.Visit(node.SourceTuple, arg);
 
         public override AstBase VisitDeclarationPattern(BoundDeclarationPattern node, SerializationContext arg)
-            => new SwitchDeclarationCaseLabel
+            => new DeclarationPattern
             {
                 LocalVariableOpt = node.VariableAccess != null
                     ? ((LocalVariableRefExpression)this.VisitLocal((BoundLocal)node.VariableAccess, arg)).LocalVariable
@@ -914,7 +914,7 @@
             => new IsPatternExpression
             {
                 Lhs = Visit(node.Expression, arg) as ExpressionSer,
-                Pattern = Visit(node.Pattern, arg) as SwitchCaseLabel
+                Pattern = Visit(node.Pattern, arg) as Pattern
             };
 
         public override AstBase VisitLabel(BoundLabel node, SerializationContext arg) => throw new NotImplementedException();
@@ -1341,21 +1341,21 @@
 
         public override AstBase VisitConvertedSwitchExpression(BoundConvertedSwitchExpression node, SerializationContext arg)
         {
-            var arms = new List<SwitchCaseLabel>();
+            var arms = new List<Pattern>();
             var exprs = new List<ExpressionSer>();
 
             foreach (var switchArm in node.SwitchArms)
             {
-                SwitchCaseLabel pattern = switchArm.Pattern switch
+                Pattern pattern = switchArm.Pattern switch
                 {
                     BoundConstantPattern constPattern =>
-                        new SwitchConstCaseLabel
+                        new ConstantPattern
                         {
                             ConstantExpression = GetConstLiteral(constPattern.ConstantValue) as ExpressionSer
                         },
 
                     BoundDeclarationPattern declarationPattern =>
-                        new SwitchDeclarationCaseLabel
+                        new DeclarationPattern
                         {
                             LocalVariableOpt = ((BoundLocal?)declarationPattern.VariableAccess) != null
                                 ? ((LocalVariableRefExpression)VisitLocal((BoundLocal?)declarationPattern.VariableAccess, arg)).LocalVariable
@@ -1368,7 +1368,7 @@
                                 : null,
                         },
 
-                    BoundDiscardPattern _ => new SwitchDiscardCaseLabel { },
+                    BoundDiscardPattern _ => new DiscardPattern { },
 
                     _ => throw new NotImplementedException($"{switchArm.Pattern.Kind} pattern not supported")
                 };
@@ -1408,7 +1408,7 @@
                 {
                     switchSections.Add(this.WrapInBlock(section, (id, _) =>
                     {
-                        var caseLabels = new List<SwitchCaseLabel>();
+                        var caseLabels = new List<Pattern>();
                         foreach (var label in section.SwitchLabels)
                         {
                             // Also check BoundSwitchLabel visitor.
@@ -1417,14 +1417,14 @@
                             {
                                 var constPattern = (BoundConstantPattern)label.Pattern;
                                 caseLabels.Add(
-                                    new SwitchConstCaseLabel
+                                    new ConstantPattern
                                     {
                                         ConstantExpression = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
                                     });
                             }
                             else if (label.Pattern.Kind == BoundKind.DiscardPattern)
                             {
-                                caseLabels.Add(new SwitchDiscardCaseLabel());
+                                caseLabels.Add(new DiscardPattern());
                             }
                             else if (label.Pattern.Kind == BoundKind.DeclarationPattern)
                             {
@@ -1434,7 +1434,7 @@
                                 var boundPattern = (BoundDeclarationPattern)label.Pattern;
                                 BoundLocal? boundLocalOpt = (BoundLocal?)boundPattern.VariableAccess;
 
-                                caseLabels.Add(new SwitchDeclarationCaseLabel()
+                                caseLabels.Add(new DeclarationPattern()
                                 {
                                     LocalVariableOpt = boundLocalOpt != null
                                         ? ((LocalVariableRefExpression)this.VisitLocal(boundLocalOpt, arg)).LocalVariable

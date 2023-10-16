@@ -71,13 +71,13 @@ namespace NScript.Converter.StatementsConverter
 
         private static JST.Expression Convert(
             IMethodScopeConverter converter,
-            CaseLabel label,
+            Pattern label,
             JST.Expression reusableSwitchValue,
             ConversionVariant conversionVariant)
         {
             switch (label)
             {
-                case ConstCaseLabel ccl:
+                case ConstantPattern ccl:
                     var constantExpression = ExpressionConverterBase.Convert(converter, ccl.ConstantExpression);
                     return conversionVariant == ConversionVariant.RegularSwitchValue
                         ? constantExpression
@@ -88,7 +88,7 @@ namespace NScript.Converter.StatementsConverter
                             reusableSwitchValue,
                             constantExpression);
 
-                case DeclarationCaseLabel dcl:
+                case DeclarationPattern dcl:
                     var variableOpt = dcl.VariableOpt != null
                         ? (JST.IdentifierExpression)ExpressionConverterBase.Convert(converter, dcl.VariableOpt)
                         : null;
@@ -186,7 +186,7 @@ namespace NScript.Converter.StatementsConverter
         {
             return statement.CaseBlocks
                 .SelectMany(cb => cb.cases)
-                .Any(cs => cs is DeclarationCaseLabel)
+                .Any(cs => cs is DeclarationPattern)
                     ? ConversionVariant.BooleanSwitchValue
                     : ConversionVariant.RegularSwitchValue;
         }

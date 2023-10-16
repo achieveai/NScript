@@ -237,7 +237,7 @@ namespace JsCsc.Lib.Serialization
     {
         public ExpressionSer Lhs { get; set; }
 
-        public SwitchCaseLabel Pattern { get; set; }
+        public Pattern Pattern { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
@@ -1103,32 +1103,32 @@ namespace JsCsc.Lib.Serialization
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    [ProtoInclude(220, typeof(SwitchConstCaseLabel))]
-    [ProtoInclude(221, typeof(SwitchDeclarationCaseLabel))]
-    [ProtoInclude(222, typeof(SwitchDiscardCaseLabel))]
+    [ProtoInclude(220, typeof(ConstantPattern))]
+    [ProtoInclude(221, typeof(DeclarationPattern))]
+    [ProtoInclude(222, typeof(DiscardPattern))]
     [Serializable]
-    public class SwitchCaseLabel: AstBase
+    public class Pattern: AstBase
     {
         public bool NoUse_ { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-    public class SwitchDiscardCaseLabel : SwitchCaseLabel
+    public class DiscardPattern : Pattern
     {
         public bool NoUse_2 { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-    public class SwitchConstCaseLabel : SwitchCaseLabel
+    public class ConstantPattern : Pattern
     {
         public ExpressionSer ConstantExpression { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
-    public class SwitchDeclarationCaseLabel : SwitchCaseLabel
+    public class DeclarationPattern : Pattern
     {
         public LocalVariableSer LocalVariableOpt { get; set; }
 
@@ -1144,7 +1144,7 @@ namespace JsCsc.Lib.Serialization
     {
         public ExpressionSer SwitchExpr { get; set; }
 
-        public List<SwitchCaseLabel> Labels { get; set; }
+        public List<Pattern> Labels { get; set; }
 
         public List<ExpressionSer> Expressions { get; set; }
 
@@ -1156,7 +1156,7 @@ namespace JsCsc.Lib.Serialization
     public class SwitchSectionSer
         : BlockSer
     {
-        public List<SwitchCaseLabel> Labels { get; set; }
+        public List<Pattern> Labels { get; set; }
 
         public StatementSer Block { get; set; }
 

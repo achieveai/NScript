@@ -10,12 +10,12 @@ namespace NScript.CLR.AST
             ClrContext context,
             Location location,
             Expression switchValue,
-            List<CaseLabel> caseLabels,
+            List<Pattern> patterns,
             List<Expression> expressions,
             TypeReference resultType) : base(context, location)
         {
             SwitchValue = switchValue;
-            CaseLabels = caseLabels;
+            Patterns = patterns;
             Expressions = expressions;
             ResultType = resultType;
         }
@@ -24,7 +24,7 @@ namespace NScript.CLR.AST
 
         public Expression SwitchValue { get; }
 
-        public List<CaseLabel> CaseLabels { get; }
+        public List<Pattern> Patterns { get; }
 
         public List<Expression> Expressions { get; }
     }
