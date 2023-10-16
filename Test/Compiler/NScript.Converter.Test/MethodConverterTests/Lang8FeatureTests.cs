@@ -18,7 +18,9 @@ namespace NScript.Converter.Test.MethodConverterTests
 
         [DataTestMethod]
         [DataRow(TestClassNameStr, "NullCoalescingAssignment", "TestNullCoalescing.js", TestType.All, false)]
-        [DataRow(TestClassNameStr, "IsPatternExpression", "TestIsPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IsConstantPattern", "IsConstantPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IsDeclarationPattern", "IsDeclarationPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IsVarPattern", "IsVarPattern.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "SwitchExpression", "SwitchExpression.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "TestAsyncForEach", "TestAsyncForEach.js", TestType.All, false)]
         public void TestMcs(

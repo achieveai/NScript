@@ -516,7 +516,7 @@ namespace JsCsc.Lib
                             new ConstCaseLabel(
                                 _clrContext,
                                 LocFromJObject(constLabel),
-                                ParseExpression(constLabel.LabelValue)),
+                                ParseExpression(constLabel.ConstantExpression)),
 
                         Serialization.SwitchDeclarationCaseLabel declarationLabel =>
                             new DeclarationCaseLabel(
@@ -528,7 +528,7 @@ namespace JsCsc.Lib
                                         null,
                                         ParseLocalVariable(declarationLabel.LocalVariableOpt))
                                     : null,
-                                DeserializeType(declarationLabel.DeclaredTypeOpt.Value),
+                                DeserializeType(declarationLabel.DeclaredType),
                                 ParseExpression(declarationLabel.When)),
 
                         Serialization.SwitchDiscardCaseLabel discardLabel =>
@@ -547,6 +547,38 @@ namespace JsCsc.Lib
                 kvs.Select(kv => kv.labelRv).ToList(),
                 kvs.Select(kv => kv.Item2).ToList(),
                 DeserializeType(jObject.Type));
+        }
+
+        private Node ParseCase(Serialization.SwitchCaseLabel label)
+        {
+            CaseLabel labelRv = label switch
+            {
+                Serialization.SwitchConstCaseLabel constLabel =>
+                    new ConstCaseLabel(
+                        _clrContext,
+                        LocFromJObject(constLabel),
+                        ParseExpression(constLabel.ConstantExpression)),
+
+                Serialization.SwitchDeclarationCaseLabel declarationLabel =>
+                    new DeclarationCaseLabel(
+                        _clrContext,
+                        null,
+                        declarationLabel.LocalVariableOpt != null
+                            ? new VariableReference(
+                                _clrContext,
+                                null,
+                                ParseLocalVariable(declarationLabel.LocalVariableOpt))
+                            : null,
+                        DeserializeType(declarationLabel.DeclaredType),
+                        ParseExpression(declarationLabel.When)),
+
+                Serialization.SwitchDiscardCaseLabel discardLabel =>
+                    new DiscardCaseLabel(_clrContext, LocFromJObject(discardLabel)),
+
+                _ => throw new NotImplementedException($"{label.GetType().Name} in switch expressions is not supported")
+            };
+
+            return labelRv;
         }
 
         private Node ParseSwitchStatement(Serialization.SwitchStatement jObject)
@@ -578,7 +610,7 @@ namespace JsCsc.Lib
                     {
                         case Serialization.SwitchConstCaseLabel sccl:
                             labels.Add(
-                                new ConstCaseLabel(_clrContext, LocFromJObject(@case), ParseExpression(sccl.LabelValue)));
+                                new ConstCaseLabel(_clrContext, LocFromJObject(@case), ParseExpression(sccl.ConstantExpression)));
                             break;
 
                         case Serialization.SwitchDiscardCaseLabel:
@@ -600,7 +632,7 @@ namespace JsCsc.Lib
                                         null,
                                         localVariableOpt)
                                     : null,
-                                DeserializeType(sdcl.DeclaredTypeOpt.Value),
+                                DeserializeType(sdcl.DeclaredType),
                                 ParseExpression(sdcl.When)));
 
                             break;
@@ -898,18 +930,7 @@ namespace JsCsc.Lib
             _clrContext,
             LocFromJObject(jObject),
             ParseExpression(jObject.Lhs),
-            ParseNode(jObject.Pattern) as Pattern);
-
-        private Node ParseConstantPattern(Serialization.ConstantPattern jObject) => new ConstantPattern(
-            _clrContext,
-            LocFromJObject(jObject),
-            ParseExpression(jObject.ConstantExpression));
-
-        private Node ParseDeclarationPattern(Serialization.DeclarationPattern jObject) => new DeclarationPattern(
-            _clrContext,
-            LocFromJObject(jObject),
-            ParseExpression(jObject.VariableAccess),
-            DeserializeType(jObject.Type));
+            ParseNode(jObject.Pattern) as CaseLabel);
 
         private Node ParseAsExpr(Serialization.AsExpression jObject) => new TypeCheckExpression(
                 _clrContext,
@@ -2037,6 +2058,18 @@ namespace JsCsc.Lib
                     (a) => ParseSwitchStatement((Serialization.SwitchStatement)a)
                 },
                 {
+                    typeof(Serialization.SwitchConstCaseLabel),
+                    (a) => ParseCase((Serialization.SwitchCaseLabel)a)
+                },
+                {
+                    typeof(Serialization.SwitchDeclarationCaseLabel),
+                    (a) => ParseCase((Serialization.SwitchCaseLabel)a)
+                },
+                {
+                    typeof(Serialization.SwitchDiscardCaseLabel),
+                    (a) => ParseCase((Serialization.SwitchCaseLabel)a)
+                },
+                {
                     typeof(Serialization.SwitchExpression),
                     (a) => ParseSwitchExpression((Serialization.SwitchExpression)a)
                 },
@@ -2087,14 +2120,6 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.IsPatternExpression),
                     (a) => ParseIsPattern(a as Serialization.IsPatternExpression)
-                },
-                {
-                    typeof(Serialization.ConstantPattern),
-                    (a) => ParseConstantPattern(a as Serialization.ConstantPattern)
-                },
-                {
-                    typeof(Serialization.DeclarationPattern),
-                    (a) => ParseDeclarationPattern(a as Serialization.DeclarationPattern)
                 },
                 {
                     typeof(Serialization.AsExpression),

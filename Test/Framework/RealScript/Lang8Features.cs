@@ -21,23 +21,27 @@ namespace RealScript
             _ = (tupl ??= (3, 4)).Item1;
         }
 
-        public static void IsPatternExpression()
+        public static void IsVarPattern()
+        {
+            var isNonZero = GetInstance() is var x && x.X != 0;
+
+            static BaseClass GetInstance() =>
+                new BaseClass { X = 90 };
+        }
+
+        public static void IsConstantPattern()
         {
             var x = 90;
             var t = x is 900;
-            var asdf = x is int z;
+        }
 
-            if (x is 900)
-            {
-            }
-            else if (x is int y)
-            {
-            }
-
+        public static void IsDeclarationPattern()
+        {
             BaseClass b = new SubClass();
-            if (b is SubClass sb)
-            {
-            }
+
+            var isZero = b is SubClass sb && sb.X == 0;
+
+            var isSubClass = b is SubClass;
         }
 
         public static void SwitchExpression()

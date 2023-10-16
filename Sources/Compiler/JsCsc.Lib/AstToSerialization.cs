@@ -753,7 +753,7 @@ namespace JsCsc.Lib
                     {
                         caseLabels.Add(
                             new SwitchConstCaseLabel
-                            { LabelValue = this.Dispatch(label.Converted ?? label.Label) });
+                            { ConstantExpression = this.Dispatch(label.Converted ?? label.Label) });
                     }
                 }
 

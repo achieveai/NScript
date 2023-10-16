@@ -484,7 +484,7 @@
             };
 
         public override AstBase VisitConstantPattern(BoundConstantPattern node, SerializationContext arg)
-            => new ConstantPattern
+            => new SwitchConstCaseLabel
             {
                 ConstantExpression = GetConstantValue(node.ConstantValue.Value) as ExpressionSer,
                 Location = node.Syntax.GetSerLoc()
@@ -610,10 +610,12 @@
             => this.Visit(node.SourceTuple, arg);
 
         public override AstBase VisitDeclarationPattern(BoundDeclarationPattern node, SerializationContext arg)
-            => new DeclarationPattern
+            => new SwitchDeclarationCaseLabel
             {
-                VariableAccess = Visit(node.VariableAccess, arg) as ExpressionSer,
-                Type = arg.SymbolSerializer.GetTypeSpecId(node.NarrowedType),
+                LocalVariableOpt = node.VariableAccess != null
+                    ? ((LocalVariableRefExpression)this.VisitLocal((BoundLocal)node.VariableAccess, arg)).LocalVariable
+                    : null,
+                DeclaredType = arg.SymbolSerializer.GetTypeSpecId(node.NarrowedType),
                 Location = node.Syntax.GetSerLoc()
             };
 
@@ -912,7 +914,7 @@
             => new IsPatternExpression
             {
                 Lhs = Visit(node.Expression, arg) as ExpressionSer,
-                Pattern = Visit(node.Pattern, arg) as Pattern
+                Pattern = Visit(node.Pattern, arg) as SwitchCaseLabel
             };
 
         public override AstBase VisitLabel(BoundLabel node, SerializationContext arg) => throw new NotImplementedException();
@@ -1349,7 +1351,7 @@
                     BoundConstantPattern constPattern =>
                         new SwitchConstCaseLabel
                         {
-                            LabelValue = GetConstLiteral(constPattern.ConstantValue) as ExpressionSer
+                            ConstantExpression = GetConstLiteral(constPattern.ConstantValue) as ExpressionSer
                         },
 
                     BoundDeclarationPattern declarationPattern =>
@@ -1359,7 +1361,7 @@
                                 ? ((LocalVariableRefExpression)VisitLocal((BoundLocal?)declarationPattern.VariableAccess, arg)).LocalVariable
                                 : null,
 
-                            DeclaredTypeOpt = arg.SymbolSerializer.GetTypeSpecId(declarationPattern.DeclaredType.Type),
+                            DeclaredType = arg.SymbolSerializer.GetTypeSpecId(declarationPattern.DeclaredType.Type),
 
                             When = switchArm.WhenClause != null
                                 ? (ExpressionSer)Visit(switchArm.WhenClause, arg)
@@ -1417,7 +1419,7 @@
                                 caseLabels.Add(
                                     new SwitchConstCaseLabel
                                     {
-                                        LabelValue = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
+                                        ConstantExpression = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
                                     });
                             }
                             else if (label.Pattern.Kind == BoundKind.DiscardPattern)
@@ -1427,9 +1429,7 @@
                             else if (label.Pattern.Kind == BoundKind.DeclarationPattern)
                             {
                                 var declaredTypeOpt = ((BoundDeclarationPattern)label.Pattern).DeclaredType.Type;
-                                var ty = !TypeSymbol.Equals(declaredTypeOpt, null)
-                                    ? arg.SymbolSerializer.GetTypeSpecId(declaredTypeOpt)
-                                    : (int?)null;
+                                var ty = arg.SymbolSerializer.GetTypeSpecId(declaredTypeOpt);
 
                                 var boundPattern = (BoundDeclarationPattern)label.Pattern;
                                 BoundLocal? boundLocalOpt = (BoundLocal?)boundPattern.VariableAccess;
@@ -1442,7 +1442,7 @@
                                     When = label.WhenClause != null
                                         ? (ExpressionSer)this.Visit(label.WhenClause, arg)
                                         : null,
-                                    DeclaredTypeOpt = ty,
+                                    DeclaredType = ty,
                                 });
                             }
                             else

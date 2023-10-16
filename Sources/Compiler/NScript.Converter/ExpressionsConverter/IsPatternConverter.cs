@@ -11,7 +11,7 @@ namespace NScript.Converter.ExpressionsConverter
         {
             var lhs = ExpressionConverterBase.Convert(converter, isPattern.Lhs);
 
-            if (isPattern.Pattern is ConstantPattern constantPattern)
+            if (isPattern.Pattern is ConstCaseLabel constantPattern)
             {
                 var constantExpression = ExpressionConverterBase.Convert(
                     converter,
@@ -24,16 +24,16 @@ namespace NScript.Converter.ExpressionsConverter
                     lhs,
                     constantExpression);
             }
-            else if (isPattern.Pattern is DeclarationPattern declarationPattern)
+            else if (isPattern.Pattern is DeclarationCaseLabel declarationPattern)
             {
                 // (x is Type2 y) ---- ((y = Type.AsType(Type2, typeof x)) != null)
 
                 var variableAccess = ExpressionConverterBase.Convert(
                     converter,
-                    declarationPattern.VariableAccess);
+                    declarationPattern.VariableOpt);
 
                 // Early return when types match
-                if (declarationPattern.VariableAccess.ResultType.IsSame(declarationPattern.Type))
+                if (declarationPattern.VariableOpt.ResultType.IsSame(declarationPattern.TypeReference))
                 {
                     // ((x = Something()) || true)
                     return new JST.BinaryExpression(
@@ -49,7 +49,7 @@ namespace NScript.Converter.ExpressionsConverter
                         new JST.BooleanLiteralExpression(converter.Scope, true));
                 }
 
-                var ty = declarationPattern.Type;
+                var ty = declarationPattern.TypeReference;
 
                 // Generate call to Type.AsType
 
