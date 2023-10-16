@@ -1144,7 +1144,7 @@ namespace JsCsc.Lib.Serialization
     {
         public ExpressionSer SwitchExpr { get; set; }
 
-        public List<Pattern> Labels { get; set; }
+        public List<Pattern> Patterns { get; set; }
 
         public List<ExpressionSer> Expressions { get; set; }
 

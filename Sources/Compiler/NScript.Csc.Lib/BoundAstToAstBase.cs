@@ -1382,7 +1382,7 @@
             return new SwitchExpression
             {
                 SwitchExpr = Visit(node.Expression, arg) as ExpressionSer,
-                Labels = arms,
+                Patterns = arms,
                 Expressions = exprs,
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type),
             };

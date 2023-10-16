@@ -504,52 +504,24 @@ namespace JsCsc.Lib
         {
             var switchValue = ParseExpression(jObject.SwitchExpr);
 
-            var kvs = jObject.Labels
+            var arms = jObject.Patterns
                 .Zip(jObject.Expressions)
                 .Select(tupl =>
                 {
                     var (label, expr) = tupl;
-
-                    Pattern labelRv = (label) switch
-                    {
-                        Serialization.ConstantPattern constLabel =>
-                            new ConstantPattern(
-                                _clrContext,
-                                LocFromJObject(constLabel),
-                                ParseExpression(constLabel.ConstantExpression)),
-
-                        Serialization.DeclarationPattern declarationLabel =>
-                            new DeclarationPattern(
-                                _clrContext,
-                                null,
-                                declarationLabel.LocalVariableOpt != null
-                                    ? new VariableReference(
-                                        _clrContext,
-                                        null,
-                                        ParseLocalVariable(declarationLabel.LocalVariableOpt))
-                                    : null,
-                                DeserializeType(declarationLabel.DeclaredType),
-                                ParseExpression(declarationLabel.When)),
-
-                        Serialization.DiscardPattern discardLabel =>
-                            new DiscardPattern(_clrContext, LocFromJObject(discardLabel)),
-
-                        _ => throw new NotImplementedException($"{label.GetType().Name} in switch expressions is not supported")
-                    };
-
-                    return (labelRv, ParseExpression(expr));
+                    return (pattern: ParsePattern(label) as Pattern, expression: ParseExpression(expr));
                 });
 
             return new SwitchExpression(
                 _clrContext,
                 LocFromJObject(jObject),
                 switchValue,
-                kvs.Select(kv => kv.labelRv).ToList(),
-                kvs.Select(kv => kv.Item2).ToList(),
+                arms.Select(kv => kv.pattern).ToList(),
+                arms.Select(kv => kv.expression).ToList(),
                 DeserializeType(jObject.Type));
         }
 
-        private Node ParseCase(Serialization.Pattern label)
+        private Node ParsePattern(Serialization.Pattern label)
         {
             Pattern labelRv = label switch
             {
@@ -2059,15 +2031,15 @@ namespace JsCsc.Lib
                 },
                 {
                     typeof(Serialization.ConstantPattern),
-                    (a) => ParseCase((Serialization.Pattern)a)
+                    (a) => ParsePattern((Serialization.Pattern)a)
                 },
                 {
                     typeof(Serialization.DeclarationPattern),
-                    (a) => ParseCase((Serialization.Pattern)a)
+                    (a) => ParsePattern((Serialization.Pattern)a)
                 },
                 {
                     typeof(Serialization.DiscardPattern),
-                    (a) => ParseCase((Serialization.Pattern)a)
+                    (a) => ParsePattern((Serialization.Pattern)a)
                 },
                 {
                     typeof(Serialization.SwitchExpression),
