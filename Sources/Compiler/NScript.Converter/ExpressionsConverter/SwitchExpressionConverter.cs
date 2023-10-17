@@ -38,6 +38,7 @@ namespace NScript.Converter.ExpressionsConverter
                     switchValue)
                 : null;
 
+            // TODO: If there are too many cases, we should generate a jump table instead.
             var exprCondList = expression.Patterns
                 .Zip(expression.Expressions)
                 .Select(tupl =>
@@ -66,7 +67,10 @@ namespace NScript.Converter.ExpressionsConverter
 
             JST.Expression rv = new JST.NullLiteralExpression(methodConverter.Scope);
 
+            // Reverse this to process the last switch arm first.
+            // Ultimately, the last arm goes to the end of the conditional expression.
             exprCondList.Reverse();
+
             exprCondList.ForEach(
                 exprCond => rv = new JST.ConditionalOperatorExpression(
                     null,
