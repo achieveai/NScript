@@ -974,7 +974,8 @@ namespace NScript.Converter.TypeSystemConverter
                     identifierScope,
                     identifierScope.ParameterIdentifiers,
                     delegateFunctionNameId,
-                    parameterBlock.IsAsync);
+                    parameterBlock.IsAsync,
+                    parameterBlock.IsIterator);
 
                 rv.AddStatements(statements);
 
@@ -1371,17 +1372,23 @@ namespace NScript.Converter.TypeSystemConverter
                 MethodReference ctor;
                 JST.Expression jstCtor;
 
-                if (MethodDefinition.ReturnType.IsSameDefinition(KnownReferences.IEnumerable)
-                    || MethodDefinition.ReturnType.IsSameDefinition(KnownReferences.IEnumerator))
+                if (MethodDefinition.ReturnType.IsSameDefinition(
+                        KnownReferences.IEnumerable)
+                    || MethodDefinition.ReturnType.IsSameDefinition(
+                        KnownReferences.IEnumerator))
                 {
-                    ctor = KnownReferences.GeneratorWrapperCtor;
+                    ctor = IsAsync
+                        ? KnownReferences.AsyncGeneratorWrapperCtor
+                        : KnownReferences.GeneratorWrapperCtor;
                     jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
                 }
                 else
                 {
-                    ctor = KnownReferences
-                        .GeneratorWrapperGenericCtor
-                        .FixGenericTypeArguments(MethodDefinition.ReturnType);
+                    ctor = (IsAsync
+                        ? KnownReferences.AsyncGeneratorWrapperCtor
+                        : KnownReferences.GeneratorWrapperGenericCtor)
+                            .FixGenericTypeArguments(MethodDefinition.ReturnType);
+
                     jstCtor = IdentifierExpression.Create(null, Scope, ResolveFactory(ctor));
 
                     if (MethodDefinition.ReturnType.ContainsGenericParameter)

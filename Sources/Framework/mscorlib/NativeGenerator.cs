@@ -24,4 +24,25 @@ namespace System
             }
         }
     }
+
+    public class NativeAsyncGenerator
+    {
+        [ScriptAlias("next")]
+        public extern Promise<NextObject> NextAsync();
+
+        public class NextObject
+        {
+            [IntrinsicProperty]
+            public extern object Value
+            {
+                get;
+            }
+
+            [IntrinsicProperty]
+            public extern bool Done
+            {
+                get;
+            }
+        }
+    }
 }

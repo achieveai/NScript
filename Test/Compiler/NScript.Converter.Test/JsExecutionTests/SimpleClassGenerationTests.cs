@@ -31,6 +31,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         [TestMethod]
         [DataRow(TestType.Debug, "FactorialCalculator", "Main", false, false, false)]
         [DataRow(TestType.Debug, "FactorialCalculator", "Main", false, false, true)]
+        [DataRow(TestType.Debug, "ForEachLoopTests", "Main", false, false, false)]
         [DataRow(TestType.Debug, "GetMin", "RunTest", false, false, false)]
         [DataRow(TestType.Debug, "GetMin", "RunTest", false, false, true)]
         [DataRow(TestType.Debug, "QuickSort", "RunTest", false, false, false)]
@@ -55,6 +56,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "TestStdlib", "Main", true, false, true)]
         [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true, false)]
         [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true, true)]
+        [DataRow(TestType.Debug, "Lang8FeatureExecutionTests", "Main", false, true, false)]
         public void TestMcs(
             TestType testType,
             string className,

@@ -136,7 +136,7 @@
         {
         }
 
-        public static void VisitThrowExpressionExt(this IJstVisitor self, ThrowExpression throwExpression)
+        public static void VisitThrowStatementExt(this IJstVisitor self, ThrowStatement throwExpression)
         {
             self.DispatchExpression(throwExpression.Expression);
         }
@@ -228,9 +228,6 @@
                     break;
                 case ThisExpression thisExpression:
                     self.VisitThisExpression(thisExpression);
-                    break;
-                case ThrowExpression throwExpression:
-                    self.VisitThrowExpression(throwExpression);
                     break;
                 case TupleExpression tupleExpression:
                     self.VisitTupleExpression(tupleExpression);
@@ -332,12 +329,12 @@
             self.DispatchExpression(switchBlockStatement.Key);
             foreach (var caseBlock in switchBlockStatement.CaseBlocks)
             {
-                foreach (var caseExpr in caseBlock.Key)
+                foreach (var caseExpr in caseBlock.cases)
                 {
                     self.DispatchExpression(caseExpr);
                 }
 
-                self.DispatchStatement(caseBlock.Value);
+                self.DispatchStatement(caseBlock.block);
             }
         }
 
@@ -419,6 +416,9 @@
                     break;
                 case SwitchBlockStatement switchBlockStatement:
                     self.VisitSwitchBlockStatement(switchBlockStatement);
+                    break;
+                case ThrowStatement throwStatement:
+                    self.VisitThrowExpression(throwStatement);
                     break;
                 case TryCatchFinalyBlock tryCatchFinalyBlock:
                     self.VisitTryCatchFinallyBlock(tryCatchFinalyBlock);

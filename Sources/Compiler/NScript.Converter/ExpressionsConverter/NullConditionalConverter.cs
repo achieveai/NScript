@@ -52,6 +52,9 @@ namespace NScript.Converter.ExpressionsConverter
                 || expression.ResultType.IsValueType
                 || converter.ClrKnownReferences.Object.IsSameDefinition(expression.ResultType))
             {
+                // In JS, '0' (Number) is implicitly false, so we cannot use the JS conditional directly.
+                // NullOrUndefinedCheck does null check(===), Undefined check is usefuly in cases like JsonType.
+
                 var methodRef = converter.ClrKnownReferences.NullOrUndefinedCheck;
                 var methodIdentifier = converter.ResolveStaticMember(methodRef);
                 var methodExpression = new JST.IdentifierExpression(methodIdentifier[0], converter.Scope);
@@ -76,6 +79,15 @@ namespace NScript.Converter.ExpressionsConverter
             converter.ReleaseTempVariable(tmpIdentifier);
 
             return rv;
+        }
+
+        public static JST.Expression Convert(
+            IMethodScopeConverter converter,
+            NullCoalsecingAssignmentExpression expression)
+        {
+            return ExpressionConverterBase.Convert(
+                converter,
+                expression.AsBinaryExpression());
         }
     }
 }

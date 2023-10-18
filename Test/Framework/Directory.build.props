@@ -1,7 +1,8 @@
 <Project>
 	<Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <PropertyGroup>
-        <CscToolExe>$(MSBuildThisFileDirectory)../../NScriptToolSet/bin/$(Configuration)/$(CompilerNetFramework)/csc.exe</CscToolExe>
-        <NScriptExe>$(MSBuildThisFileDirectory)../../NScriptToolSet/bin/$(Configuration)/$(CompilerNetFramework)/nscript.exe</NScriptExe>
+        <CscToolExe>$(MSBuildThisFileDirectory)../../NScriptToolSet/bin/Debug/$(CompilerNetFramework)/csc.exe</CscToolExe>
+        <NScriptExe>$(MSBuildThisFileDirectory)../../NScriptToolSet/bin/Debug/$(CompilerNetFramework)/nscript.exe</NScriptExe>
+        <LangVersion>8.0</LangVersion>
     </PropertyGroup>
 </Project>

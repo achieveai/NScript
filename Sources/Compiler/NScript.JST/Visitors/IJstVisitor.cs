@@ -67,8 +67,8 @@
         void VisitThisExpression(ThisExpression expr)
             => JstVisitorExtension.VisitThisExpressionExt(this, expr);
 
-        void VisitThrowExpression(ThrowExpression throwExpression)
-            => JstVisitorExtension.VisitThrowExpressionExt(this, throwExpression);
+        void VisitThrowExpression(ThrowStatement throwExpression)
+            => JstVisitorExtension.VisitThrowStatementExt(this, throwExpression);
 
         void VisitTupleExpression(TupleExpression expr)
             => JstVisitorExtension.VisitTupleExpressionExt(this, expr);

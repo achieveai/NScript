@@ -276,6 +276,11 @@ namespace NScript.Converter.ExpressionsConverter
                     },
 
                     {
+                        typeof(NullCoalsecingAssignmentExpression),
+                        SimplifyConverter<NullCoalsecingAssignmentExpression>(NullConditionalConverter.Convert)
+                    },
+
+                    {
                         typeof(InlineDelegateExpression),
                         ExpressionConverterBase.SimplifyConverter<InlineDelegateExpression>(
                             InlineDelegateExpressionConverter.Convert)
@@ -349,7 +354,18 @@ namespace NScript.Converter.ExpressionsConverter
                         typeof(AwaitExpression),
                         ExpressionConverterBase.SimplifyConverter<AwaitExpression>(
                             AwaitExpressionConverter.Convert)
-                    }
+                    },
+
+                    {
+                        typeof(IsPatternExpression),
+                        ExpressionConverterBase.SimplifyConverter<IsPatternExpression>(
+                            IsPatternConverter.Convert)
+                    },
+
+                    {
+                        typeof(SwitchExpression),
+                        SimplifyConverter<SwitchExpression>(SwitchExpressionConverter.Convert)
+                    },
                 };
 
             return returnValue;

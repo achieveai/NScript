@@ -2,6 +2,7 @@
 {
     using System.Collections;
     using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
 
     [ScriptName("Error"), IgnoreNamespace, Extended]
     public class Exception

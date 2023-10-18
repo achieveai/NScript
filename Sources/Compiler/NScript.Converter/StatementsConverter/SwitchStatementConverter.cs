@@ -11,6 +11,7 @@ namespace NScript.Converter.StatementsConverter
     using NScript.Converter.TypeSystemConverter;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Definition for SwitchStatementConverter
@@ -22,25 +23,27 @@ namespace NScript.Converter.StatementsConverter
             SwitchStatement statement)
         {
             var conversionVariant = GetSwitchConversionVariant(statement);
-            var (jsSwitchValue, reusableSwitchValue) = ConvertSwitchValue(converter, statement.SwitchValue, conversionVariant);
+            var (jsSwitchValue, reusableSwitchValue) = ConvertSwitchValue(
+                converter,
+                statement.SwitchValue,
+                conversionVariant);
 
             converter.PushScopeBlock(statement);
 
-            var caseBlocks =
-                new List<KeyValuePair<List<JST.Expression>, JST.Statement>>(statement.CaseBlocks.Count);
+            var caseBlocks = new List<(List<JST.Expression>, JST.Statement)>();
 
             foreach (var keyValuePair in statement.CaseBlocks)
             {
-                List<JST.Expression> cases = new(keyValuePair.Key.Count);
+                List<JST.Expression> cases = new(keyValuePair.cases.Count);
 
-                for (int literalIndex = 0; literalIndex < keyValuePair.Key.Count; literalIndex++)
+                for (int literalIndex = 0; literalIndex < keyValuePair.cases.Count; literalIndex++)
                 {
-                    if (keyValuePair.Key[literalIndex] != null)
+                    if (keyValuePair.cases[literalIndex] != null)
                     {
                         cases.Add(
                             Convert(
                                 converter,
-                                keyValuePair.Key[literalIndex], reusableSwitchValue, conversionVariant));
+                                keyValuePair.cases[literalIndex], reusableSwitchValue, conversionVariant));
                     }
                     else
                     {
@@ -49,11 +52,10 @@ namespace NScript.Converter.StatementsConverter
                 }
 
                 caseBlocks.Add(
-                    new KeyValuePair<List<JST.Expression>, JST.Statement>(
-                        cases,
+                        (cases,
                         StatementConverterBase.Convert(
                             converter,
-                            keyValuePair.Value)));
+                            keyValuePair.block)));
             }
 
             converter.PopScopeBlock();
@@ -67,13 +69,13 @@ namespace NScript.Converter.StatementsConverter
 
         private static JST.Expression Convert(
             IMethodScopeConverter converter,
-            CaseLabel label,
+            Pattern label,
             JST.Expression reusableSwitchValue,
             ConversionVariant conversionVariant)
         {
             switch (label)
             {
-                case ConstCaseLabel ccl:
+                case ConstantPattern ccl:
                     var constantExpression = ExpressionConverterBase.Convert(converter, ccl.ConstantExpression);
                     return conversionVariant == ConversionVariant.RegularSwitchValue
                         ? constantExpression
@@ -84,7 +86,7 @@ namespace NScript.Converter.StatementsConverter
                             reusableSwitchValue,
                             constantExpression);
 
-                case DeclarationCaseLabel dcl:
+                case DeclarationPattern dcl:
                     var variableOpt = dcl.VariableOpt != null
                         ? (JST.IdentifierExpression)ExpressionConverterBase.Convert(converter, dcl.VariableOpt)
                         : null;
@@ -131,7 +133,10 @@ namespace NScript.Converter.StatementsConverter
             RegularSwitchValue
         }
 
-        private static (JST.Expression, JST.Expression) ConvertSwitchValue(IMethodScopeConverter converter, Expression switchValue, ConversionVariant conversionVariant)
+        private static (JST.Expression, JST.Expression) ConvertSwitchValue(
+            IMethodScopeConverter converter,
+            Expression switchValue,
+            ConversionVariant conversionVariant)
         {
             var jsSwitchValue = ExpressionConverterBase.Convert(converter, switchValue);
 
@@ -177,19 +182,11 @@ namespace NScript.Converter.StatementsConverter
 
         private static ConversionVariant GetSwitchConversionVariant(SwitchStatement statement)
         {
-            foreach (var block in statement.CaseBlocks)
-            {
-                var cases = block.Key;
-                foreach (var @case in cases)
-                {
-                    if (@case is DeclarationCaseLabel)
-                    {
-                        return ConversionVariant.BooleanSwitchValue;
-                    }
-                }
-            }
-
-            return ConversionVariant.RegularSwitchValue;
+            return statement.CaseBlocks
+                .SelectMany(cb => cb.cases)
+                .Any(cs => cs is DeclarationPattern)
+                    ? ConversionVariant.BooleanSwitchValue
+                    : ConversionVariant.RegularSwitchValue;
         }
     }
 }

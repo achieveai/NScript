@@ -387,7 +387,12 @@ namespace JsCsc.Lib
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
 
-        private Node ParseThrowStatment(Serialization.ThrowExpression jObject) => new ThrowExpression(
+        private Node ParseThrowExpression(Serialization.ThrowExpression jObject) => new ThrowExpression(
+                _clrContext,
+                LocFromJObject(jObject),
+                ParseExpression(jObject.Expression));
+
+        private Node ParseThrowStatment(Serialization.ThrowStatement jObject) => new ThrowStatement(
                 _clrContext,
                 LocFromJObject(jObject),
                 ParseExpression(jObject.Expression));
@@ -478,11 +483,16 @@ namespace JsCsc.Lib
                         .Select(_ => _.variable)
                         .FirstOrDefault();
 
+                    var getAwaiterMethodCall = jObject.GetAwaiterMethodCallOpt != null
+                        ? (MethodCallExpression)ParseExpression(jObject.GetAwaiterMethodCallOpt)
+                        : null;
+
                     return new ForEachLoop(
                         _clrContext,
                         LocFromJObject(jObject),
                         localVariable,
                         iterator,
+                        getAwaiterMethodCall,
                         body,
                         vc.GetCapturedVariables(),
                         vc.GetLocalFunctionVariables());
@@ -490,17 +500,69 @@ namespace JsCsc.Lib
                 jObject.BlockId,
                 false);
 
+        private Node ParseSwitchExpression(Serialization.SwitchExpression jObject)
+        {
+            var switchValue = ParseExpression(jObject.SwitchExpr);
+
+            var arms = jObject.Patterns
+                .Zip(jObject.Expressions)
+                .Select(tupl =>
+                {
+                    var (label, expr) = tupl;
+                    return (pattern: ParsePattern(label) as Pattern, expression: ParseExpression(expr));
+                });
+
+            return new SwitchExpression(
+                _clrContext,
+                LocFromJObject(jObject),
+                switchValue,
+                arms.Select(kv => kv.pattern).ToList(),
+                arms.Select(kv => kv.expression).ToList(),
+                DeserializeType(jObject.Type));
+        }
+
+        private Node ParsePattern(Serialization.Pattern label)
+        {
+            Pattern labelRv = label switch
+            {
+                Serialization.ConstantPattern constLabel =>
+                    new ConstantPattern(
+                        _clrContext,
+                        LocFromJObject(constLabel),
+                        ParseExpression(constLabel.ConstantExpression)),
+
+                Serialization.DeclarationPattern declarationLabel =>
+                    new DeclarationPattern(
+                        _clrContext,
+                        null,
+                        declarationLabel.LocalVariableOpt != null
+                            ? new VariableReference(
+                                _clrContext,
+                                null,
+                                ParseLocalVariable(declarationLabel.LocalVariableOpt))
+                            : null,
+                        DeserializeType(declarationLabel.DeclaredType),
+                        ParseExpression(declarationLabel.When)),
+
+                Serialization.DiscardPattern discardLabel =>
+                    new DiscardPattern(_clrContext, LocFromJObject(discardLabel)),
+
+                _ => throw new NotImplementedException($"{label.GetType().Name} in switch expressions is not supported")
+            };
+
+            return labelRv;
+        }
+
         private Node ParseSwitchStatement(Serialization.SwitchStatement jObject)
         {
             var variableCollector = new VariableCollector(jObject.BlockId);
             _ = scopeBlockStack.AddFirst((jObject.BlockId, variableCollector));
 
-            var caseBlocks =
-                new List<KeyValuePair<List<CaseLabel>, Statement>>();
+            var caseBlocks = new List<(List<Pattern>, Statement)>();
 
             var sectionArray = jObject.Blocks;
-            List<(LocalVariable localVariable, bool isUsed)> sectionVariables = new List<(LocalVariable localVariable, bool isUsed)>();
-            List<LocalFunctionVariable> sectionLocalFunctionNames = new List<LocalFunctionVariable>();
+            var sectionVariables = new List<(LocalVariable localVariable, bool isUsed)>();
+            var sectionLocalFunctionNames = new List<LocalFunctionVariable>();
 
             for (var iSection = 0; iSection < sectionArray.Count; iSection++)
             {
@@ -508,8 +570,7 @@ namespace JsCsc.Lib
                 var sectionObj = sectionArray[iSection].Block;
                 var labelJArray = sectionArray[iSection].Labels;
 
-                var labels =
-                    new List<CaseLabel>(labelJArray.Count);
+                var labels = new List<Pattern>(labelJArray.Count);
 
                 var sectionVariableCollector = new VariableCollector(section.BlockId);
                 _ = scopeBlockStack.AddFirst((section.BlockId, sectionVariableCollector));
@@ -519,23 +580,23 @@ namespace JsCsc.Lib
                     var @case = labelJArray[iLabel];
                     switch (labelJArray[iLabel])
                     {
-                        case Serialization.SwitchConstCaseLabel sccl:
+                        case Serialization.ConstantPattern sccl:
                             labels.Add(
-                                new ConstCaseLabel(_clrContext, LocFromJObject(@case), ParseExpression(sccl.LabelValue)));
+                                new ConstantPattern(_clrContext, LocFromJObject(@case), ParseExpression(sccl.ConstantExpression)));
                             break;
 
-                        case Serialization.SwitchDiscardCaseLabel:
+                        case Serialization.DiscardPattern:
                         case null:
                             labels.Add(null);
                             break;
 
-                        case Serialization.SwitchDeclarationCaseLabel sdcl:
+                        case Serialization.DeclarationPattern sdcl:
                             var localVariableOpt = sdcl.LocalVariableOpt != null
                                 ? ParseLocalVariable(sdcl.LocalVariableOpt)
                                 : null;
 
                             labels.Add(
-                                new DeclarationCaseLabel(_clrContext,
+                                new DeclarationPattern(_clrContext,
                                 LocFromJObject(@case),
                                 localVariableOpt != null
                                     ? new VariableReference(
@@ -543,7 +604,7 @@ namespace JsCsc.Lib
                                         null,
                                         localVariableOpt)
                                     : null,
-                                DeserializeType(sdcl.DeclaredTypeOpt.Value),
+                                DeserializeType(sdcl.DeclaredType),
                                 ParseExpression(sdcl.When)));
 
                             break;
@@ -553,10 +614,9 @@ namespace JsCsc.Lib
                     }
                 }
 
-                caseBlocks.Add(
-                    new KeyValuePair<List<CaseLabel>, Statement>(
-                        labels,
-                        ParseStatement(sectionObj)));
+                caseBlocks.Add((
+                    labels,
+                    ParseStatement(sectionObj)));
 
                 sectionVariables.AddRange(sectionVariableCollector.GetCapturedVariables());
                 sectionLocalFunctionNames.AddRange(sectionVariableCollector.GetLocalFunctionVariables());
@@ -803,6 +863,13 @@ namespace JsCsc.Lib
                 ParseExpression(jObject.Right),
                 DeserializeType(jObject.Type));
 
+        private Node ParseNullCoalascingAssignment(Serialization.NullCoalescingAssignmentSer jObject)
+            => new NullCoalsecingAssignmentExpression(
+                _clrContext,
+                LocFromJObject(jObject),
+                ParseExpression(jObject.Left),
+                ParseExpression(jObject.Right));
+
         private Node ParseYield(Serialization.YieldStatement jObject) => new YieldStatement(
                 _clrContext,
                 LocFromJObject(jObject),
@@ -830,6 +897,12 @@ namespace JsCsc.Lib
                 ParseExpression(jObject.Expression),
                 DeserializeType(jObject.Type),
                 TypeCheckType.IsType);
+
+        private Node ParseIsPattern(Serialization.IsPatternExpression jObject) => new IsPatternExpression(
+            _clrContext,
+            LocFromJObject(jObject),
+            ParseExpression(jObject.Lhs),
+            ParseNode(jObject.Pattern) as Pattern);
 
         private Node ParseAsExpr(Serialization.AsExpression jObject) => new TypeCheckExpression(
                 _clrContext,
@@ -1918,7 +1991,11 @@ namespace JsCsc.Lib
                 },
                 {
                     typeof(Serialization.ThrowExpression),
-                    (a) => ParseThrowStatment((Serialization.ThrowExpression)a)
+                    (a) => ParseThrowExpression((Serialization.ThrowExpression)a)
+                },
+                {
+                    typeof(Serialization.ThrowStatement),
+                    (a) => ParseThrowStatment((Serialization.ThrowStatement)a)
                 },
                 {
                     typeof(Serialization.BreakStatement),
@@ -1953,6 +2030,22 @@ namespace JsCsc.Lib
                     (a) => ParseSwitchStatement((Serialization.SwitchStatement)a)
                 },
                 {
+                    typeof(Serialization.ConstantPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.DeclarationPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.DiscardPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.SwitchExpression),
+                    (a) => ParseSwitchExpression((Serialization.SwitchExpression)a)
+                },
+                {
                     typeof(Serialization.ExplicitBlockSer),
                     (a) => ParseScopeBlock((Serialization.ExplicitBlockSer)a)
                 },
@@ -1977,6 +2070,10 @@ namespace JsCsc.Lib
                     (a) => ParseNullCoalascing((Serialization.NullCoalescingOperatorSer)a)
                 },
                 {
+                    typeof(Serialization.NullCoalescingAssignmentSer),
+                    (a) => ParseNullCoalascingAssignment(a as Serialization.NullCoalescingAssignmentSer)
+                },
+                {
                     typeof(Serialization.YieldStatement),
                     (a) => ParseYield((Serialization.YieldStatement)a)
                 },
@@ -1991,6 +2088,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.IsExpression),
                     (a) => ParseIsExpr((Serialization.IsExpression)a)
+                },
+                {
+                    typeof(Serialization.IsPatternExpression),
+                    (a) => ParseIsPattern(a as Serialization.IsPatternExpression)
                 },
                 {
                     typeof(Serialization.AsExpression),

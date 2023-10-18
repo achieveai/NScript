@@ -2,8 +2,8 @@
 	<Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<JsOutputPath>.\</JsOutputPath>
-		<TargetFramework>netstandard2.1</TargetFramework>
+		<JsOutputPath Condition="$(JsOutputPath) == ''">.\</JsOutputPath>
+		<TargetFramework Condition="$(TargetFramework) == ''">netstandard2.1</TargetFramework>
 		<NoStandardLib>true</NoStandardLib>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>

@@ -744,16 +744,16 @@ namespace JsCsc.Lib
                 JObject sectObj = new JObject();
                 sectObj[NameTokens.TypeName] = TypeTokens.SwitchSection;
 
-                var caseLabels = new List<SwitchCaseLabel>();
+                var caseLabels = new List<Pattern>();
                 foreach (var label in section.Labels)
                 {
                     if (label.IsDefault)
-                    { caseLabels.Add(new SwitchDiscardCaseLabel()); }
+                    { caseLabels.Add(new DiscardPattern()); }
                     else
                     {
                         caseLabels.Add(
-                            new SwitchConstCaseLabel
-                            { LabelValue = this.Dispatch(label.Converted ?? label.Label) });
+                            new ConstantPattern
+                            { ConstantExpression = this.Dispatch(label.Converted ?? label.Label) });
                     }
                 }
 

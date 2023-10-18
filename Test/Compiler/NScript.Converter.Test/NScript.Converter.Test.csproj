@@ -12,6 +12,8 @@
     <None Remove="MethodConverterTests\YieldReturn\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="JsExecutionTests\Results\ForEachLoopTests.txt" />
+    <None Remove="JsExecutionTests\Results\Lang8FeatureExecutionTests.txt" />
     <None Remove="JsExecutionTests\Results\TestAsyncAwait.txt" />
     <None Remove="JsExecutionTests\Results\TestStdlib.txt" />
     <None Remove="JsExecutionTests\Results\YieldReturnTests.txt" />
@@ -68,6 +70,14 @@
     <None Remove="MethodConverterTests\InlineInitializations\ReturnStrDict2.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\VarArgs.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\VarArgs2.static.js" />
+    <None Remove="MethodConverterTests\Lang8Features\IsConstantPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\IsDeclarationPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\IsVarPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\SwitchConstantExpression.js" />
+    <None Remove="MethodConverterTests\Lang8Features\SwitchEnumExpression.js" />
+    <None Remove="MethodConverterTests\Lang8Features\TestAsyncForEach.js" />
+    <None Remove="MethodConverterTests\Lang8Features\TestIsPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />
     <None Remove="MethodConverterTests\MethodArgument\Constructor.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
@@ -127,6 +137,8 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="JsExecutionTests\Results\ForEachLoopTests.txt" />
+    <EmbeddedResource Include="JsExecutionTests\Results\Lang8FeatureExecutionTests.txt" />
     <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test10.js" />
     <EmbeddedResource Include="MethodConverterTests\AsyncAwait\Test3.static.js" />
     <EmbeddedResource Include="MethodConverterTests\CompilerGeneratedStuff\AddTestEvent.static.js" />
@@ -162,6 +174,14 @@
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\ReturnStrDict2.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs2.static.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsConstantPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsDeclarationPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsVarPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\SwitchConstantExpression.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\SwitchEnumExpression.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestAsyncForEach.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestIsPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\Constructor.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />

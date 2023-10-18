@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace NScript.JST
+namespace NScript.CLR.AST
 {
     using System;
     using System.Collections.Generic;
@@ -15,22 +15,19 @@ namespace NScript.JST
     /// </summary>
     public class ThrowExpression : Expression
     {
-        /// <summary>
-        /// Backing field for InnerExpression.
-        /// </summary>
         private Expression innerExpression;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ThrowExpression"/> class.
         /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="location">The location.</param>
-        /// <param name="scope">The scope.</param>
         /// <param name="innerExpression">The inner expression.</param>
         public ThrowExpression(
+            ClrContext context,
             Location location,
-            IdentifierScope scope,
             Expression innerExpression)
-            : base(location, scope)
+            : base(context, location)
         {
             this.innerExpression = innerExpression;
         }
@@ -44,25 +41,21 @@ namespace NScript.JST
         }
 
         /// <summary>
-        /// Writes to the specified writer.
+        /// Serializes the specified serialization info.
         /// </summary>
-        /// <param name="writer">The writer.</param>
-        public override void Write(JSWriter writer)
+        /// <param name="serializationInfo">The serialization info.</param>
+        public override void Serialize(Utils.ICustomSerializer serializationInfo)
         {
-            writer
-                .EnterLocation(this.Location)
-                .Write(Keyword.Throw)
-                .Write(this.Expression)
-                .LeaveLocation();
+            serializationInfo.AddValue("innerExpression", this.Expression);
         }
 
         /// <summary>
-        /// Serializes the specified serializer.
+        /// Processes the through pipeline.
         /// </summary>
-        /// <param name="serializer">The serializer.</param>
-        public override void Serialize(NScript.Utils.ICustomSerializer serializer)
+        /// <param name="processor">The processor.</param>
+        public override void ProcessThroughPipeline(IAstProcessor processor)
         {
-            serializer.AddValue("innerExpression", this.Expression);
+            this.innerExpression = (Expression)processor.Process(this.Expression);
         }
     }
 }

@@ -6,32 +6,47 @@
 
 namespace NScript.Converter.ExpressionsConverter
 {
-    using System;
-    using System.Collections.Generic;
     using NScript.Converter.TypeSystemConverter;
     using NScript.CLR.AST;
+    using System.Collections.Generic;
+    using NScript.JST;
 
-    /// <summary>
-    /// Definition for ThrowStatementConverter
-    /// </summary>
     public static class ThrowExpressionConverter
     {
-        /// <summary>
-        /// Converts the specified converter.
-        /// </summary>
-        /// <param name="converter">The converter.</param>
-        /// <param name="statement">The statement.</param>
-        /// <returns>ThrowStatement.</returns>
         public static JST.Expression Convert(
             IMethodScopeConverter converter,
             ThrowExpression statement)
         {
-            return new JST.ThrowExpression(
+            var shell = new JST.FunctionExpression(
                 statement.Location,
                 converter.Scope,
+                new IdentifierScope(converter.Scope),
+                new List<IIdentifier>(),
+                null);
+
+            shell.AddStatement(
+                new JST.ThrowStatement(
+                    statement.Location,
+                    converter.Scope,
+                    ExpressionConverterBase.Convert(
+                        converter,
+                        statement.Expression),
+                    writeOnNewLine: false));
+
+            return new JST.MethodCallExpression(statement.Location, converter.Scope, shell);
+        }
+
+        public static JST.Statement ConvertStatement(
+            IMethodScopeConverter methodScopeConverter,
+            CLR.AST.ThrowStatement throwStatement)
+        {
+            return new JST.ThrowStatement(
+                throwStatement.Location,
+                methodScopeConverter.Scope,
                 ExpressionConverterBase.Convert(
-                    converter,
-                    statement.Expression));
+                    methodScopeConverter,
+                    throwStatement.Expression),
+                writeOnNewLine: true);
         }
     }
 }

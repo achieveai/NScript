@@ -1,0 +1,44 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NScript.Csc.Lib.Test;
+using System;
+
+namespace NScript.Converter.Test.MethodConverterTests
+{
+    [TestClass]
+    public class Lang8FeatureTests
+    {
+        private const string TestClassNameStr = @"Lang8Features";
+        private const string TestFilesNSStr = @"NScript.Converter.Test.MethodConverterTests.Lang8Features.";
+
+        [TestInitialize]
+        public void Setup()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+        }
+
+        [DataTestMethod]
+        [DataRow(TestClassNameStr, "NullCoalescingAssignment", "TestNullCoalescing.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IsConstantPattern", "IsConstantPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IsDeclarationPattern", "IsDeclarationPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IsVarPattern", "IsVarPattern.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "SwitchConstantExpression", "SwitchConstantExpression.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "SwitchEnumExpression", "SwitchEnumExpression.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "TestAsyncForEach", "TestAsyncForEach.js", TestType.All, false)]
+        public void TestMcs(
+            string className,
+            string methodName,
+            string resourceName,
+            TestType testType,
+            bool isInstanceStatic)
+        {
+            ConverterTestHelpers.RunTest(
+                TestFilesNSStr + resourceName,
+                className,
+                methodName,
+                testType,
+                true,
+                false,
+                isInstanceStatic);
+        }
+    }
+}

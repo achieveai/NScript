@@ -12,6 +12,7 @@ namespace NScript.Converter.StatementsConverter
     using NScript.Converter.TypeSystemConverter;
     using Mono.Cecil;
     using NScript.CLR;
+    using System;
 
     /// <summary>
     /// Definition for ForLoopConverter
@@ -34,7 +35,7 @@ namespace NScript.Converter.StatementsConverter
                 return new JST.ForLoop(
                     forLoop.Location,
                     converter.Scope,
-                    ExpressionsConverter.ExpressionConverterBase.Convert(converter, forLoop.Condition),
+                    ExpressionConverterBase.Convert(converter, forLoop.Condition),
                     StatementConverterBase.Convert(converter, forLoop.InitializeStatement),
                     StatementConverterBase.Convert(converter, forLoop.IncrementStatement),
                     StatementConverterBase.Convert(converter, forLoop.Loop));
@@ -65,34 +66,32 @@ namespace NScript.Converter.StatementsConverter
                         forEachLoop);
                 }
 
-                JST.IdentifierExpression enumerator =
-                    new JST.IdentifierExpression(
-                        converter.GetTempVariable(),
-                        converter.Scope);
+                // for (enumTemp1 = collection.GetEnumerator(); await enumTemp1.MoveNext();) {
+                //      looopVariable = enumTemp1.Current
+                // 
 
-                JST.Expression getEnumerator =
-                    ForLoopConverter.GetEnumeratorExpression(
-                        converter,
-                        forEachLoop.Collection);
-
-                JST.Expression condition =
-                    ForLoopConverter.GetMoveNextExpression(
+                var forLoopInitialization = GetForLoopInitialization(
                     converter,
-                    enumerator);
+                    forEachLoop,
+                    out var enumeratorTempIdentifierExpr);
+
+                var condition = GetForLoopCondition(
+                    converter,
+                    enumeratorTempIdentifierExpr,
+                    forEachLoop);
 
                 return new JST.ForLoop(
                     forEachLoop.Location,
                     converter.Scope,
                     condition,
-                    JST.ExpressionStatement.CreateAssignmentExpression(
-                        enumerator,
-                        getEnumerator),
+                    forLoopInitialization,
                     null,
-                    ForLoopConverter.GetScopeBlock(
+                    GetScopeBlock(
                         converter,
-                        enumerator,
+                        enumeratorTempIdentifierExpr,
                         forEachLoop.Variable,
-                        forEachLoop.Scope));
+                        forEachLoop.Scope,
+                        forEachLoop));
             }
             finally
             {
@@ -176,60 +175,6 @@ namespace NScript.Converter.StatementsConverter
         }
 
         /// <summary>
-        /// Gets the enumerator expression.
-        /// </summary>
-        /// <param name="converter">The converter.</param>
-        /// <param name="collection">The collection.</param>
-        /// <returns></returns>
-        private static JST.Expression GetEnumeratorExpression(
-            IMethodScopeConverter converter,
-            Expression collection)
-        {
-            JST.Expression collectionEnumeration = ExpressionConverterBase.Convert(
-                converter,
-                collection);
-
-            MethodReference getEnumeratorFunc = converter.KnownReferences.GetEnumeratorIEnumerableMethod;
-
-            return new JST.MethodCallExpression(
-                collectionEnumeration.Location,
-                converter.Scope,
-                new JST.IndexExpression(
-                    collectionEnumeration.Location,
-                    converter.Scope,
-                    collectionEnumeration,
-                    converter.ResolveVirtualMethod(
-                        getEnumeratorFunc,
-                        converter.Scope)),
-                new List<JST.Expression>());
-        }
-
-        /// <summary>
-        /// Gets the move next expression.
-        /// </summary>
-        /// <param name="converter">The converter.</param>
-        /// <param name="enumerator">The enumerator.</param>
-        /// <returns></returns>
-        private static JST.Expression GetMoveNextExpression(
-            IMethodScopeConverter converter,
-            JST.Expression enumerator)
-        {
-            MethodReference moveNextFunc = converter.KnownReferences.MoveNextEnumeratorMethod;
-
-            return new JST.MethodCallExpression(
-                    enumerator.Location,
-                    converter.Scope,
-                    new JST.IndexExpression(
-                        enumerator.Location,
-                        converter.Scope,
-                        enumerator,
-                        converter.ResolveVirtualMethod(
-                            moveNextFunc,
-                            converter.Scope)),
-                    new List<JST.Expression>());
-        }
-
-        /// <summary>
         /// Gets the current expression.
         /// </summary>
         /// <param name="converter">The converter.</param>
@@ -238,10 +183,19 @@ namespace NScript.Converter.StatementsConverter
         private static JST.Expression GetCurrentExpression(
             IMethodScopeConverter converter,
             TypeReference expectedType,
-            JST.Expression enumerator)
+            JST.Expression enumerator,
+            ForEachLoop forEachLoop)
         {
-            TypeDefinition type = converter.KnownReferences.IEnumerator.Resolve();
-            MethodReference getCurrentFunc = converter.KnownReferences.GetCurrentIEnumeratorMethod;
+            var isAsyncEnumerator = forEachLoop.IsAsync;
+
+            var getCurrentFunc = isAsyncEnumerator
+                ? converter.KnownReferences.GetCurrentIAsyncEnumeratorMethod
+                : converter.KnownReferences.GetCurrentIEnumeratorMethod;
+
+            if (isAsyncEnumerator)
+            {
+                getCurrentFunc = getCurrentFunc.FixGenericTypeArguments(forEachLoop.Collection.ResultType);
+            }
 
             JST.Expression rv = new JST.MethodCallExpression(
                 enumerator.Location,
@@ -257,8 +211,9 @@ namespace NScript.Converter.StatementsConverter
 
             // Here we can check if genericParameter is restricted to referenceTypes
             // but for now not needed.
-            if (expectedType.IsValueOrEnum()
-                || expectedType.IsGenericParameter)
+            if (!forEachLoop.IsAsync
+                && (expectedType.IsValueOrEnum()
+                || expectedType.IsGenericParameter))
             {
                 rv = MethodCallExpressionConverter.CreateMethodCallExpression(
                     new MethodCallContext(
@@ -280,6 +235,123 @@ namespace NScript.Converter.StatementsConverter
             return rv;
         }
 
+        private static JST.Statement GetForLoopInitialization(
+            IMethodScopeConverter converter,
+            ForEachLoop forEachLoop,
+            out JST.IdentifierExpression enumeratorTempIdentifier)
+        {
+            var getAsyncEnumerator = forEachLoop.IsAsync;
+
+            // TODO: Generic case
+            var method = getAsyncEnumerator
+                ? converter.KnownReferences.GetAsyncEnumeratorIAsyncEnumerableMethod
+                : converter.KnownReferences.GetEnumeratorIEnumerableMethod;
+
+            if (getAsyncEnumerator)
+            {
+                method = method.FixGenericTypeArguments(forEachLoop.Collection.ResultType);
+            }
+
+            enumeratorTempIdentifier = new JST.IdentifierExpression(
+                converter.GetTempVariable(),
+                converter.Scope);
+
+            JST.ExpressionStatement collectionAssignmentStatement = null;
+
+            var collectionExpr = ExpressionConverterBase.Convert(converter, forEachLoop.Collection);
+
+            if (forEachLoop.Collection is not VariableReference)
+            {
+                var collectionTempIdentifier= new JST.IdentifierExpression(
+                    converter.GetTempVariable(),
+                    converter.Scope);
+
+                collectionAssignmentStatement = new JST.ExpressionStatement(
+                    null,
+                    converter.Scope,
+                    new JST.BinaryExpression(
+                        null,
+                        converter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        collectionTempIdentifier,
+                        collectionExpr));
+
+                collectionExpr = collectionTempIdentifier;
+            }
+
+            var enumeratorAssignmentStatement = new JST.ExpressionStatement(
+                null,
+                converter.Scope,
+                new JST.BinaryExpression(
+                    null,
+                    converter.Scope,
+                    JST.BinaryOperator.Assignment,
+                    enumeratorTempIdentifier,
+                    new JST.MethodCallExpression(
+                        forEachLoop.Location,
+                        converter.Scope,
+                        new JST.IndexExpression(
+                            forEachLoop.Location,
+                            converter.Scope,
+                            collectionExpr,
+                            converter.ResolveVirtualMethod(
+                                method,
+                                converter.Scope)),
+                        new List<JST.Expression>())));
+
+            if (collectionAssignmentStatement == null)
+            {
+                return enumeratorAssignmentStatement;
+            }
+            else
+            {
+                return new JST.ScopeBlock(
+                    null,
+                    converter.Scope,
+                    new()
+                    {
+                    collectionAssignmentStatement,
+                    enumeratorAssignmentStatement
+                    });
+            }
+        }
+
+        private static JST.Expression GetForLoopCondition(
+            IMethodScopeConverter converter,
+            JST.IdentifierExpression enumeratorIdentifier,
+            ForEachLoop forEachLoop)
+        {
+            var method = forEachLoop.IsAsync
+                ? converter.KnownReferences.GetMoveNextAsyncIAsyncEnumeratorMethod(
+                    forEachLoop.Collection.ResultType)
+                : converter.KnownReferences.MoveNextEnumeratorMethod;
+
+            // if (forEachLoop.IsAsync)
+            // {
+            //     method = method.FixGenericTypeArguments(forEachLoop.Collection.ResultType);
+            // }
+
+            JST.Expression rv = new JST.MethodCallExpression(
+                forEachLoop.Location,
+                converter.Scope,
+                new JST.IndexExpression(
+                    forEachLoop.Location,
+                    converter.Scope,
+                    enumeratorIdentifier,
+                    converter.ResolveVirtualMethod(
+                        method,
+                        converter.Scope)),
+                new List<JST.Expression>());
+
+            if (forEachLoop.IsAsync)
+            {
+                // Wrap in an await expression
+                rv = new JST.AwaitExpression(forEachLoop.Collection.Location, converter.Scope, rv);
+            }
+
+            return rv;
+        }
+
         /// <summary>
         /// Gets the scope block.
         /// </summary>
@@ -292,7 +364,8 @@ namespace NScript.Converter.StatementsConverter
             IMethodScopeConverter converter,
             JST.Expression enumerator,
             LocalVariable loopVariable,
-            ScopeBlock scopeBlock)
+            ScopeBlock scopeBlock,
+            ForEachLoop forEachLoop)
         {
             JST.Statement block =
                 ScopeBlockConverter.Convert(
@@ -324,10 +397,11 @@ namespace NScript.Converter.StatementsConverter
                             converter.ResolveLocal(
                                 loopVariable.Name),
                             converter.Scope),
-                        ForLoopConverter.GetCurrentExpression(
+                        GetCurrentExpression(
                             converter,
                             loopVariable.Type,
-                            enumerator))));
+                            enumerator,
+                            forEachLoop))));
 
             return new JST.ScopeBlock(
                 scopeBlock.Location,

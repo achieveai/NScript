@@ -13,15 +13,16 @@ namespace RealScript
     {
         public static void Main()
         {
-            TestGenerics.TestGenericBasic();
-            TestGenerics.TestImplicitImplementationOfInterface();
-            TestGenerics.TestImplicitAndExplicitInterfaces();
-            TestGenerics.TestConstructorAndFieldMutation();
-            TestGenerics.TestMiniLists();
-            TestGenerics.TestMiniDictionary();
-            TestGenerics.TestStaticFieldsOnDistinctTypeInstances();
-            TestGenerics.TestGenericMethodsIntrestingPermutation();
-            TestGenerics.TestRecursiveTypes();
+            TestGenericBasic();
+            TestImplicitImplementationOfInterface();
+            TestImplicitAndExplicitInterfaces();
+            TestConstructorAndFieldMutation();
+            TestMiniLists();
+            TestMiniDictionary();
+            TestStaticFieldsOnDistinctTypeInstances();
+            TestGenericMethodsIntrestingPermutation();
+            TestRecursiveTypes();
+            TestPropertyGetForGenerics();
         }
 
         private static void TestGenericBasic()
@@ -125,6 +126,14 @@ namespace RealScript
             Console.WriteLine(b.M(a));
         }
 
+        private static void TestPropertyGetForGenerics()
+        {
+            var w = new Wrapper<Person>(new Person("pname"));
+            var person = w.Property;
+            Console.WriteLine(person);
+            Console.WriteLine(person.Value.Name);
+        }
+
         private static void TestSameInterfaceTwice<T>(T x)
         {
             var adder = (IHigherKindedAndPolymorphic<T>)new SameInterfaceTwice();
@@ -207,6 +216,8 @@ namespace RealScript
         }
 
         override public int Second { get { return 10; } }
+
+        public string Name => name;
     }
 
     public interface ITwoTests<T>
@@ -223,7 +234,10 @@ namespace RealScript
         public Wrapper(T value)
         {
             Value = value;
+            Property = this;
         }
+
+        public Wrapper<T> Property { get; }
 
         public override string ToString()
         {

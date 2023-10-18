@@ -70,7 +70,7 @@ namespace System
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            // Nothing to dispose here
         }
     }
 }

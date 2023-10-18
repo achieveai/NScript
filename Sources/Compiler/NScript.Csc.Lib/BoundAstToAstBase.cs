@@ -8,6 +8,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     internal class BoundAstToAstBase
         : BoundAstToNotImplemented<SerializationContext, AstBase>
@@ -130,7 +131,8 @@
             return rv;
         }
 
-        public override AstBase DefaultVisit(BoundNode node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase DefaultVisit(BoundNode node, SerializationContext arg)
+            => throw new NotImplementedException($"{node.Kind} Visit not implemented");
 
         public override AstBase VisitAddressOfOperator(BoundAddressOfOperator node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -224,12 +226,12 @@
             var expr = (ExpressionSer)Visit(node.Expression, arg);
             this.AwaitableValue = expr;
             var methodCall = (MethodCallExpression)Visit(node.AwaitableInfo.GetAwaiter, arg);
-            var ret = new AwaitExpression()
+
+            return new AwaitExpression
             {
                 GetAwaiterMethodCall = methodCall,
                 Expression = expr
             };
-            return ret;
         }
 
         public override AstBase VisitAwaitableValuePlaceholder(BoundAwaitableValuePlaceholder node, SerializationContext arg)
@@ -481,7 +483,12 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
             };
 
-        public override AstBase VisitConstantPattern(BoundConstantPattern node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitConstantPattern(BoundConstantPattern node, SerializationContext arg)
+            => new ConstantPattern
+            {
+                ConstantExpression = GetConstantValue(node.ConstantValue.Value) as ExpressionSer,
+                Location = node.Syntax.GetSerLoc()
+            };
 
         public override AstBase VisitConstructorMethodBody(BoundConstructorMethodBody node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -580,6 +587,7 @@
 
                 case ConversionKind.ImplicitThrow:
                 case ConversionKind.Deconstruction:
+                case ConversionKind.SwitchExpression:
                     return Visit(node.Operand, arg);
 
                 case ConversionKind.ImplicitTupleLiteral:
@@ -601,7 +609,15 @@
         public override AstBase VisitConvertedTupleLiteral(BoundConvertedTupleLiteral node, SerializationContext arg)
             => this.Visit(node.SourceTuple, arg);
 
-        public override AstBase VisitDeclarationPattern(BoundDeclarationPattern node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitDeclarationPattern(BoundDeclarationPattern node, SerializationContext arg)
+            => new DeclarationPattern
+            {
+                LocalVariableOpt = node.VariableAccess != null
+                    ? ((LocalVariableRefExpression)this.VisitLocal((BoundLocal)node.VariableAccess, arg)).LocalVariable
+                    : null,
+                DeclaredType = arg.SymbolSerializer.GetTypeSpecId(node.NarrowedType),
+                Location = node.Syntax.GetSerLoc()
+            };
 
         public override AstBase VisitDeconstructionAssignmentOperator(
             BoundDeconstructionAssignmentOperator node,
@@ -819,7 +835,10 @@
                         BlockId = id,
                         LocalVariableName = node.IterationVariables[0].Name,
                         Collection = (ExpressionSer)Visit(node.Expression, arg),
-                        Loop = VisitToStatement(node.Body, arg)
+                        Loop = VisitToStatement(node.Body, arg),
+                        GetAwaiterMethodCallOpt = node.AwaitOpt == null
+                            ? null
+                            : (MethodCallExpression)Visit(node.AwaitOpt.GetAwaiter, arg)
                     });
 
         public override AstBase VisitForStatement(BoundForStatement node, SerializationContext arg)
@@ -886,27 +905,10 @@
             };
 
         public override AstBase VisitIsPatternExpression(BoundIsPatternExpression node, SerializationContext arg)
-            => new BinaryExpression
+            => new IsPatternExpression
             {
-                Location = node.Syntax.Location.GetSerLoc(),
-                Operator = (int)CLR.AST.BinaryOperator.NotEquals,
-                Left = new BinaryExpression
-                {
-                    Location = node.Syntax.Location.GetSerLoc(),
-                    Operator = (int)CLR.AST.BinaryOperator.Assignment,
-                    Left = (ExpressionSer)Visit(
-                        ((BoundDeclarationPattern)node.Pattern).VariableAccess,
-                        arg),
-                    Right = new AsExpression
-                    {
-                        Type = arg.SymbolSerializer.GetTypeSpecId(
-                            ((BoundDeclarationPattern)node.Pattern).DeclaredType.Type),
-                        Expression = (ExpressionSer)Visit(node.Expression, arg)
-                    },
-                },
-                Right = new NullExpression
-                {
-                }
+                Lhs = Visit(node.Expression, arg) as ExpressionSer,
+                Pattern = Visit(node.Pattern, arg) as Pattern
             };
 
         public override AstBase VisitLabel(BoundLabel node, SerializationContext arg) => throw new NotImplementedException();
@@ -1097,6 +1099,14 @@
                 Left = (ExpressionSer)Visit(node.LeftOperand, arg),
                 Right = (ExpressionSer)Visit(node.RightOperand, arg),
                 Type = arg.SymbolSerializer.GetTypeSpecId(node.Type)
+            };
+
+        public override AstBase VisitNullCoalescingAssignmentOperator(BoundNullCoalescingAssignmentOperator node, SerializationContext arg)
+            => new NullCoalescingAssignmentSer
+            {
+                Location = node.Syntax.GetSerLoc(),
+                Left = (ExpressionSer)Visit(node.LeftOperand, arg),
+                Right = (ExpressionSer)Visit(node.RightOperand, arg)
             };
 
         public override AstBase VisitObjectCreationExpression(BoundObjectCreationExpression node, SerializationContext arg)
@@ -1323,6 +1333,55 @@
 
         public override AstBase VisitStringInsert(BoundStringInsert node, SerializationContext arg) => throw new NotImplementedException();
 
+        public override AstBase VisitConvertedSwitchExpression(BoundConvertedSwitchExpression node, SerializationContext arg)
+        {
+            var arms = new List<Pattern>();
+            var exprs = new List<ExpressionSer>();
+
+            foreach (var switchArm in node.SwitchArms)
+            {
+                Pattern pattern = switchArm.Pattern switch
+                {
+                    BoundConstantPattern constPattern =>
+                        new ConstantPattern
+                        {
+                            ConstantExpression = GetConstLiteral(constPattern.ConstantValue) as ExpressionSer
+                        },
+
+                    BoundDeclarationPattern declarationPattern =>
+                        new DeclarationPattern
+                        {
+                            LocalVariableOpt = ((BoundLocal?)declarationPattern.VariableAccess) != null
+                                ? ((LocalVariableRefExpression)VisitLocal((BoundLocal?)declarationPattern.VariableAccess, arg)).LocalVariable
+                                : null,
+
+                            DeclaredType = arg.SymbolSerializer.GetTypeSpecId(declarationPattern.DeclaredType.Type),
+
+                            When = switchArm.WhenClause != null
+                                ? (ExpressionSer)Visit(switchArm.WhenClause, arg)
+                                : null,
+                        },
+
+                    BoundDiscardPattern _ => new DiscardPattern { },
+
+                    _ => throw new NotImplementedException($"{switchArm.Pattern.Kind} pattern not supported")
+                };
+
+                var expr = Visit(switchArm.Value, arg) as ExpressionSer;
+
+                exprs.Add(expr);
+                arms.Add(pattern);
+            }
+
+            return new SwitchExpression
+            {
+                SwitchExpr = Visit(node.Expression, arg) as ExpressionSer,
+                Patterns = arms,
+                Expressions = exprs,
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type),
+            };
+        }
+
         public override AstBase VisitSwitchLabel(BoundSwitchLabel node, SerializationContext arg)
         {
             throw new NotImplementedException();
@@ -1343,7 +1402,7 @@
                 {
                     switchSections.Add(this.WrapInBlock(section, (id, _) =>
                     {
-                        var caseLabels = new List<SwitchCaseLabel>();
+                        var caseLabels = new List<Pattern>();
                         foreach (var label in section.SwitchLabels)
                         {
                             // Also check BoundSwitchLabel visitor.
@@ -1352,26 +1411,24 @@
                             {
                                 var constPattern = (BoundConstantPattern)label.Pattern;
                                 caseLabels.Add(
-                                    new SwitchConstCaseLabel
+                                    new ConstantPattern
                                     {
-                                        LabelValue = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
+                                        ConstantExpression = (ExpressionSer)GetConstLiteral(constPattern.ConstantValue)
                                     });
                             }
                             else if (label.Pattern.Kind == BoundKind.DiscardPattern)
                             {
-                                caseLabels.Add(new SwitchDiscardCaseLabel());
+                                caseLabels.Add(new DiscardPattern());
                             }
                             else if (label.Pattern.Kind == BoundKind.DeclarationPattern)
                             {
                                 var declaredTypeOpt = ((BoundDeclarationPattern)label.Pattern).DeclaredType.Type;
-                                var ty = !TypeSymbol.Equals(declaredTypeOpt, null)
-                                    ? arg.SymbolSerializer.GetTypeSpecId(declaredTypeOpt)
-                                    : (int?)null;
+                                var ty = arg.SymbolSerializer.GetTypeSpecId(declaredTypeOpt);
 
                                 var boundPattern = (BoundDeclarationPattern)label.Pattern;
                                 BoundLocal? boundLocalOpt = (BoundLocal?)boundPattern.VariableAccess;
 
-                                caseLabels.Add(new SwitchDeclarationCaseLabel()
+                                caseLabels.Add(new DeclarationPattern()
                                 {
                                     LocalVariableOpt = boundLocalOpt != null
                                         ? ((LocalVariableRefExpression)this.VisitLocal(boundLocalOpt, arg)).LocalVariable
@@ -1379,7 +1436,7 @@
                                     When = label.WhenClause != null
                                         ? (ExpressionSer)this.Visit(label.WhenClause, arg)
                                         : null,
-                                    DeclaredTypeOpt = ty,
+                                    DeclaredType = ty,
                                 });
                             }
                             else
@@ -1438,16 +1495,12 @@
             };
 
         public override AstBase VisitThrowStatement(BoundThrowStatement node, SerializationContext arg)
-            => new StatementExpressionSer
+            => new ThrowStatement
             {
                 Location = node.Syntax.Location.GetSerLoc(),
-                Expression = new ThrowExpression
-                {
-                    Location = node.Syntax.Location.GetSerLoc(),
-                    Expression = node.ExpressionOpt != null
-                    ? (ExpressionSer)Visit(node.ExpressionOpt, arg)
-                    : null
-                }
+                Expression = node.ExpressionOpt == null
+                    ? throw new NotImplementedException("implicit rethrow is not supported")
+                    : (ExpressionSer)Visit(node.ExpressionOpt, arg)
             };
 
         public override AstBase VisitTryStatement(BoundTryStatement node, SerializationContext arg)
