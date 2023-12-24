@@ -1,4 +1,5 @@
 0
+Should reach
 Derived is BaseClass
 one
 two

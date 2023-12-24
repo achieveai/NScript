@@ -33,7 +33,7 @@ namespace NScript.Converter.ExpressionsConverter
                     declarationPattern.VariableOpt);
 
                 // Early return when types match
-                if (declarationPattern.VariableOpt.ResultType.IsSame(declarationPattern.TypeReference))
+                if (declarationPattern.VariableOpt.ResultType.IsSame(isPattern.Lhs.ResultType))
                 {
                     // ((x = Something()) || true)
                     return new JST.BinaryExpression(

@@ -21,6 +21,17 @@ namespace RealScript
                 Console.WriteLine(x.ToString());
             }
 
+            ContainerClass c1 = null;
+
+            if (!(c1?.Object1 is Implementor1 someVar))
+            {
+                Console.WriteLine("Should reach");
+            }
+            else
+            {
+                Console.WriteLine("Should not reach");
+            }
+
             if (new Derived() is BaseClass1)
             {
                 Console.WriteLine("Derived is BaseClass");
@@ -161,6 +172,19 @@ namespace RealScript
         }
 
         private class Derived : BaseClass1 { }
+
+        private class ContainerClass
+        {
+            public IInterface Object1 { get; set; }
+        }
+
+        private interface IInterface
+        { }
+
+        private class Implementor1: IInterface { }
+
+        private class Implementor2: IInterface { }
+
 
         private enum DayOfWeek
         {
