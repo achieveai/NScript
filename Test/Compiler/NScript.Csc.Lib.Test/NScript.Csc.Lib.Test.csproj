@@ -10,7 +10,6 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp">
       <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="System.ServiceModel" />
     <Reference Include="Mono.Cecil.Private, Version=0.10.1.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>

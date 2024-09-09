@@ -1,7 +1,7 @@
 ﻿<Project Sdk="NScript.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Windows</RootNamespace>
     <AssemblyName>Windows</AssemblyName>

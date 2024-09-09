@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -15,7 +15,6 @@
       <HintPath>..\Dependencies\JsEngine\Noesis.Javascript.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
-    <Reference Include="System.ServiceModel" />
     <ProjectReference Include="..\Test\NScript.CLR.Test\NScript.CLR.Test.csproj" />
     <ProjectReference Include="..\Sources\NScript.CLR\NScript.CLR.csproj" />
     <ProjectReference Include="..\Sources\NScript.Converter\NScript.Converter.csproj" />

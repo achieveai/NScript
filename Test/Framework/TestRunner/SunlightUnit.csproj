@@ -15,7 +15,7 @@
     <AssemblyName>SunlightUnit</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <NScriptToolSetPath>..\..\..\NScriptToolSet\</NScriptToolSetPath>
-    <NScriptBinPath>$(NScriptToolSetPath)bin\net6.0\</NScriptBinPath>
+    <NScriptBinPath>$(NScriptToolSetPath)bin\$(CompilerNetFramework)\</NScriptBinPath>
     <OutputPath>$(NScriptToolSetPath)lib\</OutputPath>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <NoWarn>0824; 0169; 0649; 0626; 0444; 0414; 0660; 0661</NoWarn>

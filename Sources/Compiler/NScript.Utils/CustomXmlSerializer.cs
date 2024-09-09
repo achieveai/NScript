@@ -123,7 +123,7 @@ namespace NScript.Utils
         public void AddValue(string name, UIntPtr value)
         {
             this.writer.WriteStartElement(name);
-            this.writer.WriteValue(value);
+            this.writer.WriteValue((long)value);
             this.writer.WriteEndElement();
         }
 

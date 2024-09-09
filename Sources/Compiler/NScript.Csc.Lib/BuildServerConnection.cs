@@ -491,11 +491,13 @@ namespace NScript.Csc.Lib
             {
                 if (PlatformInformation.IsWindows)
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
                     var currentIdentity = WindowsIdentity.GetCurrent();
                     var currentOwner = currentIdentity.Owner;
                     var remotePipeSecurity = GetPipeSecurity(pipeStream);
                     var remoteOwner = remotePipeSecurity.GetOwner(typeof(SecurityIdentifier));
                     return currentOwner.Equals(remoteOwner);
+#pragma warning restore CA1416 // Validate platform compatibility
                 }
                 else
                 {
@@ -542,7 +544,9 @@ namespace NScript.Csc.Lib
 
         private static ObjectSecurity GetPipeSecurity(PipeStream pipeStream)
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             return pipeStream.GetAccessControl();
+#pragma warning restore CA1416 // Validate platform compatibility
         }
 
         /// <returns>
@@ -556,9 +560,11 @@ namespace NScript.Csc.Lib
             bool isAdmin = false;
             if (PlatformInformation.IsWindows)
             {
+#pragma warning disable CA1416 // Validate platform compatibility
                 var currentIdentity = WindowsIdentity.GetCurrent();
                 var principal = new WindowsPrincipal(currentIdentity);
                 isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+#pragma warning restore CA1416 // Validate platform compatibility
             }
 
             var userName = Environment.UserName;

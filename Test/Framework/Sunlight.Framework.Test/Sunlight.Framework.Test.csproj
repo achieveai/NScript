@@ -2,7 +2,7 @@
   <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.props" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Sunlight.Framework.Test</RootNamespace>
     <AssemblyName>Sunlight.Framework.Test</AssemblyName>

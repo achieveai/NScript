@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Exe</OutputType>
     <AssemblyName>csc</AssemblyName>
@@ -9,7 +9,6 @@
     <StartupObject>JsCsc.Program</StartupObject>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <Prefer32Bit>true</Prefer32Bit>
     <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>
   </PropertyGroup>
   <ItemGroup>

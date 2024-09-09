@@ -224,7 +224,6 @@
       <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
     </Reference>
     <Reference Update="System.Core" />
-    <Reference Include="System.ServiceModel" />
     <ProjectReference Include="$(CompilerSources)\JsCsc.Lib\JsCsc.Lib.csproj" />
     <ProjectReference Include="$(CompilerSources)\NScript.JSParser\NScript.JSParser.csproj" />
     <ProjectReference Include="$(CompilerSources)\NScript.CLR\NScript.CLR.csproj" />

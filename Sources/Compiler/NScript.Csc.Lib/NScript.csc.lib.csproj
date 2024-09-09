@@ -15,7 +15,6 @@
     <Reference Include="Mono.Cecil.Private">
       <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
     </Reference>
-    <!-- <Reference Include="System.ServiceModel" /> -->
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj" />
