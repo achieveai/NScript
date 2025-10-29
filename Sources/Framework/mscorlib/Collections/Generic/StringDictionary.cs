@@ -149,26 +149,22 @@ namespace System.Collections.Generic
         }
 
         [Script(@"
-            var rv = [], key;
-            for(key in this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict})
-                rv.push(key);
-            return rv;
+            return ({}).constructor.keys(this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict});
             ")]
         private extern NativeArray<string> GetKeys();
 
         [Script(@"
-            var rv = [], key;
-            for(key in this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict})
-                rv.push(this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}[key]);
+            var dict = this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict};
+            var keys = ({}).constructor.keys(dict);
+            var rv = [];
+            for(var i = 0; i < keys.length; i++)
+                rv.push(dict[keys[i]]);
             return rv;
             ")]
         private extern NativeArray<TValue> GetValues();
 
         [Script(@"
-            var rv = 0, key;
-            for(key in this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict})
-                rv++;
-            return rv;
+            return ({}).constructor.keys(this.@{[mscorlib]System.Collections.Generic.StringDictionary`1::innerDict}).length;
             ")]
         private extern int ComputeCount();
 

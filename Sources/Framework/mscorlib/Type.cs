@@ -190,8 +190,10 @@
             var enumStrToValueMap = this.@{[mscorlib]System.Type::enumStrToValueMap};
             var valueToStr = {};
             var lowerStrToValue = {};
-            for(var key in enumStrToValueMap)
+            var keys = ({}).constructor.keys(enumStrToValueMap);
+            for(var i = 0; i < keys.length; i++)
             {
+                var key = keys[i];
                 valueToStr[enumStrToValueMap[key]] = key;
                 lowerStrToValue[key.toLowerCase()] = enumStrToValueMap[key];
             }
@@ -252,7 +254,6 @@
         private extern object NullableBox(object instance);
 
         [Script(@"
-            var key;
             if (!type.@{[mscorlib]System.Type::baseInterfaces}) {
                 var rv = {};
                 var baseType = type.@{[mscorlib]System.Type::BaseType};
@@ -263,8 +264,10 @@
                     var baseInterfaces = baseType.@{[mscorlib]System.Type::baseInterfaces};
                     if(baseInterfaces)
                     {
-                        for (key in baseInterfaces)
+                        var keys = ({}).constructor.keys(baseInterfaces);
+                        for (var i = 0; i < keys.length; i++)
                         {
+                            var key = keys[i];
                             rv[key] = baseInterfaces[key];
                         }
                     }
@@ -272,7 +275,7 @@
 
                 var interfaces = type.@{[mscorlib]System.Type::interfaces};
                 if (interfaces) {
-                    for(key = 0; key < interfaces.length; key++) {
+                    for(var key = 0; key < interfaces.length; key++) {
                         rv[interfaces[key].@{[mscorlib]System.Type::FullName}] = interfaces[key];
                     }
                 }
