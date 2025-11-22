@@ -1,4 +1,4 @@
-// $ANTLR 3.3.0.7239 CssGrammer.g3 2021-07-05 16:52:51
+// $ANTLR 3.3.0.7239 CssGrammer.g3 2025-11-20 09:22:13
 
 // The variable 'variable' is assigned but its value is never used.
 #pragma warning disable 219

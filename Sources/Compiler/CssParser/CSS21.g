@@ -784,8 +784,11 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
 
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values
+// Updated to support CSS custom properties (variables) that start with --
 //
-IDENT           : '-'? NMSTART NMCHAR*  ;
+IDENT           : '--' NMCHAR+          // CSS custom property: --variable-name
+                | '-'? NMSTART NMCHAR*  // Regular identifier: -webkit-property, property
+                ;
 
 // -------------
 // Reference.   Reference to an element in the body we are styling, such as <XXXX id="reference">
