@@ -14,8 +14,8 @@
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<Deterministric>true</Deterministric>
     <!--Set this to true to generate packages-->
-    <GenerateNScriptPackages>false</GenerateNScriptPackages>
+    <GenerateNScriptPackages>true</GenerateNScriptPackages>
     <!--Update package version here-->
-    <NScriptPackageVersion>1.0.4-test1</NScriptPackageVersion>
+    <NScriptPackageVersion>1.0.4</NScriptPackageVersion>
 	</PropertyGroup>
 </Project>
