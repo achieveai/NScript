@@ -112,6 +112,9 @@ namespace XwmlParser
                     {
                         documentContext.PushNode(node);
                         this.ParseDocument(node);
+                        
+                        // After all CSS blocks have been added, validate CSS variables across all blocks
+                        documentContext.ValidateAccumulatedCss();
                     }
                     finally
                     {

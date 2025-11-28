@@ -191,7 +191,8 @@
             var valueToStr = {};
             var lowerStrToValue = {};
             var keys = ({}).constructor.keys(enumStrToValueMap);
-            for(var i = 0; i < keys.length; i++)
+            var i;
+            for(i = 0; i < keys.length; i++)
             {
                 var key = keys[i];
                 valueToStr[enumStrToValueMap[key]] = key;
@@ -265,7 +266,8 @@
                     if(baseInterfaces)
                     {
                         var keys = ({}).constructor.keys(baseInterfaces);
-                        for (var i = 0; i < keys.length; i++)
+                        var i;
+                        for (i = 0; i < keys.length; i++)
                         {
                             var key = keys[i];
                             rv[key] = baseInterfaces[key];
@@ -275,8 +277,9 @@
 
                 var interfaces = type.@{[mscorlib]System.Type::interfaces};
                 if (interfaces) {
-                    for(var key = 0; key < interfaces.length; key++) {
-                        rv[interfaces[key].@{[mscorlib]System.Type::FullName}] = interfaces[key];
+                    var idx;
+                    for(idx = 0; idx < interfaces.length; idx++) {
+                        rv[interfaces[idx].@{[mscorlib]System.Type::FullName}] = interfaces[idx];
                     }
                 }
 

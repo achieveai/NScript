@@ -12,7 +12,7 @@ namespace XwmlParser
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
-    using System.Text;
+    using System.Linq;
 
     /// <summary>
     /// Definition for DocumentContext
@@ -271,6 +271,76 @@ namespace XwmlParser
                         styleNode.Line,
                         styleNode.LinePosition),
                     "Don't know what to do with link block");
+            }
+        }
+
+        /// <summary>
+        /// Validates all accumulated CSS after all style blocks and linked stylesheets have been added.
+        /// This should be called after document parsing is complete.
+        /// Validates CSS variables across all stylesheets (document + linked).
+        /// </summary>
+        public void ValidateAccumulatedCss()
+        {
+            // Collect all declared CSS variables from all stylesheets
+            var allDeclaredVariables = new HashSet<string>();
+            var allUsedVariables = new HashSet<string>();
+
+            // Collect from linked stylesheets
+            foreach (var linkedStyleSheet in this.applicableCssScopes)
+            {
+                foreach (var declaredVar in linkedStyleSheet.DeclaredCssVariables)
+                {
+                    allDeclaredVariables.Add(declaredVar);
+                }
+                foreach (var usedVar in linkedStyleSheet.UsedCssVariables)
+                {
+                    allUsedVariables.Add(usedVar);
+                }
+            }
+
+            // Collect from document stylesheet
+            if (this.documentCssScope != null)
+            {
+                foreach (var declaredVar in this.documentCssScope.DeclaredCssVariables)
+                {
+                    allDeclaredVariables.Add(declaredVar);
+                }
+                foreach (var usedVar in this.documentCssScope.UsedCssVariables)
+                {
+                    allUsedVariables.Add(usedVar);
+                }
+            }
+
+            // Validate that all used variables are declared
+            var undeclaredVariables = new List<string>();
+            foreach (var usedVar in allUsedVariables)
+            {
+                if (!allDeclaredVariables.Contains(usedVar))
+                {
+                    undeclaredVariables.Add(usedVar);
+                }
+            }
+
+            // Report all undeclared variables at once
+            if (undeclaredVariables.Count > 0)
+            {
+                string errorMessage;
+                if (undeclaredVariables.Count == 1)
+                {
+                    errorMessage = string.Format(
+                        "CSS variable '{0}' is not defined in :root. All CSS variables must be declared in :root before use.",
+                        undeclaredVariables[0]);
+                }
+                else
+                {
+                    errorMessage = string.Format(
+                        "CSS variables {0} are not defined in :root. All CSS variables must be declared in :root before use.",
+                        string.Join(", ", undeclaredVariables.Select(v => "'" + v + "'")));
+                }
+
+                throw new ConverterLocationException(
+                    new Location(this.resourceName, 0, 0),
+                    errorMessage);
             }
         }
 

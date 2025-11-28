@@ -155,7 +155,8 @@
             var dict = this.@{[mscorlib]System.Dynamic.ExpandoObject::innerDict};
             var keys = ({}).constructor.keys(dict);
             var rv = [];
-            for(var i = 0; i < keys.length; i++)
+            var i;
+            for(i = 0; i < keys.length; i++)
                 rv.push(dict[keys[i]]);
             return rv;
             ")]

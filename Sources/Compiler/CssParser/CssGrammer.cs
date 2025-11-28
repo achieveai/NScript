@@ -22,6 +22,7 @@ namespace CssParser
         private List<CssKeyframes> keyFrames;
         private List<Media> mediaRules;
         private HashSet<string> definedCssVariables = new HashSet<string>();
+        private HashSet<string> usedCssVariables = new HashSet<string>();
 
         public CssGrammer(string css, bool parseProperties = false)
         {
@@ -43,9 +44,6 @@ namespace CssParser
                     CommonTree tree = parser.styleSheet().Tree;
 
                     this.ParseCss(tree);
-                    
-                    // After parsing, always validate CSS variables
-                    this.ValidateCssVariables();
                 }
             }
             catch(Antlr.Runtime.RecognitionException ex)
@@ -71,6 +69,12 @@ namespace CssParser
 
         public List<CssProperty> Properties
         { get { return this.properties; } }
+
+        public HashSet<string> DefinedCssVariables
+        { get { return this.definedCssVariables; } }
+
+        public HashSet<string> UsedCssVariables
+        { get { return this.usedCssVariables; } }
 
         private void ParseStyle(ITree tree)
         {
@@ -784,7 +788,7 @@ namespace CssParser
         /// <summary>
         /// Collects all CSS variable definitions from :root selector
         /// </summary>
-        private void CollectCssVariablesFromRules()
+        public void CollectCssVariablesFromRules()
         {
             if (this.rules == null)
             {
@@ -831,6 +835,110 @@ namespace CssParser
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Collects used CSS variables from var() functions in all rules
+        /// </summary>
+        public void CollectUsedCssVariablesFromRules()
+        {
+            if (this.rules != null)
+            {
+                foreach (var rule in this.rules)
+                {
+                    this.CollectUsedVariablesFromRule(rule);
+                }
+            }
+
+            if (this.mediaRules != null)
+            {
+                foreach (var mediaRule in this.mediaRules)
+                {
+                    foreach (var rule in mediaRule.RuleSet)
+                    {
+                        this.CollectUsedVariablesFromRule(rule);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Collects used CSS variables from a single rule
+        /// </summary>
+        private void CollectUsedVariablesFromRule(CssRule rule)
+        {
+            if (rule.Properties == null)
+            {
+                return;
+            }
+
+            foreach (var property in rule.Properties)
+            {
+                this.CollectUsedVariablesFromProperty(property);
+            }
+        }
+
+        /// <summary>
+        /// Collects used CSS variables from a property
+        /// </summary>
+        private void CollectUsedVariablesFromProperty(CssProperty property)
+        {
+            if (property.PropertyArgs == null)
+            {
+                return;
+            }
+
+            foreach (var propertyArg in property.PropertyArgs)
+            {
+                this.CollectUsedVariablesFromValueSet(propertyArg);
+            }
+        }
+
+        /// <summary>
+        /// Collects used CSS variables from a property value set
+        /// </summary>
+        private void CollectUsedVariablesFromValueSet(CssPropertyValueSet valueSet)
+        {
+            if (valueSet.Values == null)
+            {
+                return;
+            }
+
+            foreach (var value in valueSet.Values)
+            {
+                this.CollectUsedVariablesFromValue(value);
+            }
+        }
+
+        /// <summary>
+        /// Collects used CSS variables from a property value
+        /// </summary>
+        private void CollectUsedVariablesFromValue(CssPropertyValue value)
+        {
+            if (value is CssFunctionPropertyValue functionValue)
+            {
+                // Check if this is a var() function
+                if (functionValue.FunctionName == "var" && functionValue.Args != null && functionValue.Args.Count > 0)
+                {
+                    // Get the variable name (first argument) and add it to the used set
+                    var variableName = functionValue.Args[0].ToString();
+                    this.usedCssVariables.Add(variableName);
+                }
+
+                // Recursively check nested function arguments
+                if (functionValue.Args != null)
+                {
+                    foreach (var arg in functionValue.Args)
+                    {
+                        this.CollectUsedVariablesFromValue(arg);
+                    }
+                }
+            }
+            else if (value is CssPropertyValueSet nestedValueSet)
+            {
+                // Recursively check nested value sets
+                this.CollectUsedVariablesFromValueSet(nestedValueSet);
+            }
         }
 
         /// <summary>

@@ -49,5 +49,9 @@
     <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
   </ItemGroup>
 
+  <Target Name="EnsureJsOutputDirectory" BeforeTargets="ScriptGenerate" Condition="$(GenerateJs) == 'True'">
+    <MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />
+  </Target>
+
   <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />
 </Project>
