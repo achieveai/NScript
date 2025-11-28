@@ -21,6 +21,7 @@ namespace CssParser
         private List<CssProperty> properties;
         private List<CssKeyframes> keyFrames;
         private List<Media> mediaRules;
+        private HashSet<string> definedCssVariables = new HashSet<string>();
 
         public CssGrammer(string css, bool parseProperties = false)
         {
@@ -42,6 +43,9 @@ namespace CssParser
                     CommonTree tree = parser.styleSheet().Tree;
 
                     this.ParseCss(tree);
+                    
+                    // After parsing, always validate CSS variables
+                    this.ValidateCssVariables();
                 }
             }
             catch(Antlr.Runtime.RecognitionException ex)
@@ -774,6 +778,188 @@ namespace CssParser
             else
             {
                 return new CssUnitPropertyValue(val, unit);
+            }
+        }
+
+        /// <summary>
+        /// Collects all CSS variable definitions from :root selector
+        /// </summary>
+        private void CollectCssVariablesFromRules()
+        {
+            if (this.rules == null)
+            {
+                return;
+            }
+
+            foreach (var rule in this.rules)
+            {
+                // Check if this is a :root selector
+                if (this.IsRootSelector(rule))
+                {
+                    // Collect all custom properties (variables starting with --)
+                    foreach (var property in rule.Properties)
+                    {
+                        if (property.PropertyName.StartsWith("--"))
+                        {
+                            this.definedCssVariables.Add(property.PropertyName);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if a CSS rule has :root selector
+        /// </summary>
+        private bool IsRootSelector(CssRule rule)
+        {
+            if (rule.Selectors == null || rule.Selectors.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var selector in rule.Selectors)
+            {
+                // Check if it's a pseudo selector with name "root"
+                if (selector is PseudoSelector pseudoSelector)
+                {
+                    if (pseudoSelector.Name == "root")
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Validates that all var() function calls reference defined CSS variables
+        /// </summary>
+        private void ValidateCssVariables()
+        {
+            // First, collect all defined CSS variables from :root
+            this.CollectCssVariablesFromRules();
+
+            // Then validate all var() usages
+            if (this.rules != null)
+            {
+                foreach (var rule in this.rules)
+                {
+                    this.ValidateRuleVariables(rule);
+                }
+            }
+
+            if (this.mediaRules != null)
+            {
+                foreach (var mediaRule in this.mediaRules)
+                {
+                    foreach (var rule in mediaRule.RuleSet)
+                    {
+                        this.ValidateRuleVariables(rule);
+                    }
+                }
+            }
+
+            if (this.keyFrames != null)
+            {
+                foreach (var keyframe in this.keyFrames)
+                {
+                    foreach (var frame in keyframe.Frames)
+                    {
+                        foreach (var property in frame.Properties)
+                        {
+                            this.ValidatePropertyVariables(property);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates CSS variables in a single rule
+        /// </summary>
+        private void ValidateRuleVariables(CssRule rule)
+        {
+            if (rule.Properties == null)
+            {
+                return;
+            }
+
+            foreach (var property in rule.Properties)
+            {
+                this.ValidatePropertyVariables(property);
+            }
+        }
+
+        /// <summary>
+        /// Validates CSS variables in a property
+        /// </summary>
+        private void ValidatePropertyVariables(CssProperty property)
+        {
+            if (property.PropertyArgs == null)
+            {
+                return;
+            }
+
+            foreach (var propertyArg in property.PropertyArgs)
+            {
+                this.ValidatePropertyValueSetVariables(propertyArg);
+            }
+        }
+
+        /// <summary>
+        /// Validates CSS variables in a property value set
+        /// </summary>
+        private void ValidatePropertyValueSetVariables(CssPropertyValueSet valueSet)
+        {
+            if (valueSet.Values == null)
+            {
+                return;
+            }
+
+            foreach (var value in valueSet.Values)
+            {
+                this.ValidatePropertyValueVariables(value);
+            }
+        }
+
+        /// <summary>
+        /// Validates CSS variables in a property value
+        /// </summary>
+        private void ValidatePropertyValueVariables(CssPropertyValue value)
+        {
+            if (value is CssFunctionPropertyValue functionValue)
+            {
+                // Check if this is a var() function
+                if (functionValue.FunctionName == "var" && functionValue.Args != null && functionValue.Args.Count > 0)
+                {
+                    // Get the variable name (first argument)
+                    var variableName = functionValue.Args[0].ToString();
+                    
+                    // Check if the variable is defined in :root
+                    if (!this.definedCssVariables.Contains(variableName))
+                    {
+                        throw new ParseException(
+                            $"CSS variable '{variableName}' is not defined in :root. All CSS variables must be declared in :root before use.",
+                            0,
+                            0);
+                    }
+                }
+
+                // Recursively check nested function arguments
+                if (functionValue.Args != null)
+                {
+                    foreach (var arg in functionValue.Args)
+                    {
+                        this.ValidatePropertyValueVariables(arg);
+                    }
+                }
+            }
+            else if (value is CssPropertyValueSet nestedValueSet)
+            {
+                // Recursively check nested value sets
+                this.ValidatePropertyValueSetVariables(nestedValueSet);
             }
         }
     }
