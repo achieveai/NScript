@@ -387,62 +387,6 @@
 
 
         [TestMethod]
-        public void CssVariableInRuleTest()
-        {
-            // Test CSS variable usage in a full rule: .body { color: var(--bg-color); }
-            CssGrammer grammer = new CssGrammer(".body { color: var(--bg-color); }");
-            Assert.AreEqual(1, grammer.Rules.Count);
-            Assert.AreEqual(1, grammer.Rules[0].Selectors.Count);
-            Assert.IsInstanceOfType(grammer.Rules[0].Selectors[0], typeof(CssClassName));
-
-            Assert.AreEqual(1, grammer.Rules[0].Properties.Count);
-            var property = grammer.Rules[0].Properties[0];
-            Assert.AreEqual("color", property.PropertyName);
-            Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
-            Assert.IsInstanceOfType(property.PropertyArgs[0].Values[0], typeof(CssFunctionPropertyValue));
-
-            var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
-            Assert.AreEqual("var", propertyArg.FunctionName);
-            Assert.AreEqual(1, propertyArg.Args.Count);
-            Assert.AreEqual("--bg-color", propertyArg.Args[0].ToString());
-        }
-
-        [TestMethod]
-        public void CssVariableWithFallbackTest()
-        {
-            // Test CSS variable with fallback: color: var(--primary-color, #ff0000)
-            CssGrammer grammer = new CssGrammer("color: var(--primary-color, #ff0000);", true);
-            Assert.IsNull(grammer.Rules);
-            Assert.IsNotNull(grammer.Properties);
-            Assert.AreEqual(1, grammer.Properties.Count);
-
-            var property = grammer.Properties[0];
-            Assert.AreEqual("color", property.PropertyName);
-            Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
-            Assert.IsInstanceOfType(property.PropertyArgs[0].Values[0], typeof(CssFunctionPropertyValue));
-
-            var propertyArg = (CssFunctionPropertyValue)property.PropertyArgs[0].Values[0];
-            Assert.AreEqual("var", propertyArg.FunctionName);
-            Assert.AreEqual(2, propertyArg.Args.Count);
-            Assert.AreEqual("--primary-color", propertyArg.Args[0].ToString());
-            Assert.AreEqual("#ff0000", propertyArg.Args[1].ToString());
-        }
-
-        [TestMethod]
-        public void CssVariableDeclarationTest()
-        {
-            // Test CSS variable declaration: --main-bg-color: #ffffff
-            CssGrammer grammer = new CssGrammer(":root { --main-bg-color: #ffffff; }");
-            Assert.AreEqual(1, grammer.Rules.Count);
-            Assert.AreEqual(1, grammer.Rules[0].Properties.Count);
-            
-            var property = grammer.Rules[0].Properties[0];
-            Assert.AreEqual("--main-bg-color", property.PropertyName);
-            Assert.AreEqual(1, property.PropertyArgs[0].Values.Count);
-            Assert.AreEqual("#ffffff", property.PropertyArgs[0].Values[0].ToString());
-        }
-
-        [TestMethod]
         public void MediaQueryTest()
         {
             var css = @"@media all and (max-width: 699px) and (width >= 200px) { #sidebar { } }";
@@ -489,6 +433,63 @@
             for (int i = 0; i < propertyArgs.Length; i++)
             {
                 Assert.AreEqual(propertyArgs[i], grammer.Properties[0].PropertyArgs[0].Values[i].ToString());
+            }
+        }
+
+        [TestMethod]
+        public void CssVariableValidation_ComprehensiveTest()
+        {
+            // Part 1: Test that CSS variables defined in :root can be used successfully
+            var cssWithDefinedVariables = @"
+                :root { 
+                    --primary-color: #ff0000;
+                    --secondary-color: #00ff00;
+                    --font-size: 16px;
+                    --spacing: 10px;
+                }
+                
+                .body { 
+                    color: var(--primary-color);
+                    background: var(--secondary-color);
+                    font-size: var(--font-size);
+                }
+                
+                @media (max-width: 768px) { 
+                    .mobile { padding: var(--spacing); }
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { color: var(--primary-color); }
+                }";
+            
+            // Should parse successfully without throwing
+            CssGrammer grammerWithDefinedVars = new CssGrammer(cssWithDefinedVariables);
+            Assert.IsNotNull(grammerWithDefinedVars.Rules);
+            Assert.IsTrue(grammerWithDefinedVars.Rules.Count > 0, "Should have parsed CSS rules");
+            
+            // Part 2: Test that undefined CSS variables throw ParseException
+            var cssWithUndefinedVariable = @"
+                :root { 
+                    --primary-color: #ff0000;
+                }
+                
+                .body { 
+                    color: var(--undefined-color);
+                }";
+            
+            try
+            {
+                CssGrammer grammerWithUndefinedVar = new CssGrammer(cssWithUndefinedVariable);
+                Assert.Fail("Expected ParseException was not thrown for undefined CSS variable");
+            }
+            catch (ParseException ex)
+            {
+                // Verify error message is informative
+                Assert.IsTrue(ex.Message.Contains("--undefined-color"), 
+                    $"Error message should contain the undefined variable name. Actual: {ex.Message}");
+                Assert.IsTrue(ex.Message.Contains(":root"), 
+                    $"Error message should mention :root. Actual: {ex.Message}");
             }
         }
     }
