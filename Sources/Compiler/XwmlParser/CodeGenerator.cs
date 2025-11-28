@@ -560,6 +560,9 @@ namespace XwmlParser
         /// </returns>
         public List<Statement> GetAllTemplateStatements()
         {
+            // Validate CSS variables across all HTML files and stylesheets
+            this.parserContext.ValidateAllCssVariables();
+
             this.parserContext.CompressCssNames();
 
             this.GenerateCode();

@@ -275,16 +275,13 @@ namespace XwmlParser
         }
 
         /// <summary>
-        /// Validates all accumulated CSS after all style blocks and linked stylesheets have been added.
-        /// This should be called after document parsing is complete.
-        /// Validates CSS variables across all stylesheets (document + linked).
+        /// Collects CSS variables (declared and used) from this document's stylesheets.
+        /// This includes both inline style blocks and linked stylesheets.
         /// </summary>
-        public void ValidateAccumulatedCss()
+        /// <param name="allDeclaredVariables">Set to accumulate all declared variables</param>
+        /// <param name="allUsedVariables">Set to accumulate all used variables</param>
+        internal void CollectCssVariables(HashSet<string> allDeclaredVariables, HashSet<string> allUsedVariables)
         {
-            // Collect all declared CSS variables from all stylesheets
-            var allDeclaredVariables = new HashSet<string>();
-            var allUsedVariables = new HashSet<string>();
-
             // Collect from linked stylesheets
             foreach (var linkedStyleSheet in this.applicableCssScopes)
             {
@@ -309,38 +306,6 @@ namespace XwmlParser
                 {
                     allUsedVariables.Add(usedVar);
                 }
-            }
-
-            // Validate that all used variables are declared
-            var undeclaredVariables = new List<string>();
-            foreach (var usedVar in allUsedVariables)
-            {
-                if (!allDeclaredVariables.Contains(usedVar))
-                {
-                    undeclaredVariables.Add(usedVar);
-                }
-            }
-
-            // Report all undeclared variables at once
-            if (undeclaredVariables.Count > 0)
-            {
-                string errorMessage;
-                if (undeclaredVariables.Count == 1)
-                {
-                    errorMessage = string.Format(
-                        "CSS variable '{0}' is not defined in :root. All CSS variables must be declared in :root before use.",
-                        undeclaredVariables[0]);
-                }
-                else
-                {
-                    errorMessage = string.Format(
-                        "CSS variables {0} are not defined in :root. All CSS variables must be declared in :root before use.",
-                        string.Join(", ", undeclaredVariables.Select(v => "'" + v + "'")));
-                }
-
-                throw new ConverterLocationException(
-                    new Location(this.resourceName, 0, 0),
-                    errorMessage);
             }
         }
 

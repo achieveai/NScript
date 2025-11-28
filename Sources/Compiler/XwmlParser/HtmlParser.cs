@@ -112,9 +112,6 @@ namespace XwmlParser
                     {
                         documentContext.PushNode(node);
                         this.ParseDocument(node);
-                        
-                        // After all CSS blocks have been added, validate CSS variables across all blocks
-                        documentContext.ValidateAccumulatedCss();
                     }
                     finally
                     {
@@ -133,6 +130,16 @@ namespace XwmlParser
         /// </value>
         public string ResourceName
         { get { return this.resourceName; } }
+
+        /// <summary>
+        /// Collects CSS variables (declared and used) from this HTML file's stylesheets.
+        /// </summary>
+        /// <param name="allDeclaredVariables">Set to accumulate all declared variables</param>
+        /// <param name="allUsedVariables">Set to accumulate all used variables</param>
+        internal void CollectCssVariables(HashSet<string> allDeclaredVariables, HashSet<string> allUsedVariables)
+        {
+            this.documentContext.CollectCssVariables(allDeclaredVariables, allUsedVariables);
+        }
 
         /// <summary>
         /// Process the node.
