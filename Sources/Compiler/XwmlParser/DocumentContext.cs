@@ -12,7 +12,7 @@ namespace XwmlParser
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
-    using System.Text;
+    using System.Linq;
 
     /// <summary>
     /// Definition for DocumentContext
@@ -271,6 +271,41 @@ namespace XwmlParser
                         styleNode.Line,
                         styleNode.LinePosition),
                     "Don't know what to do with link block");
+            }
+        }
+
+        /// <summary>
+        /// Collects CSS variables (declared and used) from this document's stylesheets.
+        /// This includes both inline style blocks and linked stylesheets.
+        /// </summary>
+        /// <param name="allDeclaredVariables">Set to accumulate all declared variables</param>
+        /// <param name="allUsedVariables">Set to accumulate all used variables</param>
+        internal void CollectCssVariables(HashSet<string> allDeclaredVariables, HashSet<string> allUsedVariables)
+        {
+            // Collect from linked stylesheets
+            foreach (var linkedStyleSheet in this.applicableCssScopes)
+            {
+                foreach (var declaredVar in linkedStyleSheet.DeclaredCssVariables)
+                {
+                    allDeclaredVariables.Add(declaredVar);
+                }
+                foreach (var usedVar in linkedStyleSheet.UsedCssVariables)
+                {
+                    allUsedVariables.Add(usedVar);
+                }
+            }
+
+            // Collect from document stylesheet
+            if (this.documentCssScope != null)
+            {
+                foreach (var declaredVar in this.documentCssScope.DeclaredCssVariables)
+                {
+                    allDeclaredVariables.Add(declaredVar);
+                }
+                foreach (var usedVar in this.documentCssScope.UsedCssVariables)
+                {
+                    allUsedVariables.Add(usedVar);
+                }
             }
         }
 

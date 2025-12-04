@@ -61,6 +61,16 @@ namespace XwmlParser
         List<CssStyleSheet> dependencies = new List<CssStyleSheet>();
 
         /// <summary>
+        /// CSS variables declared in :root selectors across all style blocks.
+        /// </summary>
+        HashSet<string> declaredCssVariables = new HashSet<string>();
+
+        /// <summary>
+        /// CSS variables used in var() functions across all style blocks.
+        /// </summary>
+        HashSet<string> usedCssVariables = new HashSet<string>();
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="parserContext"> Context for the parser. </param>
@@ -90,6 +100,18 @@ namespace XwmlParser
 
         public IList<CssStyleSheet> Dependencies
         { get { return this.dependencies; } }
+
+        /// <summary>
+        /// Gets the CSS variables declared in :root selectors.
+        /// </summary>
+        public IEnumerable<string> DeclaredCssVariables
+        { get { return this.declaredCssVariables; } }
+
+        /// <summary>
+        /// Gets the CSS variables used in var() functions.
+        /// </summary>
+        public IEnumerable<string> UsedCssVariables
+        { get { return this.usedCssVariables; } }
 
         /// <summary>
         /// Gets or sets the name of the resource.
@@ -163,7 +185,23 @@ namespace XwmlParser
         {
             try
             {
-                var grammer = new CssParser.CssGrammer(cssText);
+                // Parse CSS - validation will happen after all blocks are accumulated
+                var grammer = new CssParser.CssGrammer(cssText, parseProperties: false);
+                
+                // Collect declared variables from :root selectors in this block
+                grammer.CollectCssVariablesFromRules();
+                foreach (var variable in grammer.DefinedCssVariables)
+                {
+                    this.declaredCssVariables.Add(variable);
+                }
+                
+                // Collect used variables from var() functions in this block
+                grammer.CollectUsedCssVariablesFromRules();
+                foreach (var variable in grammer.UsedCssVariables)
+                {
+                    this.usedCssVariables.Add(variable);
+                }
+                
                 this.AddCssRules(
                     grammer.Rules,
                     cssBlockStartPosition,

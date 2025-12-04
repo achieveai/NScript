@@ -9,8 +9,10 @@ namespace XwmlParser
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
+    using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Definition for ParserContext
@@ -218,6 +220,55 @@ namespace XwmlParser
         internal void CompressCssNames()
         {
             this.cssNamesScope.Optimize();
+        }
+
+        /// <summary>
+        /// Validates CSS variables across all HTML files and linked stylesheets.
+        /// This should be called after all HTML files have been parsed.
+        /// </summary>
+        internal void ValidateAllCssVariables()
+        {
+            // Collect all declared and used CSS variables from all stylesheets across all HTML files
+            var allDeclaredVariables = new HashSet<string>();
+            var allUsedVariables = new HashSet<string>();
+
+            // Iterate through all parsed HTML files
+            foreach (var htmlParser in this.htmlParsers.Values)
+            {
+                htmlParser.CollectCssVariables(allDeclaredVariables, allUsedVariables);
+            }
+
+            // Validate that all used variables are declared
+            var undeclaredVariables = new List<string>();
+            foreach (var usedVar in allUsedVariables)
+            {
+                if (!allDeclaredVariables.Contains(usedVar))
+                {
+                    undeclaredVariables.Add(usedVar);
+                }
+            }
+
+            // Report all undeclared variables at once
+            if (undeclaredVariables.Count > 0)
+            {
+                string errorMessage;
+                if (undeclaredVariables.Count == 1)
+                {
+                    errorMessage = string.Format(
+                        "CSS variable '{0}' is not defined in :root. All CSS variables must be declared in :root before use.",
+                        undeclaredVariables[0]);
+                }
+                else
+                {
+                    errorMessage = string.Format(
+                        "CSS variables {0} are not defined in :root. All CSS variables must be declared in :root before use.",
+                        string.Join(", ", undeclaredVariables.Select(v => "'" + v + "'")));
+                }
+
+                throw new ConverterLocationException(
+                    new Location("", 0, 0),
+                    errorMessage);
+            }
         }
     }
 }

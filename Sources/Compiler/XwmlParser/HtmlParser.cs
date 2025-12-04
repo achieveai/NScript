@@ -132,6 +132,16 @@ namespace XwmlParser
         { get { return this.resourceName; } }
 
         /// <summary>
+        /// Collects CSS variables (declared and used) from this HTML file's stylesheets.
+        /// </summary>
+        /// <param name="allDeclaredVariables">Set to accumulate all declared variables</param>
+        /// <param name="allUsedVariables">Set to accumulate all used variables</param>
+        internal void CollectCssVariables(HashSet<string> allDeclaredVariables, HashSet<string> allUsedVariables)
+        {
+            this.documentContext.CollectCssVariables(allDeclaredVariables, allUsedVariables);
+        }
+
+        /// <summary>
         /// Process the node.
         /// </summary>
         /// <exception cref="NotImplementedException"> Thrown when the requested operation is
