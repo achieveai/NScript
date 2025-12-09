@@ -15,10 +15,10 @@ if (-not $ApiKey) {
 }
 
 # Get all 1.0.4 nupkg files in current directory
-$packages = Get-ChildItem -Filter "*.1.0.4.nupkg" -File
+$packages = Get-ChildItem -Filter "*.1.0.5.nupkg" -File
 
 if ($packages.Count -eq 0) {
-    Write-Error "No packages found matching *.1.0.4.nupkg in current directory"
+    Write-Error "No packages found matching *.1.0.5.nupkg in current directory"
     exit 1
 }
 
