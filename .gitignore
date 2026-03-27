@@ -75,3 +75,5 @@ Test/Framework/TestWebApplication/GeneratedScripts/*
 /.vs/NScript/DesignTimeBuild/.dtbcache
 /submodules/cecil
 launchsettings.json
+/tmp/
+/scratchpad/
