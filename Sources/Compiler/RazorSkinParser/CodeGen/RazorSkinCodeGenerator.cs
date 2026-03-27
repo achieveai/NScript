@@ -30,8 +30,8 @@ namespace NScript.RazorSkin.CodeGen
             var bindings = CollectBindings(ir.Children);
             var events = CollectEvents(ir.Children);
             var subControls = CollectSubControls(ir.Children);
-            var htmlContent = CollectHtml(ir.Children, events);
-            var elementPaths = ComputeElementPaths(ir.Children);
+            var elementPaths = new List<List<int>>();
+            var htmlContent = CollectHtmlWithPaths(ir.Children, events, elementPaths);
             int liveBinderCount = bindings.Count(b => b.Classification.Mode == BindingMode.OneWay);
 
             // Collect reactive blocks for binder setup
@@ -288,9 +288,9 @@ namespace NScript.RazorSkin.CodeGen
                 var condJs = ExpressionJsEmitter.ToJsGetter(cond.Condition.CSharpExpression);
 
                 // Generate true branch template fragment
-                var trueBranchHtml = CollectHtml(cond.TrueBranch, new List<EventNode>());
+                var trueBranchHtml = CollectHtml(cond.TrueBranch);
                 var falseBranchHtml = cond.FalseBranch.Count > 0
-                    ? CollectHtml(cond.FalseBranch, new List<EventNode>())
+                    ? CollectHtml(cond.FalseBranch)
                     : "";
 
                 // Property names to watch
@@ -316,7 +316,7 @@ namespace NScript.RazorSkin.CodeGen
                 var collectionJs = ExpressionJsEmitter.ToJsGetter(loop.CollectionExpression);
 
                 // Generate item template fragment
-                var itemTemplateHtml = CollectHtml(loop.ItemTemplate, new List<EventNode>());
+                var itemTemplateHtml = CollectHtml(loop.ItemTemplate);
 
                 // Emit CollectionBinder constructor call using JS-mangled name (H2)
                 // The collection getter expression retrieves the collection from the DataContext
@@ -423,7 +423,29 @@ namespace NScript.RazorSkin.CodeGen
             }
         }
 
-        private static string CollectHtml(List<IRNode> nodes, List<EventNode> eventTracker)
+        /// <summary>
+        /// Builds the innerHTML string AND computes DOM paths for each binding placeholder.
+        /// Uses marker attributes (data-bind-idx) during construction, then parses the
+        /// final HTML to compute the actual DOM path for each marker.
+        /// </summary>
+        private static string CollectHtmlWithPaths(
+            List<IRNode> nodes, List<EventNode> eventTracker, List<List<int>> outPaths)
+        {
+            // Phase 1: Build HTML with marker attributes on binding placeholders
+            int bindingIdx = 0;
+            var rawHtml = CollectHtmlWithMarkers(nodes, eventTracker, ref bindingIdx);
+
+            // Phase 2: Parse the HTML to find each marker's DOM path
+            ComputePathsFromHtml(rawHtml, bindingIdx, outPaths);
+
+            // Phase 3: Strip the marker attributes from the final HTML
+            var cleanHtml = System.Text.RegularExpressions.Regex.Replace(
+                rawHtml, @" data-bind-idx=""\d+""", "");
+            return cleanHtml;
+        }
+
+        private static string CollectHtmlWithMarkers(
+            List<IRNode> nodes, List<EventNode> eventTracker, ref int bindingIdx)
         {
             var sb = new StringBuilder();
             foreach (var node in nodes)
@@ -431,105 +453,135 @@ namespace NScript.RazorSkin.CodeGen
                 if (node is HtmlNode html)
                     sb.Append(html.HtmlContent);
                 else if (node is ExpressionBindingNode)
-                    sb.Append("<span></span>");
+                {
+                    sb.Append($"<span data-bind-idx=\"{bindingIdx}\"></span>");
+                    bindingIdx++;
+                }
                 else if (node is EventNode)
                 {
                     // Events are wired via objStorage element indices, not HTML markers.
-                    // No HTML output needed for event nodes.
                 }
                 else if (node is ConditionalNode cond)
                 {
-                    // Emit a placeholder container for the conditional block
                     sb.Append("<span>");
-                    sb.Append(CollectHtml(cond.TrueBranch, eventTracker));
+                    sb.Append(CollectHtmlWithMarkers(cond.TrueBranch, eventTracker, ref bindingIdx));
                     sb.Append("</span>");
                     if (cond.FalseBranch.Count > 0)
                     {
                         sb.Append("<span>");
-                        sb.Append(CollectHtml(cond.FalseBranch, eventTracker));
+                        sb.Append(CollectHtmlWithMarkers(cond.FalseBranch, eventTracker, ref bindingIdx));
                         sb.Append("</span>");
                     }
                 }
                 else if (node is LoopNode loop)
                 {
-                    // Emit a placeholder container for the loop items
                     sb.Append("<span>");
-                    sb.Append(CollectHtml(loop.ItemTemplate, eventTracker));
+                    sb.Append(CollectHtmlWithMarkers(loop.ItemTemplate, eventTracker, ref bindingIdx));
                     sb.Append("</span>");
                 }
                 else if (node is SubControlNode)
                 {
-                    // Sub-controls are handled separately, emit a placeholder
                     sb.Append("<span></span>");
                 }
                 else
                 {
-                    // Recurse into any other node's children
-                    sb.Append(CollectHtml(node.Children, eventTracker));
+                    sb.Append(CollectHtmlWithMarkers(node.Children, eventTracker, ref bindingIdx));
                 }
             }
             return sb.ToString();
         }
 
         /// <summary>
-        /// Compute DOM tree paths for each binding placeholder element.
-        /// Walks the IR nodes in the same order as CollectHtml and tracks a virtual
-        /// DOM child index at each nesting level, producing paths like [1, 0], [1, 2].
-        /// This mirrors the XWML SkinCodeGenerator.GetNodePath pattern.
+        /// Simple HTML collector for reactive block template fragments (no path tracking needed).
         /// </summary>
-        private static List<List<int>> ComputeElementPaths(List<IRNode> nodes)
+        private static string CollectHtml(List<IRNode> nodes)
         {
-            var paths = new List<List<int>>();
-            var currentPath = new List<int>();
-            ComputeElementPathsRecursive(nodes, currentPath, paths);
-            return paths;
+            int unused = 0;
+            var html = CollectHtmlWithMarkers(nodes, new List<EventNode>(), ref unused);
+            // Strip any binding markers from the HTML
+            return System.Text.RegularExpressions.Regex.Replace(html, @" data-bind-idx=""\d+""", "");
         }
 
-        private static void ComputeElementPathsRecursive(
-            List<IRNode> nodes, List<int> parentPath, List<List<int>> paths)
+        /// <summary>
+        /// Parses HTML to find data-bind-idx markers and compute their DOM tree path.
+        /// Tracks open/close tags to maintain a nesting stack with child counts.
+        /// </summary>
+        private static void ComputePathsFromHtml(string html, int bindingCount, List<List<int>> outPaths)
         {
-            int childIndex = 0;
-            foreach (var node in nodes)
-            {
-                if (node is HtmlNode html)
-                {
-                    // Static HTML may produce one or more child nodes in the DOM.
-                    // Count the number of top-level elements/text nodes it adds.
-                    childIndex += CountTopLevelHtmlChildren(html.HtmlContent);
-                }
-                else if (node is ExpressionBindingNode)
-                {
-                    // Each expression becomes a <span></span> placeholder
-                    var path = new List<int>(parentPath) { childIndex };
-                    paths.Add(path);
-                    childIndex++;
-                }
-                else if (node is ConditionalNode cond)
-                {
-                    // True branch wrapped in <span>
-                    var truePath = new List<int>(parentPath) { childIndex };
-                    ComputeElementPathsRecursive(cond.TrueBranch, truePath, paths);
-                    childIndex++;
+            var pathMap = new Dictionary<int, List<int>>();
 
-                    if (cond.FalseBranch.Count > 0)
-                    {
-                        var falsePath = new List<int>(parentPath) { childIndex };
-                        ComputeElementPathsRecursive(cond.FalseBranch, falsePath, paths);
-                        childIndex++;
-                    }
-                }
-                else if (node is LoopNode loop)
+            // Track nesting: stack of (myIndex, childCount) pairs.
+            // myIndex = the 0-based index of this element within its parent
+            // childCount = number of child elements seen so far at this level
+            var indexStack = new List<int>();   // myIndex at each depth
+            var childCountStack = new List<int>(); // child count at each depth
+            childCountStack.Add(0); // root level child count
+
+            int i = 0;
+            while (i < html.Length)
+            {
+                if (html[i] == '<')
                 {
-                    // Loop wrapped in <span>
-                    var loopPath = new List<int>(parentPath) { childIndex };
-                    ComputeElementPathsRecursive(loop.ItemTemplate, loopPath, paths);
-                    childIndex++;
+                    // Check for closing tag
+                    if (i + 1 < html.Length && html[i + 1] == '/')
+                    {
+                        var closeEnd = html.IndexOf('>', i);
+                        if (closeEnd < 0) break;
+                        if (indexStack.Count > 0)
+                        {
+                            indexStack.RemoveAt(indexStack.Count - 1);
+                            childCountStack.RemoveAt(childCountStack.Count - 1);
+                        }
+                        i = closeEnd + 1;
+                        continue;
+                    }
+
+                    // Opening tag
+                    var tagEnd = html.IndexOf('>', i);
+                    if (tagEnd < 0) break;
+
+                    var tagContent = html.Substring(i + 1, tagEnd - i - 1);
+                    bool selfClosing = tagContent.EndsWith("/");
+
+                    // This element's index within its parent = current child count at this level
+                    int myIndex = childCountStack[childCountStack.Count - 1];
+
+                    // Check for data-bind-idx marker
+                    var markerMatch = System.Text.RegularExpressions.Regex.Match(
+                        tagContent, @"data-bind-idx=""(\d+)""");
+                    if (markerMatch.Success)
+                    {
+                        var idx = int.Parse(markerMatch.Groups[1].Value);
+                        // Build path: all ancestor indices + this element's index
+                        var path = new List<int>(indexStack) { myIndex };
+                        pathMap[idx] = path;
+                    }
+
+                    // Increment parent's child count
+                    childCountStack[childCountStack.Count - 1]++;
+
+                    // If not self-closing, push new nesting level
+                    if (!selfClosing)
+                    {
+                        indexStack.Add(myIndex);
+                        childCountStack.Add(0);
+                    }
+
+                    i = tagEnd + 1;
                 }
                 else
                 {
-                    // Generic children
-                    ComputeElementPathsRecursive(node.Children, parentPath, paths);
+                    i++;
                 }
+            }
+
+            // Build ordered path list
+            for (int idx = 0; idx < bindingCount; idx++)
+            {
+                if (pathMap.TryGetValue(idx, out var path))
+                    outPaths.Add(path);
+                else
+                    outPaths.Add(new List<int> { idx }); // fallback
             }
         }
 
