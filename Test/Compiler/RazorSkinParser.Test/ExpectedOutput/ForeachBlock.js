@@ -1,4 +1,4 @@
-var tmplStore = new Array(1);
+var ForeachBlock_tmplStore = new Array(1);
 var ForeachBlock_var = null;
 
 function ForeachBlock_factory(skinFactory, doc) {
@@ -6,18 +6,20 @@ function ForeachBlock_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
     domStore[0].innerHTML = "<span><li><span></span></li></span>";
-    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [];
+    ForeachBlock_tmplStore[0] = ForeachBlock_tmplStore[0] ? ForeachBlock_tmplStore[0] : [];
   }
   htmlRoot = domStore[0].cloneNode(true);
   objStorage = new Array(0);
   // Reactive collection binders
-  CollectionBinder_setup(htmlRoot, function(dc) { return dc.get_items(); },
-    "<li><span></span></li>");
-  return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 0, 0);
+  var _collBinder_0 = new Sunlight__Framework__UI__Helpers__CollectionBinder(htmlRoot,
+    (function() { var e = doc.createElement('div'); e.innerHTML = "<li><span></span></li>"; return e; }()),
+    function(tmpl, item) { return tmpl.cloneNode(true); });
+  _collBinder_0.get_collection = function(dc) { return dc.get_items(); };
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, ForeachBlock_tmplStore[0], null, 0, 0);
 }
 
 function ForeachBlock() {
   if (!ForeachBlock_var)
-    ForeachBlock_var = Skin_factory(Sunlight.Framework.UI.UISkinableElement, TestVM, ForeachBlock_factory, "0");
+    ForeachBlock_var = Sunlight__Framework__UI__Skin_factory(Sunlight__Framework__UI__UISkinableElement, TestVM, ForeachBlock_factory, "0");
   return ForeachBlock_var;
 }

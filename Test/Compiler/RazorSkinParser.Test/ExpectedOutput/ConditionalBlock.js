@@ -1,4 +1,4 @@
-var tmplStore = new Array(1);
+var ConditionalBlock_tmplStore = new Array(1);
 var ConditionalBlock_var = null;
 
 function ConditionalBlock_factory(skinFactory, doc) {
@@ -6,19 +6,20 @@ function ConditionalBlock_factory(skinFactory, doc) {
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
     domStore[0].innerHTML = "<span><div>Active</div></span><span><div>Inactive</div></span>";
-    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [];
+    ConditionalBlock_tmplStore[0] = ConditionalBlock_tmplStore[0] ? ConditionalBlock_tmplStore[0] : [];
   }
   htmlRoot = domStore[0].cloneNode(true);
   objStorage = new Array(0);
   // Reactive conditional binders
-  ConditionalBinder_setup(htmlRoot, function(dc) { return dc.get_isActive(); }, ["IsActive"],
-    "<div>Active</div>",
-    "<div>Inactive</div>");
-  return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, 0, 0);
+  new Sunlight__Framework__UI__Helpers__ConditionalBinder(function(dc) { return dc.get_isActive(); }, ["IsActive"],
+    htmlRoot,
+    (function() { var e = doc.createElement('div'); e.innerHTML = "<div>Active</div>"; return e; }()),
+    (function() { var e = doc.createElement('div'); e.innerHTML = "<div>Inactive</div>"; return e; }()));
+  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, ConditionalBlock_tmplStore[0], null, 0, 0);
 }
 
 function ConditionalBlock() {
   if (!ConditionalBlock_var)
-    ConditionalBlock_var = Skin_factory(Sunlight.Framework.UI.UISkinableElement, TestVM, ConditionalBlock_factory, "0");
+    ConditionalBlock_var = Sunlight__Framework__UI__Skin_factory(Sunlight__Framework__UI__UISkinableElement, TestVM, ConditionalBlock_factory, "0");
   return ConditionalBlock_var;
 }
