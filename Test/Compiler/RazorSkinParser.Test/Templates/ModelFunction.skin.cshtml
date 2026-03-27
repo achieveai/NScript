@@ -1,0 +1,7 @@
+@model TestVM
+
+@functions {
+    string FullName() => Model.FirstName + " " + Model.LastName;
+}
+
+<div>@Model.Name</div>

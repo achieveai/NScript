@@ -73,6 +73,112 @@ namespace RazorSkinParser.Test
             sub.PropertyBindings.Should().Contain(p => p.PropertyName == "Query");
         }
 
+        // --- Content-validating assertions ---
+
+        [TestMethod]
+        public void HtmlNodeContent_PreservesStaticHtml()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div class=\"container\">Hello World</div>");
+
+            var html = ir.Children.OfType<HtmlNode>().FirstOrDefault();
+            html.Should().NotBeNull();
+            html.HtmlContent.Should().Contain("container");
+            html.HtmlContent.Should().Contain("Hello World");
+        }
+
+        [TestMethod]
+        public void ExpressionBindingNode_CapturesCSharpExpression()
+        {
+            var ir = BuildIR("@model TestVM\n\n<span>@Model.Name</span>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().First();
+            binding.Classification.CSharpExpression.Should().Be("Model.Name");
+            binding.Classification.SourceKind.Should().Be(BindingSourceKind.DataContext);
+        }
+
+        [TestMethod]
+        public void ComputedExpression_CapturesFullExpression()
+        {
+            var ir = BuildIR("@model TestVM\n\n<span>@(Model.Price * Model.Quantity)</span>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().First();
+            binding.Classification.CSharpExpression.Should().Contain("Model.Price");
+            binding.Classification.CSharpExpression.Should().Contain("Model.Quantity");
+        }
+
+        [TestMethod]
+        public void ConditionalNode_CapturesConditionExpression()
+        {
+            var ir = BuildIR("@model TestVM\n\n@if (Model.IsActive)\n{\n    <div>Active</div>\n}");
+
+            var cond = ir.Children.OfType<ConditionalNode>().First();
+            cond.Condition.CSharpExpression.Should().Be("Model.IsActive");
+            cond.Condition.SourceKind.Should().Be(BindingSourceKind.DataContext);
+        }
+
+        [TestMethod]
+        public void ConditionalNode_CapturesBothBranches()
+        {
+            var ir = BuildIR("@model TestVM\n\n@if (Model.IsActive)\n{\n    <div>Active</div>\n}\nelse\n{\n    <div>Inactive</div>\n}");
+
+            var cond = ir.Children.OfType<ConditionalNode>().First();
+            cond.TrueBranch.Should().NotBeEmpty();
+            cond.FalseBranch.Should().NotBeEmpty();
+
+            var trueHtml = cond.TrueBranch.OfType<HtmlNode>().First();
+            trueHtml.HtmlContent.Should().Contain("Active");
+
+            var falseHtml = cond.FalseBranch.OfType<HtmlNode>().First();
+            falseHtml.HtmlContent.Should().Contain("Inactive");
+        }
+
+        [TestMethod]
+        public void LoopNode_CapturesCollectionExpression()
+        {
+            var ir = BuildIR("@model TestVM\n\n@foreach (var item in Model.Items)\n{\n    <li>@item.Name</li>\n}");
+
+            var loop = ir.Children.OfType<LoopNode>().First();
+            loop.CollectionExpression.Should().Be("Model.Items");
+            loop.ItemVariableName.Should().Be("item");
+            loop.CollectionSourceKind.Should().Be(BindingSourceKind.DataContext);
+        }
+
+        [TestMethod]
+        public void LoopNode_ItemTemplateContainsBindings()
+        {
+            var ir = BuildIR("@model TestVM\n\n@foreach (var item in Model.Items)\n{\n    <li>@item.Name</li>\n}");
+
+            var loop = ir.Children.OfType<LoopNode>().First();
+            loop.ItemTemplate.Should().NotBeEmpty();
+            loop.ItemTemplate.OfType<ExpressionBindingNode>().Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        public void FunctionNode_CapturesSourceAndPurity()
+        {
+            var ir = BuildIR("@model TestVM\n\n@functions {\n    string Fmt(int x) => x.ToString();\n    string FullName() => Model.FirstName + \" \" + Model.LastName;\n}\n\n<div>test</div>");
+
+            var pureFn = ir.Functions.FirstOrDefault(f => f.FunctionName == "Fmt");
+            pureFn.Should().NotBeNull();
+            pureFn.IsPure.Should().BeTrue();
+            pureFn.CSharpSource.Should().Contain("x.ToString()");
+
+            var modelFn = ir.Functions.FirstOrDefault(f => f.FunctionName == "FullName");
+            modelFn.Should().NotBeNull();
+            modelFn.IsPure.Should().BeFalse();
+            modelFn.CSharpSource.Should().Contain("Model.FirstName");
+        }
+
+        [TestMethod]
+        public void ControlBinding_SetsSourceKindToTemplateParent()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div>@Control.CssClass</div>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().First();
+            binding.Classification.SourceKind.Should().Be(BindingSourceKind.TemplateParent);
+            binding.Classification.CSharpExpression.Should().Contain("Control.");
+        }
+
         private SkinTemplateNode BuildIR(string template)
         {
             var preprocessed = RazorSkinPreprocessor.Process(template);

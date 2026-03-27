@@ -1,0 +1,9 @@
+@model TestVM
+
+@foreach (var item in Model.Items)
+{
+    @if (item.IsComplete)
+    {
+        <li class="done">@item.Name</li>
+    }
+}
