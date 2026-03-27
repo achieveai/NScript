@@ -93,7 +93,7 @@ namespace Sunlight.Framework.UI.Helpers
             this.falseTemplate = falseTemplate;
             this.callback = this.OnPropertyChanged;
             this.anchorNode = parentElement.OwnerDocument.CreateTextNode("");
-            this.parentElement.AppendChild((Element)this.anchorNode);
+            this.parentElement.AppendChild(this.anchorNode);
         }
 
         /// <summary>
@@ -177,6 +177,7 @@ namespace Sunlight.Framework.UI.Helpers
 
         /// <summary>
         /// Registers property changed listeners for all watched properties.
+        /// Pattern shared with MultiDependencyBinder.RegisterListeners — keep in sync.
         /// </summary>
         /// <param name="notify"> The notify object to register on. </param>
         private void RegisterListeners(INotifyPropertyChanged notify)
@@ -191,6 +192,7 @@ namespace Sunlight.Framework.UI.Helpers
 
         /// <summary>
         /// Unregisters property changed listeners for all watched properties.
+        /// Pattern shared with MultiDependencyBinder.UnregisterListeners — keep in sync.
         /// </summary>
         /// <param name="notify"> The notify object to unregister from. </param>
         private void UnregisterListeners(INotifyPropertyChanged notify)

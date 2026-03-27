@@ -174,6 +174,7 @@ namespace Sunlight.Framework.UI.Helpers
 
         /// <summary>
         /// Registers property changed listeners for all watched properties.
+        /// Pattern shared with ConditionalBinder.RegisterListeners — keep in sync.
         /// </summary>
         /// <param name="notify"> The notify object to register on. </param>
         private void RegisterListeners(INotifyPropertyChanged notify)
@@ -188,6 +189,7 @@ namespace Sunlight.Framework.UI.Helpers
 
         /// <summary>
         /// Unregisters property changed listeners for all watched properties.
+        /// Pattern shared with ConditionalBinder.UnregisterListeners — keep in sync.
         /// </summary>
         /// <param name="notify"> The notify object to unregister from. </param>
         private void UnregisterListeners(INotifyPropertyChanged notify)
