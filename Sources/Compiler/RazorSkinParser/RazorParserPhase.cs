@@ -13,15 +13,18 @@ namespace NScript.RazorSkin
 
     public static class RazorParserPhase
     {
+        // Cache the engine since configuration doesn't change between calls
+        private static readonly RazorProjectEngine _engine = RazorProjectEngine.Create(
+            RazorConfiguration.Default,
+            RazorProjectFileSystem.Create("."),
+            builder =>
+            {
+                builder.SetRootNamespace("NScript.RazorSkin.Generated");
+            });
+
         public static RazorParseResult Parse(string templateName, string cleanedTemplate)
         {
-            var projectEngine = RazorProjectEngine.Create(
-                RazorConfiguration.Default,
-                RazorProjectFileSystem.Create("."),
-                builder =>
-                {
-                    builder.SetRootNamespace("NScript.RazorSkin.Generated");
-                });
+            var projectEngine = _engine;
 
             var sourceDocument = RazorSourceDocument.Create(
                 cleanedTemplate,

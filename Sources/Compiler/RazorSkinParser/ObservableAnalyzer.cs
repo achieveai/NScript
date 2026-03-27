@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace NScript.RazorSkin
@@ -7,14 +8,45 @@ namespace NScript.RazorSkin
         private const string ObservableObjectFullName = "Sunlight.Framework.Observables.ObservableObject";
         private const string INotifyPropertyChangedFullName = "Sunlight.Framework.Observables.INotifyPropertyChanged";
         private const string IObservableCollectionFullName = "Sunlight.Framework.Observables.IObservableCollection";
+        private const string AutoFireAttributeName = "AutoFireAttribute";
+        private const string AutoFireAttributeShortName = "AutoFire";
+        private const string DefaultDataBindingAttributeName = "DefaultDataBindingAttribute";
 
+        /// <summary>
+        /// A property is observable if its containing type is observable AND the property
+        /// has [AutoFire] attribute, or [DefaultDataBinding] attribute.
+        /// Setter-body analysis (FirePropertyChanged calls) is deferred for now.
+        /// If the containing type is observable and no attribute check fails, we consider
+        /// all properties observable (conservative default matching XWML behavior).
+        /// </summary>
         public static bool IsObservableProperty(IPropertySymbol property)
         {
             if (property == null)
                 return false;
 
             var containingType = property.ContainingType;
-            return IsObservableType(containingType);
+            if (!IsObservableType(containingType))
+                return false;
+
+            // Check for [AutoFire] or [DefaultDataBinding] attribute on the property
+            var attributes = property.GetAttributes();
+            bool hasAutoFire = attributes.Any(a =>
+            {
+                var name = a.AttributeClass?.Name;
+                return name == AutoFireAttributeName || name == AutoFireAttributeShortName;
+            });
+            bool hasDefaultDataBinding = attributes.Any(a =>
+                a.AttributeClass?.Name == DefaultDataBindingAttributeName);
+
+            // If the property has explicit attributes, use them
+            if (hasAutoFire || hasDefaultDataBinding)
+                return true;
+
+            // Conservative default: if the containing type is observable and the property
+            // has a setter, treat it as observable. This matches the common pattern where
+            // ObservableObject subclasses emit change notifications for all properties.
+            // TODO: Add setter-body analysis to check for FirePropertyChanged calls
+            return property.SetMethod != null;
         }
 
         public static bool IsObservableType(ITypeSymbol type)
@@ -62,10 +94,20 @@ namespace NScript.RazorSkin
 
         private static string GetFullName(ITypeSymbol type)
         {
-            if (type.ContainingNamespace == null || type.ContainingNamespace.IsGlobalNamespace)
-                return type.Name;
+            // Use OriginalDefinition for generic types so that e.g.
+            // ObservableCollection<string> compares as ObservableCollection`1
+            var originalType = type.OriginalDefinition ?? type;
 
-            return $"{type.ContainingNamespace.ToDisplayString()}.{type.Name}";
+            // Strip generic arity suffix (e.g., "ObservableCollection`1" → "ObservableCollection")
+            var name = originalType.Name;
+            var arityIndex = name.IndexOf('`');
+            if (arityIndex >= 0)
+                name = name.Substring(0, arityIndex);
+
+            if (originalType.ContainingNamespace == null || originalType.ContainingNamespace.IsGlobalNamespace)
+                return name;
+
+            return $"{originalType.ContainingNamespace.ToDisplayString()}.{name}";
         }
     }
 }

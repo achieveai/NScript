@@ -10,12 +10,48 @@ namespace NScript.RazorSkin
 {
     public static class RoslynAnalysisPhase
     {
+        // Cache metadata references since they are expensive to create and
+        // don't change between invocations. The CSharpCompilation itself is
+        // local-scoped and becomes garbage-collectable after RefineClassifications returns.
+        private static MetadataReference[] _cachedReferences;
+
+        private static MetadataReference[] GetCachedReferences()
+        {
+            if (_cachedReferences != null)
+                return _cachedReferences;
+
+            var references = new List<MetadataReference>
+            {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            };
+
+            var runtimeDir = System.IO.Path.GetDirectoryName(typeof(object).Assembly.Location);
+            foreach (var asmName in new[]
+            {
+                "System.Runtime.dll",
+                "System.Collections.dll",
+                "System.Linq.dll",
+                "System.Collections.Generic.dll",
+                "netstandard.dll"
+            })
+            {
+                var path = System.IO.Path.Combine(runtimeDir, asmName);
+                if (System.IO.File.Exists(path))
+                    references.Add(MetadataReference.CreateFromFile(path));
+            }
+
+            _cachedReferences = references.ToArray();
+            return _cachedReferences;
+        }
+
         public static void RefineClassifications(
             SkinTemplateNode ir,
             string generatedCSharp,
             string[] additionalSources)
         {
-            // Build a Roslyn compilation from the generated C# + framework stubs
+            // Build a Roslyn compilation from the generated C# + framework stubs.
+            // The compilation is local-scoped and becomes garbage-collectable after
+            // this method returns, ensuring no memory leaks for builds with many templates.
             var trees = new List<SyntaxTree>();
             trees.Add(CSharpSyntaxTree.ParseText(generatedCSharp));
             foreach (var src in additionalSources)
@@ -26,7 +62,7 @@ namespace NScript.RazorSkin
             var compilation = CSharpCompilation.Create(
                 "RazorSkinAnalysis",
                 trees,
-                new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
+                GetCachedReferences(),
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             var generatedTree = trees[0];

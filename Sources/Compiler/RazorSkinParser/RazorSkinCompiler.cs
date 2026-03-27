@@ -23,7 +23,12 @@ namespace NScript.RazorSkin
             var ir = TemplateIRBuilder.Build(templateName, preprocessed, parsed);
 
             // Phase 4: Roslyn analysis (refine classifications)
-            if (additionalCSharpSources != null)
+            // When additionalCSharpSources is null, Roslyn analysis is skipped and all
+            // bindings remain classified as OneTime. This is acceptable for preview/tooling
+            // scenarios. For production compilation, pass framework type stubs (at minimum
+            // ObservableObject, INotifyPropertyChanged, IObservableCollection) plus the
+            // model/control type source to enable accurate OneWay/observable classification.
+            if (additionalCSharpSources != null && additionalCSharpSources.Length > 0)
             {
                 RoslynAnalysisPhase.RefineClassifications(
                     ir, parsed.GeneratedCSharp, additionalCSharpSources);

@@ -25,6 +25,7 @@ namespace NScript.RazorSkin
 
             var cleanedLines = new StringBuilder();
             var lines = templateSource.Split('\n');
+            bool modelSeen = false;
 
             foreach (var rawLine in lines)
             {
@@ -33,6 +34,12 @@ namespace NScript.RazorSkin
 
                 if (trimmed.StartsWith("@model "))
                 {
+                    if (modelSeen)
+                    {
+                        throw new InvalidOperationException(
+                            "Duplicate @model directive. Only one @model directive is allowed per template.");
+                    }
+                    modelSeen = true;
                     result.ModelTypeName = trimmed.Substring("@model ".Length).Trim();
                     cleanedLines.AppendLine(line); // Keep @model for Razor
                 }
