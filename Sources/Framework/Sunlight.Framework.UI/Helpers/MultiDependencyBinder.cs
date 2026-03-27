@@ -113,7 +113,16 @@ namespace Sunlight.Framework.UI.Helpers
         public object Target
         {
             get { return this.target; }
-            set { this.target = value; }
+            set
+            {
+                if (this.target == value)
+                {
+                    return;
+                }
+
+                this.target = value;
+                this.FlowValue();
+            }
         }
 
         /// <summary>
@@ -211,7 +220,9 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         private void FlowValue()
         {
-            if (object.IsNullOrUndefined(this.source) || object.IsNullOrUndefined(this.target))
+            if (!this.isActive
+                || object.IsNullOrUndefined(this.source)
+                || object.IsNullOrUndefined(this.target))
             {
                 return;
             }

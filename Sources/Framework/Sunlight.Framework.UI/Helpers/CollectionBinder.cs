@@ -175,6 +175,11 @@ namespace Sunlight.Framework.UI.Helpers
             INotifyCollectionChanged sender,
             CollectionChangedEventArgs args)
         {
+            if (!this.isActive)
+            {
+                return;
+            }
+
             switch (args.Action)
             {
                 case CollectionChangedAction.Add:

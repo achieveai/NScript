@@ -12,7 +12,7 @@ namespace Sunlight.Framework.UI.Helpers
 
     /// <summary>
     /// Runtime binder for reactive @if/@else blocks.
-    /// Watches a boolean condition on the DataContext and swaps DOM fragments.
+    /// Watches boolean conditions on the DataContext and swaps DOM fragments.
     /// </summary>
     public class ConditionalBinder
     {
@@ -27,9 +27,9 @@ namespace Sunlight.Framework.UI.Helpers
         private Func<object, bool> conditionGetter;
 
         /// <summary>
-        /// Name of the property to watch for condition changes.
+        /// Names of the properties to watch for condition changes.
         /// </summary>
-        private string conditionPropertyName;
+        private string[] conditionPropertyNames;
 
         /// <summary>
         /// The parent DOM element that contains the conditional content.
@@ -52,6 +52,11 @@ namespace Sunlight.Framework.UI.Helpers
         private Element currentElement;
 
         /// <summary>
+        /// Anchor node that marks the insertion point for conditional content.
+        /// </summary>
+        private Node anchorNode;
+
+        /// <summary>
         /// true if this binder is active.
         /// </summary>
         private bool isActive;
@@ -70,23 +75,25 @@ namespace Sunlight.Framework.UI.Helpers
         /// Constructor.
         /// </summary>
         /// <param name="conditionGetter"> Getter function that evaluates the boolean condition. </param>
-        /// <param name="conditionPropertyName"> Name of the property to watch. </param>
+        /// <param name="conditionPropertyNames"> Names of the properties to watch. </param>
         /// <param name="parentElement"> The parent DOM element. </param>
         /// <param name="trueTemplate"> Template element for true condition. </param>
         /// <param name="falseTemplate"> Template element for false condition. </param>
         public ConditionalBinder(
             Func<object, bool> conditionGetter,
-            string conditionPropertyName,
+            string[] conditionPropertyNames,
             Element parentElement,
             Element trueTemplate,
             Element falseTemplate)
         {
             this.conditionGetter = conditionGetter;
-            this.conditionPropertyName = conditionPropertyName;
+            this.conditionPropertyNames = conditionPropertyNames;
             this.parentElement = parentElement;
             this.trueTemplate = trueTemplate;
             this.falseTemplate = falseTemplate;
             this.callback = this.OnPropertyChanged;
+            this.anchorNode = parentElement.OwnerDocument.CreateTextNode("");
+            this.parentElement.AppendChild((Element)this.anchorNode);
         }
 
         /// <summary>
@@ -107,16 +114,14 @@ namespace Sunlight.Framework.UI.Helpers
 
                 if (this.isActive && !object.IsNullOrUndefined(this.source))
                 {
-                    ((INotifyPropertyChanged)this.source).RemovePropertyChangedListener(
-                        this.conditionPropertyName, this.callback);
+                    this.UnregisterListeners((INotifyPropertyChanged)this.source);
                 }
 
                 this.source = value;
 
                 if (this.isActive && !object.IsNullOrUndefined(this.source))
                 {
-                    ((INotifyPropertyChanged)this.source).AddPropertyChangedListener(
-                        this.conditionPropertyName, this.callback);
+                    this.RegisterListeners((INotifyPropertyChanged)this.source);
                     this.Evaluate();
                 }
             }
@@ -144,8 +149,7 @@ namespace Sunlight.Framework.UI.Helpers
                 {
                     if (!object.IsNullOrUndefined(this.source))
                     {
-                        ((INotifyPropertyChanged)this.source).AddPropertyChangedListener(
-                            this.conditionPropertyName, this.callback);
+                        this.RegisterListeners((INotifyPropertyChanged)this.source);
                     }
 
                     this.Evaluate();
@@ -154,8 +158,7 @@ namespace Sunlight.Framework.UI.Helpers
                 {
                     if (!object.IsNullOrUndefined(this.source))
                     {
-                        ((INotifyPropertyChanged)this.source).RemovePropertyChangedListener(
-                            this.conditionPropertyName, this.callback);
+                        this.UnregisterListeners((INotifyPropertyChanged)this.source);
                     }
 
                     this.RemoveCurrent();
@@ -169,8 +172,35 @@ namespace Sunlight.Framework.UI.Helpers
         public void Dispose()
         {
             this.IsActive = false;
-            this.RemoveCurrent();
             this.source = null;
+        }
+
+        /// <summary>
+        /// Registers property changed listeners for all watched properties.
+        /// </summary>
+        /// <param name="notify"> The notify object to register on. </param>
+        private void RegisterListeners(INotifyPropertyChanged notify)
+        {
+            for (int i = 0; i < this.conditionPropertyNames.Length; i++)
+            {
+                notify.AddPropertyChangedListener(
+                    this.conditionPropertyNames[i],
+                    this.callback);
+            }
+        }
+
+        /// <summary>
+        /// Unregisters property changed listeners for all watched properties.
+        /// </summary>
+        /// <param name="notify"> The notify object to unregister from. </param>
+        private void UnregisterListeners(INotifyPropertyChanged notify)
+        {
+            for (int i = 0; i < this.conditionPropertyNames.Length; i++)
+            {
+                notify.RemovePropertyChangedListener(
+                    this.conditionPropertyNames[i],
+                    this.callback);
+            }
         }
 
         /// <summary>
@@ -188,6 +218,11 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         private void Evaluate()
         {
+            if (!this.isActive)
+            {
+                return;
+            }
+
             if (object.IsNullOrUndefined(this.source))
             {
                 return;
@@ -206,7 +241,7 @@ namespace Sunlight.Framework.UI.Helpers
             if (!object.IsNullOrUndefined(template))
             {
                 this.currentElement = template.CloneNode(true);
-                this.parentElement.AppendChild(this.currentElement);
+                this.parentElement.InsertBefore(this.currentElement, this.anchorNode);
             }
         }
 
