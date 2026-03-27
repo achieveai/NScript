@@ -7,15 +7,18 @@ namespace NScript.RazorSkin.CodeGen
         /// <summary>
         /// Convert a C# property access like "Model.Name" to a JS getter call like "src.get_name()".
         /// </summary>
-        public static string ToJsGetter(string csharpExpression, string sourceParam = "src")
+        public static string ToJsGetter(
+            string csharpExpression,
+            string dataContextParam = "dc",
+            string templateParentParam = "tp")
         {
-            // Replace "Model." with source param
+            // Replace "Model." with DataContext param and "Control." with TemplateParent param
             var expr = csharpExpression
-                .Replace("Model.", sourceParam + ".")
-                .Replace("Control.", sourceParam + ".");
+                .Replace("Model.", dataContextParam + ".")
+                .Replace("Control.", templateParentParam + ".");
 
             // Convert property accesses to getter calls: .PropertyName -> .get_propertyName()
-            expr = Regex.Replace(expr, @"\.([A-Z])(\w*?)(?=[.\s\)\]\+\-\*\/\,\;]|$)",
+            expr = Regex.Replace(expr, @"\.([A-Z])(\w*)(?=[.\s\)\]\+\-\*\/\,\;]|$)",
                 match =>
                 {
                     var propName = match.Groups[1].Value.ToLower() + match.Groups[2].Value;
