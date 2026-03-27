@@ -22,6 +22,7 @@
             var plugins = new List<IConverterPlugin>()
             {
                 new XwmlTemplatingPlugin(),
+                // new RazorTemplatingPlugin(), // TODO: Implement IConverterPlugin interfaces
                 new TestGenerator()
             };
 

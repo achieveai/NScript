@@ -12,6 +12,7 @@
     <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
     <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
     <ProjectReference Include="..\XwmlParser\XwmlParser.csproj" />
+    <ProjectReference Include="..\RazorSkinParser\RazorSkinParser.csproj" />
     <ProjectReference Include="..\NScript.Converter.Plugins\NScript.Converter.Plugins.csproj" />
   </ItemGroup>
 
