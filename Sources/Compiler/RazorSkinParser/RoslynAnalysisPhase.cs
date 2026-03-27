@@ -93,7 +93,18 @@ namespace NScript.RazorSkin
                     RefineExpressionBinding(binding, modelType, controlType);
                 }
 
+                // Recurse into all child collections (Children, plus branch/template lists)
                 RefineNodes(node.Children, modelType, controlType, compilation, semanticModel);
+
+                if (node is ConditionalNode cond)
+                {
+                    RefineNodes(cond.TrueBranch, modelType, controlType, compilation, semanticModel);
+                    RefineNodes(cond.FalseBranch, modelType, controlType, compilation, semanticModel);
+                }
+                else if (node is LoopNode loop)
+                {
+                    RefineNodes(loop.ItemTemplate, modelType, controlType, compilation, semanticModel);
+                }
             }
         }
 

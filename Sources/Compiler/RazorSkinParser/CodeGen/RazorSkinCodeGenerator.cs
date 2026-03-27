@@ -75,14 +75,25 @@ namespace NScript.RazorSkin.CodeGen
 
             sb.AppendLine("  }");
             sb.AppendLine("  htmlRoot = domStore[0].cloneNode(true);");
-            sb.AppendLine($"  objStorage = new Array({bindings.Count});");
+            var totalSlots = bindings.Count + events.Count;
+            sb.AppendLine($"  objStorage = new Array({totalSlots});");
 
-            // Element path mapping — compute actual DOM tree paths
+            // Element path mapping — compute actual DOM tree paths for bindings
             for (int i = 0; i < bindings.Count; i++)
             {
                 var path = i < elementPaths.Count ? elementPaths[i] : new List<int> { i + 1 };
                 var pathStr = string.Join(", ", path);
                 sb.AppendLine($"  objStorage[{i}] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [{pathStr}]);");
+            }
+
+            // Event element path mapping — events share objStorage after bindings
+            // For now, events target the nearest parent element; a future enhancement
+            // could compute exact paths via the IR tree.
+            for (int i = 0; i < events.Count; i++)
+            {
+                var elemIdx = bindings.Count + i;
+                // Use the parent element path if available, otherwise target htmlRoot
+                sb.AppendLine($"  objStorage[{elemIdx}] = htmlRoot;");
             }
 
             // Emit event binders
@@ -220,8 +231,8 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (node is EventNode evt)
                     result.Add(evt);
-                if (node is SubControlNode sub)
-                    result.AddRange(sub.EventBindings);
+                // Sub-control events are NOT collected here — they are emitted
+                // separately in EmitSubControlFactoryCalls via SubControlNode.EventBindings
                 result.AddRange(CollectEvents(node.Children));
             }
             return result;
@@ -239,7 +250,6 @@ namespace NScript.RazorSkin.CodeGen
                 // Use objStorage element indices to locate event target elements,
                 // matching the XWML pattern of using indexed objStorage entries.
                 var elemIdx = bindingCount + i;
-                sb.AppendLine($"  objStorage[{elemIdx}] = objStorage[{elemIdx}] || htmlRoot;");
                 sb.AppendLine($"  objStorage[{elemIdx}].addEventListener('{evt.DomEventName}', {jsHandler});");
             }
         }
