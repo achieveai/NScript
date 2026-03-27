@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace NScript.RazorSkin.CodeGen
@@ -10,7 +11,8 @@ namespace NScript.RazorSkin.CodeGen
         public static string ToJsGetter(
             string csharpExpression,
             string dataContextParam = "dc",
-            string templateParentParam = "tp")
+            string templateParentParam = "tp",
+            ISet<string> knownFunctionNames = null)
         {
             // Replace "Model." with DataContext param and "Control." with TemplateParent param
             var expr = csharpExpression
@@ -19,8 +21,21 @@ namespace NScript.RazorSkin.CodeGen
 
             // Convert property accesses to getter calls: .PropertyName -> .get_propertyName()
             // Match ANY uppercase-initial identifier after "." unconditionally.
+            // Skip known function names from @functions blocks (M2) — they should remain
+            // as bare function calls, not be transformed to property getters.
             expr = Regex.Replace(expr, @"\.([A-Z])(\w*)",
-                match => $".get_{match.Groups[1].Value.ToLower()}{match.Groups[2].Value}()");
+                match =>
+                {
+                    var fullName = match.Groups[1].Value + match.Groups[2].Value;
+                    if (knownFunctionNames != null && knownFunctionNames.Contains(fullName))
+                        return "." + fullName;
+                    return $".get_{match.Groups[1].Value.ToLower()}{match.Groups[2].Value}()";
+                });
+
+            // Also handle bare function calls (not preceded by ".") that match known names.
+            // These appear at the start of an expression or after operators: FormatPrice(dc.get_total())
+            // They should not be treated as getters. This is already correct since the regex
+            // only matches identifiers preceded by ".", so bare calls are not affected.
 
             return expr;
         }

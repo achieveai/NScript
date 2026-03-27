@@ -35,6 +35,7 @@ namespace RazorSkinParser.Test
 
         [TestMethod]
         [TestCategory("SnapshotGeneration")]
+        [Ignore("Only run manually to regenerate baselines")]
         public void GenerateAllSnapshots()
         {
             var dir = Path.GetDirectoryName(typeof(RazorSkinTestHelper).Assembly.Location);

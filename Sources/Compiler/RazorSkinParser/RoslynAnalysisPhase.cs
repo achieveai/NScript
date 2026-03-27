@@ -64,22 +64,25 @@ namespace NScript.RazorSkin
             var generatedTree = trees[0];
             var semanticModel = compilation.GetSemanticModel(generatedTree);
 
-            // Resolve model type
+            // Resolve model type and control type
             var modelType = ResolveModelType(ir.ModelTypeName, compilation);
+            var controlType = !string.IsNullOrEmpty(ir.ControlTypeName)
+                ? ResolveModelType(ir.ControlTypeName, compilation) : null;
 
             // Walk all IR nodes and refine classifications
-            RefineNodes(ir.Children, modelType, compilation, semanticModel);
+            RefineNodes(ir.Children, modelType, controlType, compilation, semanticModel);
 
             // Refine loop nodes
             RefineLoopNodes(ir.Children, modelType, compilation);
 
             // Refine conditional nodes
-            RefineConditionalNodes(ir.Children, modelType);
+            RefineConditionalNodes(ir.Children, modelType, controlType);
         }
 
         private static void RefineNodes(
             List<IRNode> nodes,
             INamedTypeSymbol modelType,
+            INamedTypeSymbol controlType,
             CSharpCompilation compilation,
             SemanticModel semanticModel)
         {
@@ -87,31 +90,48 @@ namespace NScript.RazorSkin
             {
                 if (node is ExpressionBindingNode binding)
                 {
-                    RefineExpressionBinding(binding, modelType);
+                    RefineExpressionBinding(binding, modelType, controlType);
                 }
 
-                RefineNodes(node.Children, modelType, compilation, semanticModel);
+                RefineNodes(node.Children, modelType, controlType, compilation, semanticModel);
             }
         }
 
         private static void RefineExpressionBinding(
             ExpressionBindingNode binding,
-            INamedTypeSymbol modelType)
+            INamedTypeSymbol modelType,
+            INamedTypeSymbol controlType)
         {
-            if (modelType == null) return;
-
             var expr = binding.Classification.CSharpExpression;
             var dependencies = new List<ObservableDependency>();
 
-            // Extract property references from the expression
-            var propertyNames = ExtractPropertyReferences(expr, "Model.");
-            foreach (var propName in propertyNames)
+            // Extract property references from Model.* expressions
+            if (modelType != null)
             {
-                var prop = FindProperty(modelType, propName);
-                if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                var propertyNames = ExtractPropertyReferences(expr, "Model.");
+                foreach (var propName in propertyNames)
                 {
-                    dependencies.Add(new ObservableDependency(
-                        BindingSourceKind.DataContext, propName, propName));
+                    var prop = FindProperty(modelType, propName);
+                    if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                    {
+                        dependencies.Add(new ObservableDependency(
+                            BindingSourceKind.DataContext, propName, propName));
+                    }
+                }
+            }
+
+            // Extract property references from Control.* expressions (H5)
+            if (controlType != null)
+            {
+                var controlPropNames = ExtractPropertyReferences(expr, "Control.");
+                foreach (var propName in controlPropNames)
+                {
+                    var prop = FindProperty(controlType, propName);
+                    if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                    {
+                        dependencies.Add(new ObservableDependency(
+                            BindingSourceKind.TemplateParent, propName, propName));
+                    }
                 }
             }
 
@@ -140,6 +160,9 @@ namespace NScript.RazorSkin
                         loop.IsObservableCollection =
                             ObservableAnalyzer.IsObservableCollection(prop.Type);
                     }
+
+                    // Recurse into item template (M3)
+                    RefineLoopNodes(loop.ItemTemplate, modelType, compilation);
                 }
 
                 RefineLoopNodes(node.Children, modelType, compilation);
@@ -148,28 +171,53 @@ namespace NScript.RazorSkin
 
         private static void RefineConditionalNodes(
             List<IRNode> nodes,
-            INamedTypeSymbol modelType)
+            INamedTypeSymbol modelType,
+            INamedTypeSymbol controlType)
         {
             foreach (var node in nodes)
             {
-                if (node is ConditionalNode cond && modelType != null)
+                if (node is ConditionalNode cond)
                 {
-                    var propNames = ExtractPropertyReferences(
-                        cond.Condition.CSharpExpression, "Model.");
-                    foreach (var propName in propNames)
+                    if (modelType != null)
                     {
-                        var prop = FindProperty(modelType, propName);
-                        if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                        var propNames = ExtractPropertyReferences(
+                            cond.Condition.CSharpExpression, "Model.");
+                        foreach (var propName in propNames)
                         {
-                            cond.IsReactive = true;
-                            cond.Condition.Mode = BindingMode.OneWay;
-                            cond.Condition.Dependencies.Add(new ObservableDependency(
-                                BindingSourceKind.DataContext, propName, propName));
+                            var prop = FindProperty(modelType, propName);
+                            if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                            {
+                                cond.IsReactive = true;
+                                cond.Condition.Mode = BindingMode.OneWay;
+                                cond.Condition.Dependencies.Add(new ObservableDependency(
+                                    BindingSourceKind.DataContext, propName, propName));
+                            }
                         }
                     }
+
+                    if (controlType != null)
+                    {
+                        var controlPropNames = ExtractPropertyReferences(
+                            cond.Condition.CSharpExpression, "Control.");
+                        foreach (var propName in controlPropNames)
+                        {
+                            var prop = FindProperty(controlType, propName);
+                            if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                            {
+                                cond.IsReactive = true;
+                                cond.Condition.Mode = BindingMode.OneWay;
+                                cond.Condition.Dependencies.Add(new ObservableDependency(
+                                    BindingSourceKind.TemplateParent, propName, propName));
+                            }
+                        }
+                    }
+
+                    // Recurse into nested branches (M3)
+                    RefineConditionalNodes(cond.TrueBranch, modelType, controlType);
+                    RefineConditionalNodes(cond.FalseBranch, modelType, controlType);
                 }
 
-                RefineConditionalNodes(node.Children, modelType);
+                RefineConditionalNodes(node.Children, modelType, controlType);
             }
         }
 

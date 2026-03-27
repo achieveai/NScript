@@ -12,6 +12,17 @@ namespace NScript.RazorSkin.CodeGen
         {
             var sb = new StringBuilder();
 
+            // Build set of known function names from @functions blocks (M2)
+            var knownFunctionNames = new HashSet<string>();
+            if (ir.Functions != null)
+            {
+                foreach (var func in ir.Functions)
+                {
+                    if (func.FunctionName != "functions_block")
+                        knownFunctionNames.Add(func.FunctionName);
+                }
+            }
+
             // Emit @functions blocks
             EmitFunctions(sb, ir.Functions);
 
@@ -27,8 +38,15 @@ namespace NScript.RazorSkin.CodeGen
             var reactiveConditionals = CollectReactiveConditionals(ir.Children);
             var reactiveLoops = CollectReactiveLoops(ir.Children);
 
-            // Template store variable (global, matching XWML tmplStore pattern)
-            sb.AppendLine($"var tmplStore = new Array(1);");
+            // Build part ID mapping: elements with id= attributes -> element index (H8)
+            var partIdMapping = BuildPartIdMapping(ir.Children);
+            var partIdMappingJs = partIdMapping.Count > 0
+                ? "{\n" + string.Join(",\n", partIdMapping.Select(kvp => $"    \"{kvp.Key}\": {kvp.Value}")) + "\n  }"
+                : "null";
+
+            // Template store variable — prefixed with template name to avoid global collision (M1)
+            var tmplStoreVar = $"{ir.TemplateName}_tmplStore";
+            sb.AppendLine($"var {tmplStoreVar} = new Array(1);");
             sb.AppendLine($"var {ir.TemplateName}_var = null;");
             sb.AppendLine();
 
@@ -42,17 +60,17 @@ namespace NScript.RazorSkin.CodeGen
             // Binders array — stored in tmplStore for reuse across instances
             if (bindings.Count > 0)
             {
-                sb.AppendLine("    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [");
+                sb.AppendLine($"    {tmplStoreVar}[0] = {tmplStoreVar}[0] ? {tmplStoreVar}[0] : [");
                 for (int i = 0; i < bindings.Count; i++)
                 {
                     var comma = i < bindings.Count - 1 ? "," : "";
-                    sb.AppendLine($"      {BinderEmitter.EmitSkinBinderInfo(bindings[i], i, i)}{comma}");
+                    sb.AppendLine($"      {BinderEmitter.EmitSkinBinderInfo(bindings[i], i, i, knownFunctionNames)}{comma}");
                 }
                 sb.AppendLine("    ];");
             }
             else
             {
-                sb.AppendLine("    tmplStore[0] = tmplStore[0] ? tmplStore[0] : [];");
+                sb.AppendLine($"    {tmplStoreVar}[0] = {tmplStoreVar}[0] ? {tmplStoreVar}[0] : [];");
             }
 
             sb.AppendLine("  }");
@@ -64,11 +82,11 @@ namespace NScript.RazorSkin.CodeGen
             {
                 var path = i < elementPaths.Count ? elementPaths[i] : new List<int> { i + 1 };
                 var pathStr = string.Join(", ", path);
-                sb.AppendLine($"  objStorage[{i}] = GetElementFromPath(htmlRoot, [{pathStr}]);");
+                sb.AppendLine($"  objStorage[{i}] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [{pathStr}]);");
             }
 
             // Emit event binders
-            EmitEventBinders(sb, events);
+            EmitEventBinders(sb, events, bindings.Count);
 
             // Emit reactive conditional binders
             EmitReactiveConditionalBinders(sb, reactiveConditionals);
@@ -79,14 +97,14 @@ namespace NScript.RazorSkin.CodeGen
             // Emit sub-control factory calls
             var childElements = EmitSubControlFactoryCalls(sb, subControls);
 
-            sb.AppendLine($"  return SkinInstance_factory(skinFactory, htmlRoot, [{childElements}], objStorage, tmplStore[0], null, {liveBinderCount}, 0);");
+            sb.AppendLine($"  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [{childElements}], objStorage, {tmplStoreVar}[0], {partIdMappingJs}, {liveBinderCount}, 0);");
             sb.AppendLine("}");
             sb.AppendLine();
 
             // Skin getter function
             sb.AppendLine($"function {ir.TemplateName}() {{");
             sb.AppendLine($"  if (!{ir.TemplateName}_var)");
-            sb.AppendLine($"    {ir.TemplateName}_var = Skin_factory({ir.ControlTypeName}, {ir.ModelTypeName}, {ir.TemplateName}_factory, \"0\");");
+            sb.AppendLine($"    {ir.TemplateName}_var = Sunlight__Framework__UI__Skin_factory({MangleTypeName(ir.ControlTypeName)}, {MangleTypeName(ir.ModelTypeName)}, {ir.TemplateName}_factory, \"0\");");
             sb.AppendLine($"  return {ir.TemplateName}_var;");
             sb.AppendLine("}");
 
@@ -209,7 +227,7 @@ namespace NScript.RazorSkin.CodeGen
             return result;
         }
 
-        private static void EmitEventBinders(StringBuilder sb, List<EventNode> events)
+        private static void EmitEventBinders(StringBuilder sb, List<EventNode> events, int bindingCount)
         {
             if (events.Count == 0) return;
 
@@ -218,7 +236,11 @@ namespace NScript.RazorSkin.CodeGen
             {
                 var evt = events[i];
                 var jsHandler = ConvertEventHandler(evt);
-                sb.AppendLine($"  htmlRoot.querySelector('[data-event-{i}]').addEventListener('{evt.DomEventName}', {jsHandler});");
+                // Use objStorage element indices to locate event target elements,
+                // matching the XWML pattern of using indexed objStorage entries.
+                var elemIdx = bindingCount + i;
+                sb.AppendLine($"  objStorage[{elemIdx}] = objStorage[{elemIdx}] || htmlRoot;");
+                sb.AppendLine($"  objStorage[{elemIdx}].addEventListener('{evt.DomEventName}', {jsHandler});");
             }
         }
 
@@ -249,28 +271,10 @@ namespace NScript.RazorSkin.CodeGen
         // --- Reactive block collection and emission ---
 
         private static List<ConditionalNode> CollectReactiveConditionals(List<IRNode> nodes)
-        {
-            var result = new List<ConditionalNode>();
-            foreach (var node in nodes)
-            {
-                if (node is ConditionalNode cond && cond.IsReactive)
-                    result.Add(cond);
-                result.AddRange(CollectReactiveConditionals(node.Children));
-            }
-            return result;
-        }
+            => CollectNodes<ConditionalNode>(nodes).Where(c => c.IsReactive).ToList();
 
         private static List<LoopNode> CollectReactiveLoops(List<IRNode> nodes)
-        {
-            var result = new List<LoopNode>();
-            foreach (var node in nodes)
-            {
-                if (node is LoopNode loop && loop.IsObservableCollection)
-                    result.Add(loop);
-                result.AddRange(CollectReactiveLoops(node.Children));
-            }
-            return result;
-        }
+            => CollectNodes<LoopNode>(nodes).Where(l => l.IsObservableCollection).ToList();
 
         private static void EmitReactiveConditionalBinders(StringBuilder sb, List<ConditionalNode> conditionals)
         {
@@ -292,9 +296,11 @@ namespace NScript.RazorSkin.CodeGen
                 var propNames = string.Join(", ",
                     cond.Condition.Dependencies.Select(d => $"\"{d.PropertyName}\""));
 
-                sb.AppendLine($"  ConditionalBinder_setup(htmlRoot, function(dc) {{ return {condJs}; }}, [{propNames}],");
-                sb.AppendLine($"    \"{EscapeJs(trueBranchHtml)}\",");
-                sb.AppendLine($"    \"{EscapeJs(falseBranchHtml)}\");");
+                // Emit ConditionalBinder constructor call using JS-mangled name (H2)
+                sb.AppendLine($"  new Sunlight__Framework__UI__Helpers__ConditionalBinder(function(dc) {{ return {condJs}; }}, [{propNames}],");
+                sb.AppendLine($"    htmlRoot,");
+                sb.AppendLine($"    (function() {{ var e = doc.createElement('div'); e.innerHTML = \"{EscapeJs(trueBranchHtml)}\"; return e; }}()),");
+                sb.AppendLine($"    {(string.IsNullOrEmpty(falseBranchHtml) ? "null" : $"(function() {{ var e = doc.createElement('div'); e.innerHTML = \"{EscapeJs(falseBranchHtml)}\"; return e; }}())")});");
             }
         }
 
@@ -311,24 +317,19 @@ namespace NScript.RazorSkin.CodeGen
                 // Generate item template fragment
                 var itemTemplateHtml = CollectHtml(loop.ItemTemplate, new List<EventNode>());
 
-                sb.AppendLine($"  CollectionBinder_setup(htmlRoot, function(dc) {{ return {collectionJs}; }},");
-                sb.AppendLine($"    \"{EscapeJs(itemTemplateHtml)}\");");
+                // Emit CollectionBinder constructor call using JS-mangled name (H2)
+                // The collection getter expression retrieves the collection from the DataContext
+                sb.AppendLine($"  var _collBinder_{i} = new Sunlight__Framework__UI__Helpers__CollectionBinder(htmlRoot,");
+                sb.AppendLine($"    (function() {{ var e = doc.createElement('div'); e.innerHTML = \"{EscapeJs(itemTemplateHtml)}\"; return e; }}()),");
+                sb.AppendLine($"    function(tmpl, item) {{ return tmpl.cloneNode(true); }});");
+                sb.AppendLine($"  _collBinder_{i}.get_collection = function(dc) {{ return {collectionJs}; }};");
             }
         }
 
         // --- Sub-control collection and emission ---
 
         private static List<SubControlNode> CollectSubControls(List<IRNode> nodes)
-        {
-            var result = new List<SubControlNode>();
-            foreach (var node in nodes)
-            {
-                if (node is SubControlNode sub)
-                    result.Add(sub);
-                result.AddRange(CollectSubControls(node.Children));
-            }
-            return result;
-        }
+            => CollectNodes<SubControlNode>(nodes);
 
         /// <summary>
         /// Emit UIElement factory calls for sub-controls and return a comma-separated
@@ -369,16 +370,56 @@ namespace NScript.RazorSkin.CodeGen
             return string.Join(", ", childIndices);
         }
 
-        private static List<ExpressionBindingNode> CollectBindings(List<IRNode> nodes)
+        /// <summary>
+        /// Generic collection of typed IR nodes from the tree (M5).
+        /// </summary>
+        private static List<T> CollectNodes<T>(List<IRNode> nodes) where T : IRNode
         {
-            var result = new List<ExpressionBindingNode>();
+            var result = new List<T>();
+            foreach (var node in nodes)
+            {
+                if (node is T typed)
+                    result.Add(typed);
+                result.AddRange(CollectNodes<T>(node.Children));
+            }
+            return result;
+        }
+
+        private static List<ExpressionBindingNode> CollectBindings(List<IRNode> nodes)
+            => CollectNodes<ExpressionBindingNode>(nodes);
+
+        /// <summary>
+        /// Build a mapping from element id attribute values to their element indices
+        /// in the objStorage array, for the SkinInstance partMap parameter (H8).
+        /// </summary>
+        private static Dictionary<string, int> BuildPartIdMapping(List<IRNode> nodes)
+        {
+            var mapping = new Dictionary<string, int>();
+            int index = 0;
+            BuildPartIdMappingRecursive(nodes, mapping, ref index);
+            return mapping;
+        }
+
+        private static void BuildPartIdMappingRecursive(
+            List<IRNode> nodes, Dictionary<string, int> mapping, ref int index)
+        {
             foreach (var node in nodes)
             {
                 if (node is ExpressionBindingNode binding)
-                    result.Add(binding);
-                result.AddRange(CollectBindings(node.Children));
+                {
+                    if (!string.IsNullOrEmpty(binding.ElementId))
+                        mapping[binding.ElementId] = index;
+                    index++;
+                }
+                else if (node is SubControlNode sub)
+                {
+                    if (!string.IsNullOrEmpty(sub.ElementId))
+                        mapping[sub.ElementId] = index;
+                    index++;
+                }
+
+                BuildPartIdMappingRecursive(node.Children, mapping, ref index);
             }
-            return result;
         }
 
         private static string CollectHtml(List<IRNode> nodes, List<EventNode> eventTracker)
@@ -390,16 +431,10 @@ namespace NScript.RazorSkin.CodeGen
                     sb.Append(html.HtmlContent);
                 else if (node is ExpressionBindingNode)
                     sb.Append("<span></span>");
-                else if (node is EventNode evt)
+                else if (node is EventNode)
                 {
-                    // Add a data attribute marker on the parent element for event wiring
-                    int eventIdx = eventTracker.IndexOf(evt);
-                    if (eventIdx < 0)
-                    {
-                        eventIdx = eventTracker.Count;
-                        // Don't add — it's already tracked in the main events list
-                    }
-                    sb.Append($" data-event-{eventIdx}=\"\"");
+                    // Events are wired via objStorage element indices, not HTML markers.
+                    // No HTML output needed for event nodes.
                 }
                 else if (node is ConditionalNode cond)
                 {
@@ -576,6 +611,17 @@ namespace NScript.RazorSkin.CodeGen
                 || tagName == "meta" || tagName == "link" || tagName == "area" || tagName == "base"
                 || tagName == "col" || tagName == "embed" || tagName == "source" || tagName == "track"
                 || tagName == "wbr";
+        }
+
+        /// <summary>
+        /// Mangle a C# fully-qualified type name to its NScript JS identifier.
+        /// Namespace separators (.) become double underscores (__).
+        /// Example: "Sunlight.Framework.UI.UISkinableElement" -> "Sunlight__Framework__UI__UISkinableElement"
+        /// </summary>
+        private static string MangleTypeName(string csharpTypeName)
+        {
+            if (string.IsNullOrEmpty(csharpTypeName)) return csharpTypeName;
+            return csharpTypeName.Replace(".", "__");
         }
 
         private static string EscapeJs(string s)

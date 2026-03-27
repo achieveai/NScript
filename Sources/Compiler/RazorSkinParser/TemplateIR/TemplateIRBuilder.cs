@@ -44,6 +44,18 @@ namespace NScript.RazorSkin.TemplateIR
             RegexOptions.Compiled);
 
         /// <summary>
+        /// Classify the binding source kind from a C# expression string (M6).
+        /// Extracts whether the expression references Model.* or Control.* to determine
+        /// if the source is DataContext or TemplateParent.
+        /// </summary>
+        internal static BindingSourceKind ClassifySource(string expression)
+        {
+            if (expression.Contains("Control."))
+                return BindingSourceKind.TemplateParent;
+            return BindingSourceKind.DataContext;
+        }
+
+        /// <summary>
         /// Checks whether a tag name is PascalCase (starts with uppercase letter).
         /// Used to detect sub-control tags like &lt;ListView&gt;, &lt;SearchBox&gt;.
         /// </summary>
@@ -227,11 +239,7 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     CSharpExpression = condExpr,
                     Mode = BindingMode.OneTime,
-                    SourceKind = condExpr.Contains("Model.")
-                        ? BindingSourceKind.DataContext
-                        : condExpr.Contains("Control.")
-                            ? BindingSourceKind.TemplateParent
-                            : BindingSourceKind.DataContext
+                    SourceKind = ClassifySource(condExpr)
                 },
                 IsReactive = false
             };
@@ -332,11 +340,7 @@ namespace NScript.RazorSkin.TemplateIR
                 ItemVariableName = foreachParts.Item1,
                 CollectionExpression = foreachParts.Item2,
                 IsObservableCollection = false,
-                CollectionSourceKind = foreachParts.Item2.Contains("Model.")
-                    ? BindingSourceKind.DataContext
-                    : foreachParts.Item2.Contains("Control.")
-                        ? BindingSourceKind.TemplateParent
-                        : BindingSourceKind.DataContext
+                CollectionSourceKind = ClassifySource(foreachParts.Item2)
             };
 
             int i = startIndex + 1;
@@ -400,9 +404,7 @@ namespace NScript.RazorSkin.TemplateIR
             {
                 CSharpExpression = expression.Trim(),
                 Mode = BindingMode.OneTime,
-                SourceKind = expression.Contains("Model.") ? BindingSourceKind.DataContext
-                           : expression.Contains("Control.") ? BindingSourceKind.TemplateParent
-                           : BindingSourceKind.DataContext
+                SourceKind = ClassifySource(expression)
             };
 
             return new ExpressionBindingNode
@@ -620,11 +622,7 @@ namespace NScript.RazorSkin.TemplateIR
                         {
                             CSharpExpression = attrValue.TrimStart('@'),
                             Mode = BindingMode.OneTime,
-                            SourceKind = attrValue.Contains("Model.")
-                                ? BindingSourceKind.DataContext
-                                : attrValue.Contains("Control.")
-                                    ? BindingSourceKind.TemplateParent
-                                    : BindingSourceKind.DataContext
+                            SourceKind = ClassifySource(attrValue)
                         };
                         subControl.PropertyBindings.Add(new SubControlPropertyBinding
                         {
