@@ -12,11 +12,20 @@ namespace NScript.RazorSkin.CodeGen
         {
             var sb = new StringBuilder();
 
+            // Emit @functions blocks
+            EmitFunctions(sb, ir.Functions);
+
             // Collect all bindings and compute HTML content with element paths
             var bindings = CollectBindings(ir.Children);
-            var htmlContent = CollectHtml(ir.Children);
+            var events = CollectEvents(ir.Children);
+            var subControls = CollectSubControls(ir.Children);
+            var htmlContent = CollectHtml(ir.Children, events);
             var elementPaths = ComputeElementPaths(ir.Children);
             int liveBinderCount = bindings.Count(b => b.Classification.Mode == BindingMode.OneWay);
+
+            // Collect reactive blocks for binder setup
+            var reactiveConditionals = CollectReactiveConditionals(ir.Children);
+            var reactiveLoops = CollectReactiveLoops(ir.Children);
 
             // Template store variable (global, matching XWML tmplStore pattern)
             sb.AppendLine($"var tmplStore = new Array(1);");
@@ -58,7 +67,19 @@ namespace NScript.RazorSkin.CodeGen
                 sb.AppendLine($"  objStorage[{i}] = GetElementFromPath(htmlRoot, [{pathStr}]);");
             }
 
-            sb.AppendLine($"  return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], null, {liveBinderCount}, 0);");
+            // Emit event binders
+            EmitEventBinders(sb, events);
+
+            // Emit reactive conditional binders
+            EmitReactiveConditionalBinders(sb, reactiveConditionals);
+
+            // Emit reactive loop binders
+            EmitReactiveLoopBinders(sb, reactiveLoops);
+
+            // Emit sub-control factory calls
+            var childElements = EmitSubControlFactoryCalls(sb, subControls);
+
+            sb.AppendLine($"  return SkinInstance_factory(skinFactory, htmlRoot, [{childElements}], objStorage, tmplStore[0], null, {liveBinderCount}, 0);");
             sb.AppendLine("}");
             sb.AppendLine();
 
@@ -70,6 +91,282 @@ namespace NScript.RazorSkin.CodeGen
             sb.AppendLine("}");
 
             return sb.ToString();
+        }
+
+        // --- @functions emission ---
+
+        private static void EmitFunctions(StringBuilder sb, List<FunctionNode> functions)
+        {
+            if (functions == null || functions.Count == 0) return;
+
+            foreach (var func in functions)
+            {
+                if (func.FunctionName == "functions_block") continue; // Skip raw block fallbacks
+
+                var jsBody = ConvertFunctionBodyToJs(func);
+
+                if (func.IsPure)
+                {
+                    // Pure function: standalone JS helper
+                    sb.AppendLine(jsBody);
+                }
+                else
+                {
+                    // Model-dependent: receives dc (dataContext) parameter
+                    sb.AppendLine(jsBody);
+                }
+                sb.AppendLine();
+            }
+        }
+
+        /// <summary>
+        /// Convert a C# function to JS. Uses simple text transformation
+        /// matching the ExpressionJsEmitter patterns.
+        /// </summary>
+        private static string ConvertFunctionBodyToJs(FunctionNode func)
+        {
+            var source = func.CSharpSource;
+
+            // Extract function signature and body
+            var parenIdx = source.IndexOf('(');
+            if (parenIdx < 0) return $"// Could not convert function: {func.FunctionName}";
+
+            // Find parameter list
+            var closeParenIdx = source.IndexOf(')', parenIdx);
+            if (closeParenIdx < 0) return $"// Could not convert function: {func.FunctionName}";
+
+            var paramStr = source.Substring(parenIdx + 1, closeParenIdx - parenIdx - 1).Trim();
+            var jsParams = ConvertParameterList(paramStr, func.IsPure);
+
+            // Check for expression-bodied method: => expr;
+            var arrowIdx = source.IndexOf("=>", closeParenIdx);
+            if (arrowIdx >= 0 && !source.Substring(closeParenIdx, arrowIdx - closeParenIdx).Contains("{"))
+            {
+                var exprBody = source.Substring(arrowIdx + 2).Trim().TrimEnd(';');
+                var jsExpr = ExpressionJsEmitter.ToJsGetter(exprBody);
+                return $"function {func.FunctionName}({jsParams}) {{ return {jsExpr}; }}";
+            }
+
+            // Block body: extract content between { }
+            var braceStart = source.IndexOf('{', closeParenIdx);
+            if (braceStart < 0) return $"// Could not convert function: {func.FunctionName}";
+
+            var braceEnd = source.LastIndexOf('}');
+            if (braceEnd <= braceStart) return $"// Could not convert function: {func.FunctionName}";
+
+            var body = source.Substring(braceStart + 1, braceEnd - braceStart - 1).Trim();
+            var jsBody = ConvertFunctionBody(body);
+
+            return $"function {func.FunctionName}({jsParams}) {{\n  {jsBody}\n}}";
+        }
+
+        private static string ConvertParameterList(string paramStr, bool isPure)
+        {
+            if (string.IsNullOrWhiteSpace(paramStr))
+                return isPure ? "" : "dc";
+
+            // Convert C# params: "decimal price, int qty" -> "price, qty"
+            var parts = paramStr.Split(',');
+            var jsParams = new List<string>();
+
+            if (!isPure)
+                jsParams.Add("dc");
+
+            foreach (var part in parts)
+            {
+                var tokens = part.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length >= 2)
+                    jsParams.Add(tokens[tokens.Length - 1]); // Last token is param name
+                else if (tokens.Length == 1)
+                    jsParams.Add(tokens[0]);
+            }
+
+            return string.Join(", ", jsParams);
+        }
+
+        private static string ConvertFunctionBody(string body)
+        {
+            // Simple conversion: replace Model. and Control. references, convert property accesses
+            var js = body;
+            js = ExpressionJsEmitter.ToJsGetter(js);
+            // Convert "return X;" to "return X;"
+            return js;
+        }
+
+        // --- Event collection and emission ---
+
+        private static List<EventNode> CollectEvents(List<IRNode> nodes)
+        {
+            var result = new List<EventNode>();
+            foreach (var node in nodes)
+            {
+                if (node is EventNode evt)
+                    result.Add(evt);
+                if (node is SubControlNode sub)
+                    result.AddRange(sub.EventBindings);
+                result.AddRange(CollectEvents(node.Children));
+            }
+            return result;
+        }
+
+        private static void EmitEventBinders(StringBuilder sb, List<EventNode> events)
+        {
+            if (events.Count == 0) return;
+
+            sb.AppendLine("  // Event handlers");
+            for (int i = 0; i < events.Count; i++)
+            {
+                var evt = events[i];
+                var jsHandler = ConvertEventHandler(evt);
+                sb.AppendLine($"  htmlRoot.querySelector('[data-event-{i}]').addEventListener('{evt.DomEventName}', {jsHandler});");
+            }
+        }
+
+        private static string ConvertEventHandler(EventNode evt)
+        {
+            if (evt.IsLambda)
+            {
+                // Lambda: @((evt) => Model.Cancel()) -> function(e) { dc.cancel(); }
+                var expr = evt.HandlerExpression.Trim();
+                // Extract lambda body: (params) => body
+                var arrowIdx = expr.IndexOf("=>");
+                if (arrowIdx >= 0)
+                {
+                    var body = expr.Substring(arrowIdx + 2).Trim();
+                    var jsBody = ExpressionJsEmitter.ToJsGetter(body);
+                    return $"function(e) {{ {jsBody}; }}";
+                }
+                return $"function(e) {{ {ExpressionJsEmitter.ToJsGetter(expr)}; }}";
+            }
+            else
+            {
+                // Method reference: @Model.OnSubmit -> function(e) { dc.get_onSubmit()(e); }
+                var jsGetter = ExpressionJsEmitter.ToJsGetter(evt.HandlerExpression);
+                return $"function(e) {{ {jsGetter}(e); }}";
+            }
+        }
+
+        // --- Reactive block collection and emission ---
+
+        private static List<ConditionalNode> CollectReactiveConditionals(List<IRNode> nodes)
+        {
+            var result = new List<ConditionalNode>();
+            foreach (var node in nodes)
+            {
+                if (node is ConditionalNode cond && cond.IsReactive)
+                    result.Add(cond);
+                result.AddRange(CollectReactiveConditionals(node.Children));
+            }
+            return result;
+        }
+
+        private static List<LoopNode> CollectReactiveLoops(List<IRNode> nodes)
+        {
+            var result = new List<LoopNode>();
+            foreach (var node in nodes)
+            {
+                if (node is LoopNode loop && loop.IsObservableCollection)
+                    result.Add(loop);
+                result.AddRange(CollectReactiveLoops(node.Children));
+            }
+            return result;
+        }
+
+        private static void EmitReactiveConditionalBinders(StringBuilder sb, List<ConditionalNode> conditionals)
+        {
+            if (conditionals.Count == 0) return;
+
+            sb.AppendLine("  // Reactive conditional binders");
+            for (int i = 0; i < conditionals.Count; i++)
+            {
+                var cond = conditionals[i];
+                var condJs = ExpressionJsEmitter.ToJsGetter(cond.Condition.CSharpExpression);
+
+                // Generate true branch template fragment
+                var trueBranchHtml = CollectHtml(cond.TrueBranch, new List<EventNode>());
+                var falseBranchHtml = cond.FalseBranch.Count > 0
+                    ? CollectHtml(cond.FalseBranch, new List<EventNode>())
+                    : "";
+
+                // Property names to watch
+                var propNames = string.Join(", ",
+                    cond.Condition.Dependencies.Select(d => $"\"{d.PropertyName}\""));
+
+                sb.AppendLine($"  ConditionalBinder_setup(htmlRoot, function(dc) {{ return {condJs}; }}, [{propNames}],");
+                sb.AppendLine($"    \"{EscapeJs(trueBranchHtml)}\",");
+                sb.AppendLine($"    \"{EscapeJs(falseBranchHtml)}\");");
+            }
+        }
+
+        private static void EmitReactiveLoopBinders(StringBuilder sb, List<LoopNode> loops)
+        {
+            if (loops.Count == 0) return;
+
+            sb.AppendLine("  // Reactive collection binders");
+            for (int i = 0; i < loops.Count; i++)
+            {
+                var loop = loops[i];
+                var collectionJs = ExpressionJsEmitter.ToJsGetter(loop.CollectionExpression);
+
+                // Generate item template fragment
+                var itemTemplateHtml = CollectHtml(loop.ItemTemplate, new List<EventNode>());
+
+                sb.AppendLine($"  CollectionBinder_setup(htmlRoot, function(dc) {{ return {collectionJs}; }},");
+                sb.AppendLine($"    \"{EscapeJs(itemTemplateHtml)}\");");
+            }
+        }
+
+        // --- Sub-control collection and emission ---
+
+        private static List<SubControlNode> CollectSubControls(List<IRNode> nodes)
+        {
+            var result = new List<SubControlNode>();
+            foreach (var node in nodes)
+            {
+                if (node is SubControlNode sub)
+                    result.Add(sub);
+                result.AddRange(CollectSubControls(node.Children));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Emit UIElement factory calls for sub-controls and return a comma-separated
+        /// list of child element indices for the SkinInstance_factory childElements parameter.
+        /// </summary>
+        private static string EmitSubControlFactoryCalls(StringBuilder sb, List<SubControlNode> subControls)
+        {
+            if (subControls.Count == 0) return "";
+
+            sb.AppendLine("  // Sub-control factory calls");
+            var childIndices = new List<string>();
+
+            for (int i = 0; i < subControls.Count; i++)
+            {
+                var sub = subControls[i];
+                var varName = $"child_{sub.TypeName}_{i}";
+
+                sb.AppendLine($"  var {varName} = {sub.TypeName}_factory(skinFactory);");
+
+                // Wire property bindings
+                foreach (var propBinding in sub.PropertyBindings)
+                {
+                    var jsValue = ExpressionJsEmitter.ToJsGetter(propBinding.Classification.CSharpExpression);
+                    var setterName = ExpressionJsEmitter.PropertyToSetterName(propBinding.PropertyName);
+                    sb.AppendLine($"  {varName}.{setterName}({jsValue});");
+                }
+
+                // Wire event bindings
+                foreach (var evt in sub.EventBindings)
+                {
+                    var jsHandler = ConvertEventHandler(evt);
+                    sb.AppendLine($"  {varName}.addEventListener('{evt.DomEventName}', {jsHandler});");
+                }
+
+                childIndices.Add(varName);
+            }
+
+            return string.Join(", ", childIndices);
         }
 
         private static List<ExpressionBindingNode> CollectBindings(List<IRNode> nodes)
@@ -84,7 +381,7 @@ namespace NScript.RazorSkin.CodeGen
             return result;
         }
 
-        private static string CollectHtml(List<IRNode> nodes)
+        private static string CollectHtml(List<IRNode> nodes, List<EventNode> eventTracker)
         {
             var sb = new StringBuilder();
             foreach (var node in nodes)
@@ -93,16 +390,27 @@ namespace NScript.RazorSkin.CodeGen
                     sb.Append(html.HtmlContent);
                 else if (node is ExpressionBindingNode)
                     sb.Append("<span></span>");
+                else if (node is EventNode evt)
+                {
+                    // Add a data attribute marker on the parent element for event wiring
+                    int eventIdx = eventTracker.IndexOf(evt);
+                    if (eventIdx < 0)
+                    {
+                        eventIdx = eventTracker.Count;
+                        // Don't add — it's already tracked in the main events list
+                    }
+                    sb.Append($" data-event-{eventIdx}=\"\"");
+                }
                 else if (node is ConditionalNode cond)
                 {
                     // Emit a placeholder container for the conditional block
                     sb.Append("<span>");
-                    sb.Append(CollectHtml(cond.TrueBranch));
+                    sb.Append(CollectHtml(cond.TrueBranch, eventTracker));
                     sb.Append("</span>");
                     if (cond.FalseBranch.Count > 0)
                     {
                         sb.Append("<span>");
-                        sb.Append(CollectHtml(cond.FalseBranch));
+                        sb.Append(CollectHtml(cond.FalseBranch, eventTracker));
                         sb.Append("</span>");
                     }
                 }
@@ -110,13 +418,18 @@ namespace NScript.RazorSkin.CodeGen
                 {
                     // Emit a placeholder container for the loop items
                     sb.Append("<span>");
-                    sb.Append(CollectHtml(loop.ItemTemplate));
+                    sb.Append(CollectHtml(loop.ItemTemplate, eventTracker));
                     sb.Append("</span>");
+                }
+                else if (node is SubControlNode)
+                {
+                    // Sub-controls are handled separately, emit a placeholder
+                    sb.Append("<span></span>");
                 }
                 else
                 {
                     // Recurse into any other node's children
-                    sb.Append(CollectHtml(node.Children));
+                    sb.Append(CollectHtml(node.Children, eventTracker));
                 }
             }
             return sb.ToString();

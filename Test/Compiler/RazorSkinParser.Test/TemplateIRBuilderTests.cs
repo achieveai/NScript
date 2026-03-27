@@ -52,6 +52,27 @@ namespace RazorSkinParser.Test
             ir.Functions.First().FunctionName.Should().Be("Fmt");
         }
 
+        [TestMethod]
+        public void SubControlDetectedFromPascalCaseTag()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div><ListView id=\"myList\" ItemCssClassName=\"item\" /></div>");
+
+            ir.Children.OfType<SubControlNode>().Should().NotBeEmpty();
+            var sub = ir.Children.OfType<SubControlNode>().First();
+            sub.TypeName.Should().Be("ListView");
+            sub.ElementId.Should().Be("myList");
+        }
+
+        [TestMethod]
+        public void SubControlPropertyBindingsExtracted()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div><SearchBox Query=\"Model.Query\" /></div>");
+
+            var sub = ir.Children.OfType<SubControlNode>().FirstOrDefault();
+            sub.Should().NotBeNull();
+            sub.PropertyBindings.Should().Contain(p => p.PropertyName == "Query");
+        }
+
         private SkinTemplateNode BuildIR(string template)
         {
             var preprocessed = RazorSkinPreprocessor.Process(template);

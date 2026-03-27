@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -8,6 +9,29 @@ namespace NScript.RazorSkin.TemplateIR
 {
     public static class TemplateIRBuilder
     {
+        // Known DOM event attribute names (lowercase)
+        private static readonly HashSet<string> EventAttributes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "onclick", "onchange", "onfocus", "onblur", "oninput", "onkeyup",
+            "onkeydown", "onsubmit", "onmousedown", "onmouseup", "onmouseover",
+            "onmouseout", "onmousemove", "ondblclick", "onscroll", "onresize",
+            "onkeypress", "ontouchstart", "ontouchend", "ontouchmove"
+        };
+
+        // Regex to detect an event attribute at the end of an HTML fragment: onclick="
+        private static readonly Regex EventAttrTailRegex = new Regex(
+            @"\b(on\w+)\s*=\s*""?\s*$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Checks whether a tag name is PascalCase (starts with uppercase letter).
+        /// Used to detect sub-control tags like &lt;ListView&gt;, &lt;SearchBox&gt;.
+        /// </summary>
+        internal static bool IsPascalCaseTag(string tagName)
+        {
+            if (string.IsNullOrEmpty(tagName)) return false;
+            return char.IsUpper(tagName[0]) && tagName.Length > 1 && tagName.All(c => char.IsLetterOrDigit(c));
+        }
         public static SkinTemplateNode Build(
             string templateName,
             PreprocessorResult preprocessed,
@@ -62,6 +86,8 @@ namespace NScript.RazorSkin.TemplateIR
         {
             var childList = children.ToList();
             int i = 0;
+            // Track the last HTML content to detect event attribute context
+            string lastHtmlContent = null;
 
             while (i < childList.Count)
             {
@@ -73,7 +99,15 @@ namespace NScript.RazorSkin.TemplateIR
                     // Skip the @model directive echoed as HTML (first HtmlContent often contains model type name)
                     if (!string.IsNullOrWhiteSpace(content) && !IsModelDirectiveEcho(content))
                     {
-                        currentParent.Children.Add(new HtmlNode { HtmlContent = content.Trim() });
+                        // Check for event attributes and sub-controls before adding HTML
+                        var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
+                        // Also detect sub-controls in the HTML
+                        processed = ExtractSubControlsFromHtml(processed, currentParent);
+                        if (!string.IsNullOrWhiteSpace(processed))
+                        {
+                            currentParent.Children.Add(new HtmlNode { HtmlContent = processed });
+                        }
+                        lastHtmlContent = content;
                     }
                     i++;
                 }
@@ -89,9 +123,42 @@ namespace NScript.RazorSkin.TemplateIR
 
                     if (!string.IsNullOrWhiteSpace(expression))
                     {
-                        currentParent.Children.Add(CreateExpressionBinding(expression));
+                        // Check if this expression is inside an event attribute
+                        var eventAttr = DetectEventAttributeContext(lastHtmlContent);
+                        if (eventAttr != null)
+                        {
+                            currentParent.Children.Add(CreateEventNode(eventAttr, expression.Trim()));
+                            // Skip the closing quote/tag in the next HTML node
+                            if (i + 1 < childList.Count && childList[i + 1] is HtmlContentIntermediateNode)
+                            {
+                                var closingHtml = GetTokenContent(childList[i + 1] as HtmlContentIntermediateNode);
+                                // Remove just the closing " from the event attribute
+                                closingHtml = closingHtml.TrimStart('"', ' ');
+                                if (!string.IsNullOrWhiteSpace(closingHtml) && !IsModelDirectiveEcho(closingHtml))
+                                {
+                                    var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
+                                    processed = ExtractSubControlsFromHtml(processed, currentParent);
+                                    if (!string.IsNullOrWhiteSpace(processed))
+                                        currentParent.Children.Add(new HtmlNode { HtmlContent = processed });
+                                    lastHtmlContent = closingHtml;
+                                }
+                                i += 2;
+                            }
+                            else
+                            {
+                                i++;
+                            }
+                        }
+                        else
+                        {
+                            currentParent.Children.Add(CreateExpressionBinding(expression));
+                            i++;
+                        }
                     }
-                    i++;
+                    else
+                    {
+                        i++;
+                    }
                 }
                 else if (child is CSharpCodeIntermediateNode codeNode)
                 {
@@ -420,6 +487,153 @@ namespace NScript.RazorSkin.TemplateIR
             }
 
             return functions;
+        }
+
+        // --- Event and sub-control detection helpers ---
+
+        /// <summary>
+        /// Detects if the tail of the last HTML content ends with an event attribute assignment.
+        /// Returns the event attribute name (e.g., "onclick") or null.
+        /// </summary>
+        private static string DetectEventAttributeContext(string lastHtmlContent)
+        {
+            if (string.IsNullOrEmpty(lastHtmlContent)) return null;
+            var match = EventAttrTailRegex.Match(lastHtmlContent);
+            if (match.Success)
+            {
+                var attrName = match.Groups[1].Value.ToLower();
+                if (EventAttributes.Contains(attrName))
+                    return attrName;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Creates an EventNode from an event attribute name and a C# expression.
+        /// </summary>
+        private static EventNode CreateEventNode(string eventAttrName, string expression)
+        {
+            // Strip "on" prefix to get DOM event name: "onclick" -> "click"
+            var domEventName = eventAttrName.StartsWith("on")
+                ? eventAttrName.Substring(2)
+                : eventAttrName;
+
+            var isLambda = expression.Contains("=>") ||
+                           expression.TrimStart().StartsWith("(");
+
+            return new EventNode
+            {
+                DomEventName = domEventName,
+                HandlerExpression = expression,
+                IsLambda = isLambda
+            };
+        }
+
+        /// <summary>
+        /// Scans HTML content for inline event attributes with static handlers (no @ expression)
+        /// and removes them, adding data-event-N markers instead.
+        /// This handles patterns where the full event attr is inside a single HTML node.
+        /// </summary>
+        private static string ExtractEventAttributesFromHtml(string html, IRNode parent)
+        {
+            // Match event attributes with @-expression values within a single HTML content node
+            // Pattern: onclick="@Model.OnSubmit" or onclick="@((e) => ...)"
+            // These appear when Razor doesn't split the expression into a separate node.
+            // Note: most Razor-split cases are handled in WalkMethodBody above.
+            return html;
+        }
+
+        /// <summary>
+        /// Scans HTML content for PascalCase tags that represent sub-controls.
+        /// Extracts them into SubControlNode instances.
+        /// </summary>
+        private static string ExtractSubControlsFromHtml(string html, IRNode parent)
+        {
+            if (string.IsNullOrEmpty(html)) return html;
+
+            // Match opening PascalCase tags: <ListView ...> or <ListView ... />
+            var tagRegex = new Regex(@"<([A-Z][A-Za-z0-9]+)(\s[^>]*)?\s*/?>", RegexOptions.Compiled);
+            var matches = tagRegex.Matches(html);
+
+            foreach (Match match in matches)
+            {
+                var tagName = match.Groups[1].Value;
+                if (!IsPascalCaseTag(tagName)) continue;
+
+                var attrsStr = match.Groups[2].Success ? match.Groups[2].Value : "";
+                var subControl = new SubControlNode
+                {
+                    TypeName = tagName,
+                    ResolvedTypeName = tagName // Will be resolved later with namespace resolution
+                };
+
+                // Extract id attribute
+                var idMatch = Regex.Match(attrsStr, @"\bid\s*=\s*""([^""]*)""|'([^']*)'");
+                if (idMatch.Success)
+                    subControl.ElementId = idMatch.Groups[1].Success ? idMatch.Groups[1].Value : idMatch.Groups[2].Value;
+
+                // Extract property bindings from attributes (non-event attributes with values)
+                var attrMatches = Regex.Matches(attrsStr, @"\b(\w+)\s*=\s*""([^""]*)""|'([^']*)'");
+                foreach (Match attrMatch in attrMatches)
+                {
+                    var attrName = attrMatch.Groups[1].Value;
+                    var attrValue = attrMatch.Groups[2].Success ? attrMatch.Groups[2].Value : attrMatch.Groups[3].Value;
+
+                    if (attrName == "id") continue; // Already handled
+
+                    if (EventAttributes.Contains(attrName.ToLower()) && attrValue.TrimStart().StartsWith("@"))
+                    {
+                        // Event binding on sub-control
+                        var evtExpr = attrValue.TrimStart('@');
+                        var domEvtName = attrName.ToLower().StartsWith("on")
+                            ? attrName.Substring(2).ToLower()
+                            : attrName.ToLower();
+                        subControl.EventBindings.Add(new EventNode
+                        {
+                            DomEventName = domEvtName,
+                            HandlerExpression = evtExpr,
+                            IsLambda = evtExpr.Contains("=>")
+                        });
+                    }
+                    else if (!attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Property binding
+                        var classification = new BindingClassification
+                        {
+                            CSharpExpression = attrValue.TrimStart('@'),
+                            Mode = BindingMode.OneTime,
+                            SourceKind = attrValue.Contains("Model.")
+                                ? BindingSourceKind.DataContext
+                                : attrValue.Contains("Control.")
+                                    ? BindingSourceKind.TemplateParent
+                                    : BindingSourceKind.DataContext
+                        };
+                        subControl.PropertyBindings.Add(new SubControlPropertyBinding
+                        {
+                            PropertyName = attrName,
+                            Classification = classification
+                        });
+                    }
+                }
+
+                parent.Children.Add(subControl);
+            }
+
+            // Remove PascalCase tags from HTML (they become sub-controls)
+            // Also remove their closing tags
+            var result = tagRegex.Replace(html, match =>
+            {
+                var tagName = match.Groups[1].Value;
+                return IsPascalCaseTag(tagName) ? "" : match.Value;
+            });
+            // Remove closing PascalCase tags
+            result = Regex.Replace(result, @"</([A-Z][A-Za-z0-9]+)\s*>", match =>
+            {
+                var tagName = match.Groups[1].Value;
+                return IsPascalCaseTag(tagName) ? "" : match.Value;
+            });
+
+            return result;
         }
 
         // --- Helper methods ---

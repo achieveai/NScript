@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using NScript.Converter;
     using NScript.Converter.Plugins;
+    using NScript.RazorSkin;
     using XwmlParser;
 
     public static class NScriptCompiler
@@ -22,7 +23,7 @@
             var plugins = new List<IConverterPlugin>()
             {
                 new XwmlTemplatingPlugin(),
-                // new RazorTemplatingPlugin(), // TODO: Implement IConverterPlugin interfaces
+                new RazorTemplatingPlugin(),
                 new TestGenerator()
             };
 
