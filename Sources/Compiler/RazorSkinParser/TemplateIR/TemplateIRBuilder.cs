@@ -142,7 +142,9 @@ namespace NScript.RazorSkin.TemplateIR
                     Mode = BindingMode.OneTime,
                     SourceKind = condExpr.Contains("Model.")
                         ? BindingSourceKind.DataContext
-                        : BindingSourceKind.DataContext
+                        : condExpr.Contains("Control.")
+                            ? BindingSourceKind.TemplateParent
+                            : BindingSourceKind.DataContext
                 },
                 IsReactive = false
             };
@@ -170,6 +172,24 @@ namespace NScript.RazorSkin.TemplateIR
                         // Switch to else branch
                         inElseBranch = true;
                         i++;
+                        continue;
+                    }
+                    else if (codeContent.StartsWith("if ") || codeContent.StartsWith("if("))
+                    {
+                        // Nested @if block
+                        var targetBranchNested = inElseBranch ? conditional.FalseBranch : conditional.TrueBranch;
+                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        i = ParseIfBlock(nodes, i, dummyParent);
+                        targetBranchNested.AddRange(dummyParent.Children);
+                        continue;
+                    }
+                    else if (codeContent.StartsWith("foreach ") || codeContent.StartsWith("foreach("))
+                    {
+                        // Nested @foreach block
+                        var targetBranchNested = inElseBranch ? conditional.FalseBranch : conditional.TrueBranch;
+                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        i = ParseForeachBlock(nodes, i, dummyParent);
+                        targetBranchNested.AddRange(dummyParent.Children);
                         continue;
                     }
                     else
@@ -227,7 +247,9 @@ namespace NScript.RazorSkin.TemplateIR
                 IsObservableCollection = false,
                 CollectionSourceKind = foreachParts.Item2.Contains("Model.")
                     ? BindingSourceKind.DataContext
-                    : BindingSourceKind.DataContext
+                    : foreachParts.Item2.Contains("Control.")
+                        ? BindingSourceKind.TemplateParent
+                        : BindingSourceKind.DataContext
             };
 
             int i = startIndex + 1;
@@ -244,6 +266,22 @@ namespace NScript.RazorSkin.TemplateIR
                     {
                         i++;
                         break;
+                    }
+                    else if (codeContent.StartsWith("if ") || codeContent.StartsWith("if("))
+                    {
+                        // Nested @if block inside foreach
+                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        i = ParseIfBlock(nodes, i, dummyParent);
+                        loop.ItemTemplate.AddRange(dummyParent.Children);
+                        continue;
+                    }
+                    else if (codeContent.StartsWith("foreach ") || codeContent.StartsWith("foreach("))
+                    {
+                        // Nested @foreach block inside foreach
+                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        i = ParseForeachBlock(nodes, i, dummyParent);
+                        loop.ItemTemplate.AddRange(dummyParent.Children);
+                        continue;
                     }
                     i++;
                     continue;
@@ -293,36 +331,81 @@ namespace NScript.RazorSkin.TemplateIR
             if (string.IsNullOrWhiteSpace(content))
                 return functions;
 
-            // Parse individual method declarations from the functions block
-            // For a more robust approach, we could use Roslyn to parse, but for now
-            // we do simple extraction looking for method-like patterns
             var trimmed = content.Trim();
 
-            // Try to extract method names using simple heuristic:
-            // Look for patterns like "type MethodName("
+            // Find method boundaries using brace-matching.
+            // We scan for lines that look like method signatures ("type Name("),
+            // then track braces to find where each method body ends.
             var lines = trimmed.Split('\n');
-            foreach (var line in lines)
+            int methodStartLine = -1;
+            string currentMethodName = null;
+            int braceDepth = 0;
+            bool inMethod = false;
+            var methodLines = new List<string>();
+
+            for (int li = 0; li < lines.Length; li++)
             {
-                var l = line.Trim();
-                // Match patterns like: string Fmt(int x) or public void DoThing()
-                var parenIdx = l.IndexOf('(');
-                if (parenIdx > 0)
+                var l = lines[li].Trim();
+
+                if (!inMethod)
                 {
-                    var beforeParen = l.Substring(0, parenIdx).Trim();
-                    var parts = beforeParen.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length >= 2)
+                    // Look for a method signature
+                    var parenIdx = l.IndexOf('(');
+                    if (parenIdx > 0)
                     {
-                        var methodName = parts[parts.Length - 1];
-                        functions.Add(new FunctionNode
+                        var beforeParen = l.Substring(0, parenIdx).Trim();
+                        var parts = beforeParen.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length >= 2)
                         {
-                            FunctionName = methodName,
-                            CSharpSource = trimmed,
-                            IsPure = !trimmed.Contains("Model.") && !trimmed.Contains("Control.")
-                        });
-                        // For now, create one FunctionNode per detected method
-                        // The full source is shared since we can't reliably split multi-method blocks
+                            currentMethodName = parts[parts.Length - 1];
+                            methodStartLine = li;
+                            inMethod = true;
+                            braceDepth = 0;
+                            methodLines.Clear();
+                        }
                     }
                 }
+
+                if (inMethod)
+                {
+                    methodLines.Add(lines[li]);
+
+                    // Count braces in this line
+                    foreach (var ch in l)
+                    {
+                        if (ch == '{') braceDepth++;
+                        else if (ch == '}') braceDepth--;
+                    }
+
+                    // Expression-bodied method (=>) on a single line with semicolon
+                    bool isExpressionBody = methodStartLine == li && l.Contains("=>") && l.EndsWith(";");
+
+                    if ((braceDepth == 0 && li > methodStartLine) || isExpressionBody)
+                    {
+                        var methodSource = string.Join("\n", methodLines).Trim();
+                        functions.Add(new FunctionNode
+                        {
+                            FunctionName = currentMethodName,
+                            CSharpSource = methodSource,
+                            IsPure = !methodSource.Contains("Model.") && !methodSource.Contains("Control.")
+                        });
+                        inMethod = false;
+                        currentMethodName = null;
+                        methodLines.Clear();
+                    }
+                }
+            }
+
+            // If we were still tracking a method (unclosed braces), add what we have
+            if (inMethod && currentMethodName != null)
+            {
+                var methodSource = string.Join("\n", methodLines).Trim();
+                functions.Add(new FunctionNode
+                {
+                    FunctionName = currentMethodName,
+                    CSharpSource = methodSource,
+                    IsPure = !methodSource.Contains("Model.") && !methodSource.Contains("Control.")
+                });
             }
 
             // Fallback: if no methods found, add the whole block
@@ -353,25 +436,50 @@ namespace NScript.RazorSkin.TemplateIR
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Checks if a text content node is just the Razor echo of the @model directive type name.
+        /// Only filters text that exactly matches a valid C# type identifier (with optional namespace dots).
+        /// </summary>
         private static bool IsModelDirectiveEcho(string content)
         {
-            // The Razor IR echoes the @model directive type name as HTML content
             var trimmed = content.Trim();
-            // If the content is just the model type name (e.g., " TestVM\n\n"),
-            // it's the model directive echo
-            return !trimmed.Contains('<') && !trimmed.Contains('>') && !trimmed.Contains('@')
-                && trimmed.Split('\n', StringSplitOptions.RemoveEmptyEntries).All(
-                    l => l.Trim().All(c => char.IsLetterOrDigit(c) || c == '.' || c == '_'));
+            if (string.IsNullOrEmpty(trimmed))
+                return false;
+
+            // Only match a single token that looks like a type name:
+            // e.g. "TestVM" or "MyApp.ViewModels.OrderVM"
+            // Must not contain spaces, HTML tags, or any content beyond an identifier.
+            var lines = trimmed.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            if (lines.Length != 1)
+                return false;
+
+            var singleLine = lines[0].Trim();
+            // Must look like a fully qualified type name: only letters, digits, dots, underscores
+            // and must start with a letter or underscore (not a digit or punctuation)
+            if (singleLine.Length == 0 || !(char.IsLetter(singleLine[0]) || singleLine[0] == '_'))
+                return false;
+
+            return singleLine.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '_');
         }
 
         private static string ExtractConditionExpression(string ifContent)
         {
             if (ifContent == null) return "";
             var start = ifContent.IndexOf('(');
-            var end = ifContent.IndexOf(')');
-            if (start >= 0 && end > start)
-                return ifContent.Substring(start + 1, end - start - 1).Trim();
-            return ifContent;
+            if (start < 0) return ifContent;
+
+            // Use paren-matching to find the correct closing paren
+            int depth = 0;
+            for (int pos = start; pos < ifContent.Length; pos++)
+            {
+                if (ifContent[pos] == '(') depth++;
+                else if (ifContent[pos] == ')') depth--;
+                if (depth == 0)
+                    return ifContent.Substring(start + 1, pos - start - 1).Trim();
+            }
+
+            // Fallback: no matching close paren found
+            return ifContent.Substring(start + 1).Trim();
         }
 
         private static Tuple<string, string> ExtractForeachParts(string content)
