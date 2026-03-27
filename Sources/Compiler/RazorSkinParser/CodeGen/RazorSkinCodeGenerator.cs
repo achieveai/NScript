@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NScript.RazorSkin.TemplateIR;
+using Serilog;
 
 namespace NScript.RazorSkin.CodeGen
 {
     public static class RazorSkinCodeGenerator
     {
+        private static ILogger Log => RazorSkinCompiler.Logger;
+
         public static string Generate(SkinTemplateNode ir)
         {
             var sb = new StringBuilder();
@@ -119,7 +122,11 @@ namespace NScript.RazorSkin.CodeGen
             sb.AppendLine($"  return {ir.TemplateName}_var;");
             sb.AppendLine("}");
 
-            return sb.ToString();
+            var jsOutput = sb.ToString();
+            Log.Debug("Code generation produced JS of length {JsLength}, {BindingCount} bindings, {EventCount} events",
+                jsOutput.Length, bindings.Count, events.Count);
+
+            return jsOutput;
         }
 
         // --- @functions emission ---

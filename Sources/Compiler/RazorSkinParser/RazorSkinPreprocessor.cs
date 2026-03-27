@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Serilog;
 
 namespace NScript.RazorSkin
 {
@@ -14,6 +15,8 @@ namespace NScript.RazorSkin
 
     public static class RazorSkinPreprocessor
     {
+        private static ILogger Log => RazorSkinCompiler.Logger;
+
         private const string DefaultControlType = "Sunlight.Framework.UI.UISkinableElement";
 
         public static PreprocessorResult Process(string templateSource)
@@ -61,6 +64,10 @@ namespace NScript.RazorSkin
             }
 
             result.CleanedTemplate = cleanedLines.ToString().TrimEnd('\r', '\n');
+
+            Log.Verbose("Preprocessor extracted directives: @model={ModelType}, @control={ControlType}, @using count={UsingCount}",
+                result.ModelTypeName, result.ControlTypeName, result.UsingNamespaces.Count);
+
             return result;
         }
     }

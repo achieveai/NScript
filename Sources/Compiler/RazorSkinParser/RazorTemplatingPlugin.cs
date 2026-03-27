@@ -8,6 +8,7 @@ using NScript.Converter;
 using NScript.Converter.TypeSystemConverter;
 using NScript.JST;
 using NScript.RazorSkin.CodeGen;
+using Serilog;
 
 namespace NScript.RazorSkin
 {
@@ -18,6 +19,8 @@ namespace NScript.RazorSkin
     /// </summary>
     public class RazorTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
+        private static ILogger Log => RazorSkinCompiler.Logger;
+
         private RuntimeScopeManager _runtimeScopeManager;
         private ClrContext _clrContext;
 
@@ -87,6 +90,9 @@ namespace Sunlight.Framework.Observables
 
                     if (fileName != null && CanHandle(fileName))
                     {
+                        Log.Debug("Discovered .skin.cshtml resource {ResourceName} (size {ResourceSize} bytes)",
+                            embeddedResource.Name, embeddedResource.GetResourceStream().Length);
+
                         try
                         {
                             using var stream = embeddedResource.GetResourceStream();
@@ -101,9 +107,15 @@ namespace Sunlight.Framework.Observables
                                 new[] { FrameworkTypeStubs });
                             _compiledTemplates[templateName] = js;
                             _hasRazorTemplates = true;
+
+                            Log.Debug("Compilation succeeded for template {TemplateName} from resource {ResourceName}",
+                                templateName, embeddedResource.Name);
                         }
                         catch (Exception ex)
                         {
+                            Log.Debug("Compilation failed for resource {ResourceName}: {ErrorMessage}",
+                                embeddedResource.Name, ex.Message);
+
                             runtimeScopeManager.Context.AddError(
                                 null,
                                 $"Error compiling Razor skin template '{fileName}': {ex.Message}",
@@ -125,6 +137,8 @@ namespace Sunlight.Framework.Observables
             MethodDefinition methodDefinition,
             ConverterContext converterContext)
         {
+            Log.Verbose("Checking interest level for method {MethodName}", methodDefinition.FullName);
+
             // Check if this is a [Skin("...")] property getter where the template
             // name corresponds to a compiled .skin.cshtml template
             PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
@@ -143,6 +157,8 @@ namespace Sunlight.Framework.Observables
                 var templateName = skinAttr.ConstructorArguments[0].Value as string;
                 if (templateName != null && _compiledTemplates.ContainsKey(templateName))
                 {
+                    Log.Debug("[Skin] match found for method {MethodName} with template {TemplateName}",
+                        methodDefinition.FullName, templateName);
                     return IntrestLevel.Overwrite;
                 }
             }
@@ -172,6 +188,8 @@ namespace Sunlight.Framework.Observables
             {
                 return null;
             }
+
+            Log.Debug("Resolved template {TemplateName} for overwrite", templateName);
 
             // Return a call to the template getter function
             // This mirrors what XwmlTemplatingPlugin does: return SkinTemplateName();
@@ -215,10 +233,16 @@ namespace Sunlight.Framework.Observables
                 return new List<Statement>();
 
             var statements = new List<Statement>();
+            var totalSize = 0;
             foreach (var kvp in _compiledTemplates)
             {
                 statements.Add(new RawJavaScriptStatement(kvp.Value));
+                totalSize += kvp.Value.Length;
             }
+
+            Log.Debug("GetPostJavascript emitting {TemplateCount} templates, total JS size {TotalJsSize} chars",
+                _compiledTemplates.Count, totalSize);
+
             return statements;
         }
     }

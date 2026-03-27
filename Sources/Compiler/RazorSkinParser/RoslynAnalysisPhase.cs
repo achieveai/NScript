@@ -5,11 +5,14 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NScript.RazorSkin.TemplateIR;
+using Serilog;
 
 namespace NScript.RazorSkin
 {
     public static class RoslynAnalysisPhase
     {
+        private static ILogger Log => RazorSkinCompiler.Logger;
+
         // Cache metadata references since they are expensive to create and
         // don't change between invocations. Uses Lazy<T> for thread safety.
         private static readonly Lazy<MetadataReference[]> _cachedReferences =
@@ -69,6 +72,10 @@ namespace NScript.RazorSkin
             var controlType = !string.IsNullOrEmpty(ir.ControlTypeName)
                 ? ResolveModelType(ir.ControlTypeName, compilation) : null;
 
+            Log.Debug("Model type {ModelTypeName} resolved: {ModelFound}, Control type {ControlTypeName} resolved: {ControlFound}",
+                ir.ModelTypeName, modelType != null,
+                ir.ControlTypeName, controlType != null);
+
             // Walk all IR nodes and refine classifications
             RefineNodes(ir.Children, modelType, controlType, compilation, semanticModel);
 
@@ -77,6 +84,10 @@ namespace NScript.RazorSkin
 
             // Refine conditional nodes
             RefineConditionalNodes(ir.Children, modelType, controlType);
+
+            // Count promotions (OneTime -> OneWay)
+            var promotionCount = CountPromotions(ir.Children);
+            Log.Debug("Binding refinement complete: {PromotionCount} bindings promoted from OneTime to OneWay", promotionCount);
         }
 
         private static void RefineNodes(
@@ -230,6 +241,27 @@ namespace NScript.RazorSkin
 
                 RefineConditionalNodes(node.Children, modelType, controlType);
             }
+        }
+
+        private static int CountPromotions(List<IRNode> nodes)
+        {
+            int count = 0;
+            foreach (var node in nodes)
+            {
+                if (node is ExpressionBindingNode binding && binding.Classification.Mode == BindingMode.OneWay)
+                    count++;
+                count += CountPromotions(node.Children);
+                if (node is ConditionalNode cond)
+                {
+                    count += CountPromotions(cond.TrueBranch);
+                    count += CountPromotions(cond.FalseBranch);
+                }
+                else if (node is LoopNode loop)
+                {
+                    count += CountPromotions(loop.ItemTemplate);
+                }
+            }
+            return count;
         }
 
         private static INamedTypeSymbol ResolveModelType(

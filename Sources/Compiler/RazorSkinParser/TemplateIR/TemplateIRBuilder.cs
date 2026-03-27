@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Serilog;
 
 namespace NScript.RazorSkin.TemplateIR
 {
     public static class TemplateIRBuilder
     {
+        private static ILogger Log => RazorSkinCompiler.Logger;
+
         // Known DOM event attribute names (lowercase)
         private static readonly HashSet<string> EventAttributes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -109,7 +112,39 @@ namespace NScript.RazorSkin.TemplateIR
             // Walk the flat sequence of children in the method body
             WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName);
 
+            // Count IR nodes by type
+            var htmlCount = CountNodes<HtmlNode>(root.Children);
+            var bindingCount = CountNodes<ExpressionBindingNode>(root.Children);
+            var eventCount = CountNodes<EventNode>(root.Children);
+            var conditionalCount = CountNodes<ConditionalNode>(root.Children);
+            var loopCount = CountNodes<LoopNode>(root.Children);
+            var subControlCount = CountNodes<SubControlNode>(root.Children);
+            var functionCount = root.Functions.Count;
+
+            Log.Debug("IR built: {HtmlNodes} html, {BindingNodes} bindings, {EventNodes} events, {ConditionalNodes} conditionals, {LoopNodes} loops, {SubControlNodes} sub-controls, {FunctionNodes} functions",
+                htmlCount, bindingCount, eventCount, conditionalCount, loopCount, subControlCount, functionCount);
+
             return root;
+        }
+
+        private static int CountNodes<T>(List<IRNode> nodes) where T : IRNode
+        {
+            int count = 0;
+            foreach (var node in nodes)
+            {
+                if (node is T) count++;
+                count += CountNodes<T>(node.Children);
+                if (node is ConditionalNode cond)
+                {
+                    count += CountNodes<T>(cond.TrueBranch);
+                    count += CountNodes<T>(cond.FalseBranch);
+                }
+                else if (node is LoopNode loop)
+                {
+                    count += CountNodes<T>(loop.ItemTemplate);
+                }
+            }
+            return count;
         }
 
         private static void WalkMethodBody(
