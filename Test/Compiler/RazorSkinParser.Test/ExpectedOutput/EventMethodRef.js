@@ -5,7 +5,7 @@ function EventMethodRef_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = "TestVM\n\n<button>Submit</button>";
+    domStore[0].innerHTML = "<button>Submit</button>";
     EventMethodRef_tmplStore[0] = EventMethodRef_tmplStore[0] ? EventMethodRef_tmplStore[0] : [];
   }
   htmlRoot = domStore[0].cloneNode(true);

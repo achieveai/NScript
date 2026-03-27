@@ -5,7 +5,7 @@ function AttributeBinding_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = "TestVM\n\n<div>Hello</div>";
+    domStore[0].innerHTML = "<div>Hello</div>";
     AttributeBinding_tmplStore[0] = AttributeBinding_tmplStore[0] ? AttributeBinding_tmplStore[0] : [];
   }
   htmlRoot = domStore[0].cloneNode(true);

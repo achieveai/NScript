@@ -107,14 +107,15 @@ namespace NScript.RazorSkin.TemplateIR
                 return root;
 
             // Walk the flat sequence of children in the method body
-            WalkMethodBody(methodNode.Children, root);
+            WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName);
 
             return root;
         }
 
         private static void WalkMethodBody(
             IntermediateNodeCollection children,
-            IRNode currentParent)
+            IRNode currentParent,
+            string modelTypeName = null)
         {
             var childList = children.ToList();
             int i = 0;
@@ -128,8 +129,9 @@ namespace NScript.RazorSkin.TemplateIR
                 if (child is HtmlContentIntermediateNode htmlNode)
                 {
                     var content = GetTokenContent(htmlNode);
-                    // Skip the @model directive echoed as HTML (first HtmlContent often contains model type name)
-                    if (!string.IsNullOrWhiteSpace(content) && !IsModelDirectiveEcho(content))
+                    // Strip the @model directive type name if Razor echoed it into the HTML
+                    content = StripModelDirectiveEcho(content, modelTypeName);
+                    if (!string.IsNullOrWhiteSpace(content))
                     {
                         // Check for event attributes and sub-controls before adding HTML
                         var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
@@ -166,7 +168,8 @@ namespace NScript.RazorSkin.TemplateIR
                                 var closingHtml = GetTokenContent(childList[i + 1] as HtmlContentIntermediateNode);
                                 // Remove just the closing " from the event attribute
                                 closingHtml = closingHtml.TrimStart('"', ' ');
-                                if (!string.IsNullOrWhiteSpace(closingHtml) && !IsModelDirectiveEcho(closingHtml))
+                                closingHtml = StripModelDirectiveEcho(closingHtml, modelTypeName);
+                                if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
                                     var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
                                     processed = ExtractSubControlsFromHtml(processed, currentParent);
@@ -681,29 +684,36 @@ namespace NScript.RazorSkin.TemplateIR
         }
 
         /// <summary>
-        /// Checks if a text content node is just the Razor echo of the @model directive type name.
-        /// Only filters text that exactly matches a valid C# type identifier (with optional namespace dots).
+        /// Strips the Razor-echoed @model type name from the beginning of HTML content.
+        /// Razor emits the model type name as a text node at the start of the template.
+        /// This may appear as its own node or combined with subsequent HTML in the same node.
+        /// Returns the content with the type name prefix removed.
         /// </summary>
-        private static bool IsModelDirectiveEcho(string content)
+        private static string StripModelDirectiveEcho(string content, string modelTypeName)
         {
-            var trimmed = content.Trim();
-            if (string.IsNullOrEmpty(trimmed))
-                return false;
+            if (string.IsNullOrEmpty(modelTypeName) || string.IsNullOrEmpty(content))
+                return content;
 
-            // Only match a single token that looks like a type name:
-            // e.g. "TestVM" or "MyApp.ViewModels.OrderVM"
-            // Must not contain spaces, HTML tags, or any content beyond an identifier.
-            var lines = trimmed.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length != 1)
-                return false;
+            var trimmed = content.TrimStart();
+            // Check if content starts with the model type name
+            if (trimmed.StartsWith(modelTypeName))
+            {
+                // Strip the type name and any trailing whitespace/newlines
+                var remainder = trimmed.Substring(modelTypeName.Length).TrimStart('\r', '\n');
+                return remainder;
+            }
 
-            var singleLine = lines[0].Trim();
-            // Must look like a fully qualified type name: only letters, digits, dots, underscores
-            // and must start with a letter or underscore (not a digit or punctuation)
-            if (singleLine.Length == 0 || !(char.IsLetter(singleLine[0]) || singleLine[0] == '_'))
-                return false;
+            // Also check short name (last segment after dots)
+            var shortName = modelTypeName.Contains(".")
+                ? modelTypeName.Substring(modelTypeName.LastIndexOf('.') + 1)
+                : null;
+            if (shortName != null && trimmed.StartsWith(shortName))
+            {
+                var remainder = trimmed.Substring(shortName.Length).TrimStart('\r', '\n');
+                return remainder;
+            }
 
-            return singleLine.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '_');
+            return content;
         }
 
         private static string ExtractConditionExpression(string ifContent)

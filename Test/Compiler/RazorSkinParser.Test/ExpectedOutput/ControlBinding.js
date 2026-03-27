@@ -5,7 +5,7 @@ function ControlBinding_factory(skinFactory, doc) {
   var domStore, htmlRoot, objStorage;
   if (!(domStore = DocStorageGetter(doc))[0]) {
     domStore[0] = doc.createElement("div");
-    domStore[0].innerHTML = "TestVM\n\n<div>Content</div>";
+    domStore[0].innerHTML = "<div>Content</div>";
     ControlBinding_tmplStore[0] = ControlBinding_tmplStore[0] ? ControlBinding_tmplStore[0] : [];
   }
   htmlRoot = domStore[0].cloneNode(true);
