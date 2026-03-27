@@ -8,10 +8,12 @@ namespace NScript.Csc.Lib
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.IO;
     using System.Linq;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.ErrorReporting;
     using Microsoft.CodeAnalysis.Emit;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -35,6 +37,7 @@ namespace NScript.Csc.Lib
     internal sealed class Csc : CSharpCompiler
     {
         private readonly List<string> rawArguments;
+        private ImmutableArray<ResourceDescription> manifestResources;
 
         internal Csc(
             string responseFile,
@@ -77,7 +80,7 @@ namespace NScript.Csc.Lib
             TextWriter textWriter,
             IAnalyzerAssemblyLoader analyzerLoader)
         {
-            FatalError.Handler = FailFast.OnFatalException;
+            FatalError.SetHandlers(FailFast.Handler, nonFatalHandler: null);
 
             var responseFile = Path.Combine(
                 buildPaths.ClientDirectory,
@@ -99,13 +102,17 @@ namespace NScript.Csc.Lib
         {
             var (resources, tmp) = SerializationHelper.InjectIntoCompilation((CSharpCompilation)compilation);
 
-            this.Arguments.ManifestResources =
+            manifestResources =
                 this
                     .GetResourceFilePaths()
                     .Concat(resources)
                     .AsImmutable();
-
         }
+
+        protected override ImmutableArray<ResourceDescription> GetManifestResources(Compilation compilation)
+            => manifestResources.IsDefault
+                ? base.GetManifestResources(compilation)
+                : manifestResources;
 
         private IEnumerable<ResourceDescription> GetResourceFilePaths()
         {

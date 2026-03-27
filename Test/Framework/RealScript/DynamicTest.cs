@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-/*
 namespace RealScript
 {
     using System;
@@ -57,4 +56,3 @@ namespace RealScript
         }
     }
 }
-*/

@@ -123,12 +123,29 @@
             TypeDefinition typeDefinition,
             string methodName)
         {
+            MethodDefinition matchedMethod = null;
             for (int methodIndex = 0; methodIndex < typeDefinition.Methods.Count; methodIndex++)
             {
-                if (typeDefinition.Methods[methodIndex].Name == methodName)
+                var method = typeDefinition.Methods[methodIndex];
+                if (method.Name == methodName)
                 {
-                    return typeDefinition.Methods[methodIndex];
+                    return method;
                 }
+
+                var lastDotIndex = method.Name.LastIndexOf('.');
+                if (lastDotIndex >= 0
+                    && string.Equals(
+                        method.Name.Substring(lastDotIndex + 1),
+                        methodName,
+                        StringComparison.Ordinal))
+                {
+                    matchedMethod ??= method;
+                }
+            }
+
+            if (matchedMethod != null)
+            {
+                return matchedMethod;
             }
 
             throw new ArgumentException(
@@ -324,43 +341,43 @@
                 @"Reflection\AssemblyVersionAttribute.cs",
                 @"RegularExpression.cs",
                 @"Reflection\AssemblyVersionCompatibility.cs",
-    			@"Reflection\Binder.cs",
-    			@"Reflection\BindingFlags.cs",
-    			@"Reflection\CallingConventions.cs",
-    			@"Reflection\ConstructorInfo.cs",
-    			@"Reflection\CustomAttributeData.cs",
-    			@"Reflection\CustomAttributeNameArgument.cs",
-    			@"Reflection\CustomAttributeTypedArgument.cs",
-    			@"Reflection\DefaultMemberAttribute.cs",
-    			@"Reflection\EventAttributes.cs",
-    			@"Reflection\EventInfo.cs",
-    			@"Reflection\ExceptionHandlingClause.cs",
-    			@"Reflection\FieldAttribute.cs",
-    			@"Reflection\FieldInfo.cs",
-    			@"Reflection\ICustomAttributeProvider.cs",
-    			@"Reflection\IReflectableType.cs",
-    			@"Reflection\LocalVariableInfo.cs",
-    			@"Reflection\MemberInfo.cs",
-    			@"Reflection\MemberTypes.cs",
-    			@"Reflection\MethodAttributes.cs",
-    			@"Reflection\MethodBase.cs",
-    			@"Reflection\MethodBody.cs",
-    			@"Reflection\MethodImplAttributes.cs",
-    			@"Reflection\MethodInfo.cs",
-    			@"Reflection\Module.cs",
-    			@"Reflection\ModuleHandle.cs",
-    			@"Reflection\ParameterAttributes.cs",
-    			@"Reflection\ParameterInfo.cs",
-    			@"Reflection\ParameterModifier.cs",
-    			@"Reflection\ProcessorArchitecture.cs",
-    			@"Reflection\PropertyAttributes.cs",
-    			@"Reflection\PropertyInfo.cs",
-    			@"Reflection\RuntimeMethodHandle.cs",
-    			@"Reflection\RuntimeModule.cs",
-    			@"Reflection\StrongNameKeyPair.cs",
-    			@"Reflection\TypedReference.cs",
-    			@"Reflection\TypeInfo.cs",
-    			@"Reflection\Version.cs",
+                @"Reflection\Binder.cs",
+                @"Reflection\BindingFlags.cs",
+                @"Reflection\CallingConventions.cs",
+                @"Reflection\ConstructorInfo.cs",
+                @"Reflection\CustomAttributeData.cs",
+                @"Reflection\CustomAttributeNameArgument.cs",
+                @"Reflection\CustomAttributeTypedArgument.cs",
+                @"Reflection\DefaultMemberAttribute.cs",
+                @"Reflection\EventAttributes.cs",
+                @"Reflection\EventInfo.cs",
+                @"Reflection\ExceptionHandlingClause.cs",
+                @"Reflection\FieldAttribute.cs",
+                @"Reflection\FieldInfo.cs",
+                @"Reflection\ICustomAttributeProvider.cs",
+                @"Reflection\IReflectableType.cs",
+                @"Reflection\LocalVariableInfo.cs",
+                @"Reflection\MemberInfo.cs",
+                @"Reflection\MemberTypes.cs",
+                @"Reflection\MethodAttributes.cs",
+                @"Reflection\MethodBase.cs",
+                @"Reflection\MethodBody.cs",
+                @"Reflection\MethodImplAttributes.cs",
+                @"Reflection\MethodInfo.cs",
+                @"Reflection\Module.cs",
+                @"Reflection\ModuleHandle.cs",
+                @"Reflection\ParameterAttributes.cs",
+                @"Reflection\ParameterInfo.cs",
+                @"Reflection\ParameterModifier.cs",
+                @"Reflection\ProcessorArchitecture.cs",
+                @"Reflection\PropertyAttributes.cs",
+                @"Reflection\PropertyInfo.cs",
+                @"Reflection\RuntimeMethodHandle.cs",
+                @"Reflection\RuntimeModule.cs",
+                @"Reflection\StrongNameKeyPair.cs",
+                @"Reflection\TypedReference.cs",
+                @"Reflection\TypeInfo.cs",
+                @"Reflection\Version.cs",
                 @"RuntimeFieldHandle.cs",
                 @"RuntimeTypeHandle.cs",
                 @"Runtime\CompilerServices\AlternateSignatureAttribute.cs",

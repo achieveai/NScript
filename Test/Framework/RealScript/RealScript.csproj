@@ -7,7 +7,8 @@
     <RootNamespace>RealScript</RootNamespace>
     <AssemblyName>RealScript</AssemblyName>
     <BaseIntermediateOutputPath>$(ProjectDir)obj</BaseIntermediateOutputPath>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <CscToolPath>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</CscToolPath>
+    <CscToolExe>csc.exe</CscToolExe>
     <OutputPath>$(ProjectDir)..\bin\</OutputPath>
     <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
     <Nullable>enable</Nullable>

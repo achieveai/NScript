@@ -7,39 +7,17 @@
 namespace NScript.Csc.Lib
 {
     using Microsoft.CodeAnalysis;
-    using System;
     using System.Reflection;
-    using System.Threading;
 
     /// <summary>
     /// Definition for NScriptAnalyzerAssemblyLoader
     /// </summary>
-    internal class NScriptAnalyzerAssemblyLoader : AnalyzerAssemblyLoader
+    internal sealed class NScriptAnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
     {
-        private int _hookedAssemblyResolve;
+        private readonly AnalyzerAssemblyLoader analyzerAssemblyLoader = new AnalyzerAssemblyLoader();
 
-        protected override Assembly LoadFromPathImpl(string fullPath)
-        {
-            if (Interlocked.CompareExchange(ref _hookedAssemblyResolve, 0, 1) == 0)
-            {
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            }
+        public void AddDependencyLocation(string fullPath) => analyzerAssemblyLoader.AddDependencyLocation(fullPath);
 
-            return LoadImpl(fullPath);
-        }
-
-        protected virtual Assembly LoadImpl(string fullPath) => Assembly.LoadFrom(fullPath);
-
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            try
-            {
-                return Load(AppDomain.CurrentDomain.ApplyPolicy(args.Name));
-            }
-            catch
-            {
-                return null;
-            }
-        }
+        public Assembly LoadFromPath(string fullPath) => analyzerAssemblyLoader.LoadFromPath(fullPath);
     }
 }

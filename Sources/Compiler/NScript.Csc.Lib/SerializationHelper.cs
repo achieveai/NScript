@@ -70,16 +70,16 @@
                 new SymbolSerializer());
 
             var rv = new Dictionary<IMethodSymbol, MethodBody>();
-            compilation.OnBoundExpressionGenerated = (methodSymbol, bsl, initializers) =>
+            compilation.OnBoundExpressionGenerated = (methodSymbol, boundBody, initializers) =>
             {
                 var serializer = new BoundAstToAstBase();
-                var methodBody = 
+                var methodBody =
                     serializer.GetMethodBody(
                         methodSymbol,
-                        bsl,
+                        boundBody,
                         initializers,
                         context);
-                lock(rv)
+                lock (rv)
                 {
                     rv.Add(
                         (IMethodSymbol)((ISymbolInternal)methodSymbol).GetISymbol(),

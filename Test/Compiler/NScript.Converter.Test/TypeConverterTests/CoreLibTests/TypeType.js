@@ -49,7 +49,7 @@ function Type__RegisterInterface(this_, typeName) {
   this_.fullName = typeName;
 }
 function Type__RegisterEnum(this_, typeName, isFlag) {
-  var enumStrToValueMap, valueToStr, lowerStrToValue, key;
+  var enumStrToValueMap, valueToStr, lowerStrToValue, keys, i, key;
   this_.isEnum = true;
   this_.fullName = typeName;
   this_.isFlagEnum = isFlag;
@@ -57,7 +57,9 @@ function Type__RegisterEnum(this_, typeName, isFlag) {
   enumStrToValueMap = this_.enumStrToValueMap;
   valueToStr = { };
   lowerStrToValue = { };
-  for (key in enumStrToValueMap) {
+  keys = { }.constructor.keys(enumStrToValueMap);
+  for (i = 0; i < keys.length; i++) {
+    key = keys[i];
     valueToStr[enumStrToValueMap[key]] = key;
     lowerStrToValue[key.toLowerCase()] = enumStrToValueMap[key];
   }
@@ -99,7 +101,7 @@ function Type__GetDefaultValueStatic(type) {
   return null;
 }
 function Type__InitializeBaseInterfaces(type) {
-  var rv, baseType, baseInterfaces, key, interfaces;
+  var rv, baseType, baseInterfaces, keys, i, key, interfaces, idx;
   if (!type.baseInterfaces) {
     rv = { };
     baseType = type.baseType;
@@ -107,14 +109,18 @@ function Type__InitializeBaseInterfaces(type) {
       if (baseType)
         Type__InitializeBaseInterfaces(type);
       baseInterfaces = baseType.baseInterfaces;
-      if (baseInterfaces)
-        for (key in baseInterfaces)
+      if (baseInterfaces) {
+        keys = { }.constructor.keys(baseInterfaces);
+        for (i = 0; i < keys.length; i++) {
+          key = keys[i];
           rv[key] = baseInterfaces[key];
+        }
+      }
     }
     interfaces = type.interfaces;
     if (interfaces)
-      for (key = 0; key < interfaces.length; key++)
-        rv[interfaces[key].fullName] = interfaces[key];
+      for (idx = 0; idx < interfaces.length; idx++)
+        rv[interfaces[idx].fullName] = interfaces[idx];
     type.baseInterfaces = rv;
   }
 }

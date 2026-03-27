@@ -118,7 +118,7 @@ namespace NScript.Csc.Lib
             }
             catch (Exception e)
             {
-                errorMessage = string.Format(CodeAnalysisResources.ExceptionEnablingMulticoreJit, e.Message);
+                errorMessage = "Exception enabling multicore JIT: " + e.Message;
                 return false;
             }
 

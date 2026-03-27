@@ -44,9 +44,10 @@ namespace CssParser
                     CommonTree tree = parser.styleSheet().Tree;
 
                     this.ParseCss(tree);
+                    this.ValidateCssVariables();
                 }
             }
-            catch(Antlr.Runtime.RecognitionException ex)
+            catch (Antlr.Runtime.RecognitionException ex)
             {
                 throw new ParseException(ex);
             }
@@ -294,7 +295,7 @@ namespace CssParser
                     case "@font-face":
                         selectors = new List<CssSelector>();
                         selectors.Add(
-                            new CssTagName("@font-face",child.Line, child.CharPositionInLine));
+                            new CssTagName("@font-face", child.Line, child.CharPositionInLine));
                         break;
                     default:
                         break;
@@ -441,7 +442,7 @@ namespace CssParser
                 }
 
                 if (selectors.Count == 0
-                    || tree.GetChild(i-1).TokenStopIndex == child.TokenStartIndex-1)
+                    || tree.GetChild(i - 1).TokenStopIndex == child.TokenStartIndex - 1)
                 {
                     selectors.Add(selector);
                 }
@@ -685,7 +686,7 @@ namespace CssParser
                         return null;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new ParseException(
                     "Error parsing CSS ",
@@ -703,7 +704,7 @@ namespace CssParser
                 name,
                 args);
 
-            for (int iChild = 1; iChild < tree.ChildCount; iChild+=2)
+            for (int iChild = 1; iChild < tree.ChildCount; iChild += 2)
             {
                 var child = tree.GetChild(iChild);
                 args.Add(this.ParsePropertyValue(child));
@@ -1044,7 +1045,7 @@ namespace CssParser
                 {
                     // Get the variable name (first argument)
                     var variableName = functionValue.Args[0].ToString();
-                    
+
                     // Check if the variable is defined in :root
                     if (!this.definedCssVariables.Contains(variableName))
                     {

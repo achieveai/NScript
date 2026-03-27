@@ -262,7 +262,7 @@ namespace NScript.JSParser.Test
         {
             JSParserAndGeneratorHelper.ParseAndGenerateTest(
                 "var rv = {};",
-                "var rv;\r\nrv = {\r\n};",
+                "var rv;\r\nrv = { };",
                 "b", "a");
         }
 
@@ -349,7 +349,7 @@ namespace NScript.JSParser.Test
             this.@{[mscorlib]System.@Type::BaseType} = parentType;
             @{[mscorlib]System.Type::FixBaseTypes([mscorlib]System.Type)}(this);
                 ",
-                "var rv, baseType, types, key;\r\nrv = {\r\n};\r\nbaseType = type[\"instance mscorlib__System.Type#BaseType\"];\r\nif (baseType != null) {\r\n  types = baseType[\"instance mscorlib__System.Type#baseTypes\"];\r\n  key[baseType] = baseType;\r\n  for (key in types)\r\n    rv[key] = types[key];\r\n}\r\nif (interfaces != null) {\r\n  for (key = 0; key < interfaces.length; key++)\r\n    rv[interfaces[key]] = interfaces[key];\r\n  type[\"instance mscorlib__System.Type#BaseType\"] = rv;\r\n}",
+                "this[\"instance mscorlib__System.Type#IsClass\"] = true;\r\nthis[\"instance mscorlib__System.Type#FullName\"] = typeName;\r\nthis[\"instance mscorlib__System.@Type#BaseType\"] = parentType;\r\n\"mscorlib__System.Type#FixBaseTypes(args:1)\"(this);",
                 "baseType",
                 "typeName", "parentType");
         }

@@ -11,6 +11,7 @@ namespace NScript.Csc.Lib
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
+    using static Microsoft.CodeAnalysis.CSharp.BoundNode;
 
     internal class BoundAstToPrintInfo
         : BoundAstToNotImplemented<SerializationContext, AstBase>
@@ -176,7 +177,7 @@ namespace NScript.Csc.Lib
                 Expression = this.Visit(node.Operand, arg) as ExpressionSer,
                 Operator = (int)node.OperatorKind,
                 Location = node.Syntax.GetSerLoc(),
-                IsLifted = node.ResultConversion.IsBoxing
+                IsLifted = GetConversion(node.ResultConversion, node.ResultPlaceholder).IsBoxing
             };
             arg.Depth--;
             return rv;
@@ -285,7 +286,7 @@ namespace NScript.Csc.Lib
             {
                 Left = this.Visit(node.Left, arg) as ExpressionSer,
                 Right = this.Visit(node.Right, arg) as ExpressionSer,
-                IsLifted = node.LeftConversion.IsBoxing,
+                IsLifted = GetConversion(node.LeftConversion, node.LeftPlaceholder).IsBoxing,
                 Operator = (int)node.Operator.Kind,
                 Location = node.Syntax.GetSerLoc()
             };
@@ -667,7 +668,7 @@ namespace NScript.Csc.Lib
             AstBase rv = null;
             foreach (var sideEffect in node.SideEffects)
             {
-                 base.Visit(sideEffect, arg);
+                base.Visit(sideEffect, arg);
             }
             arg.Depth--;
             return rv;
@@ -786,38 +787,38 @@ namespace NScript.Csc.Lib
             arg.Depth--;
             return rv;
         }
-/*
-        public override AstBase VisitPatternSwitchStatement(BoundPatternSwitchStatement node, SerializationContext arg)
-        {
-            for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
-            { Write("  "); }
+        /*
+                public override AstBase VisitPatternSwitchStatement(BoundPatternSwitchStatement node, SerializationContext arg)
+                {
+                    for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
+                    { Write("  "); }
 
-            WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitPatternSwitchStatement(node, arg);
-            arg.Depth--;
-            return rv;
-        }
-        public override AstBase VisitPatternSwitchSection(BoundPatternSwitchSection node, SerializationContext arg)
-        {
-            for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
-            { Write("  "); }
+                    WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
+                    var rv = base.VisitPatternSwitchStatement(node, arg);
+                    arg.Depth--;
+                    return rv;
+                }
+                public override AstBase VisitPatternSwitchSection(BoundPatternSwitchSection node, SerializationContext arg)
+                {
+                    for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
+                    { Write("  "); }
 
-            WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitPatternSwitchSection(node, arg);
-            arg.Depth--;
-            return rv;
-        }
-        public override AstBase VisitPatternSwitchLabel(BoundPatternSwitchLabel node, SerializationContext arg)
-        {
-            for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
-            { Write("  "); }
+                    WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
+                    var rv = base.VisitPatternSwitchSection(node, arg);
+                    arg.Depth--;
+                    return rv;
+                }
+                public override AstBase VisitPatternSwitchLabel(BoundPatternSwitchLabel node, SerializationContext arg)
+                {
+                    for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
+                    { Write("  "); }
 
-            WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            var rv = base.VisitPatternSwitchLabel(node, arg);
-            arg.Depth--;
-            return rv;
-        }
-*/
+                    WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
+                    var rv = base.VisitPatternSwitchLabel(node, arg);
+                    arg.Depth--;
+                    return rv;
+                }
+        */
         public override AstBase VisitIfStatement(BoundIfStatement node, SerializationContext arg)
         {
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
@@ -940,9 +941,9 @@ namespace NScript.Csc.Lib
             for (int idx = arg.Depth++ - 1; idx >= 0; idx--)
             { Write("  "); }
 
-            WriteLine("{0}: SyntaxKind:{1} Val: {2}", node.Kind, node.Syntax.Kind(), node.ConstantValue.GetValueToDisplay());
+            WriteLine("{0}: SyntaxKind:{1} Val: {2}", node.Kind, node.Syntax.Kind(), node.ConstantValueOpt?.GetValueToDisplay());
 
-            var rv = BoundAstToAstBase.GetConstLiteral(node.ConstantValue);
+            var rv = BoundAstToAstBase.GetConstLiteral(node.ConstantValueOpt!);
             rv.Location = node.Syntax.Location.GetSerLoc();
             arg.Depth--;
             return rv;
@@ -1089,7 +1090,7 @@ namespace NScript.Csc.Lib
             { Write("  "); }
 
             WriteLine("{0}: SyntaxKind:{1}", node.Kind, node.Syntax.Kind());
-            foreach(var statement in node.Statements)
+            foreach (var statement in node.Statements)
             { var rv = base.Visit(statement, arg); }
 
             arg.Depth--;

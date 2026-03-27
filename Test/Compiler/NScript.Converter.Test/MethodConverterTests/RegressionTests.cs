@@ -60,7 +60,7 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All, false, false)]
         [DataRow(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All, false, true)]
         [DataRow(TestClassNameStr, "TestPassByRefAssignment", "TestPassByRefAssignment.js", TestType.All, false, true)]
-        [DataRow("GeneratorWrapper", "MoveNext", "NativeGeneratorNext.js", TestType.All, false, true)]
+        [DataRow("System.GeneratorWrapper", "MoveNext", "NativeGeneratorNext.js", TestType.All, false, true)]
         public void TestMcs(
             string className,
             string methodName,

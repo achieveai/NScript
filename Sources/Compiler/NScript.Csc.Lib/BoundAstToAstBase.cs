@@ -35,7 +35,7 @@
             var parameterBlock =
                 boundNode == null
                 ? null
-                : Visit((BoundBlock)boundNode, arg, methodSymbol, initializers);
+                : GetParameterBlock(methodSymbol, boundNode, initializers, arg);
 
             // TODO: Make note of [Script] Attribute in case of empty body.
             var rv = new MethodBody
@@ -51,6 +51,18 @@
 
             return rv;
         }
+
+        private ParameterBlock GetParameterBlock(
+            MethodSymbol methodSymbol,
+            BoundNode boundNode,
+            BoundStatementList initializers,
+            SerializationContext arg)
+            => boundNode switch
+            {
+                BoundBlock block => Visit(block, arg, methodSymbol, initializers),
+                BoundStatementList statements => Visit(statements, arg, methodSymbol),
+                _ => throw new NotSupportedException($"Unsupported method body node: {boundNode.Kind}")
+            };
 
         public ParameterSer Visit(ParameterSymbol parameter, SerializationContext arg)
         {
@@ -127,6 +139,34 @@
                     .Where(_ => _ != null)
                     .ToList();
 
+            scopeBlockStack.RemoveFirst();
+            return rv;
+        }
+
+        public ParameterBlock Visit(
+            BoundStatementList node,
+            SerializationContext arg,
+            MethodSymbol methodSymbol)
+        {
+            var rv = new ParameterBlock
+            {
+                Location = node.Syntax.GetSerLoc(),
+                Id = ++id,
+                LocalFunctions = new List<string>(),
+                BlockKind = GetBlockKind(methodSymbol),
+                IsMethodOwned = true,
+                Parameters = methodSymbol
+                    .Parameters
+                    .Select(_ => Visit(_, arg))
+                    .ToList(),
+            };
+
+            _ = scopeBlockStack.AddFirst((rv.Id, node, rv.LocalFunctions));
+            rv.Statements = node.Statements
+                .Where(_ => !(_ is BoundSequencePointWithSpan))
+                .Select(_ => VisitToStatement(_, arg))
+                .Where(_ => _ != null)
+                .ToList();
             scopeBlockStack.RemoveFirst();
             return rv;
         }
@@ -258,7 +298,7 @@
                 return UserDefinedBinaryOperator(
                     node,
                     arg,
-                    node.MethodOpt,
+                    node.BinaryOperatorMethod!,
                     node.OperatorKind & (BinaryOperatorKind.OpMask | BinaryOperatorKind.Logical),
                     IsLifted(node.OperatorKind));
             }
@@ -836,9 +876,9 @@
                         LocalVariableName = node.IterationVariables[0].Name,
                         Collection = (ExpressionSer)Visit(node.Expression, arg),
                         Loop = VisitToStatement(node.Body, arg),
-                        GetAwaiterMethodCallOpt = node.AwaitOpt == null
+                        GetAwaiterMethodCallOpt = node.EnumeratorInfoOpt?.MoveNextAwaitableInfo?.GetAwaiter == null
                             ? null
-                            : (MethodCallExpression)Visit(node.AwaitOpt.GetAwaiter, arg)
+                            : (MethodCallExpression)Visit(node.EnumeratorInfoOpt.MoveNextAwaitableInfo.GetAwaiter, arg)
                     });
 
         public override AstBase VisitForStatement(BoundForStatement node, SerializationContext arg)
@@ -961,7 +1001,7 @@
 
         public override AstBase VisitLiteral(BoundLiteral node, SerializationContext arg)
         {
-            var rv = GetConstLiteral(node.ConstantValue);
+            var rv = GetConstLiteral(node.ConstantValueOpt!);
             rv.Location = node.Syntax.Location.GetSerLoc();
             return rv;
         }
@@ -1070,7 +1110,7 @@
                     .Where(e => e != null)
                     .ToList();
 
-            return initializers.Count > 0
+            return initializers.Any()
                 ? (StatementSer)new VariableBlockDeclaration
                 {
                     Initializers = initializers
@@ -1307,11 +1347,17 @@
 
         public override AstBase VisitSequence(BoundSequence node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitSequencePoint(BoundSequencePoint node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitSequencePoint(BoundSequencePoint node, SerializationContext arg)
+            => node.StatementOpt == null
+                ? null
+                : Visit(node.StatementOpt, arg);
 
         public override AstBase VisitSequencePointExpression(BoundSequencePointExpression node, SerializationContext arg) => throw new NotImplementedException();
 
-        public override AstBase VisitSequencePointWithSpan(BoundSequencePointWithSpan node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitSequencePointWithSpan(BoundSequencePointWithSpan node, SerializationContext arg)
+            => node.StatementOpt == null
+                ? null
+                : Visit(node.StatementOpt, arg);
 
         public override AstBase VisitSizeOfOperator(BoundSizeOfOperator node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1987,7 +2033,7 @@
         {
             for (int i = 1; i < list.Count; i++)
             {
-                if (list[i-1] > list[i])
+                if (list[i - 1] > list[i])
                 {
                     return true;
                 }

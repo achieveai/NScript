@@ -1,9 +1,11 @@
 <Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <CscToolExe>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\csc.exe</CscToolExe>
+    <CscToolPath>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</CscToolPath>
+    <CscToolExe>csc.exe</CscToolExe>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <LangVersion>8.0</LangVersion>
     <NoStdLib>true</NoStdLib>

@@ -1,3 +1,3 @@
 ﻿function NewLanguageFeatures__get_InlineProp(this_) {
-  return this_.field;
+  return this_._$InlineProp$_k__BackingField;
 } 
