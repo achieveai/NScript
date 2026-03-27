@@ -80,7 +80,7 @@ namespace RazorSkinParser.Test
             js.Should().Contain("get_appVersion()");
             js.Should().Contain(", 1,"); // ONETIME_DATACONTEXT flag
             // Empty dependencies array
-            js.Should().Contain("[], SetTextContent");
+            js.Should().Contain("[], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent");
         }
 
         [TestMethod]
@@ -88,7 +88,7 @@ namespace RazorSkinParser.Test
         {
             var js = RazorSkinTestHelper.CompileTemplate("ReactiveIf");
 
-            js.Should().Contain("ConditionalBinder_setup");
+            js.Should().Contain("Sunlight__Framework__UI__Helpers__ConditionalBinder");
             js.Should().Contain("get_isActive()");
             js.Should().Contain("\"IsActive\"");
             js.Should().Contain("Active");
@@ -100,8 +100,8 @@ namespace RazorSkinParser.Test
         {
             var js = RazorSkinTestHelper.CompileTemplate("StaticIf");
 
-            // PlainVM.IsStatic is not observable => no ConditionalBinder_setup
-            js.Should().NotContain("ConditionalBinder_setup");
+            // PlainVM.IsStatic is not observable => no ConditionalBinder
+            js.Should().NotContain("Sunlight__Framework__UI__Helpers__ConditionalBinder");
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace RazorSkinParser.Test
         {
             var js = RazorSkinTestHelper.CompileTemplate("ReactiveForeach");
 
-            js.Should().Contain("CollectionBinder_setup");
+            js.Should().Contain("Sunlight__Framework__UI__Helpers__CollectionBinder");
             js.Should().Contain("get_items()");
         }
 
@@ -140,7 +140,7 @@ namespace RazorSkinParser.Test
             var js = RazorSkinTestHelper.CompileTemplate("ControlBinding");
 
             // @control MyControl should set the control type in Skin_factory
-            js.Should().Contain("Skin_factory(MyControl,");
+            js.Should().Contain("Sunlight__Framework__UI__Skin_factory(MyControl,");
         }
 
         [TestMethod]
@@ -160,7 +160,7 @@ namespace RazorSkinParser.Test
                 js.Should().Contain($"{name}_factory", $"{name} should have a factory function");
                 js.Should().Contain($"function {name}()", $"{name} should have a getter function");
                 js.Should().Contain($"{name}_var", $"{name} should have a cached var");
-                js.Should().Contain("SkinInstance_factory", $"{name} should produce SkinInstance");
+                js.Should().Contain("Sunlight__Framework__UI__Helpers__SkinInstance_factory", $"{name} should produce SkinInstance");
             }
         }
 
@@ -170,7 +170,7 @@ namespace RazorSkinParser.Test
             var js = RazorSkinTestHelper.CompileTemplate("NestedControlFlow");
 
             // The foreach + if combination should produce loop binder with conditional inside
-            js.Should().Contain("CollectionBinder_setup");
+            js.Should().Contain("Sunlight__Framework__UI__Helpers__CollectionBinder");
         }
     }
 }

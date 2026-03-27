@@ -23,6 +23,38 @@ namespace NScript.RazorSkin.TemplateIR
             @"\b(on\w+)\s*=\s*""?\s*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        // Regex to match opening PascalCase tags: <ListView ...> or <ListView ... />
+        private static readonly Regex PascalCaseTagRegex = new Regex(
+            @"<([A-Z][A-Za-z0-9]+)(\s[^>]*)?\s*/?>",
+            RegexOptions.Compiled);
+
+        // Regex to match closing PascalCase tags: </ListView>
+        private static readonly Regex PascalCaseClosingTagRegex = new Regex(
+            @"</([A-Z][A-Za-z0-9]+)\s*>",
+            RegexOptions.Compiled);
+
+        // Regex to extract id attribute from an attribute string
+        private static readonly Regex IdAttributeRegex = new Regex(
+            @"\bid\s*=\s*(?:""([^""]*)""|'([^']*)')",
+            RegexOptions.Compiled);
+
+        // Regex to extract attribute name=value pairs
+        private static readonly Regex AttributeRegex = new Regex(
+            @"\b(\w+)\s*=\s*(?:""([^""]*)""|'([^']*)')",
+            RegexOptions.Compiled);
+
+        /// <summary>
+        /// Classify the binding source kind from a C# expression string (M6).
+        /// Extracts whether the expression references Model.* or Control.* to determine
+        /// if the source is DataContext or TemplateParent.
+        /// </summary>
+        internal static BindingSourceKind ClassifySource(string expression)
+        {
+            if (expression.Contains("Control."))
+                return BindingSourceKind.TemplateParent;
+            return BindingSourceKind.DataContext;
+        }
+
         /// <summary>
         /// Checks whether a tag name is PascalCase (starts with uppercase letter).
         /// Used to detect sub-control tags like &lt;ListView&gt;, &lt;SearchBox&gt;.
@@ -207,11 +239,7 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     CSharpExpression = condExpr,
                     Mode = BindingMode.OneTime,
-                    SourceKind = condExpr.Contains("Model.")
-                        ? BindingSourceKind.DataContext
-                        : condExpr.Contains("Control.")
-                            ? BindingSourceKind.TemplateParent
-                            : BindingSourceKind.DataContext
+                    SourceKind = ClassifySource(condExpr)
                 },
                 IsReactive = false
             };
@@ -312,11 +340,7 @@ namespace NScript.RazorSkin.TemplateIR
                 ItemVariableName = foreachParts.Item1,
                 CollectionExpression = foreachParts.Item2,
                 IsObservableCollection = false,
-                CollectionSourceKind = foreachParts.Item2.Contains("Model.")
-                    ? BindingSourceKind.DataContext
-                    : foreachParts.Item2.Contains("Control.")
-                        ? BindingSourceKind.TemplateParent
-                        : BindingSourceKind.DataContext
+                CollectionSourceKind = ClassifySource(foreachParts.Item2)
             };
 
             int i = startIndex + 1;
@@ -380,9 +404,7 @@ namespace NScript.RazorSkin.TemplateIR
             {
                 CSharpExpression = expression.Trim(),
                 Mode = BindingMode.OneTime,
-                SourceKind = expression.Contains("Model.") ? BindingSourceKind.DataContext
-                           : expression.Contains("Control.") ? BindingSourceKind.TemplateParent
-                           : BindingSourceKind.DataContext
+                SourceKind = ClassifySource(expression)
             };
 
             return new ExpressionBindingNode
@@ -551,9 +573,7 @@ namespace NScript.RazorSkin.TemplateIR
         {
             if (string.IsNullOrEmpty(html)) return html;
 
-            // Match opening PascalCase tags: <ListView ...> or <ListView ... />
-            var tagRegex = new Regex(@"<([A-Z][A-Za-z0-9]+)(\s[^>]*)?\s*/?>", RegexOptions.Compiled);
-            var matches = tagRegex.Matches(html);
+            var matches = PascalCaseTagRegex.Matches(html);
 
             foreach (Match match in matches)
             {
@@ -568,12 +588,12 @@ namespace NScript.RazorSkin.TemplateIR
                 };
 
                 // Extract id attribute
-                var idMatch = Regex.Match(attrsStr, @"\bid\s*=\s*""([^""]*)""|'([^']*)'");
+                var idMatch = IdAttributeRegex.Match(attrsStr);
                 if (idMatch.Success)
                     subControl.ElementId = idMatch.Groups[1].Success ? idMatch.Groups[1].Value : idMatch.Groups[2].Value;
 
                 // Extract property bindings from attributes (non-event attributes with values)
-                var attrMatches = Regex.Matches(attrsStr, @"\b(\w+)\s*=\s*""([^""]*)""|'([^']*)'");
+                var attrMatches = AttributeRegex.Matches(attrsStr);
                 foreach (Match attrMatch in attrMatches)
                 {
                     var attrName = attrMatch.Groups[1].Value;
@@ -602,11 +622,7 @@ namespace NScript.RazorSkin.TemplateIR
                         {
                             CSharpExpression = attrValue.TrimStart('@'),
                             Mode = BindingMode.OneTime,
-                            SourceKind = attrValue.Contains("Model.")
-                                ? BindingSourceKind.DataContext
-                                : attrValue.Contains("Control.")
-                                    ? BindingSourceKind.TemplateParent
-                                    : BindingSourceKind.DataContext
+                            SourceKind = ClassifySource(attrValue)
                         };
                         subControl.PropertyBindings.Add(new SubControlPropertyBinding
                         {
@@ -621,13 +637,13 @@ namespace NScript.RazorSkin.TemplateIR
 
             // Remove PascalCase tags from HTML (they become sub-controls)
             // Also remove their closing tags
-            var result = tagRegex.Replace(html, match =>
+            var result = PascalCaseTagRegex.Replace(html, match =>
             {
                 var tagName = match.Groups[1].Value;
                 return IsPascalCaseTag(tagName) ? "" : match.Value;
             });
             // Remove closing PascalCase tags
-            result = Regex.Replace(result, @"</([A-Z][A-Za-z0-9]+)\s*>", match =>
+            result = PascalCaseClosingTagRegex.Replace(result, match =>
             {
                 var tagName = match.Groups[1].Value;
                 return IsPascalCaseTag(tagName) ? "" : match.Value;

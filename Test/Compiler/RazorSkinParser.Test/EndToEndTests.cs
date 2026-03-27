@@ -96,8 +96,8 @@ public class ItemVM : ObservableObject
                 "CondSkin", template,
                 new[] { FrameworkStubs, TestVMSource });
 
-            // When IsActive is observable, should produce ConditionalBinder_setup
-            js.Should().Contain("ConditionalBinder_setup");
+            // When IsActive is observable, should produce ConditionalBinder constructor call
+            js.Should().Contain("Sunlight__Framework__UI__Helpers__ConditionalBinder");
         }
 
         [TestMethod]
@@ -108,8 +108,8 @@ public class ItemVM : ObservableObject
                 "LoopSkin", template,
                 new[] { FrameworkStubs, TestVMSource });
 
-            // Items is ObservableCollection, should produce CollectionBinder_setup
-            js.Should().Contain("CollectionBinder_setup");
+            // Items is ObservableCollection, should produce CollectionBinder constructor call
+            js.Should().Contain("Sunlight__Framework__UI__Helpers__CollectionBinder");
         }
     }
 }

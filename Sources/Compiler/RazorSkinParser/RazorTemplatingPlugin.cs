@@ -32,6 +32,27 @@ namespace NScript.RazorSkin
         /// </summary>
         private bool _hasRazorTemplates;
 
+        /// <summary>
+        /// Framework type stubs needed for Roslyn analysis to classify observable properties.
+        /// These are always passed to RazorSkinCompiler.Compile so that the Roslyn analysis
+        /// phase can detect ObservableObject-derived types and promote bindings to OneWay.
+        /// </summary>
+        private const string FrameworkTypeStubs = @"
+namespace Sunlight.Framework.Observables
+{
+    public interface INotifyPropertyChanged { }
+    public class ObservableObject : INotifyPropertyChanged
+    {
+        protected void FirePropertyChanged(string name) { }
+    }
+    public interface IObservableCollection { }
+    public class ObservableCollection<T> : ObservableObject, IObservableCollection
+    {
+        public void Add(T item) { }
+        public void Remove(T item) { }
+    }
+}";
+
         public static bool CanHandle(string templateFileName)
         {
             return templateFileName.EndsWith(".skin.cshtml", StringComparison.OrdinalIgnoreCase);
@@ -75,7 +96,9 @@ namespace NScript.RazorSkin
                             var templateName = Path.GetFileNameWithoutExtension(
                                 Path.GetFileNameWithoutExtension(fileName));
 
-                            var js = RazorSkinCompiler.Compile(templateName, templateSource);
+                            var js = RazorSkinCompiler.Compile(
+                                templateName, templateSource,
+                                new[] { FrameworkTypeStubs });
                             _compiledTemplates[templateName] = js;
                             _hasRazorTemplates = true;
                         }
@@ -151,7 +174,8 @@ namespace NScript.RazorSkin
                 a => a.AttributeType.Name == "SkinAttribute" ||
                      a.AttributeType.FullName.EndsWith(".SkinAttribute"));
 
-            var templateName = skinAttr?.ConstructorArguments[0].Value as string;
+            var templateName = (skinAttr?.HasConstructorArguments == true && skinAttr.ConstructorArguments.Count > 0)
+                ? skinAttr.ConstructorArguments[0].Value as string : null;
             if (templateName == null || !_compiledTemplates.ContainsKey(templateName))
             {
                 return null;

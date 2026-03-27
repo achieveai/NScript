@@ -6,6 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="6.0.36" />
+    <!--
+      This is the standard NuGet Roslyn package, intentionally different from the
+      forked Roslyn in Dependencies/Roslyn/. The fork is used only by NScript.Csc.Lib
+      for the bound-tree capture hooks. This project uses stock Roslyn for standalone
+      semantic analysis of template code, with no dependency on the forked internals.
+    -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
   </ItemGroup>
 

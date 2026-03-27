@@ -203,7 +203,7 @@ namespace RazorSkinParser.Test
 
             var js = RazorSkinCodeGenerator.Generate(ir);
 
-            js.Should().Contain("ConditionalBinder_setup");
+            js.Should().Contain("Sunlight__Framework__UI__Helpers__ConditionalBinder");
             js.Should().Contain("get_isLoading");
             js.Should().Contain("\"IsLoading\"");
             js.Should().Contain("Loading...");
@@ -230,7 +230,7 @@ namespace RazorSkinParser.Test
 
             var js = RazorSkinCodeGenerator.Generate(ir);
 
-            js.Should().Contain("CollectionBinder_setup");
+            js.Should().Contain("Sunlight__Framework__UI__Helpers__CollectionBinder");
             js.Should().Contain("get_items");
         }
 

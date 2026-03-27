@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using NScript.RazorSkin.TemplateIR;
 
@@ -28,16 +29,17 @@ namespace NScript.RazorSkin.CodeGen
         public static string EmitSkinBinderInfo(
             ExpressionBindingNode binding,
             int objectIndex,
-            int binderIndex)
+            int binderIndex,
+            ISet<string> knownFunctionNames = null)
         {
             var sb = new StringBuilder();
             var deps = binding.Classification.Dependencies;
             var expr = binding.Classification.CSharpExpression;
 
             // Getter function — use "dc" for DataContext source and "tp" for TemplateParent source
-            var getterJs = ExpressionJsEmitter.ToJsGetter(expr, "dc", "tp");
+            var getterJs = ExpressionJsEmitter.ToJsGetter(expr, "dc", "tp", knownFunctionNames);
             var paramName = binding.Classification.SourceKind == BindingSourceKind.TemplateParent ? "tp" : "dc";
-            sb.Append("SkinBinderInfo_factory(");
+            sb.Append("Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory(");
             sb.Append($"[function({paramName}) {{ return {getterJs}; }}]");
 
             // Property names array for live binding
@@ -49,14 +51,14 @@ namespace NScript.RazorSkin.CodeGen
             }
             sb.Append("]");
 
-            // Target setter
+            // Target setter — use fully qualified JS-mangled names matching XWML SkinBinderHelper pattern
             var setter = binding.Target switch
             {
-                ExpressionTarget.TextContent => "SetTextContent",
-                ExpressionTarget.Attribute => "SetAttribute",
-                ExpressionTarget.CssClass => "SetClassName",
-                ExpressionTarget.Style => "SetStyle",
-                _ => "SetTextContent"
+                ExpressionTarget.TextContent => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent",
+                ExpressionTarget.Attribute => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute",
+                ExpressionTarget.CssClass => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetClassName",
+                ExpressionTarget.Style => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetStyle",
+                _ => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent"
             };
             sb.Append($", {setter}");
 
