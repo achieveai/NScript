@@ -479,7 +479,135 @@ In addition to existing `SkinBinderInfo` types, new binder types are needed:
 - **CollectionBinder:** Watches an `IObservableCollection`, manages incremental DOM fragment add/remove/replace.
 - **EventBinder:** Registers DOM event handlers with method references or compiled lambda functions.
 
-## 8. Integration with NScript Compiler
+## 8. Sub-Controls & Programmatic Part Access
+
+### Declaring Sub-Controls
+
+Child UIElements (ListView, custom controls, etc.) are declared using **PascalCase component-style tags**, resolved via `@using` directives:
+
+```razor
+@model OrderViewModel
+@control OrderPanel
+@using Sunlight.Framework.UI
+@using MyApp.Controls
+
+<div class="order-panel">
+    <ListView id="orderList"
+              ObservableList="@Model.Orders"
+              ItemSkin="@Model.OrderItemSkin"
+              ItemCssClassName="order-item" />
+
+    <SearchBox id="searchBox"
+               Query="@Model.SearchQuery"
+               onchange="@((e) => Model.Search(e))" />
+
+    <CustomButton id="submitBtn"
+                  Label="@Model.SubmitLabel"
+                  onclick="@Model.OnSubmit" />
+</div>
+```
+
+**Compiler behavior:**
+
+1. PascalCase tags are resolved as type references via `@using` namespaces
+2. The compiler checks if the resolved type inherits from `UIElement`
+3. If YES: treated as a sub-control (generates UIElement factory call in JS)
+4. If NO: treated as a regular HTML element
+5. Attributes on sub-controls are resolved as property bindings (same as XWML `<vm:Type prop="{binding}">`)
+
+**Property binding on sub-controls** uses the same auto-detection:
+
+```razor
+@* Observable property -> OneWay binding *@
+<SearchBox Query="@Model.SearchQuery" />
+
+@* Non-observable -> OneTime binding *@
+<SearchBox Placeholder="@Model.DefaultPlaceholder" />
+
+@* Expression -> computed OneWay binding *@
+<StatusLabel Text="@($"{Model.Count} items")" />
+
+@* Static value (no @) -> literal, set once *@
+<ListView ItemCssClassName="order-item" />
+```
+
+### Programmatic Part Access
+
+Controls access named parts from their skin using the existing `[SkinPart]` + `GetChildById()` pattern. This is unchanged from XWML:
+
+```csharp
+public class OrderPanel : UISkinableElement
+{
+    [SkinPart(typeof(ListView))]
+    const string orderListPart = "orderList";
+
+    [SkinPart(typeof(SearchBox))]
+    const string searchBoxPart = "searchBox";
+
+    public OrderPanel(Element element) : base(element) { }
+
+    public ListView OrderList =>
+        (ListView)SkinInstance?.GetChildById(orderListPart);
+
+    public SearchBox SearchBox =>
+        (SearchBox)SkinInstance?.GetChildById(searchBoxPart);
+
+    protected override void ApplySkinInternal(SkinInstance skin)
+    {
+        // Called after skin is bound - parts are now available
+        var list = OrderList;
+        // Configure child control programmatically if needed
+    }
+}
+```
+
+The `id` attribute in the template maps to the `partIdMapping` dictionary in the generated `SkinInstance`, identical to current XWML behavior.
+
+### Sub-Control Lifecycle
+
+- Sub-controls are stored in the `elementsOfInterest` array
+- Their indices are recorded in the `childElements` array
+- During `SkinInstance.Activate()`:
+  1. DataContext is propagated to children (unless explicitly bound)
+  2. Each child is activated
+  3. Child bindings (property bindings from template attributes) are applied
+- During `SkinInstance.Deactivate()` / `Dispose()`:
+  1. Children are deactivated/disposed recursively
+
+### Sub-Controls Inside Reactive Blocks
+
+Sub-controls can appear inside `@if` and `@foreach`:
+
+```razor
+@if (Model.ShowAdvanced)
+{
+    <AdvancedPanel id="advPanel" Config="@Model.AdvancedConfig" />
+}
+
+@foreach (var item in Model.Items)
+{
+    <ItemCard Title="@item.Name" onclick="@(() => Model.Select(item))" />
+}
+```
+
+The reactive block manages the sub-control's lifecycle:
+
+- `@if` toggle: sub-control is created/destroyed (or activated/deactivated) with the branch
+- `@foreach` add/remove: sub-control instances are created/destroyed per item
+
+### Nested Skins
+
+Sub-controls that are `UISkinableElement` can have their own skins assigned via property binding:
+
+```razor
+<ListView id="orderList"
+          ObservableList="@Model.Orders"
+          ItemSkin="@Model.OrderItemSkin" />
+```
+
+The `ItemSkin` property receives a `Skin` object (which could itself be a Razor-compiled skin). This enables arbitrary nesting of Razor templates.
+
+## 9. Integration with NScript Compiler
 
 ### Plugin Registration
 
@@ -507,7 +635,7 @@ Both plugins can run simultaneously:
 
 New NuGet dependency: `Microsoft.AspNetCore.Razor.Language` (for Phase 1 parsing). This is the parser-only package, not the full ASP.NET runtime.
 
-## 9. Performance Considerations
+## 10. Performance Considerations
 
 Since runtime performance testing is a key requirement, the design preserves the current performance characteristics while adding new capabilities:
 
@@ -537,7 +665,7 @@ Each new binder type will be benchmarked against the XWML equivalent:
 
 Results will determine which strategy (Show/Hide vs Add/Remove for conditionals, etc.) becomes the default.
 
-## 10. Summary
+## 11. Summary
 
 | Aspect | Current (XWML) | New (Razor) |
 |--------|----------------|-------------|
@@ -550,5 +678,7 @@ Results will determine which strategy (Show/Hide vs Add/Remove for conditionals,
 | Two-way binding | `TwoWay` binder | OneWay + event lambda |
 | Event handling | `{OnClick}` in event attr | `@Model.OnClick` or `@((e) => ...)` |
 | TemplateParent | `Source=TemplateParent` | `@Control.Property` |
+| Sub-controls | `<vm:Type>` XML namespaces | `<TypeName>` PascalCase tags via `@using` |
+| Part access | `[SkinPart]` + `GetChildById()` | Same (unchanged) |
 | Runtime output | SkinInstance + SkinBinderInfo | SkinInstance + SkinBinderInfo (same) |
 | IDE support | None | Razor IntelliSense (partial) |
