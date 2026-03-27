@@ -11,15 +11,12 @@ namespace NScript.RazorSkin
     public static class RoslynAnalysisPhase
     {
         // Cache metadata references since they are expensive to create and
-        // don't change between invocations. The CSharpCompilation itself is
-        // local-scoped and becomes garbage-collectable after RefineClassifications returns.
-        private static MetadataReference[] _cachedReferences;
+        // don't change between invocations. Uses Lazy<T> for thread safety.
+        private static readonly Lazy<MetadataReference[]> _cachedReferences =
+            new Lazy<MetadataReference[]>(BuildReferences);
 
-        private static MetadataReference[] GetCachedReferences()
+        private static MetadataReference[] BuildReferences()
         {
-            if (_cachedReferences != null)
-                return _cachedReferences;
-
             var references = new List<MetadataReference>
             {
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
@@ -40,8 +37,7 @@ namespace NScript.RazorSkin
                     references.Add(MetadataReference.CreateFromFile(path));
             }
 
-            _cachedReferences = references.ToArray();
-            return _cachedReferences;
+            return references.ToArray();
         }
 
         public static void RefineClassifications(
@@ -62,7 +58,7 @@ namespace NScript.RazorSkin
             var compilation = CSharpCompilation.Create(
                 "RazorSkinAnalysis",
                 trees,
-                GetCachedReferences(),
+                _cachedReferences.Value,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             var generatedTree = trees[0];

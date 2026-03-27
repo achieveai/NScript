@@ -18,12 +18,9 @@ namespace NScript.RazorSkin.CodeGen
                 .Replace("Control.", templateParentParam + ".");
 
             // Convert property accesses to getter calls: .PropertyName -> .get_propertyName()
-            expr = Regex.Replace(expr, @"\.([A-Z])(\w*)(?=[.\s\)\]\+\-\*\/\,\;]|$)",
-                match =>
-                {
-                    var propName = match.Groups[1].Value.ToLower() + match.Groups[2].Value;
-                    return $".get_{propName}()";
-                });
+            // Match ANY uppercase-initial identifier after "." unconditionally.
+            expr = Regex.Replace(expr, @"\.([A-Z])(\w*)",
+                match => $".get_{match.Groups[1].Value.ToLower()}{match.Groups[2].Value}()");
 
             return expr;
         }

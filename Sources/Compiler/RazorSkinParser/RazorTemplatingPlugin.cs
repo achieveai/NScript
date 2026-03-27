@@ -151,7 +151,8 @@ namespace NScript.RazorSkin
                 a => a.AttributeType.Name == "SkinAttribute" ||
                      a.AttributeType.FullName.EndsWith(".SkinAttribute"));
 
-            var templateName = skinAttr?.ConstructorArguments[0].Value as string;
+            var templateName = (skinAttr?.HasConstructorArguments == true && skinAttr.ConstructorArguments.Count > 0)
+                ? skinAttr.ConstructorArguments[0].Value as string : null;
             if (templateName == null || !_compiledTemplates.ContainsKey(templateName))
             {
                 return null;
