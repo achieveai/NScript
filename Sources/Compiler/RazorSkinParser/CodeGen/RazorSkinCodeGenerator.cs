@@ -132,18 +132,9 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (func.FunctionName == "functions_block") continue; // Skip raw block fallbacks
 
+                // ConvertFunctionBodyToJs handles pure vs model-dependent via ConvertParameterList
                 var jsBody = ConvertFunctionBodyToJs(func);
-
-                if (func.IsPure)
-                {
-                    // Pure function: standalone JS helper
-                    sb.AppendLine(jsBody);
-                }
-                else
-                {
-                    // Model-dependent: receives dc (dataContext) parameter
-                    sb.AppendLine(jsBody);
-                }
+                sb.AppendLine(jsBody);
                 sb.AppendLine();
             }
         }

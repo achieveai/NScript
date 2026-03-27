@@ -273,7 +273,7 @@ namespace NScript.RazorSkin.TemplateIR
                     {
                         // Nested @if block
                         var targetBranchNested = inElseBranch ? conditional.FalseBranch : conditional.TrueBranch;
-                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        var dummyParent = new SkinTemplateNode();
                         i = ParseIfBlock(nodes, i, dummyParent);
                         targetBranchNested.AddRange(dummyParent.Children);
                         continue;
@@ -282,7 +282,7 @@ namespace NScript.RazorSkin.TemplateIR
                     {
                         // Nested @foreach block
                         var targetBranchNested = inElseBranch ? conditional.FalseBranch : conditional.TrueBranch;
-                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        var dummyParent = new SkinTemplateNode();
                         i = ParseForeachBlock(nodes, i, dummyParent);
                         targetBranchNested.AddRange(dummyParent.Children);
                         continue;
@@ -361,7 +361,7 @@ namespace NScript.RazorSkin.TemplateIR
                     else if (codeContent.StartsWith("if ") || codeContent.StartsWith("if("))
                     {
                         // Nested @if block inside foreach
-                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        var dummyParent = new SkinTemplateNode();
                         i = ParseIfBlock(nodes, i, dummyParent);
                         loop.ItemTemplate.AddRange(dummyParent.Children);
                         continue;
@@ -369,7 +369,7 @@ namespace NScript.RazorSkin.TemplateIR
                     else if (codeContent.StartsWith("foreach ") || codeContent.StartsWith("foreach("))
                     {
                         // Nested @foreach block inside foreach
-                        var dummyParent = new HtmlNode { HtmlContent = "" };
+                        var dummyParent = new SkinTemplateNode();
                         i = ParseForeachBlock(nodes, i, dummyParent);
                         loop.ItemTemplate.AddRange(dummyParent.Children);
                         continue;
@@ -459,11 +459,25 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     methodLines.Add(lines[li]);
 
-                    // Count braces in this line
-                    foreach (var ch in l)
+                    // Count braces in this line, skipping string literals and comments
+                    bool inString = false;
+                    bool inLineComment = false;
+                    for (int ci = 0; ci < l.Length; ci++)
                     {
-                        if (ch == '{') braceDepth++;
-                        else if (ch == '}') braceDepth--;
+                        var ch = l[ci];
+                        if (inLineComment) break;
+                        if (ch == '/' && ci + 1 < l.Length && l[ci + 1] == '/')
+                        {
+                            inLineComment = true;
+                            break;
+                        }
+                        if (ch == '"' && (ci == 0 || l[ci - 1] != '\\'))
+                            inString = !inString;
+                        if (!inString)
+                        {
+                            if (ch == '{') braceDepth++;
+                            else if (ch == '}') braceDepth--;
+                        }
                     }
 
                     // Expression-bodied method (=>) on a single line with semicolon
@@ -715,11 +729,15 @@ namespace NScript.RazorSkin.TemplateIR
         private static Tuple<string, string> ExtractForeachParts(string content)
         {
             if (content == null) return null;
-            var inIdx = content.IndexOf(" in ");
-            if (inIdx < 0) return null;
 
+            // Use regex to find " in " as a keyword boundary, not just substring.
+            // This avoids matching property names containing "in" (e.g., "CheckInRecords").
+            var inMatch = System.Text.RegularExpressions.Regex.Match(content, @"\s+in\s+");
+            if (!inMatch.Success) return null;
+
+            var inIdx = inMatch.Index;
             var varPart = content.Substring(0, inIdx).Trim();
-            var afterIn = content.Substring(inIdx + 4);
+            var afterIn = content.Substring(inIdx + inMatch.Length);
 
             // Remove everything from ")" onward
             var parenIdx = afterIn.IndexOf(')');

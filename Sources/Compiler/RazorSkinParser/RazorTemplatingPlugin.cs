@@ -150,22 +150,14 @@ namespace Sunlight.Framework.Observables
             return IntrestLevel.None;
         }
 
-        public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter)
-        {
-            throw new NotImplementedException();
-        }
+        // Not used: RazorTemplatingPlugin only returns IntrestLevel.Overwrite or None.
+        public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter) => null;
 
-        public List<Statement> GetPostInsertionStatements(MethodConverter methodConverter)
-        {
-            throw new NotImplementedException();
-        }
+        public List<Statement> GetPostInsertionStatements(MethodConverter methodConverter) => null;
 
         public List<Statement> GetEncapsulationStatements(
             MethodConverter methodConverter,
-            List<Statement> methodStatments)
-        {
-            throw new NotImplementedException();
-        }
+            List<Statement> methodStatments) => null;
 
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {
