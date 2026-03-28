@@ -40,6 +40,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Templates\TestTemplateVMB1_int.html" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="RazorTemplates\RazorSimpleText.skin.cshtml" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />

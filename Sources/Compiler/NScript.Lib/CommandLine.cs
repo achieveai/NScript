@@ -22,8 +22,11 @@
 
             var plugins = new List<IConverterPlugin>()
             {
-                new XwmlTemplatingPlugin(),
+                // Razor MUST be before XWML: the first plugin returning Overwrite wins,
+                // and XWML would claim [Skin] attributes for .skin.cshtml templates
+                // then fail because it only handles .html templates.
                 new RazorTemplatingPlugin(),
+                new XwmlTemplatingPlugin(),
                 new TestGenerator()
             };
 

@@ -2,4 +2,5 @@
 <Plugins>
   <Plugin Assembly="NScript.Converter.Plugins" ClassName="NScript.Converter.Plugins.TestGenerator" />
   <Plugin Assembly="XwmlParser" ClassName="XwmlParser.XwmlTemplatingPlugin" />
+  <Plugin Assembly="RazorSkinParser" ClassName="NScript.RazorSkin.RazorTemplatingPlugin" />
 </Plugins>

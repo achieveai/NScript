@@ -31,6 +31,11 @@ namespace NScript.RazorSkin
         private readonly Dictionary<string, string> _compiledTemplates = new Dictionary<string, string>();
 
         /// <summary>
+        /// Maps full resource name to short template name (for GetOverwrite JS call).
+        /// </summary>
+        private readonly Dictionary<string, string> _templateShortNames = new Dictionary<string, string>();
+
+        /// <summary>
         /// Whether any .skin.cshtml resources were found during initialization.
         /// </summary>
         private bool _hasRazorTemplates;
@@ -105,7 +110,11 @@ namespace Sunlight.Framework.Observables
                             var js = RazorSkinCompiler.Compile(
                                 templateName, templateSource,
                                 new[] { FrameworkTypeStubs });
+                            // Store under both short name and full resource name
+                            // so [Skin("full.resource.name.skin.cshtml")] matches
                             _compiledTemplates[templateName] = js;
+                            _compiledTemplates[embeddedResource.Name] = js;
+                            _templateShortNames[embeddedResource.Name] = templateName;
                             _hasRazorTemplates = true;
 
                             Log.Debug("Compilation succeeded for template {TemplateName} from resource {ResourceName}",
@@ -141,6 +150,7 @@ namespace Sunlight.Framework.Observables
 
             // Check if this is a [Skin("...")] property getter where the template
             // name corresponds to a compiled .skin.cshtml template
+            Log.Verbose($"[RazorPlugin:GetInterestLevel] {methodDefinition.FullName}");
             PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
             if (propertyDefinition == null) return IntrestLevel.None;
             if (propertyDefinition.SetMethod != null) return IntrestLevel.None;
@@ -155,8 +165,10 @@ namespace Sunlight.Framework.Observables
             if (skinAttr.HasConstructorArguments)
             {
                 var templateName = skinAttr.ConstructorArguments[0].Value as string;
+                Log.Verbose($"[RazorPlugin] Checking template '{templateName}', compiled keys: [{string.Join(", ", _compiledTemplates.Keys)}]");
                 if (templateName != null && _compiledTemplates.ContainsKey(templateName))
                 {
+                    Log.Verbose($"[RazorPlugin] MATCH FOUND for '{templateName}' -> returning Overwrite");
                     Log.Debug("[Skin] match found for method {MethodName} with template {TemplateName}",
                         methodDefinition.FullName, templateName);
                     return IntrestLevel.Overwrite;
@@ -189,24 +201,18 @@ namespace Sunlight.Framework.Observables
                 return null;
             }
 
-            Log.Debug("Resolved template {TemplateName} for overwrite", templateName);
+            // Look up the short template name (used as the JS getter function name)
+            var shortName = _templateShortNames.ContainsKey(templateName)
+                ? _templateShortNames[templateName] : templateName;
 
-            // Return a call to the template getter function
-            // This mirrors what XwmlTemplatingPlugin does: return SkinTemplateName();
+            Log.Debug("Resolved template {TemplateName} (short: {ShortName}) for overwrite", templateName, shortName);
+
+            // Emit raw JS: return TemplateName();
+            // The getter function is emitted by GetPostJavascript as raw JS,
+            // so we must reference it by its raw name (not NScript-mangled).
             return new List<Statement>
             {
-                new ReturnStatement(
-                    null,
-                    methodConverter.Scope,
-                    new MethodCallExpression(
-                        null,
-                        methodConverter.Scope,
-                        new IdentifierExpression(
-                            SimpleIdentifier.CreateScopeIdentifier(
-                                methodConverter.Scope,
-                                templateName,
-                                false),
-                            methodConverter.Scope)))
+                new RawJavaScriptStatement($"return {shortName}();")
             };
         }
 
