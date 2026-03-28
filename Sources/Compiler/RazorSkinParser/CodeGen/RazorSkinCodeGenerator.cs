@@ -396,6 +396,21 @@ namespace NScript.RazorSkin.CodeGen
         private static List<ExpressionBindingNode> CollectBindings(List<IRNode> nodes)
             => CollectNodes<ExpressionBindingNode>(nodes);
 
+        // --- Public accessors for RazorSkinJSTGenerator ---
+
+        public static List<ExpressionBindingNode> CollectBindingsPublic(List<IRNode> nodes)
+            => CollectBindings(nodes);
+
+        public static List<EventNode> CollectEventsPublic(List<IRNode> nodes)
+            => CollectEvents(nodes);
+
+        public static string CollectHtmlWithPathsPublic(
+            List<IRNode> nodes, List<EventNode> eventTracker, List<List<int>> outPaths)
+            => CollectHtmlWithPaths(nodes, eventTracker, outPaths);
+
+        public static Dictionary<string, int> BuildPartIdMappingPublic(List<IRNode> nodes)
+            => BuildPartIdMapping(nodes);
+
         /// <summary>
         /// Build a mapping from element id attribute values to their element indices
         /// in the objStorage array, for the SkinInstance partMap parameter (H8).

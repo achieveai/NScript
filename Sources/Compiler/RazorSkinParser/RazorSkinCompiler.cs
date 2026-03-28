@@ -78,5 +78,38 @@ namespace NScript.RazorSkin
 
             return result;
         }
+
+        /// <summary>
+        /// Compiles a .skin.cshtml template through all phases and returns both the
+        /// template IR (for JST generation) and the JS string (for snapshot tests).
+        /// </summary>
+        public static (SkinTemplateNode IR, string JS) CompileWithIR(
+            string templateName,
+            string templateSource,
+            string[] additionalCSharpSources = null)
+        {
+            Log.Debug("CompileWithIR started for template {TemplateName}", templateName);
+
+            // Phase 1: Preprocess
+            var preprocessed = RazorSkinPreprocessor.Process(templateSource);
+
+            // Phase 2: Razor parse
+            var parsed = RazorParserPhase.Parse(templateName, preprocessed.CleanedTemplate);
+
+            // Phase 3: Build IR
+            var ir = TemplateIRBuilder.Build(templateName, preprocessed, parsed);
+
+            // Phase 4: Roslyn analysis
+            if (additionalCSharpSources != null && additionalCSharpSources.Length > 0)
+            {
+                RoslynAnalysisPhase.RefineClassifications(
+                    ir, parsed.GeneratedCSharp, additionalCSharpSources);
+            }
+
+            // Phase 5: Generate JS (for backward compatibility / snapshot tests)
+            var js = RazorSkinCodeGenerator.Generate(ir);
+
+            return (ir, js);
+        }
     }
 }

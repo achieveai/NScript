@@ -31,6 +31,13 @@ namespace NScript.RazorSkin
         private readonly Dictionary<string, string> _compiledTemplates = new Dictionary<string, string>();
 
         /// <summary>
+        /// Map of template name to compiled template IR.
+        /// Used by GetPostJavascript to generate proper JST nodes.
+        /// </summary>
+        private readonly Dictionary<string, TemplateIR.SkinTemplateNode> _compiledIRs
+            = new Dictionary<string, TemplateIR.SkinTemplateNode>();
+
+        /// <summary>
         /// Maps full resource name to short template name (for GetOverwrite JS call).
         /// </summary>
         private readonly Dictionary<string, string> _templateShortNames = new Dictionary<string, string>();
@@ -39,6 +46,14 @@ namespace NScript.RazorSkin
         /// Whether any .skin.cshtml resources were found during initialization.
         /// </summary>
         private bool _hasRazorTemplates;
+
+        /// <summary>
+        /// Maps template name to its JST getter function identifier.
+        /// Populated during GetPostJavascript when JST generation succeeds.
+        /// Used by GetOverwrite to emit proper JST return statements.
+        /// </summary>
+        private readonly Dictionary<string, IIdentifier> _templateGetterIdentifiers
+            = new Dictionary<string, IIdentifier>();
 
         /// <summary>
         /// Resolved runtime identifiers for replacing mangled names in compiled JS.
@@ -120,13 +135,15 @@ namespace Sunlight.Framework.Observables
                             var templateName = Path.GetFileNameWithoutExtension(
                                 Path.GetFileNameWithoutExtension(fileName));
 
-                            var js = RazorSkinCompiler.Compile(
+                            var (ir, js) = RazorSkinCompiler.CompileWithIR(
                                 templateName, templateSource,
                                 new[] { FrameworkTypeStubs });
                             // Store under both short name and full resource name
                             // so [Skin("full.resource.name.skin.cshtml")] matches
                             _compiledTemplates[templateName] = js;
                             _compiledTemplates[embeddedResource.Name] = js;
+                            _compiledIRs[templateName] = ir;
+                            _compiledIRs[embeddedResource.Name] = ir;
                             _templateShortNames[embeddedResource.Name] = templateName;
                             _hasRazorTemplates = true;
 
@@ -493,9 +510,24 @@ namespace Sunlight.Framework.Observables
 
             Log.Debug("Resolved template {TemplateName} (short: {ShortName}) for overwrite", templateName, shortName);
 
-            // Emit raw JS: return TemplateName();
-            // The getter function is emitted by GetPostJavascript as raw JS,
-            // so we must reference it by its raw name (not NScript-mangled).
+            // Use the JST getter identifier if available (from JST generation in GetPostJavascript),
+            // otherwise fall back to raw JS with the short name.
+            if (_templateGetterIdentifiers.TryGetValue(shortName, out var getterId))
+            {
+                var scope = methodConverter.Scope;
+                return new List<Statement>
+                {
+                    new ReturnStatement(
+                        null,
+                        scope,
+                        new MethodCallExpression(
+                            null,
+                            scope,
+                            new IdentifierExpression(getterId, scope)))
+                };
+            }
+
+            // Fallback: emit raw JS
             return new List<Statement>
             {
                 new RawJavaScriptStatement($"return {shortName}();")
@@ -553,36 +585,62 @@ namespace Sunlight.Framework.Observables
                 return new List<Statement>();
 
             var statements = new List<Statement>();
-            var totalSize = 0;
 
-            // Track which template keys we've already emitted to avoid duplicates
-            // (_compiledTemplates stores the same JS under both short name and resource name)
-            var emittedJs = new HashSet<string>(StringComparer.Ordinal);
+            // Track which template IRs we've already emitted to avoid duplicates
+            // (_compiledIRs stores the same IR under both short name and resource name)
+            var emittedTemplates = new HashSet<string>(StringComparer.Ordinal);
 
-            foreach (var kvp in _compiledTemplates)
+            foreach (var kvp in _compiledIRs)
             {
-                if (!emittedJs.Add(kvp.Value))
+                if (!emittedTemplates.Add(kvp.Value.TemplateName))
                     continue; // Skip duplicate entries
 
-                // Use ResolvedJavaScriptStatement for lazy identifier resolution.
-                // Names are resolved during Write() when all scope names are finalized,
-                // not at GetPostJavascript() time when names may not have their final
-                // minification suffixes yet.
-                if (_resolvedIdentifiers.Count > 0 || _resolvedTypeIdentifiers.Count > 0)
+                try
                 {
-                    statements.Add(new ResolvedJavaScriptStatement(
-                        kvp.Value, _resolvedIdentifiers, _resolvedTypeIdentifiers));
-                }
-                else
-                {
-                    statements.Add(new RawJavaScriptStatement(kvp.Value));
-                }
+                    // Generate proper JST nodes using the template IR
+                    var jstGenerator = new RazorSkinJSTGenerator(
+                        kvp.Value,
+                        _runtimeScopeManager,
+                        _resolvedIdentifiers,
+                        _resolvedTypeIdentifiers);
 
-                totalSize += kvp.Value.Length;
+                    var jstStatements = jstGenerator.Generate();
+                    statements.AddRange(jstStatements);
+
+                    // Store the getter identifier for use in GetOverwrite
+                    var getterIdentifier = jstGenerator.GetGetterIdentifier();
+                    if (getterIdentifier != null)
+                    {
+                        _templateGetterIdentifiers[kvp.Value.TemplateName] = getterIdentifier;
+                    }
+
+                    Log.Debug("Generated {StatementCount} JST statements for template {TemplateName}",
+                        jstStatements.Count, kvp.Value.TemplateName);
+                }
+                catch (System.Exception ex)
+                {
+                    // Fallback to ResolvedJavaScriptStatement if JST generation fails
+                    Log.Debug("JST generation failed for template {TemplateName}: {Error}. " +
+                        "Falling back to ResolvedJavaScriptStatement.",
+                        kvp.Value.TemplateName, ex.Message);
+
+                    if (_compiledTemplates.TryGetValue(kvp.Key, out var js))
+                    {
+                        if (_resolvedIdentifiers.Count > 0 || _resolvedTypeIdentifiers.Count > 0)
+                        {
+                            statements.Add(new ResolvedJavaScriptStatement(
+                                js, _resolvedIdentifiers, _resolvedTypeIdentifiers));
+                        }
+                        else
+                        {
+                            statements.Add(new RawJavaScriptStatement(js));
+                        }
+                    }
+                }
             }
 
-            Log.Debug("GetPostJavascript emitting {TemplateCount} templates, total JS size {TotalJsSize} chars",
-                statements.Count, totalSize);
+            Log.Debug("GetPostJavascript emitting {StatementCount} statements for {TemplateCount} templates",
+                statements.Count, emittedTemplates.Count);
 
             return statements;
         }
