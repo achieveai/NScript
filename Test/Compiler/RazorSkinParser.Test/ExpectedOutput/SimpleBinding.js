@@ -7,7 +7,7 @@ function SimpleBinding_factory(skinFactory, doc) {
     domStore[0] = doc.createElement("div");
     domStore[0].innerHTML = "<div>\n    <span><span></span></span>\n</div>";
     SimpleBinding_tmplStore[0] = SimpleBinding_tmplStore[0] ? SimpleBinding_tmplStore[0] : [
-      Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([function(dc) { return dc.get_name(); }], [], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 1, 0, 0, null, "")
+      Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory([function(dc) { return dc.get_name(); }], [], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent, 17, 0, 0, null, "")
     ];
   }
   htmlRoot = domStore[0].cloneNode(true);

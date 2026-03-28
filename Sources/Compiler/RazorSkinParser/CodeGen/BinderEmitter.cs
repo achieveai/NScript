@@ -6,25 +6,15 @@ namespace NScript.RazorSkin.CodeGen
 {
     public static class BinderEmitter
     {
-        // Binder type flags matching XwmlParser BinderType enum.
+        // Binder type flags matching SkinBinderInfo.BinderType enum.
         // Low nibble = source type, high nibble = binder kind.
-        // DataContext = 0x1, TemplateParent = 0x3, PropertyBinder = 0x10
+        // PropertyBinder is ALWAYS set — both OneTime and OneWay use the 8-param
+        // SkinBinderInfo constructor. The difference is the propertyNames array:
+        //   OneWay: ["PropA", "PropB"] → LiveBinder watches for changes
+        //   OneTime: [] → no LiveBinder, initial value still flows via SetPropertyValue
         private const int DATACONTEXT = 0x1;       // BinderType.DataContext
         private const int TEMPLATEPARENT = 0x3;     // BinderType.TemplateParent
         private const int PROPERTYBINDER = 0x10;    // BinderType.PropertyBinder
-        private const int CSSBINDER = 0x50;         // BinderType.CssBinder
-        private const int STYLEBINDER = 0x60;       // BinderType.StyleBinder
-        private const int ATTRIBUTEBINDER = 0x70;   // BinderType.AttributeBinder
-
-        // Combined flags used in generated JS:
-        // ONEWAY_DATACONTEXT  = PropertyBinder | DataContext = 0x11 = 17
-        // ONETIME_DATACONTEXT = DataContext = 0x01 = 1
-        // ONEWAY_TEMPLATEPARENT = PropertyBinder | TemplateParent = 0x13 = 19
-        // ONETIME_TEMPLATEPARENT = TemplateParent = 0x03 = 3
-        private const int ONEWAY_DATACONTEXT = PROPERTYBINDER | DATACONTEXT;   // 17
-        private const int ONETIME_DATACONTEXT = DATACONTEXT;                    // 1
-        private const int ONEWAY_TEMPLATEPARENT = PROPERTYBINDER | TEMPLATEPARENT; // 19
-        private const int ONETIME_TEMPLATEPARENT = TEMPLATEPARENT;              // 3
 
         public static string EmitSkinBinderInfo(
             ExpressionBindingNode binding,
@@ -62,13 +52,16 @@ namespace NScript.RazorSkin.CodeGen
             };
             sb.Append($", {setter}");
 
-            // Compute binder type flags from source kind and binding mode
+            // Compute binder type flags from source kind.
+            // PropertyBinder flag is ALWAYS set (both OneTime and OneWay use PropertyBinder).
+            // The difference between OneTime and OneWay is the propertyNames array:
+            //   OneWay has ["PropA", "PropB"] → LiveBinder watches for changes
+            //   OneTime has [] → no LiveBinder, but initial value still flows via SetPropertyValue
             int flags;
-            bool isOneWay = binding.Classification.Mode == BindingMode.OneWay;
             if (binding.Classification.SourceKind == BindingSourceKind.TemplateParent)
-                flags = isOneWay ? ONEWAY_TEMPLATEPARENT : ONETIME_TEMPLATEPARENT;
+                flags = PROPERTYBINDER | TEMPLATEPARENT;  // 0x10 | 0x03 = 19
             else
-                flags = isOneWay ? ONEWAY_DATACONTEXT : ONETIME_DATACONTEXT;
+                flags = PROPERTYBINDER | DATACONTEXT;     // 0x10 | 0x01 = 17
             sb.Append($", {flags}");
 
             // Object index, binder index

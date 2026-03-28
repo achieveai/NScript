@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="RazorTemplates\RazorSimpleText.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorOneTimeText.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorMultiBinding.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

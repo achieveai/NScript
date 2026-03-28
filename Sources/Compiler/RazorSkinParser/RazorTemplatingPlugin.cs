@@ -135,9 +135,17 @@ namespace Sunlight.Framework.Observables
                             var templateName = Path.GetFileNameWithoutExtension(
                                 Path.GetFileNameWithoutExtension(fileName));
 
+                            // Generate C# stubs for the model type from Cecil type info.
+                            // This allows the Roslyn analysis phase to detect observable
+                            // properties and promote bindings from OneTime to OneWay.
+                            var modelTypeStub = GenerateModelTypeStub(templateSource, clrContext);
+                            var additionalSources = modelTypeStub != null
+                                ? new[] { FrameworkTypeStubs, modelTypeStub }
+                                : new[] { FrameworkTypeStubs };
+
                             var (ir, js) = RazorSkinCompiler.CompileWithIR(
                                 templateName, templateSource,
-                                new[] { FrameworkTypeStubs });
+                                additionalSources);
                             // Store under both short name and full resource name
                             // so [Skin("full.resource.name.skin.cshtml")] matches
                             _compiledTemplates[templateName] = js;
@@ -146,6 +154,14 @@ namespace Sunlight.Framework.Observables
                             _compiledIRs[embeddedResource.Name] = ir;
                             _templateShortNames[embeddedResource.Name] = templateName;
                             _hasRazorTemplates = true;
+
+                            // Pre-create the getter function identifier in the scope system
+                            // so it's available when GetOverwrite is called (before GetPostJavascript)
+                            var getterId = SimpleIdentifier.CreateScopeIdentifier(
+                                runtimeScopeManager.Scope,
+                                templateName,
+                                false);
+                            _templateGetterIdentifiers[templateName] = getterId;
 
                             Log.Debug("Compilation succeeded for template {TemplateName} from resource {ResourceName}",
                                 templateName, embeddedResource.Name);
@@ -238,9 +254,6 @@ namespace Sunlight.Framework.Observables
                 var nativeArrayInt = new GenericInstanceType(nativeArray1);
                 nativeArrayInt.GenericArguments.Add(clrKnownRefs.Int32);
 
-                var nativeArrayInt32 = new GenericInstanceType(nativeArray1);
-                nativeArrayInt32.GenericArguments.Add(clrKnownRefs.Int32);
-
                 var nativeArrayObject = new GenericInstanceType(nativeArray1);
                 nativeArrayObject.GenericArguments.Add(clrKnownRefs.Object);
 
@@ -265,7 +278,7 @@ namespace Sunlight.Framework.Observables
                 // --- Resolve SkinInstance constructor factory ---
                 var skinInstanceCtor = clrContext.GetMethodReference(
                     ".ctor", clrKnownRefs.Void, skinInstanceType,
-                    skinType, elementRefType, nativeArrayInt32,
+                    skinType, elementRefType, nativeArrayInt,
                     nativeArray, nativeArraySkinBinderInfo,
                     clrKnownRefs.Object, clrKnownRefs.Int32, clrKnownRefs.Int32).Resolve();
 
@@ -438,6 +451,125 @@ namespace Sunlight.Framework.Observables
             Log.Debug("Could not find type definition for mangled name {MangledName}", mangledName);
         }
 
+        /// <summary>
+        /// Generates a C# source stub for the model type referenced by @model in the template.
+        /// Uses Cecil type information to produce a minimal class declaration with properties,
+        /// so the Roslyn analysis phase can detect observable properties and promote bindings
+        /// from OneTime to OneWay.
+        /// </summary>
+        private string GenerateModelTypeStub(string templateSource, ClrContext clrContext)
+        {
+            // Extract @model type name from the template source
+            string modelTypeName = null;
+            foreach (var line in templateSource.Split('\n'))
+            {
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("@model "))
+                {
+                    modelTypeName = trimmed.Substring("@model ".Length).Trim();
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(modelTypeName))
+                return null;
+
+            // Find the type in Cecil
+            TypeDefinition typeDef = null;
+            foreach (var module in clrContext.Modules)
+            {
+                foreach (var t in module.Types)
+                {
+                    if (t.FullName == modelTypeName)
+                    {
+                        typeDef = t;
+                        break;
+                    }
+                }
+                if (typeDef != null) break;
+            }
+
+            if (typeDef == null)
+            {
+                Log.Debug("Could not find Cecil type {TypeName} for model stub generation", modelTypeName);
+                return null;
+            }
+
+            // Determine base class
+            var baseTypeName = "object";
+            var currentBase = typeDef.BaseType;
+            while (currentBase != null)
+            {
+                if (currentBase.FullName == "Sunlight.Framework.Observables.ObservableObject")
+                {
+                    baseTypeName = "Sunlight.Framework.Observables.ObservableObject";
+                    break;
+                }
+                try { currentBase = currentBase.Resolve()?.BaseType; }
+                catch { break; }
+            }
+
+            // Build namespace and class declaration
+            var ns = typeDef.Namespace;
+            var className = typeDef.Name;
+            var sb = new System.Text.StringBuilder();
+
+            if (!string.IsNullOrEmpty(ns))
+            {
+                sb.AppendLine($"namespace {ns} {{");
+            }
+
+            sb.AppendLine($"  public class {className} : {baseTypeName} {{");
+
+            // Generate property stubs
+            foreach (var prop in typeDef.Properties)
+            {
+                var propTypeName = MapCecilTypeToSimpleName(prop.PropertyType);
+                if (prop.GetMethod != null && prop.SetMethod != null)
+                {
+                    sb.AppendLine($"    public {propTypeName} {prop.Name} {{ get; set; }}");
+                }
+                else if (prop.GetMethod != null)
+                {
+                    sb.AppendLine($"    public {propTypeName} {prop.Name} {{ get; }}");
+                }
+            }
+
+            sb.AppendLine("  }");
+
+            if (!string.IsNullOrEmpty(ns))
+            {
+                sb.AppendLine("}");
+            }
+
+            var stub = sb.ToString();
+            Log.Debug("Generated model type stub for {TypeName}: {StubLength} chars, base={BaseType}",
+                modelTypeName, stub.Length, baseTypeName);
+            return stub;
+        }
+
+        /// <summary>
+        /// Maps a Cecil TypeReference to a simple C# type name for stub generation.
+        /// </summary>
+        private static string MapCecilTypeToSimpleName(TypeReference typeRef)
+        {
+            if (typeRef == null) return "object";
+
+            switch (typeRef.FullName)
+            {
+                case "System.String": return "string";
+                case "System.Int32": return "int";
+                case "System.Boolean": return "bool";
+                case "System.Double": return "double";
+                case "System.Single": return "float";
+                case "System.Int64": return "long";
+                case "System.Decimal": return "decimal";
+                case "System.Object": return "object";
+                case "System.Void": return "void";
+                default: return "object";
+            }
+        }
+
         public void ParseArgs(IList<Tuple<string, string>> args)
         {
             // No custom args needed for Razor templates
@@ -453,7 +585,6 @@ namespace Sunlight.Framework.Observables
 
             // Check if this is a [Skin("...")] property getter where the template
             // name corresponds to a compiled .skin.cshtml template
-            Log.Verbose($"[RazorPlugin:GetInterestLevel] {methodDefinition.FullName}");
             PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
             if (propertyDefinition == null) return IntrestLevel.None;
             if (propertyDefinition.SetMethod != null) return IntrestLevel.None;
@@ -468,10 +599,8 @@ namespace Sunlight.Framework.Observables
             if (skinAttr.HasConstructorArguments)
             {
                 var templateName = skinAttr.ConstructorArguments[0].Value as string;
-                Log.Verbose($"[RazorPlugin] Checking template '{templateName}', compiled keys: [{string.Join(", ", _compiledTemplates.Keys)}]");
                 if (templateName != null && _compiledTemplates.ContainsKey(templateName))
                 {
-                    Log.Verbose($"[RazorPlugin] MATCH FOUND for '{templateName}' -> returning Overwrite");
                     Log.Debug("[Skin] match found for method {MethodName} with template {TemplateName}",
                         methodDefinition.FullName, templateName);
                     return IntrestLevel.Overwrite;
@@ -598,11 +727,17 @@ namespace Sunlight.Framework.Observables
                 try
                 {
                     // Generate proper JST nodes using the template IR
+                    // Pass the pre-created getter identifier so it matches what GetOverwrite references
+                    IIdentifier preCreatedGetter = null;
+                    _templateGetterIdentifiers.TryGetValue(kvp.Value.TemplateName, out preCreatedGetter);
+
                     var jstGenerator = new RazorSkinJSTGenerator(
                         kvp.Value,
                         _runtimeScopeManager,
+                        _clrContext,
                         _resolvedIdentifiers,
-                        _resolvedTypeIdentifiers);
+                        _resolvedTypeIdentifiers,
+                        preCreatedGetter);
 
                     var jstStatements = jstGenerator.Generate();
                     statements.AddRange(jstStatements);

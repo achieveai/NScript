@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil;
+using NScript.CLR;
 using NScript.Converter.TypeSystemConverter;
 using NScript.JST;
 using NScript.RazorSkin.TemplateIR;
@@ -19,6 +21,7 @@ namespace NScript.RazorSkin.CodeGen
 
         private readonly SkinTemplateNode _ir;
         private readonly RuntimeScopeManager _scopeManager;
+        private readonly ClrContext _clrContext;
         private readonly Dictionary<string, IIdentifier> _resolvedIdentifiers;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
 
@@ -34,19 +37,37 @@ namespace NScript.RazorSkin.CodeGen
         private IIdentifier _htmlRootIdentifier;
         private IIdentifier _objStorageIdentifier;
 
-        // Data index (always 0 for Razor templates — single template per resource)
-        private const int DataIndex = 0;
+        // Data index for doc.stateStore — must be unique across ALL templates (XWML + Razor).
+        // XWML templates use sequential indices starting from 0 (one per skin).
+        // We start at 100 to avoid collision. If a project has 100+ XWML templates,
+        // this offset must be increased. TODO: Coordinate with XWML's CodeGenerator
+        // to allocate from a shared counter instead of a hardcoded offset.
+        private const int RazorDataIndexOffset = 100;
+        private static int _next_dataIndex = RazorDataIndexOffset;
+        private readonly int _dataIndex;
+
+
+        /// <summary>
+        /// Pre-created getter identifier from Initialize(), so GetOverwrite can reference
+        /// the same identifier that the getter function is registered under.
+        /// </summary>
+        private readonly IIdentifier _preCreatedGetterIdentifier;
 
         public RazorSkinJSTGenerator(
             SkinTemplateNode ir,
             RuntimeScopeManager scopeManager,
+            ClrContext clrContext,
             Dictionary<string, IIdentifier> resolvedIdentifiers,
-            Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers)
+            Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers,
+            IIdentifier preCreatedGetterIdentifier = null)
         {
             _ir = ir;
             _scopeManager = scopeManager;
+            _clrContext = clrContext;
             _resolvedIdentifiers = resolvedIdentifiers;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
+            _preCreatedGetterIdentifier = preCreatedGetterIdentifier;
+            _dataIndex = _next_dataIndex++;
         }
 
         /// <summary>
@@ -77,10 +98,12 @@ namespace NScript.RazorSkin.CodeGen
                 _ir.TemplateName + "_var",
                 false);
 
-            _getterMethodIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                _scopeManager.Scope,
-                _ir.TemplateName,
-                false);
+            // Use pre-created identifier if available (from Initialize), otherwise create new
+            _getterMethodIdentifier = (_preCreatedGetterIdentifier as SimpleIdentifier)
+                ?? SimpleIdentifier.CreateScopeIdentifier(
+                    _scopeManager.Scope,
+                    _ir.TemplateName,
+                    false);
 
             // Create the tmplStore variable — use a scope identifier like XWML's GetGlobalStateVariable
             _tmplStoreIdentifier = SimpleIdentifier.CreateScopeIdentifier(
@@ -199,7 +222,7 @@ namespace NScript.RazorSkin.CodeGen
                                 _factoryScope,
                                 new IdentifierExpression(docStorageGetterId, _factoryScope),
                                 new IdentifierExpression(docParam, _factoryScope))),
-                        new NumberLiteralExpression(_factoryScope, DataIndex)));
+                        new NumberLiteralExpression(_factoryScope, _dataIndex)));
 
             var initStatements = new List<Statement>();
 
@@ -210,7 +233,7 @@ namespace NScript.RazorSkin.CodeGen
                         null,
                         _factoryScope,
                         new IdentifierExpression(_domStoreIdentifier, _factoryScope),
-                        new NumberLiteralExpression(_factoryScope, DataIndex)),
+                        new NumberLiteralExpression(_factoryScope, _dataIndex)),
                     new MethodCallExpression(
                         null,
                         _factoryScope,
@@ -231,7 +254,7 @@ namespace NScript.RazorSkin.CodeGen
                             null,
                             _factoryScope,
                             new IdentifierExpression(_domStoreIdentifier, _factoryScope),
-                            new NumberLiteralExpression(_factoryScope, DataIndex)),
+                            new NumberLiteralExpression(_factoryScope, _dataIndex)),
                         new StringLiteralExpression(_factoryScope, "innerHTML")),
                     new StringLiteralExpression(_factoryScope, htmlContent)));
 
@@ -243,7 +266,7 @@ namespace NScript.RazorSkin.CodeGen
                         null,
                         _factoryScope,
                         new IdentifierExpression(_tmplStoreIdentifier, _factoryScope),
-                        new NumberLiteralExpression(_factoryScope, DataIndex)),
+                        new NumberLiteralExpression(_factoryScope, _dataIndex)),
                     new ConditionalOperatorExpression(
                         null,
                         _factoryScope,
@@ -251,12 +274,12 @@ namespace NScript.RazorSkin.CodeGen
                             null,
                             _factoryScope,
                             new IdentifierExpression(_tmplStoreIdentifier, _factoryScope),
-                            new NumberLiteralExpression(_factoryScope, DataIndex)),
+                            new NumberLiteralExpression(_factoryScope, _dataIndex)),
                         new IndexExpression(
                             null,
                             _factoryScope,
                             new IdentifierExpression(_tmplStoreIdentifier, _factoryScope),
-                            new NumberLiteralExpression(_factoryScope, DataIndex)),
+                            new NumberLiteralExpression(_factoryScope, _dataIndex)),
                         new InlineNewArrayInitialization(
                             null,
                             _factoryScope,
@@ -285,7 +308,7 @@ namespace NScript.RazorSkin.CodeGen
                                 null,
                                 _factoryScope,
                                 new IdentifierExpression(_domStoreIdentifier, _factoryScope),
-                                new NumberLiteralExpression(_factoryScope, DataIndex)),
+                                new NumberLiteralExpression(_factoryScope, _dataIndex)),
                             new StringLiteralExpression(_factoryScope, "cloneNode")),
                         new BooleanLiteralExpression(_factoryScope, true))));
 
@@ -342,25 +365,10 @@ namespace NScript.RazorSkin.CodeGen
                         new IdentifierExpression(_htmlRootIdentifier, _factoryScope)));
             }
 
-            // Build part ID mapping expression
-            var partIdMapping = RazorSkinCodeGenerator.BuildPartIdMappingPublic(_ir.Children);
-            Expression partIdExpr;
-            if (partIdMapping.Count > 0)
-            {
-                // Build an object literal as raw JS (part IDs are simple string->int maps)
-                var entries = new List<Expression>();
-                foreach (var kvp in partIdMapping)
-                {
-                    entries.Add(new StringLiteralExpression(_factoryScope, kvp.Key));
-                    entries.Add(new NumberLiteralExpression(_factoryScope, kvp.Value));
-                }
-                // Use null for now since XWML also uses a custom expression for this
-                partIdExpr = new NullLiteralExpression(_factoryScope);
-            }
-            else
-            {
-                partIdExpr = new NullLiteralExpression(_factoryScope);
-            }
+            // Part ID mapping — not yet implemented for Razor templates (always null).
+            // XWML uses a custom expression for this; Razor will add support when
+            // id-based part access is needed.
+            var partIdExpr = new NullLiteralExpression(_factoryScope);
 
             // return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], partMap, liveBinderCount, 0)
             IIdentifier skinInstanceFactoryId = GetResolvedIdentifier(
@@ -392,7 +400,7 @@ namespace NScript.RazorSkin.CodeGen
                             null,
                             _factoryScope,
                             new IdentifierExpression(_tmplStoreIdentifier, _factoryScope),
-                            new NumberLiteralExpression(_factoryScope, DataIndex)),
+                            new NumberLiteralExpression(_factoryScope, _dataIndex)),
                         // partMap
                         partIdExpr,
                         // liveBinderCount
@@ -420,18 +428,15 @@ namespace NScript.RazorSkin.CodeGen
                 var deps = binding.Classification.Dependencies;
                 var expr = binding.Classification.CSharpExpression;
 
-                // Getter function: function(dc) { return <jsExpr>; }
-                var getterJs = ExpressionJsEmitter.ToJsGetter(expr, "dc", "tp", knownFunctionNames);
+                // Getter function: function(dc) { return dc.get_propStr1_c(); }
                 var paramName = binding.Classification.SourceKind == BindingSourceKind.TemplateParent
                     ? "tp" : "dc";
 
                 // Build getter function scope with the correct parameter name.
-                // The raw JS body uses "dc" or "tp" as the parameter name, so we must
-                // create the scope with that exact name enforced to prevent renaming.
                 var getterScope = new IdentifierScope(
                     _factoryScope,
                     new string[] { paramName },
-                    true);
+                    false);
                 var getterFunc = new FunctionExpression(
                     null,
                     _factoryScope,
@@ -439,13 +444,27 @@ namespace NScript.RazorSkin.CodeGen
                     getterScope.ParameterIdentifiers,
                     null);
 
-                // The getter function returns the JS expression.
-                // Since the expression is text-based from the Razor parser, we use a RawJsExpression.
-                getterFunc.AddStatement(
-                    new ReturnStatement(
-                        null,
-                        getterScope,
-                        new RawJsExpression(getterJs, getterScope)));
+                // Try to build a resolved JST expression (proper minified method calls).
+                // Falls back to raw JS text only for complex expressions that can't be resolved.
+                var paramIdentifier = getterScope.ParameterIdentifiers[0];
+                var resolvedExpr = TryBuildResolvedGetterExpression(binding, getterScope, paramIdentifier);
+
+                if (resolvedExpr != null)
+                {
+                    getterFunc.AddStatement(
+                        new ReturnStatement(null, getterScope, resolvedExpr));
+                }
+                else
+                {
+                    // Fallback: raw JS for complex expressions (computed, function calls, etc.)
+                    var getterJs = ExpressionJsEmitter.ToJsGetter(expr, "dc", "tp", knownFunctionNames);
+                    Log.Warning("Using raw JS fallback for getter expression: {Expr}", expr);
+                    getterFunc.AddStatement(
+                        new ReturnStatement(
+                            null,
+                            getterScope,
+                            new RawJsExpression(getterJs, getterScope)));
+                }
 
                 var getterArray = new InlineNewArrayInitialization(
                     null,
@@ -464,13 +483,11 @@ namespace NScript.RazorSkin.CodeGen
                 // Target setter
                 IIdentifier setterId = GetSetterIdentifier(binding.Target);
 
-                // Binder type flags
-                bool isOneWay = binding.Classification.Mode == BindingMode.OneWay;
-                int flags;
-                if (binding.Classification.SourceKind == BindingSourceKind.TemplateParent)
-                    flags = isOneWay ? 0x13 : 0x03;
-                else
-                    flags = isOneWay ? 0x11 : 0x01;
+                // Binder type flags — PropertyBinder is always set for both OneTime and OneWay.
+                // The difference is the propertyNames array: OneWay has names, OneTime has [].
+                int flags = binding.Classification.SourceKind == BindingSourceKind.TemplateParent
+                    ? 0x13   // PropertyBinder | TemplateParent
+                    : 0x11;  // PropertyBinder | DataContext
 
                 // SkinBinderInfo_factory(getters, propNames, setter, flags, objIdx, binderIdx, converter, default)
                 result.Add(
@@ -525,7 +542,7 @@ namespace NScript.RazorSkin.CodeGen
                     controlTypeExpr,
                     modelTypeExpr,
                     new IdentifierExpression(_factoryMethodIdentifier, methodScope),
-                    new StringLiteralExpression(methodScope, DataIndex.ToString())));
+                    new StringLiteralExpression(methodScope, _dataIndex.ToString())));
 
             // if (!TemplateName_var)
             var initIfStatement = new IfBlockStatement(
@@ -613,6 +630,136 @@ namespace NScript.RazorSkin.CodeGen
         /// GetOverwrite statements that reference the getter by scope identifier.
         /// </summary>
         public IIdentifier GetGetterIdentifier() => _getterMethodIdentifier;
+
+        /// <summary>
+        /// Builds a proper JST expression for the getter function body by resolving
+        /// property getter methods through the Cecil type system. This ensures that
+        /// the generated JS uses minified method names (e.g., get_propStr1_c) instead
+        /// of raw unminified names (e.g., get_propStr1).
+        ///
+        /// For simple expressions like "Model.PropStr1", builds:
+        ///   dc.get_propStr1_c()
+        ///
+        /// For property chains like "Model.Customer.Name", builds:
+        ///   dc.get_customer_x().get_name_y()
+        ///
+        /// Returns null if the expression cannot be resolved (complex/computed),
+        /// in which case the caller should fall back to RawJsExpression.
+        /// </summary>
+        private Expression TryBuildResolvedGetterExpression(
+            ExpressionBindingNode binding,
+            IdentifierScope getterScope,
+            IIdentifier paramIdentifier)
+        {
+            if (_clrContext == null) return null;
+
+            var expr = binding.Classification.CSharpExpression;
+            if (string.IsNullOrEmpty(expr)) return null;
+
+            // Determine the source prefix and type name
+            string prefix;
+            string typeName;
+            if (expr.StartsWith("Model."))
+            {
+                prefix = "Model.";
+                typeName = _ir.ModelTypeName;
+            }
+            else if (expr.StartsWith("Control."))
+            {
+                prefix = "Control.";
+                typeName = _ir.ControlTypeName;
+            }
+            else
+            {
+                return null; // Not a simple Model/Control property access
+            }
+
+            // Extract the property path after the prefix
+            var propertyPath = expr.Substring(prefix.Length);
+
+            // Bail out for operators or complex expressions (computed, ternary, etc.)
+            if (propertyPath.IndexOfAny(new[] { ' ', '(', '+', '-', '*', '/', '?', '!' }) >= 0)
+                return null;
+
+            // Split property chain (e.g., "Customer.Name" -> ["Customer", "Name"])
+            var properties = propertyPath.Split('.');
+            if (properties.Length == 0) return null;
+
+            // Resolve the source type
+            var typeDefinition = FindTypeDefinition(typeName);
+            if (typeDefinition == null)
+            {
+                Log.Debug("Cannot resolve type {TypeName} for getter expression", typeName);
+                return null;
+            }
+
+            // Build a chain of method calls: dc.get_prop1().get_prop2()...
+            Expression currentExpr = new IdentifierExpression(paramIdentifier, getterScope);
+            var currentType = typeDefinition;
+
+            foreach (var propName in properties)
+            {
+                var property = FindProperty(currentType, propName);
+                if (property?.GetMethod == null)
+                {
+                    Log.Debug("Cannot find property getter {PropName} on type {TypeName}",
+                        propName, currentType.FullName);
+                    return null;
+                }
+
+                // Resolve the getter method to get the minified identifier
+                var getterMethodId = _scopeManager.Resolve(property.GetMethod);
+
+                // Build: currentExpr.get_propName()
+                currentExpr = new MethodCallExpression(
+                    null,
+                    getterScope,
+                    new IndexExpression(
+                        null,
+                        getterScope,
+                        currentExpr,
+                        new IdentifierExpression(getterMethodId, getterScope)),
+                    System.Array.Empty<Expression>());
+
+                // Advance to the property's return type for chained access
+                currentType = property.PropertyType?.Resolve();
+                if (currentType == null && properties.Length > 1)
+                {
+                    Log.Debug("Cannot resolve return type of {PropName} for chain traversal", propName);
+                    return null;
+                }
+            }
+
+            return currentExpr;
+        }
+
+        /// <summary>
+        /// Finds a TypeDefinition by fully qualified name across all loaded assemblies.
+        /// </summary>
+        private TypeDefinition FindTypeDefinition(string fullTypeName)
+        {
+            if (string.IsNullOrEmpty(fullTypeName)) return null;
+
+            return _clrContext.GetTypes()
+                .FirstOrDefault(t => t.FullName == fullTypeName);
+        }
+
+        /// <summary>
+        /// Finds a property on a type, walking up the inheritance hierarchy.
+        /// </summary>
+        private static PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
+        {
+            var current = type;
+            while (current != null)
+            {
+                var prop = current.Properties.FirstOrDefault(p => p.Name == propertyName);
+                if (prop != null) return prop;
+
+                try { current = current.BaseType?.Resolve(); }
+                catch { break; }
+            }
+            return null;
+        }
     }
 
     /// <summary>

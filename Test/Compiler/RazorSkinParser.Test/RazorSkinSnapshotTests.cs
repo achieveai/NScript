@@ -76,9 +76,9 @@ namespace RazorSkinParser.Test
         {
             var js = RazorSkinTestHelper.CompileTemplate("OneTimeBinding");
 
-            // PlainVM is not ObservableObject => OneTime binder (flag 1)
+            // PlainVM is not ObservableObject => OneTime binder (flag 17 = PropertyBinder | DataContext)
             js.Should().Contain("get_appVersion()");
-            js.Should().Contain(", 1,"); // ONETIME_DATACONTEXT flag
+            js.Should().Contain(", 17,"); // PropertyBinder always set for initial value flow
             // Empty dependencies array
             js.Should().Contain("[], Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent");
         }

@@ -16,5 +16,19 @@ namespace Sunlight.Framework.UI.Test
             get
             { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorOneTimeText.skin.cshtml")]
+        public static Skin RazorOneTimeText
+        {
+            get
+            { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorMultiBinding.skin.cshtml")]
+        public static Skin RazorMultiBinding
+        {
+            get
+            { return null; }
+        }
     }
 }

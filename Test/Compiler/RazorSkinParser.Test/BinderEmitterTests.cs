@@ -41,8 +41,8 @@ namespace RazorSkinParser.Test
 
             var result = BinderEmitter.EmitSkinBinderInfo(binding, 0, 0);
 
-            // 1 = ONETIME_DATACONTEXT
-            result.Should().Contain(", 1,");
+            // 17 = PropertyBinder | DataContext (both OneTime and OneWay always use PropertyBinder)
+            result.Should().Contain(", 17,");
             result.Should().Contain("get_appVersion()");
         }
 
@@ -75,8 +75,8 @@ namespace RazorSkinParser.Test
 
             var result = BinderEmitter.EmitSkinBinderInfo(binding, 0, 0);
 
-            // 3 = ONETIME_TEMPLATEPARENT
-            result.Should().Contain(", 3,");
+            // 19 = PropertyBinder | TemplateParent (both OneTime and OneWay always use PropertyBinder)
+            result.Should().Contain(", 19,");
         }
 
         [TestMethod]
