@@ -230,5 +230,110 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("VM2", span.TextContent,
                 "Old VM changes should not affect control after DataContext swap");
         }
+
+        // ------------------------------------------------------------------
+        // Graph mode tests
+        // ------------------------------------------------------------------
+
+        [Test]
+        public static void TestGraphSimpleTextBinding(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new TestViewModelA();
+            vm.PropStr1 = "Hello Graph";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
+
+            assert.NotEqual(null, control.Skin, "Graph skin should be compiled and available");
+
+            control.Activate();
+
+            var span = element.QuerySelector("[data-test] span");
+            assert.NotEqual(null, span, "Skin should render a span element");
+            assert.Equal("Hello Graph", span.TextContent,
+                "Span text should match bound PropStr1 value");
+        }
+
+        [Test]
+        public static void TestGraphOneWayReactivity(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new TestViewModelA();
+            vm.PropStr1 = "Initial";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
+            control.Activate();
+
+            var span = element.QuerySelector("[data-test] span");
+            assert.Equal("Initial", span.TextContent, "Initial value should be rendered");
+
+            vm.PropStr1 = "Updated";
+            assert.Equal("Updated", span.TextContent,
+                "Graph binding should update reactively when property changes");
+        }
+
+        [Test]
+        public static void TestGraphDataContextChange(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm1 = new TestViewModelA();
+            vm1.PropStr1 = "VM1";
+            control.DataContext = vm1;
+            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
+            control.Activate();
+
+            var span = element.QuerySelector("[data-test] span");
+            assert.Equal("VM1", span.TextContent, "Should show first VM value");
+
+            var vm2 = new TestViewModelA();
+            vm2.PropStr1 = "VM2";
+            control.DataContext = vm2;
+
+            span = element.QuerySelector("[data-test] span");
+            assert.Equal("VM2", span.TextContent,
+                "Should show second VM value after DataContext change");
+
+            vm1.PropStr1 = "VM1 Updated";
+            span = element.QuerySelector("[data-test] span");
+            assert.Equal("VM2", span.TextContent,
+                "Old VM changes should not affect control after DataContext swap");
+        }
+
+        [Test]
+        public static void TestGraphMultiBinding(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Alice";
+            vm.Count = 42;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.GraphMultiBinding;
+            control.Activate();
+
+            var nameSpan = element.QuerySelector("[data-test] .name span");
+            var countSpan = element.QuerySelector("[data-test] .count span");
+            assert.NotEqual(null, nameSpan, "Name span should exist");
+            assert.NotEqual(null, countSpan, "Count span should exist");
+            assert.Equal("Alice", nameSpan.TextContent, "Name should show initial value");
+            assert.Equal("42", countSpan.TextContent, "Count should show initial value");
+
+            vm.Name = "Bob";
+            assert.Equal("Bob", nameSpan.TextContent, "Name should update reactively");
+            assert.Equal("42", countSpan.TextContent,
+                "Count should remain unchanged when only Name changes");
+
+            vm.Count = 99;
+            assert.Equal("Bob", nameSpan.TextContent,
+                "Name should remain unchanged when only Count changes");
+            assert.Equal("99", countSpan.TextContent, "Count should update reactively");
+        }
     }
 }

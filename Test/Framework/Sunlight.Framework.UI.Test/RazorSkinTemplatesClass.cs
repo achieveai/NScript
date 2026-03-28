@@ -30,5 +30,17 @@ namespace Sunlight.Framework.UI.Test
             get
             { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.GraphSimpleText.skin.cshtml")]
+        public static Skin GraphSimpleText
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.GraphMultiBinding.skin.cshtml")]
+        public static Skin GraphMultiBinding
+        {
+            get { return null; }
+        }
     }
 }
