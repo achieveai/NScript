@@ -34,7 +34,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             int subCount = subscriptions.Length;
             NativeArray listeners = new NativeArray(subCount);
-            int listenerIdx = 0;
 
             for (int i = 0; i < subCount; i++)
             {
@@ -54,12 +53,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     };
 
                 observable.AddPropertyChangedListener(entry.PropertyName, callback);
-                listeners[listenerIdx] = callback;
-                listenerIdx++;
+                listeners[i] = callback;
             }
 
             this.state.Listeners = listeners;
-            this.state.ListenerCount = listenerIdx;
+            this.state.ListenerCount = subCount;
             this.state.SubscriptionsActive = true;
         }
 

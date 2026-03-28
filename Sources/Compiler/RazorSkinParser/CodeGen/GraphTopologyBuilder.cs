@@ -70,6 +70,12 @@ namespace NScript.RazorSkin.CodeGen
         public List<CollectionTopology> Collections { get; set; } = new List<CollectionTopology>();
         public string ModelTypeName { get; set; }
         public int RootSourceSlot { get; set; }
+
+        /// <summary>
+        /// Parent indices per node (inverse of Consumers). ParentIndices[j] lists
+        /// nodes that feed into node j. Computed at build time for O(1) runtime lookup.
+        /// </summary>
+        public List<int>[] ParentIndices { get; set; }
     }
 
     // --- Builder ---
@@ -374,7 +380,8 @@ namespace NScript.RazorSkin.CodeGen
 
             public GraphTopology ToTopology(string modelTypeName)
             {
-                Topology.NodeCount = _nodeTypes.Count;
+                int n = _nodeTypes.Count;
+                Topology.NodeCount = n;
                 Topology.NodeTypes = _nodeTypes.ToArray();
                 Topology.GetterExpressions = _getterExpressions.ToArray();
                 Topology.Consumers = _consumers.ToArray();
@@ -382,6 +389,21 @@ namespace NScript.RazorSkin.CodeGen
                 Topology.DefaultValues = _defaultValues.ToArray();
                 Topology.ModelTypeName = modelTypeName;
                 Topology.RootSourceSlot = 0;
+
+                // Build ParentIndices by inverting the Consumers adjacency list.
+                var parentIndices = new List<int>[n];
+                for (int i = 0; i < n; i++)
+                    parentIndices[i] = new List<int>();
+
+                for (int from = 0; from < n; from++)
+                {
+                    foreach (int to in _consumers[from])
+                    {
+                        parentIndices[to].Add(from);
+                    }
+                }
+
+                Topology.ParentIndices = parentIndices;
                 return Topology;
             }
 

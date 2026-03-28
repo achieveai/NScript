@@ -64,6 +64,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// 0 = DataContext, 1 = TemplateParent.
         /// </summary>
         public int RootSourceSlot;
+
+        /// <summary>
+        /// Parent node indices per node. ParentIndices[i] is an int[] of node indices
+        /// that feed into node i. Source nodes have empty parents. Property/DomTarget nodes
+        /// typically have 1 parent. Computed nodes may have multiple parents.
+        /// Pre-computed at compile time for O(1) parent lookup at runtime.
+        /// </summary>
+        public NativeArray<NativeArray<int>> ParentIndices;
     }
 
     /// <summary>

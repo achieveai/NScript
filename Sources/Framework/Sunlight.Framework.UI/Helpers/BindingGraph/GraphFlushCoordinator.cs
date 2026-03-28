@@ -55,8 +55,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 pendingByDepth = grown;
             }
 
+            // Deduplicate: skip if this graph is already pending at this depth.
             NativeArray<GraphState> bucket = pendingByDepth[depth];
             int oldLen = bucket.Length;
+            for (int i = 0; i < oldLen; i++)
+            {
+                if (bucket[i] == state) return;
+            }
+
             NativeArray<GraphState> newBucket = new NativeArray<GraphState>(oldLen + 1);
             for (int i = 0; i < oldLen; i++)
             {

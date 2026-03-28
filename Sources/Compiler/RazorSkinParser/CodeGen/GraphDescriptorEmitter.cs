@@ -107,7 +107,23 @@ namespace NScript.RazorSkin.CodeGen
             sb.AppendLine("  subscribeMode: 0,");
 
             // nodeCount
-            sb.AppendLine($"  nodeCount: {topology.NodeCount}");
+            sb.AppendLine($"  nodeCount: {topology.NodeCount},");
+
+            // parentIndices: [[], [0], [1], [0, 1], ...]
+            sb.Append("  parentIndices: [");
+            for (int i = 0; i < topology.NodeCount; i++)
+            {
+                if (i > 0) sb.Append(", ");
+                sb.Append("[");
+                var parents = topology.ParentIndices[i];
+                for (int j = 0; j < parents.Count; j++)
+                {
+                    if (j > 0) sb.Append(", ");
+                    sb.Append(parents[j]);
+                }
+                sb.Append("]");
+            }
+            sb.AppendLine("]");
 
             sb.Append("};");
             return sb.ToString();

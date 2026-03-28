@@ -363,7 +363,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     if (!object.IsNullOrUndefined(colInfo))
                     {
                         // Clear old collection items.
-                        GraphEngine.ClearCollectionItems(state, i, colInfo);
+                        GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
 
                         // Detach old collection listener.
                         if (!object.IsNullOrUndefined(oldVal))
@@ -410,17 +410,25 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         /// <summary>
         /// Finds the parent node value that feeds into the node at nodeIdx.
-        /// Scans the consumers adjacency list to find which node lists nodeIdx as a consumer.
-        /// Since nodes are in topological order, the parent is always at a lower index.
-        /// O(nodes * edges) — acceptable for small graphs (&lt;50 nodes).
+        /// Uses pre-computed ParentIndices for O(1) lookup when available,
+        /// falls back to scanning the consumers adjacency list.
+        /// For nodes with multiple parents (e.g. Computed), returns the first parent's value.
+        /// Use FindParentValues for multi-parent access.
         /// </summary>
-        /// <param name="desc">The static graph descriptor.</param>
-        /// <param name="state">The per-instance graph state.</param>
-        /// <param name="nodeIdx">The index of the node whose parent value to find.</param>
-        /// <returns>The cached value of the parent node, or null if no parent found.</returns>
         public static object FindParentValue(GraphDescriptor desc, GraphState state, int nodeIdx)
         {
-            // Parent must be at a lower index (topological order).
+            // Fast path: use pre-computed parent indices.
+            if (!object.IsNullOrUndefined(desc.ParentIndices))
+            {
+                NativeArray<int> parents = desc.ParentIndices[nodeIdx];
+                if (!object.IsNullOrUndefined(parents) && parents.Length > 0)
+                {
+                    return state.Values[parents[0]];
+                }
+                return null;
+            }
+
+            // Fallback: scan consumers adjacency list. O(nodes * edges).
             for (int p = 0; p < nodeIdx; p++)
             {
                 NativeArray<int> consumers = desc.Consumers[p];
@@ -442,6 +450,32 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
+        /// Returns all parent values for a node with multiple inputs (e.g. Computed nodes).
+        /// Uses pre-computed ParentIndices for O(1) lookup.
+        /// Returns null if ParentIndices not available or node has no parents.
+        /// </summary>
+        public static NativeArray FindParentValues(GraphDescriptor desc, GraphState state, int nodeIdx)
+        {
+            if (object.IsNullOrUndefined(desc.ParentIndices))
+            {
+                return null;
+            }
+
+            NativeArray<int> parents = desc.ParentIndices[nodeIdx];
+            if (object.IsNullOrUndefined(parents) || parents.Length == 0)
+            {
+                return null;
+            }
+
+            NativeArray values = new NativeArray(parents.Length);
+            for (int i = 0; i < parents.Length; i++)
+            {
+                values[i] = state.Values[parents[i]];
+            }
+            return values;
+        }
+
+        /// <summary>
         /// Applies gate closure: sets defaults on all nodes gated by this gate.
         /// Called when a gate node transitions from open to closed.
         /// </summary>
@@ -454,23 +488,61 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             for (int i = gateIdx + 1; i < n; i++)
             {
-                if (desc.GateIndices[i] == gateIdx)
+                if (desc.GateIndices[i] != gateIdx)
                 {
-                    state.Values[i] = desc.DefaultValues[i];
-                    state.Dirty[i] = false;
+                    continue;
+                }
 
-                    // If DomTarget: apply default to DOM.
-                    if (desc.NodeTypes[i] == GraphNodeType.DomTarget)
+                state.Values[i] = desc.DefaultValues[i];
+                state.Dirty[i] = false;
+
+                int nodeType = desc.NodeTypes[i];
+
+                // DomTarget: apply default to DOM.
+                if (nodeType == GraphNodeType.DomTarget)
+                {
+                    DomTargetInfo targetInfo = (DomTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(targetInfo))
                     {
-                        DomTargetInfo targetInfo = (DomTargetInfo)desc.TargetInfos[i];
-                        if (!object.IsNullOrUndefined(targetInfo))
+                        object elem = state.ElemRefs[targetInfo.ElemIdx];
+                        if (!object.IsNullOrUndefined(targetInfo.Setter) && !object.IsNullOrUndefined(elem))
                         {
-                            object elem = state.ElemRefs[targetInfo.ElemIdx];
-                            if (!object.IsNullOrUndefined(targetInfo.Setter) && !object.IsNullOrUndefined(elem))
+                            targetInfo.Setter(elem, desc.DefaultValues[i]);
+                        }
+                    }
+                }
+                // EventBinding: unbind listener when gate closes.
+                else if (nodeType == GraphNodeType.EventBinding)
+                {
+                    Action<Element, ElementEvent> handler =
+                        (Action<Element, ElementEvent>)state.EventListeners[i];
+                    if (!object.IsNullOrUndefined(handler))
+                    {
+                        EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
+                        if (!object.IsNullOrUndefined(evtInfo))
+                        {
+                            Element elem = (Element)state.ElemRefs[evtInfo.ElemIdx];
+                            if (!object.IsNullOrUndefined(elem))
                             {
-                                targetInfo.Setter(elem, desc.DefaultValues[i]);
+                                elem.UnBind(evtInfo.EventName, handler);
                             }
                         }
+                        state.EventListeners[i] = null;
+                    }
+                }
+                // CollectionManager: detach listener and clear items when gate closes.
+                else if (nodeType == GraphNodeType.CollectionManager)
+                {
+                    object collection = state.Values[i];
+                    if (!object.IsNullOrUndefined(collection))
+                    {
+                        GraphEngine.DetachCollectionListener(state, i, collection);
+                    }
+
+                    CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(colInfo))
+                    {
+                        GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
                     }
                 }
             }
@@ -546,7 +618,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>
         /// Clears all rendered items for a CollectionManager node.
         /// </summary>
-        public static void ClearCollectionItems(GraphState state, int nodeIdx, CollectionTargetInfo colInfo)
+        public static void ClearCollectionItems(GraphDescriptor desc, GraphState state, int nodeIdx, CollectionTargetInfo colInfo)
         {
             NativeArray itemElems = state.ItemElements[nodeIdx];
             if (!object.IsNullOrUndefined(itemElems))
@@ -561,20 +633,30 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
             }
 
-            // Dispose child graph states.
+            // Dispose child graph states — clean up listeners recursively.
             NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
             if (!object.IsNullOrUndefined(childStates))
             {
+                GraphDescriptor itemDesc = colInfo.ItemGraph;
+
                 for (int idx = 0; idx < childStates.Length; idx++)
                 {
                     GraphState child = childStates[idx];
-                    if (!object.IsNullOrUndefined(child))
+                    if (object.IsNullOrUndefined(child))
                     {
-                        // Clear child state values.
-                        for (int v = 0; v < child.Values.Length; v++)
-                        {
-                            child.Values[v] = null;
-                        }
+                        continue;
+                    }
+
+                    // Clean up event and collection listeners on child states.
+                    if (!object.IsNullOrUndefined(itemDesc))
+                    {
+                        GraphEngine.CleanupEventListeners(itemDesc, child);
+                        GraphEngine.CleanupCollectionListeners(itemDesc, child);
+                    }
+
+                    for (int v = 0; v < child.Values.Length; v++)
+                    {
+                        child.Values[v] = null;
                     }
                 }
             }
@@ -670,11 +752,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
 
                 // Insert new items.
+                Element addTemplate = (Element)colInfo.ItemTemplate;
+                if (object.IsNullOrUndefined(addTemplate)) return;
+
                 for (int j = 0; j < addCount; j++)
                 {
                     object item = newItems[j];
-                    Element template = (Element)colInfo.ItemTemplate;
-                    Element clone = template.CloneNode(true);
+                    Element clone = addTemplate.CloneNode(true);
                     parent.InsertBefore(clone, refNode);
                     newItemElems[insertIdx + j] = clone;
 
@@ -743,7 +827,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             else if (args.Action == CollectionChangedAction.Reset)
             {
                 // Full reset: clear and re-render.
-                GraphEngine.ClearCollectionItems(state, nodeIdx, colInfo);
+                GraphEngine.ClearCollectionItems(desc, state, nodeIdx, colInfo);
                 object collection = state.Values[nodeIdx];
                 if (!object.IsNullOrUndefined(collection))
                 {
@@ -758,11 +842,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             NativeArray<GraphState> newStates = new NativeArray<GraphState>(count);
                             NativeArray newElems = new NativeArray(count);
 
+                            Element resetTemplate = (Element)colInfo.ItemTemplate;
+                            if (object.IsNullOrUndefined(resetTemplate)) return;
+
                             for (int idx = 0; idx < count; idx++)
                             {
                                 object item = obsCol[idx];
-                                Element template = (Element)colInfo.ItemTemplate;
-                                Element clone = template.CloneNode(true);
+                                Element clone = resetTemplate.CloneNode(true);
                                 resetParent.InsertBefore(clone, resetMarker);
                                 newElems[idx] = clone;
 
@@ -834,7 +920,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
                     if (!object.IsNullOrUndefined(colInfo))
                     {
-                        GraphEngine.ClearCollectionItems(state, i, colInfo);
+                        GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
                     }
                 }
             }
