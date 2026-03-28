@@ -7,6 +7,7 @@
 namespace Sunlight.Framework.UI.Helpers
 {
     using Sunlight.Framework.Binders;
+    using Sunlight.Framework.UI.Helpers.BindingGraph;
     using System;
     using System.Collections.Generic;
     using System.Web.Html;
@@ -47,24 +48,19 @@ namespace Sunlight.Framework.UI.Helpers
         bool isDiposed;
 
         /// <summary>
-        /// The binders.
+        /// The binding strategy (legacy XWML or graph-based Razor).
         /// </summary>
-        private NativeArray<SkinBinderInfo> binders;
+        private IBindingStrategy bindingStrategy;
 
         /// <summary>
-        /// The live binders.
+        /// true if using graph-based binding mode.
         /// </summary>
-        private NativeArray<LiveBinder> liveBinders;
+        private bool isGraphMode;
 
         /// <summary>
         /// The has data context binding.
         /// </summary>
         private NativeArray<bool> hasDataContextBinding;
-
-        /// <summary>
-        /// The extra objects.
-        /// </summary>
-        private NativeArray extraObjects;
 
         /// <summary>
         /// The part identifier mapping.
@@ -118,18 +114,45 @@ namespace Sunlight.Framework.UI.Helpers
 
             this.parentFactory = factory;
             this.rootElement = rootElement;
-            this.binders = binders;
             this.childElements = childElements;
             this.elementsOfIntrest = elementsOfIntrests;
             this.dataContextUpdated = true;
             this.templateParentUpdated = true;
-            this.hasDataContextBinding = new NativeArray<bool>(this.elementsOfIntrest.Length);
 
-            if (liveBinderCount > 0)
-            { this.liveBinders = new NativeArray<LiveBinder>(liveBinderCount); }
+            this.isGraphMode = false;
+            var legacy = new LegacyBinderStrategy(binders, liveBinderCount, extraObjectCount, elementsOfIntrests.Length);
+            this.bindingStrategy = legacy;
+            this.hasDataContextBinding = legacy.HasDataContextBinding;
 
-            if (extraObjectCount > 0)
-            { this.extraObjects = new NativeArray(extraObjectCount); }
+            if (partIdMapping != null)
+            { this.partIdMapping = new StringDictionary<int>(partIdMapping); }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the SkinInstance class for graph-based (Razor) skins.
+        /// </summary>
+        public SkinInstance(
+            Skin factory,
+            Element rootElement,
+            NativeArray<int> childElements,
+            NativeArray elementsOfIntrests,
+            GraphDescriptor graphDescriptor,
+            Object partIdMapping,
+            int unused1,
+            int unused2)
+        {
+            ExceptionHelpers.IsNullOrUndefined(rootElement);
+
+            this.parentFactory = factory;
+            this.rootElement = rootElement;
+            this.childElements = childElements;
+            this.elementsOfIntrest = elementsOfIntrests;
+            this.dataContextUpdated = true;
+            this.templateParentUpdated = true;
+
+            this.isGraphMode = true;
+            this.bindingStrategy = new GraphBindingStrategy(graphDescriptor, elementsOfIntrests, 0);
+            this.hasDataContextBinding = new NativeArray<bool>(elementsOfIntrests.Length);
 
             if (partIdMapping != null)
             { this.partIdMapping = new StringDictionary<int>(partIdMapping); }
@@ -238,77 +261,18 @@ namespace Sunlight.Framework.UI.Helpers
                 this.isActive = true;
 
                 var childElements = this.childElements;
-                var binders = this.binders;
                 var childElementLength = childElements.Length;
                 var elementsOfIntrest = this.elementsOfIntrest;
-                var binderLength = binders.Length;
                 var dataContext = this.dataContext;
-                Action<UIElement, object> dataContextSetter = SkinBinderHelper.SetDataContext;
 
-                for (int iBinder = 0, iLiveBinder = 0; iBinder < binderLength; iBinder++)
+                if (!this.isGraphMode)
                 {
-                    var binder = binders[iBinder];
-                    object source = null;
-                    switch (binder.BinderType & BinderType.TargetTypes)
-                    {
-                        case BinderType.DataContext:
-                            if (!this.dataContextUpdated
-                                && binder.Mode != DataBindingMode.OneTime)
-                            { continue; }
-
-                            source = dataContext;
-                            break;
-                        case BinderType.Static:
-                            if (this.firstActivationDone
-                                && binder.Mode != DataBindingMode.OneTime)
-                            { continue; }
-
-                            break;
-                        case BinderType.TemplateParent:
-                            if (!this.templateParentUpdated
-                                && binder.Mode != DataBindingMode.OneTime)
-                            { continue; }
-
-                            source = this.skinableParent;
-                            break;
-                    }
-
-                    if (binder.Mode == DataBindingMode.TwoWay)
-                    {
-                        LiveBinder liveBinder = this.liveBinders[iLiveBinder];
-                        if (object.IsNullOrUndefined(liveBinder))
-                        {
-                            liveBinder = new LiveBinder(binder, this.extraObjects);
-                            liveBinder.Source = source;
-                            liveBinder.Target = elementsOfIntrest[binder.ObjectIndex];
-                            liveBinder.IsActive = true;
-                            this.liveBinders[iLiveBinder] = liveBinder;
-                        }
-                        else
-                        {
-                            liveBinder.Source = source;
-                            liveBinder.IsActive = true;
-                        }
-                    }
-                    else
-                    {
-                        SkinBinderHelper.SetPropertyValue(
-                            binder,
-                            source,
-                            elementsOfIntrest[binder.ObjectIndex],
-                            this.extraObjects);
-
-                        if ((object)binder.TargetPropertySetter == (object)dataContextSetter)
-                        {
-                            this.hasDataContextBinding[binder.ObjectIndex] = true;
-                        }
-                    }
-
-                    if (binder.Mode != DataBindingMode.OneTime)
-                    {
-                        ++iLiveBinder;
-                    }
+                    var legacy = (LegacyBinderStrategy)this.bindingStrategy;
+                    legacy.DataContextUpdated = this.dataContextUpdated;
+                    legacy.TemplateParentUpdated = this.templateParentUpdated;
                 }
+
+                this.bindingStrategy.PushInitialValues(dataContext, this.skinableParent, elementsOfIntrest);
 
                 for (int iChild = 0; iChild < childElementLength; iChild++)
                 {
@@ -339,20 +303,8 @@ namespace Sunlight.Framework.UI.Helpers
                 this.isActive = false;
                 var childElements = this.childElements;
                 var childElementLength = childElements.Length;
-                var liveBinders = this.liveBinders;
 
-                if (!object.IsNullOrUndefined(liveBinders))
-                {
-                    var liveBinderLength = liveBinders.Length;
-
-                    for (int iLiveBinder = 0; iLiveBinder < liveBinderLength; iLiveBinder++)
-                    {
-                        if (object.IsNullOrUndefined(liveBinders[iLiveBinder]))
-                        { continue; }
-
-                        liveBinders[iLiveBinder].IsActive = false;
-                    }
-                }
+                this.bindingStrategy.Deactivate();
 
                 for (int iChild = 0; iChild < childElementLength; iChild++)
                 {
@@ -382,23 +334,7 @@ namespace Sunlight.Framework.UI.Helpers
                     }
                 }
 
-                if (!object.IsNullOrUndefined(this.liveBinders))
-                {
-                    for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
-                    {
-                        var liveBinder = this.liveBinders[iLiveBinder];
-                        if (object.IsNullOrUndefined(liveBinder))
-                        {
-                            continue;
-                        }
-
-                        liveBinder.IsActive = false;
-                        liveBinder.Source = null;
-                        liveBinder.Target = null;
-                        liveBinder.Cleanup();
-                        this.liveBinders[iLiveBinder] = null;
-                    }
-                }
+                this.bindingStrategy.Dispose();
 
                 this.isDiposed = true;
                 for (int i = 0, j = this.childElements.Length; i < j; i++)
@@ -415,63 +351,23 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         private void QueuedActivation()
         {
-            var binders = this.binders;
-            var liveBinders = this.liveBinders;
-            if (object.IsNullOrUndefined(liveBinders))
-            { return; }
-
-            var binderLength = binders.Length;
-            var liveBindersLength = liveBinders.Length;
-            for (int iBinderInfo = 0, iLivebinder = 0;
-                iBinderInfo < binderLength && iLivebinder < liveBindersLength;
-                iBinderInfo++)
-            {
-                var binder = binders[iBinderInfo];
-                if (binder.Mode != DataBindingMode.OneTime)
-                {
-                    LiveBinder liveBinder = liveBinders[iLivebinder];
-                    if (object.IsNullOrUndefined(liveBinder))
-                    {
-                        liveBinders[iLivebinder] = liveBinder = new LiveBinder(binder, this.extraObjects);
-                        liveBinder.Target = this.elementsOfIntrest[binder.ObjectIndex];
-                    }
-
-                    switch (binder.BinderType & BinderType.TargetTypes)
-                    {
-                        case BinderType.DataContext:
-                            liveBinder.Source = this.skinableParent.DataContext;
-                            break;
-                        case BinderType.TemplateParent:
-                            liveBinder.Source = this.skinableParent;
-                            break;
-                    }
-
-                    liveBinder.IsActive = true;
-
-                    ++iLivebinder;
-                }
-            }
+            this.bindingStrategy.WireSubscriptions(
+                this.skinableParent != null ? this.skinableParent.DataContext : null,
+                this.skinableParent);
         }
 
         /// <summary>
         /// Queued deactivation.  /// </summary>
         private void QueuedDeactivation()
         {
-            if (this.isActive || this.isDiposed || object.IsNullOrUndefined(this.liveBinders))
+            if (this.isActive || this.isDiposed)
             {
                 return;
             }
 
-            for (int iLiveBinder = 0; iLiveBinder < this.liveBinders.Length; iLiveBinder++)
+            if (!this.isGraphMode)
             {
-                var liveBinder = this.liveBinders[iLiveBinder];
-                if (object.IsNullOrUndefined(liveBinder))
-                {
-                    return;
-                }
-
-                liveBinder.IsActive = false;
-                liveBinder.Cleanup();
+                ((LegacyBinderStrategy)this.bindingStrategy).QueuedDeactivation(false, false);
             }
         }
 
@@ -482,33 +378,13 @@ namespace Sunlight.Framework.UI.Helpers
         /// <param name="sourceType"> Type of the source. </param>
         private void UpdateBinderSource(object source, BinderType sourceType)
         {
-            var liveBinders = this.liveBinders;
-            var binders = this.binders;
-            var bindersLength = binders.Length;
-            var liveBindersLength = object.IsNullOrUndefined(liveBinders) ? 0 : liveBinders.Length;
-
-            for (int iBinder = 0, iLiveBinder = 0; iBinder < bindersLength; iBinder++)
+            if (sourceType == BinderType.DataContext)
             {
-                var binder = binders[iBinder];
-                if (binder.Mode != DataBindingMode.OneTime
-                    && iLiveBinder < liveBindersLength
-                    && !object.IsNullOrUndefined(liveBinders[iLiveBinder]))
-                {
-                    if (sourceType == (binder.BinderType & BinderType.TargetTypes))
-                    {
-                        liveBinders[iLiveBinder].Source = source;
-                    }
-
-                    iLiveBinder++;
-                }
-                else if (sourceType == (binder.BinderType & BinderType.TargetTypes))
-                {
-                    SkinBinderHelper.SetPropertyValue(
-                        binder,
-                        source,
-                        this.elementsOfIntrest[binder.ObjectIndex],
-                        this.extraObjects);
-                }
+                this.bindingStrategy.OnDataContextChanged(source);
+            }
+            else if (sourceType == BinderType.TemplateParent)
+            {
+                this.bindingStrategy.OnTemplateParentChanged(source);
             }
 
             if (sourceType == BinderType.DataContext)
