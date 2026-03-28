@@ -35,11 +35,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (nodeType == GraphNodeType.Source)
                 {
                     // Read from state.Sources[desc.RootSourceSlot].
-                    // The SourceType field is used by the generated JS binding wrapper to
-                    // perform an instanceof check before activating the graph. Here we simply
-                    // propagate the value — if it is null/undefined the downstream nodes
-                    // will short-circuit on their own null checks.
-                    state.Values[i] = state.Sources[desc.RootSourceSlot];
+                    // Type-check against desc.SourceType at the boundary.
+                    object sourceVal = state.Sources[desc.RootSourceSlot];
+                    if (!object.IsNullOrUndefined(sourceVal)
+                        && !object.IsNullOrUndefined(desc.SourceType)
+                        && !desc.SourceType.IsInstanceOfType(sourceVal))
+                    {
+                        sourceVal = null;
+                    }
+                    state.Values[i] = sourceVal;
                 }
                 else if (nodeType == GraphNodeType.Property
                     || nodeType == GraphNodeType.Computed
@@ -143,6 +147,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (nodeType == GraphNodeType.Source)
                 {
                     newVal = state.Sources[desc.RootSourceSlot];
+                    if (!object.IsNullOrUndefined(newVal)
+                        && !object.IsNullOrUndefined(desc.SourceType)
+                        && !desc.SourceType.IsInstanceOfType(newVal))
+                    {
+                        newVal = null;
+                    }
                 }
                 else if (nodeType == GraphNodeType.Property
                     || nodeType == GraphNodeType.Computed
