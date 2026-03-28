@@ -1,6 +1,9 @@
 namespace Sunlight.Framework.UI.Helpers.BindingGraph
 {
     using System;
+    using System.Collections;
+    using System.Web.Html;
+    using Sunlight.Framework.Observables;
 
     /// <summary>
     /// Stateless evaluation engine for reactive binding graphs.
@@ -78,6 +81,27 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     bool wasOpen = state.GateOpen[i];
                     state.GateOpen[i] = gateIsOpen;
 
+                    // DOM operations: clone and insert the appropriate template branch.
+                    GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(gateInfo))
+                    {
+                        Element marker = (Element)state.ElemRefs[gateInfo.MarkerIdx];
+                        Element template = gateIsOpen
+                            ? (Element)gateInfo.TrueTemplate
+                            : (Element)gateInfo.FalseTemplate;
+
+                        if (!object.IsNullOrUndefined(template) && !object.IsNullOrUndefined(marker))
+                        {
+                            Element clone = template.CloneNode(true);
+                            Node parent = marker.ParentNode;
+                            if (!object.IsNullOrUndefined(parent))
+                            {
+                                parent.InsertBefore(clone, marker);
+                            }
+                            state.GateElements[i] = clone;
+                        }
+                    }
+
                     // If gate just closed, apply defaults to all gated children.
                     if (!gateIsOpen && wasOpen)
                     {
@@ -105,11 +129,34 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
                 else if (nodeType == GraphNodeType.EventBinding)
                 {
-                    // Get method reference from parent (wiring handled separately).
+                    // Get method reference from parent, wire addEventListener.
                     object methodRef = GraphEngine.FindParentValue(desc, state, i);
                     state.Values[i] = methodRef;
+
+                    EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(evtInfo) && !object.IsNullOrUndefined(methodRef))
+                    {
+                        Element evtElem = (Element)state.ElemRefs[evtInfo.ElemIdx];
+                        if (!object.IsNullOrUndefined(evtElem))
+                        {
+                            Action<Element, ElementEvent> handler = (Action<Element, ElementEvent>)methodRef;
+                            evtElem.Bind(evtInfo.EventName, handler);
+                            state.EventListeners[i] = handler;
+                        }
+                    }
                 }
-                // CollectionManager: handled by a separate subsystem; value is set externally.
+                else if (nodeType == GraphNodeType.CollectionManager)
+                {
+                    // Get collection from parent value.
+                    object collection = GraphEngine.FindParentValue(desc, state, i);
+                    state.Values[i] = collection;
+
+                    CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(colInfo) && !object.IsNullOrUndefined(collection))
+                    {
+                        GraphEngine.RenderCollection(desc, state, i, colInfo, (IObservableCollection)collection);
+                    }
+                }
             }
         }
 
@@ -190,6 +237,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 {
                     newVal = GraphEngine.FindParentValue(desc, state, i);
                 }
+                else if (nodeType == GraphNodeType.CollectionManager)
+                {
+                    newVal = GraphEngine.FindParentValue(desc, state, i);
+                }
 
                 // Flip-flop elimination: compare new value to cached value.
                 // If unchanged (reference equality), clear dirty flag and DON'T dirty consumers.
@@ -211,6 +262,39 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     bool gateIsOpen = !object.IsNullOrUndefined(newVal) && (bool)newVal;
                     bool wasOpen = state.GateOpen[i];
                     state.GateOpen[i] = gateIsOpen;
+
+                    // DOM swap: remove old branch, insert new branch.
+                    if (gateIsOpen != wasOpen)
+                    {
+                        GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[i];
+                        if (!object.IsNullOrUndefined(gateInfo))
+                        {
+                            // Remove current branch element.
+                            Element oldElem = (Element)state.GateElements[i];
+                            if (!object.IsNullOrUndefined(oldElem))
+                            {
+                                oldElem.Remove();
+                                state.GateElements[i] = null;
+                            }
+
+                            // Insert new branch template.
+                            Element template = gateIsOpen
+                                ? (Element)gateInfo.TrueTemplate
+                                : (Element)gateInfo.FalseTemplate;
+                            Element marker = (Element)state.ElemRefs[gateInfo.MarkerIdx];
+
+                            if (!object.IsNullOrUndefined(template) && !object.IsNullOrUndefined(marker))
+                            {
+                                Element clone = template.CloneNode(true);
+                                Node parent = marker.ParentNode;
+                                if (!object.IsNullOrUndefined(parent))
+                                {
+                                    parent.InsertBefore(clone, marker);
+                                }
+                                state.GateElements[i] = clone;
+                            }
+                        }
+                    }
 
                     if (!gateIsOpen && wasOpen)
                     {
@@ -235,6 +319,62 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                 ? newVal
                                 : desc.DefaultValues[i];
                             targetInfo.Setter(elem, val);
+                        }
+                    }
+                }
+
+                // EventBinding: re-wire listener when method reference changes.
+                if (nodeType == GraphNodeType.EventBinding)
+                {
+                    EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(evtInfo))
+                    {
+                        Element evtElem = (Element)state.ElemRefs[evtInfo.ElemIdx];
+                        if (!object.IsNullOrUndefined(evtElem))
+                        {
+                            // Remove old listener.
+                            Action<Element, ElementEvent> oldHandler =
+                                (Action<Element, ElementEvent>)state.EventListeners[i];
+                            if (!object.IsNullOrUndefined(oldHandler))
+                            {
+                                evtElem.UnBind(evtInfo.EventName, oldHandler);
+                            }
+
+                            // Wire new listener.
+                            if (!object.IsNullOrUndefined(newVal))
+                            {
+                                Action<Element, ElementEvent> newHandler =
+                                    (Action<Element, ElementEvent>)newVal;
+                                evtElem.Bind(evtInfo.EventName, newHandler);
+                                state.EventListeners[i] = newHandler;
+                            }
+                            else
+                            {
+                                state.EventListeners[i] = null;
+                            }
+                        }
+                    }
+                }
+
+                // CollectionManager: re-render when collection reference changes.
+                if (nodeType == GraphNodeType.CollectionManager)
+                {
+                    CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(colInfo))
+                    {
+                        // Clear old collection items.
+                        GraphEngine.ClearCollectionItems(state, i, colInfo);
+
+                        // Detach old collection listener.
+                        if (!object.IsNullOrUndefined(oldVal))
+                        {
+                            GraphEngine.DetachCollectionListener(state, i, oldVal);
+                        }
+
+                        // Render new collection.
+                        if (!object.IsNullOrUndefined(newVal))
+                        {
+                            GraphEngine.RenderCollection(desc, state, i, colInfo, (IObservableCollection)newVal);
                         }
                     }
                 }
@@ -352,6 +492,350 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (desc.GateIndices[i] == gateIdx)
                 {
                     state.Dirty[i] = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Renders all items in a collection for a CollectionManager node.
+        /// Creates child graph state + DOM elements per item.
+        /// </summary>
+        public static void RenderCollection(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, IObservableCollection collection)
+        {
+            Element marker = (Element)state.ElemRefs[colInfo.MarkerIdx];
+            if (object.IsNullOrUndefined(marker)) return;
+
+            Node parent = marker.ParentNode;
+            if (object.IsNullOrUndefined(parent)) return;
+
+            int count = collection.Count;
+            NativeArray<GraphState> childStates = new NativeArray<GraphState>(count);
+            NativeArray itemElems = new NativeArray(count);
+
+            for (int idx = 0; idx < count; idx++)
+            {
+                object item = collection[idx];
+                Element template = (Element)colInfo.ItemTemplate;
+                if (object.IsNullOrUndefined(template)) continue;
+
+                Element clone = template.CloneNode(true);
+                parent.InsertBefore(clone, marker);
+                itemElems[idx] = clone;
+
+                // Create child graph if item graph descriptor exists.
+                if (!object.IsNullOrUndefined(colInfo.ItemGraph))
+                {
+                    NativeArray childElemRefs = new NativeArray(1);
+                    childElemRefs[0] = clone;
+                    GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, state.Depth + 1);
+                    childState.Sources[GraphSourceSlot.DataContext] = item;
+                    GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
+                    childStates[idx] = childState;
+                }
+            }
+
+            state.ChildGraphStates[nodeIdx] = childStates;
+            state.ItemElements[nodeIdx] = itemElems;
+
+            // Attach collection change listener.
+            GraphEngine.AttachCollectionListener(desc, state, nodeIdx, colInfo, collection);
+        }
+
+        /// <summary>
+        /// Clears all rendered items for a CollectionManager node.
+        /// </summary>
+        public static void ClearCollectionItems(GraphState state, int nodeIdx, CollectionTargetInfo colInfo)
+        {
+            NativeArray itemElems = state.ItemElements[nodeIdx];
+            if (!object.IsNullOrUndefined(itemElems))
+            {
+                for (int idx = 0; idx < itemElems.Length; idx++)
+                {
+                    Element elem = (Element)itemElems[idx];
+                    if (!object.IsNullOrUndefined(elem))
+                    {
+                        elem.Remove();
+                    }
+                }
+            }
+
+            // Dispose child graph states.
+            NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
+            if (!object.IsNullOrUndefined(childStates))
+            {
+                for (int idx = 0; idx < childStates.Length; idx++)
+                {
+                    GraphState child = childStates[idx];
+                    if (!object.IsNullOrUndefined(child))
+                    {
+                        // Clear child state values.
+                        for (int v = 0; v < child.Values.Length; v++)
+                        {
+                            child.Values[v] = null;
+                        }
+                    }
+                }
+            }
+
+            state.ChildGraphStates[nodeIdx] = null;
+            state.ItemElements[nodeIdx] = null;
+        }
+
+        /// <summary>
+        /// Attaches a CollectionChanged listener for incremental updates.
+        /// </summary>
+        public static void AttachCollectionListener(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, IObservableCollection collection)
+        {
+            INotifyCollectionChanged notifier = collection as INotifyCollectionChanged;
+            if (object.IsNullOrUndefined(notifier)) return;
+
+            int capturedNodeIdx = nodeIdx;
+            GraphDescriptor capturedDesc = desc;
+            GraphState capturedState = state;
+            CollectionTargetInfo capturedColInfo = colInfo;
+
+            Action<INotifyCollectionChanged, CollectionChangedEventArgs> handler =
+                delegate(INotifyCollectionChanged sender, CollectionChangedEventArgs args)
+                {
+                    GraphEngine.OnCollectionChanged(
+                        capturedDesc, capturedState, capturedNodeIdx, capturedColInfo, args);
+                };
+
+            notifier.CollectionChanged += handler;
+            state.CollectionListeners[nodeIdx] = handler;
+        }
+
+        /// <summary>
+        /// Detaches a CollectionChanged listener.
+        /// </summary>
+        public static void DetachCollectionListener(GraphState state, int nodeIdx, object oldCollection)
+        {
+            object handler = state.CollectionListeners[nodeIdx];
+            if (object.IsNullOrUndefined(handler)) return;
+
+            INotifyCollectionChanged notifier = oldCollection as INotifyCollectionChanged;
+            if (!object.IsNullOrUndefined(notifier))
+            {
+                notifier.CollectionChanged -=
+                    (Action<INotifyCollectionChanged, CollectionChangedEventArgs>)handler;
+            }
+
+            state.CollectionListeners[nodeIdx] = null;
+        }
+
+        /// <summary>
+        /// Handles incremental collection changes (add, remove, replace, reset).
+        /// </summary>
+        public static void OnCollectionChanged(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, CollectionChangedEventArgs args)
+        {
+            Element marker = (Element)state.ElemRefs[colInfo.MarkerIdx];
+            if (object.IsNullOrUndefined(marker)) return;
+
+            Node parent = marker.ParentNode;
+            if (object.IsNullOrUndefined(parent)) return;
+
+            if (args.Action == CollectionChangedAction.Add)
+            {
+                int insertIdx = args.ChangeIndex;
+                IList newItems = args.NewItems;
+                NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
+                NativeArray itemElems = state.ItemElements[nodeIdx];
+
+                int oldCount = object.IsNullOrUndefined(itemElems) ? 0 : itemElems.Length;
+                int addCount = newItems.Count;
+                int newCount = oldCount + addCount;
+
+                // Build new arrays with items inserted at position.
+                NativeArray<GraphState> newChildStates = new NativeArray<GraphState>(newCount);
+                NativeArray newItemElems = new NativeArray(newCount);
+
+                // Copy items before insertion point.
+                for (int j = 0; j < insertIdx && j < oldCount; j++)
+                {
+                    newChildStates[j] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                    newItemElems[j] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
+                }
+
+                // Find the reference node for InsertBefore.
+                Node refNode = marker;
+                if (insertIdx < oldCount && !object.IsNullOrUndefined(itemElems))
+                {
+                    refNode = (Node)itemElems[insertIdx];
+                }
+
+                // Insert new items.
+                for (int j = 0; j < addCount; j++)
+                {
+                    object item = newItems[j];
+                    Element template = (Element)colInfo.ItemTemplate;
+                    Element clone = template.CloneNode(true);
+                    parent.InsertBefore(clone, refNode);
+                    newItemElems[insertIdx + j] = clone;
+
+                    if (!object.IsNullOrUndefined(colInfo.ItemGraph))
+                    {
+                        NativeArray childElemRefs = new NativeArray(1);
+                        childElemRefs[0] = clone;
+                        GraphState childState = new GraphState(
+                            colInfo.ItemGraph, childElemRefs, state.Depth + 1);
+                        childState.Sources[GraphSourceSlot.DataContext] = item;
+                        GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
+                        newChildStates[insertIdx + j] = childState;
+                    }
+                }
+
+                // Copy items after insertion point.
+                for (int j = insertIdx; j < oldCount; j++)
+                {
+                    newChildStates[j + addCount] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                    newItemElems[j + addCount] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
+                }
+
+                state.ChildGraphStates[nodeIdx] = newChildStates;
+                state.ItemElements[nodeIdx] = newItemElems;
+            }
+            else if (args.Action == CollectionChangedAction.Remove)
+            {
+                int removeIdx = args.ChangeIndex;
+                int removeCount = args.OldItems.Count;
+                NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
+                NativeArray itemElems = state.ItemElements[nodeIdx];
+
+                if (object.IsNullOrUndefined(itemElems)) return;
+
+                int oldCount = itemElems.Length;
+                int newCount = oldCount - removeCount;
+
+                // Remove DOM elements (backwards to avoid index shifting).
+                for (int j = removeIdx + removeCount - 1; j >= removeIdx; j--)
+                {
+                    Element elem = (Element)itemElems[j];
+                    if (!object.IsNullOrUndefined(elem))
+                    {
+                        elem.Remove();
+                    }
+                }
+
+                // Rebuild arrays without removed items.
+                NativeArray<GraphState> newChildStates = new NativeArray<GraphState>(newCount);
+                NativeArray newItemElems = new NativeArray(newCount);
+
+                for (int j = 0; j < removeIdx; j++)
+                {
+                    newChildStates[j] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                    newItemElems[j] = itemElems[j];
+                }
+                for (int j = removeIdx + removeCount; j < oldCount; j++)
+                {
+                    newChildStates[j - removeCount] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                    newItemElems[j - removeCount] = itemElems[j];
+                }
+
+                state.ChildGraphStates[nodeIdx] = newChildStates;
+                state.ItemElements[nodeIdx] = newItemElems;
+            }
+            else if (args.Action == CollectionChangedAction.Reset)
+            {
+                // Full reset: clear and re-render.
+                GraphEngine.ClearCollectionItems(state, nodeIdx, colInfo);
+                object collection = state.Values[nodeIdx];
+                if (!object.IsNullOrUndefined(collection))
+                {
+                    IObservableCollection obsCol = (IObservableCollection)collection;
+                    Element resetMarker = (Element)state.ElemRefs[colInfo.MarkerIdx];
+                    if (!object.IsNullOrUndefined(resetMarker))
+                    {
+                        Node resetParent = resetMarker.ParentNode;
+                        if (!object.IsNullOrUndefined(resetParent))
+                        {
+                            int count = obsCol.Count;
+                            NativeArray<GraphState> newStates = new NativeArray<GraphState>(count);
+                            NativeArray newElems = new NativeArray(count);
+
+                            for (int idx = 0; idx < count; idx++)
+                            {
+                                object item = obsCol[idx];
+                                Element template = (Element)colInfo.ItemTemplate;
+                                Element clone = template.CloneNode(true);
+                                resetParent.InsertBefore(clone, resetMarker);
+                                newElems[idx] = clone;
+
+                                if (!object.IsNullOrUndefined(colInfo.ItemGraph))
+                                {
+                                    NativeArray childElemRefs = new NativeArray(1);
+                                    childElemRefs[0] = clone;
+                                    GraphState childState = new GraphState(
+                                        colInfo.ItemGraph, childElemRefs, state.Depth + 1);
+                                    childState.Sources[GraphSourceSlot.DataContext] = item;
+                                    GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
+                                    newStates[idx] = childState;
+                                }
+                            }
+
+                            state.ChildGraphStates[nodeIdx] = newStates;
+                            state.ItemElements[nodeIdx] = newElems;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans up all event listeners for disposal.
+        /// </summary>
+        public static void CleanupEventListeners(GraphDescriptor desc, GraphState state)
+        {
+            int n = desc.NodeCount;
+            for (int i = 0; i < n; i++)
+            {
+                if (desc.NodeTypes[i] == GraphNodeType.EventBinding)
+                {
+                    Action<Element, ElementEvent> handler =
+                        (Action<Element, ElementEvent>)state.EventListeners[i];
+                    if (!object.IsNullOrUndefined(handler))
+                    {
+                        EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
+                        if (!object.IsNullOrUndefined(evtInfo))
+                        {
+                            Element elem = (Element)state.ElemRefs[evtInfo.ElemIdx];
+                            if (!object.IsNullOrUndefined(elem))
+                            {
+                                elem.UnBind(evtInfo.EventName, handler);
+                            }
+                        }
+                        state.EventListeners[i] = null;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans up all collection listeners for disposal.
+        /// </summary>
+        public static void CleanupCollectionListeners(GraphDescriptor desc, GraphState state)
+        {
+            int n = desc.NodeCount;
+            for (int i = 0; i < n; i++)
+            {
+                if (desc.NodeTypes[i] == GraphNodeType.CollectionManager)
+                {
+                    object collection = state.Values[i];
+                    if (!object.IsNullOrUndefined(collection))
+                    {
+                        GraphEngine.DetachCollectionListener(state, i, collection);
+                    }
+
+                    CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(colInfo))
+                    {
+                        GraphEngine.ClearCollectionItems(state, i, colInfo);
+                    }
                 }
             }
         }

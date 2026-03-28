@@ -97,9 +97,24 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             UnsubscribeAll();
             this.state.SubscriptionsActive = false;
 
+            // Clean up event listeners and collection listeners.
+            GraphEngine.CleanupEventListeners(this.descriptor, this.state);
+            GraphEngine.CleanupCollectionListeners(this.descriptor, this.state);
+
             int n = this.descriptor.NodeCount;
             for (int i = 0; i < n; i++)
             {
+                // Remove gate elements from DOM.
+                if (this.descriptor.NodeTypes[i] == GraphNodeType.Gate)
+                {
+                    object gateElem = this.state.GateElements[i];
+                    if (!object.IsNullOrUndefined(gateElem))
+                    {
+                        ((System.Web.Html.Element)gateElem).Remove();
+                        this.state.GateElements[i] = null;
+                    }
+                }
+
                 this.state.Values[i] = null;
                 this.state.Dirty[i] = false;
             }

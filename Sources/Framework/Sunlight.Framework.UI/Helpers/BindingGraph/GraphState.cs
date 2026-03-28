@@ -43,6 +43,21 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Back-reference to the static descriptor.</summary>
         public GraphDescriptor Descriptor;
 
+        /// <summary>Active cloned DOM element per Gate node (null for non-gate nodes).</summary>
+        public NativeArray GateElements;
+
+        /// <summary>Active event listener handles per EventBinding node (for cleanup).</summary>
+        public NativeArray EventListeners;
+
+        /// <summary>Per-CollectionManager: child graph states per item.</summary>
+        public NativeArray<NativeArray<GraphState>> ChildGraphStates;
+
+        /// <summary>Per-CollectionManager: item element arrays per item.</summary>
+        public NativeArray<NativeArray> ItemElements;
+
+        /// <summary>Per-CollectionManager: collection change listener reference.</summary>
+        public NativeArray CollectionListeners;
+
         /// <summary>
         /// Creates a new GraphState for the given descriptor.
         /// </summary>
@@ -61,6 +76,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             this.ListenerCount = 0;
             this.SubscriptionsActive = false;
             this.FlushScheduled = false;
+
+            this.GateElements = new NativeArray(n);
+            this.EventListeners = new NativeArray(n);
+            this.ChildGraphStates = new NativeArray<NativeArray<GraphState>>(n);
+            this.ItemElements = new NativeArray<NativeArray>(n);
+            this.CollectionListeners = new NativeArray(n);
 
             // All gates start open (true). Gate.Evaluate during initial push
             // will close gates whose condition is false.
