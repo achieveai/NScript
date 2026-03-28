@@ -48,6 +48,12 @@ namespace NScript.RazorSkin
         private bool _hasRazorTemplates;
 
         /// <summary>
+        /// When true, templates are emitted using graph-based binding descriptors
+        /// instead of SkinBinderInfo arrays. Default is false (legacy mode).
+        /// </summary>
+        private bool _useGraphMode = false;
+
+        /// <summary>
         /// Maps template name to its JST getter function identifier.
         /// Populated during GetPostJavascript when JST generation succeeds.
         /// Used by GetOverwrite to emit proper JST return statements.
@@ -726,6 +732,25 @@ namespace Sunlight.Framework.Observables
 
                 try
                 {
+                    // If graph mode is enabled, use graph-based code generation
+                    if (_useGraphMode)
+                    {
+                        var graphJs = CodeGen.RazorSkinCodeGenerator.GenerateGraphMode(kvp.Value);
+                        if (_resolvedIdentifiers.Count > 0 || _resolvedTypeIdentifiers.Count > 0)
+                        {
+                            statements.Add(new ResolvedJavaScriptStatement(
+                                graphJs, _resolvedIdentifiers, _resolvedTypeIdentifiers));
+                        }
+                        else
+                        {
+                            statements.Add(new RawJavaScriptStatement(graphJs));
+                        }
+
+                        Log.Debug("Generated graph-mode JS for template {TemplateName}",
+                            kvp.Value.TemplateName);
+                        continue;
+                    }
+
                     // Generate proper JST nodes using the template IR
                     // Pass the pre-created getter identifier so it matches what GetOverwrite references
                     IIdentifier preCreatedGetter = null;

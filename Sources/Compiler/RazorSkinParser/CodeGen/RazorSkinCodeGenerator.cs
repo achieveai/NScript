@@ -11,6 +11,98 @@ namespace NScript.RazorSkin.CodeGen
     {
         private static ILogger Log => RazorSkinCompiler.Logger;
 
+        /// <summary>
+        /// Generates JavaScript for a template using graph-based binding instead of SkinBinderInfo arrays.
+        /// Returns JS containing: graph descriptor variable, factory function, getter function.
+        /// </summary>
+        public static string GenerateGraphMode(SkinTemplateNode ir)
+        {
+            var sb = new StringBuilder();
+
+            // Build set of known function names from @functions blocks
+            var knownFunctionNames = new HashSet<string>();
+            if (ir.Functions != null)
+            {
+                foreach (var func in ir.Functions)
+                {
+                    if (func.FunctionName != "functions_block")
+                        knownFunctionNames.Add(func.FunctionName);
+                }
+            }
+
+            // Emit @functions blocks
+            EmitFunctions(sb, ir.Functions);
+
+            // 1. Build graph topology from IR
+            var topology = GraphTopologyBuilder.Build(ir);
+
+            // 2. Emit graph descriptor variable
+            sb.AppendLine(GraphDescriptorEmitter.EmitDescriptor(ir.TemplateName, topology, knownFunctionNames));
+            sb.AppendLine();
+
+            // 3. Collect HTML and element paths (reuse existing methods)
+            var events = CollectEvents(ir.Children);
+            var elementPaths = new List<List<int>>();
+            var htmlContent = CollectHtmlWithPaths(ir.Children, events, elementPaths);
+
+            // 4. Build part ID mapping
+            var partIdMapping = BuildPartIdMapping(ir.Children);
+            var partIdMappingJs = partIdMapping.Count > 0
+                ? "{\n" + string.Join(",\n", partIdMapping.Select(kvp => $"    \"{kvp.Key}\": {kvp.Value}")) + "\n  }"
+                : "null";
+
+            // 5. Emit tmplStore and cache variables
+            sb.AppendLine($"var {ir.TemplateName}_tmplStore = new Array(1);");
+            sb.AppendLine($"var {ir.TemplateName}_var = null;");
+            sb.AppendLine();
+
+            // 6. Emit factory function
+            sb.AppendLine($"function {ir.TemplateName}_factory(skinFactory, doc) {{");
+            sb.AppendLine("  var domStore, htmlRoot, objStorage;");
+            sb.AppendLine($"  if (!(domStore = DocStorageGetter(doc))[0]) {{");
+            sb.AppendLine($"    domStore[0] = doc.createElement(\"div\");");
+            sb.AppendLine($"    domStore[0].innerHTML = \"{EscapeJs(htmlContent)}\";");
+            sb.AppendLine("  }");
+            sb.AppendLine($"  htmlRoot = domStore[0].cloneNode(true);");
+
+            // 7. Emit element path resolution (objStorage)
+            var totalSlots = elementPaths.Count + events.Count;
+            sb.AppendLine($"  objStorage = new Array({totalSlots});");
+            for (int i = 0; i < elementPaths.Count; i++)
+            {
+                var path = elementPaths[i];
+                var pathStr = string.Join(", ", path);
+                sb.AppendLine($"  objStorage[{i}] = Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath(htmlRoot, [{pathStr}]);");
+            }
+
+            // Event element path mapping (events share objStorage after element paths)
+            for (int i = 0; i < events.Count; i++)
+            {
+                var elemIdx = elementPaths.Count + i;
+                sb.AppendLine($"  objStorage[{elemIdx}] = htmlRoot;");
+            }
+
+            // Emit event binders
+            EmitEventBinders(sb, events, elementPaths.Count);
+
+            // 8. Emit SkinInstance factory call - passing graph descriptor instead of binder array
+            sb.AppendLine($"  return Sunlight__Framework__UI__Helpers__SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, {ir.TemplateName}_graph, {partIdMappingJs}, 0, 0);");
+            sb.AppendLine("}");
+            sb.AppendLine();
+
+            // 9. Emit getter function
+            sb.AppendLine($"function {ir.TemplateName}() {{");
+            sb.AppendLine($"  if (!{ir.TemplateName}_var)");
+            sb.AppendLine($"    {ir.TemplateName}_var = Sunlight__Framework__UI__Skin_factory({MangleTypeName(ir.ControlTypeName)}, {MangleTypeName(ir.ModelTypeName)}, {ir.TemplateName}_factory, \"0\");");
+            sb.AppendLine($"  return {ir.TemplateName}_var;");
+            sb.AppendLine("}");
+
+            var jsOutput = sb.ToString();
+            Log.Debug("Graph mode code generation produced JS of length {JsLength}", jsOutput.Length);
+
+            return jsOutput;
+        }
+
         public static string Generate(SkinTemplateNode ir)
         {
             var sb = new StringBuilder();
