@@ -57,45 +57,8 @@ namespace NScript.RazorSkin.CodeGen
             List<IRNode> nodes, List<EventNode> eventTracker, List<List<int>> outPaths)
             => CollectHtmlWithPaths(nodes, eventTracker, outPaths);
 
-        public static Dictionary<string, int> BuildPartIdMappingPublic(List<IRNode> nodes)
-            => BuildPartIdMapping(nodes);
-
         public static string CollectHtmlPublic(List<IRNode> nodes)
             => CollectHtml(nodes);
-
-        /// <summary>
-        /// Build a mapping from element id attribute values to their element indices
-        /// in the objStorage array, for the SkinInstance partMap parameter (H8).
-        /// </summary>
-        private static Dictionary<string, int> BuildPartIdMapping(List<IRNode> nodes)
-        {
-            var mapping = new Dictionary<string, int>();
-            int index = 0;
-            BuildPartIdMappingRecursive(nodes, mapping, ref index);
-            return mapping;
-        }
-
-        private static void BuildPartIdMappingRecursive(
-            List<IRNode> nodes, Dictionary<string, int> mapping, ref int index)
-        {
-            foreach (var node in nodes)
-            {
-                if (node is ExpressionBindingNode binding)
-                {
-                    if (!string.IsNullOrEmpty(binding.ElementId))
-                        mapping[binding.ElementId] = index;
-                    index++;
-                }
-                else if (node is SubControlNode sub)
-                {
-                    if (!string.IsNullOrEmpty(sub.ElementId))
-                        mapping[sub.ElementId] = index;
-                    index++;
-                }
-
-                BuildPartIdMappingRecursive(node.Children, mapping, ref index);
-            }
-        }
 
         /// <summary>
         /// Builds the innerHTML string AND computes DOM paths for each binding placeholder.
@@ -126,9 +89,21 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (node is HtmlNode html)
                     sb.Append(html.HtmlContent);
-                else if (node is ExpressionBindingNode)
+                else if (node is ExpressionBindingNode exprBinding)
                 {
-                    sb.Append($"<span data-bind-idx=\"{bindingIdx}\"></span>");
+                    if (exprBinding.Target == ExpressionTarget.TextContent)
+                    {
+                        // Text bindings get a span placeholder in the HTML
+                        sb.Append($"<span data-bind-idx=\"{bindingIdx}\"></span>");
+                    }
+                    else
+                    {
+                        // Attribute/Class/Style bindings target the element itself.
+                        // The preceding HTML is an unclosed opening tag like '<div data-test="1"'
+                        // (the attribute was stripped by the IR builder). Append the marker
+                        // as an attribute on that element.
+                        sb.Append($" data-bind-idx=\"{bindingIdx}\"");
+                    }
                     bindingIdx++;
                 }
                 else if (node is EventNode)
@@ -137,21 +112,19 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else if (node is ConditionalNode cond)
                 {
-                    sb.Append("<span>");
-                    sb.Append(CollectHtmlWithMarkers(cond.TrueBranch, eventTracker, ref bindingIdx));
-                    sb.Append("</span>");
-                    if (cond.FalseBranch.Count > 0)
-                    {
-                        sb.Append("<span>");
-                        sb.Append(CollectHtmlWithMarkers(cond.FalseBranch, eventTracker, ref bindingIdx));
-                        sb.Append("</span>");
-                    }
+                    // Gate: emit only an empty marker span. Branch content is stored
+                    // as HTML strings in the GateTargetInfo (trueTemplate/falseTemplate)
+                    // and dynamically cloned by GraphEngine at runtime.
+                    sb.Append("<span></span>");
+                    // Still need to recurse into branches so any nested bindings get
+                    // their bindingIdx allocated (though they won't have HTML markers)
                 }
                 else if (node is LoopNode loop)
                 {
-                    sb.Append("<span>");
-                    sb.Append(CollectHtmlWithMarkers(loop.ItemTemplate, eventTracker, ref bindingIdx));
-                    sb.Append("</span>");
+                    // Collection: emit only an empty marker span. Item template content
+                    // is stored as an HTML string in the CollectionTargetInfo and rendered
+                    // by GraphEngine for each collection item.
+                    sb.Append("<span></span>");
                 }
                 else if (node is SubControlNode)
                 {
@@ -191,11 +164,23 @@ namespace NScript.RazorSkin.CodeGen
             var childCountStack = new List<int>(); // child count at each depth
             childCountStack.Add(0); // root level child count
 
+            // Track whether we've seen text content at the current level
+            // that hasn't been counted yet. Browser childNodes includes text nodes,
+            // so we must count them to match GetElementFromPath's index resolution.
+            bool hasUnflushedText = false;
+
             int i = 0;
             while (i < html.Length)
             {
                 if (html[i] == '<')
                 {
+                    // Flush any pending text node before processing the tag
+                    if (hasUnflushedText)
+                    {
+                        childCountStack[childCountStack.Count - 1]++;
+                        hasUnflushedText = false;
+                    }
+
                     // Check for closing tag
                     if (i + 1 < html.Length && html[i + 1] == '/')
                     {
@@ -207,6 +192,7 @@ namespace NScript.RazorSkin.CodeGen
                             childCountStack.RemoveAt(childCountStack.Count - 1);
                         }
                         i = closeEnd + 1;
+                        hasUnflushedText = false;
                         continue;
                     }
 
@@ -220,10 +206,10 @@ namespace NScript.RazorSkin.CodeGen
                     // This element's index within its parent = current child count at this level
                     int myIndex = childCountStack[childCountStack.Count - 1];
 
-                    // Check for data-bind-idx marker
-                    var markerMatch = System.Text.RegularExpressions.Regex.Match(
+                    // Check for data-bind-idx markers (may have multiple on same element for attr bindings)
+                    var markerMatches = System.Text.RegularExpressions.Regex.Matches(
                         tagContent, @"data-bind-idx=""(\d+)""");
-                    if (markerMatch.Success)
+                    foreach (System.Text.RegularExpressions.Match markerMatch in markerMatches)
                     {
                         var idx = int.Parse(markerMatch.Groups[1].Value);
                         // Build path: all ancestor indices + this element's index
@@ -231,7 +217,7 @@ namespace NScript.RazorSkin.CodeGen
                         pathMap[idx] = path;
                     }
 
-                    // Increment parent's child count
+                    // Increment parent's child count (this is an element node)
                     childCountStack[childCountStack.Count - 1]++;
 
                     // If not self-closing, push new nesting level
@@ -242,9 +228,13 @@ namespace NScript.RazorSkin.CodeGen
                     }
 
                     i = tagEnd + 1;
+                    hasUnflushedText = false;
                 }
                 else
                 {
+                    // Text content — mark as pending (will be counted as a text node
+                    // when we encounter the next tag at the same level)
+                    hasUnflushedText = true;
                     i++;
                 }
             }
@@ -259,85 +249,5 @@ namespace NScript.RazorSkin.CodeGen
             }
         }
 
-        /// <summary>
-        /// Counts the number of top-level child nodes that an HTML string would add to its parent.
-        /// Uses a simple heuristic: count top-level tags and text segments.
-        /// </summary>
-        private static int CountTopLevelHtmlChildren(string html)
-        {
-            if (string.IsNullOrEmpty(html))
-                return 0;
-
-            int count = 0;
-            int depth = 0;
-            bool hasText = false;
-
-            for (int i = 0; i < html.Length; i++)
-            {
-                char c = html[i];
-                if (c == '<')
-                {
-                    // Flush any pending text node at depth 0
-                    if (depth == 0 && hasText)
-                    {
-                        count++;
-                        hasText = false;
-                    }
-
-                    // Check if closing tag
-                    if (i + 1 < html.Length && html[i + 1] == '/')
-                    {
-                        // Find end of closing tag
-                        int end = html.IndexOf('>', i);
-                        if (end >= 0)
-                        {
-                            depth--;
-                            i = end;
-                        }
-                    }
-                    else
-                    {
-                        // Opening tag — check for self-closing
-                        int end = html.IndexOf('>', i);
-                        if (end >= 0)
-                        {
-                            bool selfClosing = html[end - 1] == '/' ||
-                                IsSelfClosingTag(html, i, end);
-                            if (depth == 0)
-                                count++;
-                            if (!selfClosing)
-                                depth++;
-                            i = end;
-                        }
-                    }
-                }
-                else if (depth == 0 && !char.IsWhiteSpace(c))
-                {
-                    hasText = true;
-                }
-            }
-
-            // Trailing text node
-            if (depth == 0 && hasText)
-                count++;
-
-            return Math.Max(count, 1); // At minimum, the content occupies 1 slot
-        }
-
-        private static bool IsSelfClosingTag(string html, int tagStart, int tagEnd)
-        {
-            // Extract tag name
-            int nameStart = tagStart + 1;
-            int nameEnd = nameStart;
-            while (nameEnd < tagEnd && !char.IsWhiteSpace(html[nameEnd]) && html[nameEnd] != '>' && html[nameEnd] != '/')
-                nameEnd++;
-            var tagName = html.Substring(nameStart, nameEnd - nameStart).ToLower();
-
-            // HTML void elements
-            return tagName == "br" || tagName == "hr" || tagName == "img" || tagName == "input"
-                || tagName == "meta" || tagName == "link" || tagName == "area" || tagName == "base"
-                || tagName == "col" || tagName == "embed" || tagName == "source" || tagName == "track"
-                || tagName == "wbr";
-        }
     }
 }

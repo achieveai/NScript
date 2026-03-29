@@ -19,6 +19,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             this.state.Sources[GraphSourceSlot.DataContext] = dataContext;
             this.state.Sources[GraphSourceSlot.TemplateParent] = templateParent;
             GraphEngine.PushInitialValues(this.descriptor, this.state);
+
+            // Wire subscriptions immediately so property changes propagate synchronously.
+            // This is called again from SkinInstance.QueuedActivation, but WireSubscriptions
+            // is idempotent (returns early if already active).
+            WireSubscriptions(dataContext, templateParent);
         }
 
         public void WireSubscriptions(object dataContext, object templateParent)
@@ -44,13 +49,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 INotifyPropertyChanged observable = source as INotifyPropertyChanged;
                 if (object.IsNullOrUndefined(observable)) continue;
 
-                int capturedNodeIdx = entry.NodeIdx;
-                GraphState capturedState = this.state;
+                // IMPORTANT: Create callback via a separate method to avoid JS closure-in-loop bug.
+                // NScript compiles C# locals as function-scoped `var` — all loop iterations
+                // share the same variable binding. By calling a method, each gets its own scope.
                 Action<INotifyPropertyChanged, string> callback =
-                    delegate(INotifyPropertyChanged sender, string propName)
-                    {
-                        GraphEngine.MarkDirty(capturedState, capturedNodeIdx);
-                    };
+                    GraphBindingStrategy.CreatePropertyCallback(this.state, this.descriptor, entry.NodeIdx);
 
                 observable.AddPropertyChangedListener(entry.PropertyName, callback);
                 listeners[i] = callback;
@@ -80,6 +83,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public void OnTemplateParentChanged(object newTemplateParent)
         {
             this.state.Sources[GraphSourceSlot.TemplateParent] = newTemplateParent;
+
+            if (this.state.SubscriptionsActive)
+            {
+                UnsubscribeAll();
+                this.state.SubscriptionsActive = false;
+                WireSubscriptions(this.state.Sources[GraphSourceSlot.DataContext], newTemplateParent);
+            }
+
+            // Mark source node dirty and flush synchronously
             this.state.Dirty[0] = true;
             GraphEngine.Flush(this.descriptor, this.state);
         }
@@ -120,6 +132,21 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             this.state.ElemRefs = null;
             this.state.Sources[0] = null;
             this.state.Sources[1] = null;
+        }
+
+        /// <summary>
+        /// Creates a property change callback with its own closure scope.
+        /// This avoids the JS closure-in-loop bug where all callbacks would share
+        /// the same capturedNodeIdx variable (last loop value) if created inline.
+        /// </summary>
+        public static Action<INotifyPropertyChanged, string> CreatePropertyCallback(
+            GraphState state, GraphDescriptor descriptor, int nodeIdx)
+        {
+            return delegate(INotifyPropertyChanged sender, string propName)
+            {
+                state.Dirty[nodeIdx] = true;
+                GraphEngine.Flush(descriptor, state);
+            };
         }
 
         private void UnsubscribeAll()

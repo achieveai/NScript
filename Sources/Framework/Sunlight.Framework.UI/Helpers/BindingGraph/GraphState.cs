@@ -37,6 +37,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Whether a flush is scheduled for this graph.</summary>
         public bool FlushScheduled;
 
+        /// <summary>Reentrancy guard: true while Flush is executing on this state.</summary>
+        public bool Flushing;
+
         /// <summary>Depth in the skin nesting hierarchy (0 = root).</summary>
         public int Depth;
 
