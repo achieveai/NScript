@@ -1,0 +1,1495 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using NScript.CLR;
+using NScript.Converter.TypeSystemConverter;
+using NScript.JST;
+using NScript.RazorSkin.TemplateIR;
+using NScript.Utils;
+using Serilog;
+
+namespace NScript.RazorSkin.CodeGen
+{
+    /// <summary>
+    /// Emits a graph descriptor as a JST <see cref="InlineObjectInitializer"/> with function
+    /// references resolved via <see cref="RuntimeScopeManager"/>. Uses proper JST nodes
+    /// that participate in NScript's scope-based minification system.
+    /// All field names are resolved through Cecil so they receive minified identifiers
+    /// that match the runtime's field access patterns.
+    /// </summary>
+    public class GraphDescriptorJSTEmitter
+    {
+        private static ILogger Log => RazorSkinCompiler.Logger;
+
+        private readonly GraphTopology _topology;
+        private readonly IdentifierScope _scope;
+        private readonly RuntimeScopeManager _scopeManager;
+        private readonly RazorKnownTypes _knownTypes;
+        private readonly ISet<string> _knownFunctionNames;
+        private readonly ClrContext _clrContext;
+        private readonly string _modelTypeName;
+        private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
+
+        // Resolved field identifiers for GraphDescriptor
+        private readonly IIdentifier _nodeCountField;
+        private readonly IIdentifier _nodeTypesField;
+        private readonly IIdentifier _gettersField;
+        private readonly IIdentifier _consumersField;
+        private readonly IIdentifier _gateIndicesField;
+        private readonly IIdentifier _defaultValuesField;
+        private readonly IIdentifier _targetInfosField;
+        private readonly IIdentifier _subscriptionsField;
+        private readonly IIdentifier _sourceTypeField;
+        private readonly IIdentifier _subscribeModeField;
+        private readonly IIdentifier _parentIndicesField;
+        private readonly IIdentifier _rootSourceSlotField;
+
+        // Resolved field identifiers for DomTargetInfo
+        private readonly IIdentifier _domTargetElemIdxField;
+        private readonly IIdentifier _domTargetSetterField;
+
+        // Resolved field identifiers for SubscriptionEntry
+        private readonly IIdentifier _subscriptionPropertyNameField;
+        private readonly IIdentifier _subscriptionNodeIdxField;
+        private readonly IIdentifier _subscriptionSourceSlotField;
+
+        // Resolved field identifiers for GateTargetInfo
+        private readonly IIdentifier _gateMarkerIdxField;
+        private readonly IIdentifier _gateTrueTemplateField;
+        private readonly IIdentifier _gateFalseTemplateField;
+        private readonly IIdentifier _gateTrueElemCountField;
+        private readonly IIdentifier _gateFalseElemCountField;
+        private readonly IIdentifier _gateTrueChildElemIndicesField;
+        private readonly IIdentifier _gateFalseChildElemIndicesField;
+
+        // Resolved field identifiers for CollectionTargetInfo
+        private readonly IIdentifier _collectionMarkerIdxField;
+        private readonly IIdentifier _collectionItemGraphField;
+        private readonly IIdentifier _collectionItemTemplateField;
+
+        // Resolved field identifiers for EventTargetInfo
+        private readonly IIdentifier _eventElemIdxField;
+        private readonly IIdentifier _eventNameField;
+
+        // Factory identifiers for sub-types (used to emit proper typed instances)
+        private readonly IIdentifier _domTargetInfoFactory;
+        private readonly IIdentifier _subscriptionEntryFactory;
+        private readonly IIdentifier _gateTargetInfoFactory;
+        private readonly IIdentifier _collectionTargetInfoFactory;
+        private readonly IIdentifier _eventTargetInfoFactory;
+
+        public GraphDescriptorJSTEmitter(
+            GraphTopology topology,
+            IdentifierScope scope,
+            RuntimeScopeManager scopeManager,
+            RazorKnownTypes knownTypes,
+            ISet<string> knownFunctionNames,
+            ClrContext clrContext,
+            string modelTypeName,
+            Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null)
+        {
+            _topology = topology;
+            _scope = scope;
+            _scopeManager = scopeManager;
+            _knownTypes = knownTypes;
+            _knownFunctionNames = knownFunctionNames;
+            _clrContext = clrContext;
+            _modelTypeName = modelTypeName;
+            _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
+
+            // Resolve all field identifiers at construction time
+            ResolveFieldIdentifiers(
+                out _nodeCountField, out _nodeTypesField, out _gettersField,
+                out _consumersField, out _gateIndicesField, out _defaultValuesField,
+                out _targetInfosField, out _subscriptionsField, out _sourceTypeField,
+                out _subscribeModeField, out _parentIndicesField, out _rootSourceSlotField,
+                out _domTargetElemIdxField, out _domTargetSetterField,
+                out _subscriptionPropertyNameField, out _subscriptionNodeIdxField,
+                out _subscriptionSourceSlotField,
+                out _gateMarkerIdxField, out _gateTrueTemplateField, out _gateFalseTemplateField,
+                out _gateTrueElemCountField, out _gateFalseElemCountField,
+                out _gateTrueChildElemIndicesField, out _gateFalseChildElemIndicesField,
+                out _collectionMarkerIdxField, out _collectionItemGraphField,
+                out _collectionItemTemplateField,
+                out _eventElemIdxField, out _eventNameField);
+
+            // Resolve factory identifiers for sub-types so we can emit proper typed instances
+            ResolveFactoryIdentifiers(
+                out _domTargetInfoFactory, out _subscriptionEntryFactory,
+                out _gateTargetInfoFactory, out _collectionTargetInfoFactory,
+                out _eventTargetInfoFactory);
+        }
+
+        /// <summary>
+        /// Resolves all field identifiers for GraphDescriptor and its sub-types via Cecil.
+        /// Each field is looked up on the appropriate TypeDefinition, then resolved through
+        /// the RuntimeScopeManager so identifiers participate in minification.
+        /// </summary>
+        private void ResolveFieldIdentifiers(
+            out IIdentifier nodeCount, out IIdentifier nodeTypes, out IIdentifier getters,
+            out IIdentifier consumers, out IIdentifier gateIndices, out IIdentifier defaultValues,
+            out IIdentifier targetInfos, out IIdentifier subscriptions, out IIdentifier sourceType,
+            out IIdentifier subscribeMode, out IIdentifier parentIndices, out IIdentifier rootSourceSlot,
+            out IIdentifier domElemIdx, out IIdentifier domSetter,
+            out IIdentifier subPropertyName, out IIdentifier subNodeIdx, out IIdentifier subSourceSlot,
+            out IIdentifier gateMarkerIdx, out IIdentifier gateTrueTemplate, out IIdentifier gateFalseTemplate,
+            out IIdentifier gateTrueElemCount, out IIdentifier gateFalseElemCount,
+            out IIdentifier gateTrueChildElemIndices, out IIdentifier gateFalseChildElemIndices,
+            out IIdentifier collMarkerIdx, out IIdentifier collItemGraph, out IIdentifier collItemTemplate,
+            out IIdentifier eventElemIdx, out IIdentifier eventName)
+        {
+            // GraphDescriptor fields
+            var graphDescType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GraphDescriptor");
+            nodeCount = ResolveFieldId(graphDescType, "NodeCount");
+            nodeTypes = ResolveFieldId(graphDescType, "NodeTypes");
+            getters = ResolveFieldId(graphDescType, "Getters");
+            consumers = ResolveFieldId(graphDescType, "Consumers");
+            gateIndices = ResolveFieldId(graphDescType, "GateIndices");
+            defaultValues = ResolveFieldId(graphDescType, "DefaultValues");
+            targetInfos = ResolveFieldId(graphDescType, "TargetInfos");
+            subscriptions = ResolveFieldId(graphDescType, "Subscriptions");
+            sourceType = ResolveFieldId(graphDescType, "SourceType");
+            subscribeMode = ResolveFieldId(graphDescType, "SubscribeMode");
+            parentIndices = ResolveFieldId(graphDescType, "ParentIndices");
+            rootSourceSlot = ResolveFieldId(graphDescType, "RootSourceSlot");
+
+            // DomTargetInfo fields
+            var domTargetType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.DomTargetInfo");
+            domElemIdx = ResolveFieldId(domTargetType, "ElemIdx");
+            domSetter = ResolveFieldId(domTargetType, "Setter");
+
+            // SubscriptionEntry fields
+            var subEntryType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubscriptionEntry");
+            subPropertyName = ResolveFieldId(subEntryType, "PropertyName");
+            subNodeIdx = ResolveFieldId(subEntryType, "NodeIdx");
+            subSourceSlot = ResolveFieldId(subEntryType, "SourceSlot");
+
+            // GateTargetInfo fields
+            var gateType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GateTargetInfo");
+            gateMarkerIdx = ResolveFieldId(gateType, "MarkerIdx");
+            gateTrueTemplate = ResolveFieldId(gateType, "TrueTemplate");
+            gateFalseTemplate = ResolveFieldId(gateType, "FalseTemplate");
+            gateTrueElemCount = ResolveFieldId(gateType, "TrueElemCount");
+            gateFalseElemCount = ResolveFieldId(gateType, "FalseElemCount");
+            gateTrueChildElemIndices = ResolveFieldId(gateType, "TrueChildElemIndices");
+            gateFalseChildElemIndices = ResolveFieldId(gateType, "FalseChildElemIndices");
+
+            // CollectionTargetInfo fields
+            var collType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.CollectionTargetInfo");
+            collMarkerIdx = ResolveFieldId(collType, "MarkerIdx");
+            collItemGraph = ResolveFieldId(collType, "ItemGraph");
+            collItemTemplate = ResolveFieldId(collType, "ItemTemplate");
+
+            // EventTargetInfo fields
+            var eventType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.EventTargetInfo");
+            eventElemIdx = ResolveFieldId(eventType, "ElemIdx");
+            eventName = ResolveFieldId(eventType, "EventName");
+        }
+
+        /// <summary>
+        /// Resolves factory (constructor) identifiers for sub-types so that emitted objects
+        /// are proper NScript typed instances instead of plain object literals.
+        /// The runtime casts these with Type__CastType_d which requires type metadata.
+        /// </summary>
+        private void ResolveFactoryIdentifiers(
+            out IIdentifier domTargetInfoFactory, out IIdentifier subscriptionEntryFactory,
+            out IIdentifier gateTargetInfoFactory, out IIdentifier collectionTargetInfoFactory,
+            out IIdentifier eventTargetInfoFactory)
+        {
+            domTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.DomTargetInfo");
+            subscriptionEntryFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.SubscriptionEntry");
+            gateTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.GateTargetInfo");
+            collectionTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.CollectionTargetInfo");
+            eventTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.EventTargetInfo");
+        }
+
+        /// <summary>
+        /// Resolves the type constructor for creating instances via 'new Type()'.
+        /// Uses ResolveType which returns the type's JS constructor identifier.
+        /// </summary>
+        private IIdentifier ResolveFactoryForType(string fullTypeName)
+        {
+            var typeDef = FindTypeDefinition(fullTypeName);
+            if (typeDef == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot find type {TypeName} for constructor resolution", fullTypeName);
+                return null;
+            }
+
+            var identifiers = _scopeManager.ResolveType(typeDef);
+            if (identifiers == null || identifiers.Count == 0)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve type {TypeName}", fullTypeName);
+                return null;
+            }
+
+            // For simple (non-generic) types, the first identifier IS the constructor
+            return identifiers[0];
+        }
+
+        /// <summary>
+        /// Resolves a field on a type definition to an IIdentifier via the scope manager.
+        /// Returns null if the type or field cannot be found (will fall back to string keys).
+        /// </summary>
+        private IIdentifier ResolveFieldId(TypeDefinition type, string fieldName)
+        {
+            if (type == null) return null;
+
+            var fieldDef = type.Fields.FirstOrDefault(f => f.Name == fieldName);
+            if (fieldDef == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot find field {FieldName} on {TypeName}",
+                    fieldName, type.FullName);
+                return null;
+            }
+
+            return _scopeManager.Resolve(fieldDef);
+        }
+
+        /// <summary>
+        /// Emits the complete graph descriptor as an InlineObjectInitializer JST node.
+        /// Fields: nodeTypes, getters, consumers, gateIndices, defaultValues,
+        /// targetInfos, subscriptions, subscribeMode, nodeCount, parentIndices.
+        /// All field names use resolved IIdentifiers for correct minification.
+        /// </summary>
+        public InlineObjectInitializer Emit()
+        {
+            var obj = new InlineObjectInitializer(null, _scope);
+
+            AddField(obj, _nodeTypesField, "nodeTypes", EmitNodeTypes());
+            AddField(obj, _gettersField, "getters", EmitGetters());
+            AddField(obj, _consumersField, "consumers", EmitConsumers());
+            AddField(obj, _gateIndicesField, "gateIndices", EmitGateIndices());
+            AddField(obj, _defaultValuesField, "defaultValues", EmitDefaultValues());
+            AddField(obj, _targetInfosField, "targetInfos", EmitTargetInfos());
+            AddField(obj, _subscriptionsField, "subscriptions", EmitSubscriptions());
+            AddField(obj, _subscribeModeField, "subscribeMode", new NumberLiteralExpression(_scope, 0));
+            AddField(obj, _nodeCountField, "nodeCount", new NumberLiteralExpression(_scope, _topology.NodeCount));
+
+            if (!string.IsNullOrEmpty(_topology.ModelTypeName))
+                AddField(obj, _sourceTypeField, "sourceType", EmitSourceType(_topology.ModelTypeName));
+
+            AddField(obj, _parentIndicesField, "parentIndices", EmitParentIndices());
+            AddField(obj, _rootSourceSlotField, "rootSourceSlot", new NumberLiteralExpression(_scope, 0));
+
+            return obj;
+        }
+
+        /// <summary>
+        /// Adds a field to an InlineObjectInitializer using the resolved identifier.
+        /// Logs a warning if resolution failed — string keys break minification.
+        /// </summary>
+        private void AddField(InlineObjectInitializer obj, IIdentifier resolvedId, string fallbackName, Expression value)
+        {
+            if (resolvedId != null)
+            {
+                obj.AddInitializer(resolvedId, value);
+            }
+            else
+            {
+                Log.Warning("GraphDescriptorJSTEmitter: Field '{FieldName}' not resolved — using string key (WILL BREAK in retail/minified builds)", fallbackName);
+                obj.AddInitializer(fallbackName, value);
+            }
+        }
+
+        /// <summary>
+        /// Emits a resolved type expression for the sourceType field.
+        /// Uses the resolved type identifiers dictionary to find the minified type reference,
+        /// falling back to a string literal if resolution is not available.
+        /// </summary>
+        private Expression EmitSourceType(string modelTypeName)
+        {
+            if (_resolvedTypeIdentifiers != null && !string.IsNullOrEmpty(modelTypeName))
+            {
+                var mangledName = modelTypeName.Replace(".", "__");
+                if (_resolvedTypeIdentifiers.TryGetValue(mangledName, out var identifiers)
+                    && identifiers.Count > 0)
+                {
+                    return IdentifierExpression.Create(null, _scope, identifiers);
+                }
+            }
+
+            // Fallback: emit null — a string would crash at runtime when
+            // GraphEngine calls desc.SourceType.IsInstanceOfType().
+            Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve sourceType {TypeName} — emitting null (type check disabled)", modelTypeName);
+            return new NullLiteralExpression(_scope);
+        }
+
+        /// <summary>nodeTypes: [0, 1, 3, ...]</summary>
+        private Expression EmitNodeTypes()
+        {
+            var items = new List<Expression>();
+            for (int i = 0; i < _topology.NodeCount; i++)
+                items.Add(new NumberLiteralExpression(_scope, _topology.NodeTypes[i]));
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// getters: [null, function(dc) { return dc.get_name(); }, null, ...]
+        /// Uses <see cref="RawBodyFunctionExpression"/> for getter bodies since getter
+        /// expressions reference virtual method accessors that are already correctly mangled.
+        /// </summary>
+        private Expression EmitGetters()
+        {
+            var items = new List<Expression>();
+            for (int i = 0; i < _topology.NodeCount; i++)
+                items.Add(EmitGetter(_topology.NodeTypes[i], _topology.GetterExpressions[i]));
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        private Expression EmitGetter(int nodeType, string getterExpression)
+        {
+            switch (nodeType)
+            {
+                case GraphNodeTypeConstants.Source:
+                case GraphNodeTypeConstants.DomTarget:
+                    return new NullLiteralExpression(_scope);
+
+                case GraphNodeTypeConstants.EventBinding:
+                {
+                    // EventBinding needs a getter to extract the method reference from the source.
+                    if (string.IsNullOrEmpty(getterExpression))
+                        return new NullLiteralExpression(_scope);
+
+                    return EmitEventGetter(getterExpression);
+                }
+
+                case GraphNodeTypeConstants.Property:
+                {
+                    if (string.IsNullOrEmpty(getterExpression))
+                        return new NullLiteralExpression(_scope);
+
+                    // Try building a fully resolved JST getter via Cecil type lookup
+                    var resolved = TryBuildResolvedPropertyGetter(getterExpression);
+                    if (resolved != null)
+                        return resolved;
+
+                    // Fallback: known function names stay as-is, others get getter prefix.
+                    // Strip "Model." or item variable prefix — these map to the DataContext.
+                    var fallbackExpr = getterExpression;
+                    if (fallbackExpr.StartsWith("Model."))
+                        fallbackExpr = fallbackExpr.Substring(6);
+                    if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
+                        && fallbackExpr.StartsWith(_topology.ItemVariablePrefix))
+                        fallbackExpr = fallbackExpr.Substring(_topology.ItemVariablePrefix.Length);
+
+                    string body;
+                    if (_knownFunctionNames != null && _knownFunctionNames.Contains(fallbackExpr))
+                        body = "return dc." + fallbackExpr;
+                    else
+                    {
+                        var getterName = ExpressionJsEmitter.PropertyToGetterName(fallbackExpr);
+                        body = "return dc." + getterName + "()";
+                    }
+
+                    return CreateRawGetterFunction(body);
+                }
+
+                case GraphNodeTypeConstants.Gate:
+                    // Gate nodes use their parent Property node's value directly as the
+                    // condition. No getter needed — the engine passes through parentVal.
+                    return new NullLiteralExpression(_scope);
+
+                case GraphNodeTypeConstants.Computed:
+                case GraphNodeTypeConstants.CollectionManager:
+                {
+                    if (string.IsNullOrEmpty(getterExpression))
+                        return new NullLiteralExpression(_scope);
+
+                    // For simple single-property expressions, try resolved field access first.
+                    // This handles inlined getters where get_X() doesn't exist at runtime.
+                    var resolved = TryBuildResolvedPropertyGetter(getterExpression);
+                    if (resolved != null)
+                        return resolved;
+
+                    // Try building a proper JST expression tree for arithmetic expressions.
+                    // This ensures field names are resolved through the scope system, avoiding
+                    // issues with raw body strings that can't access the final minified names.
+                    var jstExpr = TryBuildComputedJSTExpression(getterExpression);
+                    if (jstExpr != null)
+                        return jstExpr;
+
+                    // Final fallback: use raw body with field-access replacement
+                    var jsExpr = ToJsGetterWithFieldAccess(
+                        getterExpression, "dc", "tp", _knownFunctionNames);
+                    return CreateRawGetterFunction("return " + jsExpr);
+                }
+
+                default:
+                    return new NullLiteralExpression(_scope);
+            }
+        }
+
+        /// <summary>
+        /// Builds a fully resolved JST getter function for a simple property access.
+        /// The getter expression is the property name (e.g., "PropStr1") which is looked
+        /// up on the model type via Cecil. The getter method is resolved through the scope
+        /// manager so all identifiers participate in minification.
+        /// Returns: function(dc) { return dc.get_propStr1(); } with all identifiers resolved.
+        /// Returns null if the property cannot be resolved (falls back to raw string).
+        /// </summary>
+        private Expression TryBuildResolvedPropertyGetter(string propertyName)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            // Strip "Model." prefix — in Razor templates, Model IS the DataContext.
+            // OneTime bindings pass the full CSharpExpression (e.g., "Model.AppVersion").
+            if (propertyName.StartsWith("Model."))
+                propertyName = propertyName.Substring(6);
+
+            // Strip item variable prefix for foreach item templates (e.g., "item.Name" -> "Name")
+            if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
+                && propertyName.StartsWith(_topology.ItemVariablePrefix))
+                propertyName = propertyName.Substring(_topology.ItemVariablePrefix.Length);
+
+            // Don't handle dotted paths beyond Model. (e.g., "Customer.Address")
+            if (propertyName.Contains("."))
+                return null;
+
+            // Find the model type
+            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            if (typeDefinition == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve type {TypeName} for getter", _modelTypeName);
+                return null;
+            }
+
+            // Find the property on the type
+            var property = FindProperty(typeDefinition, propertyName);
+            if (property?.GetMethod == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot find property getter {PropName} on {TypeName}",
+                    propertyName, typeDefinition.FullName);
+                return null;
+            }
+
+            // Create a scope with "dc" parameter (no enforceSuggestion — let minification work)
+            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var paramIdentifier = getterScope.ParameterIdentifiers[0];
+
+            // NScript inlines simple field-return getters — the getter method won't exist at
+            // runtime. Detect this and emit field access: dc.fieldName instead of dc.get_propName().
+            // IMPORTANT: Find the backing field on the SAME TypeDefinition from _clrContext
+            // (not via IL resolution) to ensure the scope manager returns the correct identifier.
+            var backingField = TryFindBackingFieldOnType(typeDefinition, property);
+            Expression currentExpr;
+            if (backingField != null)
+            {
+                // Simple getter inlined by NScript — use field access: dc.fieldName
+                var fieldId = _scopeManager.Resolve(backingField);
+                currentExpr = new IndexExpression(
+                    null,
+                    getterScope,
+                    new IdentifierExpression(paramIdentifier, getterScope),
+                    new IdentifierExpression(fieldId, getterScope));
+            }
+            else
+            {
+                // Complex getter — use method call: dc.get_propName()
+                var getterMethodId = _scopeManager.Resolve(property.GetMethod);
+                currentExpr = new MethodCallExpression(
+                    null,
+                    getterScope,
+                    new IndexExpression(
+                        null,
+                        getterScope,
+                        new IdentifierExpression(paramIdentifier, getterScope),
+                        new IdentifierExpression(getterMethodId, getterScope)),
+                    System.Array.Empty<Expression>());
+            }
+
+            // Wrap in: function(dc) { return <expr>; }
+            var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, getterScope, currentExpr));
+            return fn;
+        }
+
+        /// <summary>
+        /// Finds the backing field for a property by analyzing the getter's IL to get the
+        /// field name, then looking it up on the SAME TypeDefinition from _clrContext.
+        /// This is critical: we must use the same TypeDefinition that the scope manager
+        /// processed, otherwise Resolve() creates a new (wrong) identifier.
+        /// Returns null if the getter is not a simple field-return.
+        /// </summary>
+        private static FieldDefinition TryFindBackingFieldOnType(TypeDefinition type, PropertyDefinition property)
+        {
+            var getter = property.GetMethod;
+            if (getter?.Body == null)
+                return null;
+
+            // Analyze IL to find the field name referenced by the getter
+            string fieldName = null;
+            var instructions = getter.Body.Instructions;
+            bool hasLdarg0 = false;
+
+            foreach (var instr in instructions)
+            {
+                var op = instr.OpCode;
+                if (op == OpCodes.Nop || op == OpCodes.Stloc_0 || op == OpCodes.Ldloc_0
+                    || op == OpCodes.Br_S || op == OpCodes.Ret)
+                    continue;
+
+                if (op == OpCodes.Ldarg_0)
+                {
+                    hasLdarg0 = true;
+                    continue;
+                }
+
+                if (op == OpCodes.Ldfld && hasLdarg0 && fieldName == null)
+                {
+                    fieldName = (instr.Operand as FieldReference)?.Name;
+                    continue;
+                }
+
+                // Any other instruction means this isn't a simple field getter
+                return null;
+            }
+
+            if (fieldName == null)
+                return null;
+
+            // Find the field by NAME on the type definition from _clrContext
+            // Walk up the hierarchy in case the field is declared on a base type
+            var current = type;
+            while (current != null)
+            {
+                var field = current.Fields.FirstOrDefault(f => f.Name == fieldName);
+                if (field != null) return field;
+                try { current = current.BaseType?.Resolve(); }
+                catch (Exception) { break; }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Fallback: creates a getter function with a raw JS body string.
+        /// Used for computed/gate/collection getters whose bodies contain operators
+        /// and complex expressions that can't be resolved through Cecil.
+        /// Uses enforceSuggestion=true so "dc" stays as-is since the raw body references it literally.
+        /// </summary>
+        private RawBodyFunctionExpression CreateRawGetterFunction(string rawBody)
+        {
+            var innerScope = new IdentifierScope(
+                _scope,
+                new string[] { "dc" },
+                true);
+
+            return new RawBodyFunctionExpression(
+                null,
+                _scope,
+                innerScope,
+                innerScope.ParameterIdentifiers,
+                rawBody);
+        }
+
+        /// <summary>
+        /// Like ExpressionJsEmitter.ToJsGetter, but uses backing-field access instead of
+        /// getter method calls. This handles inlined getters where get_X() doesn't exist.
+        /// Falls back to ExpressionJsEmitter.ToJsGetter if field resolution fails.
+        /// </summary>
+        private string ToJsGetterWithFieldAccess(
+            string csharpExpression,
+            string dataContextParam,
+            string templateParentParam,
+            ISet<string> knownFunctionNames)
+        {
+            // Build property-to-field name map for the model type
+            var fieldMap = BuildPropertyFieldNameMap();
+
+            if (fieldMap == null || fieldMap.Count == 0)
+            {
+                return ExpressionJsEmitter.ToJsGetter(
+                    csharpExpression, dataContextParam, templateParentParam, knownFunctionNames);
+            }
+
+            // Replace "Model." with DataContext param and "Control." with TemplateParent param
+            var expr = csharpExpression
+                .Replace("Model.", dataContextParam + ".")
+                .Replace("Control.", templateParentParam + ".");
+
+            // Build method name map for resolving method calls
+            var methodMap = BuildMethodNameMap();
+
+            // Convert property accesses to field accesses using the map.
+            // Also handle method calls: .MethodName() should use resolved method name.
+            expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\.([A-Z])(\w*)(\(\))?",
+                match =>
+                {
+                    var propName = match.Groups[1].Value + match.Groups[2].Value;
+                    var hasParens = match.Groups[3].Success; // matched "()"
+
+                    if (knownFunctionNames != null && knownFunctionNames.Contains(propName))
+                        return "." + propName + (hasParens ? "()" : "");
+
+                    // If followed by (), it's a method call — use resolved method name
+                    if (hasParens && methodMap != null && methodMap.TryGetValue(propName, out var resolvedMethodName))
+                        return "." + resolvedMethodName + "()";
+
+                    if (fieldMap.TryGetValue(propName, out var fieldName))
+                        return "." + fieldName;
+
+                    // Fallback to getter call pattern for properties
+                    if (hasParens)
+                        return $".{match.Groups[1].Value.ToLower()}{match.Groups[2].Value}()";
+                    return $".get_{match.Groups[1].Value.ToLower()}{match.Groups[2].Value}()";
+                });
+
+            return expr;
+        }
+
+        /// <summary>
+        /// Builds a map of C# property name -> JS field name for the model type's
+        /// simple field-return properties. Uses enforceSuggestion=true identifiers
+        /// since these will be embedded in raw body strings.
+        /// </summary>
+        private Dictionary<string, string> BuildPropertyFieldNameMap()
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            if (typeDefinition == null)
+                return null;
+
+            var map = new Dictionary<string, string>();
+            foreach (var prop in typeDefinition.Properties)
+            {
+                if (prop.GetMethod == null) continue;
+                var field = TryFindBackingFieldOnType(typeDefinition, prop);
+                if (field == null) continue;
+
+                // Get the minified field name. Since we're building raw body text,
+                // we need the actual text the identifier produces.
+                var fieldId = _scopeManager.Resolve(field);
+                if (fieldId is SimpleIdentifier simpleId)
+                    map[prop.Name] = simpleId.GetName();
+                else if (fieldId != null)
+                    map[prop.Name] = fieldId.SuggestedName;
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Builds a map of C# method name -> JS method name for the model type's public methods.
+        /// Uses enforceSuggestion=true identifiers for raw body embedding.
+        /// </summary>
+        private Dictionary<string, string> BuildMethodNameMap()
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            if (typeDefinition == null)
+                return null;
+
+            var map = new Dictionary<string, string>();
+            foreach (var method in typeDefinition.Methods)
+            {
+                if (!method.IsPublic || method.IsConstructor || method.IsGetter || method.IsSetter)
+                    continue;
+                var methodId = _scopeManager.Resolve(method);
+                if (methodId is SimpleIdentifier simpleId)
+                    map[method.Name] = simpleId.GetName();
+                else if (methodId != null)
+                    map[method.Name] = methodId.SuggestedName;
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Finds a TypeDefinition by fully qualified name across all loaded assemblies.
+        /// </summary>
+        private TypeDefinition FindTypeDefinition(string fullTypeName)
+        {
+            if (string.IsNullOrEmpty(fullTypeName)) return null;
+
+            return _clrContext.GetTypes()
+                .FirstOrDefault(t => t.FullName == fullTypeName);
+        }
+
+        /// <summary>
+        /// Finds a property on a type, walking up the inheritance hierarchy.
+        /// </summary>
+        private static PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
+        {
+            var current = type;
+            while (current != null)
+            {
+                var prop = current.Properties.FirstOrDefault(p => p.Name == propertyName);
+                if (prop != null) return prop;
+
+                try { current = current.BaseType?.Resolve(); }
+                catch (Exception) { break; }
+            }
+            return null;
+        }
+
+        /// <summary>consumers: [[1], [2], [], ...]</summary>
+        private Expression EmitConsumers()
+        {
+            var items = new List<Expression>();
+            for (int i = 0; i < _topology.NodeCount; i++)
+            {
+                var consumerExprs = new List<Expression>();
+                foreach (int c in _topology.Consumers[i])
+                    consumerExprs.Add(new NumberLiteralExpression(_scope, c));
+
+                items.Add(new InlineNewArrayInitialization(null, _scope, consumerExprs));
+            }
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>gateIndices: [-1, -1, 2, ...]</summary>
+        private Expression EmitGateIndices()
+        {
+            var items = new List<Expression>();
+            for (int i = 0; i < _topology.NodeCount; i++)
+                items.Add(new NumberLiteralExpression(_scope, _topology.GateIndices[i]));
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>defaultValues: [null, null, "", false, ...]</summary>
+        private Expression EmitDefaultValues()
+        {
+            var items = new List<Expression>();
+            for (int i = 0; i < _topology.NodeCount; i++)
+                items.Add(EmitDefaultValue(_topology.DefaultValues[i]));
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        private Expression EmitDefaultValue(object value)
+        {
+            if (value == null) return new NullLiteralExpression(_scope);
+            if (value is bool b) return new BooleanLiteralExpression(_scope, b);
+            if (value is string s) return new StringLiteralExpression(_scope, s);
+            if (value is int n) return new NumberLiteralExpression(_scope, n);
+            if (value is long l) return new NumberLiteralExpression(_scope, l);
+            return new StringLiteralExpression(_scope, value.ToString());
+        }
+
+        /// <summary>
+        /// targetInfos: [null, null, {elem: 0, set: SetTextContent}, ...]
+        /// For setter references, resolves the MethodDefinition to a scope-resolved IIdentifier
+        /// via RuntimeScopeManager.ResolveStatic, ensuring proper minification.
+        /// </summary>
+        private Expression EmitTargetInfos()
+        {
+            // Build a lookup from NodeIdx to DomTargetTopology
+            var domTargetMap = new Dictionary<int, DomTargetTopology>();
+            foreach (var dt in _topology.DomTargets)
+                domTargetMap[dt.NodeIdx] = dt;
+
+            // Build a lookup from NodeIdx to GateTopology
+            var gateMap = new Dictionary<int, GateTopology>();
+            foreach (var gt in _topology.Gates)
+                gateMap[gt.NodeIdx] = gt;
+
+            // Build a lookup from NodeIdx to CollectionTopology
+            var collectionMap = new Dictionary<int, CollectionTopology>();
+            foreach (var ct in _topology.Collections)
+                collectionMap[ct.NodeIdx] = ct;
+
+            // Build a lookup from NodeIdx to EventTopology
+            var eventMap = new Dictionary<int, EventTopology>();
+            foreach (var et in _topology.Events)
+                eventMap[et.NodeIdx] = et;
+
+            var items = new List<Expression>();
+            for (int i = 0; i < _topology.NodeCount; i++)
+            {
+                if (domTargetMap.TryGetValue(i, out var dt))
+                {
+                    items.Add(EmitDomTargetInfo(dt));
+                }
+                else if (gateMap.TryGetValue(i, out var gt))
+                {
+                    items.Add(EmitGateTargetInfo(gt));
+                }
+                else if (collectionMap.TryGetValue(i, out var ct))
+                {
+                    items.Add(EmitCollectionTargetInfo(ct));
+                }
+                else if (eventMap.TryGetValue(i, out var et))
+                {
+                    items.Add(EmitEventTargetInfo(et));
+                }
+                else
+                {
+                    items.Add(new NullLiteralExpression(_scope));
+                }
+            }
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// Emits a typed object as an IIFE (Immediately Invoked Function Expression) that
+        /// creates a proper NScript typed instance instead of a plain object literal.
+        /// The runtime uses Type__CastType_d to check type metadata, so plain {} fails.
+        /// Pattern: (function(){var o=new TypeFactory();o.field1=val1;o.field2=val2;return o})()
+        /// </summary>
+        private Expression EmitTypedObject(IIdentifier factoryId, List<(IIdentifier field, string fallbackName, Expression value)> fields)
+        {
+            // Create inner scope for the IIFE (no parameters)
+            var innerScope = new IdentifierScope(_scope, 0);
+            var objVar = SimpleIdentifier.CreateScopeIdentifier(innerScope, "o", false);
+
+            var stmts = new List<Statement>();
+
+            // var o = new TypeFactory();
+            var factoryExpr = new IdentifierExpression(factoryId, innerScope);
+            var newExpr = new NewObjectExpression(null, innerScope, factoryExpr);
+            stmts.Add(ExpressionStatement.CreateAssignmentExpression(
+                new IdentifierExpression(objVar, innerScope),
+                newExpr));
+
+            // o.field = value;
+            foreach (var (fieldId, fallbackName, value) in fields)
+            {
+                Expression fieldAccess;
+                if (fieldId != null)
+                {
+                    fieldAccess = new IndexExpression(null, innerScope,
+                        new IdentifierExpression(objVar, innerScope),
+                        new IdentifierExpression(fieldId, innerScope));
+                }
+                else
+                {
+                    fieldAccess = new IndexExpression(null, innerScope,
+                        new IdentifierExpression(objVar, innerScope),
+                        new StringLiteralExpression(innerScope, fallbackName));
+                }
+
+                stmts.Add(ExpressionStatement.CreateAssignmentExpression(fieldAccess, value));
+            }
+
+            // return o;
+            stmts.Add(new ReturnStatement(null, innerScope,
+                new IdentifierExpression(objVar, innerScope)));
+
+            // Build the IIFE: (function() { ... })()
+            var fn = new FunctionExpression(null, _scope, innerScope,
+                innerScope.ParameterIdentifiers, null);
+            fn.AddStatements(stmts);
+
+            return new MethodCallExpression(null, _scope, fn);
+        }
+
+        /// <summary>
+        /// Emits a DomTarget targetInfo as a proper DomTargetInfo instance via IIFE.
+        /// The setter is resolved via RuntimeScopeManager.ResolveStatic for minification.
+        /// Field names use resolved IIdentifiers from DomTargetInfo type.
+        /// The attribute name is baked into the setter function itself (SetAttribute is called
+        /// with the attribute name), so no separate field is needed.
+        /// </summary>
+        private Expression EmitDomTargetInfo(DomTargetTopology dt)
+        {
+            // Build the setter expression based on target type.
+            // GraphEngine calls setter(elem, value) — 2 params. But SetCssClass and SetAttribute
+            // expect 3 params. We emit inline wrapper functions for these cases.
+            Expression setterExpr;
+            switch (dt.Target)
+            {
+                case ExpressionTarget.CssClass:
+                    // Emit: function(e, v) { e.className = v || ""; }
+                    setterExpr = CreateRawSetterFunction("e.className = v || \"\"");
+                    break;
+
+                case ExpressionTarget.Attribute:
+                {
+                    // Emit: function(e, v) { if (v != null) e.setAttribute("attrName", v); else e.removeAttribute("attrName"); }
+                    var attrName = EscapeJsString(dt.AttributeName ?? "");
+                    setterExpr = CreateRawSetterFunction(
+                        $"if (v != null) e.setAttribute(\"{attrName}\", v); else e.removeAttribute(\"{attrName}\")");
+                    break;
+                }
+
+                case ExpressionTarget.Style:
+                {
+                    // Use setAttribute("style", ...) instead of style.cssText to avoid
+                    // browser normalization issues. Include the static prefix if present.
+                    var stylePrefix = EscapeJsString(dt.AttributePrefix ?? "");
+                    if (!string.IsNullOrEmpty(stylePrefix))
+                        setterExpr = CreateRawSetterFunction($"e.setAttribute(\"style\", \"{stylePrefix}\" + (v || \"\"))");
+                    else
+                        setterExpr = CreateRawSetterFunction("e.setAttribute(\"style\", v || \"\")");
+                    break;
+                }
+
+                default:
+                {
+                    // TextContent: use SetTextContent directly — it has the right (elem, value) signature
+                    var setterMethod = _knownTypes.GetSetterMethod(dt.Target);
+                    var setterId = _scopeManager.ResolveStatic(setterMethod);
+                    setterExpr = new IdentifierExpression(setterId, _scope);
+                    break;
+                }
+            }
+
+            if (_domTargetInfoFactory != null)
+            {
+                var fields = new List<(IIdentifier, string, Expression)>
+                {
+                    (_domTargetElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, dt.ElemIdx)),
+                    (_domTargetSetterField, "Setter", setterExpr)
+                };
+                return EmitTypedObject(_domTargetInfoFactory, fields);
+            }
+
+            // Fallback: plain object literal if factory resolution failed
+            var info = new InlineObjectInitializer(null, _scope);
+            AddField(info, _domTargetElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, dt.ElemIdx));
+            AddField(info, _domTargetSetterField, "Setter", setterExpr);
+            return info;
+        }
+
+        /// <summary>
+        /// Tries to build a proper JST expression tree for a computed expression like
+        /// "Model.Price * Model.Quantity". Uses resolved field identifiers so the output
+        /// participates in NScript's minification system.
+        /// Returns function(dc) { return dc.price_I * dc.quantity_J; } with resolved identifiers.
+        /// Returns null if the expression cannot be parsed.
+        /// </summary>
+        private Expression TryBuildComputedJSTExpression(string expression)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            // Tokenize the expression: split on arithmetic operators while preserving them
+            var tokens = System.Text.RegularExpressions.Regex.Split(
+                expression.Trim(), @"(\s*[+\-*/]\s*)");
+
+            if (tokens.Length < 3) return null; // Need at least operand operator operand
+
+            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var paramIdentifier = getterScope.ParameterIdentifiers[0];
+
+            Expression result = null;
+            BinaryOperator? pendingOp = null;
+
+            foreach (var token in tokens)
+            {
+                var t = token.Trim();
+                if (string.IsNullOrEmpty(t)) continue;
+
+                // Check if it's an operator
+                if (t == "*" || t == "/" || t == "+" || t == "-")
+                {
+                    pendingOp = t == "*" ? BinaryOperator.Mul
+                        : t == "/" ? BinaryOperator.Div
+                        : t == "+" ? BinaryOperator.Plus
+                        : BinaryOperator.Minus;
+                    continue;
+                }
+
+                // It's a property reference — resolve it
+                Expression operand = TryResolvePropertyToFieldAccess(t, getterScope, paramIdentifier);
+                if (operand == null) return null; // Can't resolve — bail
+
+                if (result == null)
+                {
+                    result = operand;
+                }
+                else if (pendingOp.HasValue)
+                {
+                    result = new BinaryExpression(null, getterScope, pendingOp.Value, result, operand);
+                    pendingOp = null;
+                }
+                else
+                {
+                    return null; // Unexpected token
+                }
+            }
+
+            if (result == null) return null;
+
+            // Wrap in: function(dc) { return <expr>; }
+            var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, getterScope, result));
+            return fn;
+        }
+
+        /// <summary>
+        /// Resolves a property expression like "Model.Price" to a field access JST expression.
+        /// Returns: dc.price_I (using the resolved field identifier).
+        /// </summary>
+        private Expression TryResolvePropertyToFieldAccess(
+            string expression, IdentifierScope scope, IIdentifier dcParam)
+        {
+            var propName = expression;
+            if (propName.StartsWith("Model.")) propName = propName.Substring(6);
+            if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
+                && propName.StartsWith(_topology.ItemVariablePrefix))
+                propName = propName.Substring(_topology.ItemVariablePrefix.Length);
+            if (propName.Contains(".")) return null;
+
+            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            if (typeDefinition == null) return null;
+
+            var property = FindProperty(typeDefinition, propName);
+            if (property == null) return null;
+
+            var backingField = TryFindBackingFieldOnType(typeDefinition, property);
+            if (backingField != null)
+            {
+                var fieldId = _scopeManager.Resolve(backingField);
+                return new IndexExpression(null, scope,
+                    new IdentifierExpression(dcParam, scope),
+                    new IdentifierExpression(fieldId, scope));
+            }
+
+            // Try getter method
+            if (property.GetMethod != null)
+            {
+                var getterId = _scopeManager.Resolve(property.GetMethod);
+                return new MethodCallExpression(null, scope,
+                    new IndexExpression(null, scope,
+                        new IdentifierExpression(dcParam, scope),
+                        new IdentifierExpression(getterId, scope)),
+                    System.Array.Empty<Expression>());
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Emits a getter function for an EventBinding node.
+        /// The handler expression is like "Model.IncrementClick" or a lambda "(e) => Model.IncrementClick()".
+        /// For method references: function(dc) { return dc.incrementClick_x; }
+        /// For lambdas: use the raw expression with field access replacement.
+        /// </summary>
+        private Expression EmitEventGetter(string handlerExpression)
+        {
+            if (string.IsNullOrEmpty(handlerExpression))
+                return new NullLiteralExpression(_scope);
+
+            // Strip Model. prefix
+            var expr = handlerExpression;
+            if (expr.StartsWith("Model."))
+                expr = expr.Substring(6);
+
+            // For simple method references (no parens, no lambda)
+            if (expr.IndexOfAny(new[] { '(', ')', '=', '>' }) < 0)
+            {
+                // Build a proper JST getter that returns a wrapper function:
+                // function(dc) { return function(e, ev) { dc.method(); }; }
+                // Using resolved identifiers so the method name matches minification.
+                var methodId = TryResolveMethodIdentifier(handlerExpression);
+                if (methodId != null)
+                {
+                    // Outer function: function(dc) { ... }
+                    var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+                    var dcParam = outerScope.ParameterIdentifiers[0];
+
+                    // Inner function: function(e, ev) { dc.method(); }
+                    var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
+
+                    // dc.method()
+                    var dcRef = new IdentifierExpression(dcParam, innerScope);
+                    var methodAccess = new IndexExpression(null, innerScope, dcRef,
+                        new IdentifierExpression(methodId, innerScope));
+                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+
+                    var innerFn = new FunctionExpression(null, outerScope, innerScope,
+                        innerScope.ParameterIdentifiers, null);
+                    innerFn.AddStatement(new ExpressionStatement(null, innerScope, methodCall));
+
+                    var outerFn = new FunctionExpression(null, _scope, outerScope,
+                        outerScope.ParameterIdentifiers, null);
+                    outerFn.AddStatement(new ReturnStatement(null, outerScope, innerFn));
+                    return outerFn;
+                }
+
+                // Fallback: raw body (unresolved name — may not match minification)
+                var methodName = char.ToLower(expr[0]) + expr.Substring(1);
+                return CreateRawGetterFunction(
+                    "return function(e,ev){dc." + methodName + "()}");
+            }
+
+            // Lambda expression: try to extract the method call and build proper JST.
+            // Pattern: "(e) => Model.MethodName()" or "(e) => Model.MethodName(args)"
+            var lambdaMethodName = TryExtractLambdaMethodName(handlerExpression);
+            if (lambdaMethodName != null)
+            {
+                var lambdaMethodId = TryResolveMethodIdentifier("Model." + lambdaMethodName);
+                if (lambdaMethodId != null)
+                {
+                    // Build: function(dc) { return function(e, ev) { dc.method(); }; }
+                    var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+                    var dcParam = outerScope.ParameterIdentifiers[0];
+
+                    var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
+
+                    var dcRef = new IdentifierExpression(dcParam, innerScope);
+                    var methodAccess = new IndexExpression(null, innerScope, dcRef,
+                        new IdentifierExpression(lambdaMethodId, innerScope));
+                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+
+                    var innerFn = new FunctionExpression(null, outerScope, innerScope,
+                        innerScope.ParameterIdentifiers, null);
+                    innerFn.AddStatement(new ExpressionStatement(null, innerScope, methodCall));
+
+                    var outerFn = new FunctionExpression(null, _scope, outerScope,
+                        outerScope.ParameterIdentifiers, null);
+                    outerFn.AddStatement(new ReturnStatement(null, outerScope, innerFn));
+                    return outerFn;
+                }
+            }
+
+            // Fallback: raw body with field access replacement (for complex expressions)
+            var jsExpr = ToJsGetterWithFieldAccess(
+                handlerExpression, "dc", "tp", _knownFunctionNames);
+            return CreateRawGetterFunction("return " + jsExpr);
+        }
+
+        /// <summary>
+        /// Extracts a simple method name from a lambda event handler expression.
+        /// E.g., "(e) => Model.IncrementClick()" returns "IncrementClick".
+        /// Returns null for complex lambdas.
+        /// </summary>
+        private static string TryExtractLambdaMethodName(string handlerExpression)
+        {
+            // Pattern: (params) => Model.MethodName()
+            var arrowIdx = handlerExpression.IndexOf("=>");
+            if (arrowIdx < 0) return null;
+
+            var body = handlerExpression.Substring(arrowIdx + 2).Trim();
+
+            // Strip "Model." prefix
+            if (body.StartsWith("Model."))
+                body = body.Substring(6);
+
+            // Check for simple method call: MethodName()
+            if (body.EndsWith("()"))
+            {
+                var name = body.Substring(0, body.Length - 2).Trim();
+                if (name.Length > 0 && !name.Contains(".") && !name.Contains("("))
+                    return name;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves a method identifier through the scope system.
+        /// Returns the IIdentifier that tracks minification, or null if not found.
+        /// </summary>
+        private IIdentifier TryResolveMethodIdentifier(string handlerExpression)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            var methodName = handlerExpression;
+            if (methodName.StartsWith("Model."))
+                methodName = methodName.Substring(6);
+
+            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            if (typeDefinition == null)
+                return null;
+
+            foreach (var method in typeDefinition.Methods)
+            {
+                if (method.Name == methodName && method.IsPublic && !method.IsConstructor)
+                {
+                    return _scopeManager.Resolve(method);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Creates a raw setter function: function(e, v) { body }
+        /// </summary>
+        private RawBodyFunctionExpression CreateRawSetterFunction(string rawBody)
+        {
+            var innerScope = new IdentifierScope(
+                _scope,
+                new string[] { "e", "v" },
+                true);
+            return new RawBodyFunctionExpression(
+                null, _scope, innerScope, innerScope.ParameterIdentifiers, rawBody);
+        }
+
+        /// <summary>
+        /// Resolves the element type of a collection property by analyzing the property's
+        /// return type's generic arguments. E.g., ObservableCollection&lt;RazorItemVM&gt; → "RazorItemVM".
+        /// </summary>
+        private string ResolveCollectionItemTypeName(CollectionTopology ct)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            // The collection expression is like "Model.Items"
+            var collExpr = ct.IrNode.CollectionExpression ?? "";
+            if (collExpr.StartsWith("Model."))
+                collExpr = collExpr.Substring(6);
+            if (collExpr.Contains("."))
+                return null; // Don't handle chained paths
+
+            var modelType = FindTypeDefinition(_modelTypeName);
+            if (modelType == null) return null;
+
+            var property = FindProperty(modelType, collExpr);
+            if (property == null) return null;
+
+            // Get the generic instance type (e.g., ObservableCollection<RazorItemVM>)
+            var returnType = property.PropertyType as Mono.Cecil.GenericInstanceType;
+            if (returnType != null && returnType.GenericArguments.Count > 0)
+            {
+                var itemType = returnType.GenericArguments[0];
+                return itemType.FullName;
+            }
+
+            return null;
+        }
+
+        private static string EscapeJsString(string s)
+            => s.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+        /// <summary>
+        /// Emits a Gate targetInfo as a proper GateTargetInfo instance via IIFE.
+        /// HTML content is computed from the IR node's branches.
+        /// </summary>
+        private Expression EmitGateTargetInfo(GateTopology gt)
+        {
+            var trueHtml = RazorSkinCodeGenerator.CollectHtmlPublic(gt.IrNode.TrueBranch);
+            var falseHtml = (gt.IrNode.FalseBranch != null && gt.IrNode.FalseBranch.Count > 0)
+                ? RazorSkinCodeGenerator.CollectHtmlPublic(gt.IrNode.FalseBranch)
+                : "";
+
+            if (_gateTargetInfoFactory != null)
+            {
+                var fields = new List<(IIdentifier, string, Expression)>
+                {
+                    (_gateMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, gt.MarkerIdx)),
+                    (_gateTrueTemplateField, "TrueTemplate", new StringLiteralExpression(_scope, trueHtml)),
+                    (_gateFalseTemplateField, "FalseTemplate", new StringLiteralExpression(_scope, falseHtml))
+                };
+                if (gt.TrueChildElemIndices != null && gt.TrueChildElemIndices.Length > 0)
+                    fields.Add((_gateTrueChildElemIndicesField, "TrueChildElemIndices", EmitIntArray(gt.TrueChildElemIndices)));
+                if (gt.FalseChildElemIndices != null && gt.FalseChildElemIndices.Length > 0)
+                    fields.Add((_gateFalseChildElemIndicesField, "FalseChildElemIndices", EmitIntArray(gt.FalseChildElemIndices)));
+                return EmitTypedObject(_gateTargetInfoFactory, fields);
+            }
+
+            // Fallback: plain object literal if factory resolution failed
+            var info = new InlineObjectInitializer(null, _scope);
+            AddField(info, _gateMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, gt.MarkerIdx));
+            AddField(info, _gateTrueTemplateField, "TrueTemplate", new StringLiteralExpression(_scope, trueHtml));
+            AddField(info, _gateFalseTemplateField, "FalseTemplate", new StringLiteralExpression(_scope, falseHtml));
+            if (gt.TrueChildElemIndices != null && gt.TrueChildElemIndices.Length > 0)
+                AddField(info, _gateTrueChildElemIndicesField, "TrueChildElemIndices", EmitIntArray(gt.TrueChildElemIndices));
+            if (gt.FalseChildElemIndices != null && gt.FalseChildElemIndices.Length > 0)
+                AddField(info, _gateFalseChildElemIndicesField, "FalseChildElemIndices", EmitIntArray(gt.FalseChildElemIndices));
+            return info;
+        }
+
+        /// <summary>
+        /// Emits a literal int[] as an inline array expression: [1, 2, 3].
+        /// </summary>
+        private Expression EmitIntArray(int[] values)
+        {
+            var elements = new List<Expression>();
+            foreach (var v in values)
+                elements.Add(new NumberLiteralExpression(_scope, v));
+            return new InlineNewArrayInitialization(null, _scope, elements);
+        }
+
+        /// <summary>
+        /// Emits a Collection targetInfo as a proper CollectionTargetInfo instance via IIFE.
+        /// If the collection has an item topology, it is recursively emitted.
+        /// </summary>
+        private Expression EmitCollectionTargetInfo(CollectionTopology ct)
+        {
+            var itemHtml = (ct.IrNode.ItemTemplate != null && ct.IrNode.ItemTemplate.Count > 0)
+                ? RazorSkinCodeGenerator.CollectHtmlPublic(ct.IrNode.ItemTemplate)
+                : "";
+
+            Expression itemGraphExpr = null;
+            if (ct.ItemTopology != null)
+            {
+                // Resolve the item type from the collection property's generic argument.
+                // E.g., for ObservableCollection<RazorItemVM>, the item type is RazorItemVM.
+                string itemTypeName = ResolveCollectionItemTypeName(ct);
+
+                var nestedEmitter = new GraphDescriptorJSTEmitter(
+                    ct.ItemTopology, _scope, _scopeManager, _knownTypes, _knownFunctionNames,
+                    _clrContext, itemTypeName ?? _modelTypeName,
+                    _resolvedTypeIdentifiers);
+                itemGraphExpr = nestedEmitter.Emit();
+            }
+
+            if (_collectionTargetInfoFactory != null)
+            {
+                var fields = new List<(IIdentifier, string, Expression)>
+                {
+                    (_collectionMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, ct.MarkerIdx)),
+                    (_collectionItemTemplateField, "ItemTemplate", new StringLiteralExpression(_scope, itemHtml))
+                };
+                if (itemGraphExpr != null)
+                    fields.Add((_collectionItemGraphField, "ItemGraph", itemGraphExpr));
+                return EmitTypedObject(_collectionTargetInfoFactory, fields);
+            }
+
+            // Fallback: plain object literal if factory resolution failed
+            var info = new InlineObjectInitializer(null, _scope);
+            AddField(info, _collectionMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, ct.MarkerIdx));
+            AddField(info, _collectionItemTemplateField, "ItemTemplate", new StringLiteralExpression(_scope, itemHtml));
+            if (itemGraphExpr != null)
+                AddField(info, _collectionItemGraphField, "ItemGraph", itemGraphExpr);
+            return info;
+        }
+
+        /// <summary>
+        /// subscriptions: array of proper SubscriptionEntry instances.
+        /// Each entry is emitted via IIFE to create a typed instance that passes
+        /// the runtime's Type__CastType_d(SubscriptionEntry, ...) check.
+        /// </summary>
+        private Expression EmitSubscriptions()
+        {
+            var items = new List<Expression>();
+            foreach (var sub in _topology.Subscriptions)
+            {
+                if (_subscriptionEntryFactory != null)
+                {
+                    var fields = new List<(IIdentifier, string, Expression)>
+                    {
+                        (_subscriptionPropertyNameField, "PropertyName", new StringLiteralExpression(_scope, sub.PropertyName)),
+                        (_subscriptionNodeIdxField, "NodeIdx", new NumberLiteralExpression(_scope, sub.NodeIdx)),
+                        (_subscriptionSourceSlotField, "SourceSlot", new NumberLiteralExpression(_scope, sub.SourceSlot))
+                    };
+                    items.Add(EmitTypedObject(_subscriptionEntryFactory, fields));
+                }
+                else
+                {
+                    // Fallback: plain object literal if factory resolution failed
+                    var subObj = new InlineObjectInitializer(null, _scope);
+                    AddField(subObj, _subscriptionPropertyNameField, "PropertyName",
+                        new StringLiteralExpression(_scope, sub.PropertyName));
+                    AddField(subObj, _subscriptionNodeIdxField, "NodeIdx",
+                        new NumberLiteralExpression(_scope, sub.NodeIdx));
+                    AddField(subObj, _subscriptionSourceSlotField, "SourceSlot",
+                        new NumberLiteralExpression(_scope, sub.SourceSlot));
+                    items.Add(subObj);
+                }
+            }
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// Emits an EventBinding targetInfo as a proper EventTargetInfo instance via IIFE.
+        /// </summary>
+        private Expression EmitEventTargetInfo(EventTopology et)
+        {
+            if (_eventTargetInfoFactory != null)
+            {
+                var fields = new List<(IIdentifier, string, Expression)>
+                {
+                    (_eventElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, et.ElemIdx)),
+                    (_eventNameField, "EventName", new StringLiteralExpression(_scope, et.EventName))
+                };
+                return EmitTypedObject(_eventTargetInfoFactory, fields);
+            }
+
+            // Fallback: plain object literal if factory resolution failed
+            var info = new InlineObjectInitializer(null, _scope);
+            AddField(info, _eventElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, et.ElemIdx));
+            AddField(info, _eventNameField, "EventName", new StringLiteralExpression(_scope, et.EventName));
+            return info;
+        }
+
+        /// <summary>parentIndices: [[], [0], [1], [0, 1], ...]</summary>
+        private Expression EmitParentIndices()
+        {
+            var items = new List<Expression>();
+            for (int i = 0; i < _topology.NodeCount; i++)
+            {
+                var parentExprs = new List<Expression>();
+                foreach (int p in _topology.ParentIndices[i])
+                    parentExprs.Add(new NumberLiteralExpression(_scope, p));
+
+                items.Add(new InlineNewArrayInitialization(null, _scope, parentExprs));
+            }
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+    }
+
+    /// <summary>
+    /// A function expression that writes a raw JS body string. Used for graph descriptor
+    /// getter functions whose bodies contain property accessor calls that are already
+    /// correctly mangled (e.g., "return dc.get_name()"). The function wrapper and
+    /// parameter list are proper JST nodes; only the body is raw text.
+    /// </summary>
+    public class RawBodyFunctionExpression : Expression
+    {
+        private readonly IdentifierScope _innerScope;
+        private readonly IList<SimpleIdentifier> _parameters;
+        private readonly string _rawBody;
+
+        /// <summary>
+        /// Creates a new raw-body function expression.
+        /// </summary>
+        /// <param name="location">Source location (may be null).</param>
+        /// <param name="outerScope">The enclosing scope.</param>
+        /// <param name="innerScope">The function's own scope (contains parameter identifiers).</param>
+        /// <param name="parameters">The function parameter identifiers.</param>
+        /// <param name="rawBody">The raw JS function body text (without braces or semicolons).</param>
+        public RawBodyFunctionExpression(
+            Location location,
+            IdentifierScope outerScope,
+            IdentifierScope innerScope,
+            IList<SimpleIdentifier> parameters,
+            string rawBody)
+            : base(location, outerScope)
+        {
+            _innerScope = innerScope;
+            _parameters = parameters;
+            _rawBody = rawBody;
+        }
+
+        public override Precedence Precedence => Precedence.Assignment;
+
+        public override bool IsLeftToRight => false;
+
+        public override void Serialize(ICustomSerializer serializer)
+        {
+            serializer.AddValue("rawBody", _rawBody);
+        }
+
+        /// <summary>
+        /// Writes: function(param1, param2) { rawBody; }
+        /// Parameters use proper JST identifiers; the body is emitted as raw text.
+        /// </summary>
+        public override void Write(JSWriter writer)
+        {
+            writer.Write(Keyword.Function);
+            writer.Write(Symbols.BracketOpenRound);
+
+            for (int i = 0; i < _parameters.Count; i++)
+            {
+                if (i > 0) writer.Write(Symbols.Comma);
+                writer.Write(_parameters[i]);
+            }
+
+            writer.Write(Symbols.BracketCloseRound);
+            writer.Write(Symbols.BracketOpenCurly);
+            writer.WriteIdentifier(_rawBody);
+            writer.Write(Symbols.SemiColon);
+            writer.Write(Symbols.BracketCloseCurly);
+        }
+    }
+}

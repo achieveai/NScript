@@ -1,6 +1,7 @@
 namespace Sunlight.Framework.UI.Helpers.BindingGraph
 {
     using System;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Immutable static graph shape shared across all instances of a template.
@@ -103,6 +104,16 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public object FalseTemplate;
         public int TrueElemCount;
         public int FalseElemCount;
+        /// <summary>
+        /// Elem indices inside the true branch template. After the gate renders
+        /// the true template, the engine resolves these from the rendered DOM
+        /// and updates state.ElemRefs. Null if the true branch has no child elements.
+        /// </summary>
+        public NativeArray<int> TrueChildElemIndices;
+        /// <summary>
+        /// Elem indices inside the false branch template.
+        /// </summary>
+        public NativeArray<int> FalseChildElemIndices;
     }
 
     /// <summary>
