@@ -1,0 +1,6 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+<button class="btn-lambda" onclick="@((e) => Model.IncrementClick())">Lambda Click</button>
+<span class="click-count">@Model.ClickCount</span>
+</div>

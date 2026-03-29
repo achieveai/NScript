@@ -13,6 +13,12 @@ namespace Sunlight.Framework.UI.Test
         private string cssClass;
         private int count;
         private ObservableCollection<RazorItemVM> items;
+        private int price;
+        private int quantity;
+        private string displayStyle;
+        private string title;
+        private bool showDetails;
+        private int clickCount;
 
         public string Name
         {
@@ -90,12 +96,96 @@ namespace Sunlight.Framework.UI.Test
         {
             this.ClickFired = true;
         }
+
+        public int Price
+        {
+            get { return this.price; }
+            set
+            {
+                if (this.price != value)
+                {
+                    this.price = value;
+                    base.FirePropertyChanged("Price");
+                }
+            }
+        }
+
+        public int Quantity
+        {
+            get { return this.quantity; }
+            set
+            {
+                if (this.quantity != value)
+                {
+                    this.quantity = value;
+                    base.FirePropertyChanged("Quantity");
+                }
+            }
+        }
+
+        public string DisplayStyle
+        {
+            get { return this.displayStyle; }
+            set
+            {
+                if (this.displayStyle != value)
+                {
+                    this.displayStyle = value;
+                    base.FirePropertyChanged("DisplayStyle");
+                }
+            }
+        }
+
+        public string Title
+        {
+            get { return this.title; }
+            set
+            {
+                if (this.title != value)
+                {
+                    this.title = value;
+                    base.FirePropertyChanged("Title");
+                }
+            }
+        }
+
+        public bool ShowDetails
+        {
+            get { return this.showDetails; }
+            set
+            {
+                if (this.showDetails != value)
+                {
+                    this.showDetails = value;
+                    base.FirePropertyChanged("ShowDetails");
+                }
+            }
+        }
+
+        public int ClickCount
+        {
+            get { return this.clickCount; }
+            set
+            {
+                if (this.clickCount != value)
+                {
+                    this.clickCount = value;
+                    base.FirePropertyChanged("ClickCount");
+                }
+            }
+        }
+
+        public void IncrementClick()
+        {
+            this.ClickCount = this.ClickCount + 1;
+        }
     }
 
     public class RazorItemVM : ObservableObject
     {
         private string name;
         private bool isComplete;
+        private string status;
 
         public string Name
         {
@@ -122,6 +212,19 @@ namespace Sunlight.Framework.UI.Test
                 }
             }
         }
+
+        public string Status
+        {
+            get { return this.status; }
+            set
+            {
+                if (this.status != value)
+                {
+                    this.status = value;
+                    base.FirePropertyChanged("Status");
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -130,5 +233,6 @@ namespace Sunlight.Framework.UI.Test
     public class RazorPlainVM
     {
         public string AppVersion { get; set; }
+        public bool IsStatic { get; set; }
     }
 }

@@ -1,0 +1,10 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+<ul class="item-list">
+@foreach (var item in Model.Items)
+{
+    <li class="item">@item.Name</li>
+}
+</ul>
+</div>

@@ -1,0 +1,15 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    @if (Model.ShowDetails)
+    {
+        <span class="active-with-details">Has Details</span>
+    }
+    else
+    {
+        <span class="active-no-details">No Details</span>
+    }
+}
+</div>

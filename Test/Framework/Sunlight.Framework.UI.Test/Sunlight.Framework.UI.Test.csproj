@@ -46,6 +46,24 @@
     <EmbeddedResource Include="RazorTemplates\RazorMultiBinding.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\GraphSimpleText.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\GraphMultiBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorClassBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorStyleBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorAttrBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorMultiAttr.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorComputed.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfOnly.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfElse.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfElseIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfBindings.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorNestedIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorStaticIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeachBindings.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfInForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeachInIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorEventClick.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorEventLambda.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorTodoApp.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

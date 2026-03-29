@@ -1,0 +1,20 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+<div class="todo-header">
+    <span class="todo-count">@Model.Count</span>
+</div>
+<ul class="todo-list">
+@foreach (var item in Model.Items)
+{
+    @if (item.IsComplete)
+    {
+        <li class="todo-done"><span class="todo-name">@item.Name</span></li>
+    }
+    else
+    {
+        <li class="todo-pending"><span class="todo-name">@item.Name</span></li>
+    }
+}
+</ul>
+</div>

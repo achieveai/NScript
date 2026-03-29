@@ -29,6 +29,8 @@ namespace NScript.RazorSkin.TemplateIR
         public BindingClassification Classification { get; set; }
         public ExpressionTarget Target { get; set; }
         public string ElementId { get; set; } // Part ID if element has id= attribute
+        public string AttributeName { get; set; } // For Attribute/Style targets: "title", "data-count", etc.
+        public string AttributePrefix { get; set; } // Static text before the expression: "display: " in style="display: @expr"
     }
 
     public enum ExpressionTarget

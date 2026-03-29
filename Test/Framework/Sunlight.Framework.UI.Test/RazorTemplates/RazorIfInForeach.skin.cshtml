@@ -1,0 +1,15 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@foreach (var item in Model.Items)
+{
+    @if (item.IsComplete)
+    {
+        <li class="done">@item.Name</li>
+    }
+    else
+    {
+        <li class="pending">@item.Name</li>
+    }
+}
+</div>

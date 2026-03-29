@@ -26,6 +26,12 @@ namespace NScript.RazorSkin.TemplateIR
             @"\b(on\w+)\s*=\s*""?\s*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        // Regex to detect a non-event attribute at the end of an HTML fragment: class=", title=", data-count="
+        // Matches: attrName=" or attrName="literal-prefix where expression follows
+        private static readonly Regex AttrBindTailRegex = new Regex(
+            @"\b([\w-]+)\s*=\s*""([^""]*)$",
+            RegexOptions.Compiled);
+
         // Regex to match opening PascalCase tags: <ListView ...> or <ListView ... />
         private static readonly Regex PascalCaseTagRegex = new Regex(
             @"<([A-Z][A-Za-z0-9]+)(\s[^>]*)?\s*/?>",
@@ -221,8 +227,59 @@ namespace NScript.RazorSkin.TemplateIR
                         }
                         else
                         {
-                            currentParent.Children.Add(CreateExpressionBinding(expression));
-                            i++;
+                            // Check if this expression is inside an attribute context (class="@...", title="@...", etc.)
+                            var attrCtx = DetectAttributeBindingContext(lastHtmlContent);
+                            if (attrCtx != null)
+                            {
+                                var (attrName, prefix) = attrCtx.Value;
+                                var target = ClassifyAttributeTarget(attrName);
+                                var binding = CreateExpressionBinding(expression);
+                                binding.Target = target;
+                                binding.AttributeName = attrName;
+                                binding.AttributePrefix = prefix;
+
+                                // Trim the incomplete attribute from the last HTML node
+                                // e.g. '<div class="' → '<div' (the attribute is now a binding, not static HTML)
+                                var lastChild = currentParent.Children.Count > 0
+                                    ? currentParent.Children[currentParent.Children.Count - 1] as HtmlNode
+                                    : null;
+                                if (lastChild != null)
+                                {
+                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                        StringComparison.OrdinalIgnoreCase);
+                                    if (idx >= 0)
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                }
+
+                                currentParent.Children.Add(binding);
+
+                                // Consume the closing quote from the next HTML node (like events do)
+                                if (i + 1 < childList.Count && childList[i + 1] is HtmlContentIntermediateNode)
+                                {
+                                    var closingHtml = GetTokenContent(childList[i + 1] as HtmlContentIntermediateNode);
+                                    // Remove the closing " from the attribute
+                                    closingHtml = closingHtml.TrimStart('"', ' ');
+                                    closingHtml = StripModelDirectiveEcho(closingHtml, modelTypeName);
+                                    if (!string.IsNullOrWhiteSpace(closingHtml))
+                                    {
+                                        var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
+                                        processed = ExtractSubControlsFromHtml(processed, currentParent);
+                                        if (!string.IsNullOrWhiteSpace(processed))
+                                            currentParent.Children.Add(new HtmlNode { HtmlContent = processed });
+                                        lastHtmlContent = closingHtml;
+                                    }
+                                    i += 2;
+                                }
+                                else
+                                {
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                currentParent.Children.Add(CreateExpressionBinding(expression));
+                                i++;
+                            }
                         }
                     }
                     else
@@ -580,6 +637,37 @@ namespace NScript.RazorSkin.TemplateIR
                     return attrName;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Detects a non-event attribute binding context from the last HTML fragment.
+        /// Returns (attrName, prefix) if the HTML ends with  attrName="prefix  where
+        /// a @expression follows. Returns null if not in an attribute context.
+        /// </summary>
+        private static (string attrName, string prefix)? DetectAttributeBindingContext(string lastHtmlContent)
+        {
+            if (string.IsNullOrEmpty(lastHtmlContent)) return null;
+            var match = AttrBindTailRegex.Match(lastHtmlContent);
+            if (!match.Success) return null;
+            var attrName = match.Groups[1].Value;
+            // Skip event attributes — they are handled separately
+            if (EventAttributes.Contains(attrName.ToLower())) return null;
+            // Skip id attribute
+            if (attrName.Equals("id", StringComparison.OrdinalIgnoreCase)) return null;
+            var prefix = match.Groups[2].Value; // text before the @expression (e.g. "display: " in style="display: @...")
+            return (attrName, prefix);
+        }
+
+        /// <summary>
+        /// Classifies an attribute name to ExpressionTarget.
+        /// </summary>
+        private static ExpressionTarget ClassifyAttributeTarget(string attrName)
+        {
+            if (attrName.Equals("class", StringComparison.OrdinalIgnoreCase))
+                return ExpressionTarget.CssClass;
+            if (attrName.Equals("style", StringComparison.OrdinalIgnoreCase))
+                return ExpressionTarget.Style;
+            return ExpressionTarget.Attribute;
         }
 
         /// <summary>

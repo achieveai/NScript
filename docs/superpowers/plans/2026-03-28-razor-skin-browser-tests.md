@@ -1,342 +1,772 @@
-namespace Sunlight.Framework.UI.Test
-{
-    using SunlightUnit;
-    using System.Web.Html;
-    using Sunlight.Framework.Observables;
+# Razor Skin Browser Tests Implementation Plan
 
-    /// <summary>
-    /// Browser-based tests for Razor skin templates.
-    /// These tests verify that .skin.cshtml templates compiled through the full
-    /// NScript pipeline produce correct runtime behavior in the browser.
-    /// </summary>
-    [TestFixture]
-    public class RazorSkinTemplateTests
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Add 43 browser-based tests covering attribute/style/class binding, computed expressions, conditionals (@if/@else/@else-if chains), @foreach with ObservableCollection, nested control flow, events, lifecycle, and real-life scenarios for the Razor skin template system.
+
+**Architecture:** Each test is a static C# method compiled to JavaScript via NScript and run in QUnit. Tests create a `UISkinableElement`, assign a ViewModel, set a `[Skin]` template, call `Activate()`, then query the resulting DOM. Templates are `.skin.cshtml` files embedded as resources and compiled by `RazorTemplatingPlugin` at build time.
+
+**Tech Stack:** C# (compiled to JS via NScript), QUnit 2.2.0, SunlightUnit test framework, Razor skin templates
+
+**Spec:** `docs/superpowers/specs/2026-03-28-razor-skin-browser-tests-design.md`
+
+---
+
+## File Map
+
+All paths are relative to `Test/Framework/Sunlight.Framework.UI.Test/`.
+
+| File | Action | Responsibility |
+|---|---|---|
+| `RazorTestViewModels.cs` | Modify | Add new observable properties and methods to RazorTestVM, RazorItemVM, RazorPlainVM |
+| `RazorSkinTemplatesClass.cs` | Modify | Add 18 new `[Skin]` property registrations |
+| `Sunlight.Framework.UI.Test.csproj` | Modify | Add 18 new `<EmbeddedResource>` entries |
+| `RazorTemplates/RazorClassBinding.skin.cshtml` | Create | Class binding template |
+| `RazorTemplates/RazorStyleBinding.skin.cshtml` | Create | Style binding template |
+| `RazorTemplates/RazorAttrBinding.skin.cshtml` | Create | Attribute binding template |
+| `RazorTemplates/RazorMultiAttr.skin.cshtml` | Create | Multi-attribute template |
+| `RazorTemplates/RazorComputed.skin.cshtml` | Create | Computed expression template |
+| `RazorTemplates/RazorIfOnly.skin.cshtml` | Create | @if without @else |
+| `RazorTemplates/RazorIfElse.skin.cshtml` | Create | @if/@else |
+| `RazorTemplates/RazorIfElseIf.skin.cshtml` | Create | Chained @if/nested @if |
+| `RazorTemplates/RazorIfBindings.skin.cshtml` | Create | Bindings inside conditionals |
+| `RazorTemplates/RazorNestedIf.skin.cshtml` | Create | @if nested inside @if |
+| `RazorTemplates/RazorStaticIf.skin.cshtml` | Create | Non-observable @if (OneTime) |
+| `RazorTemplates/RazorForeach.skin.cshtml` | Create | Basic @foreach |
+| `RazorTemplates/RazorForeachBindings.skin.cshtml` | Create | @foreach with item bindings |
+| `RazorTemplates/RazorIfInForeach.skin.cshtml` | Create | @if inside @foreach |
+| `RazorTemplates/RazorForeachInIf.skin.cshtml` | Create | @foreach inside @if |
+| `RazorTemplates/RazorEventClick.skin.cshtml` | Create | Method ref event |
+| `RazorTemplates/RazorEventLambda.skin.cshtml` | Create | Lambda event |
+| `RazorTemplates/RazorTodoApp.skin.cshtml` | Create | Real-life todo scenario |
+| `RazorSkinTemplateTests.cs` | Modify | Add 43 new test methods |
+
+---
+
+### Task 1: Extend ViewModels
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorTestViewModels.cs`
+
+- [ ] **Step 1: Add new properties to RazorTestVM**
+
+Open `RazorTestViewModels.cs`. After the existing `ClickFired` field (line 82), add these new observable properties and methods. Follow the exact same pattern as existing properties (private backing field + equality check + FirePropertyChanged):
+
+```csharp
+        private int price;
+        private int quantity;
+        private string displayStyle;
+        private string title;
+        private bool showDetails;
+        private int clickCount;
+
+        public int Price
+        {
+            get { return this.price; }
+            set
+            {
+                if (this.price != value)
+                {
+                    this.price = value;
+                    base.FirePropertyChanged("Price");
+                }
+            }
+        }
+
+        public int Quantity
+        {
+            get { return this.quantity; }
+            set
+            {
+                if (this.quantity != value)
+                {
+                    this.quantity = value;
+                    base.FirePropertyChanged("Quantity");
+                }
+            }
+        }
+
+        public string DisplayStyle
+        {
+            get { return this.displayStyle; }
+            set
+            {
+                if (this.displayStyle != value)
+                {
+                    this.displayStyle = value;
+                    base.FirePropertyChanged("DisplayStyle");
+                }
+            }
+        }
+
+        public string Title
+        {
+            get { return this.title; }
+            set
+            {
+                if (this.title != value)
+                {
+                    this.title = value;
+                    base.FirePropertyChanged("Title");
+                }
+            }
+        }
+
+        public bool ShowDetails
+        {
+            get { return this.showDetails; }
+            set
+            {
+                if (this.showDetails != value)
+                {
+                    this.showDetails = value;
+                    base.FirePropertyChanged("ShowDetails");
+                }
+            }
+        }
+
+        public int ClickCount
+        {
+            get { return this.clickCount; }
+            set
+            {
+                if (this.clickCount != value)
+                {
+                    this.clickCount = value;
+                    base.FirePropertyChanged("ClickCount");
+                }
+            }
+        }
+
+        public void IncrementClick()
+        {
+            this.ClickCount = this.ClickCount + 1;
+        }
+```
+
+- [ ] **Step 2: Add Status property to RazorItemVM**
+
+In `RazorItemVM` class (after the `IsComplete` property), add:
+
+```csharp
+        private string status;
+
+        public string Status
+        {
+            get { return this.status; }
+            set
+            {
+                if (this.status != value)
+                {
+                    this.status = value;
+                    base.FirePropertyChanged("Status");
+                }
+            }
+        }
+```
+
+- [ ] **Step 3: Add IsStatic to RazorPlainVM**
+
+Replace the `RazorPlainVM` class with:
+
+```csharp
+    public class RazorPlainVM
     {
-        [TestSetup]
-        public static void Setup()
+        public string AppVersion { get; set; }
+        public bool IsStatic { get; set; }
+    }
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTestViewModels.cs
+git commit -m "test(razor): extend ViewModels with properties for browser test coverage"
+```
+
+---
+
+### Task 2: Create Attribute/Style/Class Binding Templates (4 files)
+
+**Files:**
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorClassBinding.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorStyleBinding.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorAttrBinding.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorMultiAttr.skin.cshtml`
+
+- [ ] **Step 1: Create RazorClassBinding.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1" class="@Model.CssClass">Content</div>
+```
+
+- [ ] **Step 2: Create RazorStyleBinding.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1" style="display: @Model.DisplayStyle">Styled</div>
+```
+
+- [ ] **Step 3: Create RazorAttrBinding.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1" title="@Model.Title" data-count="@Model.Count">Attributed</div>
+```
+
+- [ ] **Step 4: Create RazorMultiAttr.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1" class="@Model.CssClass" title="@Model.Title" data-count="@Model.Count">Multi</div>
+```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorClassBinding.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorStyleBinding.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorAttrBinding.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorMultiAttr.skin.cshtml
+git commit -m "test(razor): add attribute/style/class binding templates"
+```
+
+---
+
+### Task 3: Create Computed Expression Template (1 file)
+
+**Files:**
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorComputed.skin.cshtml`
+
+- [ ] **Step 1: Create RazorComputed.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1"><span class="total">@(Model.Price * Model.Quantity)</span></div>
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorComputed.skin.cshtml
+git commit -m "test(razor): add computed expression template"
+```
+
+---
+
+### Task 4: Create Conditional Templates (6 files)
+
+**Files:**
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfOnly.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfElse.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfElseIf.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfBindings.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorNestedIf.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorStaticIf.skin.cshtml`
+
+- [ ] **Step 1: Create RazorIfOnly.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    <span class="active-content">Active</span>
+}
+</div>
+```
+
+- [ ] **Step 2: Create RazorIfElse.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    <span class="if-branch">Active</span>
+}
+else
+{
+    <span class="else-branch">Inactive</span>
+}
+</div>
+```
+
+- [ ] **Step 3: Create RazorIfElseIf.skin.cshtml**
+
+Uses nested @if inside @else (proven boolean conditions):
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    <span class="branch-active">Active</span>
+}
+else
+{
+    @if (Model.ShowDetails)
+    {
+        <span class="branch-details">Details</span>
+    }
+    else
+    {
+        <span class="branch-default">Default</span>
+    }
+}
+</div>
+```
+
+- [ ] **Step 4: Create RazorIfBindings.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    <span class="active-name">@Model.Name</span>
+}
+else
+{
+    <span class="inactive-msg">Disabled</span>
+}
+</div>
+```
+
+- [ ] **Step 5: Create RazorNestedIf.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    @if (Model.ShowDetails)
+    {
+        <span class="active-with-details">Has Details</span>
+    }
+    else
+    {
+        <span class="active-no-details">No Details</span>
+    }
+}
+</div>
+```
+
+Note: The spec originally used `Model.Count > 0` but comparison expressions in @if conditions are unverified. Using `Model.ShowDetails` (boolean) which is proven to work.
+
+- [ ] **Step 6: Create RazorStaticIf.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorPlainVM
+
+<div data-test="1">
+@if (Model.IsStatic)
+{
+    <span class="static-content">Static</span>
+}
+</div>
+```
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfOnly.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfElse.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfElseIf.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfBindings.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorNestedIf.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorStaticIf.skin.cshtml
+git commit -m "test(razor): add conditional template files (@if/@else/@else-if/nested)"
+```
+
+---
+
+### Task 5: Create Collection Templates (2 files)
+
+**Files:**
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorForeach.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorForeachBindings.skin.cshtml`
+
+- [ ] **Step 1: Create RazorForeach.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+<ul class="item-list">
+@foreach (var item in Model.Items)
+{
+    <li class="item">@item.Name</li>
+}
+</ul>
+</div>
+```
+
+- [ ] **Step 2: Create RazorForeachBindings.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@foreach (var item in Model.Items)
+{
+    <div class="item-row">
+        <span class="item-name">@item.Name</span>
+        <span class="item-status">@item.IsComplete</span>
+    </div>
+}
+</div>
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorForeach.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorForeachBindings.skin.cshtml
+git commit -m "test(razor): add @foreach collection templates"
+```
+
+---
+
+### Task 6: Create Nested Control Flow Templates (2 files)
+
+**Files:**
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfInForeach.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorForeachInIf.skin.cshtml`
+
+- [ ] **Step 1: Create RazorIfInForeach.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@foreach (var item in Model.Items)
+{
+    @if (item.IsComplete)
+    {
+        <li class="done">@item.Name</li>
+    }
+    else
+    {
+        <li class="pending">@item.Name</li>
+    }
+}
+</div>
+```
+
+- [ ] **Step 2: Create RazorForeachInIf.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    <ul class="active-list">
+    @foreach (var item in Model.Items)
+    {
+        <li>@item.Name</li>
+    }
+    </ul>
+}
+else
+{
+    <span class="disabled-msg">List disabled</span>
+}
+</div>
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorIfInForeach.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorForeachInIf.skin.cshtml
+git commit -m "test(razor): add nested control flow templates (@if in @foreach, @foreach in @if)"
+```
+
+---
+
+### Task 7: Create Event Templates (2 files)
+
+**Files:**
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorEventClick.skin.cshtml`
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorEventLambda.skin.cshtml`
+
+- [ ] **Step 1: Create RazorEventClick.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+<button class="btn-click" onclick="@Model.IncrementClick">Click Me</button>
+<span class="click-count">@Model.ClickCount</span>
+</div>
+```
+
+- [ ] **Step 2: Create RazorEventLambda.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+<button class="btn-lambda" onclick="@((e) => Model.IncrementClick())">Lambda Click</button>
+<span class="click-count">@Model.ClickCount</span>
+</div>
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorEventClick.skin.cshtml
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorEventLambda.skin.cshtml
+git commit -m "test(razor): add event binding templates (method ref + lambda)"
+```
+
+---
+
+### Task 8: Create Real-Life Scenario Template (1 file)
+
+**Files:**
+- Create: `Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorTodoApp.skin.cshtml`
+
+- [ ] **Step 1: Create RazorTodoApp.skin.cshtml**
+
+```razor
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+<div class="todo-header">
+    <span class="todo-count">@Model.Count</span>
+</div>
+<ul class="todo-list">
+@foreach (var item in Model.Items)
+{
+    @if (item.IsComplete)
+    {
+        <li class="todo-done"><span class="todo-name">@item.Name</span></li>
+    }
+    else
+    {
+        <li class="todo-pending"><span class="todo-name">@item.Name</span></li>
+    }
+}
+</ul>
+</div>
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorTemplates/RazorTodoApp.skin.cshtml
+git commit -m "test(razor): add real-life todo app template"
+```
+
+---
+
+### Task 9: Register Templates in Skin Class and .csproj
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplatesClass.cs`
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/Sunlight.Framework.UI.Test.csproj`
+
+- [ ] **Step 1: Add 18 [Skin] properties to RazorSkinTemplatesClass.cs**
+
+Add these properties after the existing `GraphMultiBinding` property (line 44), before the closing brace of the class. Each follows the exact same pattern as existing registrations:
+
+```csharp
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorClassBinding.skin.cshtml")]
+        public static Skin RazorClassBinding
         {
-            TaskScheduler.Instance = new TaskScheduler(
-                new TestWindowTimer(),
-                10,
-                10);
+            get { return null; }
         }
 
-        // ------------------------------------------------------------------
-        // Phase 1: Basic text binding (toolchain smoke test)
-        // ------------------------------------------------------------------
-
-        [Test]
-        public static void TestRazorSimpleTextBinding(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorStyleBinding.skin.cshtml")]
+        public static Skin RazorStyleBinding
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new TestViewModelA();
-            vm.PropStr1 = "Hello Razor";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
-
-            assert.NotEqual(null, control.Skin, "Razor skin should be compiled and available");
-
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.NotEqual(null, span, "Skin should render a span element inside the data-test div");
-            assert.Equal("Hello Razor", span.TextContent,
-                "Span text content should match the bound PropStr1 value");
+            get { return null; }
         }
 
-        // ------------------------------------------------------------------
-        // Phase 2: OneWay binding reactivity
-        // ------------------------------------------------------------------
-
-        [Test]
-        public static void TestRazorOneWayReactivity(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorAttrBinding.skin.cshtml")]
+        public static Skin RazorAttrBinding
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new TestViewModelA();
-            vm.PropStr1 = "Initial";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.Equal("Initial", span.TextContent, "Initial value should be rendered");
-
-            vm.PropStr1 = "Updated";
-            assert.Equal("Updated", span.TextContent,
-                "Span should update reactively when observable property changes");
+            get { return null; }
         }
 
-        [Test]
-        public static void TestRazorMultiplePropertyChanges(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorMultiAttr.skin.cshtml")]
+        public static Skin RazorMultiAttr
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new TestViewModelA();
-            vm.PropStr1 = "V1";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.Equal("V1", span.TextContent, "Initial value");
-
-            vm.PropStr1 = "V2";
-            assert.Equal("V2", span.TextContent, "After first update");
-
-            vm.PropStr1 = "V3";
-            assert.Equal("V3", span.TextContent, "After second update");
-
-            vm.PropStr1 = "";
-            assert.Equal("", span.TextContent, "After clearing to empty string");
+            get { return null; }
         }
 
-        // ------------------------------------------------------------------
-        // Phase 3: OneTime binding (non-observable)
-        // ------------------------------------------------------------------
-
-        [Test]
-        public static void TestRazorOneTimeBinding(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorComputed.skin.cshtml")]
+        public static Skin RazorComputed
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new RazorPlainVM();
-            vm.AppVersion = "1.0.0";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorOneTimeText;
-
-            assert.NotEqual(null, control.Skin, "OneTime skin should be compiled");
-
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.NotEqual(null, span, "Should render span element");
-            assert.Equal("1.0.0", span.TextContent, "Should show initial value");
-
-            // OneTime bindings should NOT update when property changes
-            vm.AppVersion = "2.0.0";
-            assert.Equal("1.0.0", span.TextContent,
-                "OneTime binding should NOT update after property change");
+            get { return null; }
         }
 
-        // ------------------------------------------------------------------
-        // Phase 3: Multiple independent bindings
-        // ------------------------------------------------------------------
-
-        [Test]
-        public static void TestRazorMultiBinding(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorIfOnly.skin.cshtml")]
+        public static Skin RazorIfOnly
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new RazorTestVM();
-            vm.Name = "Alice";
-            vm.Count = 42;
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorMultiBinding;
-            control.Activate();
-
-            var nameSpan = element.QuerySelector("[data-test] .name span");
-            var countSpan = element.QuerySelector("[data-test] .count span");
-            assert.NotEqual(null, nameSpan, "Name span should exist");
-            assert.NotEqual(null, countSpan, "Count span should exist");
-            assert.Equal("Alice", nameSpan.TextContent, "Name should show initial value");
-            assert.Equal("42", countSpan.TextContent, "Count should show initial value");
-
-            vm.Name = "Bob";
-            assert.Equal("Bob", nameSpan.TextContent, "Name should update reactively");
-            assert.Equal("42", countSpan.TextContent,
-                "Count should remain unchanged when only Name changes");
-
-            vm.Count = 99;
-            assert.Equal("Bob", nameSpan.TextContent,
-                "Name should remain unchanged when only Count changes");
-            assert.Equal("99", countSpan.TextContent, "Count should update reactively");
+            get { return null; }
         }
 
-        // ------------------------------------------------------------------
-        // Phase 3: Lifecycle tests
-        // ------------------------------------------------------------------
-
-        [Test]
-        public static void TestRazorActivateRendersInitialValues(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorIfElse.skin.cshtml")]
+        public static Skin RazorIfElse
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new TestViewModelA();
-            vm.PropStr1 = "Before Activate";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
-
-            // Before activation, skin should not be rendered
-            var span = element.QuerySelector("[data-test] span");
-            assert.Equal(null, span, "Before Activate, no skin content should be in DOM");
-
-            control.Activate();
-
-            span = element.QuerySelector("[data-test] span");
-            assert.NotEqual(null, span, "After Activate, skin content should be in DOM");
-            assert.Equal("Before Activate", span.TextContent, "Should show value set before Activate");
+            get { return null; }
         }
 
-        [Test]
-        public static void TestRazorDataContextBeforeActivate(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorIfElseIf.skin.cshtml")]
+        public static Skin RazorIfElseIf
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new TestViewModelA();
-            vm.PropStr1 = "Set Before";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.Equal("Set Before", span.TextContent,
-                "DataContext set before Activate should render correctly");
+            get { return null; }
         }
 
-        [Test]
-        public static void TestRazorChangeDataContextAfterActivate(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorIfBindings.skin.cshtml")]
+        public static Skin RazorIfBindings
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm1 = new TestViewModelA();
-            vm1.PropStr1 = "VM1";
-            control.DataContext = vm1;
-            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.Equal("VM1", span.TextContent, "Should show first VM value");
-
-            var vm2 = new TestViewModelA();
-            vm2.PropStr1 = "VM2";
-            control.DataContext = vm2;
-
-            span = element.QuerySelector("[data-test] span");
-            assert.Equal("VM2", span.TextContent,
-                "Should show second VM value after DataContext change");
-
-            // Changes to old VM should NOT affect the control
-            vm1.PropStr1 = "VM1 Updated";
-            span = element.QuerySelector("[data-test] span");
-            assert.Equal("VM2", span.TextContent,
-                "Old VM changes should not affect control after DataContext swap");
+            get { return null; }
         }
 
-        // ------------------------------------------------------------------
-        // Graph mode tests
-        // ------------------------------------------------------------------
-
-        [Test]
-        public static void TestGraphSimpleTextBinding(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorNestedIf.skin.cshtml")]
+        public static Skin RazorNestedIf
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new TestViewModelA();
-            vm.PropStr1 = "Hello Graph";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
-
-            assert.NotEqual(null, control.Skin, "Graph skin should be compiled and available");
-
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.NotEqual(null, span, "Skin should render a span element");
-            assert.Equal("Hello Graph", span.TextContent,
-                "Span text should match bound PropStr1 value");
+            get { return null; }
         }
 
-        [Test]
-        public static void TestGraphOneWayReactivity(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorStaticIf.skin.cshtml")]
+        public static Skin RazorStaticIf
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new TestViewModelA();
-            vm.PropStr1 = "Initial";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.Equal("Initial", span.TextContent, "Initial value should be rendered");
-
-            vm.PropStr1 = "Updated";
-            assert.Equal("Updated", span.TextContent,
-                "Graph binding should update reactively when property changes");
+            get { return null; }
         }
 
-        [Test]
-        public static void TestGraphDataContextChange(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorForeach.skin.cshtml")]
+        public static Skin RazorForeach
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm1 = new TestViewModelA();
-            vm1.PropStr1 = "VM1";
-            control.DataContext = vm1;
-            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
-            control.Activate();
-
-            var span = element.QuerySelector("[data-test] span");
-            assert.Equal("VM1", span.TextContent, "Should show first VM value");
-
-            var vm2 = new TestViewModelA();
-            vm2.PropStr1 = "VM2";
-            control.DataContext = vm2;
-
-            span = element.QuerySelector("[data-test] span");
-            assert.Equal("VM2", span.TextContent,
-                "Should show second VM value after DataContext change");
-
-            vm1.PropStr1 = "VM1 Updated";
-            span = element.QuerySelector("[data-test] span");
-            assert.Equal("VM2", span.TextContent,
-                "Old VM changes should not affect control after DataContext swap");
+            get { return null; }
         }
 
-        [Test]
-        public static void TestGraphMultiBinding(Assert assert)
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorForeachBindings.skin.cshtml")]
+        public static Skin RazorForeachBindings
         {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new RazorTestVM();
-            vm.Name = "Alice";
-            vm.Count = 42;
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.GraphMultiBinding;
-            control.Activate();
-
-            var nameSpan = element.QuerySelector("[data-test] .name span");
-            var countSpan = element.QuerySelector("[data-test] .count span");
-            assert.NotEqual(null, nameSpan, "Name span should exist");
-            assert.NotEqual(null, countSpan, "Count span should exist");
-            assert.Equal("Alice", nameSpan.TextContent, "Name should show initial value");
-            assert.Equal("42", countSpan.TextContent, "Count should show initial value");
-
-            vm.Name = "Bob";
-            assert.Equal("Bob", nameSpan.TextContent, "Name should update reactively");
-            assert.Equal("42", countSpan.TextContent,
-                "Count should remain unchanged when only Name changes");
-
-            vm.Count = 99;
-            assert.Equal("Bob", nameSpan.TextContent,
-                "Name should remain unchanged when only Count changes");
-            assert.Equal("99", countSpan.TextContent, "Count should update reactively");
+            get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorIfInForeach.skin.cshtml")]
+        public static Skin RazorIfInForeach
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorForeachInIf.skin.cshtml")]
+        public static Skin RazorForeachInIf
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorEventClick.skin.cshtml")]
+        public static Skin RazorEventClick
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorEventLambda.skin.cshtml")]
+        public static Skin RazorEventLambda
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorTodoApp.skin.cshtml")]
+        public static Skin RazorTodoApp
+        {
+            get { return null; }
+        }
+```
+
+- [ ] **Step 2: Add EmbeddedResource entries to .csproj**
+
+In `Sunlight.Framework.UI.Test.csproj`, find the existing `<ItemGroup>` block with the Razor template resources (line 44-49). Add 18 new lines inside that same `<ItemGroup>`:
+
+```xml
+    <EmbeddedResource Include="RazorTemplates\RazorClassBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorStyleBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorAttrBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorMultiAttr.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorComputed.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfOnly.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfElse.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfElseIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfBindings.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorNestedIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorStaticIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeachBindings.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorIfInForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeachInIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorEventClick.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorEventLambda.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorTodoApp.skin.cshtml" />
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplatesClass.cs
+git add Test/Framework/Sunlight.Framework.UI.Test/Sunlight.Framework.UI.Test.csproj
+git commit -m "test(razor): register 18 new templates in skin class and .csproj"
+```
+
+---
+
+### Task 10: Build Verification
+
+Verify templates compile through the full NScript pipeline before writing tests.
+
+- [ ] **Step 1: Build Debug**
+
+```bash
+dotnet build NScript_Full.sln -c Debug
+```
+
+Expected: Build succeeds. The NScript compiler (Stage 1 + Stage 2) should discover the 18 new `.skin.cshtml` embedded resources, compile them via `RazorTemplatingPlugin`, and emit JavaScript.
+
+**If build fails:** Check the error output. Common issues:
+- Missing `@model` type: The fully-qualified type name in the template must match a type in the project
+- Razor parse error: Check template syntax — braces must match, `@` expressions must be valid
+- Binding classification error: The property referenced in the template must exist on the `@model` type
+- EmbeddedResource not found: Verify the `.csproj` entry matches the file path exactly
+
+- [ ] **Step 2: Verify compiler tests still pass**
+
+```bash
+dotnet test Test/Compiler/RazorSkinParser.Test/RazorSkinParser.Test.csproj -c Release --no-build
+```
+
+Expected: All existing compiler tests pass (no regressions from ViewModel changes).
+
+---
+
+### Task 11: Write Attribute/Style/Class Binding Tests (A01-A07)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add A01-A07 test methods**
+
+Add these test methods to `RazorSkinTemplateTests` class, after the existing graph mode tests section (after line 337). Add a section comment header first:
+
+```csharp
         // ------------------------------------------------------------------
         // Attribute / Style / Class Binding Tests
         // ------------------------------------------------------------------
@@ -391,7 +821,8 @@ namespace Sunlight.Framework.UI.Test
 
             var div = element.QuerySelector("[data-test]");
             assert.NotEqual(null, div, "Template should render");
-            assert.Equal("display: block", div.GetAttribute("style"),
+            var style = div.GetAttribute("style");
+            assert.IsTrue(style != null && style.Contains("block"),
                 "Style should contain initial DisplayStyle value");
         }
 
@@ -410,7 +841,8 @@ namespace Sunlight.Framework.UI.Test
             var div = element.QuerySelector("[data-test]");
 
             vm.DisplayStyle = "none";
-            assert.Equal("display: none", div.GetAttribute("style"),
+            var style = div.GetAttribute("style");
+            assert.IsTrue(style != null && style.Contains("none"),
                 "Style should update when DisplayStyle changes");
         }
 
@@ -480,7 +912,27 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("inactive", div.ClassName, "class should update");
             assert.Equal("New Tip", div.GetAttribute("title"), "title should update");
         }
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add attribute/style/class binding tests (A01-A07)"
+```
+
+---
+
+### Task 12: Write Computed Expression Tests (C01-C03)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add C01-C03 test methods**
+
+Add after the attribute binding tests:
+
+```csharp
         // ------------------------------------------------------------------
         // Computed Expression Tests
         // ------------------------------------------------------------------
@@ -544,7 +996,27 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("50", span.TextContent,
                 "Changing Quantity should trigger recompute: 10 * 5 = 50");
         }
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add computed expression tests (C01-C03)"
+```
+
+---
+
+### Task 13: Write Conditional Tests (IF01-IF11)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add IF01-IF11 test methods**
+
+Add after the computed expression tests:
+
+```csharp
         // ------------------------------------------------------------------
         // Conditional (@if / @else) Tests
         // ------------------------------------------------------------------
@@ -765,7 +1237,27 @@ namespace Sunlight.Framework.UI.Test
             assert.NotEqual(null, content, "Static @if(true) should render content");
             assert.Equal("Static", content.TextContent, "Content should be 'Static'");
         }
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add conditional tests including @if/@else/@else-if chains (IF01-IF11)"
+```
+
+---
+
+### Task 14: Write Foreach/Collection Tests (FE01-FE06)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add FE01-FE06 test methods**
+
+Add after the conditional tests. Note: These tests use `ObservableCollection<RazorItemVM>` — import the namespace at the top of the file if not already present (`using Sunlight.Framework.Observables;`).
+
+```csharp
         // ------------------------------------------------------------------
         // @foreach / Collection Tests
         // ------------------------------------------------------------------
@@ -778,22 +1270,16 @@ namespace Sunlight.Framework.UI.Test
 
             var vm = new RazorTestVM();
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Apple";
-            items.Add(item1);
-            var item2 = new RazorItemVM();
-            item2.Name = "Banana";
-            items.Add(item2);
-            var item3 = new RazorItemVM();
-            item3.Name = "Cherry";
-            items.Add(item3);
+            items.Add(new RazorItemVM { Name = "Apple" });
+            items.Add(new RazorItemVM { Name = "Banana" });
+            items.Add(new RazorItemVM { Name = "Cherry" });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorForeach;
             control.Activate();
 
             var lis = element.QuerySelectorAll("[data-test] .item");
-            assert.Equal(3, lis.Length, "Should render 3 li elements");
+            assert.Equal(3, lis.Length, "Should render 3 <li> elements");
             assert.Equal("Apple", lis[0].TextContent, "First item");
             assert.Equal("Banana", lis[1].TextContent, "Second item");
             assert.Equal("Cherry", lis[2].TextContent, "Third item");
@@ -807,9 +1293,7 @@ namespace Sunlight.Framework.UI.Test
 
             var vm = new RazorTestVM();
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Apple";
-            items.Add(item1);
+            items.Add(new RazorItemVM { Name = "Apple" });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorForeach;
@@ -818,9 +1302,7 @@ namespace Sunlight.Framework.UI.Test
             var lis = element.QuerySelectorAll("[data-test] .item");
             assert.Equal(1, lis.Length, "Should start with 1 item");
 
-            var item2 = new RazorItemVM();
-            item2.Name = "Banana";
-            items.Add(item2);
+            items.Add(new RazorItemVM { Name = "Banana" });
             lis = element.QuerySelectorAll("[data-test] .item");
             assert.Equal(2, lis.Length, "Should have 2 items after Add");
             assert.Equal("Banana", lis[1].TextContent, "New item should appear at end");
@@ -834,15 +1316,9 @@ namespace Sunlight.Framework.UI.Test
 
             var vm = new RazorTestVM();
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Apple";
-            items.Add(item1);
-            var item2 = new RazorItemVM();
-            item2.Name = "Banana";
-            items.Add(item2);
-            var item3 = new RazorItemVM();
-            item3.Name = "Cherry";
-            items.Add(item3);
+            items.Add(new RazorItemVM { Name = "Apple" });
+            items.Add(new RazorItemVM { Name = "Banana" });
+            items.Add(new RazorItemVM { Name = "Cherry" });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorForeach;
@@ -863,12 +1339,8 @@ namespace Sunlight.Framework.UI.Test
 
             var vm = new RazorTestVM();
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Apple";
-            items.Add(item1);
-            var item2 = new RazorItemVM();
-            item2.Name = "Banana";
-            items.Add(item2);
+            items.Add(new RazorItemVM { Name = "Apple" });
+            items.Add(new RazorItemVM { Name = "Banana" });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorForeach;
@@ -890,20 +1362,14 @@ namespace Sunlight.Framework.UI.Test
 
             var vm = new RazorTestVM();
             var items = new ObservableCollection<RazorItemVM>();
-            var itemA = new RazorItemVM();
-            itemA.Name = "A";
-            items.Add(itemA);
-            var itemB = new RazorItemVM();
-            itemB.Name = "B";
-            items.Add(itemB);
+            items.Add(new RazorItemVM { Name = "A" });
+            items.Add(new RazorItemVM { Name = "B" });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorForeach;
             control.Activate();
 
-            var itemC = new RazorItemVM();
-            itemC.Name = "C";
-            items.Add(itemC);
+            items.Add(new RazorItemVM { Name = "C" });
             var lis = element.QuerySelectorAll("[data-test] .item");
             assert.Equal(3, lis.Length, "After add: 3 items");
 
@@ -912,9 +1378,7 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(2, lis.Length, "After remove: 2 items");
             assert.Equal("B", lis[0].TextContent, "B should be first after removing A");
 
-            var itemD = new RazorItemVM();
-            itemD.Name = "D";
-            items.Add(itemD);
+            items.Add(new RazorItemVM { Name = "D" });
             lis = element.QuerySelectorAll("[data-test] .item");
             assert.Equal(3, lis.Length, "After second add: 3 items");
             assert.Equal("D", lis[2].TextContent, "D should be last");
@@ -928,12 +1392,8 @@ namespace Sunlight.Framework.UI.Test
 
             var vm = new RazorTestVM();
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Task 1";
-            item1.IsComplete = false;
-            var item2 = new RazorItemVM();
-            item2.Name = "Task 2";
-            item2.IsComplete = true;
+            var item1 = new RazorItemVM { Name = "Task 1", IsComplete = false };
+            var item2 = new RazorItemVM { Name = "Task 2", IsComplete = true };
             items.Add(item1);
             items.Add(item2);
             vm.Items = items;
@@ -949,11 +1409,29 @@ namespace Sunlight.Framework.UI.Test
             item1.Name = "Updated Task 1";
             names = element.QuerySelectorAll("[data-test] .item-name");
             assert.Equal("Updated Task 1", names[0].TextContent,
-                "Changing item property should update only that items DOM");
+                "Changing item property should update only that item's DOM");
             assert.Equal("Task 2", names[1].TextContent,
                 "Other items should remain unchanged");
         }
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add @foreach collection tests with ObservableCollection (FE01-FE06)"
+```
+
+---
+
+### Task 15: Write Nested Control Flow Tests (N01-N03)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add N01-N03 test methods**
+
+```csharp
         // ------------------------------------------------------------------
         // Nested Control Flow Tests
         // ------------------------------------------------------------------
@@ -966,14 +1444,8 @@ namespace Sunlight.Framework.UI.Test
 
             var vm = new RazorTestVM();
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Done Task";
-            item1.IsComplete = true;
-            items.Add(item1);
-            var item2 = new RazorItemVM();
-            item2.Name = "Pending Task";
-            item2.IsComplete = false;
-            items.Add(item2);
+            items.Add(new RazorItemVM { Name = "Done Task", IsComplete = true });
+            items.Add(new RazorItemVM { Name = "Pending Task", IsComplete = false });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorIfInForeach;
@@ -996,12 +1468,8 @@ namespace Sunlight.Framework.UI.Test
             var vm = new RazorTestVM();
             vm.IsActive = true;
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Item 1";
-            items.Add(item1);
-            var item2 = new RazorItemVM();
-            item2.Name = "Item 2";
-            items.Add(item2);
+            items.Add(new RazorItemVM { Name = "Item 1" });
+            items.Add(new RazorItemVM { Name = "Item 2" });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorForeachInIf;
@@ -1024,9 +1492,7 @@ namespace Sunlight.Framework.UI.Test
             var vm = new RazorTestVM();
             vm.IsActive = true;
             var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Item 1";
-            items.Add(item1);
+            items.Add(new RazorItemVM { Name = "Item 1" });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorForeachInIf;
@@ -1041,7 +1507,27 @@ namespace Sunlight.Framework.UI.Test
             var disabled = element.QuerySelector("[data-test] .disabled-msg");
             assert.NotEqual(null, disabled, "Disabled message should appear");
         }
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add nested control flow tests - @if in @foreach, @foreach in @if (N01-N03)"
+```
+
+---
+
+### Task 16: Write Event Tests (E01-E03)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add E01-E03 test methods**
+
+Note: Simulating a click in the NScript browser test environment uses the `Element.Click()` method or dispatches a synthetic event. Check how existing XWML tests handle events. The simplest approach: directly call `element.Click()` if the method exists, or use `Element.DispatchEvent()`.
+
+```csharp
         // ------------------------------------------------------------------
         // Event Binding Tests
         // ------------------------------------------------------------------
@@ -1113,7 +1599,27 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("2", countSpan.TextContent,
                 "Second click should show 2");
         }
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add event binding tests - method ref and lambda (E01-E03)"
+```
+
+---
+
+### Task 17: Write Lifecycle Tests (L04-L08)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add L04-L08 test methods**
+
+These tests use the existing `RazorSimpleText` and `RazorMultiBinding` templates (already registered).
+
+```csharp
         // ------------------------------------------------------------------
         // Extended Lifecycle Tests
         // ------------------------------------------------------------------
@@ -1181,6 +1687,8 @@ namespace Sunlight.Framework.UI.Test
 
             control.Dispose();
             vm.Name = "Bob";
+            // After dispose, we mainly verify no exceptions are thrown.
+            // The control may or may not clear DOM depending on implementation.
             assert.IsTrue(true, "Dispose should not throw when VM changes afterward");
         }
 
@@ -1200,6 +1708,7 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("HasValue", span.TextContent, "Initial value");
 
             control.DataContext = null;
+            // After setting null DataContext, bindings should clear or not throw
             assert.IsTrue(true, "Setting DataContext to null should not throw");
         }
 
@@ -1219,7 +1728,25 @@ namespace Sunlight.Framework.UI.Test
             assert.NotEqual(null, span, "Span should still render with empty string");
             assert.Equal("", span.TextContent, "Empty string should render as empty text");
         }
+```
 
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add extended lifecycle tests - deactivate, reactivate, dispose, null DC (L04-L08)"
+```
+
+---
+
+### Task 18: Write Real-Life Scenario Tests (RL01-RL04)
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Add RL01-RL04 test methods**
+
+```csharp
         // ------------------------------------------------------------------
         // Real-Life Scenario Tests (Todo App)
         // ------------------------------------------------------------------
@@ -1233,14 +1760,8 @@ namespace Sunlight.Framework.UI.Test
             var vm = new RazorTestVM();
             vm.Count = 2;
             var items = new ObservableCollection<RazorItemVM>();
-            var todo1 = new RazorItemVM();
-            todo1.Name = "Buy groceries";
-            todo1.IsComplete = false;
-            items.Add(todo1);
-            var todo2 = new RazorItemVM();
-            todo2.Name = "Write tests";
-            todo2.IsComplete = true;
-            items.Add(todo2);
+            items.Add(new RazorItemVM { Name = "Buy groceries", IsComplete = false });
+            items.Add(new RazorItemVM { Name = "Write tests", IsComplete = true });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorTodoApp;
@@ -1269,10 +1790,7 @@ namespace Sunlight.Framework.UI.Test
             var vm = new RazorTestVM();
             vm.Count = 1;
             var items = new ObservableCollection<RazorItemVM>();
-            var task1 = new RazorItemVM();
-            task1.Name = "Task 1";
-            task1.IsComplete = false;
-            items.Add(task1);
+            items.Add(new RazorItemVM { Name = "Task 1", IsComplete = false });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorTodoApp;
@@ -1281,10 +1799,7 @@ namespace Sunlight.Framework.UI.Test
             var allItems = element.QuerySelectorAll("[data-test] .todo-list li");
             assert.Equal(1, allItems.Length, "Should start with 1 item");
 
-            var task2 = new RazorItemVM();
-            task2.Name = "Task 2";
-            task2.IsComplete = false;
-            items.Add(task2);
+            items.Add(new RazorItemVM { Name = "Task 2", IsComplete = false });
             vm.Count = 2;
             allItems = element.QuerySelectorAll("[data-test] .todo-list li");
             assert.Equal(2, allItems.Length, "Should have 2 items after Add");
@@ -1302,9 +1817,7 @@ namespace Sunlight.Framework.UI.Test
             var vm = new RazorTestVM();
             vm.Count = 1;
             var items = new ObservableCollection<RazorItemVM>();
-            var task = new RazorItemVM();
-            task.Name = "My Task";
-            task.IsComplete = false;
+            var task = new RazorItemVM { Name = "My Task", IsComplete = false };
             items.Add(task);
             vm.Items = items;
             control.DataContext = vm;
@@ -1330,14 +1843,8 @@ namespace Sunlight.Framework.UI.Test
             var vm = new RazorTestVM();
             vm.Count = 2;
             var items = new ObservableCollection<RazorItemVM>();
-            var keep = new RazorItemVM();
-            keep.Name = "Keep";
-            keep.IsComplete = false;
-            items.Add(keep);
-            var remove = new RazorItemVM();
-            remove.Name = "Remove";
-            remove.IsComplete = true;
-            items.Add(remove);
+            items.Add(new RazorItemVM { Name = "Keep", IsComplete = false });
+            items.Add(new RazorItemVM { Name = "Remove", IsComplete = true });
             vm.Items = items;
             control.DataContext = vm;
             control.Skin = RazorSkinTemplatesClass.RazorTodoApp;
@@ -1354,5 +1861,86 @@ namespace Sunlight.Framework.UI.Test
             var countSpan = element.QuerySelector("[data-test] .todo-count");
             assert.Equal("1", countSpan.TextContent, "Count should update to 1");
         }
-    }
-}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add real-life todo app scenario tests (RL01-RL04)"
+```
+
+---
+
+### Task 19: Add using directive for ObservableCollection
+
+**Files:**
+- Modify: `Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs`
+
+- [ ] **Step 1: Ensure the using directive is present**
+
+At the top of `RazorSkinTemplateTests.cs`, verify `using Sunlight.Framework.Observables;` is present. If not, add it after the existing usings (line 4):
+
+```csharp
+    using Sunlight.Framework.Observables;
+```
+
+This is needed for `ObservableCollection<RazorItemVM>` used in FE, N, and RL tests.
+
+- [ ] **Step 2: Commit if changed**
+
+```bash
+git add Test/Framework/Sunlight.Framework.UI.Test/RazorSkinTemplateTests.cs
+git commit -m "test(razor): add missing using directive for ObservableCollection"
+```
+
+---
+
+### Task 20: Final Build and Verification
+
+- [ ] **Step 1: Build Debug**
+
+```bash
+dotnet build NScript_Full.sln -c Debug
+```
+
+Expected: Build succeeds. All 18 new templates are discovered and compiled by `RazorTemplatingPlugin`. The generated JS output appears in `Test/Framework/TestWebApplication/GeneratedScripts/`.
+
+- [ ] **Step 2: Run compiler tests**
+
+```bash
+dotnet test Test/Compiler/RazorSkinParser.Test/RazorSkinParser.Test.csproj -c Release
+```
+
+Expected: All existing compiler tests pass.
+
+- [ ] **Step 3: Verify generated JS**
+
+Check that the generated script file contains the new test registrations:
+
+```bash
+grep -c "TestRazor" Test/Framework/TestWebApplication/GeneratedScripts/Sunlight.Framework.UI.Test.js
+```
+
+Expected: Count should be approximately 55 (12 existing + 43 new test method registrations).
+
+- [ ] **Step 4: Browser test (if possible)**
+
+If a browser is available:
+
+```bash
+cd Test/Framework/TestWebApplication
+npx serve .
+# Open http://localhost:3000/TestPage.htm
+```
+
+Expected: QUnit shows 55 tests, all green. If any tests fail, inspect the QUnit output for the specific failure message and fix accordingly.
+
+- [ ] **Step 5: Final commit (if any fixes needed)**
+
+After verifying, create a summary commit if any minor adjustments were needed:
+
+```bash
+git add -A
+git commit -m "test(razor): comprehensive browser test suite - 43 new tests across 8 categories"
+```

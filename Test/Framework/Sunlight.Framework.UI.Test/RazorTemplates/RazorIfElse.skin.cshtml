@@ -1,0 +1,12 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@if (Model.IsActive)
+{
+    <span class="if-branch">Active</span>
+}
+else
+{
+    <span class="else-branch">Inactive</span>
+}
+</div>
