@@ -70,3 +70,4 @@ Avoid ADRs for routine refactors or localized implementation details that do not
 | [0018](0018-replace-independent-binders-with-compile-time-reactive-binding-graph.md) | Replace Independent Binders with Compile-Time Reactive Binding Graph | Accepted |
 | [0019](0019-extract-ibindingstrategy-from-skininstance.md) | Extract IBindingStrategy from SkinInstance | Accepted |
 | [0020](0020-auto-detect-binding-mode-from-roslyn-semantic-analysis.md) | Auto-Detect Binding Mode from Roslyn Semantic Analysis | Accepted |
+| [0021](0021-require-resolved-identifiers-for-all-generated-javascript-symbols.md) | Require Resolved Identifiers for All Generated JavaScript Symbols | Accepted |
