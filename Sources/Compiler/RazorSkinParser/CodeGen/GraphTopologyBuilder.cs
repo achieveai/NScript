@@ -30,6 +30,7 @@ namespace NScript.RazorSkin.CodeGen
         public int NodeIdx { get; set; }
         public int ElemIdx { get; set; }
         public ExpressionTarget Target { get; set; }
+        public string AttributeName { get; set; }
     }
 
     public class EventTopology
@@ -367,7 +368,8 @@ namespace NScript.RazorSkin.CodeGen
                 {
                     NodeIdx = domIdx,
                     ElemIdx = NextElemIdx(),
-                    Target = binding.Target
+                    Target = binding.Target,
+                    AttributeName = binding.AttributeName
                 });
 
                 return domIdx;

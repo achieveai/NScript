@@ -24,6 +24,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly ClrContext _clrContext;
         private readonly Dictionary<string, IIdentifier> _resolvedIdentifiers;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
+        private readonly RazorKnownTypes _knownTypes;
 
         // Scope for the factory function body (has "skinFactory" and "doc" parameters)
         private IdentifierScope _factoryScope;
@@ -59,6 +60,7 @@ namespace NScript.RazorSkin.CodeGen
             ClrContext clrContext,
             Dictionary<string, IIdentifier> resolvedIdentifiers,
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers,
+            RazorKnownTypes knownTypes,
             IIdentifier preCreatedGetterIdentifier = null)
         {
             _ir = ir;
@@ -66,6 +68,7 @@ namespace NScript.RazorSkin.CodeGen
             _clrContext = clrContext;
             _resolvedIdentifiers = resolvedIdentifiers;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
+            _knownTypes = knownTypes;
             _preCreatedGetterIdentifier = preCreatedGetterIdentifier;
             _dataIndex = _next_dataIndex++;
         }
@@ -125,7 +128,8 @@ namespace NScript.RazorSkin.CodeGen
             var elementPaths = new List<List<int>>();
             var htmlContent = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(
                 _ir.Children, events, elementPaths);
-            int liveBinderCount = bindings.Count(b => b.Classification.Mode == BindingMode.OneWay);
+            // Build graph topology from IR
+            var topology = GraphTopologyBuilder.Build(_ir);
 
             // Build known function names from @functions blocks
             var knownFunctionNames = new HashSet<string>();
@@ -152,7 +156,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // 2. Factory function
             var factoryStatements = BuildFactoryBody(
-                bindings, events, htmlContent, elementPaths, liveBinderCount, knownFunctionNames);
+                bindings, events, htmlContent, elementPaths, knownFunctionNames, topology);
 
             var factoryFunction = new FunctionExpression(
                 null,
@@ -192,8 +196,8 @@ namespace NScript.RazorSkin.CodeGen
             List<EventNode> events,
             string htmlContent,
             List<List<int>> elementPaths,
-            int liveBinderCount,
-            HashSet<string> knownFunctionNames)
+            HashSet<string> knownFunctionNames,
+            GraphTopology topology)
         {
             var stmts = new List<Statement>();
 
@@ -258,8 +262,11 @@ namespace NScript.RazorSkin.CodeGen
                         new StringLiteralExpression(_factoryScope, "innerHTML")),
                     new StringLiteralExpression(_factoryScope, htmlContent)));
 
-            // tmplStore[0] = tmplStore[0] ? tmplStore[0] : [binders...]
-            var binderExpressions = BuildBinderExpressions(bindings, knownFunctionNames);
+            // tmplStore[dataIndex] = tmplStore[dataIndex] ? tmplStore[dataIndex] : graphDescriptor
+            var graphEmitter = new GraphDescriptorJSTEmitter(
+                topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames);
+            var graphDescriptorExpr = graphEmitter.Emit();
+
             initStatements.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IndexExpression(
@@ -280,10 +287,7 @@ namespace NScript.RazorSkin.CodeGen
                             _factoryScope,
                             new IdentifierExpression(_tmplStoreIdentifier, _factoryScope),
                             new NumberLiteralExpression(_factoryScope, _dataIndex)),
-                        new InlineNewArrayInitialization(
-                            null,
-                            _factoryScope,
-                            binderExpressions))));
+                        graphDescriptorExpr)));
 
             // Wrap in if block
             stmts.Add(
@@ -403,109 +407,12 @@ namespace NScript.RazorSkin.CodeGen
                             new NumberLiteralExpression(_factoryScope, _dataIndex)),
                         // partMap
                         partIdExpr,
-                        // liveBinderCount
-                        new NumberLiteralExpression(_factoryScope, liveBinderCount),
+                        // liveBinderCount (0 — graph engine handles reactivity)
+                        new NumberLiteralExpression(_factoryScope, 0),
                         // extraObjectCount
                         new NumberLiteralExpression(_factoryScope, 0))));
 
             return stmts;
-        }
-
-        /// <summary>
-        /// Builds JST expressions for SkinBinderInfo_factory calls for each binding.
-        /// </summary>
-        private List<Expression> BuildBinderExpressions(
-            List<ExpressionBindingNode> bindings,
-            HashSet<string> knownFunctionNames)
-        {
-            var result = new List<Expression>();
-            IIdentifier skinBinderInfoFactoryId = GetResolvedIdentifier(
-                "Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory");
-
-            for (int i = 0; i < bindings.Count; i++)
-            {
-                var binding = bindings[i];
-                var deps = binding.Classification.Dependencies;
-                var expr = binding.Classification.CSharpExpression;
-
-                // Getter function: function(dc) { return dc.get_propStr1_c(); }
-                var paramName = binding.Classification.SourceKind == BindingSourceKind.TemplateParent
-                    ? "tp" : "dc";
-
-                // Build getter function scope with the correct parameter name.
-                var getterScope = new IdentifierScope(
-                    _factoryScope,
-                    new string[] { paramName },
-                    false);
-                var getterFunc = new FunctionExpression(
-                    null,
-                    _factoryScope,
-                    getterScope,
-                    getterScope.ParameterIdentifiers,
-                    null);
-
-                // Try to build a resolved JST expression (proper minified method calls).
-                // Falls back to raw JS text only for complex expressions that can't be resolved.
-                var paramIdentifier = getterScope.ParameterIdentifiers[0];
-                var resolvedExpr = TryBuildResolvedGetterExpression(binding, getterScope, paramIdentifier);
-
-                if (resolvedExpr != null)
-                {
-                    getterFunc.AddStatement(
-                        new ReturnStatement(null, getterScope, resolvedExpr));
-                }
-                else
-                {
-                    // Fallback: raw JS for complex expressions (computed, function calls, etc.)
-                    var getterJs = ExpressionJsEmitter.ToJsGetter(expr, "dc", "tp", knownFunctionNames);
-                    Log.Warning("Using raw JS fallback for getter expression: {Expr}", expr);
-                    getterFunc.AddStatement(
-                        new ReturnStatement(
-                            null,
-                            getterScope,
-                            new RawJsExpression(getterJs, getterScope)));
-                }
-
-                var getterArray = new InlineNewArrayInitialization(
-                    null,
-                    _factoryScope,
-                    new List<Expression> { getterFunc });
-
-                // Property names array
-                var propNameExprs = new List<Expression>();
-                foreach (var dep in deps)
-                    propNameExprs.Add(new StringLiteralExpression(_factoryScope, dep.PropertyName));
-                var propNamesArray = new InlineNewArrayInitialization(
-                    null,
-                    _factoryScope,
-                    propNameExprs);
-
-                // Target setter
-                IIdentifier setterId = GetSetterIdentifier(binding.Target);
-
-                // Binder type flags — PropertyBinder is always set for both OneTime and OneWay.
-                // The difference is the propertyNames array: OneWay has names, OneTime has [].
-                int flags = binding.Classification.SourceKind == BindingSourceKind.TemplateParent
-                    ? 0x13   // PropertyBinder | TemplateParent
-                    : 0x11;  // PropertyBinder | DataContext
-
-                // SkinBinderInfo_factory(getters, propNames, setter, flags, objIdx, binderIdx, converter, default)
-                result.Add(
-                    new MethodCallExpression(
-                        null,
-                        _factoryScope,
-                        new IdentifierExpression(skinBinderInfoFactoryId, _factoryScope),
-                        getterArray,
-                        propNamesArray,
-                        new IdentifierExpression(setterId, _factoryScope),
-                        new NumberLiteralExpression(_factoryScope, flags),
-                        new NumberLiteralExpression(_factoryScope, i),
-                        new NumberLiteralExpression(_factoryScope, i),
-                        new NullLiteralExpression(_factoryScope),
-                        new StringLiteralExpression(_factoryScope, "")));
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -586,23 +493,6 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Gets the resolved setter identifier for a binding target.
-        /// </summary>
-        private IIdentifier GetSetterIdentifier(ExpressionTarget target)
-        {
-            var mangledName = target switch
-            {
-                ExpressionTarget.TextContent => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent",
-                ExpressionTarget.Attribute => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute",
-                ExpressionTarget.CssClass => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetClassName",
-                ExpressionTarget.Style => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetStyle",
-                _ => "Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent"
-            };
-
-            return GetResolvedIdentifier(mangledName);
-        }
-
-        /// <summary>
         /// Builds a type reference expression using resolved type identifiers,
         /// falling back to a raw name if not resolved.
         /// </summary>
@@ -643,8 +533,7 @@ namespace NScript.RazorSkin.CodeGen
         /// For property chains like "Model.Customer.Name", builds:
         ///   dc.get_customer_x().get_name_y()
         ///
-        /// Returns null if the expression cannot be resolved (complex/computed),
-        /// in which case the caller should fall back to RawJsExpression.
+        /// Returns null if the expression cannot be resolved (complex/computed).
         /// </summary>
         private Expression TryBuildResolvedGetterExpression(
             ExpressionBindingNode binding,
@@ -778,32 +667,4 @@ namespace NScript.RazorSkin.CodeGen
         }
     }
 
-    /// <summary>
-    /// A minimal JST Expression that outputs raw JavaScript text.
-    /// Used for Razor-generated expressions (getter function bodies) that are
-    /// text-based and cannot be decomposed into individual JST nodes.
-    /// The surrounding function/identifiers are still proper JST nodes.
-    /// </summary>
-    internal class RawJsExpression : Expression
-    {
-        private readonly string _jsText;
-
-        public RawJsExpression(string jsText, IdentifierScope scope)
-            : base(null, scope)
-        {
-            _jsText = jsText;
-        }
-
-        public override Precedence Precedence => Precedence.Primary;
-
-        public override void Serialize(NScript.Utils.ICustomSerializer serializer)
-        {
-            serializer.AddValue("raw", _jsText);
-        }
-
-        public override void Write(JSWriter writer)
-        {
-            writer.WriteIdentifier(_jsText);
-        }
-    }
 }
