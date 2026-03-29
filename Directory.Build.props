@@ -7,7 +7,7 @@
     <CompilerTestSources>$(NScriptRoot)/Test/Compiler</CompilerTestSources>
     <SolutionDir>$(NScriptRoot)</SolutionDir>
     <TestOutputDir>$(NScriptRoot)/Test/TestBin</TestOutputDir>
-    <CompilerNetFramework>net6.0</CompilerNetFramework>
+    <CompilerNetFramework>net8.0</CompilerNetFramework>
   </PropertyGroup>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
