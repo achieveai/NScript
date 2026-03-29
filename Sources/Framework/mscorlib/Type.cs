@@ -157,6 +157,7 @@
             this.@{[mscorlib]System.Type::interfaces} = parentType ? interfaces.concat(parentType.@{[mscorlib]System.Type::interfaces}) : interfaces;
             if (!@{[mscorlib]System.Type::typeMapping}) { @{[mscorlib]System.Type::typeMapping} = {}; }
             @{[mscorlib]System.Type::typeMapping}[this.@{[mscorlib]System.Type::FullName}] = this;
+            if (this.prototype) this.prototype.constructor = this;
         ")]
         internal extern void RegisterReferenceType(
             string typeName,
@@ -261,7 +262,7 @@
                 if (baseType != null && baseType != @{[mscorlib]System.Object})
                 {
                     if (baseType)
-                        @{[mscorlib]System.Type::InitializeBaseInterfaces([mscorlib]System.Type)}(type);
+                        @{[mscorlib]System.Type::InitializeBaseInterfaces([mscorlib]System.Type)}(baseType);
                     var baseInterfaces = baseType.@{[mscorlib]System.Type::baseInterfaces};
                     if(baseInterfaces)
                     {

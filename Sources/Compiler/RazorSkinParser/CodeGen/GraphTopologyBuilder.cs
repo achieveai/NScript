@@ -31,6 +31,7 @@ namespace NScript.RazorSkin.CodeGen
         public int ElemIdx { get; set; }
         public ExpressionTarget Target { get; set; }
         public string AttributeName { get; set; }
+        public string AttributePrefix { get; set; }
     }
 
     public class EventTopology
@@ -46,6 +47,15 @@ namespace NScript.RazorSkin.CodeGen
         public int NodeIdx { get; set; }
         public int MarkerIdx { get; set; }
         public ConditionalNode IrNode { get; set; }
+        /// <summary>
+        /// Elem indices allocated inside the true branch (for runtime ElemRef resolution).
+        /// These elements exist only in the gate's trueTemplate DOM, not the static HTML.
+        /// </summary>
+        public int[] TrueChildElemIndices { get; set; }
+        /// <summary>
+        /// Elem indices allocated inside the false branch (for runtime ElemRef resolution).
+        /// </summary>
+        public int[] FalseChildElemIndices { get; set; }
     }
 
     public class CollectionTopology
@@ -71,12 +81,36 @@ namespace NScript.RazorSkin.CodeGen
         public List<CollectionTopology> Collections { get; set; } = new List<CollectionTopology>();
         public string ModelTypeName { get; set; }
         public int RootSourceSlot { get; set; }
+        public int TotalElemSlots { get; set; }
+        /// <summary>
+        /// For item graphs, the variable prefix to strip from expressions (e.g., "item.").
+        /// </summary>
+        public string ItemVariablePrefix { get; set; }
 
         /// <summary>
         /// Parent indices per node (inverse of Consumers). ParentIndices[j] lists
         /// nodes that feed into node j. Computed at build time for O(1) runtime lookup.
         /// </summary>
         public List<int>[] ParentIndices { get; set; }
+
+        /// <summary>
+        /// Returns the set of all elem indices that are inside gate branches
+        /// (not present in static HTML, resolved at runtime when gates render).
+        /// </summary>
+        public HashSet<int> GetGatedElemIndices()
+        {
+            var result = new HashSet<int>();
+            foreach (var gate in Gates)
+            {
+                if (gate.TrueChildElemIndices != null)
+                    foreach (var idx in gate.TrueChildElemIndices)
+                        result.Add(idx);
+                if (gate.FalseChildElemIndices != null)
+                    foreach (var idx in gate.FalseChildElemIndices)
+                        result.Add(idx);
+            }
+            return result;
+        }
     }
 
     // --- Builder ---
@@ -93,7 +127,9 @@ namespace NScript.RazorSkin.CodeGen
             // Walk all children
             WalkChildren(template.Children, ctx, gateIndex: -1);
 
-            return ctx.ToTopology(template.ModelTypeName);
+            var topo = ctx.ToTopology(template.ModelTypeName);
+            topo.ItemVariablePrefix = template.ItemVariablePrefix;
+            return topo;
         }
 
         private static void WalkChildren(List<IRNode> children, BuildContext ctx, int gateIndex)
@@ -139,7 +175,7 @@ namespace NScript.RazorSkin.CodeGen
                 // No dependencies — create a property node from the expression directly
                 int propIdx = ctx.GetOrCreatePropertyNode(
                     binding.Classification.CSharpExpression, 0);
-                if (gateIndex >= 0) ctx.SetGateIndex(propIdx, gateIndex);
+                if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
 
                 int domIdx = ctx.AddDomTarget(binding, propIdx, gateIndex);
                 return;
@@ -150,7 +186,7 @@ namespace NScript.RazorSkin.CodeGen
                 // Single dependency — Property node
                 var dep = deps[0];
                 int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
-                if (gateIndex >= 0) ctx.SetGateIndex(propIdx, gateIndex);
+                if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
 
                 if (isOneWay)
                 {
@@ -167,7 +203,7 @@ namespace NScript.RazorSkin.CodeGen
                 foreach (var dep in deps)
                 {
                     int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
-                    if (gateIndex >= 0) ctx.SetGateIndex(propIdx, gateIndex);
+                    if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
                     propIndices.Add(propIdx);
 
                     if (isOneWay)
@@ -180,9 +216,14 @@ namespace NScript.RazorSkin.CodeGen
                 // Create Computed node
                 int computedIdx = ctx.AddNode(GraphNodeTypeConstants.Computed,
                     binding.Classification.CSharpExpression, null);
-                if (gateIndex >= 0) ctx.SetGateIndex(computedIdx, gateIndex);
+                if (gateIndex != -1) ctx.SetGateIndex(computedIdx, gateIndex);
 
-                // Wire property nodes -> computed
+                // Wire Source(0) -> Computed FIRST so FindParentValue returns the source.
+                // The Computed getter evaluates the full expression against the DataContext,
+                // not against a single property value.
+                ctx.AddEdge(0, computedIdx);
+
+                // Also wire property nodes -> computed for dirty propagation.
                 foreach (int propIdx in propIndices)
                 {
                     ctx.AddEdge(propIdx, computedIdx);
@@ -195,8 +236,10 @@ namespace NScript.RazorSkin.CodeGen
 
         private static void ProcessEvent(EventNode evt, BuildContext ctx, int gateIndex)
         {
-            int evtIdx = ctx.AddNode(GraphNodeTypeConstants.EventBinding, null, null);
-            if (gateIndex >= 0) ctx.SetGateIndex(evtIdx, gateIndex);
+            // Store the handler expression as the getter expression so the emitter can
+            // build a proper getter function to extract the method reference from the source.
+            int evtIdx = ctx.AddNode(GraphNodeTypeConstants.EventBinding, evt.HandlerExpression, null);
+            if (gateIndex != -1) ctx.SetGateIndex(evtIdx, gateIndex);
 
             ctx.AddEdge(0, evtIdx); // Source -> EventBinding
 
@@ -218,6 +261,8 @@ namespace NScript.RazorSkin.CodeGen
             if (deps.Count == 1)
             {
                 conditionSourceIdx = ctx.GetOrCreatePropertyNode(deps[0].PropertyName, 0);
+                // Gate the condition property node when nested inside another gate's branch.
+                if (gateIndex != -1) ctx.SetGateIndex(conditionSourceIdx, gateIndex);
                 if (cond.Condition.Mode == BindingMode.OneWay)
                 {
                     ctx.AddSubscription(deps[0].PropertyName, conditionSourceIdx,
@@ -230,46 +275,72 @@ namespace NScript.RazorSkin.CodeGen
                 conditionSourceIdx = 0;
             }
 
-            // Create Gate node
+            // Create Gate node.
+            // For nested gates (gateIndex != -1), set gateIndex on the gate node itself
+            // so it only evaluates when its parent gate's branch is active.
+            // Top-level gates (gateIndex == -1) are ungated and always evaluate.
             int gateIdx = ctx.AddNode(GraphNodeTypeConstants.Gate,
                 cond.Condition.CSharpExpression, false);
-            ctx.SetGateIndex(gateIdx, gateIdx); // Gate's gateIndex is itself
+            if (gateIndex != -1) ctx.SetGateIndex(gateIdx, gateIndex);
 
             ctx.AddEdge(conditionSourceIdx, gateIdx);
+
+            int markerIdx = ctx.NextElemIdx();
+
+            // Track elem indices allocated inside each branch.
+            // These elements exist only in the gate's template DOM, not the static HTML.
+            // The runtime uses these indices to resolve ElemRefs after rendering.
+            int trueElemStart = ctx.ElemCounter;
+            WalkChildren(cond.TrueBranch, ctx, gateIdx);
+            int trueElemEnd = ctx.ElemCounter;
+
+            int falseElemStart = ctx.ElemCounter;
+            if (cond.FalseBranch != null && cond.FalseBranch.Count > 0)
+            {
+                // Convention: -(gateIdx + 2) encodes "inverted gate at gateIdx".
+                WalkChildren(cond.FalseBranch, ctx, -(gateIdx + 2));
+            }
+            int falseElemEnd = ctx.ElemCounter;
+
+            // Build child elem index arrays
+            int[] trueChildElems = trueElemEnd > trueElemStart
+                ? Enumerable.Range(trueElemStart, trueElemEnd - trueElemStart).ToArray()
+                : null;
+            int[] falseChildElems = falseElemEnd > falseElemStart
+                ? Enumerable.Range(falseElemStart, falseElemEnd - falseElemStart).ToArray()
+                : null;
 
             ctx.Topology.Gates.Add(new GateTopology
             {
                 NodeIdx = gateIdx,
-                MarkerIdx = ctx.NextElemIdx(),
-                IrNode = cond
+                MarkerIdx = markerIdx,
+                IrNode = cond,
+                TrueChildElemIndices = trueChildElems,
+                FalseChildElemIndices = falseChildElems
             });
-
-            // Walk true branch with this gate
-            WalkChildren(cond.TrueBranch, ctx, gateIdx);
-
-            // Walk false branch with this gate (if present)
-            if (cond.FalseBranch != null && cond.FalseBranch.Count > 0)
-            {
-                WalkChildren(cond.FalseBranch, ctx, gateIdx);
-            }
         }
 
         private static void ProcessLoop(LoopNode loop, BuildContext ctx, int gateIndex)
         {
             int collIdx = ctx.AddNode(GraphNodeTypeConstants.CollectionManager,
                 loop.CollectionExpression, null);
-            if (gateIndex >= 0) ctx.SetGateIndex(collIdx, gateIndex);
+            if (gateIndex != -1) ctx.SetGateIndex(collIdx, gateIndex);
 
             ctx.AddEdge(0, collIdx);
 
-            // Build item topology recursively if there's an item template
+            // Build item topology recursively if there's an item template.
+            // Note: ModelTypeName is set to null — the item type isn't known at compile
+            // time from the loop variable name alone. The GraphEngine skips the type check
+            // when sourceType is null, which is correct since the collection getter already
+            // returns properly-typed items.
             GraphTopology itemTopology = null;
             if (loop.ItemTemplate != null && loop.ItemTemplate.Count > 0)
             {
                 var itemTemplate = new SkinTemplateNode
                 {
                     TemplateName = "ItemTemplate",
-                    ModelTypeName = loop.ItemVariableName,
+                    ModelTypeName = null,
+                    ItemVariablePrefix = loop.ItemVariableName + ".",
                     Children = loop.ItemTemplate
                 };
                 itemTopology = Build(itemTemplate);
@@ -301,6 +372,8 @@ namespace NScript.RazorSkin.CodeGen
             private readonly HashSet<string> _subscribedProperties = new HashSet<string>();
 
             private int _elemCounter;
+
+            public int ElemCounter => _elemCounter;
 
             public GraphTopology Topology { get; } = new GraphTopology();
 
@@ -337,6 +410,14 @@ namespace NScript.RazorSkin.CodeGen
 
             public void SetGateIndex(int nodeIdx, int gateIdx)
             {
+                int existing = _gateIndices[nodeIdx];
+                if (existing != -1 && existing != gateIdx)
+                {
+                    // Node is shared across multiple gate branches (e.g., a property used
+                    // in both true and false branches). Make it ungated so it always evaluates.
+                    _gateIndices[nodeIdx] = -1;
+                    return;
+                }
                 _gateIndices[nodeIdx] = gateIdx;
             }
 
@@ -360,7 +441,7 @@ namespace NScript.RazorSkin.CodeGen
                 int domIdx = AddNode(GraphNodeTypeConstants.DomTarget,
                     binding.Classification.CSharpExpression, defaultVal);
 
-                if (gateIndex >= 0) SetGateIndex(domIdx, gateIndex);
+                if (gateIndex != -1) SetGateIndex(domIdx, gateIndex);
 
                 AddEdge(producerIdx, domIdx);
 
@@ -369,7 +450,8 @@ namespace NScript.RazorSkin.CodeGen
                     NodeIdx = domIdx,
                     ElemIdx = NextElemIdx(),
                     Target = binding.Target,
-                    AttributeName = binding.AttributeName
+                    AttributeName = binding.AttributeName,
+                    AttributePrefix = binding.AttributePrefix
                 });
 
                 return domIdx;
@@ -406,6 +488,7 @@ namespace NScript.RazorSkin.CodeGen
                 }
 
                 Topology.ParentIndices = parentIndices;
+                Topology.TotalElemSlots = _elemCounter;
                 return Topology;
             }
 

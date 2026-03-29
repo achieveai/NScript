@@ -101,6 +101,10 @@ namespace Sunlight.Framework.Observables
             _clrContext = clrContext;
             _runtimeScopeManager = runtimeScopeManager;
 
+            // Reset per-compilation state to ensure deterministic output
+            // when the compiler is hosted in a long-running process.
+            RazorSkinJSTGenerator.ResetDataIndex();
+
             // Scan embedded resources for .skin.cshtml files
             foreach (var module in clrContext.Modules)
             {
@@ -274,14 +278,18 @@ namespace Sunlight.Framework.Observables
                 var skinFactoryId = runtimeScopeManager.ResolveFactory(skinCtor);
                 _resolvedIdentifiers["Sunlight__Framework__UI__Skin_factory"] = skinFactoryId;
 
-                // --- Resolve SkinInstance constructor factory ---
-                var skinInstanceCtor = clrContext.GetMethodReference(
+                // --- Resolve SkinInstance graph-mode constructor factory ---
+                // SkinInstance(Skin, Element, NativeArray<int>, NativeArray, GraphDescriptor, object, int, int)
+                var graphDescriptorType = clrContext.GetTypeDefinition(
+                    Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.BindingGraph.GraphDescriptor"));
+
+                var skinInstanceGraphCtor = clrContext.GetMethodReference(
                     ".ctor", clrKnownRefs.Void, skinInstanceType,
                     skinType, elementRefType, nativeArrayInt,
-                    nativeArray, nativeArraySkinBinderInfo,
+                    nativeArray, graphDescriptorType,
                     clrKnownRefs.Object, clrKnownRefs.Int32, clrKnownRefs.Int32).Resolve();
 
-                var skinInstanceFactoryId = runtimeScopeManager.ResolveFactory(skinInstanceCtor);
+                var skinInstanceFactoryId = runtimeScopeManager.ResolveFactory(skinInstanceGraphCtor);
                 _resolvedIdentifiers["Sunlight__Framework__UI__Helpers__SkinInstance_factory"] = skinInstanceFactoryId;
 
                 // --- Resolve SkinBinderInfo constructor factory ---
@@ -345,6 +353,11 @@ namespace Sunlight.Framework.Observables
 
                 // --- Resolve type identifiers for model types referenced in compiled templates ---
                 ResolveModelTypeIdentifiers(clrContext, runtimeScopeManager);
+
+                // --- Force resolution of event handler methods referenced in templates ---
+                // This ensures the compiler emits them in the JS output, even if they're
+                // not directly called from compiled C# code.
+                ResolveEventHandlerMethods(clrContext, runtimeScopeManager);
 
                 Log.Debug("Resolved {Count} runtime identifiers for Razor template JS replacement",
                     _resolvedIdentifiers.Count + _resolvedTypeIdentifiers.Count);
@@ -453,6 +466,93 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
+        /// Resolves event handler methods referenced in template IR nodes.
+        /// Calling Resolve() on the scope manager marks the method as "used",
+        /// ensuring the compiler emits it in the JS output even if no compiled
+        /// C# code directly calls it.
+        /// </summary>
+        private void ResolveEventHandlerMethods(ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
+        {
+            var resolvedMethods = new HashSet<string>();
+            foreach (var kvp in _compiledIRs)
+            {
+                var ir = kvp.Value;
+                if (string.IsNullOrEmpty(ir.ModelTypeName)) continue;
+
+                // Find the model type in Cecil
+                TypeDefinition modelType = null;
+                foreach (var module in clrContext.Modules)
+                {
+                    foreach (var t in module.Types)
+                    {
+                        if (t.FullName == ir.ModelTypeName)
+                        {
+                            modelType = t;
+                            break;
+                        }
+                    }
+                    if (modelType != null) break;
+                }
+                if (modelType == null) continue;
+
+                // Walk IR nodes to find EventNode references
+                CollectAndResolveEventMethods(ir.Children, modelType, runtimeScopeManager, resolvedMethods);
+            }
+
+            if (resolvedMethods.Count > 0)
+                Log.Debug("Resolved {Count} event handler methods for template emission: {Methods}",
+                    resolvedMethods.Count, string.Join(", ", resolvedMethods));
+        }
+
+        private static void CollectAndResolveEventMethods(
+            List<TemplateIR.IRNode> nodes,
+            TypeDefinition modelType,
+            RuntimeScopeManager runtimeScopeManager,
+            HashSet<string> resolved)
+        {
+            foreach (var node in nodes)
+            {
+                if (node is TemplateIR.EventNode evt)
+                {
+                    // Extract method name from handler expression (e.g., "Model.IncrementClick")
+                    var expr = evt.HandlerExpression ?? "";
+                    if (expr.StartsWith("Model."))
+                        expr = expr.Substring(6);
+
+                    // For simple method references (no parens/lambda)
+                    if (expr.IndexOfAny(new[] { '(', ')', '=', '>' }) < 0)
+                    {
+                        var key = modelType.FullName + "." + expr;
+                        if (resolved.Add(key))
+                        {
+                            foreach (var method in modelType.Methods)
+                            {
+                                if (method.Name == expr && method.IsPublic && !method.IsConstructor)
+                                {
+                                    runtimeScopeManager.Resolve(method);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Recurse into children
+                CollectAndResolveEventMethods(node.Children, modelType, runtimeScopeManager, resolved);
+
+                if (node is TemplateIR.ConditionalNode cond)
+                {
+                    CollectAndResolveEventMethods(cond.TrueBranch, modelType, runtimeScopeManager, resolved);
+                    CollectAndResolveEventMethods(cond.FalseBranch, modelType, runtimeScopeManager, resolved);
+                }
+                else if (node is TemplateIR.LoopNode loop)
+                {
+                    CollectAndResolveEventMethods(loop.ItemTemplate, modelType, runtimeScopeManager, resolved);
+                }
+            }
+        }
+
+        /// <summary>
         /// Generates a C# source stub for the model type referenced by @model in the template.
         /// Uses Cecil type information to produce a minimal class declaration with properties,
         /// so the Roslyn analysis phase can detect observable properties and promote bindings
@@ -507,7 +607,7 @@ namespace Sunlight.Framework.Observables
                     break;
                 }
                 try { currentBase = currentBase.Resolve()?.BaseType; }
-                catch { break; }
+                catch (Exception) { break; }
             }
 
             // Build namespace and class declaration
@@ -536,6 +636,17 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
+            // Generate method stubs (for event handlers)
+            foreach (var method in typeDef.Methods)
+            {
+                if (!method.IsPublic || method.IsConstructor || method.IsGetter || method.IsSetter)
+                    continue;
+                var retType = MapCecilTypeToSimpleName(method.ReturnType);
+                var paramStrs = method.Parameters
+                    .Select(p => $"{MapCecilTypeToSimpleName(p.ParameterType)} {p.Name}");
+                sb.AppendLine($"    public {retType} {method.Name}({string.Join(", ", paramStrs)}) {{ }}");
+            }
+
             sb.AppendLine("  }");
 
             if (!string.IsNullOrEmpty(ns))
@@ -543,10 +654,96 @@ namespace Sunlight.Framework.Observables
                 sb.AppendLine("}");
             }
 
+            // Generate stubs for types referenced in collection properties AFTER
+            // closing the main namespace, so they get their own proper namespace blocks.
+            var referencedTypes = new HashSet<string>();
+            foreach (var prop in typeDef.Properties)
+            {
+                if (prop.PropertyType is GenericInstanceType genPropType)
+                {
+                    foreach (var arg in genPropType.GenericArguments)
+                    {
+                        if (!arg.IsPrimitive && arg.FullName != "System.String" && arg.FullName != "System.Object")
+                        {
+                            referencedTypes.Add(arg.FullName);
+                        }
+                    }
+                }
+            }
+
+            foreach (var refTypeName in referencedTypes)
+            {
+                GenerateReferencedTypeStub(sb, refTypeName, clrContext);
+            }
+
             var stub = sb.ToString();
             Log.Debug("Generated model type stub for {TypeName}: {StubLength} chars, base={BaseType}",
                 modelTypeName, stub.Length, baseTypeName);
             return stub;
+        }
+
+        private void GenerateReferencedTypeStub(
+            System.Text.StringBuilder sb,
+            string fullTypeName,
+            ClrContext clrContext)
+        {
+            TypeDefinition refTypeDef = null;
+            foreach (var module in clrContext.Modules)
+            {
+                foreach (var t in module.Types)
+                {
+                    if (t.FullName == fullTypeName)
+                    {
+                        refTypeDef = t;
+                        break;
+                    }
+                }
+                if (refTypeDef != null) break;
+            }
+
+            if (refTypeDef == null) return;
+
+            // Determine base class for the referenced type
+            var refBaseType = "object";
+            var refBase = refTypeDef.BaseType;
+            while (refBase != null)
+            {
+                if (refBase.FullName == "Sunlight.Framework.Observables.ObservableObject")
+                {
+                    refBaseType = "Sunlight.Framework.Observables.ObservableObject";
+                    break;
+                }
+                try { refBase = refBase.Resolve()?.BaseType; }
+                catch (Exception) { break; }
+            }
+
+            // If the type is in a different namespace, wrap in its own namespace block
+            var refNs = refTypeDef.Namespace;
+            var refClassName = refTypeDef.Name;
+            bool needsNamespaceClose = false;
+
+            // Only open a namespace if it differs from what's already open
+            if (!string.IsNullOrEmpty(refNs))
+            {
+                sb.AppendLine($"  namespace {refNs} {{");
+                needsNamespaceClose = true;
+            }
+
+            sb.AppendLine($"    public class {refClassName} : {refBaseType} {{");
+
+            foreach (var prop in refTypeDef.Properties)
+            {
+                var propTypeName = MapCecilTypeToSimpleName(prop.PropertyType);
+                if (prop.GetMethod != null && prop.SetMethod != null)
+                    sb.AppendLine($"      public {propTypeName} {prop.Name} {{ get; set; }}");
+                else if (prop.GetMethod != null)
+                    sb.AppendLine($"      public {propTypeName} {prop.Name} {{ get; }}");
+            }
+
+            sb.AppendLine("    }");
+
+            if (needsNamespaceClose)
+                sb.AppendLine("  }");
         }
 
         /// <summary>
@@ -567,8 +764,22 @@ namespace Sunlight.Framework.Observables
                 case "System.Decimal": return "decimal";
                 case "System.Object": return "object";
                 case "System.Void": return "void";
-                default: return "object";
             }
+
+            // Handle generic types like ObservableCollection<RazorItemVM>
+            if (typeRef is GenericInstanceType genType)
+            {
+                var baseName = genType.ElementType.FullName;
+                // Strip arity suffix (e.g., ObservableCollection`1 → ObservableCollection)
+                var arityIdx = baseName.IndexOf('`');
+                if (arityIdx >= 0) baseName = baseName.Substring(0, arityIdx);
+                var args = string.Join(", ", genType.GenericArguments
+                    .Select(a => MapCecilTypeToSimpleName(a)));
+                return $"{baseName}<{args}>";
+            }
+
+            // For other non-primitive types, return the full type name
+            return typeRef.FullName;
         }
 
         public void ParseArgs(IList<Tuple<string, string>> args)
@@ -657,10 +868,20 @@ namespace Sunlight.Framework.Observables
                 };
             }
 
-            // Fallback: emit raw JS
+            // Fallback: use scope-registered identifier for the getter function.
+            // RawNameIdentifier participates in scope naming but won't be minified
+            // since the original name is used as the suggested name.
+            var fallbackScope = _runtimeScopeManager.Scope;
+            var fallbackId = RawNameIdentifier.Create(fallbackScope, shortName);
             return new List<Statement>
             {
-                new RawJavaScriptStatement($"return {shortName}();")
+                new ReturnStatement(
+                    null,
+                    fallbackScope,
+                    new MethodCallExpression(
+                        null,
+                        fallbackScope,
+                        new IdentifierExpression(fallbackId, fallbackScope)))
             };
         }
 

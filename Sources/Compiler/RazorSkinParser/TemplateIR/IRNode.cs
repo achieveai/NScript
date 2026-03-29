@@ -15,6 +15,11 @@ namespace NScript.RazorSkin.TemplateIR
         public string ControlTypeName { get; set; }
         public List<string> UsingNamespaces { get; set; } = new List<string>();
         public List<FunctionNode> Functions { get; set; } = new List<FunctionNode>();
+        /// <summary>
+        /// For item templates inside foreach loops, this is the prefix to strip from
+        /// property expressions (e.g., "item." for @foreach(var item in ...)).
+        /// </summary>
+        public string ItemVariablePrefix { get; set; }
     }
 
     /// <summary>Static HTML content (no bindings).</summary>

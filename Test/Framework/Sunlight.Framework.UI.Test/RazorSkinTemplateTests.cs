@@ -391,7 +391,7 @@ namespace Sunlight.Framework.UI.Test
 
             var div = element.QuerySelector("[data-test]");
             assert.NotEqual(null, div, "Template should render");
-            assert.Equal("display: block", div.GetAttribute("style"),
+            assert.Equal("display:block", div.GetAttribute("style"),
                 "Style should contain initial DisplayStyle value");
         }
 
@@ -410,7 +410,7 @@ namespace Sunlight.Framework.UI.Test
             var div = element.QuerySelector("[data-test]");
 
             vm.DisplayStyle = "none";
-            assert.Equal("display: none", div.GetAttribute("style"),
+            assert.Equal("display:none", div.GetAttribute("style"),
                 "Style should update when DisplayStyle changes");
         }
 

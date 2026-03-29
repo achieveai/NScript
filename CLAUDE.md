@@ -105,6 +105,20 @@ Supported: classes, interfaces, generics, LINQ, lambdas, async/await, null-coale
 
 NOT supported: `dynamic`, `yield break`/`yield return`, reflection, P/Invoke. See `csharp8-todos.md` for detailed C# 8 status.
 
+## JST Code Generation Rules (CRITICAL)
+
+When generating JavaScript AST (JST) nodes — especially in codegen plugins like `RazorSkinParser` or `XwmlParser`:
+
+1. **ALL identifiers must be resolved through the scope system.** Never use raw string names for variables, fields, methods, or types. The compiler renames everything during minification. Use `RuntimeScopeManager.Resolve()`, `ResolveStatic()`, `ResolveType()`, or `ResolveFactory()`.
+
+2. **Object literal field keys:** Use `InlineObjectInitializer.AddInitializer(IIdentifier, Expression)` with a resolved field identifier, NOT the `(string, Expression)` overload. String keys produce unminified names that don't match runtime field access.
+
+3. **Type constructors (parameterless):** Use `ResolveType(typeDef)[0]` + `new` syntax. `ResolveFactory()` only works for constructors WITH parameters — parameterless constructors don't get factory functions in NScript.
+
+4. **`[JsonType]` attribute:** Adds `importedExtension` wrapper on field access. Don't use for types created as object literals in codegen — the wrapper won't match. Use typed instances (`new Type()`) instead.
+
+5. **Raw body function expressions:** If unavoidable (complex computed expressions), use `enforceSuggestion=true` on the `IdentifierScope` so parameter names match the raw body text. Prefer fully resolved JST expressions where possible.
+
 ## Prerequisites
 
 - .NET 8.0 SDK (version 8.0.416, see `global.json`)

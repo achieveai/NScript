@@ -1,5 +1,6 @@
 namespace Sunlight.Framework.UI.Helpers.BindingGraph
 {
+    using System;
     /// <summary>
     /// Internal strategy interface for SkinInstance binding management.
     /// Selected based on whether the factory provides a GraphDescriptor or SkinBinderInfo[].

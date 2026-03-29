@@ -76,14 +76,12 @@ namespace NScript.RazorSkin
                 ir.ModelTypeName, modelType != null,
                 ir.ControlTypeName, controlType != null);
 
-            // Walk all IR nodes and refine classifications
+            // Walk all IR nodes and refine classifications.
+            // This now handles expression bindings, conditionals, and loop item types.
             RefineNodes(ir.Children, modelType, controlType, compilation, semanticModel);
 
-            // Refine loop nodes
+            // Refine loop nodes (sets IsObservableCollection flag)
             RefineLoopNodes(ir.Children, modelType, compilation);
-
-            // Refine conditional nodes
-            RefineConditionalNodes(ir.Children, modelType, controlType);
 
             // Count promotions (OneTime -> OneWay)
             var promotionCount = CountPromotions(ir.Children);
@@ -95,42 +93,90 @@ namespace NScript.RazorSkin
             INamedTypeSymbol modelType,
             INamedTypeSymbol controlType,
             CSharpCompilation compilation,
-            SemanticModel semanticModel)
+            SemanticModel semanticModel,
+            string modelPrefix = "Model.")
         {
             foreach (var node in nodes)
             {
                 if (node is ExpressionBindingNode binding)
                 {
-                    RefineExpressionBinding(binding, modelType, controlType);
+                    RefineExpressionBinding(binding, modelType, controlType, modelPrefix);
                 }
-
-                // Recurse into all child collections (Children, plus branch/template lists)
-                RefineNodes(node.Children, modelType, controlType, compilation, semanticModel);
-
-                if (node is ConditionalNode cond)
+                else if (node is ConditionalNode cond)
                 {
-                    RefineNodes(cond.TrueBranch, modelType, controlType, compilation, semanticModel);
-                    RefineNodes(cond.FalseBranch, modelType, controlType, compilation, semanticModel);
+                    // Refine condition with the current model prefix (handles item.Prop inside loops)
+                    RefineConditionalBinding(cond, modelType, controlType, modelPrefix);
+                    RefineNodes(cond.TrueBranch, modelType, controlType, compilation, semanticModel, modelPrefix);
+                    RefineNodes(cond.FalseBranch, modelType, controlType, compilation, semanticModel, modelPrefix);
                 }
                 else if (node is LoopNode loop)
                 {
-                    RefineNodes(loop.ItemTemplate, modelType, controlType, compilation, semanticModel);
+                    // Resolve item type from the collection property's generic argument.
+                    var itemType = ResolveLoopItemType(loop, modelType);
+                    var itemPrefix = loop.ItemVariableName + ".";
+                    if (itemType != null)
+                    {
+                        RefineNodes(loop.ItemTemplate, itemType, controlType, compilation, semanticModel, itemPrefix);
+                    }
+                    else
+                    {
+                        RefineNodes(loop.ItemTemplate, modelType, controlType, compilation, semanticModel, modelPrefix);
+                    }
+                }
+
+                // Recurse into generic children
+                RefineNodes(node.Children, modelType, controlType, compilation, semanticModel, modelPrefix);
+            }
+        }
+
+        /// <summary>
+        /// Resolves the item type for a loop node by finding the collection property
+        /// on the model type and extracting its generic type argument.
+        /// E.g., ObservableCollection&lt;RazorItemVM&gt; → RazorItemVM.
+        /// </summary>
+        private static INamedTypeSymbol ResolveLoopItemType(LoopNode loop, INamedTypeSymbol modelType)
+        {
+            if (modelType == null) return null;
+
+            var collExpr = loop.CollectionExpression;
+            var propName = collExpr.Replace("Model.", "").Split('.')[0];
+            var prop = FindProperty(modelType, propName);
+            if (prop == null) return null;
+
+            var collectionType = prop.Type as INamedTypeSymbol;
+            if (collectionType == null) return null;
+
+            // Check generic type arguments (e.g., ObservableCollection<T> has one arg)
+            if (collectionType.TypeArguments.Length > 0)
+            {
+                return collectionType.TypeArguments[0] as INamedTypeSymbol;
+            }
+
+            // Check interfaces for IEnumerable<T>
+            foreach (var iface in collectionType.AllInterfaces)
+            {
+                if (iface.Name == "IEnumerable" && iface.TypeArguments.Length > 0)
+                {
+                    return iface.TypeArguments[0] as INamedTypeSymbol;
                 }
             }
+
+            return null;
         }
 
         private static void RefineExpressionBinding(
             ExpressionBindingNode binding,
             INamedTypeSymbol modelType,
-            INamedTypeSymbol controlType)
+            INamedTypeSymbol controlType,
+            string modelPrefix = "Model.")
         {
             var expr = binding.Classification.CSharpExpression;
             var dependencies = new List<ObservableDependency>();
 
-            // Extract property references from Model.* expressions
+            // Extract property references from model expressions (Model.* or item.*)
             if (modelType != null)
             {
-                var propertyNames = ExtractPropertyReferences(expr, "Model.");
+                var propertyNames = ExtractPropertyReferences(expr, modelPrefix);
                 foreach (var propName in propertyNames)
                 {
                     var prop = FindProperty(modelType, propName);
@@ -191,55 +237,48 @@ namespace NScript.RazorSkin
             }
         }
 
-        private static void RefineConditionalNodes(
-            List<IRNode> nodes,
+        /// <summary>
+        /// Refines a conditional node's binding with the current model prefix.
+        /// Handles both top-level (Model.*) and item-level (item.*) conditions.
+        /// </summary>
+        private static void RefineConditionalBinding(
+            ConditionalNode cond,
             INamedTypeSymbol modelType,
-            INamedTypeSymbol controlType)
+            INamedTypeSymbol controlType,
+            string modelPrefix)
         {
-            foreach (var node in nodes)
+            if (modelType != null)
             {
-                if (node is ConditionalNode cond)
+                var propNames = ExtractPropertyReferences(
+                    cond.Condition.CSharpExpression, modelPrefix);
+                foreach (var propName in propNames)
                 {
-                    if (modelType != null)
+                    var prop = FindProperty(modelType, propName);
+                    if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
                     {
-                        var propNames = ExtractPropertyReferences(
-                            cond.Condition.CSharpExpression, "Model.");
-                        foreach (var propName in propNames)
-                        {
-                            var prop = FindProperty(modelType, propName);
-                            if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
-                            {
-                                cond.IsReactive = true;
-                                cond.Condition.Mode = BindingMode.OneWay;
-                                cond.Condition.Dependencies.Add(new ObservableDependency(
-                                    BindingSourceKind.DataContext, propName, propName));
-                            }
-                        }
+                        cond.IsReactive = true;
+                        cond.Condition.Mode = BindingMode.OneWay;
+                        cond.Condition.Dependencies.Add(new ObservableDependency(
+                            BindingSourceKind.DataContext, propName, propName));
                     }
-
-                    if (controlType != null)
-                    {
-                        var controlPropNames = ExtractPropertyReferences(
-                            cond.Condition.CSharpExpression, "Control.");
-                        foreach (var propName in controlPropNames)
-                        {
-                            var prop = FindProperty(controlType, propName);
-                            if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
-                            {
-                                cond.IsReactive = true;
-                                cond.Condition.Mode = BindingMode.OneWay;
-                                cond.Condition.Dependencies.Add(new ObservableDependency(
-                                    BindingSourceKind.TemplateParent, propName, propName));
-                            }
-                        }
-                    }
-
-                    // Recurse into nested branches (M3)
-                    RefineConditionalNodes(cond.TrueBranch, modelType, controlType);
-                    RefineConditionalNodes(cond.FalseBranch, modelType, controlType);
                 }
+            }
 
-                RefineConditionalNodes(node.Children, modelType, controlType);
+            if (controlType != null)
+            {
+                var controlPropNames = ExtractPropertyReferences(
+                    cond.Condition.CSharpExpression, "Control.");
+                foreach (var propName in controlPropNames)
+                {
+                    var prop = FindProperty(controlType, propName);
+                    if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                    {
+                        cond.IsReactive = true;
+                        cond.Condition.Mode = BindingMode.OneWay;
+                        cond.Condition.Dependencies.Add(new ObservableDependency(
+                            BindingSourceKind.TemplateParent, propName, propName));
+                    }
+                }
             }
         }
 

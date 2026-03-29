@@ -163,6 +163,21 @@ namespace NScript.RazorSkin.TemplateIR
             // Track the last HTML content to detect event attribute context
             string lastHtmlContent = null;
 
+            // Debug: log all child node types and content at this level
+            for (int dbgIdx = 0; dbgIdx < childList.Count; dbgIdx++)
+            {
+                var dbgChild = childList[dbgIdx];
+                string dbgContent = "";
+                if (dbgChild is HtmlContentIntermediateNode dbgHtml)
+                    dbgContent = GetTokenContent(dbgHtml);
+                else if (dbgChild is CSharpExpressionIntermediateNode dbgExpr)
+                    dbgContent = GetTokenContent(dbgExpr);
+                else if (dbgChild is HtmlAttributeIntermediateNode dbgAttr)
+                    dbgContent = dbgAttr.AttributeName ?? "(no name)";
+                Log.Debug("WalkMethodBody [{Idx}]: {Type} = {Content}",
+                    dbgIdx, dbgChild.GetType().Name, dbgContent.Length > 80 ? dbgContent.Substring(0, 80) + "..." : dbgContent);
+            }
+
             while (i < childList.Count)
             {
                 var child = childList[i];
@@ -308,8 +323,57 @@ namespace NScript.RazorSkin.TemplateIR
                         i++;
                     }
                 }
+                else if (child is HtmlAttributeIntermediateNode attrNode)
+                {
+                    // Razor wraps attribute bindings like class="@Model.X" in structured nodes:
+                    //   HtmlAttributeIntermediateNode (AttributeName="class")
+                    //     ├── HtmlAttributeValueIntermediateNode (static part)
+                    //     └── CSharpExpressionAttributeValueIntermediateNode
+                    //           └── LazyIntermediateToken (the expression text)
+                    var attrName = attrNode.AttributeName;
+                    var exprValue = ExtractCSharpExpressionFromAttribute(attrNode);
+                    // Extract static prefix from HtmlAttributeValueIntermediateNode children
+                    // e.g., style="display: @Model.X" → prefix = "display: "
+                    var attrPrefix = ExtractAttributePrefix(attrNode);
+
+                    if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
+                    {
+                        // Check if this is an event attribute
+                        if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+                        {
+                            currentParent.Children.Add(CreateEventNode(attrName, exprValue.Trim()));
+                        }
+                        else
+                        {
+                            var target = ClassifyAttributeTarget(attrName);
+                            var binding = CreateExpressionBinding(exprValue);
+                            binding.Target = target;
+                            binding.AttributeName = attrName;
+                            binding.AttributePrefix = attrPrefix ?? "";
+
+                            // Trim incomplete attribute from preceding HTML node
+                            var lastChild = currentParent.Children.Count > 0
+                                ? currentParent.Children[currentParent.Children.Count - 1] as HtmlNode
+                                : null;
+                            if (lastChild != null)
+                            {
+                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                    StringComparison.OrdinalIgnoreCase);
+                                if (idx >= 0)
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                            }
+
+                            currentParent.Children.Add(binding);
+                        }
+                    }
+                    i++;
+                }
                 else
                 {
+                    // Recurse into children of unknown nodes
+                    if (child.Children.Count > 0)
+                        WalkMethodBody(child.Children, currentParent, modelTypeName);
+
                     i++;
                 }
             }
@@ -656,6 +720,72 @@ namespace NScript.RazorSkin.TemplateIR
             if (attrName.Equals("id", StringComparison.OrdinalIgnoreCase)) return null;
             var prefix = match.Groups[2].Value; // text before the @expression (e.g. "display: " in style="display: @...")
             return (attrName, prefix);
+        }
+
+        /// <summary>
+        /// Extracts the static prefix from a HtmlAttributeIntermediateNode.
+        /// E.g., for style="display: @Model.X", the prefix is "display: ".
+        /// The prefix comes from HtmlAttributeValueIntermediateNode children that appear
+        /// before the CSharpExpressionAttributeValueIntermediateNode.
+        /// </summary>
+        private static string ExtractAttributePrefix(IntermediateNode attrNode)
+        {
+            var prefix = new System.Text.StringBuilder();
+            foreach (var child in attrNode.Children)
+            {
+                var typeName = child.GetType().Name;
+                // Static content before the expression
+                if (typeName.Contains("HtmlAttributeValue"))
+                {
+                    foreach (var token in child.Children)
+                    {
+                        var content = GetTokenContentFromNode(token);
+                        if (!string.IsNullOrEmpty(content))
+                            prefix.Append(content);
+                    }
+                }
+                // Stop when we reach the expression part
+                else if (typeName.Contains("CSharpExpression"))
+                {
+                    break;
+                }
+            }
+            return prefix.Length > 0 ? prefix.ToString() : null;
+        }
+
+        /// <summary>
+        /// Extracts the C# expression text from a structured HtmlAttributeIntermediateNode.
+        /// Walks into CSharpExpressionAttributeValueIntermediateNode children to find LazyIntermediateToken.
+        /// </summary>
+        private static string ExtractCSharpExpressionFromAttribute(IntermediateNode attrNode)
+        {
+            foreach (var child in attrNode.Children)
+            {
+                // CSharpExpressionAttributeValueIntermediateNode contains the expression
+                if (child.GetType().Name.Contains("CSharpExpression"))
+                {
+                    // The expression token is inside the children
+                    foreach (var token in child.Children)
+                    {
+                        var content = GetTokenContentFromNode(token);
+                        if (!string.IsNullOrWhiteSpace(content))
+                            return content;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets token content from an arbitrary IntermediateNode (handles LazyIntermediateToken, etc.)
+        /// </summary>
+        private static string GetTokenContentFromNode(IntermediateNode node)
+        {
+            // Try to get Content property via reflection (LazyIntermediateToken has it)
+            var contentProp = node.GetType().GetProperty("Content");
+            if (contentProp != null)
+                return contentProp.GetValue(node) as string;
+            return null;
         }
 
         /// <summary>

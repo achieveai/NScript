@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
@@ -26,6 +27,9 @@ namespace NScript.RazorSkin.CodeGen
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
         private readonly RazorKnownTypes _knownTypes;
 
+        // Topology reference for marker path computation
+        private GraphTopology _topology;
+
         // Scope for the factory function body (has "skinFactory" and "doc" parameters)
         private IdentifierScope _factoryScope;
 
@@ -41,11 +45,20 @@ namespace NScript.RazorSkin.CodeGen
         // Data index for doc.stateStore — must be unique across ALL templates (XWML + Razor).
         // XWML templates use sequential indices starting from 0 (one per skin).
         // We start at 100 to avoid collision. If a project has 100+ XWML templates,
-        // this offset must be increased. TODO: Coordinate with XWML's CodeGenerator
-        // to allocate from a shared counter instead of a hardcoded offset.
+        // this offset must be increased. A shared counter with XWML's CodeGenerator
+        // would be the proper long-term fix.
         private const int RazorDataIndexOffset = 100;
         private static int _next_dataIndex = RazorDataIndexOffset;
         private readonly int _dataIndex;
+
+        /// <summary>
+        /// Resets the data index counter. Must be called at the start of each compilation
+        /// to ensure deterministic output when the compiler is hosted in a long-running process.
+        /// </summary>
+        public static void ResetDataIndex()
+        {
+            _next_dataIndex = RazorDataIndexOffset;
+        }
 
 
         /// <summary>
@@ -130,6 +143,7 @@ namespace NScript.RazorSkin.CodeGen
                 _ir.Children, events, elementPaths);
             // Build graph topology from IR
             var topology = GraphTopologyBuilder.Build(_ir);
+            _topology = topology;
 
             // Build known function names from @functions blocks
             var knownFunctionNames = new HashSet<string>();
@@ -264,7 +278,8 @@ namespace NScript.RazorSkin.CodeGen
 
             // tmplStore[dataIndex] = tmplStore[dataIndex] ? tmplStore[dataIndex] : graphDescriptor
             var graphEmitter = new GraphDescriptorJSTEmitter(
-                topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames);
+                topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames,
+                _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers);
             var graphDescriptorExpr = graphEmitter.Emit();
 
             initStatements.Add(
@@ -317,22 +332,43 @@ namespace NScript.RazorSkin.CodeGen
                         new BooleanLiteralExpression(_factoryScope, true))));
 
             // objStorage = new Array(totalSlots)
-            int totalSlots = bindings.Count + events.Count;
-            stmts.Add(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IdentifierExpression(_objStorageIdentifier, _factoryScope),
-                    new NewArrayExpression(
-                        null,
-                        _factoryScope,
-                        new NumberLiteralExpression(_factoryScope, totalSlots))));
+            // The topology assigns element indices for ALL element types:
+            // DomTarget (text span markers + attr-bound elements), Events, Gate markers, Collection markers
+            int totalSlots = topology.TotalElemSlots;
+            if (totalSlots > 0)
+            {
+                stmts.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
+                        new IdentifierExpression(_objStorageIdentifier, _factoryScope),
+                        new NewArrayExpression(
+                            null,
+                            _factoryScope,
+                            new NumberLiteralExpression(_factoryScope, totalSlots))));
+            }
+            else
+            {
+                // Empty array for templates with no bindings
+                stmts.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
+                        new IdentifierExpression(_objStorageIdentifier, _factoryScope),
+                        new InlineNewArrayInitialization(null, _factoryScope, new List<Expression>())));
+            }
 
-            // objStorage[i] = GetElementFromPath(htmlRoot, [path])
             IIdentifier getElementFromPathId = GetResolvedIdentifier(
                 "Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath");
 
+            // Elements inside gate branches don't exist in static HTML — they're resolved
+            // at runtime when the gate renders its template. Skip their objStorage entries.
+            var gatedElemIndices = topology.GetGatedElemIndices();
+
+            // Assign element references for DomTargets using computed element paths
             for (int i = 0; i < bindings.Count; i++)
             {
-                var path = i < elementPaths.Count ? elementPaths[i] : new List<int> { i + 1 };
+                var dt = topology.DomTargets.FirstOrDefault(d => d.NodeIdx == FindDomTargetNodeIdx(topology, i));
+                int elemIdx = dt?.ElemIdx ?? i;
+                if (gatedElemIndices.Contains(elemIdx)) continue; // resolved at runtime by gate
+
+                var path = i < elementPaths.Count ? elementPaths[i] : new List<int> { 0 };
                 var pathElements = new List<Expression>();
                 foreach (var p in path)
                     pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
@@ -343,7 +379,7 @@ namespace NScript.RazorSkin.CodeGen
                             null,
                             _factoryScope,
                             new IdentifierExpression(_objStorageIdentifier, _factoryScope),
-                            new NumberLiteralExpression(_factoryScope, i)),
+                            new NumberLiteralExpression(_factoryScope, elemIdx)),
                         new MethodCallExpression(
                             null,
                             _factoryScope,
@@ -355,18 +391,61 @@ namespace NScript.RazorSkin.CodeGen
                                 pathElements))));
             }
 
-            // Event element paths (events target htmlRoot for now)
-            for (int i = 0; i < events.Count; i++)
+            // Assign element references for gate markers.
+            // Skip nested gate markers — they're inside a parent gate's template
+            // and will be resolved at runtime when the parent gate renders.
+            foreach (var gate in topology.Gates)
             {
-                int elemIdx = bindings.Count + i;
+                if (gatedElemIndices.Contains(gate.MarkerIdx)) continue;
+
                 stmts.Add(
                     ExpressionStatement.CreateAssignmentExpression(
                         new IndexExpression(
                             null,
                             _factoryScope,
                             new IdentifierExpression(_objStorageIdentifier, _factoryScope),
-                            new NumberLiteralExpression(_factoryScope, elemIdx)),
-                        new IdentifierExpression(_htmlRootIdentifier, _factoryScope)));
+                            new NumberLiteralExpression(_factoryScope, gate.MarkerIdx)),
+                        new MethodCallExpression(
+                            null,
+                            _factoryScope,
+                            new IdentifierExpression(getElementFromPathId, _factoryScope),
+                            new IdentifierExpression(_htmlRootIdentifier, _factoryScope),
+                            BuildGateMarkerPath(htmlContent, gate))));
+            }
+
+            // Assign element references for collection markers (same pattern as gates)
+            foreach (var coll in topology.Collections)
+            {
+                if (gatedElemIndices.Contains(coll.MarkerIdx)) continue;
+
+                stmts.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
+                        new IndexExpression(
+                            null,
+                            _factoryScope,
+                            new IdentifierExpression(_objStorageIdentifier, _factoryScope),
+                            new NumberLiteralExpression(_factoryScope, coll.MarkerIdx)),
+                        new MethodCallExpression(
+                            null,
+                            _factoryScope,
+                            new IdentifierExpression(getElementFromPathId, _factoryScope),
+                            new IdentifierExpression(_htmlRootIdentifier, _factoryScope),
+                            BuildCollectionMarkerPath(htmlContent, coll))));
+            }
+
+            // Assign element references for events.
+            foreach (var evt in topology.Events)
+            {
+                if (gatedElemIndices.Contains(evt.ElemIdx)) continue;
+
+                stmts.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
+                        new IndexExpression(
+                            null,
+                            _factoryScope,
+                            new IdentifierExpression(_objStorageIdentifier, _factoryScope),
+                            new NumberLiteralExpression(_factoryScope, evt.ElemIdx)),
+                        BuildEventElementRef(htmlContent, evt)));
             }
 
             // Part ID mapping — not yet implemented for Razor templates (always null).
@@ -645,10 +724,285 @@ namespace NScript.RazorSkin.CodeGen
                 if (prop != null) return prop;
 
                 try { current = current.BaseType?.Resolve(); }
-                catch { break; }
+                catch (Exception) { break; }
             }
             return null;
         }
+
+        /// <summary>
+        /// Finds the DomTarget node index for the i-th binding (in document order).
+        /// DomTargets are added in the same order as bindings are walked.
+        /// </summary>
+        private static int FindDomTargetNodeIdx(GraphTopology topology, int bindingIndex)
+        {
+            if (bindingIndex < topology.DomTargets.Count)
+                return topology.DomTargets[bindingIndex].NodeIdx;
+            return -1;
+        }
+
+        /// <summary>
+        /// Computes the DOM path for a gate marker span in the cleaned HTML.
+        /// Parses the HTML string to find the N-th empty span (gate marker).
+        /// </summary>
+        private Expression BuildGateMarkerPath(string htmlContent, GateTopology gate)
+        {
+            var path = FindEmptySpanPath(htmlContent, gate.MarkerIdx, "gate");
+            var pathElements = new List<Expression>();
+            foreach (var p in path)
+                pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
+            return new InlineNewArrayInitialization(null, _factoryScope, pathElements);
+        }
+
+        /// <summary>
+        /// Computes the DOM path for a collection marker span in the cleaned HTML.
+        /// </summary>
+        private Expression BuildCollectionMarkerPath(string htmlContent, CollectionTopology coll)
+        {
+            var path = FindEmptySpanPath(htmlContent, coll.MarkerIdx, "collection");
+            var pathElements = new List<Expression>();
+            foreach (var p in path)
+                pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
+            return new InlineNewArrayInitialization(null, _factoryScope, pathElements);
+        }
+
+        /// <summary>
+        /// Finds the DOM path for the marker with the given elemIdx.
+        /// Gate and collection markers are empty <span></span> elements in the static HTML.
+        /// Text content binding markers are also empty <span></span> elements.
+        /// We count ALL empty spans to determine the ordinal position of the target marker.
+        /// Elements inside gate branches are excluded (not in static HTML).
+        /// </summary>
+        private List<int> FindEmptySpanPath(string html, int targetIdx, string kind)
+        {
+            // Collect ALL elem indices that produce empty <span></span> in static HTML:
+            // text content bindings, gate markers, collection markers.
+            // Exclude gated elements (inside gate branches — not in static HTML).
+            var gatedIndices = _topology.GetGatedElemIndices();
+            var allEmptySpanIndices = new List<int>();
+
+            // Text content bindings produce empty spans
+            foreach (var dt in _topology.DomTargets)
+            {
+                if (dt.Target == TemplateIR.ExpressionTarget.TextContent
+                    && !gatedIndices.Contains(dt.ElemIdx))
+                {
+                    allEmptySpanIndices.Add(dt.ElemIdx);
+                }
+            }
+
+            // Gate markers produce empty spans
+            foreach (var g in _topology.Gates)
+            {
+                if (!gatedIndices.Contains(g.MarkerIdx))
+                    allEmptySpanIndices.Add(g.MarkerIdx);
+            }
+
+            // Collection markers produce empty spans
+            foreach (var c in _topology.Collections)
+            {
+                if (!gatedIndices.Contains(c.MarkerIdx))
+                    allEmptySpanIndices.Add(c.MarkerIdx);
+            }
+
+            allEmptySpanIndices.Sort();
+
+            // Find which ordinal position among all empty spans this target is at
+            int ordinal = allEmptySpanIndices.IndexOf(targetIdx);
+            if (ordinal < 0) ordinal = 0;
+
+            return FindNthEmptySpanPath(html, ordinal);
+        }
+
+        /// <summary>
+        /// Parses HTML to find the N-th empty span element and returns its DOM path.
+        /// </summary>
+        private static List<int> FindNthEmptySpanPath(string html, int n)
+        {
+            var indexStack = new List<int>();
+            var childCountStack = new List<int> { 0 };
+            int emptySpanCount = 0;
+            bool hasText = false;
+
+            int i = 0;
+            while (i < html.Length)
+            {
+                if (html[i] == '<')
+                {
+                    // Flush text node
+                    if (hasText) { childCountStack[childCountStack.Count - 1]++; hasText = false; }
+
+                    if (i + 1 < html.Length && html[i + 1] == '/')
+                    {
+                        var closeEnd = html.IndexOf('>', i);
+                        if (closeEnd < 0) break;
+                        if (indexStack.Count > 0)
+                        {
+                            indexStack.RemoveAt(indexStack.Count - 1);
+                            childCountStack.RemoveAt(childCountStack.Count - 1);
+                        }
+                        i = closeEnd + 1;
+                        hasText = false;
+                        continue;
+                    }
+
+                    var tagEnd = html.IndexOf('>', i);
+                    if (tagEnd < 0) break;
+                    var tagContent = html.Substring(i + 1, tagEnd - i - 1);
+                    bool selfClosing = tagContent.EndsWith("/");
+                    int myIndex = childCountStack[childCountStack.Count - 1];
+                    childCountStack[childCountStack.Count - 1]++;
+
+                    // Check if this is <span></span> (empty span = gate/collection marker)
+                    var tagName = tagContent.Split(new[] { ' ', '/' }, System.StringSplitOptions.RemoveEmptyEntries)
+                        .FirstOrDefault()?.ToLower() ?? "";
+                    if (tagName == "span" && !selfClosing)
+                    {
+                        // Check if immediately followed by </span>
+                        var closeSpanIdx = html.IndexOf("</span>", tagEnd + 1);
+                        if (closeSpanIdx == tagEnd + 1)
+                        {
+                            // Empty span found
+                            if (emptySpanCount == n)
+                            {
+                                return new List<int>(indexStack) { myIndex };
+                            }
+                            emptySpanCount++;
+
+                            // Skip past the closing tag
+                            indexStack.Add(myIndex);
+                            childCountStack.Add(0);
+                            indexStack.RemoveAt(indexStack.Count - 1);
+                            childCountStack.RemoveAt(childCountStack.Count - 1);
+                            i = closeSpanIdx + 7; // past </span>
+                            continue;
+                        }
+                    }
+
+                    if (!selfClosing)
+                    {
+                        indexStack.Add(myIndex);
+                        childCountStack.Add(0);
+                    }
+                    i = tagEnd + 1;
+                    hasText = false;
+                }
+                else
+                {
+                    hasText = true;
+                    i++;
+                }
+            }
+
+            // Fallback
+            return new List<int> { 0 };
+        }
+
+        /// <summary>
+        /// Builds an element reference expression for an event target.
+        /// Finds the event target element in the HTML by looking for the element
+        /// that originally had the onclick/onX attribute.
+        /// </summary>
+        private Expression BuildEventElementRef(string htmlContent, EventTopology evt)
+        {
+            // Events target specific elements (buttons, etc.) in the template HTML.
+            // The event target element was identified during IR building and its path
+            // is computed relative to htmlRoot. For now, find buttons/elements by
+            // looking at the HTML structure.
+            // The topology assigns event element indices in document order.
+            // Find the ordinal position of this event among all events.
+            int ordinal = 0;
+            foreach (var e in _topology.Events)
+            {
+                if (e.ElemIdx == evt.ElemIdx) break;
+                ordinal++;
+            }
+
+            // Parse HTML to find the (ordinal+1)-th interactive element (button, a, input, etc.)
+            var path = FindNthInteractiveElementPath(htmlContent, ordinal);
+            var pathElements = new List<Expression>();
+            foreach (var p in path)
+                pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
+
+            IIdentifier getElementFromPathId = GetResolvedIdentifier(
+                "Sunlight__Framework__UI__Helpers__SkinBinderHelper__GetElementFromPath");
+
+            return new MethodCallExpression(
+                null,
+                _factoryScope,
+                new IdentifierExpression(getElementFromPathId, _factoryScope),
+                new IdentifierExpression(_htmlRootIdentifier, _factoryScope),
+                new InlineNewArrayInitialization(null, _factoryScope, pathElements));
+        }
+
+        /// <summary>
+        /// Finds the DOM path for the N-th interactive element (button, a, input) in the HTML.
+        /// </summary>
+        private static List<int> FindNthInteractiveElementPath(string html, int n)
+        {
+            var indexStack = new List<int>();
+            var childCountStack = new List<int> { 0 };
+            int interactiveCount = 0;
+            bool hasText = false;
+
+            int i = 0;
+            while (i < html.Length)
+            {
+                if (html[i] == '<')
+                {
+                    if (hasText) { childCountStack[childCountStack.Count - 1]++; hasText = false; }
+
+                    if (i + 1 < html.Length && html[i + 1] == '/')
+                    {
+                        var closeEnd = html.IndexOf('>', i);
+                        if (closeEnd < 0) break;
+                        if (indexStack.Count > 0)
+                        {
+                            indexStack.RemoveAt(indexStack.Count - 1);
+                            childCountStack.RemoveAt(childCountStack.Count - 1);
+                        }
+                        i = closeEnd + 1;
+                        hasText = false;
+                        continue;
+                    }
+
+                    var tagEnd = html.IndexOf('>', i);
+                    if (tagEnd < 0) break;
+                    var tagContent = html.Substring(i + 1, tagEnd - i - 1);
+                    bool selfClosing = tagContent.EndsWith("/");
+                    int myIndex = childCountStack[childCountStack.Count - 1];
+                    childCountStack[childCountStack.Count - 1]++;
+
+                    var tagName = tagContent.Split(new[] { ' ', '/' }, System.StringSplitOptions.RemoveEmptyEntries)
+                        .FirstOrDefault()?.ToLower() ?? "";
+
+                    if (tagName == "button" || tagName == "a" || tagName == "input")
+                    {
+                        if (interactiveCount == n)
+                        {
+                            return new List<int>(indexStack) { myIndex };
+                        }
+                        interactiveCount++;
+                    }
+
+                    if (!selfClosing)
+                    {
+                        indexStack.Add(myIndex);
+                        childCountStack.Add(0);
+                    }
+                    i = tagEnd + 1;
+                    hasText = false;
+                }
+                else
+                {
+                    hasText = true;
+                    i++;
+                }
+            }
+
+            // Fallback
+            return new List<int> { 0 };
+        }
+
     }
 
     /// <summary>
