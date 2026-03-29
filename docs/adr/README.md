@@ -73,3 +73,4 @@ Avoid ADRs for routine refactors or localized implementation details that do not
 | [0021](0021-require-resolved-identifiers-for-all-generated-javascript-symbols.md) | Require Resolved Identifiers for All Generated JavaScript Symbols | Accepted |
 | [0022](0022-demand-driven-conversion-and-dead-code-elimination.md) | Demand-Driven Conversion and Dead Code Elimination | Accepted |
 | [0023](0023-devirtualize-non-virtual-methods-and-inline-trivial-accessors.md) | Devirtualize Non-Virtual Methods and Inline Trivial Accessors | Accepted |
+| [0024](0024-deduplicate-structurally-identical-functions-after-minification.md) | Deduplicate Structurally Identical Functions After Minification | Accepted |
