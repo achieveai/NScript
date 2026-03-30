@@ -685,6 +685,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     // Find all <span> elements inside the clone — these are the binding markers.
                     NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
 
+                    // Resolve event target elements from data-evt-idx markers in the item HTML.
+                    GraphEngine.ResolveEventElements(clone, childElemRefs);
+
                     GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, state.Depth + 1);
                     childState.Sources[GraphSourceSlot.DataContext] = item;
                     GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
@@ -858,6 +861,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     if (!object.IsNullOrUndefined(colInfo.ItemGraph))
                     {
                         NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
+                        GraphEngine.ResolveEventElements(clone, childElemRefs);
 
                         GraphState childState = new GraphState(
                             colInfo.ItemGraph, childElemRefs, state.Depth + 1);
@@ -986,6 +990,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                 if (!object.IsNullOrUndefined(colInfo.ItemGraph))
                                 {
                                     NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
+                                    GraphEngine.ResolveEventElements(clone, childElemRefs);
 
                                     GraphState childState = new GraphState(
                                         colInfo.ItemGraph, childElemRefs, state.Depth + 1);
@@ -1162,6 +1167,33 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 result[0] = clone;
             }
             return result;
+        }
+
+        /// <summary>
+        /// Replaces event marker spans (with data-ns-evt attribute) in elemRefs
+        /// with their parent element. Event marker spans are inserted by the compiler
+        /// into item template HTML to occupy the correct ElemIdx positions.
+        /// The actual event target is the parent of the marker span.
+        /// </summary>
+        public static void ResolveEventElements(Element clone, NativeArray elemRefs)
+        {
+            NativeArray<Element> evtSpans = clone.QuerySelectorAll("[data-ns-evt]");
+            if (object.IsNullOrUndefined(evtSpans) || evtSpans.Length == 0)
+                return;
+
+            for (int i = 0; i < evtSpans.Length; i++)
+            {
+                Element span = evtSpans[i];
+                // Find this span in elemRefs and replace with its parent element
+                for (int j = 0; j < elemRefs.Length; j++)
+                {
+                    if ((object)elemRefs[j] == (object)span)
+                    {
+                        elemRefs[j] = (Element)span.ParentNode;
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>

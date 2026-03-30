@@ -8,6 +8,7 @@ using NScript.Converter;
 using NScript.Converter.TypeSystemConverter;
 using NScript.JST;
 using NScript.RazorSkin.CodeGen;
+using NScript.RazorSkin.TemplateIR;
 using Serilog;
 
 namespace NScript.RazorSkin
@@ -901,13 +902,180 @@ namespace Sunlight.Framework.Observables
                 TryResolveDocStorageGetter();
             }
 
-            return new List<MethodReference>();
+            // Collect all event handler methods from Razor templates so the tree-shaker
+            // includes them. Template-bound methods are only referenced from JST graph
+            // descriptors (emitted in GetPostJavascript), which runs AFTER tree-shaking.
+            // By registering them here, the methods are marked as used during the
+            // main conversion loop where WalkUsedDependencies() processes the queue.
+            var methods = new List<MethodReference>();
+            if (_hasRazorTemplates && _clrContext != null)
+            {
+                var visited = new HashSet<SkinTemplateNode>();
+                foreach (var kvp in _compiledIRs)
+                {
+                    var ir = kvp.Value;
+                    if (visited.Contains(ir)) continue; // Skip duplicates (short name + resource name)
+                    visited.Add(ir);
+                    Log.Debug("GetMethodsToEmitPassN: scanning template {Name}, modelType={ModelType}, children={Count}",
+                        kvp.Key, ir.ModelTypeName ?? "(null)", ir.Children?.Count ?? 0);
+                    CollectEventMethodReferences(ir.Children, ir.ModelTypeName, null, methods);
+                }
+                Log.Debug("GetMethodsToEmitPassN: found {Count} event method references", methods.Count);
+            }
+            return methods;
         }
 
         /// <summary>
+        /// Recursively walks IR nodes to find EventNode objects and resolve their handler
+        /// methods to MethodReference objects for the tree-shaker.
+        /// </summary>
+        private void CollectEventMethodReferences(
+            List<IRNode> nodes, string modelTypeName, string itemVarPrefix,
+            List<MethodReference> methods)
+        {
+            if (nodes == null) return;
+            foreach (var node in nodes)
+            {
+                if (node is EventNode evt && !string.IsNullOrEmpty(evt.HandlerExpression))
+                {
+                    var methodRef = ResolveEventMethodReference(
+                        evt.HandlerExpression, modelTypeName, itemVarPrefix);
+                    if (methodRef != null)
+                        methods.Add(methodRef);
+                }
+                else if (node is LoopNode loop)
+                {
+                    var itemTypeName = ResolveCollectionItemType(loop.CollectionExpression, modelTypeName);
+                    var ivp = loop.ItemVariableName + ".";
+                    CollectEventMethodReferences(loop.ItemTemplate, itemTypeName ?? modelTypeName, ivp, methods);
+                }
+                else if (node is ConditionalNode cond)
+                {
+                    CollectEventMethodReferences(cond.TrueBranch, modelTypeName, itemVarPrefix, methods);
+                    CollectEventMethodReferences(cond.FalseBranch, modelTypeName, itemVarPrefix, methods);
+                }
+
+                // Recurse into generic children
+                if (node.Children != null && node.Children.Count > 0)
+                    CollectEventMethodReferences(node.Children, modelTypeName, itemVarPrefix, methods);
+            }
+        }
+
+        /// <summary>
+        /// Resolves an event handler expression (e.g., "folder.OnSelect" or "Model.SelectedTodo.OnTitleChange")
+        /// to a MethodReference by walking the property chain to find the declaring type.
+        /// </summary>
+        private MethodReference ResolveEventMethodReference(
+            string handlerExpression, string modelTypeName, string itemVarPrefix)
+        {
+            if (string.IsNullOrEmpty(modelTypeName)) return null;
+
+            var expr = handlerExpression;
+            if (expr.StartsWith("Model."))
+                expr = expr.Substring(6);
+            if (!string.IsNullOrEmpty(itemVarPrefix) && expr.StartsWith(itemVarPrefix))
+                expr = expr.Substring(itemVarPrefix.Length);
+
+            // Skip lambdas and complex expressions
+            if (expr.IndexOfAny(new[] { '(', ')', '=', '>' }) >= 0)
+                return null;
+
+            // Handle chained paths like "SelectedTodo.OnTitleChange" by walking properties
+            var currentTypeName = modelTypeName;
+            var parts = expr.Split('.');
+            for (int i = 0; i < parts.Length - 1; i++)
+            {
+                var propName = parts[i];
+                var typeDef = FindTypeDefinitionByName(currentTypeName);
+                if (typeDef == null) return null;
+
+                string nextTypeName = null;
+                foreach (var prop in typeDef.Properties)
+                {
+                    if (prop.Name == propName)
+                    {
+                        nextTypeName = prop.PropertyType.FullName;
+                        break;
+                    }
+                }
+                if (nextTypeName == null) return null;
+                currentTypeName = nextTypeName;
+            }
+
+            var methodName = parts[parts.Length - 1];
+            var targetType = FindTypeDefinitionByName(currentTypeName);
+            if (targetType == null) return null;
+
+            foreach (var method in targetType.Methods)
+            {
+                if (method.Name == methodName && method.IsPublic && !method.IsConstructor)
+                    return method;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves the item type of a collection expression (e.g., "Model.Folders" → "FolderViewModel").
+        /// </summary>
+        private string ResolveCollectionItemType(string collectionExpression, string modelTypeName)
+        {
+            if (string.IsNullOrEmpty(collectionExpression) || string.IsNullOrEmpty(modelTypeName))
+                return null;
+
+            var propName = collectionExpression;
+            if (propName.StartsWith("Model."))
+                propName = propName.Substring(6);
+            if (propName.Contains("."))
+                return null;
+
+            var modelType = FindTypeDefinitionByName(modelTypeName);
+            if (modelType == null) return null;
+
+            foreach (var prop in modelType.Properties)
+            {
+                if (prop.Name == propName)
+                {
+                    var returnType = prop.PropertyType as Mono.Cecil.GenericInstanceType;
+                    if (returnType != null && returnType.GenericArguments.Count > 0)
+                        return returnType.GenericArguments[0].FullName;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Finds a TypeDefinition by full name across all loaded modules.
+        /// </summary>
+        private Mono.Cecil.TypeDefinition FindTypeDefinitionByName(string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName)) return null;
+            foreach (var module in _clrContext.Modules)
+            {
+                foreach (var type in module.Types)
+                {
+                    if (type.FullName == fullName) return type;
+                    foreach (var nested in type.NestedTypes)
+                    {
+                        if (nested.FullName == fullName) return nested;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Flag set when the Razor plugin had to create its own DocStorageGetter
+        /// identifier because XWML did not provide one.  When true,
+        /// <see cref="GetPostJavascript"/> must also emit the function body.
+        /// </summary>
+        private bool _needsDocStorageGetterEmission;
+
+        /// <summary>
         /// Searches the runtime scope for the DocStorageGetter identifier created by
-        /// the XWML CodeGenerator. This must be called after XWML's GetMethodsToEmitPassN
-        /// has run so the identifier exists in the scope.
+        /// the XWML CodeGenerator. If not found (e.g. XWML plugin has no templates
+        /// or is absent), creates the identifier in scope so the Razor factory
+        /// emits a resolved (minification-safe) call, and sets a flag so that
+        /// <see cref="GetPostJavascript"/> emits the function body.
         /// </summary>
         private void TryResolveDocStorageGetter()
         {
@@ -922,7 +1090,11 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
-            Log.Debug("DocStorageGetter identifier not found in scope — XWML plugin may not be active");
+            // Not found — create it ourselves so the emitted call is minification-safe.
+            var newId = SimpleIdentifier.CreateScopeIdentifier(scope, "DocStorageGetter", false);
+            _resolvedIdentifiers["DocStorageGetter"] = newId;
+            _needsDocStorageGetterEmission = true;
+            Log.Debug("Created DocStorageGetter identifier (XWML not active); will emit function body");
         }
 
         public List<Statement> GetPreJavascript()
@@ -934,6 +1106,14 @@ namespace Sunlight.Framework.Observables
         {
             if (!_hasRazorTemplates)
                 return new List<Statement>();
+
+            // Re-attempt DocStorageGetter resolution here because XWML's GetPostJavascript()
+            // creates the identifier lazily during template emission.  GetMethodsToEmitPassN()
+            // runs before GetPostJavascript(), so the first attempt may have been too early.
+            if (!_resolvedIdentifiers.ContainsKey("DocStorageGetter"))
+            {
+                TryResolveDocStorageGetter();
+            }
 
             var statements = new List<Statement>();
 
@@ -985,10 +1165,101 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
+            // If Razor created its own DocStorageGetter identifier (no XWML), emit the function body.
+            if (_needsDocStorageGetterEmission)
+            {
+                var docStorageGetterStatements = EmitDocStorageGetterFunction();
+                if (docStorageGetterStatements != null)
+                    statements.AddRange(docStorageGetterStatements);
+            }
+
             Log.Debug("GetPostJavascript emitting {StatementCount} statements for {TemplateCount} templates",
                 statements.Count, emittedTemplates.Count);
 
             return statements;
+        }
+
+        /// <summary>
+        /// Emits the DocStorageGetter function when the XWML plugin is not present.
+        /// The function initialises a stateStore array on the document object and returns it.
+        /// This mirrors the function generated by XWML's CodeGenerator.GenerateDocumentInitializerMethod().
+        /// </summary>
+        private List<Statement> EmitDocStorageGetterFunction()
+        {
+            try
+            {
+                var scope = _runtimeScopeManager.Scope;
+                IIdentifier docStorageGetterId = _resolvedIdentifiers["DocStorageGetter"];
+
+                // Look up the Document type so we can create the stateStore field identifier on it.
+                var documentTypeDef = _clrContext.GetTypeDefinition(
+                    Tuple.Create("System.Web.Html", "System.Web.Html.Document"));
+
+                if (documentTypeDef == null)
+                {
+                    Log.Warning("Could not find Document type for DocStorageGetter emission");
+                    return null;
+                }
+
+                // Get or create the 'stateStore' extension field on Document's type scope.
+                IIdentifier stateStoreId = _runtimeScopeManager.GetTypeScope(documentTypeDef)
+                    .GetIdentifier("stateStore", true, false);
+
+                // Build: function DocStorageGetter(doc) { if (!doc.stateStore) { doc.stateStore = []; } return doc.stateStore; }
+                var methodScope = new IdentifierScope(
+                    scope,
+                    new string[] { "doc" },
+                    false);
+
+                IIdentifier docParam = methodScope.ParameterIdentifiers[0];
+
+                // doc.stateStore = []
+                var initStmts = new List<Statement>();
+                initStmts.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
+                        IdentifierExpression.Create(
+                            null, methodScope,
+                            new IIdentifier[] { docParam, stateStoreId }),
+                        new NewArrayExpression(null, methodScope, null)));
+
+                // if (!doc.stateStore) { doc.stateStore = []; }
+                var ifStmt = new IfBlockStatement(
+                    null, methodScope,
+                    new UnaryExpression(
+                        null, methodScope,
+                        UnaryOperator.LogicalNot,
+                        IdentifierExpression.Create(
+                            null, methodScope,
+                            new IIdentifier[] { docParam, stateStoreId })),
+                    new ScopeBlock(null, methodScope, initStmts),
+                    null);
+
+                // function DocStorageGetter(doc) { ... }
+                var funcExpr = new FunctionExpression(
+                    null, scope, methodScope,
+                    methodScope.ParameterIdentifiers,
+                    docStorageGetterId);
+
+                funcExpr.AddStatement(ifStmt);
+
+                // return doc.stateStore;
+                funcExpr.AddStatement(
+                    new ReturnStatement(
+                        null, methodScope,
+                        IdentifierExpression.Create(
+                            null, methodScope,
+                            new IIdentifier[] { docParam, stateStoreId })));
+
+                return new List<Statement>
+                {
+                    new ExpressionStatement(null, scope, funcExpr)
+                };
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error(ex, "Failed to emit DocStorageGetter function");
+                return null;
+            }
         }
     }
 }

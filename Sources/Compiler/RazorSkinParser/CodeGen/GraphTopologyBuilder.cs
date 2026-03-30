@@ -260,13 +260,50 @@ namespace NScript.RazorSkin.CodeGen
 
             if (deps.Count == 1)
             {
-                conditionSourceIdx = ctx.GetOrCreatePropertyNode(deps[0].PropertyName, 0);
-                // Gate the condition property node when nested inside another gate's branch.
-                if (gateIndex != -1) ctx.SetGateIndex(conditionSourceIdx, gateIndex);
-                if (cond.Condition.Mode == BindingMode.OneWay)
+                var condExpr = cond.Condition.CSharpExpression ?? "";
+                var propName = deps[0].PropertyName;
+
+                // Classify the condition expression to determine how to feed the gate:
+                // - "!Model.X" → negated property (gate checks !field)
+                // - "Model.X != null" → direct property (gate checks truthiness = non-null)
+                // - "Model.X == null" → negated property (gate checks !truthiness = null)
+                // - "!Model.X" prefix with "!= null" → complex, but simplify where possible
+                bool isNegated = condExpr.TrimStart().StartsWith("!");
+                bool isNotNull = condExpr.Contains("!= null") || condExpr.Contains("!=null");
+                bool isNull = !isNotNull && (condExpr.Contains("== null") || condExpr.Contains("==null"));
+
+                // "X != null" is equivalent to truthiness check on X — no special handling needed
+                // "X == null" is equivalent to !X (negated truthiness)
+                if (isNull)
+                    isNegated = true;
+
+                if (isNegated && !isNotNull)
                 {
-                    ctx.AddSubscription(deps[0].PropertyName, conditionSourceIdx,
-                        deps[0].SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
+                    // Simple negation — create a dedicated Property node with negated getter.
+                    // Use "!" prefix convention: the emitter will build "return !dc.field;"
+                    int propIdx = ctx.GetOrCreatePropertyNode(propName, 0);
+                    if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+                    if (cond.Condition.Mode == BindingMode.OneWay)
+                    {
+                        ctx.AddSubscription(propName, propIdx,
+                            deps[0].SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
+                    }
+
+                    // Create a new non-shared Property node with "!" + propName as getter
+                    conditionSourceIdx = ctx.AddNode(GraphNodeTypeConstants.Property,
+                        "!" + propName, null);
+                    if (gateIndex != -1) ctx.SetGateIndex(conditionSourceIdx, gateIndex);
+                    ctx.AddEdge(propIdx, conditionSourceIdx);
+                }
+                else
+                {
+                    conditionSourceIdx = ctx.GetOrCreatePropertyNode(propName, 0);
+                    if (gateIndex != -1) ctx.SetGateIndex(conditionSourceIdx, gateIndex);
+                    if (cond.Condition.Mode == BindingMode.OneWay)
+                    {
+                        ctx.AddSubscription(propName, conditionSourceIdx,
+                            deps[0].SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
+                    }
                 }
             }
             else

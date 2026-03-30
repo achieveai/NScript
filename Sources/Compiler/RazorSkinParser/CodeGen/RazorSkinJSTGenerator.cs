@@ -139,8 +139,9 @@ namespace NScript.RazorSkin.CodeGen
             var bindings = RazorSkinCodeGenerator.CollectBindingsPublic(_ir.Children);
             var events = RazorSkinCodeGenerator.CollectEventsPublic(_ir.Children);
             var elementPaths = new List<List<int>>();
+            var eventPaths = new List<List<int>>();
             var htmlContent = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(
-                _ir.Children, events, elementPaths);
+                _ir.Children, events, elementPaths, eventPaths);
             // Build graph topology from IR
             var topology = GraphTopologyBuilder.Build(_ir);
             _topology = topology;
@@ -170,7 +171,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // 2. Factory function
             var factoryStatements = BuildFactoryBody(
-                bindings, events, htmlContent, elementPaths, knownFunctionNames, topology);
+                bindings, events, htmlContent, elementPaths, eventPaths, knownFunctionNames, topology);
 
             var factoryFunction = new FunctionExpression(
                 null,
@@ -210,6 +211,7 @@ namespace NScript.RazorSkin.CodeGen
             List<EventNode> events,
             string htmlContent,
             List<List<int>> elementPaths,
+            List<List<int>> eventPaths,
             HashSet<string> knownFunctionNames,
             GraphTopology topology)
         {
@@ -433,10 +435,16 @@ namespace NScript.RazorSkin.CodeGen
                             BuildCollectionMarkerPath(htmlContent, coll))));
             }
 
-            // Assign element references for events.
-            foreach (var evt in topology.Events)
+            // Assign element references for events using pre-computed DOM paths.
+            for (int evtOrd = 0; evtOrd < topology.Events.Count; evtOrd++)
             {
+                var evt = topology.Events[evtOrd];
                 if (gatedElemIndices.Contains(evt.ElemIdx)) continue;
+
+                var path = evtOrd < eventPaths.Count ? eventPaths[evtOrd] : new List<int> { 0 };
+                var pathElements = new List<Expression>();
+                foreach (var p in path)
+                    pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
 
                 stmts.Add(
                     ExpressionStatement.CreateAssignmentExpression(
@@ -445,7 +453,12 @@ namespace NScript.RazorSkin.CodeGen
                             _factoryScope,
                             new IdentifierExpression(_objStorageIdentifier, _factoryScope),
                             new NumberLiteralExpression(_factoryScope, evt.ElemIdx)),
-                        BuildEventElementRef(htmlContent, evt)));
+                        new MethodCallExpression(
+                            null,
+                            _factoryScope,
+                            new IdentifierExpression(getElementFromPathId, _factoryScope),
+                            new IdentifierExpression(_htmlRootIdentifier, _factoryScope),
+                            new InlineNewArrayInitialization(null, _factoryScope, pathElements))));
             }
 
             // Part ID mapping — not yet implemented for Razor templates (always null).

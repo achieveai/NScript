@@ -54,11 +54,82 @@ namespace NScript.RazorSkin.CodeGen
             => CollectEvents(nodes);
 
         public static string CollectHtmlWithPathsPublic(
-            List<IRNode> nodes, List<EventNode> eventTracker, List<List<int>> outPaths)
-            => CollectHtmlWithPaths(nodes, eventTracker, outPaths);
+            List<IRNode> nodes, List<EventNode> eventTracker, List<List<int>> outPaths,
+            List<List<int>> outEventPaths = null)
+            => CollectHtmlWithPaths(nodes, eventTracker, outPaths, outEventPaths);
 
         public static string CollectHtmlPublic(List<IRNode> nodes)
             => CollectHtml(nodes);
+
+        /// <summary>
+        /// Collects HTML for item templates, inserting <span data-ns-evt></span> marker spans
+        /// for event target elements. These marker spans are found by CollectSpanElements at
+        /// runtime and occupy the correct ElemIdx positions. The runtime uses parentElement
+        /// on marker spans to find the actual event target element.
+        /// </summary>
+        public static string CollectItemTemplateHtmlPublic(List<IRNode> nodes)
+        {
+            var sb = new StringBuilder();
+            int pendingEvtMarkers = 0;
+            CollectItemTemplateHtmlRecursive(nodes, sb, ref pendingEvtMarkers);
+            // Strip any binding markers from the HTML
+            return System.Text.RegularExpressions.Regex.Replace(sb.ToString(), @" data-(bind|evt)-idx=""\d+""", "");
+        }
+
+        private static void CollectItemTemplateHtmlRecursive(
+            List<IRNode> nodes, StringBuilder sb, ref int pendingEvtMarkers)
+        {
+            foreach (var node in nodes)
+            {
+                if (node is HtmlNode html)
+                {
+                    var content = html.HtmlContent;
+                    // If there are pending event markers, insert them after the first >
+                    if (pendingEvtMarkers > 0)
+                    {
+                        int gtIdx = content.IndexOf('>');
+                        if (gtIdx >= 0)
+                        {
+                            sb.Append(content.Substring(0, gtIdx + 1));
+                            for (int m = 0; m < pendingEvtMarkers; m++)
+                                sb.Append("<span data-ns-evt></span>");
+                            sb.Append(content.Substring(gtIdx + 1));
+                            pendingEvtMarkers = 0;
+                            continue;
+                        }
+                    }
+                    sb.Append(content);
+                }
+                else if (node is ExpressionBindingNode exprBinding)
+                {
+                    if (exprBinding.Target == ExpressionTarget.TextContent)
+                        sb.Append("<span></span>");
+                    // Attribute bindings don't produce HTML in item templates
+                }
+                else if (node is EventNode)
+                {
+                    // Mark that we need to insert a marker span inside the event target element.
+                    // The span will be inserted after the next closing > of the current tag.
+                    pendingEvtMarkers++;
+                }
+                else if (node is ConditionalNode)
+                {
+                    sb.Append("<span></span>");
+                }
+                else if (node is LoopNode)
+                {
+                    sb.Append("<span></span>");
+                }
+                else if (node is SubControlNode)
+                {
+                    sb.Append("<span></span>");
+                }
+                else
+                {
+                    CollectItemTemplateHtmlRecursive(node.Children, sb, ref pendingEvtMarkers);
+                }
+            }
+        }
 
         /// <summary>
         /// Builds the innerHTML string AND computes DOM paths for each binding placeholder.
@@ -66,23 +137,25 @@ namespace NScript.RazorSkin.CodeGen
         /// final HTML to compute the actual DOM path for each marker.
         /// </summary>
         private static string CollectHtmlWithPaths(
-            List<IRNode> nodes, List<EventNode> eventTracker, List<List<int>> outPaths)
+            List<IRNode> nodes, List<EventNode> eventTracker, List<List<int>> outPaths,
+            List<List<int>> outEventPaths = null)
         {
             // Phase 1: Build HTML with marker attributes on binding placeholders
             int bindingIdx = 0;
-            var rawHtml = CollectHtmlWithMarkers(nodes, eventTracker, ref bindingIdx);
+            int eventIdx = 0;
+            var rawHtml = CollectHtmlWithMarkers(nodes, eventTracker, ref bindingIdx, ref eventIdx);
 
             // Phase 2: Parse the HTML to find each marker's DOM path
-            ComputePathsFromHtml(rawHtml, bindingIdx, outPaths);
+            ComputePathsFromHtml(rawHtml, bindingIdx, outPaths, eventIdx, outEventPaths);
 
-            // Phase 3: Strip the marker attributes from the final HTML
+            // Phase 3: Strip ALL marker attributes from the final HTML
             var cleanHtml = System.Text.RegularExpressions.Regex.Replace(
-                rawHtml, @" data-bind-idx=""\d+""", "");
+                rawHtml, @" data-(bind|evt)-idx=""\d+""", "");
             return cleanHtml;
         }
 
         private static string CollectHtmlWithMarkers(
-            List<IRNode> nodes, List<EventNode> eventTracker, ref int bindingIdx)
+            List<IRNode> nodes, List<EventNode> eventTracker, ref int bindingIdx, ref int eventIdx)
         {
             var sb = new StringBuilder();
             foreach (var node in nodes)
@@ -106,9 +179,13 @@ namespace NScript.RazorSkin.CodeGen
                     }
                     bindingIdx++;
                 }
-                else if (node is EventNode)
+                else if (node is EventNode evt)
                 {
-                    // Events are wired via objStorage element indices, not HTML markers.
+                    // Mark the event's target element for DOM path computation.
+                    // The EventNode follows an unclosed opening tag in the preceding HTML —
+                    // this attribute will be on that element. Path is computed in ComputePathsFromHtml.
+                    sb.Append($" data-evt-idx=\"{eventIdx}\"");
+                    eventIdx++;
                 }
                 else if (node is ConditionalNode cond)
                 {
@@ -132,7 +209,7 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else
                 {
-                    sb.Append(CollectHtmlWithMarkers(node.Children, eventTracker, ref bindingIdx));
+                    sb.Append(CollectHtmlWithMarkers(node.Children, eventTracker, ref bindingIdx, ref eventIdx));
                 }
             }
             return sb.ToString();
@@ -144,18 +221,21 @@ namespace NScript.RazorSkin.CodeGen
         private static string CollectHtml(List<IRNode> nodes)
         {
             int unused = 0;
-            var html = CollectHtmlWithMarkers(nodes, new List<EventNode>(), ref unused);
-            // Strip any binding markers from the HTML
-            return System.Text.RegularExpressions.Regex.Replace(html, @" data-bind-idx=""\d+""", "");
+            int unusedEvt = 0;
+            var html = CollectHtmlWithMarkers(nodes, new List<EventNode>(), ref unused, ref unusedEvt);
+            // Strip any binding and event markers from the HTML
+            return System.Text.RegularExpressions.Regex.Replace(html, @" data-(bind|evt)-idx=""\d+""", "");
         }
 
         /// <summary>
         /// Parses HTML to find data-bind-idx markers and compute their DOM tree path.
         /// Tracks open/close tags to maintain a nesting stack with child counts.
         /// </summary>
-        private static void ComputePathsFromHtml(string html, int bindingCount, List<List<int>> outPaths)
+        private static void ComputePathsFromHtml(string html, int bindingCount, List<List<int>> outPaths,
+            int eventCount = 0, List<List<int>> outEventPaths = null)
         {
             var pathMap = new Dictionary<int, List<int>>();
+            var eventPathMap = new Dictionary<int, List<int>>();
 
             // Track nesting: stack of (myIndex, childCount) pairs.
             // myIndex = the 0-based index of this element within its parent
@@ -217,6 +297,19 @@ namespace NScript.RazorSkin.CodeGen
                         pathMap[idx] = path;
                     }
 
+                    // Check for data-evt-idx markers (event target elements)
+                    if (outEventPaths != null)
+                    {
+                        var evtMarkerMatches = System.Text.RegularExpressions.Regex.Matches(
+                            tagContent, @"data-evt-idx=""(\d+)""");
+                        foreach (System.Text.RegularExpressions.Match evtMatch in evtMarkerMatches)
+                        {
+                            var idx = int.Parse(evtMatch.Groups[1].Value);
+                            var path = new List<int>(indexStack) { myIndex };
+                            eventPathMap[idx] = path;
+                        }
+                    }
+
                     // Increment parent's child count (this is an element node)
                     childCountStack[childCountStack.Count - 1]++;
 
@@ -239,13 +332,25 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
 
-            // Build ordered path list
+            // Build ordered path list for bindings
             for (int idx = 0; idx < bindingCount; idx++)
             {
                 if (pathMap.TryGetValue(idx, out var path))
                     outPaths.Add(path);
                 else
                     outPaths.Add(new List<int> { idx }); // fallback
+            }
+
+            // Build ordered path list for events
+            if (outEventPaths != null)
+            {
+                for (int idx = 0; idx < eventCount; idx++)
+                {
+                    if (eventPathMap.TryGetValue(idx, out var path))
+                        outEventPaths.Add(path);
+                    else
+                        outEventPaths.Add(new List<int> { 0 }); // fallback to root
+                }
             }
         }
 

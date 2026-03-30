@@ -405,6 +405,7 @@ namespace NScript.RazorSkin.TemplateIR
 
             int i = startIndex + 1;
             bool inElseBranch = false;
+            string lastHtmlContent = null;
 
             // Collect content nodes until we hit the closing brace
             while (i < nodes.Count)
@@ -460,13 +461,110 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     var content = GetTokenContent(htmlNode);
                     if (!string.IsNullOrWhiteSpace(content))
+                    {
                         targetBranch.Add(new HtmlNode { HtmlContent = content.Trim() });
+                        lastHtmlContent = content;
+                    }
                 }
                 else if (node is CSharpExpressionIntermediateNode exprNode)
                 {
                     var expr = GetTokenContent(exprNode);
                     if (!string.IsNullOrWhiteSpace(expr))
-                        targetBranch.Add(CreateExpressionBinding(expr));
+                    {
+                        // Check if expression is inside an event attribute context
+                        var eventAttr = DetectEventAttributeContext(lastHtmlContent);
+                        if (eventAttr != null)
+                        {
+                            targetBranch.Add(CreateEventNode(eventAttr, expr.Trim()));
+                            if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                            {
+                                var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                closingHtml = closingHtml.TrimStart('"', ' ');
+                                if (!string.IsNullOrWhiteSpace(closingHtml))
+                                {
+                                    targetBranch.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                    lastHtmlContent = closingHtml;
+                                }
+                                i += 2;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // Check attribute binding context
+                            var attrCtx = DetectAttributeBindingContext(lastHtmlContent);
+                            if (attrCtx != null)
+                            {
+                                var (attrName, prefix) = attrCtx.Value;
+                                var target = ClassifyAttributeTarget(attrName);
+                                var binding = CreateExpressionBinding(expr);
+                                binding.Target = target;
+                                binding.AttributeName = attrName;
+                                binding.AttributePrefix = prefix;
+
+                                var lastChild = targetBranch.Count > 0
+                                    ? targetBranch[targetBranch.Count - 1] as HtmlNode : null;
+                                if (lastChild != null)
+                                {
+                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                        StringComparison.OrdinalIgnoreCase);
+                                    if (idx >= 0)
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                }
+                                targetBranch.Add(binding);
+
+                                if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                                {
+                                    var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                    closingHtml = closingHtml.TrimStart('"', ' ');
+                                    if (!string.IsNullOrWhiteSpace(closingHtml))
+                                    {
+                                        targetBranch.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                        lastHtmlContent = closingHtml;
+                                    }
+                                    i += 2;
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                targetBranch.Add(CreateExpressionBinding(expr));
+                            }
+                        }
+                    }
+                }
+                else if (node is HtmlAttributeIntermediateNode attrNode)
+                {
+                    var attrName = attrNode.AttributeName;
+                    var exprValue = ExtractCSharpExpressionFromAttribute(attrNode);
+                    var attrPrefix = ExtractAttributePrefix(attrNode);
+
+                    if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
+                    {
+                        if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetBranch.Add(CreateEventNode(attrName, exprValue.Trim()));
+                        }
+                        else
+                        {
+                            var target = ClassifyAttributeTarget(attrName);
+                            var binding = CreateExpressionBinding(exprValue);
+                            binding.Target = target;
+                            binding.AttributeName = attrName;
+                            binding.AttributePrefix = attrPrefix ?? "";
+
+                            var lastChild = targetBranch.Count > 0
+                                ? targetBranch[targetBranch.Count - 1] as HtmlNode : null;
+                            if (lastChild != null)
+                            {
+                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                    StringComparison.OrdinalIgnoreCase);
+                                if (idx >= 0)
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                            }
+                            targetBranch.Add(binding);
+                        }
+                    }
                 }
 
                 i++;
@@ -503,6 +601,7 @@ namespace NScript.RazorSkin.TemplateIR
             };
 
             int i = startIndex + 1;
+            string lastHtmlContent = null;
 
             // Collect content nodes until we hit the closing brace
             while (i < nodes.Count)
@@ -541,13 +640,119 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     var content = GetTokenContent(htmlNode);
                     if (!string.IsNullOrWhiteSpace(content))
+                    {
                         loop.ItemTemplate.Add(new HtmlNode { HtmlContent = content.Trim() });
+                        lastHtmlContent = content;
+                    }
                 }
                 else if (node is CSharpExpressionIntermediateNode exprNode)
                 {
                     var expr = GetTokenContent(exprNode);
                     if (!string.IsNullOrWhiteSpace(expr))
-                        loop.ItemTemplate.Add(CreateExpressionBinding(expr));
+                    {
+                        // Check if expression is inside an event attribute context
+                        var eventAttr = DetectEventAttributeContext(lastHtmlContent);
+                        if (eventAttr != null)
+                        {
+                            loop.ItemTemplate.Add(CreateEventNode(eventAttr, expr.Trim()));
+                            // Skip closing quote in the next HTML node
+                            if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                            {
+                                var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                closingHtml = closingHtml.TrimStart('"', ' ');
+                                if (!string.IsNullOrWhiteSpace(closingHtml))
+                                {
+                                    loop.ItemTemplate.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                    lastHtmlContent = closingHtml;
+                                }
+                                i += 2;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // Check if expression is inside an attribute context
+                            var attrCtx = DetectAttributeBindingContext(lastHtmlContent);
+                            if (attrCtx != null)
+                            {
+                                var (attrName, prefix) = attrCtx.Value;
+                                var target = ClassifyAttributeTarget(attrName);
+                                var binding = CreateExpressionBinding(expr);
+                                binding.Target = target;
+                                binding.AttributeName = attrName;
+                                binding.AttributePrefix = prefix;
+
+                                // Trim the incomplete attribute from the last HTML node
+                                var lastChild = loop.ItemTemplate.Count > 0
+                                    ? loop.ItemTemplate[loop.ItemTemplate.Count - 1] as HtmlNode
+                                    : null;
+                                if (lastChild != null)
+                                {
+                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                        StringComparison.OrdinalIgnoreCase);
+                                    if (idx >= 0)
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                }
+
+                                loop.ItemTemplate.Add(binding);
+
+                                // Consume closing quote
+                                if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                                {
+                                    var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                    closingHtml = closingHtml.TrimStart('"', ' ');
+                                    if (!string.IsNullOrWhiteSpace(closingHtml))
+                                    {
+                                        loop.ItemTemplate.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                        lastHtmlContent = closingHtml;
+                                    }
+                                    i += 2;
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                loop.ItemTemplate.Add(CreateExpressionBinding(expr));
+                            }
+                        }
+                    }
+                }
+                else if (node is HtmlAttributeIntermediateNode attrNode)
+                {
+                    // Structured attribute bindings (e.g., onclick="@folder.OnSelect", class="@Model.X")
+                    var attrName = attrNode.AttributeName;
+                    var exprValue = ExtractCSharpExpressionFromAttribute(attrNode);
+                    var attrPrefix = ExtractAttributePrefix(attrNode);
+
+                    if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
+                    {
+                        if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+                        {
+                            loop.ItemTemplate.Add(CreateEventNode(attrName, exprValue.Trim()));
+                        }
+                        else
+                        {
+                            var target = ClassifyAttributeTarget(attrName);
+                            var binding = CreateExpressionBinding(exprValue);
+                            binding.Target = target;
+                            binding.AttributeName = attrName;
+                            binding.AttributePrefix = attrPrefix ?? "";
+
+                            // Trim incomplete attribute from preceding HTML node
+                            var lastChild = loop.ItemTemplate.Count > 0
+                                ? loop.ItemTemplate[loop.ItemTemplate.Count - 1] as HtmlNode
+                                : null;
+                            if (lastChild != null)
+                            {
+                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                    StringComparison.OrdinalIgnoreCase);
+                                if (idx >= 0)
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                            }
+
+                            loop.ItemTemplate.Add(binding);
+                        }
+                    }
                 }
 
                 i++;

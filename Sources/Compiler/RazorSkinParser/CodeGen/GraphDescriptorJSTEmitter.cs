@@ -437,6 +437,14 @@ namespace NScript.RazorSkin.CodeGen
             if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
                 return null;
 
+            // Check for negation prefix (from gate conditions like "!IsCollapsed")
+            bool isNegated = false;
+            if (propertyName.StartsWith("!"))
+            {
+                isNegated = true;
+                propertyName = propertyName.Substring(1);
+            }
+
             // Strip "Model." prefix — in Razor templates, Model IS the DataContext.
             // OneTime bindings pass the full CSharpExpression (e.g., "Model.AppVersion").
             if (propertyName.StartsWith("Model."))
@@ -501,6 +509,13 @@ namespace NScript.RazorSkin.CodeGen
                         new IdentifierExpression(paramIdentifier, getterScope),
                         new IdentifierExpression(getterMethodId, getterScope)),
                     System.Array.Empty<Expression>());
+            }
+
+            // Apply negation for gate conditions like "!IsCollapsed"
+            if (isNegated)
+            {
+                currentExpr = new UnaryExpression(
+                    null, getterScope, UnaryOperator.LogicalNot, currentExpr);
             }
 
             // Wrap in: function(dc) { return <expr>; }
@@ -1074,10 +1089,13 @@ namespace NScript.RazorSkin.CodeGen
             if (string.IsNullOrEmpty(handlerExpression))
                 return new NullLiteralExpression(_scope);
 
-            // Strip Model. prefix
+            // Strip Model. or item variable prefix (e.g., "folder.", "todo.")
             var expr = handlerExpression;
             if (expr.StartsWith("Model."))
                 expr = expr.Substring(6);
+            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix)
+                && expr.StartsWith(_topology.ItemVariablePrefix))
+                expr = expr.Substring(_topology.ItemVariablePrefix.Length);
 
             // For simple method references (no parens, no lambda)
             if (expr.IndexOfAny(new[] { '(', ')', '=', '>' }) < 0)
@@ -1085,21 +1103,25 @@ namespace NScript.RazorSkin.CodeGen
                 // Build a proper JST getter that returns a wrapper function:
                 // function(dc) { return function(e, ev) { dc.method(); }; }
                 // Using resolved identifiers so the method name matches minification.
-                var methodId = TryResolveMethodIdentifier(handlerExpression);
+                var methodId = TryResolveMethodIdentifier(expr);
                 if (methodId != null)
                 {
                     // Outer function: function(dc) { ... }
                     var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
                     var dcParam = outerScope.ParameterIdentifiers[0];
 
-                    // Inner function: function(e, ev) { dc.method(); }
+                    // Inner function: function(e, ev) { dc.method(e, ev); }
+                    // Pass (element, event) so handlers can read input values and key codes.
+                    // JS ignores extra args for methods that don't use them.
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    // dc.method()
+                    // dc.method(e, ev)
                     var dcRef = new IdentifierExpression(dcParam, innerScope);
                     var methodAccess = new IndexExpression(null, innerScope, dcRef,
                         new IdentifierExpression(methodId, innerScope));
-                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+                    var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
+                    var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
+                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess, eParam, evParam);
 
                     var innerFn = new FunctionExpression(null, outerScope, innerScope,
                         innerScope.ParameterIdentifiers, null);
@@ -1193,6 +1215,10 @@ namespace NScript.RazorSkin.CodeGen
             var methodName = handlerExpression;
             if (methodName.StartsWith("Model."))
                 methodName = methodName.Substring(6);
+            // Strip item variable prefix for foreach item templates
+            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix)
+                && methodName.StartsWith(_topology.ItemVariablePrefix))
+                methodName = methodName.Substring(_topology.ItemVariablePrefix.Length);
 
             var typeDefinition = FindTypeDefinition(_modelTypeName);
             if (typeDefinition == null)
@@ -1313,8 +1339,10 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Expression EmitCollectionTargetInfo(CollectionTopology ct)
         {
+            // Use CollectItemTemplateHtmlPublic to preserve data-evt-idx markers
+            // for runtime event element resolution in item graphs.
             var itemHtml = (ct.IrNode.ItemTemplate != null && ct.IrNode.ItemTemplate.Count > 0)
-                ? RazorSkinCodeGenerator.CollectHtmlPublic(ct.IrNode.ItemTemplate)
+                ? RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(ct.IrNode.ItemTemplate)
                 : "";
 
             Expression itemGraphExpr = null;
