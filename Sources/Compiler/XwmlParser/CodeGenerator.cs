@@ -1441,6 +1441,15 @@ namespace XwmlParser
                 }
             }
 
+            // Append CSS contributions from other plugins (e.g., Razor templates)
+            if (this.parserContext?.ConverterContext != null)
+            {
+                foreach (var contribution in this.parserContext.ConverterContext.GetCssContributions())
+                {
+                    sb.Append(contribution);
+                }
+            }
+
             return CssStyleSheet.Compiler.Prefix(
                 sb.ToString(),
                 CssStyleSheet.browserSpecification);

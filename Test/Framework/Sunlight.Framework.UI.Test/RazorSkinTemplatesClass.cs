@@ -150,5 +150,17 @@ namespace Sunlight.Framework.UI.Test
         {
             get { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorStyledTemplate.skin.cshtml")]
+        public static Skin RazorStyledTemplate
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorMultiStyled.skin.cshtml")]
+        public static Skin RazorMultiStyled
+        {
+            get { return null; }
+        }
     }
 }

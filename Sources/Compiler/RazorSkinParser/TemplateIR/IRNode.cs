@@ -20,6 +20,11 @@ namespace NScript.RazorSkin.TemplateIR
         /// property expressions (e.g., "item." for @foreach(var item in ...)).
         /// </summary>
         public string ItemVariablePrefix { get; set; }
+        /// <summary>
+        /// Ordered list of CSS stylesheet resource names referenced via @styles directives.
+        /// Used for CSS class validation and output emission.
+        /// </summary>
+        public List<string> StylesheetResourceNames { get; set; } = new List<string>();
     }
 
     /// <summary>Static HTML content (no bindings).</summary>

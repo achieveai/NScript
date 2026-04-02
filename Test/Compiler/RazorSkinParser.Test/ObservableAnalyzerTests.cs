@@ -96,5 +96,36 @@ public class TestVM
 
             ObservableAnalyzer.IsObservableCollection(prop.Type).Should().BeFalse();
         }
+
+        [TestMethod]
+        public void GetterOnlyPropertyOnObservableObject_ReturnsTrue()
+        {
+            var source = @"
+using Sunlight.Framework.Observables;
+public class AddressVM : ObservableObject
+{
+    public string FullAddress => ""test"";
+}";
+            var compilation = CreateCompilationWithTypes(source);
+            var type = compilation.GetTypeByMetadataName("AddressVM");
+            var prop = type.GetMembers("FullAddress")[0] as IPropertySymbol;
+
+            ObservableAnalyzer.IsObservableProperty(prop).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void GetterOnlyPropertyOnPlainClass_ReturnsFalse()
+        {
+            var source = @"
+public class PlainHelper
+{
+    public string Label => ""static"";
+}";
+            var compilation = CreateCompilationWithTypes(source);
+            var type = compilation.GetTypeByMetadataName("PlainHelper");
+            var prop = type.GetMembers("Label")[0] as IPropertySymbol;
+
+            ObservableAnalyzer.IsObservableProperty(prop).Should().BeFalse();
+        }
     }
 }

@@ -687,6 +687,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                     // Resolve event target elements from data-evt-idx markers in the item HTML.
                     GraphEngine.ResolveEventElements(clone, childElemRefs);
+                    GraphEngine.ResolveBindElements(clone, childElemRefs);
 
                     GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, state.Depth + 1);
                     childState.Sources[GraphSourceSlot.DataContext] = item;
@@ -862,6 +863,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     {
                         NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
                         GraphEngine.ResolveEventElements(clone, childElemRefs);
+                    GraphEngine.ResolveBindElements(clone, childElemRefs);
 
                         GraphState childState = new GraphState(
                             colInfo.ItemGraph, childElemRefs, state.Depth + 1);
@@ -991,6 +993,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                 {
                                     NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
                                     GraphEngine.ResolveEventElements(clone, childElemRefs);
+                    GraphEngine.ResolveBindElements(clone, childElemRefs);
 
                                     GraphState childState = new GraphState(
                                         colInfo.ItemGraph, childElemRefs, state.Depth + 1);
@@ -1149,20 +1152,24 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
-        /// Collects span elements from an item clone for use as element refs in child graph states.
-        /// Returns a NativeArray with each span as an entry. If no spans found, returns
-        /// a single-element array containing the clone itself.
+        /// Collects marker span elements from an item clone for use as element refs
+        /// in child graph states. Only collects spans with data-ns-ph, data-ns-evt,
+        /// or data-ns-bind attributes — these are the compiler-inserted placeholders
+        /// that correspond to elemIdx values in the descriptor. Container spans
+        /// (e.g., span.item-name) are NOT included since the compiler does not
+        /// count them when computing elemIdx.
         /// </summary>
         public static NativeArray CollectSpanElements(Element clone)
         {
-            NativeArray<Element> spans = clone.GetElementsByTagName("span");
-            int spanCount = spans.Length;
-            NativeArray result = new NativeArray(spanCount > 0 ? spanCount : 1);
-            for (int i = 0; i < spanCount; i++)
+            NativeArray<Element> markers = clone.QuerySelectorAll(
+                "[data-ns-ph], [data-ns-evt], [data-ns-bind]");
+            int markerCount = !object.IsNullOrUndefined(markers) ? markers.Length : 0;
+            NativeArray result = new NativeArray(markerCount > 0 ? markerCount : 1);
+            for (int i = 0; i < markerCount; i++)
             {
-                result[i] = spans[i];
+                result[i] = markers[i];
             }
-            if (spanCount == 0)
+            if (markerCount == 0)
             {
                 result[0] = clone;
             }
@@ -1196,6 +1203,31 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
         }
 
+        /// <summary>
+        /// Replaces bind marker spans (with data-ns-bind attribute) in elemRefs
+        /// with their parent element. Bind marker spans are inserted by the compiler
+        /// into item template HTML for class/style/attribute bindings that target
+        /// the parent element rather than creating text content.
+        /// </summary>
+        public static void ResolveBindElements(Element clone, NativeArray elemRefs)
+        {
+            NativeArray<Element> bindSpans = clone.QuerySelectorAll("[data-ns-bind]");
+            if (object.IsNullOrUndefined(bindSpans) || bindSpans.Length == 0)
+                return;
+
+            for (int i = 0; i < bindSpans.Length; i++)
+            {
+                Element span = bindSpans[i];
+                for (int j = 0; j < elemRefs.Length; j++)
+                {
+                    if ((object)elemRefs[j] == (object)span)
+                    {
+                        elemRefs[j] = (Element)span.ParentNode;
+                        break;
+                    }
+                }
+            }
+        }
         /// <summary>
         /// Parses an HTML template string into a DOM Element by creating a temporary
         /// container, setting its innerHTML, and returning the first child element.

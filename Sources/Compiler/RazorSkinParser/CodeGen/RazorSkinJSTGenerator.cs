@@ -67,6 +67,11 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private readonly IIdentifier _preCreatedGetterIdentifier;
 
+        /// <summary>
+        /// Optional CSS manager for replacing class names in HTML with minified versions.
+        /// </summary>
+        private readonly RazorCssManager _cssManager;
+
         public RazorSkinJSTGenerator(
             SkinTemplateNode ir,
             RuntimeScopeManager scopeManager,
@@ -74,7 +79,8 @@ namespace NScript.RazorSkin.CodeGen
             Dictionary<string, IIdentifier> resolvedIdentifiers,
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers,
             RazorKnownTypes knownTypes,
-            IIdentifier preCreatedGetterIdentifier = null)
+            IIdentifier preCreatedGetterIdentifier = null,
+            RazorCssManager cssManager = null)
         {
             _ir = ir;
             _scopeManager = scopeManager;
@@ -83,6 +89,7 @@ namespace NScript.RazorSkin.CodeGen
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
             _knownTypes = knownTypes;
             _preCreatedGetterIdentifier = preCreatedGetterIdentifier;
+            _cssManager = cssManager;
             _dataIndex = _next_dataIndex++;
         }
 
@@ -142,6 +149,13 @@ namespace NScript.RazorSkin.CodeGen
             var eventPaths = new List<List<int>>();
             var htmlContent = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(
                 _ir.Children, events, elementPaths, eventPaths);
+
+            // Replace CSS class names with minified versions if CSS is loaded
+            if (_cssManager != null && _cssManager.HasStylesheets)
+            {
+                htmlContent = ReplaceCssClassNamesInHtml(htmlContent);
+            }
+
             // Build graph topology from IR
             var topology = GraphTopologyBuilder.Build(_ir);
             _topology = topology;
@@ -1014,6 +1028,29 @@ namespace NScript.RazorSkin.CodeGen
 
             // Fallback
             return new List<int> { 0 };
+        }
+
+        // Regex to match class="..." attributes in HTML for CSS name replacement
+        private static readonly System.Text.RegularExpressions.Regex CssClassAttrRegex
+            = new System.Text.RegularExpressions.Regex(
+                @"(\bclass\s*=\s*"")([^""]*)("")",
+                System.Text.RegularExpressions.RegexOptions.Compiled
+                | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Replaces CSS class names in class="..." attributes with their minified equivalents.
+        /// </summary>
+        private string ReplaceCssClassNamesInHtml(string html)
+        {
+            return CssClassAttrRegex.Replace(html, match =>
+            {
+                var prefix = match.Groups[1].Value; // 'class="'
+                var classValue = match.Groups[2].Value;
+                var suffix = match.Groups[3].Value; // '"'
+
+                var replaced = _cssManager.ReplaceCssClassNames(classValue);
+                return prefix + replaced + suffix;
+            });
         }
 
     }

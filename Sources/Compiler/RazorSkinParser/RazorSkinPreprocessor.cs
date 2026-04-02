@@ -10,6 +10,11 @@ namespace NScript.RazorSkin
         public string ModelTypeName { get; set; }
         public string ControlTypeName { get; set; }
         public List<string> UsingNamespaces { get; set; } = new List<string>();
+        /// <summary>
+        /// Ordered list of CSS stylesheet resource names referenced via @styles directives.
+        /// The order matters: later stylesheets may depend on earlier ones.
+        /// </summary>
+        public List<string> StylesheetReferences { get; set; } = new List<string>();
         public string CleanedTemplate { get; set; }
     }
 
@@ -51,6 +56,12 @@ namespace NScript.RazorSkin
                     result.ControlTypeName = trimmed.Substring("@control ".Length).Trim();
                     // Remove @control — not valid Razor
                 }
+                else if (trimmed.StartsWith("@styles "))
+                {
+                    var cssRef = trimmed.Substring("@styles ".Length).Trim().Trim('"', '\'');
+                    result.StylesheetReferences.Add(cssRef);
+                    // Remove @styles — not valid Razor
+                }
                 else if (trimmed.StartsWith("@using "))
                 {
                     var ns = trimmed.Substring("@using ".Length).Trim();
@@ -65,8 +76,8 @@ namespace NScript.RazorSkin
 
             result.CleanedTemplate = cleanedLines.ToString().TrimEnd('\r', '\n');
 
-            Log.Verbose("Preprocessor extracted directives: @model={ModelType}, @control={ControlType}, @using count={UsingCount}",
-                result.ModelTypeName, result.ControlTypeName, result.UsingNamespaces.Count);
+            Log.Verbose("Preprocessor extracted directives: @model={ModelType}, @control={ControlType}, @using count={UsingCount}, @styles count={StylesCount}",
+                result.ModelTypeName, result.ControlTypeName, result.UsingNamespaces.Count, result.StylesheetReferences.Count);
 
             return result;
         }

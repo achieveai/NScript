@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CssParser\CssParser.csproj" />
     <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj" />
     <ProjectReference Include="..\NScript.Converter\NScript.Converter.csproj" />
     <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj" />

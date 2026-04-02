@@ -132,7 +132,7 @@ namespace XwmlParser
             StringBuilder sb = new StringBuilder();
             foreach (var cssRule in this.cssRules)
             {
-                CssSerializerVisitor.Instance.Process(
+                CssParser.CssSerializerVisitor.Instance.Process(
                     sb,
                     cssRule,
                     (cn) =>
@@ -149,14 +149,14 @@ namespace XwmlParser
 
             foreach (var keyframes in this.keyFrames)
             {
-                CssSerializerVisitor.Instance.Process(
+                CssParser.CssSerializerVisitor.Instance.Process(
                     sb,
                     keyframes);
             }
 
             foreach (var media in this.mediaRules)
             {
-                CssSerializerVisitor.Instance.Process(
+                CssParser.CssSerializerVisitor.Instance.Process(
                     sb,
                     media,
                     (cn) =>
@@ -258,7 +258,7 @@ namespace XwmlParser
 
             for (int iRule = 0; iRule < rules.Count; iRule++)
             {
-                CssClassNameFinderVisitor.Instance.Process(
+                CssParser.CssClassNameFinderVisitor.Instance.Process(
                     rules[iRule],
                     (cn, nested) => this.AddCssClassName(cn, nested, cssBlockStartPosition, previousStyles));
             }
@@ -292,7 +292,7 @@ namespace XwmlParser
                 {
                     for (int iRule = 0; iRule < mediaRule.RuleSet.Count; iRule++)
                     {
-                        CssClassNameFinderVisitor.Instance.Process(
+                        CssParser.CssClassNameFinderVisitor.Instance.Process(
                             mediaRule.RuleSet[iRule],
                             (cn, nested) => this.AddCssClassName(cn, nested, cssBlockStartPosition, prevoiusStyles));
                     }

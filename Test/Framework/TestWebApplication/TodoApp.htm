@@ -168,6 +168,12 @@
       font-weight: 600;
     }
 
+    .folder-item.drag-over {
+      background: rgba(37, 100, 207, 0.15);
+      outline: 2px dashed var(--color-primary);
+      outline-offset: -2px;
+    }
+
     .folder-icon {
       margin-right: 10px;
       font-size: 16px;
@@ -216,6 +222,31 @@
     .todo-item.completed .todo-title {
       text-decoration: line-through;
       color: var(--color-completed);
+    }
+
+    .btn-check {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border: 2px solid var(--color-text-secondary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-right: 12px;
+      font-size: 12px;
+      color: transparent;
+    }
+
+    .btn-check:hover {
+      border-color: var(--color-primary);
+    }
+
+    .btn-check.checked {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+      color: white;
     }
 
     /* ─── CHECKBOX ─── */
@@ -274,6 +305,43 @@
 
     .star.important {
       color: var(--color-important);
+    }
+
+    /* ─── COMPLETED SECTION ─── */
+    .completed-section {
+      border-top: 1px solid var(--color-border);
+      margin-top: 8px;
+    }
+
+    .completed-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    .completed-header:hover {
+      background: var(--color-hover-bg);
+    }
+
+    .completed-toggle {
+      margin-right: 8px;
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+
+    .completed-section:not(.collapsed) .completed-toggle {
+      transform: rotate(90deg);
+    }
+
+    .completed-section.collapsed .completed-list {
+      display: none;
+    }
+
+    .completed-section.hidden {
+      display: none;
     }
 
     /* ─── ADD TASK BAR ─── */
@@ -382,7 +450,49 @@
       flex: 1;
     }
 
+    .subtask-title-input {
+      font-size: 14px;
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--color-text);
+      padding: 2px 4px;
+      outline: none;
+    }
+
+    .subtask-title-input:focus {
+      border-bottom: 1px solid var(--color-primary);
+    }
+
+    .subtask-item.completed .subtask-title-input {
+      text-decoration: line-through;
+      color: var(--color-completed);
+    }
+
     /* ─── ADD SUBTASK ─── */
+    .add-subtask-bar {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      color: var(--color-primary);
+      font-size: 14px;
+    }
+
+    .add-step-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--color-text);
+      font-size: 14px;
+      outline: none;
+      padding: 4px;
+    }
+
+    .add-step-input::placeholder {
+      color: var(--color-primary);
+    }
+
     .add-subtask {
       display: flex;
       align-items: center;
@@ -407,6 +517,35 @@
 
     .detail-section.myday.active {
       color: var(--color-primary);
+    }
+
+    /* ─── FOLDER PICKER ─── */
+    .current-folder-label {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      padding: 4px 0 8px 0;
+    }
+
+    .folder-pick-item {
+      display: flex;
+      align-items: center;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+
+    .folder-pick-item:hover {
+      background: rgba(37, 100, 207, 0.1);
+    }
+
+    .folder-pick-icon {
+      margin-right: 8px;
+      font-size: 16px;
+    }
+
+    .folder-pick-name {
+      flex: 1;
     }
 
     /* ─── DELETE TASK ─── */

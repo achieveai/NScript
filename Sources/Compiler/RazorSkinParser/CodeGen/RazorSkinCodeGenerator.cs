@@ -71,21 +71,37 @@ namespace NScript.RazorSkin.CodeGen
         {
             var sb = new StringBuilder();
             int pendingEvtMarkers = 0;
-            CollectItemTemplateHtmlRecursive(nodes, sb, ref pendingEvtMarkers);
-            // Strip any binding markers from the HTML
-            return System.Text.RegularExpressions.Regex.Replace(sb.ToString(), @" data-(bind|evt)-idx=""\d+""", "");
+            int pendingBindMarkers = 0;
+            CollectItemTemplateHtmlRecursive(nodes, sb, ref pendingEvtMarkers, ref pendingBindMarkers);
+
+            var html = sb.ToString();
+
+            // Strip outer-template marker attributes (data-bind-idx, data-evt-idx)
+            html = System.Text.RegularExpressions.Regex.Replace(html, @" data-(bind|evt)-idx=""\d+""", "");
+
+            // Post-process: for void elements (input, br, img, hr) that have
+            // <span data-ns-bind></span> nearby (possibly with event markers in between),
+            // move the bind marker to a data-ns-bind attribute on the void element.
+            html = System.Text.RegularExpressions.Regex.Replace(
+                html,
+                @"(<(?:input|br|img|hr)\b[^>]*?)(\s*/?>)((?:<span data-ns-evt></span>)*)<span data-ns-bind></span>",
+                "$1 data-ns-bind$2$3",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            return html;
         }
 
         private static void CollectItemTemplateHtmlRecursive(
-            List<IRNode> nodes, StringBuilder sb, ref int pendingEvtMarkers)
+            List<IRNode> nodes, StringBuilder sb, ref int pendingEvtMarkers, ref int pendingBindMarkers)
         {
             foreach (var node in nodes)
             {
                 if (node is HtmlNode html)
                 {
                     var content = html.HtmlContent;
-                    // If there are pending event markers, insert them after the first >
-                    if (pendingEvtMarkers > 0)
+                    // If there are pending event or bind markers, insert them after the first >
+                    int totalPending = pendingEvtMarkers + pendingBindMarkers;
+                    if (totalPending > 0)
                     {
                         int gtIdx = content.IndexOf('>');
                         if (gtIdx >= 0)
@@ -93,8 +109,11 @@ namespace NScript.RazorSkin.CodeGen
                             sb.Append(content.Substring(0, gtIdx + 1));
                             for (int m = 0; m < pendingEvtMarkers; m++)
                                 sb.Append("<span data-ns-evt></span>");
+                            for (int m = 0; m < pendingBindMarkers; m++)
+                                sb.Append("<span data-ns-bind></span>");
                             sb.Append(content.Substring(gtIdx + 1));
                             pendingEvtMarkers = 0;
+                            pendingBindMarkers = 0;
                             continue;
                         }
                     }
@@ -103,8 +122,13 @@ namespace NScript.RazorSkin.CodeGen
                 else if (node is ExpressionBindingNode exprBinding)
                 {
                     if (exprBinding.Target == ExpressionTarget.TextContent)
-                        sb.Append("<span></span>");
-                    // Attribute bindings don't produce HTML in item templates
+                        sb.Append("<span data-ns-ph></span>");
+                    else
+                    {
+                        // Class/style/attribute bindings: insert a marker span inside the
+                        // target element. The runtime resolves it to parentNode, like events.
+                        pendingBindMarkers++;
+                    }
                 }
                 else if (node is EventNode)
                 {
@@ -114,19 +138,19 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else if (node is ConditionalNode)
                 {
-                    sb.Append("<span></span>");
+                    sb.Append("<span data-ns-ph></span>");
                 }
                 else if (node is LoopNode)
                 {
-                    sb.Append("<span></span>");
+                    sb.Append("<span data-ns-ph></span>");
                 }
                 else if (node is SubControlNode)
                 {
-                    sb.Append("<span></span>");
+                    sb.Append("<span data-ns-ph></span>");
                 }
                 else
                 {
-                    CollectItemTemplateHtmlRecursive(node.Children, sb, ref pendingEvtMarkers);
+                    CollectItemTemplateHtmlRecursive(node.Children, sb, ref pendingEvtMarkers, ref pendingBindMarkers);
                 }
             }
         }
@@ -166,8 +190,10 @@ namespace NScript.RazorSkin.CodeGen
                 {
                     if (exprBinding.Target == ExpressionTarget.TextContent)
                     {
-                        // Text bindings get a span placeholder in the HTML
-                        sb.Append($"<span data-bind-idx=\"{bindingIdx}\"></span>");
+                        // Text bindings get a span placeholder in the HTML.
+                        // data-ns-ph marks this as a compiler-generated placeholder span
+                        // so CollectSpanElements can distinguish it from user-authored spans.
+                        sb.Append($"<span data-ns-ph data-bind-idx=\"{bindingIdx}\"></span>");
                     }
                     else
                     {
@@ -192,7 +218,7 @@ namespace NScript.RazorSkin.CodeGen
                     // Gate: emit only an empty marker span. Branch content is stored
                     // as HTML strings in the GateTargetInfo (trueTemplate/falseTemplate)
                     // and dynamically cloned by GraphEngine at runtime.
-                    sb.Append("<span></span>");
+                    sb.Append("<span data-ns-ph></span>");
                     // Still need to recurse into branches so any nested bindings get
                     // their bindingIdx allocated (though they won't have HTML markers)
                 }
@@ -201,11 +227,11 @@ namespace NScript.RazorSkin.CodeGen
                     // Collection: emit only an empty marker span. Item template content
                     // is stored as an HTML string in the CollectionTargetInfo and rendered
                     // by GraphEngine for each collection item.
-                    sb.Append("<span></span>");
+                    sb.Append("<span data-ns-ph></span>");
                 }
                 else if (node is SubControlNode)
                 {
-                    sb.Append("<span></span>");
+                    sb.Append("<span data-ns-ph></span>");
                 }
                 else
                 {

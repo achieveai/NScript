@@ -54,6 +54,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _subscriptionPropertyNameField;
         private readonly IIdentifier _subscriptionNodeIdxField;
         private readonly IIdentifier _subscriptionSourceSlotField;
+        private readonly IIdentifier _subscriptionPathSegmentsField;
 
         // Resolved field identifiers for GateTargetInfo
         private readonly IIdentifier _gateMarkerIdxField;
@@ -107,7 +108,7 @@ namespace NScript.RazorSkin.CodeGen
                 out _subscribeModeField, out _parentIndicesField, out _rootSourceSlotField,
                 out _domTargetElemIdxField, out _domTargetSetterField,
                 out _subscriptionPropertyNameField, out _subscriptionNodeIdxField,
-                out _subscriptionSourceSlotField,
+                out _subscriptionSourceSlotField, out _subscriptionPathSegmentsField,
                 out _gateMarkerIdxField, out _gateTrueTemplateField, out _gateFalseTemplateField,
                 out _gateTrueElemCountField, out _gateFalseElemCountField,
                 out _gateTrueChildElemIndicesField, out _gateFalseChildElemIndicesField,
@@ -134,6 +135,7 @@ namespace NScript.RazorSkin.CodeGen
             out IIdentifier subscribeMode, out IIdentifier parentIndices, out IIdentifier rootSourceSlot,
             out IIdentifier domElemIdx, out IIdentifier domSetter,
             out IIdentifier subPropertyName, out IIdentifier subNodeIdx, out IIdentifier subSourceSlot,
+            out IIdentifier subPathSegments,
             out IIdentifier gateMarkerIdx, out IIdentifier gateTrueTemplate, out IIdentifier gateFalseTemplate,
             out IIdentifier gateTrueElemCount, out IIdentifier gateFalseElemCount,
             out IIdentifier gateTrueChildElemIndices, out IIdentifier gateFalseChildElemIndices,
@@ -165,6 +167,7 @@ namespace NScript.RazorSkin.CodeGen
             subPropertyName = ResolveFieldId(subEntryType, "PropertyName");
             subNodeIdx = ResolveFieldId(subEntryType, "NodeIdx");
             subSourceSlot = ResolveFieldId(subEntryType, "SourceSlot");
+            subPathSegments = ResolveFieldId(subEntryType, "PathSegments");
 
             // GateTargetInfo fields
             var gateType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GateTargetInfo");
@@ -413,6 +416,13 @@ namespace NScript.RazorSkin.CodeGen
                     if (jstExpr != null)
                         return jstExpr;
 
+                    // Try building a proper JST expression tree for ternary expressions.
+                    // Ternary expressions like "item.IsComplete ? \"done\" : \"pending\""
+                    // need resolved field identifiers to produce correct minified names.
+                    var ternaryExpr = TryBuildTernaryJSTExpression(getterExpression);
+                    if (ternaryExpr != null)
+                        return ternaryExpr;
+
                     // Final fallback: use raw body with field-access replacement
                     var jsExpr = ToJsGetterWithFieldAccess(
                         getterExpression, "dc", "tp", _knownFunctionNames);
@@ -623,10 +633,16 @@ namespace NScript.RazorSkin.CodeGen
                     csharpExpression, dataContextParam, templateParentParam, knownFunctionNames);
             }
 
-            // Replace "Model." with DataContext param and "Control." with TemplateParent param
+            // Replace "Model.", "Control.", and the item variable prefix (e.g. "folder.")
+            // with the appropriate function parameter names.
             var expr = csharpExpression
                 .Replace("Model.", dataContextParam + ".")
                 .Replace("Control.", templateParentParam + ".");
+
+            // For foreach item templates, the item variable prefix (e.g. "folder.") must
+            // be replaced with "dc." since the data context IS the item.
+            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix))
+                expr = expr.Replace(_topology.ItemVariablePrefix, dataContextParam + ".");
 
             // Build method name map for resolving method calls
             var methodMap = BuildMethodNameMap();
@@ -923,10 +939,20 @@ namespace NScript.RazorSkin.CodeGen
 
                 case ExpressionTarget.Attribute:
                 {
-                    // Emit: function(e, v) { if (v != null) e.setAttribute("attrName", v); else e.removeAttribute("attrName"); }
                     var attrName = EscapeJsString(dt.AttributeName ?? "");
-                    setterExpr = CreateRawSetterFunction(
-                        $"if (v != null) e.setAttribute(\"{attrName}\", v); else e.removeAttribute(\"{attrName}\")");
+                    // "value" attribute must use the DOM property (e.value), not setAttribute.
+                    // setAttribute("value", x) only updates the HTML attribute, not the displayed
+                    // input value after user interaction. Browsers render .value, not the attribute.
+                    if (string.Equals(dt.AttributeName, "value", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        setterExpr = CreateRawSetterFunction("e.value = v || \"\"");
+                    }
+                    else
+                    {
+                        // Emit: function(e, v) { if (v != null) e.setAttribute("attrName", v); else e.removeAttribute("attrName"); }
+                        setterExpr = CreateRawSetterFunction(
+                            $"if (v != null) e.setAttribute(\"{attrName}\", v); else e.removeAttribute(\"{attrName}\")");
+                    }
                     break;
                 }
 
@@ -1033,6 +1059,98 @@ namespace NScript.RazorSkin.CodeGen
             var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
             fn.AddStatement(new ReturnStatement(null, getterScope, result));
             return fn;
+        }
+
+        /// <summary>
+        /// Tries to build a proper JST expression tree for a ternary expression like
+        /// "Model.IsActive ? \"yes\" : \"no\"" or "item.IsComplete ? \"done\" : \"pending\"".
+        /// Uses resolved field identifiers so the output participates in NScript's minification system.
+        /// Returns function(dc) { return dc.isActive_I ? "yes" : "no"; } with resolved identifiers.
+        /// Returns null if the expression cannot be parsed as a ternary.
+        /// </summary>
+        private Expression TryBuildTernaryJSTExpression(string expression)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            // Match pattern: <propertyExpr> ? <trueExpr> : <falseExpr>
+            // The condition must be a simple property access (possibly negated).
+            // True/false branches can be string literals or property accesses.
+            var match = System.Text.RegularExpressions.Regex.Match(
+                expression.Trim(),
+                @"^(!?\s*(?:Model\.|" +
+                System.Text.RegularExpressions.Regex.Escape(_topology?.ItemVariablePrefix ?? "NOMATCH") +
+                @")?\s*[A-Z]\w*)\s*\?\s*(.*?)\s*:\s*(.*?)\s*$");
+
+            if (!match.Success) return null;
+
+            var conditionPart = match.Groups[1].Value.Trim();
+            var truePart = match.Groups[2].Value.Trim();
+            var falsePart = match.Groups[3].Value.Trim();
+
+            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var paramIdentifier = getterScope.ParameterIdentifiers[0];
+
+            // Build condition expression (property field access, possibly negated)
+            bool isNegated = conditionPart.StartsWith("!");
+            if (isNegated)
+                conditionPart = conditionPart.Substring(1).Trim();
+
+            Expression conditionExpr = TryResolvePropertyToFieldAccess(conditionPart, getterScope, paramIdentifier);
+            if (conditionExpr == null) return null;
+
+            if (isNegated)
+                conditionExpr = new UnaryExpression(null, getterScope, UnaryOperator.LogicalNot, conditionExpr);
+
+            // Build true/false branch expressions
+            Expression trueExpr = TryParseLiteralOrProperty(truePart, getterScope, paramIdentifier);
+            if (trueExpr == null) return null;
+
+            Expression falseExpr = TryParseLiteralOrProperty(falsePart, getterScope, paramIdentifier);
+            if (falseExpr == null) return null;
+
+            // Build: condition ? trueExpr : falseExpr
+            var ternary = new ConditionalOperatorExpression(null, getterScope, conditionExpr, trueExpr, falseExpr);
+
+            // Wrap in: function(dc) { return <ternary>; }
+            var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, getterScope, ternary));
+            return fn;
+        }
+
+        /// <summary>
+        /// Parses a ternary branch value as either a string literal or a property field access.
+        /// String literals are enclosed in double quotes: "someValue"
+        /// Property accesses are Model.Prop or item.Prop references.
+        /// </summary>
+        private Expression TryParseLiteralOrProperty(
+            string value, IdentifierScope scope, IIdentifier dcParam)
+        {
+            if (string.IsNullOrEmpty(value)) return null;
+
+            // String literal: "value"
+            if (value.StartsWith("\"") && value.EndsWith("\"") && value.Length >= 2)
+            {
+                var unquoted = value.Substring(1, value.Length - 2);
+                return new StringLiteralExpression(scope, unquoted);
+            }
+
+            // Boolean literals
+            if (value == "true")
+                return new BooleanLiteralExpression(scope, true);
+            if (value == "false")
+                return new BooleanLiteralExpression(scope, false);
+
+            // Numeric literals
+            if (int.TryParse(value, out var intVal))
+                return new NumberLiteralExpression(scope, intVal);
+
+            // null
+            if (value == "null")
+                return new NullLiteralExpression(scope);
+
+            // Property access
+            return TryResolvePropertyToFieldAccess(value, scope, dcParam);
         }
 
         /// <summary>
@@ -1398,6 +1516,19 @@ namespace NScript.RazorSkin.CodeGen
                         (_subscriptionNodeIdxField, "NodeIdx", new NumberLiteralExpression(_scope, sub.NodeIdx)),
                         (_subscriptionSourceSlotField, "SourceSlot", new NumberLiteralExpression(_scope, sub.SourceSlot))
                     };
+
+                    // Emit PathSegments array for chained property paths
+                    if (sub.PathSegments != null && sub.PathSegments.Length > 1)
+                    {
+                        var pathArray = new List<Expression>();
+                        foreach (var segment in sub.PathSegments)
+                        {
+                            pathArray.Add(new StringLiteralExpression(_scope, segment));
+                        }
+                        fields.Add((_subscriptionPathSegmentsField, "PathSegments",
+                            new InlineNewArrayInitialization(null, _scope, pathArray)));
+                    }
+
                     items.Add(EmitTypedObject(_subscriptionEntryFactory, fields));
                 }
                 else
@@ -1410,6 +1541,19 @@ namespace NScript.RazorSkin.CodeGen
                         new NumberLiteralExpression(_scope, sub.NodeIdx));
                     AddField(subObj, _subscriptionSourceSlotField, "SourceSlot",
                         new NumberLiteralExpression(_scope, sub.SourceSlot));
+
+                    // Emit PathSegments array for chained property paths
+                    if (sub.PathSegments != null && sub.PathSegments.Length > 1)
+                    {
+                        var pathArray = new List<Expression>();
+                        foreach (var segment in sub.PathSegments)
+                        {
+                            pathArray.Add(new StringLiteralExpression(_scope, segment));
+                        }
+                        AddField(subObj, _subscriptionPathSegmentsField, "PathSegments",
+                            new InlineNewArrayInitialization(null, _scope, pathArray));
+                    }
+
                     items.Add(subObj);
                 }
             }

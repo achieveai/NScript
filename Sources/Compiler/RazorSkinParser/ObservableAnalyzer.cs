@@ -15,9 +15,11 @@ namespace NScript.RazorSkin
         /// <summary>
         /// A property is observable if its containing type is observable AND the property
         /// has [AutoFire] attribute, or [DefaultDataBinding] attribute.
-        /// Setter-body analysis (FirePropertyChanged calls) is deferred for now.
-        /// If the containing type is observable and no attribute check fails, we consider
-        /// all properties observable (conservative default matching XWML behavior).
+        /// If neither attribute is present but the containing type is observable, we
+        /// conservatively treat ALL properties as observable. The framework supports
+        /// notification without setters via FirePropertyChanged(), AddLinkedProperty(),
+        /// and AutoFireAttribute patterns. Over-subscribing is harmless (costs a single
+        /// listener registration per property).
         /// </summary>
         public static bool IsObservableProperty(IPropertySymbol property)
         {
@@ -42,11 +44,11 @@ namespace NScript.RazorSkin
             if (hasAutoFire || hasDefaultDataBinding)
                 return true;
 
-            // Conservative default: if the containing type is observable and the property
-            // has a setter, treat it as observable. This matches the common pattern where
-            // ObservableObject subclasses emit change notifications for all properties.
-            // TODO: Add setter-body analysis to check for FirePropertyChanged calls
-            return property.SetMethod != null;
+            // Conservative default: if the containing type is observable, treat ALL properties
+            // as potentially observable. The framework supports notification without setters via
+            // FirePropertyChanged(), AddLinkedProperty(), and AutoFireAttribute patterns.
+            // Over-subscribing is harmless (costs a single listener registration per property).
+            return true;
         }
 
         public static bool IsObservableType(ITypeSymbol type)

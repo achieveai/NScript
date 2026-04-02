@@ -92,6 +92,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public string PropertyName;
         public int NodeIdx;
         public int SourceSlot;
+        /// <summary>
+        /// For chained property paths (e.g., ["Customer", "Address", "City"]).
+        /// Null for simple single-property subscriptions.
+        /// </summary>
+        public NativeArray<string> PathSegments;
     }
 
     /// <summary>

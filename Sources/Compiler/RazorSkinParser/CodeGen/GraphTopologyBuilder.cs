@@ -23,6 +23,11 @@ namespace NScript.RazorSkin.CodeGen
         public string PropertyName { get; set; }
         public int NodeIdx { get; set; }
         public int SourceSlot { get; set; }
+        /// <summary>
+        /// For chained paths (e.g., "Customer.Address.City"), the individual path segments.
+        /// Null for single-property subscriptions.
+        /// </summary>
+        public string[] PathSegments { get; set; }
     }
 
     public class DomTargetTopology
@@ -183,18 +188,66 @@ namespace NScript.RazorSkin.CodeGen
 
             if (deps.Count == 1)
             {
-                // Single dependency — Property node
                 var dep = deps[0];
-                int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
-                if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+                bool isChained = dep.PropertyChain != null && dep.PropertyChain.Contains(".");
 
-                if (isOneWay)
+                if (isChained)
                 {
-                    ctx.AddSubscription(dep.PropertyName, propIdx,
-                        dep.SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
-                }
+                    // Chained path: Property node for root + Computed node for full expression
+                    int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                    if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
 
-                int domIdx = ctx.AddDomTarget(binding, propIdx, gateIndex);
+                    if (isOneWay)
+                    {
+                        var segments = dep.PropertyChain.Split('.');
+                        ctx.AddSubscription(dep.PropertyName, propIdx,
+                            dep.SourceKind == BindingSourceKind.TemplateParent ? 1 : 0,
+                            segments);
+                    }
+
+                    // Computed node evaluates the full chain expression
+                    int computedIdx = ctx.AddNode(GraphNodeTypeConstants.Computed,
+                        binding.Classification.CSharpExpression, null);
+                    if (gateIndex != -1) ctx.SetGateIndex(computedIdx, gateIndex);
+                    ctx.AddEdge(0, computedIdx);
+                    ctx.AddEdge(propIdx, computedIdx);
+
+                    int domIdx = ctx.AddDomTarget(binding, computedIdx, gateIndex);
+                }
+                else
+                {
+                    // Check if the expression is more complex than a simple property access.
+                    // Ternary expressions, comparisons, etc. need a Computed node to preserve
+                    // the full expression logic. A Property node only returns the property value.
+                    bool isComplexExpression = IsComplexExpression(
+                        binding.Classification.CSharpExpression);
+
+                    int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                    if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+
+                    if (isOneWay)
+                    {
+                        ctx.AddSubscription(dep.PropertyName, propIdx,
+                            dep.SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
+                    }
+
+                    if (isComplexExpression)
+                    {
+                        // Complex expression with single dep: Property node for subscription +
+                        // Computed node for full expression evaluation (like multi-dep case)
+                        int computedIdx = ctx.AddNode(GraphNodeTypeConstants.Computed,
+                            binding.Classification.CSharpExpression, null);
+                        if (gateIndex != -1) ctx.SetGateIndex(computedIdx, gateIndex);
+                        ctx.AddEdge(0, computedIdx);
+                        ctx.AddEdge(propIdx, computedIdx);
+                        ctx.AddDomTarget(binding, computedIdx, gateIndex);
+                    }
+                    else
+                    {
+                        // Simple single property — existing behavior
+                        ctx.AddDomTarget(binding, propIdx, gateIndex);
+                    }
+                }
             }
             else
             {
@@ -313,12 +366,12 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             // Create Gate node.
-            // For nested gates (gateIndex != -1), set gateIndex on the gate node itself
-            // so it only evaluates when its parent gate's branch is active.
-            // Top-level gates (gateIndex == -1) are ungated and always evaluate.
+            // A gate's gateIndex is always itself — the runtime uses this to identify gate nodes.
+            // For nested gates, child nodes reference the gate node's index via gateIndex parameter
+            // passed to WalkChildren, not the gate node itself.
             int gateIdx = ctx.AddNode(GraphNodeTypeConstants.Gate,
                 cond.Condition.CSharpExpression, false);
-            if (gateIndex != -1) ctx.SetGateIndex(gateIdx, gateIndex);
+            ctx.SetGateIndex(gateIdx, gateIdx); // Gate's gateIndex is always itself
 
             ctx.AddEdge(conditionSourceIdx, gateIdx);
 
@@ -365,6 +418,19 @@ namespace NScript.RazorSkin.CodeGen
 
             ctx.AddEdge(0, collIdx);
 
+            // Subscribe to PropertyChanged for the collection property so that
+            // collection reference changes (e.g., setting DetailSubTasks to a new
+            // ObservableCollection) trigger a Flush that detaches the old listener
+            // and re-renders with the new collection.
+            string collExpr = loop.CollectionExpression ?? "";
+            string propName = collExpr;
+            if (propName.StartsWith("Model."))
+                propName = propName.Substring("Model.".Length);
+            if (!string.IsNullOrEmpty(propName))
+            {
+                ctx.AddSubscription(propName, collIdx, 0);
+            }
+
             // Build item topology recursively if there's an item template.
             // Note: ModelTypeName is set to null — the item type isn't known at compile
             // time from the loop variable name alone. The GraphEngine skips the type check
@@ -390,6 +456,32 @@ namespace NScript.RazorSkin.CodeGen
                 IrNode = loop,
                 ItemTopology = itemTopology
             });
+        }
+
+        /// <summary>
+        /// Detects whether a C# expression is more complex than a simple property access.
+        /// Ternary operators, comparisons, logical operators, arithmetic, and string
+        /// concatenation all indicate that a Computed node is needed to preserve the logic.
+        /// </summary>
+        private static bool IsComplexExpression(string expression)
+        {
+            if (string.IsNullOrEmpty(expression))
+                return false;
+
+            // Check for common operators that indicate complex expressions.
+            // We check for operators that wouldn't appear in a simple "Prefix.PropertyName" path.
+            return expression.Contains("?")    // ternary
+                || expression.Contains("+")    // concatenation/arithmetic
+                || expression.Contains("-")    // subtraction
+                || expression.Contains("*")    // multiplication
+                || expression.Contains("/")    // division
+                || expression.Contains("==")   // equality
+                || expression.Contains("!=")   // inequality
+                || expression.Contains("&&")   // logical AND
+                || expression.Contains("||")   // logical OR
+                || expression.Contains(">")    // comparison
+                || expression.Contains("<")    // comparison
+                || expression.Contains("!");   // negation (standalone, not part of !=)
         }
 
         // --- Internal build context ---
@@ -458,17 +550,20 @@ namespace NScript.RazorSkin.CodeGen
                 _gateIndices[nodeIdx] = gateIdx;
             }
 
-            public void AddSubscription(string propertyName, int nodeIdx, int sourceSlot)
+            public void AddSubscription(string propertyName, int nodeIdx, int sourceSlot, string[] pathSegments = null)
             {
-                if (_subscribedProperties.Contains(propertyName))
+                // For chains, deduplicate by full chain key; for simple, by property name
+                var dedupeKey = pathSegments != null ? string.Join(".", pathSegments) : propertyName;
+                if (_subscribedProperties.Contains(dedupeKey))
                     return;
 
-                _subscribedProperties.Add(propertyName);
+                _subscribedProperties.Add(dedupeKey);
                 Topology.Subscriptions.Add(new SubscriptionInfo
                 {
                     PropertyName = propertyName,
                     NodeIdx = nodeIdx,
-                    SourceSlot = sourceSlot
+                    SourceSlot = sourceSlot,
+                    PathSegments = pathSegments
                 });
             }
 

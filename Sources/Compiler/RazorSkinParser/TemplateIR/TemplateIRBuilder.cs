@@ -18,7 +18,8 @@ namespace NScript.RazorSkin.TemplateIR
             "onclick", "onchange", "onfocus", "onblur", "oninput", "onkeyup",
             "onkeydown", "onsubmit", "onmousedown", "onmouseup", "onmouseover",
             "onmouseout", "onmousemove", "ondblclick", "onscroll", "onresize",
-            "onkeypress", "ontouchstart", "ontouchend", "ontouchmove"
+            "onkeypress", "ontouchstart", "ontouchend", "ontouchmove",
+            "ondragstart", "ondragend", "ondragover", "ondragenter", "ondragleave", "ondrop"
         };
 
         // Regex to detect an event attribute at the end of an HTML fragment: onclick="
@@ -83,7 +84,8 @@ namespace NScript.RazorSkin.TemplateIR
                 TemplateName = templateName,
                 ModelTypeName = preprocessed.ModelTypeName,
                 ControlTypeName = preprocessed.ControlTypeName,
-                UsingNamespaces = preprocessed.UsingNamespaces
+                UsingNamespaces = preprocessed.UsingNamespaces,
+                StylesheetResourceNames = preprocessed.StylesheetReferences
             };
 
             var irDoc = parsed.CodeDocument.GetDocumentIntermediateNode();
@@ -1227,6 +1229,88 @@ namespace NScript.RazorSkin.TemplateIR
                 if (found != null) return found;
             }
             return null;
+        }
+
+        // Regex to match class="..." attributes in HTML content
+        private static readonly Regex ClassAttributeRegex = new Regex(
+            @"\bclass\s*=\s*""([^""]*)""|class\s*=\s*'([^']*)'",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Validates that all static CSS class names used in template HTML actually exist
+        /// in the referenced @styles stylesheets. Throws ConverterLocationException if
+        /// a class is not found.
+        /// </summary>
+        public static void ValidateCssClasses(SkinTemplateNode ir, RazorCssManager cssManager)
+        {
+            if (cssManager == null || !cssManager.HasStylesheets)
+                return;
+
+            ValidateCssClassesInNodes(ir.Children, cssManager, ir.TemplateName);
+        }
+
+        private static void ValidateCssClassesInNodes(
+            List<IRNode> nodes,
+            RazorCssManager cssManager,
+            string templateName)
+        {
+            foreach (var node in nodes)
+            {
+                if (node is HtmlNode htmlNode)
+                {
+                    ValidateCssClassesInHtml(htmlNode.HtmlContent, cssManager, templateName);
+                }
+
+                // Recurse into children
+                if (node.Children.Count > 0)
+                    ValidateCssClassesInNodes(node.Children, cssManager, templateName);
+
+                // Recurse into conditional branches
+                if (node is ConditionalNode conditional)
+                {
+                    if (conditional.TrueBranch.Count > 0)
+                        ValidateCssClassesInNodes(conditional.TrueBranch, cssManager, templateName);
+                    if (conditional.FalseBranch.Count > 0)
+                        ValidateCssClassesInNodes(conditional.FalseBranch, cssManager, templateName);
+                }
+
+                // Recurse into loop body
+                if (node is LoopNode loop && loop.ItemTemplate.Count > 0)
+                    ValidateCssClassesInNodes(loop.ItemTemplate, cssManager, templateName);
+            }
+        }
+
+        private static void ValidateCssClassesInHtml(
+            string htmlContent,
+            RazorCssManager cssManager,
+            string templateName)
+        {
+            if (string.IsNullOrEmpty(htmlContent)) return;
+
+            var matches = ClassAttributeRegex.Matches(htmlContent);
+            foreach (Match match in matches)
+            {
+                // Get the class value from whichever group matched (double or single quotes)
+                var classValue = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+                if (string.IsNullOrWhiteSpace(classValue)) continue;
+
+                var classNames = classValue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var className in classNames)
+                {
+                    // Skip dynamic expressions (contain @ or { })
+                    if (className.Contains("@") || className.Contains("{") || className.Contains("}"))
+                        continue;
+
+                    NScript.JST.IIdentifier identifier;
+                    if (!cssManager.TryGetCssClassIdentifier(className, out identifier))
+                    {
+                        throw new NScript.Converter.ConverterLocationException(
+                            new NScript.Utils.Location(templateName, 0, 0),
+                            $"CSS class name '{className}' not found in any @styles stylesheet. " +
+                            "Ensure the class is defined in a referenced CSS file.");
+                    }
+                }
+            }
         }
     }
 }

@@ -1,14 +1,14 @@
 @model TodoApp.ViewModels.AppViewModel
 
 <div data-test="1">
-    <div class="@Model.LeftPaneClass">
+    <div class="@(Model.IsLeftPaneCollapsed ? "pane-left collapsed" : "pane-left")">
         <div class="pane-header">
             <div class="app-title">To Do</div>
         </div>
         <div class="folder-list">
             @foreach (var folder in Model.Folders)
             {
-                <div class="folder-item" onclick="@folder.OnSelect">
+                <div class="@(folder.IsSelected ? "folder-item selected" : "folder-item")" onclick="@folder.OnSelect">
                     <div class="folder-icon">@folder.Icon</div>
                     <div class="folder-name">@folder.Name</div>
                     <div class="folder-count">@folder.TodoCount</div>
@@ -24,7 +24,7 @@
         <div class="todo-list">
             @foreach (var todo in Model.CurrentTodos)
             {
-                <div class="todo-item" onclick="@todo.OnSelect">
+                <div class="@(todo.IsCompleted ? "todo-item completed" : "todo-item")" onclick="@todo.OnSelect">
                     <div class="todo-check" onclick="@todo.ToggleComplete">&#10003;</div>
                     <div class="todo-title">@todo.Title</div>
                     @if (todo.IsImportant)
@@ -43,7 +43,7 @@
             <input type="text" class="add-task-input" placeholder="Add a task" onkeydown="@Model.AddTodoOnEnter" />
         </div>
     </div>
-    <div class="@Model.RightPaneClass">
+    <div class="@(Model.IsRightPaneCollapsed ? "pane-right collapsed" : "pane-right")">
         <div class="pane-header">
             <div class="btn-close-detail" onclick="@Model.ToggleRightPane">&#10005;</div>
         </div>

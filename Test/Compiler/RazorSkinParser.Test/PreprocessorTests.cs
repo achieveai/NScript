@@ -56,5 +56,47 @@ namespace RazorSkinParser.Test
             result.CleanedTemplate.Should().Contain("@Model.Name");
             result.CleanedTemplate.Should().NotContain("@control");
         }
+
+        [TestMethod]
+        public void ExtractsStylesDirective()
+        {
+            var input = "@model MyVM\n@styles \"AppStyles.css\"\n<div>Hello</div>";
+            var result = RazorSkinPreprocessor.Process(input);
+
+            result.StylesheetReferences.Should().HaveCount(1);
+            result.StylesheetReferences[0].Should().Be("AppStyles.css");
+            result.CleanedTemplate.Should().NotContain("@styles");
+        }
+
+        [TestMethod]
+        public void ExtractsMultipleStylesDirectives()
+        {
+            var input = "@model MyVM\n@styles \"Base.css\"\n@styles \"Theme.css\"\n@styles \"Page.css\"\n<div/>";
+            var result = RazorSkinPreprocessor.Process(input);
+
+            result.StylesheetReferences.Should().HaveCount(3);
+            result.StylesheetReferences[0].Should().Be("Base.css");
+            result.StylesheetReferences[1].Should().Be("Theme.css");
+            result.StylesheetReferences[2].Should().Be("Page.css");
+        }
+
+        [TestMethod]
+        public void StylesDirectiveWithSingleQuotes()
+        {
+            var input = "@model MyVM\n@styles 'AppStyles.css'\n<div/>";
+            var result = RazorSkinPreprocessor.Process(input);
+
+            result.StylesheetReferences.Should().HaveCount(1);
+            result.StylesheetReferences[0].Should().Be("AppStyles.css");
+        }
+
+        [TestMethod]
+        public void NoStylesDirectiveReturnsEmptyList()
+        {
+            var input = "@model MyVM\n<div>Hello</div>";
+            var result = RazorSkinPreprocessor.Process(input);
+
+            result.StylesheetReferences.Should().BeEmpty();
+        }
     }
 }

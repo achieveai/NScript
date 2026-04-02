@@ -57,6 +57,13 @@ namespace NScript.RazorSkin
             = new Dictionary<string, IIdentifier>();
 
         /// <summary>
+        /// CSS managers for templates that have @styles directives.
+        /// Maps template name to its CSS manager.
+        /// </summary>
+        private readonly Dictionary<string, RazorCssManager> _cssManagers
+            = new Dictionary<string, RazorCssManager>();
+
+        /// <summary>
         /// Resolved runtime identifiers for replacing mangled names in compiled JS.
         /// Maps the Razor-generated mangled name (e.g. "Sunlight__Framework__UI__Skin_factory")
         /// to the IIdentifier resolved through the NScript scope system.
@@ -148,6 +155,24 @@ namespace Sunlight.Framework.Observables
                             _compiledIRs[embeddedResource.Name] = ir;
                             _templateShortNames[embeddedResource.Name] = templateName;
                             _hasRazorTemplates = true;
+
+                            // Load CSS stylesheets referenced by @styles directives
+                            if (ir.StylesheetResourceNames.Count > 0)
+                            {
+                                var cssManager = LoadCssStylesheets(
+                                    ir.StylesheetResourceNames, clrContext, runtimeScopeManager);
+
+                                if (cssManager != null)
+                                {
+                                    _cssManagers[templateName] = cssManager;
+
+                                    // Validate CSS class names used in template HTML
+                                    TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, cssManager);
+
+                                    Log.Debug("Loaded {SheetCount} CSS stylesheets for template {TemplateName}",
+                                        cssManager.Sheets.Count, templateName);
+                                }
+                            }
 
                             // Pre-create the getter function identifier in the scope system
                             // so it's available when GetOverwrite is called (before GetPostJavascript)
@@ -360,6 +385,12 @@ namespace Sunlight.Framework.Observables
                 // not directly called from compiled C# code.
                 ResolveEventHandlerMethods(clrContext, runtimeScopeManager);
 
+                // --- Force resolution of property getters referenced in template bindings ---
+                // Getter-only computed properties are only referenced from template JST,
+                // which is generated in GetPostJavascript (after tree-shaking). By resolving
+                // them here, the tree-shaker includes them in the output.
+                CollectAndResolvePropertyGetters(clrContext, runtimeScopeManager);
+
                 Log.Debug("Resolved {Count} runtime identifiers for Razor template JS replacement",
                     _resolvedIdentifiers.Count + _resolvedTypeIdentifiers.Count);
             }
@@ -505,6 +536,113 @@ namespace Sunlight.Framework.Observables
                     resolvedMethods.Count, string.Join(", ", resolvedMethods));
         }
 
+        /// <summary>
+        /// Resolves property getter methods referenced in template binding expressions.
+        /// Getter-only computed properties are only referenced from template JST (emitted
+        /// in GetPostJavascript), which runs AFTER tree-shaking. By resolving them here,
+        /// the getter methods are marked as "used" and survive tree-shaking.
+        /// </summary>
+        private void CollectAndResolvePropertyGetters(ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
+        {
+            var resolvedGetters = new HashSet<string>();
+            foreach (var kvp in _compiledIRs)
+            {
+                var ir = kvp.Value;
+                if (string.IsNullOrEmpty(ir.ModelTypeName)) continue;
+
+                // Find the model type in Cecil
+                TypeDefinition modelType = FindTypeDefinitionByName(ir.ModelTypeName);
+                if (modelType == null) continue;
+
+                // Walk IR nodes to find property references in binding expressions
+                CollectAndResolvePropertyGettersFromNodes(ir.Children, modelType, runtimeScopeManager, resolvedGetters);
+            }
+
+            if (resolvedGetters.Count > 0)
+                Log.Debug("Resolved {Count} property getter methods for template emission: {Methods}",
+                    resolvedGetters.Count, string.Join(", ", resolvedGetters));
+        }
+
+        private void CollectAndResolvePropertyGettersFromNodes(
+            List<TemplateIR.IRNode> nodes,
+            TypeDefinition modelType,
+            RuntimeScopeManager runtimeScopeManager,
+            HashSet<string> resolved)
+        {
+            if (nodes == null) return;
+            foreach (var node in nodes)
+            {
+                if (node is TemplateIR.ExpressionBindingNode binding)
+                {
+                    ResolvePropertyGettersFromExpression(
+                        binding.Classification?.CSharpExpression, modelType, runtimeScopeManager, resolved);
+                }
+                else if (node is TemplateIR.ConditionalNode cond)
+                {
+                    ResolvePropertyGettersFromExpression(
+                        cond.Condition?.CSharpExpression, modelType, runtimeScopeManager, resolved);
+                    CollectAndResolvePropertyGettersFromNodes(cond.TrueBranch, modelType, runtimeScopeManager, resolved);
+                    CollectAndResolvePropertyGettersFromNodes(cond.FalseBranch, modelType, runtimeScopeManager, resolved);
+                }
+                else if (node is TemplateIR.LoopNode loop)
+                {
+                    ResolvePropertyGettersFromExpression(
+                        loop.CollectionExpression, modelType, runtimeScopeManager, resolved);
+                    // For item templates, resolve against item type if possible
+                    var itemTypeName = ResolveCollectionItemType(loop.CollectionExpression, modelType.FullName);
+                    var itemType = itemTypeName != null ? FindTypeDefinitionByName(itemTypeName) : null;
+                    CollectAndResolvePropertyGettersFromNodes(
+                        loop.ItemTemplate, itemType ?? modelType, runtimeScopeManager, resolved);
+                }
+
+                // Recurse into generic children
+                CollectAndResolvePropertyGettersFromNodes(node.Children, modelType, runtimeScopeManager, resolved);
+            }
+        }
+
+        private static void ResolvePropertyGettersFromExpression(
+            string expression,
+            TypeDefinition modelType,
+            RuntimeScopeManager runtimeScopeManager,
+            HashSet<string> resolved)
+        {
+            if (string.IsNullOrEmpty(expression) || modelType == null) return;
+
+            // Extract property names after "Model." prefix (same logic as ExtractPropertyReferences)
+            var prefixes = new[] { "Model.", "Control." };
+            foreach (var prefix in prefixes)
+            {
+                var idx = 0;
+                while ((idx = expression.IndexOf(prefix, idx, StringComparison.Ordinal)) >= 0)
+                {
+                    idx += prefix.Length;
+                    var end = idx;
+                    while (end < expression.Length && (char.IsLetterOrDigit(expression[end]) || expression[end] == '_'))
+                        end++;
+
+                    if (end > idx)
+                    {
+                        var propName = expression.Substring(idx, end - idx);
+                        var getterName = "get_" + propName;
+                        var key = modelType.FullName + "." + getterName;
+
+                        if (resolved.Add(key))
+                        {
+                            foreach (var method in modelType.Methods)
+                            {
+                                if (method.Name == getterName && !method.IsConstructor)
+                                {
+                                    runtimeScopeManager.Resolve(method);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    idx = end;
+                }
+            }
+        }
+
         private static void CollectAndResolveEventMethods(
             List<TemplateIR.IRNode> nodes,
             TypeDefinition modelType,
@@ -551,6 +689,70 @@ namespace Sunlight.Framework.Observables
                     CollectAndResolveEventMethods(loop.ItemTemplate, modelType, runtimeScopeManager, resolved);
                 }
             }
+        }
+
+        /// <summary>
+        /// Loads CSS stylesheets referenced by @styles directives from embedded resources.
+        /// </summary>
+        private RazorCssManager LoadCssStylesheets(
+            List<string> stylesheetResourceNames,
+            ClrContext clrContext,
+            RuntimeScopeManager runtimeScopeManager)
+        {
+            var cssManager = new RazorCssManager();
+
+            foreach (var cssResourceName in stylesheetResourceNames)
+            {
+                bool found = false;
+
+                foreach (var module in clrContext.Modules)
+                {
+                    foreach (var resource in module.Resources)
+                    {
+                        var embeddedResource = resource as EmbeddedResource;
+                        if (embeddedResource == null) continue;
+
+                        // Match by resource name (could be full or partial)
+                        var resourceFileName = runtimeScopeManager.Context.GetResourceFileName(
+                            module, embeddedResource.Name);
+
+                        if (embeddedResource.Name == cssResourceName
+                            || embeddedResource.Name.EndsWith("." + cssResourceName)
+                            || (resourceFileName != null && resourceFileName == cssResourceName)
+                            || (resourceFileName != null && resourceFileName.EndsWith(cssResourceName)))
+                        {
+                            using var stream = embeddedResource.GetResourceStream();
+                            using var reader = new StreamReader(stream);
+                            var cssText = reader.ReadToEnd();
+
+                            cssManager.AddStylesheet(
+                                resourceFileName ?? embeddedResource.Name,
+                                cssText);
+
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) break;
+                }
+
+                if (!found)
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"CSS stylesheet '{cssResourceName}' referenced by @styles not found in embedded resources.",
+                        false);
+                }
+            }
+
+            if (cssManager.HasStylesheets)
+            {
+                cssManager.ValidateCssVariables();
+                return cssManager;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -919,6 +1121,8 @@ namespace Sunlight.Framework.Observables
                     Log.Debug("GetMethodsToEmitPassN: scanning template {Name}, modelType={ModelType}, children={Count}",
                         kvp.Key, ir.ModelTypeName ?? "(null)", ir.Children?.Count ?? 0);
                     CollectEventMethodReferences(ir.Children, ir.ModelTypeName, null, methods);
+                    // Also collect property getter methods referenced in template bindings
+                    CollectPropertyGetterReferences(ir.Children, ir.ModelTypeName, null, methods);
                 }
                 Log.Debug("GetMethodsToEmitPassN: found {Count} event method references", methods.Count);
             }
@@ -1012,6 +1216,83 @@ namespace Sunlight.Framework.Observables
                     return method;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Recursively walks IR nodes to find property references in binding expressions
+        /// and resolve their getter methods to MethodReference objects for the tree-shaker.
+        /// </summary>
+        private void CollectPropertyGetterReferences(
+            List<IRNode> nodes, string modelTypeName, string itemVarPrefix,
+            List<MethodReference> methods)
+        {
+            if (nodes == null) return;
+            foreach (var node in nodes)
+            {
+                if (node is ExpressionBindingNode binding)
+                {
+                    CollectGettersFromExpression(binding.Classification?.CSharpExpression,
+                        modelTypeName, itemVarPrefix, methods);
+                }
+                else if (node is ConditionalNode cond)
+                {
+                    CollectGettersFromExpression(cond.Condition?.CSharpExpression,
+                        modelTypeName, itemVarPrefix, methods);
+                    CollectPropertyGetterReferences(cond.TrueBranch, modelTypeName, itemVarPrefix, methods);
+                    CollectPropertyGetterReferences(cond.FalseBranch, modelTypeName, itemVarPrefix, methods);
+                }
+                else if (node is LoopNode loop)
+                {
+                    CollectGettersFromExpression(loop.CollectionExpression,
+                        modelTypeName, itemVarPrefix, methods);
+                    var itemTypeName = ResolveCollectionItemType(loop.CollectionExpression, modelTypeName);
+                    var ivp = loop.ItemVariableName + ".";
+                    CollectPropertyGetterReferences(loop.ItemTemplate,
+                        itemTypeName ?? modelTypeName, ivp, methods);
+                }
+
+                if (node.Children != null && node.Children.Count > 0)
+                    CollectPropertyGetterReferences(node.Children, modelTypeName, itemVarPrefix, methods);
+            }
+        }
+
+        private void CollectGettersFromExpression(
+            string expression, string modelTypeName, string itemVarPrefix,
+            List<MethodReference> methods)
+        {
+            if (string.IsNullOrEmpty(expression) || string.IsNullOrEmpty(modelTypeName)) return;
+
+            var prefix = "Model.";
+            if (!string.IsNullOrEmpty(itemVarPrefix))
+                prefix = itemVarPrefix;
+
+            var idx = 0;
+            while ((idx = expression.IndexOf(prefix, idx, StringComparison.Ordinal)) >= 0)
+            {
+                idx += prefix.Length;
+                var end = idx;
+                while (end < expression.Length && (char.IsLetterOrDigit(expression[end]) || expression[end] == '_'))
+                    end++;
+
+                if (end > idx)
+                {
+                    var propName = expression.Substring(idx, end - idx);
+                    var getterName = "get_" + propName;
+                    var typeDef = FindTypeDefinitionByName(modelTypeName);
+                    if (typeDef != null)
+                    {
+                        foreach (var method in typeDef.Methods)
+                        {
+                            if (method.Name == getterName && !method.IsConstructor)
+                            {
+                                methods.Add(method);
+                                break;
+                            }
+                        }
+                    }
+                }
+                idx = end;
+            }
         }
 
         /// <summary>
@@ -1132,6 +1413,10 @@ namespace Sunlight.Framework.Observables
                     IIdentifier preCreatedGetter = null;
                     _templateGetterIdentifiers.TryGetValue(kvp.Value.TemplateName, out preCreatedGetter);
 
+                    // Look up CSS manager for this template (may be null if no @styles)
+                    RazorCssManager cssManager = null;
+                    _cssManagers.TryGetValue(kvp.Value.TemplateName, out cssManager);
+
                     var jstGenerator = new RazorSkinJSTGenerator(
                         kvp.Value,
                         _runtimeScopeManager,
@@ -1139,7 +1424,8 @@ namespace Sunlight.Framework.Observables
                         _resolvedIdentifiers,
                         _resolvedTypeIdentifiers,
                         _razorKnownTypes,
-                        preCreatedGetter);
+                        preCreatedGetter,
+                        cssManager);
 
                     var jstStatements = jstGenerator.Generate();
                     statements.AddRange(jstStatements);
@@ -1172,6 +1458,10 @@ namespace Sunlight.Framework.Observables
                 if (docStorageGetterStatements != null)
                     statements.AddRange(docStorageGetterStatements);
             }
+
+            // Contribute Razor CSS to the merged output via ConverterContext.
+            // XWML's CodeGenerator.GetAllCss() picks up these contributions.
+            ContributeCssToMergedOutput();
 
             Log.Debug("GetPostJavascript emitting {StatementCount} statements for {TemplateCount} templates",
                 statements.Count, emittedTemplates.Count);
@@ -1259,6 +1549,33 @@ namespace Sunlight.Framework.Observables
             {
                 Log.Error(ex, "Failed to emit DocStorageGetter function");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Contributes serialized CSS from all Razor templates to the ConverterContext
+        /// so XWML's CodeGenerator.GetAllCss() can include it in the merged output.
+        /// If XWML is not present, emits nothing here — a fallback style element would
+        /// be needed (future work).
+        /// </summary>
+        private void ContributeCssToMergedOutput()
+        {
+            if (_cssManagers.Count == 0) return;
+
+            var allCss = new System.Text.StringBuilder();
+
+            // Collect CSS from all templates, compressing names first
+            foreach (var kvp in _cssManagers)
+            {
+                kvp.Value.CompressNames();
+                allCss.Append(kvp.Value.GetSerializedCss());
+            }
+
+            var css = allCss.ToString();
+            if (!string.IsNullOrEmpty(css))
+            {
+                _runtimeScopeManager.Context.AddCssContribution(css);
+                Log.Debug("Contributed {CssLength} chars of Razor CSS to merged output", css.Length);
             }
         }
     }

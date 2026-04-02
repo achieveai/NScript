@@ -1354,5 +1354,239 @@ namespace Sunlight.Framework.UI.Test
             var countSpan = element.QuerySelector("[data-test] .todo-count");
             assert.Equal("1", countSpan.TextContent, "Count should update to 1");
         }
+
+        // ------------------------------------------------------------------
+        // @styles CSS stylesheet tests
+        // ------------------------------------------------------------------
+
+        [Test]
+        public static void TestRazorStyledTemplate_Renders(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Styled Header";
+            vm.Count = 42;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+
+            assert.NotEqual(null, control.Skin, "Styled skin should compile");
+            control.Activate();
+
+            var header = element.QuerySelector("[data-test] h1");
+            assert.NotEqual(null, header, "Should render h1 header element");
+            assert.Equal("Styled Header", header.TextContent, "Header text should match binding");
+        }
+
+        [Test]
+        public static void TestRazorStyledTemplate_HasCssClass(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Test";
+            vm.Count = 1;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+            control.Activate();
+
+            // The h1 should have a class attribute (minified name from CSS)
+            var header = element.QuerySelector("[data-test] h1");
+            assert.NotEqual(null, header, "h1 should exist");
+            var className = header.ClassName;
+            assert.NotEqual(null, className, "h1 should have a CSS class");
+            assert.NotEqual("", className, "CSS class should not be empty");
+        }
+
+        [Test]
+        public static void TestRazorStyledTemplate_CssApplied(Assert assert)
+        {
+            // Attach to the actual document body so computed styles work
+            var container = Window.Instance.Document.CreateElement("div");
+            Window.Instance.Document.Body.AppendChild(container);
+            var control = new UISkinableElement(container);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Bold Header";
+            vm.Count = 0;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+            control.Activate();
+
+            var header = container.QuerySelector("[data-test] h1");
+            assert.NotEqual(null, header, "h1 should exist");
+
+            // Check that the style element was created and CSS is present
+            var styleElements = Window.Instance.Document.QuerySelectorAll("style");
+            var foundCss = false;
+            for (var i = 0; i < styleElements.Length; i++)
+            {
+                if (styleElements[i].TextContent.IndexOf("font-weight") >= 0)
+                {
+                    foundCss = true;
+                }
+            }
+            assert.Equal(true, foundCss, "A style element should contain font-weight rule from @styles CSS");
+
+            // Clean up
+            Window.Instance.Document.Body.RemoveChild(container);
+        }
+
+        [Test]
+        public static void TestRazorStyledTemplate_AllElementsHaveClasses(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Test";
+            vm.Count = 5;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+            control.Activate();
+
+            // All 3 styled elements should have class attributes
+            var header = element.QuerySelector("[data-test] h1");
+            assert.NotEqual("", header.ClassName, "h1 should have styled-header class");
+
+            var content = element.QuerySelector("[data-test] div:nth-child(2)");
+            assert.NotEqual(null, content, "Content div should exist");
+
+            // Footer div exists
+            var allDivs = element.QuerySelectorAll("[data-test] div");
+            assert.Equal(true, allDivs.Length >= 2, "Should have at least 2 child divs (content + footer)");
+        }
+
+        [Test]
+        public static void TestRazorMultiStyled_Renders(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Multi-Styled";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorMultiStyled;
+
+            assert.NotEqual(null, control.Skin, "Multi-styled skin should compile");
+            control.Activate();
+
+            var header = element.QuerySelector("[data-test] h1");
+            assert.NotEqual(null, header, "Should render h1");
+            assert.Equal("Multi-Styled", header.TextContent, "Header text should match");
+
+            var sidebar = element.QuerySelector("[data-test] aside");
+            assert.NotEqual(null, sidebar, "Should render aside element");
+            assert.Equal("Side", sidebar.TextContent, "Sidebar text should match");
+        }
+
+        [Test]
+        public static void TestRazorMultiStyled_BothSheetsApplied(Assert assert)
+        {
+            var container = Window.Instance.Document.CreateElement("div");
+            Window.Instance.Document.Body.AppendChild(container);
+            var control = new UISkinableElement(container);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Test";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorMultiStyled;
+            control.Activate();
+
+            // Check that CSS from both stylesheets is present
+            var styleElements = Window.Instance.Document.QuerySelectorAll("style");
+            var foundFontWeight = false;
+            var foundWidth = false;
+            for (var i = 0; i < styleElements.Length; i++)
+            {
+                var text = styleElements[i].TextContent;
+                if (text.IndexOf("font-weight") >= 0)
+                    foundFontWeight = true;
+                if (text.IndexOf("width") >= 0)
+                    foundWidth = true;
+            }
+            assert.Equal(true, foundFontWeight, "CSS from RazorStyles.css should be in style element");
+            assert.Equal(true, foundWidth, "CSS from RazorStylesExtra.css should be in style element");
+
+            // Clean up
+            Window.Instance.Document.Body.RemoveChild(container);
+        }
+
+        // ------------------------------------------------------------------
+        // Phase 12: Ternary expression class binding in foreach
+        // ------------------------------------------------------------------
+
+        [Test]
+        public static void TestRazorTernaryClassInitial(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            var item1 = new RazorItemVM();
+            item1.Name = "Task A";
+            item1.IsComplete = false;
+            items.Add(item1);
+            var item2 = new RazorItemVM();
+            item2.Name = "Task B";
+            item2.IsComplete = true;
+            items.Add(item2);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorForeachBindings;
+            control.Activate();
+
+            var rows = element.QuerySelectorAll("[data-test] .item-row");
+            assert.Equal(rows.Length, 2, "Should render 2 item rows");
+
+            // Query by class applied via ternary binding
+            var pendingSpans = element.QuerySelectorAll("[data-test] .pending");
+            var doneSpans = element.QuerySelectorAll("[data-test] .done");
+            assert.Equal(pendingSpans.Length, 1,
+                "Should have 1 pending span (IsComplete=false)");
+            assert.Equal(doneSpans.Length, 1,
+                "Should have 1 done span (IsComplete=true)");
+        }
+
+        [Test]
+        public static void TestRazorTernaryClassReactivity(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            var item1 = new RazorItemVM();
+            item1.Name = "Task A";
+            item1.IsComplete = false;
+            items.Add(item1);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorForeachBindings;
+            control.Activate();
+
+            var pending = element.QuerySelectorAll("[data-test] .pending");
+            assert.Equal(pending.Length, 1,
+                "Should start with 1 pending span");
+
+            item1.IsComplete = true;
+            var done = element.QuerySelectorAll("[data-test] .done");
+            pending = element.QuerySelectorAll("[data-test] .pending");
+            assert.Equal(done.Length, 1,
+                "After toggle: should have 1 done span");
+            assert.Equal(pending.Length, 0,
+                "After toggle: should have 0 pending spans");
+
+            item1.IsComplete = false;
+            pending = element.QuerySelectorAll("[data-test] .pending");
+            done = element.QuerySelectorAll("[data-test] .done");
+            assert.Equal(pending.Length, 1,
+                "After revert: should have 1 pending span");
+            assert.Equal(done.Length, 0,
+                "After revert: should have 0 done spans");
+        }
     }
 }
