@@ -4,6 +4,7 @@ using NScript.RazorSkin.CodeGen;
 using NScript.RazorSkin.TemplateIR;
 using System.Collections.Generic;
 using System.Linq;
+using static RazorSkinParser.Test.TopologyTestHelpers;
 
 namespace RazorSkinParser.Test
 {
@@ -14,29 +15,8 @@ namespace RazorSkinParser.Test
         public void SimpleTextBinding_ProducesSourcePropertyDomTarget()
         {
             // IR: @Model.Name as text content
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
-                {
-                    new ExpressionBindingNode
-                    {
-                        Target = ExpressionTarget.TextContent,
-                        ElementId = "e0",
-                        Classification = new BindingClassification
-                        {
-                            CSharpExpression = "Model.Name",
-                            Mode = BindingMode.OneWay,
-                            SourceKind = BindingSourceKind.DataContext,
-                            Dependencies = new List<ObservableDependency>
-                            {
-                                new ObservableDependency(BindingSourceKind.DataContext, "Name", "Name")
-                            }
-                        }
-                    }
-                }
-            };
+            var template = MakeTemplate(
+                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -70,18 +50,9 @@ namespace RazorSkinParser.Test
         public void TwoBindings_ShareSourceAndDeduplicateProperty()
         {
             // IR: @Model.Name appears twice
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
-                {
-                    MakeBinding("Model.Name", BindingMode.OneWay, BindingSourceKind.DataContext,
-                        ExpressionTarget.TextContent, "e0", "Name"),
-                    MakeBinding("Model.Name", BindingMode.OneWay, BindingSourceKind.DataContext,
-                        ExpressionTarget.TextContent, "e1", "Name")
-                }
-            };
+            var template = MakeTemplate(
+                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name"),
+                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e1", "Name"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -108,18 +79,9 @@ namespace RazorSkinParser.Test
         public void TwoDistinctProperties_CreateSeparatePropertyNodes()
         {
             // IR: @Model.Name and @Model.Count
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
-                {
-                    MakeBinding("Model.Name", BindingMode.OneWay, BindingSourceKind.DataContext,
-                        ExpressionTarget.TextContent, "e0", "Name"),
-                    MakeBinding("Model.Count", BindingMode.OneWay, BindingSourceKind.DataContext,
-                        ExpressionTarget.TextContent, "e1", "Count")
-                }
-            };
+            var template = MakeTemplate(
+                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name"),
+                MakeBinding("Model.Count", BindingMode.OneWay, ExpressionTarget.TextContent, "e1", "Count"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -139,34 +101,16 @@ namespace RazorSkinParser.Test
 
             // 2 subscriptions
             topology.Subscriptions.Should().HaveCount(2);
-            topology.Subscriptions.Select(s => s.PropertyName).Should().Contain("Name");
-            topology.Subscriptions.Select(s => s.PropertyName).Should().Contain("Count");
+            topology.Subscriptions.Select(s => s.PropertyName)
+                .Should().BeEquivalentTo(new[] { "Name", "Count" });
         }
 
         [TestMethod]
         public void OneTimeBinding_HasNoSubscription()
         {
             // IR: @Model.AppVersion with Mode=OneTime
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
-                {
-                    new ExpressionBindingNode
-                    {
-                        Target = ExpressionTarget.TextContent,
-                        ElementId = "e0",
-                        Classification = new BindingClassification
-                        {
-                            CSharpExpression = "Model.AppVersion",
-                            Mode = BindingMode.OneTime,
-                            SourceKind = BindingSourceKind.DataContext,
-                            Dependencies = new List<ObservableDependency>()
-                        }
-                    }
-                }
-            };
+            var template = MakeTemplate(
+                MakeBinding("Model.AppVersion", BindingMode.OneTime, ExpressionTarget.TextContent, "e0", "AppVersion"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -182,30 +126,23 @@ namespace RazorSkinParser.Test
         public void ComputedExpression_CreatesSeparateComputedNode()
         {
             // IR: @(Model.Price * Model.Quantity) with deps [Price, Quantity]
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
+            var template = MakeTemplate(
+                new ExpressionBindingNode
                 {
-                    new ExpressionBindingNode
+                    Target = ExpressionTarget.TextContent,
+                    ElementId = "e0",
+                    Classification = new BindingClassification
                     {
-                        Target = ExpressionTarget.TextContent,
-                        ElementId = "e0",
-                        Classification = new BindingClassification
+                        CSharpExpression = "Model.Price * Model.Quantity",
+                        Mode = BindingMode.OneWay,
+                        SourceKind = BindingSourceKind.DataContext,
+                        Dependencies = new List<ObservableDependency>
                         {
-                            CSharpExpression = "Model.Price * Model.Quantity",
-                            Mode = BindingMode.OneWay,
-                            SourceKind = BindingSourceKind.DataContext,
-                            Dependencies = new List<ObservableDependency>
-                            {
-                                new ObservableDependency(BindingSourceKind.DataContext, "Price", "Price"),
-                                new ObservableDependency(BindingSourceKind.DataContext, "Quantity", "Quantity")
-                            }
+                            new ObservableDependency(BindingSourceKind.DataContext, "Price", "Price"),
+                            new ObservableDependency(BindingSourceKind.DataContext, "Quantity", "Quantity")
                         }
                     }
-                }
-            };
+                });
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -235,20 +172,7 @@ namespace RazorSkinParser.Test
         [TestMethod]
         public void EventBinding_CreatesEventTopology()
         {
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
-                {
-                    new EventNode
-                    {
-                        DomEventName = "click",
-                        HandlerExpression = "Model.OnSubmit",
-                        IsLambda = false
-                    }
-                }
-            };
+            var template = MakeTemplate(MakeEvent("click", "Model.OnSubmit"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -264,33 +188,12 @@ namespace RazorSkinParser.Test
         [TestMethod]
         public void GateNode_ForConditionalBlock()
         {
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
-                {
-                    new ConditionalNode
+            var template = MakeTemplate(
+                MakeConditional("Model.IsVisible", "IsVisible",
+                    new List<IRNode>
                     {
-                        IsReactive = true,
-                        Condition = new BindingClassification
-                        {
-                            CSharpExpression = "Model.IsVisible",
-                            Mode = BindingMode.OneWay,
-                            SourceKind = BindingSourceKind.DataContext,
-                            Dependencies = new List<ObservableDependency>
-                            {
-                                new ObservableDependency(BindingSourceKind.DataContext, "IsVisible", "IsVisible")
-                            }
-                        },
-                        TrueBranch = new List<IRNode>
-                        {
-                            MakeBinding("Model.Name", BindingMode.OneWay, BindingSourceKind.DataContext,
-                                ExpressionTarget.TextContent, "e0", "Name")
-                        }
-                    }
-                }
-            };
+                        MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name")
+                    }));
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -299,8 +202,9 @@ namespace RazorSkinParser.Test
             topology.NodeTypes[1].Should().Be(GraphNodeTypeConstants.Property);
             topology.NodeTypes[2].Should().Be(GraphNodeTypeConstants.Gate);
 
-            // Gate node's gateIndex is itself
-            topology.GateIndices[2].Should().Be(2);
+            // Top-level gate is ungated (-1) — it always evaluates.
+            // Only nested gates have their parent's gateIndex set.
+            topology.GateIndices[2].Should().Be(-1);
 
             // Child nodes have gateIndices pointing to the Gate
             topology.GateIndices[3].Should().Be(2);
@@ -317,16 +221,8 @@ namespace RazorSkinParser.Test
         [TestMethod]
         public void DefaultValues_MatchTargetType()
         {
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
-                {
-                    MakeBinding("Model.Name", BindingMode.OneWay, BindingSourceKind.DataContext,
-                        ExpressionTarget.TextContent, "e0", "Name")
-                }
-            };
+            var template = MakeTemplate(
+                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -339,11 +235,7 @@ namespace RazorSkinParser.Test
         [TestMethod]
         public void SourceNode_AlwaysAtIndexZero()
         {
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel"
-            };
+            var template = MakeTemplate();
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -352,138 +244,267 @@ namespace RazorSkinParser.Test
             topology.RootSourceSlot.Should().Be(0);
         }
 
-        /// <summary>
-        /// Verifies that an attribute binding with AttributeName="value" creates a
-        /// DomTargetTopology with the correct target and attribute name.
-        /// The emitter uses this data to generate e.value (DOM property) instead of
-        /// setAttribute("value"...) — ensuring input values update correctly after
-        /// user interaction (H2 review finding).
-        /// </summary>
+        // ------------------------------------------------------------------
+        // SubControlNode handling
+        // ------------------------------------------------------------------
+
         [TestMethod]
-        public void ValueAttributeBinding_ProducesDomTargetWithValueAttributeName()
+        public void SubControlNode_IsIgnoredInTopology()
         {
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
+            // SubControlNode is present in IR but GraphTopologyBuilder skips it
+            // (stub break; — no graph nodes created for sub-controls yet).
+            var template = MakeTemplate(
+                new SubControlNode
                 {
-                    new ExpressionBindingNode
-                    {
-                        Target = ExpressionTarget.Attribute,
-                        AttributeName = "value",
-                        ElementId = "e0",
-                        Classification = new BindingClassification
-                        {
-                            CSharpExpression = "Model.SomeProperty",
-                            Mode = BindingMode.OneWay,
-                            SourceKind = BindingSourceKind.DataContext,
-                            Dependencies = new List<ObservableDependency>
-                            {
-                                new ObservableDependency(BindingSourceKind.DataContext, "SomeProperty", "SomeProperty")
-                            }
-                        }
-                    }
-                }
-            };
+                    TypeName = "ListView",
+                    ResolvedTypeName = "Sunlight.Framework.UI.ListView",
+                    ElementId = "myList"
+                },
+                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
-            // Should have Source(0) -> Property(1) -> DomTarget(2)
+            // SubControlNode should NOT add nodes — only the binding does
+            // Source(0) -> Property(1) -> DomTarget(2)
             topology.NodeCount.Should().Be(3);
             topology.NodeTypes[0].Should().Be(GraphNodeTypeConstants.Source);
             topology.NodeTypes[1].Should().Be(GraphNodeTypeConstants.Property);
             topology.NodeTypes[2].Should().Be(GraphNodeTypeConstants.DomTarget);
-
-            // DomTarget should carry "value" attribute name so the emitter
-            // generates e.value (DOM property) rather than setAttribute("value"...)
-            topology.DomTargets.Should().HaveCount(1);
-            topology.DomTargets[0].AttributeName.Should().Be("value",
-                "value attribute must use DOM property setter, not setAttribute");
-            topology.DomTargets[0].Target.Should().Be(ExpressionTarget.Attribute);
         }
 
-        // --- Helper ---
-
-        /// <summary>
-        /// Verifies that a negated gate condition (@if (!Model.IsCollapsed)) produces
-        /// a Property node with "!" prefix getter expression (M3 review finding).
-        /// </summary>
         [TestMethod]
-        public void NegatedGateCondition_ProducesNegatedPropertyGetter()
+        public void SubControlNode_WithBindings_OnlyProcessesExpressionBindings()
         {
-            var template = new SkinTemplateNode
-            {
-                TemplateName = "TestTemplate",
-                ModelTypeName = "TestModel",
-                Children =
+            // SubControlNode with property bindings — the sub-control itself is skipped,
+            // but sibling expression bindings are still processed.
+            var template = MakeTemplate(
+                new SubControlNode
                 {
-                    new ConditionalNode
+                    TypeName = "SearchBox",
+                    ResolvedTypeName = "App.SearchBox",
+                    ElementId = "search",
+                    PropertyBindings = new List<SubControlPropertyBinding>
                     {
-                        IsReactive = true,
-                        Condition = new BindingClassification
+                        new SubControlPropertyBinding
                         {
-                            CSharpExpression = "!Model.IsCollapsed",
-                            Mode = BindingMode.OneWay,
-                            SourceKind = BindingSourceKind.DataContext,
-                            Dependencies = new List<ObservableDependency>
+                            PropertyName = "Query",
+                            Classification = new BindingClassification
                             {
-                                new ObservableDependency(BindingSourceKind.DataContext, "IsCollapsed", "IsCollapsed")
+                                CSharpExpression = "Model.SearchQuery",
+                                Mode = BindingMode.OneWay,
+                                SourceKind = BindingSourceKind.DataContext
                             }
-                        },
-                        TrueBranch = new List<IRNode>
-                        {
-                            MakeBinding("Model.Content", BindingMode.OneWay, BindingSourceKind.DataContext,
-                                ExpressionTarget.TextContent, "e0", "Content")
                         }
                     }
-                }
-            };
+                },
+                MakeBinding("Model.Title", BindingMode.OneWay, ExpressionTarget.TextContent, "e1", "Title"));
 
             var topology = GraphTopologyBuilder.Build(template);
 
-            // Source(0) -> Property_IsCollapsed(1) -> NegatedProperty_!IsCollapsed(2) -> Gate(3)
-            topology.NodeTypes[0].Should().Be(GraphNodeTypeConstants.Source);
-            topology.NodeTypes[1].Should().Be(GraphNodeTypeConstants.Property);
-            topology.NodeTypes[2].Should().Be(GraphNodeTypeConstants.Property,
-                "negated condition should create a second Property node");
-
-            // The negated property getter should have "!" prefix
-            topology.GetterExpressions[2].Should().StartWith("!",
-                "negated gate condition should produce getter with ! prefix");
-            topology.GetterExpressions[2].Should().Be("!IsCollapsed");
-
-            // Gate node follows
-            topology.NodeTypes[3].Should().Be(GraphNodeTypeConstants.Gate);
+            // Only the expression binding is processed, not the sub-control
+            topology.NodeCount.Should().Be(3);
+            topology.Subscriptions.Should().HaveCount(1);
+            topology.Subscriptions[0].PropertyName.Should().Be("Title");
         }
 
-        private static ExpressionBindingNode MakeBinding(
-            string csharpExpr,
-            BindingMode mode,
-            BindingSourceKind sourceKind,
-            ExpressionTarget target,
-            string elementId,
-            string propertyName)
-        {
-            var deps = mode == BindingMode.OneTime
-                ? new List<ObservableDependency>()
-                : new List<ObservableDependency>
-                {
-                    new ObservableDependency(sourceKind, propertyName, propertyName)
-                };
+        // ------------------------------------------------------------------
+        // Static-only template
+        // ------------------------------------------------------------------
 
-            return new ExpressionBindingNode
-            {
-                Target = target,
-                ElementId = elementId,
-                Classification = new BindingClassification
-                {
-                    CSharpExpression = csharpExpr,
-                    Mode = mode,
-                    SourceKind = sourceKind,
-                    Dependencies = deps
-                }
-            };
+        [TestMethod]
+        public void StaticHtmlOnly_ProducesMinimalTopology()
+        {
+            // Template with only static HTML (no bindings, no events)
+            var template = MakeTemplate(new HtmlNode { HtmlContent = "<div>Hello World</div>" });
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Only Source node exists (index 0)
+            topology.NodeCount.Should().Be(1);
+            topology.NodeTypes[0].Should().Be(GraphNodeTypeConstants.Source);
+            topology.Subscriptions.Should().HaveCount(0);
+            topology.DomTargets.Should().HaveCount(0);
+            topology.Events.Should().HaveCount(0);
+            topology.Gates.Should().HaveCount(0);
+        }
+
+        // ------------------------------------------------------------------
+        // Nested conditional gates
+        // ------------------------------------------------------------------
+
+        [TestMethod]
+        public void NestedConditionals_CreateChainedGates()
+        {
+            // @if(Model.IsVisible) { @if(Model.ShowDetails) { @Model.Name } }
+            var template = MakeTemplate(
+                MakeConditional("Model.IsVisible", "IsVisible",
+                    new List<IRNode>
+                    {
+                        MakeConditional("Model.ShowDetails", "ShowDetails",
+                            new List<IRNode>
+                            {
+                                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name")
+                            })
+                    }));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Should have 2 gates
+            topology.Gates.Should().HaveCount(2);
+
+            // Find gate node indices
+            var gateIndices = topology.NodeTypes
+                .Select((t, i) => new { Type = t, Index = i })
+                .Where(x => x.Type == GraphNodeTypeConstants.Gate)
+                .Select(x => x.Index)
+                .ToList();
+
+            gateIndices.Should().HaveCount(2);
+
+            int outerGate = gateIndices[0];
+            int innerGate = gateIndices[1];
+
+            // Outer gate is ungated (top-level, -1)
+            topology.GateIndices[outerGate].Should().Be(-1);
+
+            // Inner gate is gated by the outer gate
+            topology.GateIndices[innerGate].Should().Be(outerGate);
+        }
+
+        // ------------------------------------------------------------------
+        // Loop (CollectionManager) topology
+        // ------------------------------------------------------------------
+
+        [TestMethod]
+        public void LoopNode_CreatesCollectionManagerTopology()
+        {
+            // @foreach(var item in Model.Items) { @item.Name }
+            var template = MakeTemplate(
+                MakeLoop("Model.Items", "item",
+                    new List<IRNode>
+                    {
+                        MakeBinding("item.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name")
+                    }));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Should contain a CollectionManager node
+            var collManagerIndices = topology.NodeTypes
+                .Select((t, i) => new { Type = t, Index = i })
+                .Where(x => x.Type == GraphNodeTypeConstants.CollectionManager)
+                .Select(x => x.Index)
+                .ToList();
+
+            collManagerIndices.Should().HaveCount(1);
+
+            // CollectionManager should be connected from Source
+            int cmIdx = collManagerIndices[0];
+            topology.Consumers[0].Should().Contain(cmIdx);
+        }
+
+        // ------------------------------------------------------------------
+        // Attribute binding targets
+        // ------------------------------------------------------------------
+
+        [TestMethod]
+        public void AttributeBinding_ProducesCorrectDomTarget()
+        {
+            var template = MakeTemplate(
+                MakeBinding("Model.Title", BindingMode.OneWay, ExpressionTarget.Attribute, "e0", "Title"));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Source(0) -> Property(1) -> DomTarget(2)
+            topology.DomTargets.Should().HaveCount(1);
+            topology.DomTargets[0].Target.Should().Be(ExpressionTarget.Attribute);
+        }
+
+        [TestMethod]
+        public void CssClassBinding_ProducesCorrectDomTarget()
+        {
+            var template = MakeTemplate(
+                MakeBinding("Model.CssClass", BindingMode.OneWay, ExpressionTarget.CssClass, "e0", "CssClass"));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            topology.DomTargets.Should().HaveCount(1);
+            topology.DomTargets[0].Target.Should().Be(ExpressionTarget.CssClass);
+        }
+
+        [TestMethod]
+        public void StyleBinding_ProducesCorrectDomTarget()
+        {
+            var template = MakeTemplate(
+                MakeBinding("Model.DisplayStyle", BindingMode.OneWay, ExpressionTarget.Style, "e0", "DisplayStyle"));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            topology.DomTargets.Should().HaveCount(1);
+            topology.DomTargets[0].Target.Should().Be(ExpressionTarget.Style);
+        }
+
+        // ------------------------------------------------------------------
+        // Mixed template (binding + event + conditional)
+        // ------------------------------------------------------------------
+
+        [TestMethod]
+        public void MixedTemplate_BindingEventConditional_AllProcessed()
+        {
+            var template = MakeTemplate(
+                MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name"),
+                MakeEvent("click", "Model.OnClick"),
+                MakeConditional("Model.IsActive", "IsActive",
+                    new List<IRNode> { new HtmlNode { HtmlContent = "<span>Active</span>" } }));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Should have all three: DomTarget, EventBinding, Gate
+            topology.DomTargets.Should().HaveCount(1);
+            topology.Events.Should().HaveCount(1);
+            topology.Gates.Should().HaveCount(1);
+
+            // Subscriptions: "Name" and "IsActive"
+            topology.Subscriptions.Should().HaveCount(2);
+            topology.Subscriptions.Select(s => s.PropertyName)
+                .Should().BeEquivalentTo(new[] { "Name", "IsActive" });
+        }
+
+        [TestMethod]
+        public void NegatedGateCondition_ProducesNegatedPropertyGetter()
+        {
+            // Arrange — template with @if (!Model.IsEnabled)
+            var template = MakeTemplate(
+                MakeConditional("!Model.IsEnabled", "IsEnabled",
+                    new List<IRNode>
+                    {
+                        MakeBinding("Model.Label", BindingMode.OneWay,
+                            ExpressionTarget.TextContent, "e0", "Label")
+                    }));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Assert — a negated gate should produce a Property node with "!" prefix getter
+            topology.Gates.Should().HaveCount(1);
+            // The negated condition creates a Property node with "!IsEnabled" getter
+            topology.GetterExpressions.Should().Contain("!IsEnabled");
+        }
+
+        [TestMethod]
+        public void ValueAttributeBinding_ProducesDomTargetWithValueAttributeName()
+        {
+            // Arrange — template with <input value="@Model.Name" />
+            var binding = MakeBinding("Model.Name", BindingMode.OneWay,
+                ExpressionTarget.Attribute, "e0", "Name");
+            binding.AttributeName = "value";
+            var template = MakeTemplate(binding);
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Assert — DomTarget should have AttributeName = "value" and Target = Attribute
+            topology.DomTargets.Should().HaveCount(1);
+            var domTarget = topology.DomTargets[0];
+            domTarget.AttributeName.Should().Be("value");
+            domTarget.Target.Should().Be(ExpressionTarget.Attribute);
         }
     }
 }

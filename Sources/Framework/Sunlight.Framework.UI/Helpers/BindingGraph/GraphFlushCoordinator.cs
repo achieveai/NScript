@@ -63,13 +63,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (bucket[i] == state) return;
             }
 
-            NativeArray<GraphState> newBucket = new NativeArray<GraphState>(oldLen + 1);
-            for (int i = 0; i < oldLen; i++)
-            {
-                newBucket[i] = bucket[i];
-            }
-            newBucket[oldLen] = state;
-            pendingByDepth[depth] = newBucket;
+            // Append in-place using Push (JS array is dynamic).
+            bucket.Push(state);
 
             if (depth > maxDepth)
             {

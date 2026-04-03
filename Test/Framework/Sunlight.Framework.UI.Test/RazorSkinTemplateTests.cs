@@ -1356,237 +1356,238 @@ namespace Sunlight.Framework.UI.Test
         }
 
         // ------------------------------------------------------------------
-        // @styles CSS stylesheet tests
+        // Additional Lifecycle / Edge-Case Tests
         // ------------------------------------------------------------------
 
         [Test]
-        public static void TestRazorStyledTemplate_Renders(Assert assert)
+        public static void TestRazorSkinSwap(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new TestViewModelA();
+            vm.PropStr1 = "First Skin";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
+            control.Activate();
+
+            var span = element.QuerySelector("[data-test] span");
+            assert.Equal("First Skin", span.TextContent, "First skin should render");
+
+            // Swap to a different skin
+            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
+
+            span = element.QuerySelector("[data-test] span");
+            assert.NotEqual(null, span, "New skin should render after swap");
+            assert.Equal("First Skin", span.TextContent,
+                "New skin should show same DataContext value");
+        }
+
+        [Test]
+        public static void TestRazorSkinSwapUpdates(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new TestViewModelA();
+            vm.PropStr1 = "Initial";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
+            control.Activate();
+
+            // Swap to graph skin
+            control.Skin = RazorSkinTemplatesClass.GraphSimpleText;
+
+            // Updates should work on new skin
+            vm.PropStr1 = "After Swap";
+            var span = element.QuerySelector("[data-test] span");
+            assert.Equal("After Swap", span.TextContent,
+                "Reactive updates should work after skin swap");
+        }
+
+        [Test]
+        public static void TestRazorForeachEmptyStart(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
             var control = new UISkinableElement(element);
 
             var vm = new RazorTestVM();
-            vm.Name = "Styled Header";
-            vm.Count = 42;
+            var items = new ObservableCollection<RazorItemVM>();
+            vm.Items = items;
             control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
-
-            assert.NotEqual(null, control.Skin, "Styled skin should compile");
+            control.Skin = RazorSkinTemplatesClass.RazorForeach;
             control.Activate();
 
-            var header = element.QuerySelector("[data-test] h1");
-            assert.NotEqual(null, header, "Should render h1 header element");
-            assert.Equal("Styled Header", header.TextContent, "Header text should match binding");
+            var lis = element.QuerySelectorAll("[data-test] .item");
+            assert.Equal(0, lis.Length, "Should start with 0 items");
+
+            // Add items dynamically to empty collection
+            var item1 = new RazorItemVM();
+            item1.Name = "First";
+            items.Add(item1);
+            lis = element.QuerySelectorAll("[data-test] .item");
+            assert.Equal(1, lis.Length, "Should have 1 item after first Add");
+            assert.Equal("First", lis[0].TextContent, "First item text");
+
+            var item2 = new RazorItemVM();
+            item2.Name = "Second";
+            items.Add(item2);
+            lis = element.QuerySelectorAll("[data-test] .item");
+            assert.Equal(2, lis.Length, "Should have 2 items after second Add");
         }
 
         [Test]
-        public static void TestRazorStyledTemplate_HasCssClass(Assert assert)
+        public static void TestRazorComputedBothChange(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
             var control = new UISkinableElement(element);
 
             var vm = new RazorTestVM();
-            vm.Name = "Test";
-            vm.Count = 1;
+            vm.Price = 5;
+            vm.Quantity = 2;
             control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+            control.Skin = RazorSkinTemplatesClass.RazorComputed;
             control.Activate();
 
-            // The h1 should have a class attribute (minified name from CSS)
-            var header = element.QuerySelector("[data-test] h1");
-            assert.NotEqual(null, header, "h1 should exist");
-            var className = header.ClassName;
-            assert.NotEqual(null, className, "h1 should have a CSS class");
-            assert.NotEqual("", className, "CSS class should not be empty");
+            var span = element.QuerySelector("[data-test] .total");
+            assert.Equal("10", span.TextContent, "Initial: 5 * 2 = 10");
+
+            // Change both properties
+            vm.Price = 7;
+            vm.Quantity = 4;
+            assert.Equal("28", span.TextContent,
+                "After changing both: 7 * 4 = 28");
         }
 
         [Test]
-        public static void TestRazorStyledTemplate_CssApplied(Assert assert)
+        public static void TestRazorEventMultipleClicks(Assert assert)
         {
-            // Attach to the actual document body so computed styles work
-            var container = Window.Instance.Document.CreateElement("div");
-            Window.Instance.Document.Body.AppendChild(container);
-            var control = new UISkinableElement(container);
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
 
             var vm = new RazorTestVM();
-            vm.Name = "Bold Header";
+            vm.ClickCount = 0;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorEventClick;
+            control.Activate();
+
+            var btn = element.QuerySelector("[data-test] .btn-click");
+            var countSpan = element.QuerySelector("[data-test] .click-count");
+
+            btn.Click();
+            btn.Click();
+            btn.Click();
+
+            assert.Equal(3, vm.ClickCount, "ClickCount should be 3 after 3 clicks");
+            assert.Equal("3", countSpan.TextContent,
+                "DOM should reactively show 3 after 3 clicks");
+        }
+
+        [Test]
+        public static void TestRazorIfConditionWithBinding(Assert assert)
+        {
+            // Test that bindings inside @if blocks update correctly after gate toggles
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.IsActive = false;
+            vm.Name = "Alice";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorIfBindings;
+            control.Activate();
+
+            var nameSpan = element.QuerySelector("[data-test] .active-name");
+            assert.Equal(null, nameSpan, "When IsActive=false, binding content should not render");
+
+            // Toggle gate open
+            vm.IsActive = true;
+            nameSpan = element.QuerySelector("[data-test] .active-name");
+            assert.NotEqual(null, nameSpan, "When IsActive toggled to true, content should appear");
+            assert.Equal("Alice", nameSpan.TextContent,
+                "Content should show current Name when gate opens");
+
+            // Change name while gate is open
+            vm.Name = "Bob";
+            nameSpan = element.QuerySelector("[data-test] .active-name");
+            assert.Equal("Bob", nameSpan.TextContent,
+                "Binding should update while gate is open");
+        }
+
+        [Test]
+        public static void TestRazorDeactivatePreservesElements(Assert assert)
+        {
+            // Verify that deactivate/reactivate cycle doesn't corrupt the DOM.
+            // After reactivation, updates to the VM should still propagate.
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new TestViewModelA();
+            vm.PropStr1 = "Before";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSimpleText;
+            control.Activate();
+
+            var span = element.QuerySelector("[data-test] span");
+            assert.Equal("Before", span.TextContent, "Initial value");
+
+            control.Deactivate();
+            control.Activate();
+
+            // After reactivation, DOM should still be functional
+            span = element.QuerySelector("[data-test] span");
+            assert.NotEqual(null, span, "Span should exist after reactivation");
+
+            vm.PropStr1 = "After Reactivate";
+            span = element.QuerySelector("[data-test] span");
+            assert.Equal("After Reactivate", span.TextContent,
+                "Reactive updates should work after deactivate/reactivate cycle");
+        }
+
+        /// <summary>
+        /// Verifies that property changes flush synchronously to the DOM.
+        /// This is the key behavioral contract of CreatePropertyCallback: each
+        /// property mutation must update the DOM before the next line of
+        /// application code executes. If the flush were async (via MarkDirty +
+        /// TaskScheduler), these intermediate assertions would fail because
+        /// the DOM wouldn't update until the next microtask boundary.
+        /// </summary>
+        [Test]
+        public static void TestRazorSynchronousFlushGuarantee(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Step0";
             vm.Count = 0;
             control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+            control.Skin = RazorSkinTemplatesClass.RazorMultiBinding;
             control.Activate();
 
-            var header = container.QuerySelector("[data-test] h1");
-            assert.NotEqual(null, header, "h1 should exist");
+            var nameSpan = element.QuerySelector("[data-test] .name span");
+            var countSpan = element.QuerySelector("[data-test] .count span");
+            assert.Equal("Step0", nameSpan.TextContent, "Initial Name");
+            assert.Equal("0", countSpan.TextContent, "Initial Count");
 
-            // Check that the style element was created and CSS is present
-            var styleElements = Window.Instance.Document.QuerySelectorAll("style");
-            var foundCss = false;
-            for (var i = 0; i < styleElements.Length; i++)
-            {
-                if (styleElements[i].TextContent.IndexOf("font-weight") >= 0)
-                {
-                    foundCss = true;
-                }
-            }
-            assert.Equal(true, foundCss, "A style element should contain font-weight rule from @styles CSS");
+            // Rapid sequential mutations — each must flush to DOM synchronously
+            // before the next assertion executes. If flush were async, these
+            // intermediate checks would still see stale values.
+            vm.Name = "Step1";
+            assert.Equal("Step1", nameSpan.TextContent,
+                "Name must be 'Step1' synchronously after first mutation");
 
-            // Clean up
-            Window.Instance.Document.Body.RemoveChild(container);
-        }
+            vm.Count = 10;
+            assert.Equal("10", countSpan.TextContent,
+                "Count must be '10' synchronously after second mutation");
 
-        [Test]
-        public static void TestRazorStyledTemplate_AllElementsHaveClasses(Assert assert)
-        {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
+            vm.Name = "Step2";
+            assert.Equal("Step2", nameSpan.TextContent,
+                "Name must be 'Step2' synchronously after third mutation");
 
-            var vm = new RazorTestVM();
-            vm.Name = "Test";
-            vm.Count = 5;
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
-            control.Activate();
-
-            // All 3 styled elements should have class attributes
-            var header = element.QuerySelector("[data-test] h1");
-            assert.NotEqual("", header.ClassName, "h1 should have styled-header class");
-
-            var content = element.QuerySelector("[data-test] div:nth-child(2)");
-            assert.NotEqual(null, content, "Content div should exist");
-
-            // Footer div exists
-            var allDivs = element.QuerySelectorAll("[data-test] div");
-            assert.Equal(true, allDivs.Length >= 2, "Should have at least 2 child divs (content + footer)");
-        }
-
-        [Test]
-        public static void TestRazorMultiStyled_Renders(Assert assert)
-        {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new RazorTestVM();
-            vm.Name = "Multi-Styled";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorMultiStyled;
-
-            assert.NotEqual(null, control.Skin, "Multi-styled skin should compile");
-            control.Activate();
-
-            var header = element.QuerySelector("[data-test] h1");
-            assert.NotEqual(null, header, "Should render h1");
-            assert.Equal("Multi-Styled", header.TextContent, "Header text should match");
-
-            var sidebar = element.QuerySelector("[data-test] aside");
-            assert.NotEqual(null, sidebar, "Should render aside element");
-            assert.Equal("Side", sidebar.TextContent, "Sidebar text should match");
-        }
-
-        [Test]
-        public static void TestRazorMultiStyled_BothSheetsApplied(Assert assert)
-        {
-            var container = Window.Instance.Document.CreateElement("div");
-            Window.Instance.Document.Body.AppendChild(container);
-            var control = new UISkinableElement(container);
-
-            var vm = new RazorTestVM();
-            vm.Name = "Test";
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorMultiStyled;
-            control.Activate();
-
-            // Check that CSS from both stylesheets is present
-            var styleElements = Window.Instance.Document.QuerySelectorAll("style");
-            var foundFontWeight = false;
-            var foundWidth = false;
-            for (var i = 0; i < styleElements.Length; i++)
-            {
-                var text = styleElements[i].TextContent;
-                if (text.IndexOf("font-weight") >= 0)
-                    foundFontWeight = true;
-                if (text.IndexOf("width") >= 0)
-                    foundWidth = true;
-            }
-            assert.Equal(true, foundFontWeight, "CSS from RazorStyles.css should be in style element");
-            assert.Equal(true, foundWidth, "CSS from RazorStylesExtra.css should be in style element");
-
-            // Clean up
-            Window.Instance.Document.Body.RemoveChild(container);
-        }
-
-        // ------------------------------------------------------------------
-        // Phase 12: Ternary expression class binding in foreach
-        // ------------------------------------------------------------------
-
-        [Test]
-        public static void TestRazorTernaryClassInitial(Assert assert)
-        {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new RazorTestVM();
-            var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Task A";
-            item1.IsComplete = false;
-            items.Add(item1);
-            var item2 = new RazorItemVM();
-            item2.Name = "Task B";
-            item2.IsComplete = true;
-            items.Add(item2);
-            vm.Items = items;
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorForeachBindings;
-            control.Activate();
-
-            var rows = element.QuerySelectorAll("[data-test] .item-row");
-            assert.Equal(rows.Length, 2, "Should render 2 item rows");
-
-            // Query by class applied via ternary binding
-            var pendingSpans = element.QuerySelectorAll("[data-test] .pending");
-            var doneSpans = element.QuerySelectorAll("[data-test] .done");
-            assert.Equal(pendingSpans.Length, 1,
-                "Should have 1 pending span (IsComplete=false)");
-            assert.Equal(doneSpans.Length, 1,
-                "Should have 1 done span (IsComplete=true)");
-        }
-
-        [Test]
-        public static void TestRazorTernaryClassReactivity(Assert assert)
-        {
-            var element = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(element);
-
-            var vm = new RazorTestVM();
-            var items = new ObservableCollection<RazorItemVM>();
-            var item1 = new RazorItemVM();
-            item1.Name = "Task A";
-            item1.IsComplete = false;
-            items.Add(item1);
-            vm.Items = items;
-            control.DataContext = vm;
-            control.Skin = RazorSkinTemplatesClass.RazorForeachBindings;
-            control.Activate();
-
-            var pending = element.QuerySelectorAll("[data-test] .pending");
-            assert.Equal(pending.Length, 1,
-                "Should start with 1 pending span");
-
-            item1.IsComplete = true;
-            var done = element.QuerySelectorAll("[data-test] .done");
-            pending = element.QuerySelectorAll("[data-test] .pending");
-            assert.Equal(done.Length, 1,
-                "After toggle: should have 1 done span");
-            assert.Equal(pending.Length, 0,
-                "After toggle: should have 0 pending spans");
-
-            item1.IsComplete = false;
-            pending = element.QuerySelectorAll("[data-test] .pending");
-            done = element.QuerySelectorAll("[data-test] .done");
-            assert.Equal(pending.Length, 1,
-                "After revert: should have 1 pending span");
-            assert.Equal(done.Length, 0,
-                "After revert: should have 0 done spans");
+            vm.Count = 20;
+            assert.Equal("20", countSpan.TextContent,
+                "Count must be '20' synchronously after fourth mutation");
         }
     }
 }

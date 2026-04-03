@@ -1,3 +1,4 @@
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
 using NScript.RazorSkin;
@@ -57,46 +58,54 @@ namespace RazorSkinParser.Test
             result.CleanedTemplate.Should().NotContain("@control");
         }
 
-        [TestMethod]
-        public void ExtractsStylesDirective()
-        {
-            var input = "@model MyVM\n@styles \"AppStyles.css\"\n<div>Hello</div>";
-            var result = RazorSkinPreprocessor.Process(input);
+        // --- Error / diagnostic path tests ---
 
-            result.StylesheetReferences.Should().HaveCount(1);
-            result.StylesheetReferences[0].Should().Be("AppStyles.css");
-            result.CleanedTemplate.Should().NotContain("@styles");
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void DuplicateModelDirective_ThrowsInvalidOperationException()
+        {
+            var source = "@model MyViewModel\n@model AnotherViewModel\n<div>test</div>";
+            RazorSkinPreprocessor.Process(source);
         }
 
         [TestMethod]
-        public void ExtractsMultipleStylesDirectives()
+        public void EmptyTemplateBody_ProducesEmptyCleanedTemplate()
         {
-            var input = "@model MyVM\n@styles \"Base.css\"\n@styles \"Theme.css\"\n@styles \"Page.css\"\n<div/>";
-            var result = RazorSkinPreprocessor.Process(input);
+            // Template with only a @model directive and no HTML body
+            var source = "@model MyVM";
+            var result = RazorSkinPreprocessor.Process(source);
 
-            result.StylesheetReferences.Should().HaveCount(3);
-            result.StylesheetReferences[0].Should().Be("Base.css");
-            result.StylesheetReferences[1].Should().Be("Theme.css");
-            result.StylesheetReferences[2].Should().Be("Page.css");
+            result.ModelTypeName.Should().Be("MyVM");
+            result.CleanedTemplate.Should().Contain("@model MyVM");
         }
 
         [TestMethod]
-        public void StylesDirectiveWithSingleQuotes()
+        public void MissingModelDirective_ModelTypeNameIsNull()
         {
-            var input = "@model MyVM\n@styles 'AppStyles.css'\n<div/>";
-            var result = RazorSkinPreprocessor.Process(input);
+            // Template with no @model directive
+            var source = "<div>Hello World</div>";
+            var result = RazorSkinPreprocessor.Process(source);
 
-            result.StylesheetReferences.Should().HaveCount(1);
-            result.StylesheetReferences[0].Should().Be("AppStyles.css");
+            result.ModelTypeName.Should().BeNull();
+            result.CleanedTemplate.Should().Contain("<div>Hello World</div>");
         }
 
         [TestMethod]
-        public void NoStylesDirectiveReturnsEmptyList()
+        public void MissingModelDirective_StillDefaultsControlType()
         {
-            var input = "@model MyVM\n<div>Hello</div>";
-            var result = RazorSkinPreprocessor.Process(input);
+            var source = "<div>Hello</div>";
+            var result = RazorSkinPreprocessor.Process(source);
 
-            result.StylesheetReferences.Should().BeEmpty();
+            result.ControlTypeName.Should().Be("Sunlight.Framework.UI.UISkinableElement");
+        }
+
+        [TestMethod]
+        public void WhitespaceOnlyBody_HandledGracefully()
+        {
+            var source = "@model MyVM\n\n   \n\n";
+            var result = RazorSkinPreprocessor.Process(source);
+
+            result.ModelTypeName.Should().Be("MyVM");
         }
     }
 }

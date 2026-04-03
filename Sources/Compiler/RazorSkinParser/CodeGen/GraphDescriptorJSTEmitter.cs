@@ -32,6 +32,12 @@ namespace NScript.RazorSkin.CodeGen
         private readonly string _modelTypeName;
         private readonly string _parentModelTypeName;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
+        private readonly CecilTypeHelper _typeHelper;
+
+        // Cached maps for ToJsGetterWithFieldAccess — identical across all invocations
+        // since _modelTypeName doesn't change.
+        private Dictionary<string, string> _cachedFieldMap;
+        private Dictionary<string, string> _cachedMethodMap;
 
         /// <summary>
         /// Whether this emitter generates for an item graph (inside a @foreach loop).
@@ -108,6 +114,7 @@ namespace NScript.RazorSkin.CodeGen
             _modelTypeName = modelTypeName;
             _parentModelTypeName = parentModelTypeName;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
+            _typeHelper = new CecilTypeHelper(clrContext);
 
             // Resolve all field identifiers at construction time
             ResolveFieldIdentifiers(
@@ -600,7 +607,8 @@ namespace NScript.RazorSkin.CodeGen
                 var field = current.Fields.FirstOrDefault(f => f.Name == fieldName);
                 if (field != null) return field;
                 try { current = current.BaseType?.Resolve(); }
-                catch (Exception) { break; }
+                catch (Mono.Cecil.AssemblyResolutionException) { break; }
+                catch (System.Exception) { break; } // Cecil resolution — external assembly not loaded
             }
 
             return null;
@@ -716,6 +724,8 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Dictionary<string, string> BuildPropertyFieldNameMap()
         {
+            if (_cachedFieldMap != null) return _cachedFieldMap;
+
             if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
                 return null;
 
@@ -739,7 +749,8 @@ namespace NScript.RazorSkin.CodeGen
                     map[prop.Name] = fieldId.SuggestedName;
             }
 
-            return map;
+            _cachedFieldMap = map;
+            return _cachedFieldMap;
         }
 
         /// <summary>
@@ -748,6 +759,8 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Dictionary<string, string> BuildMethodNameMap()
         {
+            if (_cachedMethodMap != null) return _cachedMethodMap;
+
             if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
                 return null;
 
@@ -767,36 +780,15 @@ namespace NScript.RazorSkin.CodeGen
                     map[method.Name] = methodId.SuggestedName;
             }
 
-            return map;
+            _cachedMethodMap = map;
+            return _cachedMethodMap;
         }
 
-        /// <summary>
-        /// Finds a TypeDefinition by fully qualified name across all loaded assemblies.
-        /// </summary>
         private TypeDefinition FindTypeDefinition(string fullTypeName)
-        {
-            if (string.IsNullOrEmpty(fullTypeName)) return null;
+            => _typeHelper.FindTypeDefinition(fullTypeName);
 
-            return _clrContext.GetTypes()
-                .FirstOrDefault(t => t.FullName == fullTypeName);
-        }
-
-        /// <summary>
-        /// Finds a property on a type, walking up the inheritance hierarchy.
-        /// </summary>
-        private static PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
-        {
-            var current = type;
-            while (current != null)
-            {
-                var prop = current.Properties.FirstOrDefault(p => p.Name == propertyName);
-                if (prop != null) return prop;
-
-                try { current = current.BaseType?.Resolve(); }
-                catch (Exception) { break; }
-            }
-            return null;
-        }
+        private PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
+            => _typeHelper.FindProperty(type, propertyName);
 
         /// <summary>consumers: [[1], [2], [], ...]</summary>
         private Expression EmitConsumers()

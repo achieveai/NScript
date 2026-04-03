@@ -371,7 +371,9 @@ namespace NScript.RazorSkin.CodeGen
             // passed to WalkChildren, not the gate node itself.
             int gateIdx = ctx.AddNode(GraphNodeTypeConstants.Gate,
                 cond.Condition.CSharpExpression, false);
-            ctx.SetGateIndex(gateIdx, gateIdx); // Gate's gateIndex is always itself
+            // Gate node's gateIndex: -1 if top-level (always evaluates),
+            // or the parent gate's index if nested (parent controls its visibility).
+            if (gateIndex != -1) ctx.SetGateIndex(gateIdx, gateIndex);
 
             ctx.AddEdge(conditionSourceIdx, gateIdx);
 

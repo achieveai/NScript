@@ -301,6 +301,23 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
+        /// Notifies the strategy that data context and/or template parent flags have been updated.
+        /// </summary>
+        public void OnDataContextUpdated(bool dcUpdated, bool tpUpdated)
+        {
+            this.DataContextUpdated = dcUpdated;
+            this.TemplateParentUpdated = tpUpdated;
+        }
+
+        /// <summary>
+        /// Performs deferred deactivation cleanup (unwiring live binders).
+        /// </summary>
+        public void OnQueuedDeactivation(bool isActive, bool isDisposed)
+        {
+            this.QueuedDeactivation(isActive, isDisposed);
+        }
+
+        /// <summary>
         /// Internal helper: updates binder sources for the given source type.
         /// This is the binder loop portion of the original SkinInstance.UpdateBinderSource().
         /// </summary>

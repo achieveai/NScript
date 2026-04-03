@@ -26,6 +26,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly Dictionary<string, IIdentifier> _resolvedIdentifiers;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
         private readonly RazorKnownTypes _knownTypes;
+        private readonly CecilTypeHelper _typeHelper;
 
         // Topology reference for marker path computation
         private GraphTopology _topology;
@@ -43,22 +44,8 @@ namespace NScript.RazorSkin.CodeGen
         private IIdentifier _objStorageIdentifier;
 
         // Data index for doc.stateStore — must be unique across ALL templates (XWML + Razor).
-        // XWML templates use sequential indices starting from 0 (one per skin).
-        // We start at 100 to avoid collision. If a project has 100+ XWML templates,
-        // this offset must be increased. A shared counter with XWML's CodeGenerator
-        // would be the proper long-term fix.
-        private const int RazorDataIndexOffset = 100;
-        private static int _next_dataIndex = RazorDataIndexOffset;
+        // The starting offset is passed in from the plugin to avoid collision with XWML indices.
         private readonly int _dataIndex;
-
-        /// <summary>
-        /// Resets the data index counter. Must be called at the start of each compilation
-        /// to ensure deterministic output when the compiler is hosted in a long-running process.
-        /// </summary>
-        public static void ResetDataIndex()
-        {
-            _next_dataIndex = RazorDataIndexOffset;
-        }
 
 
         /// <summary>
@@ -67,11 +54,6 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private readonly IIdentifier _preCreatedGetterIdentifier;
 
-        /// <summary>
-        /// Optional CSS manager for replacing class names in HTML with minified versions.
-        /// </summary>
-        private readonly RazorCssManager _cssManager;
-
         public RazorSkinJSTGenerator(
             SkinTemplateNode ir,
             RuntimeScopeManager scopeManager,
@@ -79,8 +61,8 @@ namespace NScript.RazorSkin.CodeGen
             Dictionary<string, IIdentifier> resolvedIdentifiers,
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers,
             RazorKnownTypes knownTypes,
-            IIdentifier preCreatedGetterIdentifier = null,
-            RazorCssManager cssManager = null)
+            int dataIndex,
+            IIdentifier preCreatedGetterIdentifier = null)
         {
             _ir = ir;
             _scopeManager = scopeManager;
@@ -88,9 +70,9 @@ namespace NScript.RazorSkin.CodeGen
             _resolvedIdentifiers = resolvedIdentifiers;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
             _knownTypes = knownTypes;
+            _typeHelper = new CecilTypeHelper(clrContext);
             _preCreatedGetterIdentifier = preCreatedGetterIdentifier;
-            _cssManager = cssManager;
-            _dataIndex = _next_dataIndex++;
+            _dataIndex = dataIndex;
         }
 
         /// <summary>
@@ -146,16 +128,8 @@ namespace NScript.RazorSkin.CodeGen
             var bindings = RazorSkinCodeGenerator.CollectBindingsPublic(_ir.Children);
             var events = RazorSkinCodeGenerator.CollectEventsPublic(_ir.Children);
             var elementPaths = new List<List<int>>();
-            var eventPaths = new List<List<int>>();
             var htmlContent = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(
-                _ir.Children, events, elementPaths, eventPaths);
-
-            // Replace CSS class names with minified versions if CSS is loaded
-            if (_cssManager != null && _cssManager.HasStylesheets)
-            {
-                htmlContent = ReplaceCssClassNamesInHtml(htmlContent);
-            }
-
+                _ir.Children, events, elementPaths);
             // Build graph topology from IR
             var topology = GraphTopologyBuilder.Build(_ir);
             _topology = topology;
@@ -185,7 +159,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // 2. Factory function
             var factoryStatements = BuildFactoryBody(
-                bindings, events, htmlContent, elementPaths, eventPaths, knownFunctionNames, topology);
+                bindings, events, htmlContent, elementPaths, knownFunctionNames, topology);
 
             var factoryFunction = new FunctionExpression(
                 null,
@@ -225,7 +199,6 @@ namespace NScript.RazorSkin.CodeGen
             List<EventNode> events,
             string htmlContent,
             List<List<int>> elementPaths,
-            List<List<int>> eventPaths,
             HashSet<string> knownFunctionNames,
             GraphTopology topology)
         {
@@ -449,16 +422,10 @@ namespace NScript.RazorSkin.CodeGen
                             BuildCollectionMarkerPath(htmlContent, coll))));
             }
 
-            // Assign element references for events using pre-computed DOM paths.
-            for (int evtOrd = 0; evtOrd < topology.Events.Count; evtOrd++)
+            // Assign element references for events.
+            foreach (var evt in topology.Events)
             {
-                var evt = topology.Events[evtOrd];
                 if (gatedElemIndices.Contains(evt.ElemIdx)) continue;
-
-                var path = evtOrd < eventPaths.Count ? eventPaths[evtOrd] : new List<int> { 0 };
-                var pathElements = new List<Expression>();
-                foreach (var p in path)
-                    pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
 
                 stmts.Add(
                     ExpressionStatement.CreateAssignmentExpression(
@@ -467,12 +434,7 @@ namespace NScript.RazorSkin.CodeGen
                             _factoryScope,
                             new IdentifierExpression(_objStorageIdentifier, _factoryScope),
                             new NumberLiteralExpression(_factoryScope, evt.ElemIdx)),
-                        new MethodCallExpression(
-                            null,
-                            _factoryScope,
-                            new IdentifierExpression(getElementFromPathId, _factoryScope),
-                            new IdentifierExpression(_htmlRootIdentifier, _factoryScope),
-                            new InlineNewArrayInitialization(null, _factoryScope, pathElements))));
+                        BuildEventElementRef(htmlContent, evt)));
             }
 
             // Part ID mapping — not yet implemented for Razor templates (always null).
@@ -728,33 +690,11 @@ namespace NScript.RazorSkin.CodeGen
             return currentExpr;
         }
 
-        /// <summary>
-        /// Finds a TypeDefinition by fully qualified name across all loaded assemblies.
-        /// </summary>
         private TypeDefinition FindTypeDefinition(string fullTypeName)
-        {
-            if (string.IsNullOrEmpty(fullTypeName)) return null;
+            => _typeHelper.FindTypeDefinition(fullTypeName);
 
-            return _clrContext.GetTypes()
-                .FirstOrDefault(t => t.FullName == fullTypeName);
-        }
-
-        /// <summary>
-        /// Finds a property on a type, walking up the inheritance hierarchy.
-        /// </summary>
-        private static PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
-        {
-            var current = type;
-            while (current != null)
-            {
-                var prop = current.Properties.FirstOrDefault(p => p.Name == propertyName);
-                if (prop != null) return prop;
-
-                try { current = current.BaseType?.Resolve(); }
-                catch (Exception) { break; }
-            }
-            return null;
-        }
+        private PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
+            => _typeHelper.FindProperty(type, propertyName);
 
         /// <summary>
         /// Finds the DomTarget node index for the i-th binding (in document order).
@@ -1028,29 +968,6 @@ namespace NScript.RazorSkin.CodeGen
 
             // Fallback
             return new List<int> { 0 };
-        }
-
-        // Regex to match class="..." attributes in HTML for CSS name replacement
-        private static readonly System.Text.RegularExpressions.Regex CssClassAttrRegex
-            = new System.Text.RegularExpressions.Regex(
-                @"(\bclass\s*=\s*"")([^""]*)("")",
-                System.Text.RegularExpressions.RegexOptions.Compiled
-                | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-        /// <summary>
-        /// Replaces CSS class names in class="..." attributes with their minified equivalents.
-        /// </summary>
-        private string ReplaceCssClassNamesInHtml(string html)
-        {
-            return CssClassAttrRegex.Replace(html, match =>
-            {
-                var prefix = match.Groups[1].Value; // 'class="'
-                var classValue = match.Groups[2].Value;
-                var suffix = match.Groups[3].Value; // '"'
-
-                var replaced = _cssManager.ReplaceCssClassNames(classValue);
-                return prefix + replaced + suffix;
-            });
         }
 
     }

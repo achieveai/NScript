@@ -62,20 +62,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public NativeArray CollectionListeners;
 
         /// <summary>
-        /// Per-subscription intermediate objects for chained property paths.
-        /// ChainLiveObjects[i] is a NativeArray of intermediate objects along the chain.
-        /// Null for simple subscriptions.
-        /// </summary>
-        public NativeArray<NativeArray> ChainLiveObjects;
-
-        /// <summary>
-        /// Per-subscription intermediate listeners for chained property paths.
-        /// ChainListeners[i] is a NativeArray of callback delegates for each chain hop.
-        /// Null for simple subscriptions.
-        /// </summary>
-        public NativeArray<NativeArray> ChainListeners;
-
-        /// <summary>
         /// Creates a new GraphState for the given descriptor.
         /// </summary>
         public GraphState(GraphDescriptor descriptor, NativeArray elemRefs, int depth)
@@ -87,26 +73,43 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             int n = descriptor.NodeCount;
             this.Values = new NativeArray(n);
             this.Dirty = new NativeArray<bool>(n);
-            this.GateOpen = new NativeArray<bool>(n);
             this.Sources = new NativeArray(2);
             this.Listeners = new NativeArray(0);
             this.ListenerCount = 0;
             this.SubscriptionsActive = false;
             this.FlushScheduled = false;
 
-            this.GateElements = new NativeArray(n);
-            this.EventListeners = new NativeArray(n);
-            this.ChildGraphStates = new NativeArray<NativeArray<GraphState>>(n);
-            this.ItemElements = new NativeArray<NativeArray>(n);
-            this.CollectionListeners = new NativeArray(n);
-            this.ChainLiveObjects = new NativeArray<NativeArray>(0);
-            this.ChainListeners = new NativeArray<NativeArray>(0);
-
-            // All gates start open (true). Gate.Evaluate during initial push
-            // will close gates whose condition is false.
+            // Only allocate sparse arrays when the descriptor has nodes of the relevant type.
+            bool hasGates = false;
+            bool hasEvents = false;
+            bool hasCollections = false;
             for (int i = 0; i < n; i++)
             {
-                this.GateOpen[i] = true;
+                int nodeType = descriptor.NodeTypes[i];
+                if (nodeType == GraphNodeType.Gate) hasGates = true;
+                else if (nodeType == GraphNodeType.EventBinding) hasEvents = true;
+                else if (nodeType == GraphNodeType.CollectionManager) hasCollections = true;
+            }
+
+            if (hasGates)
+            {
+                this.GateElements = new NativeArray(n);
+                this.GateOpen = new NativeArray<bool>(n);
+                // All gates start open (true). Gate.Evaluate during initial push
+                // will close gates whose condition is false.
+                for (int i = 0; i < n; i++)
+                {
+                    this.GateOpen[i] = true;
+                }
+            }
+
+            this.EventListeners = hasEvents ? new NativeArray(n) : null;
+
+            if (hasCollections)
+            {
+                this.ChildGraphStates = new NativeArray<NativeArray<GraphState>>(n);
+                this.ItemElements = new NativeArray<NativeArray>(n);
+                this.CollectionListeners = new NativeArray(n);
             }
         }
     }

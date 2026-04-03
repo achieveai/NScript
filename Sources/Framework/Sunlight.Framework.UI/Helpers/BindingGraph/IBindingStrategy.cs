@@ -38,5 +38,17 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Full cleanup: unsubscribe, release DOM references, destroy child graphs.
         /// </summary>
         void Dispose();
+
+        /// <summary>
+        /// Notifies the strategy that data context and/or template parent flags have been updated.
+        /// Called by SkinInstance.Activate() before PushInitialValues.
+        /// </summary>
+        void OnDataContextUpdated(bool dcUpdated, bool tpUpdated);
+
+        /// <summary>
+        /// Performs deferred deactivation cleanup (e.g., unwiring live binders).
+        /// Called by SkinInstance.QueuedDeactivation().
+        /// </summary>
+        void OnQueuedDeactivation(bool isActive, bool isDisposed);
     }
 }

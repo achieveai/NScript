@@ -179,6 +179,67 @@ namespace RazorSkinParser.Test
             binding.Classification.CSharpExpression.Should().Contain("Control.");
         }
 
+        // --- Attribute binding IR classification tests ---
+
+        [TestMethod]
+        public void AttributeBinding_CssClass_ProducesCssClassTarget()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div class=\"@Model.CssClass\">Hello</div>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("class attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.CssClass);
+            binding.Classification.CSharpExpression.Should().Contain("Model.CssClass");
+            binding.Classification.SourceKind.Should().Be(BindingSourceKind.DataContext);
+        }
+
+        [TestMethod]
+        public void AttributeBinding_Style_ProducesStyleTarget()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div style=\"display: @Model.DisplayStyle\">Content</div>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("style attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.Style);
+            binding.AttributePrefix.Should().Contain("display");
+            binding.Classification.CSharpExpression.Should().Contain("Model.DisplayStyle");
+        }
+
+        [TestMethod]
+        public void EventBinding_OnClick_ProducesEventNode()
+        {
+            var ir = BuildIR("@model TestVM\n\n<button onclick=\"@Model.HandleClick\">Click</button>");
+
+            var eventNode = ir.Children.OfType<EventNode>().FirstOrDefault();
+            eventNode.Should().NotBeNull("onclick attribute should produce an EventNode");
+            eventNode.DomEventName.Should().Be("click");
+            eventNode.HandlerExpression.Should().Contain("Model.HandleClick");
+        }
+
+        [TestMethod]
+        public void AttributeBinding_DataAttribute_ProducesGenericAttributeBinding()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div data-id=\"@Model.Id\">Content</div>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("data-* attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.Attribute);
+            binding.AttributeName.Should().Be("data-id");
+            binding.Classification.CSharpExpression.Should().Contain("Model.Id");
+        }
+
+        [TestMethod]
+        public void AttributeBinding_Title_ProducesAttributeBinding()
+        {
+            var ir = BuildIR("@model TestVM\n\n<span title=\"@Model.Tooltip\">Hover me</span>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("title attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.Attribute);
+            binding.AttributeName.Should().Be("title");
+            binding.Classification.CSharpExpression.Should().Contain("Model.Tooltip");
+        }
+
         private SkinTemplateNode BuildIR(string template)
         {
             var preprocessed = RazorSkinPreprocessor.Process(template);

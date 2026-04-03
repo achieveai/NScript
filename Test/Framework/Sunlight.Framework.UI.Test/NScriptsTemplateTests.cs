@@ -19,7 +19,7 @@ namespace Sunlight.Framework.UI.Test
         /// <summary>
         /// Sets up the data/environment to run all the test cases.
         /// </summary>
-        [TestSetup]
+        [TestCaseSetup]
         public static void Setup()
         {
             TaskScheduler.Instance = new TaskScheduler(
