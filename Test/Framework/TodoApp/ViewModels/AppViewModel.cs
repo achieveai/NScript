@@ -359,6 +359,9 @@ namespace TodoApp.ViewModels
             this.allTodos.Remove(todo);
             this.CurrentTodos.Remove(todo);
 
+            if (this.selectedFolder != null)
+                this.selectedFolder.TodoCount = this.CurrentTodos.Count;
+
             if (this.selectedTodo == todo)
             {
                 this.SelectedTodo = null;
@@ -408,6 +411,10 @@ namespace TodoApp.ViewModels
                     todo.DueDate,
                     todo.Notes);
             }
+
+            // Refresh the current view so folder counts and filtered lists stay in sync
+            // after property changes like IsImportant, IsMyDay, or IsCompleted.
+            this.RefreshCurrentTodos();
         }
 
         /// <summary>

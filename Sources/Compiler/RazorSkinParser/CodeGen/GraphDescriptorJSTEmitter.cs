@@ -30,7 +30,14 @@ namespace NScript.RazorSkin.CodeGen
         private readonly ISet<string> _knownFunctionNames;
         private readonly ClrContext _clrContext;
         private readonly string _modelTypeName;
+        private readonly string _parentModelTypeName;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
+
+        /// <summary>
+        /// Whether this emitter generates for an item graph (inside a @foreach loop).
+        /// Item graphs use tuple DataContext: [parentDC, control, item].
+        /// </summary>
+        private bool IsItemGraph => !string.IsNullOrEmpty(_topology.ItemVariablePrefix);
 
         // Resolved field identifiers for GraphDescriptor
         private readonly IIdentifier _nodeCountField;
@@ -89,7 +96,8 @@ namespace NScript.RazorSkin.CodeGen
             ISet<string> knownFunctionNames,
             ClrContext clrContext,
             string modelTypeName,
-            Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null)
+            Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null,
+            string parentModelTypeName = null)
         {
             _topology = topology;
             _scope = scope;
@@ -98,6 +106,7 @@ namespace NScript.RazorSkin.CodeGen
             _knownFunctionNames = knownFunctionNames;
             _clrContext = clrContext;
             _modelTypeName = modelTypeName;
+            _parentModelTypeName = parentModelTypeName;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
 
             // Resolve all field identifiers at construction time
@@ -271,7 +280,8 @@ namespace NScript.RazorSkin.CodeGen
             AddField(obj, _subscribeModeField, "subscribeMode", new NumberLiteralExpression(_scope, 0));
             AddField(obj, _nodeCountField, "nodeCount", new NumberLiteralExpression(_scope, _topology.NodeCount));
 
-            if (!string.IsNullOrEmpty(_topology.ModelTypeName))
+            // Skip SourceType for item graphs — DataContext is a tuple, not the model type.
+            if (!string.IsNullOrEmpty(_topology.ModelTypeName) && !IsItemGraph)
                 AddField(obj, _sourceTypeField, "sourceType", EmitSourceType(_topology.ModelTypeName));
 
             AddField(obj, _parentIndicesField, "parentIndices", EmitParentIndices());
@@ -372,21 +382,23 @@ namespace NScript.RazorSkin.CodeGen
                         return resolved;
 
                     // Fallback: known function names stay as-is, others get getter prefix.
-                    // Strip "Model." or item variable prefix — these map to the DataContext.
                     var fallbackExpr = getterExpression;
-                    if (fallbackExpr.StartsWith("Model."))
+                    bool fallbackIsModel = fallbackExpr.StartsWith("Model.");
+                    if (fallbackIsModel)
                         fallbackExpr = fallbackExpr.Substring(6);
                     if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
                         && fallbackExpr.StartsWith(_topology.ItemVariablePrefix))
                         fallbackExpr = fallbackExpr.Substring(_topology.ItemVariablePrefix.Length);
 
+                    // For item graphs: dc[2] for item props, dc[0] for Model props
+                    string dcRef = IsItemGraph ? (fallbackIsModel ? "dc[0]" : "dc[2]") : "dc";
                     string body;
                     if (_knownFunctionNames != null && _knownFunctionNames.Contains(fallbackExpr))
-                        body = "return dc." + fallbackExpr;
+                        body = "return " + dcRef + "." + fallbackExpr;
                     else
                     {
                         var getterName = ExpressionJsEmitter.PropertyToGetterName(fallbackExpr);
-                        body = "return dc." + getterName + "()";
+                        body = "return " + dcRef + "." + getterName + "()";
                     }
 
                     return CreateRawGetterFunction(body);
@@ -495,20 +507,22 @@ namespace NScript.RazorSkin.CodeGen
             // IMPORTANT: Find the backing field on the SAME TypeDefinition from _clrContext
             // (not via IL resolution) to ensure the scope manager returns the correct identifier.
             var backingField = TryFindBackingFieldOnType(typeDefinition, property);
+            // For item graphs, access the item element of the tuple: dc[2]
+            var dcAccess = CreateTupleAccessExpression(paramIdentifier, getterScope);
             Expression currentExpr;
             if (backingField != null)
             {
-                // Simple getter inlined by NScript — use field access: dc.fieldName
+                // Simple getter inlined by NScript — use field access: dc.fieldName (or dc[2].fieldName)
                 var fieldId = _scopeManager.Resolve(backingField);
                 currentExpr = new IndexExpression(
                     null,
                     getterScope,
-                    new IdentifierExpression(paramIdentifier, getterScope),
+                    dcAccess,
                     new IdentifierExpression(fieldId, getterScope));
             }
             else
             {
-                // Complex getter — use method call: dc.get_propName()
+                // Complex getter — use method call: dc.get_propName() (or dc[2].get_propName())
                 var getterMethodId = _scopeManager.Resolve(property.GetMethod);
                 currentExpr = new MethodCallExpression(
                     null,
@@ -516,7 +530,7 @@ namespace NScript.RazorSkin.CodeGen
                     new IndexExpression(
                         null,
                         getterScope,
-                        new IdentifierExpression(paramIdentifier, getterScope),
+                        dcAccess,
                         new IdentifierExpression(getterMethodId, getterScope)),
                     System.Array.Empty<Expression>());
             }
@@ -614,6 +628,23 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
+        /// Creates a JST expression to access a DataContext element.
+        /// For root graphs: returns the dc parameter directly.
+        /// For item graphs: returns dc[tupleIndex] — tuple layout: [0]=parentDC, [1]=control, [2]=item.
+        /// </summary>
+        private Expression CreateTupleAccessExpression(
+            IIdentifier dcParam, IdentifierScope scope, int tupleIndex = 2)
+        {
+            Expression dcExpr = new IdentifierExpression(dcParam, scope);
+            if (IsItemGraph)
+            {
+                dcExpr = new IndexExpression(null, scope, dcExpr,
+                    new NumberLiteralExpression(scope, tupleIndex));
+            }
+            return dcExpr;
+        }
+
+        /// <summary>
         /// Like ExpressionJsEmitter.ToJsGetter, but uses backing-field access instead of
         /// getter method calls. This handles inlined getters where get_X() doesn't exist.
         /// Falls back to ExpressionJsEmitter.ToJsGetter if field resolution fails.
@@ -635,14 +666,18 @@ namespace NScript.RazorSkin.CodeGen
 
             // Replace "Model.", "Control.", and the item variable prefix (e.g. "folder.")
             // with the appropriate function parameter names.
+            // For item graphs (tuple DataContext): Model. → dc[0]., itemVar. → dc[2].
+            // For root graphs: Model. → dc.
+            string modelRef = IsItemGraph ? dataContextParam + "[0]." : dataContextParam + ".";
+            string itemRef = IsItemGraph ? dataContextParam + "[2]." : dataContextParam + ".";
             var expr = csharpExpression
-                .Replace("Model.", dataContextParam + ".")
+                .Replace("Model.", modelRef)
                 .Replace("Control.", templateParentParam + ".");
 
             // For foreach item templates, the item variable prefix (e.g. "folder.") must
-            // be replaced with "dc." since the data context IS the item.
+            // be replaced with the appropriate dc reference.
             if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix))
-                expr = expr.Replace(_topology.ItemVariablePrefix, dataContextParam + ".");
+                expr = expr.Replace(_topology.ItemVariablePrefix, itemRef);
 
             // Build method name map for resolving method calls
             var methodMap = BuildMethodNameMap();
@@ -1076,6 +1111,8 @@ namespace NScript.RazorSkin.CodeGen
             // Match pattern: <propertyExpr> ? <trueExpr> : <falseExpr>
             // The condition must be a simple property access (possibly negated).
             // True/false branches can be string literals or property accesses.
+            // NOTE: Nested ternaries (e.g., "A ? B ? c : d : e") are NOT supported —
+            // the non-greedy capture will mis-split them. They fall through to raw emission.
             var match = System.Text.RegularExpressions.Regex.Match(
                 expression.Trim(),
                 @"^(!?\s*(?:Model\.|" +
@@ -1174,11 +1211,13 @@ namespace NScript.RazorSkin.CodeGen
             if (property == null) return null;
 
             var backingField = TryFindBackingFieldOnType(typeDefinition, property);
+            // For item graphs, access the item element of the tuple: dc[2]
+            var dcAccess = CreateTupleAccessExpression(dcParam, scope);
             if (backingField != null)
             {
                 var fieldId = _scopeManager.Resolve(backingField);
                 return new IndexExpression(null, scope,
-                    new IdentifierExpression(dcParam, scope),
+                    dcAccess,
                     new IdentifierExpression(fieldId, scope));
             }
 
@@ -1188,7 +1227,7 @@ namespace NScript.RazorSkin.CodeGen
                 var getterId = _scopeManager.Resolve(property.GetMethod);
                 return new MethodCallExpression(null, scope,
                     new IndexExpression(null, scope,
-                        new IdentifierExpression(dcParam, scope),
+                        dcAccess,
                         new IdentifierExpression(getterId, scope)),
                     System.Array.Empty<Expression>());
             }
@@ -1199,13 +1238,15 @@ namespace NScript.RazorSkin.CodeGen
         /// <summary>
         /// Emits a getter function for an EventBinding node.
         /// The handler expression is like "Model.IncrementClick" or a lambda "(e) => Model.IncrementClick()".
-        /// For method references: function(dc) { return dc.incrementClick_x; }
-        /// For lambdas: use the raw expression with field access replacement.
+        /// For item graphs, uses tuple DataContext: dc[2] for item methods, dc[0] for Model methods.
         /// </summary>
         private Expression EmitEventGetter(string handlerExpression)
         {
             if (string.IsNullOrEmpty(handlerExpression))
                 return new NullLiteralExpression(_scope);
+
+            // Track whether this is a Model-level method reference (for tuple index selection)
+            bool isModelMethodRef = handlerExpression.StartsWith("Model.");
 
             // Strip Model. or item variable prefix (e.g., "folder.", "todo.")
             var expr = handlerExpression;
@@ -1218,23 +1259,19 @@ namespace NScript.RazorSkin.CodeGen
             // For simple method references (no parens, no lambda)
             if (expr.IndexOfAny(new[] { '(', ')', '=', '>' }) < 0)
             {
-                // Build a proper JST getter that returns a wrapper function:
-                // function(dc) { return function(e, ev) { dc.method(); }; }
-                // Using resolved identifiers so the method name matches minification.
-                var methodId = TryResolveMethodIdentifier(expr);
+                // Resolve method — for Model methods in item graphs, look up on parent type
+                var resolveTypeName = (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
+                    ? _parentModelTypeName : null;
+                var methodId = TryResolveMethodIdentifier(expr, resolveTypeName);
                 if (methodId != null)
                 {
-                    // Outer function: function(dc) { ... }
                     var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
                     var dcParam = outerScope.ParameterIdentifiers[0];
-
-                    // Inner function: function(e, ev) { dc.method(e, ev); }
-                    // Pass (element, event) so handlers can read input values and key codes.
-                    // JS ignores extra args for methods that don't use them.
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    // dc.method(e, ev)
-                    var dcRef = new IdentifierExpression(dcParam, innerScope);
+                    // For item graphs: dc[2].method (item) or dc[0].method (Model)
+                    int tupleIdx = isModelMethodRef ? 0 : 2;
+                    var dcRef = CreateTupleAccessExpression(dcParam, innerScope, tupleIdx);
                     var methodAccess = new IndexExpression(null, innerScope, dcRef,
                         new IdentifierExpression(methodId, innerScope));
                     var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
@@ -1253,25 +1290,33 @@ namespace NScript.RazorSkin.CodeGen
 
                 // Fallback: raw body (unresolved name — may not match minification)
                 var methodName = char.ToLower(expr[0]) + expr.Substring(1);
+                var rawPrefix = IsItemGraph ? (isModelMethodRef ? "dc[0]" : "dc[2]") : "dc";
                 return CreateRawGetterFunction(
-                    "return function(e,ev){dc." + methodName + "()}");
+                    "return function(e,ev){" + rawPrefix + "." + methodName + "()}");
             }
 
+            // Parent-context method invocation inside a foreach item template:
+            // Pattern: "Model.Method(itemVar)" → function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }
+            var parentMethodResult = TryEmitParentMethodInvocation(handlerExpression);
+            if (parentMethodResult != null)
+                return parentMethodResult;
+
             // Lambda expression: try to extract the method call and build proper JST.
-            // Pattern: "(e) => Model.MethodName()" or "(e) => Model.MethodName(args)"
             var lambdaMethodName = TryExtractLambdaMethodName(handlerExpression);
             if (lambdaMethodName != null)
             {
-                var lambdaMethodId = TryResolveMethodIdentifier("Model." + lambdaMethodName);
+                // For lambdas in item graphs, resolve on parent type (lambdas reference Model methods)
+                var resolveTypeName = (IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
+                    ? _parentModelTypeName : null;
+                var lambdaMethodId = TryResolveMethodIdentifier(lambdaMethodName, resolveTypeName);
                 if (lambdaMethodId != null)
                 {
-                    // Build: function(dc) { return function(e, ev) { dc.method(); }; }
                     var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
                     var dcParam = outerScope.ParameterIdentifiers[0];
-
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    var dcRef = new IdentifierExpression(dcParam, innerScope);
+                    // Lambdas reference Model methods → tuple index 0 for item graphs
+                    var dcRef = CreateTupleAccessExpression(dcParam, innerScope, 0);
                     var methodAccess = new IndexExpression(null, innerScope, dcRef,
                         new IdentifierExpression(lambdaMethodId, innerScope));
                     var methodCall = new MethodCallExpression(null, innerScope, methodAccess);
@@ -1325,9 +1370,10 @@ namespace NScript.RazorSkin.CodeGen
         /// Resolves a method identifier through the scope system.
         /// Returns the IIdentifier that tracks minification, or null if not found.
         /// </summary>
-        private IIdentifier TryResolveMethodIdentifier(string handlerExpression)
+        private IIdentifier TryResolveMethodIdentifier(string handlerExpression, string typeNameOverride = null)
         {
-            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+            var typeName = typeNameOverride ?? _modelTypeName;
+            if (_clrContext == null || string.IsNullOrEmpty(typeName))
                 return null;
 
             var methodName = handlerExpression;
@@ -1338,7 +1384,7 @@ namespace NScript.RazorSkin.CodeGen
                 && methodName.StartsWith(_topology.ItemVariablePrefix))
                 methodName = methodName.Substring(_topology.ItemVariablePrefix.Length);
 
-            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            var typeDefinition = FindTypeDefinition(typeName);
             if (typeDefinition == null)
                 return null;
 
@@ -1351,6 +1397,89 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Tries to emit a parent-context method invocation for event handlers inside foreach item templates.
+        /// Handles the pattern: "Model.MethodName(itemVar)" where the method lives on the parent ViewModel
+        /// and the argument is the loop variable (the item itself).
+        /// 
+        /// Generated JS: function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }
+        /// where dc[0] = parent DataContext (tuple element 0), dc[2] = loop item (tuple element 2).
+        /// </summary>
+        private Expression TryEmitParentMethodInvocation(string handlerExpression)
+        {
+            // Only applies inside foreach item templates with known parent type
+            if (!IsItemGraph || string.IsNullOrEmpty(_parentModelTypeName) || _clrContext == null)
+                return null;
+
+            // Parse "Model.MethodName(argName)" pattern
+            var expr = handlerExpression;
+            if (!expr.StartsWith("Model."))
+                return null;
+            expr = expr.Substring(6); // strip "Model."
+
+            var parenOpen = expr.IndexOf('(');
+            var parenClose = expr.LastIndexOf(')');
+            if (parenOpen < 1 || parenClose <= parenOpen)
+                return null;
+
+            var methodName = expr.Substring(0, parenOpen);
+            var argName = expr.Substring(parenOpen + 1, parenClose - parenOpen - 1).Trim();
+
+            // Verify the argument matches the loop variable
+            var itemVarName = _topology.ItemVariablePrefix.TrimEnd('.');
+            if (argName != itemVarName)
+                return null;
+
+            // Look up the method on the parent type
+            var parentTypeDef = FindTypeDefinition(_parentModelTypeName);
+            if (parentTypeDef == null)
+                return null;
+
+            MethodDefinition targetMethod = null;
+            foreach (var m in parentTypeDef.Methods)
+            {
+                if (m.Name == methodName && m.IsPublic && !m.IsConstructor)
+                {
+                    targetMethod = m;
+                    break;
+                }
+            }
+            if (targetMethod == null)
+                return null;
+
+            var methodId = _scopeManager.Resolve(targetMethod);
+            if (methodId == null)
+                return null;
+
+            // Build: function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }
+            // dc[0] = parent DataContext, dc[2] = loop item
+            var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var dcParam = outerScope.ParameterIdentifiers[0];
+            var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
+
+            // dc[0].method
+            var parentAccess = CreateTupleAccessExpression(dcParam, innerScope, 0);
+            var methodAccess = new IndexExpression(null, innerScope, parentAccess,
+                new IdentifierExpression(methodId, innerScope));
+
+            // dc[2] = item argument
+            var itemAccess = CreateTupleAccessExpression(dcParam, innerScope, 2);
+            var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
+            var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
+
+            // dc[0].method(dc[2], e, ev)
+            var methodCall = new MethodCallExpression(null, innerScope, methodAccess, itemAccess, eParam, evParam);
+
+            var innerFn = new FunctionExpression(null, outerScope, innerScope,
+                innerScope.ParameterIdentifiers, null);
+            innerFn.AddStatement(new ExpressionStatement(null, innerScope, methodCall));
+
+            var outerFn = new FunctionExpression(null, _scope, outerScope,
+                outerScope.ParameterIdentifiers, null);
+            outerFn.AddStatement(new ReturnStatement(null, outerScope, innerFn));
+            return outerFn;
         }
 
         /// <summary>
@@ -1473,7 +1602,8 @@ namespace NScript.RazorSkin.CodeGen
                 var nestedEmitter = new GraphDescriptorJSTEmitter(
                     ct.ItemTopology, _scope, _scopeManager, _knownTypes, _knownFunctionNames,
                     _clrContext, itemTypeName ?? _modelTypeName,
-                    _resolvedTypeIdentifiers);
+                    _resolvedTypeIdentifiers,
+                    parentModelTypeName: _modelTypeName);
                 itemGraphExpr = nestedEmitter.Emit();
             }
 

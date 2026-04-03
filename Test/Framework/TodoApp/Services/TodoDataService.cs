@@ -90,8 +90,7 @@ namespace TodoApp.Services
         }
 
         /// <summary>
-        /// Escapes a string for safe embedding in a JSON value.
-        /// Handles backslashes and double-quotes.
+        /// Escapes a string for safe embedding in a JSON value (RFC 8259).
         /// </summary>
         private static string EscapeJson(string input)
         {
@@ -103,6 +102,11 @@ namespace TodoApp.Services
             string result = input;
             result = result.Replace("\\", "\\\\");
             result = result.Replace("\"", "\\\"");
+            result = result.Replace("\n", "\\n");
+            result = result.Replace("\r", "\\r");
+            result = result.Replace("\t", "\\t");
+            result = result.Replace("\b", "\\b");
+            result = result.Replace("\f", "\\f");
             return result;
         }
     }

@@ -24,17 +24,10 @@
         <div class="todo-list">
             @foreach (var todo in Model.CurrentTodos)
             {
-                <div class="@(todo.IsCompleted ? "todo-item completed" : "todo-item")" onclick="@todo.OnSelect">
+                <div class="@(todo.IsCompleted ? "todo-item completed" : "todo-item")" onclick="@Model.OnSelectTodo(todo)">
                     <div class="todo-check" onclick="@todo.ToggleComplete">&#10003;</div>
                     <div class="todo-title">@todo.Title</div>
-                    @if (todo.IsImportant)
-                    {
-                        <div class="star important">&#9733;</div>
-                    }
-                    else
-                    {
-                        <div class="star" onclick="@todo.ToggleImportant">&#9734;</div>
-                    }
+                    <div class="@(todo.IsImportant ? "star important" : "star")" onclick="@todo.ToggleImportant">@(todo.IsImportant ? "★" : "☆")</div>
                 </div>
             }
         </div>

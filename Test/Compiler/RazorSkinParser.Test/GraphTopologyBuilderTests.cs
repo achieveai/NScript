@@ -352,7 +352,110 @@ namespace RazorSkinParser.Test
             topology.RootSourceSlot.Should().Be(0);
         }
 
+        /// <summary>
+        /// Verifies that an attribute binding with AttributeName="value" creates a
+        /// DomTargetTopology with the correct target and attribute name.
+        /// The emitter uses this data to generate e.value (DOM property) instead of
+        /// setAttribute("value"...) — ensuring input values update correctly after
+        /// user interaction (H2 review finding).
+        /// </summary>
+        [TestMethod]
+        public void ValueAttributeBinding_ProducesDomTargetWithValueAttributeName()
+        {
+            var template = new SkinTemplateNode
+            {
+                TemplateName = "TestTemplate",
+                ModelTypeName = "TestModel",
+                Children =
+                {
+                    new ExpressionBindingNode
+                    {
+                        Target = ExpressionTarget.Attribute,
+                        AttributeName = "value",
+                        ElementId = "e0",
+                        Classification = new BindingClassification
+                        {
+                            CSharpExpression = "Model.SomeProperty",
+                            Mode = BindingMode.OneWay,
+                            SourceKind = BindingSourceKind.DataContext,
+                            Dependencies = new List<ObservableDependency>
+                            {
+                                new ObservableDependency(BindingSourceKind.DataContext, "SomeProperty", "SomeProperty")
+                            }
+                        }
+                    }
+                }
+            };
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Should have Source(0) -> Property(1) -> DomTarget(2)
+            topology.NodeCount.Should().Be(3);
+            topology.NodeTypes[0].Should().Be(GraphNodeTypeConstants.Source);
+            topology.NodeTypes[1].Should().Be(GraphNodeTypeConstants.Property);
+            topology.NodeTypes[2].Should().Be(GraphNodeTypeConstants.DomTarget);
+
+            // DomTarget should carry "value" attribute name so the emitter
+            // generates e.value (DOM property) rather than setAttribute("value"...)
+            topology.DomTargets.Should().HaveCount(1);
+            topology.DomTargets[0].AttributeName.Should().Be("value",
+                "value attribute must use DOM property setter, not setAttribute");
+            topology.DomTargets[0].Target.Should().Be(ExpressionTarget.Attribute);
+        }
+
         // --- Helper ---
+
+        /// <summary>
+        /// Verifies that a negated gate condition (@if (!Model.IsCollapsed)) produces
+        /// a Property node with "!" prefix getter expression (M3 review finding).
+        /// </summary>
+        [TestMethod]
+        public void NegatedGateCondition_ProducesNegatedPropertyGetter()
+        {
+            var template = new SkinTemplateNode
+            {
+                TemplateName = "TestTemplate",
+                ModelTypeName = "TestModel",
+                Children =
+                {
+                    new ConditionalNode
+                    {
+                        IsReactive = true,
+                        Condition = new BindingClassification
+                        {
+                            CSharpExpression = "!Model.IsCollapsed",
+                            Mode = BindingMode.OneWay,
+                            SourceKind = BindingSourceKind.DataContext,
+                            Dependencies = new List<ObservableDependency>
+                            {
+                                new ObservableDependency(BindingSourceKind.DataContext, "IsCollapsed", "IsCollapsed")
+                            }
+                        },
+                        TrueBranch = new List<IRNode>
+                        {
+                            MakeBinding("Model.Content", BindingMode.OneWay, BindingSourceKind.DataContext,
+                                ExpressionTarget.TextContent, "e0", "Content")
+                        }
+                    }
+                }
+            };
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Source(0) -> Property_IsCollapsed(1) -> NegatedProperty_!IsCollapsed(2) -> Gate(3)
+            topology.NodeTypes[0].Should().Be(GraphNodeTypeConstants.Source);
+            topology.NodeTypes[1].Should().Be(GraphNodeTypeConstants.Property);
+            topology.NodeTypes[2].Should().Be(GraphNodeTypeConstants.Property,
+                "negated condition should create a second Property node");
+
+            // The negated property getter should have "!" prefix
+            topology.GetterExpressions[2].Should().StartWith("!",
+                "negated gate condition should produce getter with ! prefix");
+            topology.GetterExpressions[2].Should().Be("!IsCollapsed");
+
+            // Gate node follows
+            topology.NodeTypes[3].Should().Be(GraphNodeTypeConstants.Gate);
+        }
 
         private static ExpressionBindingNode MakeBinding(
             string csharpExpr,

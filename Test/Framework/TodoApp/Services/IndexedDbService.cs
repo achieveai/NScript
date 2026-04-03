@@ -38,7 +38,7 @@ namespace TodoApp.Services
                     self.@{[TodoApp]TodoApp.Services.IndexedDbService::db} = e.target.result;
                     resolve(true);
                 };
-                request.onerror = function(e) { reject(e); };
+                request.onerror = function(e) { reject(e.target.error || new @:Error('IndexedDB open failed')); };
             });
         ")]
         public extern Promise<bool> Open();
@@ -53,7 +53,7 @@ namespace TodoApp.Services
                 var store = tx.objectStore(storeName);
                 var request = store.put(@:JSON.parse(json));
                 request.onsuccess = function() { resolve(true); };
-                request.onerror = function(e) { reject(e); };
+                request.onerror = function(e) { reject(e.target.error || new @:Error('IndexedDB put failed')); };
             });
         ")]
         public extern Promise<bool> PutRaw(string storeName, string json);
@@ -68,7 +68,7 @@ namespace TodoApp.Services
                 var store = tx.objectStore(storeName);
                 var request = store.getAll();
                 request.onsuccess = function() { resolve(@:JSON.stringify(request.result || [])); };
-                request.onerror = function(e) { reject(e); };
+                request.onerror = function(e) { reject(e.target.error || new @:Error('IndexedDB getAll failed')); };
             });
         ")]
         public extern Promise<string> GetAllRaw(string storeName);
@@ -83,7 +83,7 @@ namespace TodoApp.Services
                 var store = tx.objectStore(storeName);
                 var request = store['delete'](key);
                 request.onsuccess = function() { resolve(true); };
-                request.onerror = function(e) { reject(e); };
+                request.onerror = function(e) { reject(e.target.error || new @:Error('IndexedDB delete failed')); };
             });
         ")]
         public extern Promise<bool> DeleteRaw(string storeName, string key);

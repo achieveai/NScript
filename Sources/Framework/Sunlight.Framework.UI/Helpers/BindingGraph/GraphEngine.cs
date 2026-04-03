@@ -30,8 +30,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 // Skip gated nodes whose gate is closed — apply default values instead.
                 // Convention: gateIdx >= 0 means "only when gate is open".
                 //             gateIdx <= -2 means "only when gate at index -(gateIdx+2) is CLOSED" (inverted gate).
+                // A gate node must never skip itself — it is the controller, not a gated child.
                 int gateIdx = desc.GateIndices[i];
-                if (gateIdx >= 0 && !state.GateOpen[gateIdx])
+                if (gateIdx >= 0 && gateIdx != i && !state.GateOpen[gateIdx])
                 {
                     state.Values[i] = desc.DefaultValues[i];
                     continue;
@@ -221,8 +222,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
 
                 // Skip gated nodes whose gate is closed (or inverted gate that is open).
+                // A gate node must never skip itself — it is the controller, not a gated child.
                 int gateIdx = desc.GateIndices[i];
-                if (gateIdx >= 0 && !state.GateOpen[gateIdx])
+                if (gateIdx >= 0 && gateIdx != i && !state.GateOpen[gateIdx])
                 {
                     state.Dirty[i] = false;
                     continue;
@@ -690,7 +692,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     GraphEngine.ResolveBindElements(clone, childElemRefs);
 
                     GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                    childState.Sources[GraphSourceSlot.DataContext] = item;
+                    // Item graph DataContext is a tuple: [parentDC, control, item]
+                    NativeArray itemContext = new NativeArray(3);
+                    itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
+                    itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
+                    itemContext[2] = item;
+                    childState.Sources[GraphSourceSlot.DataContext] = itemContext;
                     GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
                     GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
                     childStates[idx] = childState;
@@ -867,7 +874,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                         GraphState childState = new GraphState(
                             colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                        childState.Sources[GraphSourceSlot.DataContext] = item;
+                        NativeArray itemContext = new NativeArray(3);
+                        itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
+                        itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
+                        itemContext[2] = item;
+                        childState.Sources[GraphSourceSlot.DataContext] = itemContext;
                         GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
                         GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
                         newChildStates[insertIdx + j] = childState;
@@ -951,11 +962,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         GraphEngine.CleanupEventListeners(colInfo.ItemGraph, oldChild);
                     }
 
-                    // Update the child graph's DataContext to the new item and re-push.
+                    // Update the child graph's DataContext — update the item element of the tuple.
                     object newItem = args.NewItems[0];
                     if (!object.IsNullOrUndefined(oldChild) && !object.IsNullOrUndefined(colInfo.ItemGraph))
                     {
-                        oldChild.Sources[GraphSourceSlot.DataContext] = newItem;
+                        NativeArray tuple = oldChild.Sources[GraphSourceSlot.DataContext] as NativeArray;
+                        if (!object.IsNullOrUndefined(tuple) && tuple.Length >= 3)
+                            tuple[2] = newItem;
+                        else
+                            oldChild.Sources[GraphSourceSlot.DataContext] = newItem;
                         oldChild.SubscriptionsActive = false;
                         GraphEngine.PushInitialValues(colInfo.ItemGraph, oldChild);
                         GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, oldChild, newItem);
@@ -997,7 +1012,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                                     GraphState childState = new GraphState(
                                         colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                                    childState.Sources[GraphSourceSlot.DataContext] = item;
+                                    NativeArray itemContext = new NativeArray(3);
+                                    itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
+                                    itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
+                                    itemContext[2] = item;
+                                    childState.Sources[GraphSourceSlot.DataContext] = itemContext;
                                     GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
                                     GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
                                     newStates[idx] = childState;
@@ -1127,6 +1146,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                 object source = childState.Sources[entry.SourceSlot];
                 if (object.IsNullOrUndefined(source)) continue;
+
+                // For item graphs, Sources[DataContext] is a tuple [parentDC, control, item].
+                // Extract the item element for subscription unwiring.
+                NativeArray asTuple = source as NativeArray;
+                if (!object.IsNullOrUndefined(asTuple) && asTuple.Length >= 3)
+                    source = asTuple[2];
 
                 INotifyPropertyChanged observable = source as INotifyPropertyChanged;
                 if (object.IsNullOrUndefined(observable)) continue;

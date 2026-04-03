@@ -104,6 +104,7 @@ namespace TodoApp.ViewModels
 
         /// <summary>
         /// Toggles the completed state of this subtask.
+        /// TODO: Subtask persistence is not yet implemented — changes are lost on reload.
         /// </summary>
         public void ToggleComplete()
         {

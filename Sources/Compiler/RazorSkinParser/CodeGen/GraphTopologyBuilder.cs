@@ -320,7 +320,7 @@ namespace NScript.RazorSkin.CodeGen
                 // - "!Model.X" → negated property (gate checks !field)
                 // - "Model.X != null" → direct property (gate checks truthiness = non-null)
                 // - "Model.X == null" → negated property (gate checks !truthiness = null)
-                // - "!Model.X" prefix with "!= null" → complex, but simplify where possible
+                // - "!Model.X != null" → unsupported degenerate case; falls through to direct property (non-negated).
                 bool isNegated = condExpr.TrimStart().StartsWith("!");
                 bool isNotNull = condExpr.Contains("!= null") || condExpr.Contains("!=null");
                 bool isNull = !isNotNull && (condExpr.Contains("== null") || condExpr.Contains("==null"));

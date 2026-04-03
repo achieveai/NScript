@@ -37,10 +37,10 @@ namespace TodoApp.Test.ViewModels
             var todo = new TodoItemViewModel(appVm);
             todo.IsCompleted = false;
 
-            todo.ToggleComplete();
+            todo.ToggleComplete(null, null);
             assert.Equal(true, todo.IsCompleted, "Should be completed after toggle");
 
-            todo.ToggleComplete();
+            todo.ToggleComplete(null, null);
             assert.Equal(false, todo.IsCompleted, "Should be uncompleted after second toggle");
         }
 
@@ -51,7 +51,7 @@ namespace TodoApp.Test.ViewModels
             var todo = new TodoItemViewModel(appVm);
             todo.IsImportant = false;
 
-            todo.ToggleImportant();
+            todo.ToggleImportant(null, null);
             assert.Equal(true, todo.IsImportant, "Should be important after toggle");
         }
 

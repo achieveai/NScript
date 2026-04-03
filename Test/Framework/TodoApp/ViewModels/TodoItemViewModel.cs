@@ -1,5 +1,6 @@
 namespace TodoApp.ViewModels
 {
+    using System.Runtime.CompilerServices;
     using System.Web.Html;
     using Sunlight.Framework.Observables;
 
@@ -284,21 +285,30 @@ namespace TodoApp.ViewModels
 
         /// <summary>
         /// Toggles the completed state of this todo item and persists the change.
+        /// Stops event propagation to prevent parent onclick (OnSelectTodo) from firing.
+        /// Parameters: e = DOM element, ev = DOM Event (passed by NScript event binder).
         /// </summary>
-        public void ToggleComplete()
+        public void ToggleComplete(object e, object ev)
         {
+            if (ev != null) StopPropagation(ev);
             this.IsCompleted = !this.IsCompleted;
             this.appViewModel.SaveTodo(this);
         }
 
         /// <summary>
         /// Toggles the importance (star) state of this todo item and persists the change.
+        /// Stops event propagation to prevent parent onclick (OnSelectTodo) from firing.
+        /// Parameters: e = DOM element, ev = DOM Event (passed by NScript event binder).
         /// </summary>
-        public void ToggleImportant()
+        public void ToggleImportant(object e, object ev)
         {
+            if (ev != null) StopPropagation(ev);
             this.IsImportant = !this.IsImportant;
             this.appViewModel.SaveTodo(this);
         }
+
+        [Script("ev.stopPropagation();")]
+        private static extern void StopPropagation(object ev);
 
         /// <summary>
         /// Toggles whether this todo is included in My Day and persists the change.

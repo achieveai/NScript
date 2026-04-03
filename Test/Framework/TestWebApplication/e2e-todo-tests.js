@@ -525,6 +525,35 @@ const { chromium } = require('playwright');
     assert(updatedClass.includes('important'), 'Star should become important after click, got: ' + updatedClass);
   });
 
+  await runTest('BUG-005b: Toggling star back removes important class (un-star)', async (page) => {
+    // "Buy groceries" starts important — click its star to un-star it
+    const todoItems = await page.$$('.todo-item');
+    assert(todoItems.length >= 1, 'Need at least 1 todo');
+
+    const star = await todoItems[0].$('.star');
+    const classBefore = await star.evaluate(el => el.className);
+    assert(classBefore.includes('important'), 'First todo should start important, got: ' + classBefore);
+
+    // Click to un-star
+    await star.click();
+    await page.waitForTimeout(500);
+
+    // Re-query after DOM update
+    const updatedTodo = (await page.$$('.todo-item'))[0];
+    const updatedStar = await updatedTodo.$('.star');
+    const classAfter = await updatedStar.evaluate(el => el.className);
+    assert(!classAfter.includes('important'), 'Star should lose important after click, got: ' + classAfter);
+
+    // Click again to re-star — verify round-trip
+    await updatedStar.click();
+    await page.waitForTimeout(500);
+
+    const reTodo = (await page.$$('.todo-item'))[0];
+    const reStar = await reTodo.$('.star');
+    const classRound = await reStar.evaluate(el => el.className);
+    assert(classRound.includes('important'), 'Star should regain important after second click, got: ' + classRound);
+  });
+
   // ─── COMPLETED FOLDER BEHAVIOR ─────────────────────────────────────────────
 
   await runTest('BUG-020: Completed folder shows items in main list, not completed section', async (page) => {
@@ -563,6 +592,70 @@ const { chromium } = require('playwright');
     // Data from IndexedDB should restore todos
     const todos = await page.$$('.todo-item');
     assert(todos.length >= 1, 'Should have todos after reload, got ' + todos.length);
+  });
+
+  // ─── PARENT-METHOD EVENT BINDING (Model.OnSelect) ─────────────────────────
+
+  await runTest('REG-001: Model.OnSelect(todo) triggers selection on parent ViewModel', async (page) => {
+    // Verify at least one todo item exists
+    const todoItems = await page.$$('.todo-item');
+    assert(todoItems.length >= 2, 'Need at least 2 todos, got: ' + todoItems.length);
+
+    // Click the second todo and check it gets a selected visual cue
+    await todoItems[1].click();
+    await page.waitForTimeout(500);
+
+    // The right pane should exist after selection
+    const rightPane = await page.$('.pane-right');
+    assert(rightPane, 'Right pane should appear after clicking a todo via Model.OnSelect');
+  });
+
+  await runTest('REG-002: Switching selected todo updates selection', async (page) => {
+    const todoItems = await page.$$('.todo-item');
+    assert(todoItems.length >= 2, 'Need at least 2 todos');
+
+    // Click first todo
+    await todoItems[0].click();
+    await page.waitForTimeout(300);
+
+    // Click second todo
+    await todoItems[1].click();
+    await page.waitForTimeout(300);
+
+    // Right pane should still be visible
+    const pane = await page.$('.pane-right');
+    assert(pane, 'Right pane should still be visible after switching selection');
+  });
+
+  await runTest('REG-003: Star toggle and selection work independently', async (page) => {
+    // This tests that item events (star toggle) and parent method events
+    // (Model.OnSelect) both work from the same foreach item template.
+    const todoItems = await page.$$('.todo-item');
+    assert(todoItems.length >= 1, 'Need at least 1 todo');
+
+    // Toggle star on first todo
+    const star = await todoItems[0].$('.star');
+    assert(star, 'Todo should have a star element');
+    const classBefore = await star.evaluate(el => el.className);
+
+    await star.click();
+    await page.waitForTimeout(500);
+
+    const updatedItems = await page.$$('.todo-item');
+    const updatedStar = await updatedItems[0].$('.star');
+    const classAfter = await updatedStar.evaluate(el => el.className);
+
+    // Star class should have changed
+    assert(classBefore !== classAfter,
+      'Star class should change after click. Before: ' + classBefore + ', After: ' + classAfter);
+
+    // Now click the todo itself (not the star) to trigger selection
+    await updatedItems[0].click();
+    await page.waitForTimeout(500);
+
+    // Right pane should appear (selection via Model.OnSelect)
+    const pane = await page.$('.pane-right');
+    assert(pane, 'Right pane should appear after clicking todo item body');
   });
 
   // ─── RESULTS ────────────────────────────────────────────────────────────────
