@@ -31,6 +31,9 @@ namespace NScript.RazorSkin.CodeGen
         // Topology reference for marker path computation
         private GraphTopology _topology;
 
+        // Event element paths computed from data-evt-idx markers
+        private List<List<int>> _eventPaths;
+
         // Scope for the factory function body (has "skinFactory" and "doc" parameters)
         private IdentifierScope _factoryScope;
 
@@ -128,8 +131,9 @@ namespace NScript.RazorSkin.CodeGen
             var bindings = RazorSkinCodeGenerator.CollectBindingsPublic(_ir.Children);
             var events = RazorSkinCodeGenerator.CollectEventsPublic(_ir.Children);
             var elementPaths = new List<List<int>>();
+            var eventPaths = new List<List<int>>();
             var htmlContent = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(
-                _ir.Children, events, elementPaths);
+                _ir.Children, events, elementPaths, eventPaths);
             // Build graph topology from IR
             var topology = GraphTopologyBuilder.Build(_ir);
             _topology = topology;
@@ -159,7 +163,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // 2. Factory function
             var factoryStatements = BuildFactoryBody(
-                bindings, events, htmlContent, elementPaths, knownFunctionNames, topology);
+                bindings, events, htmlContent, elementPaths, eventPaths, knownFunctionNames, topology);
 
             var factoryFunction = new FunctionExpression(
                 null,
@@ -199,9 +203,11 @@ namespace NScript.RazorSkin.CodeGen
             List<EventNode> events,
             string htmlContent,
             List<List<int>> elementPaths,
+            List<List<int>> eventPaths,
             HashSet<string> knownFunctionNames,
             GraphTopology topology)
         {
+            _eventPaths = eventPaths;
             var stmts = new List<Statement>();
 
             // Get the "doc" parameter identifier
@@ -871,10 +877,10 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Expression BuildEventElementRef(string htmlContent, EventTopology evt)
         {
-            // Events target specific elements (buttons, etc.) in the template HTML.
-            // The event target element was identified during IR building and its path
-            // is computed relative to htmlRoot. For now, find buttons/elements by
-            // looking at the HTML structure.
+            // Events target specific elements in the template HTML.
+            // The event target element was identified during IR building and marked
+            // with data-evt-idx attributes. The paths were computed from those markers
+            // by ComputePathsFromHtml and passed via _eventPaths.
             // The topology assigns event element indices in document order.
             // Find the ordinal position of this event among all events.
             int ordinal = 0;
@@ -884,8 +890,17 @@ namespace NScript.RazorSkin.CodeGen
                 ordinal++;
             }
 
-            // Parse HTML to find the (ordinal+1)-th interactive element (button, a, input, etc.)
-            var path = FindNthInteractiveElementPath(htmlContent, ordinal);
+            // Use the marker-computed path if available, otherwise fall back to heuristic
+            List<int> path;
+            if (_eventPaths != null && ordinal < _eventPaths.Count)
+            {
+                path = _eventPaths[ordinal];
+            }
+            else
+            {
+                path = FindNthInteractiveElementPath(htmlContent, ordinal);
+            }
+
             var pathElements = new List<Expression>();
             foreach (var p in path)
                 pathElements.Add(new NumberLiteralExpression(_factoryScope, p));

@@ -1,5 +1,6 @@
 namespace TodoApp.ViewModels
 {
+    using System.Runtime.CompilerServices;
     using System.Web.Html;
     using Sunlight.Framework.Observables;
     using TodoApp.Services;
@@ -34,6 +35,15 @@ namespace TodoApp.ViewModels
         private string rightPaneClass;
         private string detailTitle;
 
+        private ObservableCollection<TodoItemViewModel> completedCurrentTodos;
+        private ObservableCollection<SubTaskViewModel> detailSubTasks;
+        private bool isCompletedSectionVisible;
+        private bool isCompletedSectionExpanded;
+        private int completedCount;
+        private TodoItemViewModel draggedTodo;
+
+        private string completedSectionClass;
+
         public AppViewModel()
         {
             this.isRightPaneCollapsed = true;
@@ -41,6 +51,12 @@ namespace TodoApp.ViewModels
             this.rightPaneClass = "pane-right collapsed";
             this.detailTitle = "";
             this.allTodos = new ObservableCollection<TodoItemViewModel>();
+            this.completedCurrentTodos = new ObservableCollection<TodoItemViewModel>();
+            this.detailSubTasks = new ObservableCollection<SubTaskViewModel>();
+            this.isCompletedSectionVisible = true;
+            this.isCompletedSectionExpanded = false;
+            this.completedCount = 0;
+            this.completedSectionClass = "completed-section collapsed";
         }
 
         public bool IsLeftPaneCollapsed
@@ -152,15 +168,105 @@ namespace TodoApp.ViewModels
             }
         }
 
+        public ObservableCollection<TodoItemViewModel> CompletedCurrentTodos
+        {
+            get { return this.completedCurrentTodos; }
+            set
+            {
+                if (this.completedCurrentTodos != value)
+                {
+                    this.completedCurrentTodos = value;
+                    base.FirePropertyChanged("CompletedCurrentTodos");
+                }
+            }
+        }
+
+        public ObservableCollection<SubTaskViewModel> DetailSubTasks
+        {
+            get { return this.detailSubTasks; }
+            set
+            {
+                if (this.detailSubTasks != value)
+                {
+                    this.detailSubTasks = value;
+                    base.FirePropertyChanged("DetailSubTasks");
+                }
+            }
+        }
+
+        public bool IsCompletedSectionVisible
+        {
+            get { return this.isCompletedSectionVisible; }
+            set
+            {
+                if (this.isCompletedSectionVisible != value)
+                {
+                    this.isCompletedSectionVisible = value;
+                    base.FirePropertyChanged("IsCompletedSectionVisible");
+                }
+            }
+        }
+
+        public bool IsCompletedSectionExpanded
+        {
+            get { return this.isCompletedSectionExpanded; }
+            set
+            {
+                if (this.isCompletedSectionExpanded != value)
+                {
+                    this.isCompletedSectionExpanded = value;
+                    base.FirePropertyChanged("IsCompletedSectionExpanded");
+                }
+            }
+        }
+
+        public int CompletedCount
+        {
+            get { return this.completedCount; }
+            set
+            {
+                if (this.completedCount != value)
+                {
+                    this.completedCount = value;
+                    base.FirePropertyChanged("CompletedCount");
+                }
+            }
+        }
+
+        public string CompletedSectionClass
+        {
+            get { return this.completedSectionClass; }
+            set
+            {
+                if (this.completedSectionClass != value)
+                {
+                    this.completedSectionClass = value;
+                    base.FirePropertyChanged("CompletedSectionClass");
+                }
+            }
+        }
+
+        private void UpdateCompletedSectionClass()
+        {
+            if (!this.isCompletedSectionVisible)
+                this.CompletedSectionClass = "completed-section hidden";
+            else if (!this.isCompletedSectionExpanded)
+                this.CompletedSectionClass = "completed-section collapsed";
+            else
+                this.CompletedSectionClass = "completed-section";
+        }
+
         private void UpdateDetailProperties()
         {
             if (this.selectedTodo != null)
             {
                 this.DetailTitle = this.selectedTodo.Title;
+                this.DetailSubTasks = this.selectedTodo.SubTasks;
             }
             else
             {
                 this.DetailTitle = "";
+                this.DetailSubTasks = new ObservableCollection<SubTaskViewModel>();
             }
         }
 
@@ -351,6 +457,118 @@ namespace TodoApp.ViewModels
         }
 
         /// <summary>
+        /// Toggles the collapsed/expanded state of the completed section.
+        /// </summary>
+        public void ToggleCompletedSection()
+        {
+            this.IsCompletedSectionExpanded = !this.IsCompletedSectionExpanded;
+            this.UpdateCompletedSectionClass();
+        }
+
+        /// <summary>
+        /// Handles onchange on the detail title input to sync edits back to the todo.
+        /// </summary>
+        public void OnDetailTitleChange(Element e, ElementEvent ev)
+        {
+            InputElement input = (InputElement)e;
+            string newTitle = input.Value;
+            if (this.selectedTodo != null && newTitle != null && newTitle != "")
+            {
+                this.selectedTodo.Title = newTitle;
+                this.DetailTitle = newTitle;
+                this.SaveTodo(this.selectedTodo);
+            }
+        }
+
+        /// <summary>
+        /// Handles onkeydown on the add-step input. Creates a subtask on Enter.
+        /// </summary>
+        public void AddSubTaskOnEnter(Element e, ElementEvent ev)
+        {
+            if (ev.KeyCode != 13) return;
+
+            InputElement input = (InputElement)e;
+            string title = input.Value;
+            if (title == null || title == "") return;
+
+            if (this.selectedTodo != null)
+            {
+                var sub = new SubTaskViewModel();
+                sub.Id = TodoItemViewModel.GenerateId();
+                sub.Title = title;
+                sub.IsCompleted = false;
+                this.selectedTodo.SubTasks.Add(sub);
+                input.Value = "";
+            }
+        }
+
+        /// <summary>
+        /// Moves the selected todo to a different folder.
+        /// </summary>
+        public void MoveSelectedToFolder(FolderViewModel folder)
+        {
+            if (this.selectedTodo == null || folder == null) return;
+
+            if (folder.IsSystem)
+            {
+                if (folder.SystemType == "myday")
+                    this.selectedTodo.IsMyDay = true;
+                else if (folder.SystemType == "important")
+                    this.selectedTodo.IsImportant = true;
+                else
+                    this.selectedTodo.FolderId = folder.Id;
+            }
+            else
+            {
+                this.selectedTodo.FolderId = folder.Id;
+            }
+
+            this.SaveTodo(this.selectedTodo);
+        }
+
+        /// <summary>
+        /// Stores the dragged todo for drag-drop operations.
+        /// </summary>
+        public void OnDragStart(TodoItemViewModel todo)
+        {
+            this.draggedTodo = todo;
+        }
+
+        /// <summary>
+        /// Handles a drop on a folder. Assigns the dragged todo to the target folder.
+        /// </summary>
+        public void OnDropToFolder(FolderViewModel folder)
+        {
+            if (this.draggedTodo == null || folder == null) return;
+
+            if (folder.IsSystem)
+            {
+                if (folder.SystemType == "myday")
+                    this.draggedTodo.IsMyDay = true;
+                else if (folder.SystemType == "important")
+                    this.draggedTodo.IsImportant = true;
+            }
+            else
+            {
+                this.draggedTodo.FolderId = folder.Id;
+            }
+
+            this.SaveTodo(this.draggedTodo);
+            this.draggedTodo = null;
+        }
+
+        /// <summary>
+        /// Prevents the default behavior on dragover to allow drops.
+        /// </summary>
+        public void OnDragOver(object e, object ev)
+        {
+            PreventDefault(ev);
+        }
+
+        [Script("ev.preventDefault();")]
+        private static extern void PreventDefault(object ev);
+
+        /// <summary>
         /// Removes a todo from both the full list and the current view, then deletes from DB.
         /// Closes the detail pane if the deleted todo was selected.
         /// </summary>
@@ -448,6 +666,7 @@ namespace TodoApp.ViewModels
             else
             {
                 this.AddSampleTodos();
+                this.UpdateAllFolderCounts();
                 this.OnSelectFolder(this.defaultTasksFolder);
             }
         }
@@ -486,10 +705,18 @@ namespace TodoApp.ViewModels
             tasks.IsSystem = true;
             tasks.SystemType = "tasks";
 
+            var completed = new FolderViewModel(this);
+            completed.Id = "completed";
+            completed.Name = "Completed";
+            completed.Icon = "\u2714";
+            completed.IsSystem = true;
+            completed.SystemType = "completed";
+
             this.Folders.Add(myDay);
             this.Folders.Add(important);
             this.Folders.Add(planned);
             this.Folders.Add(tasks);
+            this.Folders.Add(completed);
 
             this.defaultTasksFolder = tasks;
         }
@@ -567,6 +794,7 @@ namespace TodoApp.ViewModels
                 }
             }
 
+            this.UpdateAllFolderCounts();
             this.OnSelectFolder(this.defaultTasksFolder);
         }
 
@@ -606,15 +834,21 @@ namespace TodoApp.ViewModels
 
         /// <summary>
         /// Refreshes CurrentTodos based on the selected folder's filter criteria.
+        /// Splits items into pending (CurrentTodos) and completed (CompletedCurrentTodos).
         /// </summary>
         private void RefreshCurrentTodos()
         {
             this.CurrentTodos.Clear();
+            this.CompletedCurrentTodos.Clear();
 
             if (this.selectedFolder == null)
             {
+                this.CompletedCount = 0;
+                this.IsCompletedSectionVisible = false;
                 return;
             }
+
+            bool isCompletedFolder = this.selectedFolder.IsSystem && this.selectedFolder.SystemType == "completed";
 
             if (this.selectedFolder.IsSystem)
             {
@@ -623,21 +857,25 @@ namespace TodoApp.ViewModels
                 for (int i = 0; i < this.allTodos.Count; i++)
                 {
                     var todo = this.allTodos[i];
+                    bool matches = false;
+
                     if (systemType == "myday" && todo.IsMyDay)
-                    {
-                        this.CurrentTodos.Add(todo);
-                    }
+                        matches = true;
                     else if (systemType == "important" && todo.IsImportant)
-                    {
-                        this.CurrentTodos.Add(todo);
-                    }
+                        matches = true;
                     else if (systemType == "planned" && todo.HasDueDate)
-                    {
-                        this.CurrentTodos.Add(todo);
-                    }
+                        matches = true;
                     else if (systemType == "tasks")
+                        matches = true;
+                    else if (systemType == "completed" && todo.IsCompleted)
+                        matches = true;
+
+                    if (matches)
                     {
-                        this.CurrentTodos.Add(todo);
+                        if (isCompletedFolder || !todo.IsCompleted)
+                            this.CurrentTodos.Add(todo);
+                        else
+                            this.CompletedCurrentTodos.Add(todo);
                     }
                 }
             }
@@ -649,12 +887,53 @@ namespace TodoApp.ViewModels
                     var todo = this.allTodos[i];
                     if (todo.FolderId == folderId)
                     {
-                        this.CurrentTodos.Add(todo);
+                        if (!todo.IsCompleted)
+                            this.CurrentTodos.Add(todo);
+                        else
+                            this.CompletedCurrentTodos.Add(todo);
                     }
                 }
             }
 
-            this.selectedFolder.TodoCount = this.CurrentTodos.Count;
+            this.CompletedCount = this.CompletedCurrentTodos.Count;
+            this.IsCompletedSectionVisible = !isCompletedFolder;
+            this.selectedFolder.TodoCount = this.CurrentTodos.Count + this.CompletedCurrentTodos.Count;
+            this.UpdateCompletedSectionClass();
+        }
+
+        /// <summary>
+        /// Computes correct TodoCount for all system folders based on current allTodos state.
+        /// </summary>
+        private void UpdateAllFolderCounts()
+        {
+            int myDayCount = 0;
+            int importantCount = 0;
+            int plannedCount = 0;
+            int tasksCount = 0;
+            int completedCount = 0;
+
+            for (int i = 0; i < this.allTodos.Count; i++)
+            {
+                var todo = this.allTodos[i];
+                if (todo.IsMyDay) myDayCount = myDayCount + 1;
+                if (todo.IsImportant) importantCount = importantCount + 1;
+                if (todo.HasDueDate) plannedCount = plannedCount + 1;
+                tasksCount = tasksCount + 1;
+                if (todo.IsCompleted) completedCount = completedCount + 1;
+            }
+
+            for (int i = 0; i < this.Folders.Count; i++)
+            {
+                var folder = this.Folders[i];
+                if (folder.IsSystem)
+                {
+                    if (folder.SystemType == "myday") folder.TodoCount = myDayCount;
+                    else if (folder.SystemType == "important") folder.TodoCount = importantCount;
+                    else if (folder.SystemType == "planned") folder.TodoCount = plannedCount;
+                    else if (folder.SystemType == "tasks") folder.TodoCount = tasksCount;
+                    else if (folder.SystemType == "completed") folder.TodoCount = completedCount;
+                }
+            }
         }
     }
 }

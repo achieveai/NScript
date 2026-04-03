@@ -29,7 +29,7 @@ namespace TodoApp.Test.ViewModels
         public static void TestSubTaskToggle(Assert assert)
         {
             var sub = new SubTaskViewModel();
-            sub.ToggleComplete();
+            sub.ToggleComplete(null, null);
             assert.Equal(true, sub.IsCompleted, "Should be completed after toggle");
         }
 

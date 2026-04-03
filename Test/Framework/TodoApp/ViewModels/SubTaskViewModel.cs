@@ -1,5 +1,6 @@
 namespace TodoApp.ViewModels
 {
+    using System.Web.Html;
     using Sunlight.Framework.Observables;
 
     /// <summary>
@@ -104,11 +105,23 @@ namespace TodoApp.ViewModels
 
         /// <summary>
         /// Toggles the completed state of this subtask.
-        /// TODO: Subtask persistence is not yet implemented — changes are lost on reload.
         /// </summary>
-        public void ToggleComplete()
+        public void ToggleComplete(object e, object ev)
         {
             this.IsCompleted = !this.IsCompleted;
+        }
+
+        /// <summary>
+        /// Updates the title when the user edits the subtask input.
+        /// </summary>
+        public void OnTitleChange(Element e, ElementEvent ev)
+        {
+            InputElement input = (InputElement)e;
+            string newTitle = input.Value;
+            if (newTitle != null && newTitle != "")
+            {
+                this.Title = newTitle;
+            }
         }
 
     }
