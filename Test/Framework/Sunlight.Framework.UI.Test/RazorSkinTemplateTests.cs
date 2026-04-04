@@ -1707,5 +1707,113 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("in-progress", ((InputElement)inputs[0]).Value,
                 "Dynamic item input binding should react to Status change");
         }
+
+        // ------------------------------------------------------------------
+        // Phase 8: @styles directive — CSS pipeline integration
+        // ------------------------------------------------------------------
+
+        [Test]
+        public static void TestRazorStyledTemplate_Renders(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "CSS Test";
+            vm.Count = 42;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+
+            assert.NotEqual(null, control.Skin, "Styled skin should compile with @styles directive");
+            control.Activate();
+
+            var header = element.QuerySelectorAll("[data-test] h1");
+            assert.Equal(1, header.Length, "Template should render an h1 element");
+            assert.Equal("CSS Test", header[0].TextContent, "h1 should display model Name");
+        }
+
+        [Test]
+        public static void TestRazorStyledTemplate_HasCssClass(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Styled";
+            vm.Count = 1;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+            control.Activate();
+
+            var header = element.QuerySelectorAll("[data-test] h1");
+            var cssClass = header[0].GetAttribute("class");
+            assert.NotEqual(null, cssClass, "h1 should have a class attribute from @styles");
+        }
+
+        // Note: TestRazorStyledTemplate_CssInDom omitted — verifying <style> injection
+        // requires Document-level QuerySelectorAll which is not supported by the NScript
+        // compiler. The CSS IIFE injection is verified by the E2E TodoApp tests instead.
+
+        [Test]
+        public static void TestRazorMultiStyled_Renders(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Multi CSS";
+            vm.Count = 2;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorMultiStyled;
+
+            assert.NotEqual(null, control.Skin, "Multi-styled skin should compile with two @styles directives");
+            control.Activate();
+
+            var header = element.QuerySelectorAll("[data-test] h1");
+            assert.Equal(1, header.Length, "Multi-styled template should render");
+            assert.Equal("Multi CSS", header[0].TextContent, "h1 should display model Name");
+        }
+
+        [Test]
+        public static void TestRazorMultiStyled_BothSheetsApplied(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Both Sheets";
+            vm.Count = 0;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorMultiStyled;
+            control.Activate();
+
+            var sidebar = element.QuerySelectorAll("[data-test] aside");
+            assert.Equal(1, sidebar.Length, "aside element should render for styled-sidebar class");
+            var sidebarClass = sidebar[0].GetAttribute("class");
+            assert.NotEqual(null, sidebarClass, "aside should have class from second styles sheet");
+        }
+
+        [Test]
+        public static void TestRazorStyledTemplate_ReactiveWithCss(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            vm.Name = "Before";
+            vm.Count = 10;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorStyledTemplate;
+            control.Activate();
+
+            var header = element.QuerySelectorAll("[data-test] h1");
+            assert.Equal("Before", header[0].TextContent, "Initial Name binding");
+
+            vm.Name = "After";
+
+            header = element.QuerySelectorAll("[data-test] h1");
+            assert.Equal("After", header[0].TextContent,
+                "Name binding should update reactively even with styles CSS classes");
+        }
     }
 }

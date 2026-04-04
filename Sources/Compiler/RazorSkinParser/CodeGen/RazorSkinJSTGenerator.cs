@@ -50,6 +50,12 @@ namespace NScript.RazorSkin.CodeGen
         // The starting offset is passed in from the plugin to avoid collision with XWML indices.
         private readonly int _dataIndex;
 
+        /// <summary>
+        /// Optional CSS manager for templates with @styles directives.
+        /// When set, class names in HTML output are replaced with minified versions.
+        /// </summary>
+        private readonly RazorCssManager _cssManager;
+
 
         /// <summary>
         /// Pre-created getter identifier from Initialize(), so GetOverwrite can reference
@@ -65,7 +71,8 @@ namespace NScript.RazorSkin.CodeGen
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers,
             RazorKnownTypes knownTypes,
             int dataIndex,
-            IIdentifier preCreatedGetterIdentifier = null)
+            IIdentifier preCreatedGetterIdentifier = null,
+            RazorCssManager cssManager = null)
         {
             _ir = ir;
             _scopeManager = scopeManager;
@@ -76,6 +83,7 @@ namespace NScript.RazorSkin.CodeGen
             _typeHelper = new CecilTypeHelper(clrContext);
             _preCreatedGetterIdentifier = preCreatedGetterIdentifier;
             _dataIndex = dataIndex;
+            _cssManager = cssManager;
         }
 
         /// <summary>
@@ -134,6 +142,13 @@ namespace NScript.RazorSkin.CodeGen
             var eventPaths = new List<List<int>>();
             var htmlContent = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(
                 _ir.Children, events, elementPaths, eventPaths);
+
+            // Replace CSS class names with minified versions when @styles are active
+            if (_cssManager != null && _cssManager.HasStylesheets)
+            {
+                htmlContent = ReplaceCssClassNamesInHtml(htmlContent);
+            }
+
             // Build graph topology from IR
             var topology = GraphTopologyBuilder.Build(_ir);
             _topology = topology;
@@ -985,6 +1000,23 @@ namespace NScript.RazorSkin.CodeGen
             return new List<int> { 0 };
         }
 
+        /// <summary>
+        /// Replaces CSS class names in HTML class="..." attributes with their minified versions.
+        /// Uses the same regex pattern as TemplateIRBuilder.ValidateCssClassesInHtml.
+        /// </summary>
+        private string ReplaceCssClassNamesInHtml(string html)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(
+                html,
+                @"class=""([^""]*)""|class='([^']*)'",
+                match =>
+                {
+                    var classValue = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+                    var quote = match.Groups[1].Success ? "\"" : "'";
+                    var replaced = _cssManager.ReplaceCssClassNames(classValue);
+                    return $"class={quote}{replaced}{quote}";
+                });
+        }
     }
 
     /// <summary>

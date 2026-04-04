@@ -64,6 +64,20 @@ namespace NScript.RazorSkin
         private RazorKnownTypes _razorKnownTypes;
 
         /// <summary>
+        /// Per-template CSS managers, keyed by template name.
+        /// Populated during Initialize when templates have @styles directives.
+        /// </summary>
+        private readonly Dictionary<string, RazorCssManager> _templateCssManagers
+            = new Dictionary<string, RazorCssManager>();
+
+        /// <summary>
+        /// All embedded CSS resources found during module scanning, keyed by resource name.
+        /// Used to resolve @styles references to actual CSS content.
+        /// </summary>
+        private readonly Dictionary<string, EmbeddedResource> _cssResources
+            = new Dictionary<string, EmbeddedResource>();
+
+        /// <summary>
         /// Maps template name to its JST getter function identifier.
         /// Populated during GetPostJavascript when JST generation succeeds.
         /// Used by GetOverwrite to emit proper JST return statements.
@@ -122,13 +136,20 @@ namespace Sunlight.Framework.Observables
             // Reset per-compilation data index counter
             _nextDataIndex = 100;
 
-            // Scan embedded resources for .skin.cshtml files
+            // Scan embedded resources for .skin.cshtml and .css files
             foreach (var module in clrContext.Modules)
             {
                 foreach (var resource in module.Resources)
                 {
                     var embeddedResource = resource as EmbeddedResource;
                     if (embeddedResource == null) continue;
+
+                    // Collect CSS resources for @styles resolution
+                    if (embeddedResource.Name.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _cssResources[embeddedResource.Name] = embeddedResource;
+                        Log.Debug("Discovered CSS resource {ResourceName}", embeddedResource.Name);
+                    }
 
                     var fileName = runtimeScopeManager.Context.GetResourceFileName(
                         module, embeddedResource.Name);
@@ -205,7 +226,183 @@ namespace Sunlight.Framework.Observables
                 }
 
                 ResolveRuntimeIdentifiers(clrContext, runtimeScopeManager);
+
+                // Load CSS for templates with @styles directives
+                LoadCssForTemplates(runtimeScopeManager);
             }
+        }
+
+        /// <summary>
+        /// Loads CSS for templates with @styles directives.
+        /// Creates a RazorCssManager per template, loads referenced CSS from embedded resources,
+        /// validates class usage, and optimizes names for minification.
+        /// </summary>
+        private void LoadCssForTemplates(RuntimeScopeManager runtimeScopeManager)
+        {
+            // Deduplicate — _compiledIRs stores each IR under both short name and resource name
+            var processedTemplates = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var kvp in _compiledIRs)
+            {
+                var ir = kvp.Value;
+                if (!processedTemplates.Add(ir.TemplateName))
+                    continue;
+
+                if (ir.StylesheetResourceNames == null || ir.StylesheetResourceNames.Count == 0)
+                    continue;
+
+                try
+                {
+                    var cssManager = new RazorCssManager();
+
+                    foreach (var cssResourceName in ir.StylesheetResourceNames)
+                    {
+                        EmbeddedResource cssResource;
+                        if (!_cssResources.TryGetValue(cssResourceName, out cssResource))
+                        {
+                            runtimeScopeManager.Context.AddError(
+                                null,
+                                $"CSS resource '{cssResourceName}' referenced by @styles in template " +
+                                $"'{ir.TemplateName}' was not found as an embedded resource.",
+                                false);
+                            continue;
+                        }
+
+                        using var stream = cssResource.GetResourceStream();
+                        using var reader = new StreamReader(stream);
+                        var cssText = reader.ReadToEnd();
+
+                        cssManager.AddStylesheet(cssResourceName, cssText);
+                        Log.Debug("Loaded CSS {ResourceName} for template {TemplateName}",
+                            cssResourceName, ir.TemplateName);
+                    }
+
+                    if (cssManager.HasStylesheets)
+                    {
+                        // Validate CSS variables are declared
+                        cssManager.ValidateCssVariables();
+
+                        // Validate class names used in template HTML
+                        TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, cssManager);
+
+                        // Note: CompressNames() is intentionally NOT called here.
+                        // Minification would break templates with dynamic class references
+                        // (e.g., @Model.CssClass = "pane-left") since C# strings stay unminified.
+                        // The @styles pipeline still provides compile-time class validation
+                        // and CSS emission without minification.
+
+                        _templateCssManagers[ir.TemplateName] = cssManager;
+
+                        Log.Debug("CSS loaded for template {TemplateName}: {SheetCount} sheets",
+                            ir.TemplateName, cssManager.Sheets.Count);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "CSS loading failed for template {TemplateName}", ir.TemplateName);
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"Error loading CSS for Razor template '{ir.TemplateName}': {ex.Message}",
+                        false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Emits CSS from Razor templates as JST statements.
+        /// Creates a &lt;style&gt; element, sets textContent to the serialized CSS, and appends to document.head.
+        /// Also contributes to ConverterContext for XWML merge (when XWML plugin is active).
+        /// </summary>
+        private List<Statement> EmitCssStatements()
+        {
+            var result = new List<Statement>();
+            if (_templateCssManagers.Count == 0) return result;
+
+            // Collect all serialized CSS
+            var allCss = new System.Text.StringBuilder();
+            var emittedManagers = new HashSet<RazorCssManager>();
+            foreach (var cssManager in _templateCssManagers.Values)
+            {
+                if (!emittedManagers.Add(cssManager))
+                    continue;
+
+                var css = cssManager.GetSerializedCss();
+                if (!string.IsNullOrEmpty(css))
+                    allCss.Append(css);
+            }
+
+            if (allCss.Length == 0) return result;
+
+            var cssText = allCss.ToString();
+
+            // Also contribute to ConverterContext for XWML merge (if XWML plugin is active)
+            _runtimeScopeManager?.Context?.AddCssContribution(cssText);
+
+            // Emit standalone <style> element creation via IIFE:
+            // (function(d){var s=d.createElement("style");s.textContent="...";d.head.appendChild(s)})(document)
+            var scope = _runtimeScopeManager.Scope;
+            var iifeScope = new IdentifierScope(scope, new[] { "d" }, false);
+            var docParam = iifeScope.ParameterIdentifiers[0];
+
+            var styleVar = SimpleIdentifier.CreateScopeIdentifier(iifeScope, "s", true);
+            var iifeName = SimpleIdentifier.CreateScopeIdentifier(scope, "_razorCssInit", false);
+            var body = new List<Statement>();
+
+            // s = d.createElement("style")
+            body.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IdentifierExpression(styleVar, iifeScope),
+                    new MethodCallExpression(
+                        null,
+                        iifeScope,
+                        new IndexExpression(
+                            null, iifeScope,
+                            new IdentifierExpression(docParam, iifeScope),
+                            new StringLiteralExpression(iifeScope, "createElement")),
+                        new StringLiteralExpression(iifeScope, "style"))));
+
+            // s.textContent = "...css..."
+            body.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IndexExpression(
+                        null, iifeScope,
+                        new IdentifierExpression(styleVar, iifeScope),
+                        new StringLiteralExpression(iifeScope, "textContent")),
+                    new StringLiteralExpression(iifeScope, cssText)));
+
+            // d.head.appendChild(s)
+            body.Add(
+                new ExpressionStatement(
+                    null,
+                    iifeScope,
+                    new MethodCallExpression(
+                        null,
+                        iifeScope,
+                        new IndexExpression(
+                            null, iifeScope,
+                            new IndexExpression(
+                                null, iifeScope,
+                                new IdentifierExpression(docParam, iifeScope),
+                                new StringLiteralExpression(iifeScope, "head")),
+                            new StringLiteralExpression(iifeScope, "appendChild")),
+                        new IdentifierExpression(styleVar, iifeScope))));
+
+            // Wrap in IIFE: (function(d){ ... })(document)
+            var iifeFunc = new FunctionExpression(
+                null, scope, iifeScope,
+                iifeScope.ParameterIdentifiers,
+                iifeName);
+            iifeFunc.AddStatements(body);
+
+            var iife = new MethodCallExpression(
+                null, scope, iifeFunc,
+                new IdentifierExpression(
+                    RawNameIdentifier.Create(scope, "document"), scope));
+
+            result.Add(new ExpressionStatement(null, scope, iife));
+
+            Log.Debug("Emitted CSS style element with {CssLength} chars", cssText.Length);
+            return result;
         }
 
         /// <summary>
@@ -927,6 +1124,9 @@ namespace Sunlight.Framework.Observables
                     IIdentifier preCreatedGetter = null;
                     _templateGetterIdentifiers.TryGetValue(kvp.Value.TemplateName, out preCreatedGetter);
 
+                    RazorCssManager cssManager = null;
+                    _templateCssManagers.TryGetValue(kvp.Value.TemplateName, out cssManager);
+
                     var jstGenerator = new RazorSkinJSTGenerator(
                         kvp.Value,
                         _runtimeScopeManager,
@@ -935,7 +1135,8 @@ namespace Sunlight.Framework.Observables
                         _resolvedTypeIdentifiers,
                         _razorKnownTypes,
                         _nextDataIndex++,
-                        preCreatedGetter);
+                        preCreatedGetter,
+                        cssManager);
 
                     var jstStatements = jstGenerator.Generate();
                     statements.AddRange(jstStatements);
@@ -960,6 +1161,9 @@ namespace Sunlight.Framework.Observables
                         false);
                 }
             }
+
+            // Emit CSS <style> element for templates with @styles directives
+            statements.AddRange(EmitCssStatements());
 
             Log.Debug("GetPostJavascript emitting {StatementCount} statements for {TemplateCount} templates",
                 statements.Count, emittedTemplates.Count);
