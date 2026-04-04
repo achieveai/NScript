@@ -67,6 +67,7 @@
                     @foreach (var folder in Model.Folders)
                     {
                         <div class="folder-pick-item" onclick="@Model.MoveSelectedToFolder(folder)">
+                            <div class="folder-pick-icon">@folder.Icon</div>
                             <div class="folder-pick-name">@folder.Name</div>
                         </div>
                     }

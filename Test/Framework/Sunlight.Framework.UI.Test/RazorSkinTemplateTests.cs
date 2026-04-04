@@ -1589,5 +1589,123 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("20", countSpan.TextContent,
                 "Count must be '20' synchronously after fourth mutation");
         }
+
+        // ------------------------------------------------------------------
+        // Mixed Marker Tests (span + non-span elements in foreach)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Verifies that CollectSpanElements correctly collects both span markers
+        /// and non-span self-binding elements (e.g. input[data-ns-bind]) inside
+        /// a @foreach template. Without the fix, the input element is missed by
+        /// getElementsByTagName("span") and all subsequent element indices are
+        /// off by one, causing the input's value to bind to the wrong DOM node.
+        /// </summary>
+        [Test]
+        public static void TestForeachMixedMarkersInitialBinding(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            var item1 = new RazorItemVM();
+            item1.Name = "Task A";
+            item1.Status = "active";
+            items.Add(item1);
+            var item2 = new RazorItemVM();
+            item2.Name = "Task B";
+            item2.Status = "done";
+            items.Add(item2);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorForeachMixedMarkers;
+            control.Activate();
+
+            // Verify span text binding works
+            var labels = element.QuerySelectorAll("[data-test] .item-label");
+            assert.Equal(2, labels.Length, "Should render 2 label spans");
+            assert.Equal("Task A", labels[0].TextContent, "First label text");
+            assert.Equal("Task B", labels[1].TextContent, "Second label text");
+
+            // Verify input value binding works (the bug that was fixed)
+            var inputs = element.QuerySelectorAll("[data-test] .item-input");
+            assert.Equal(2, inputs.Length, "Should render 2 input elements");
+            assert.Equal("active", ((InputElement)inputs[0]).Value,
+                "First input value must be 'active' — fails if CollectSpanElements misses non-span markers");
+            assert.Equal("done", ((InputElement)inputs[1]).Value,
+                "Second input value must be 'done'");
+        }
+
+        /// <summary>
+        /// Verifies that reactive updates propagate correctly to both span and
+        /// input elements within the same foreach item template.
+        /// </summary>
+        [Test]
+        public static void TestForeachMixedMarkersReactiveUpdate(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            var item1 = new RazorItemVM();
+            item1.Name = "Original";
+            item1.Status = "pending";
+            items.Add(item1);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorForeachMixedMarkers;
+            control.Activate();
+
+            // Mutate the span-bound property
+            item1.Name = "Updated";
+            var label = element.QuerySelector("[data-test] .item-label");
+            assert.Equal("Updated", label.TextContent,
+                "Span binding should react to Name change");
+
+            // Mutate the input-bound property
+            item1.Status = "completed";
+            var input = element.QuerySelector("[data-test] .item-input");
+            assert.Equal("completed", ((InputElement)input).Value,
+                "Input value binding should react to Status change");
+        }
+
+        /// <summary>
+        /// Verifies that dynamically adding items to the collection correctly
+        /// binds both span and input elements for the new item.
+        /// </summary>
+        [Test]
+        public static void TestForeachMixedMarkersDynamicAdd(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorForeachMixedMarkers;
+            control.Activate();
+
+            // Start empty — add an item dynamically
+            var newItem = new RazorItemVM();
+            newItem.Name = "Dynamic Task";
+            newItem.Status = "new";
+            items.Add(newItem);
+
+            var labels = element.QuerySelectorAll("[data-test] .item-label");
+            var inputs = element.QuerySelectorAll("[data-test] .item-input");
+            assert.Equal(1, labels.Length, "Should render 1 item after add");
+            assert.Equal("Dynamic Task", labels[0].TextContent, "Label text for dynamically added item");
+            assert.Equal("new", ((InputElement)inputs[0]).Value,
+                "Input value for dynamically added item — exercises CollectSpanElements on cloned template");
+
+            // Verify reactivity on the dynamically added item
+            newItem.Status = "in-progress";
+            inputs = element.QuerySelectorAll("[data-test] .item-input");
+            assert.Equal("in-progress", ((InputElement)inputs[0]).Value,
+                "Dynamic item input binding should react to Status change");
+        }
     }
 }

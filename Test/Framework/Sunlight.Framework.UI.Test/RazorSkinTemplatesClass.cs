@@ -162,5 +162,11 @@ namespace Sunlight.Framework.UI.Test
         {
             get { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorForeachMixedMarkers.skin.cshtml")]
+        public static Skin RazorForeachMixedMarkers
+        {
+            get { return null; }
+        }
     }
 }

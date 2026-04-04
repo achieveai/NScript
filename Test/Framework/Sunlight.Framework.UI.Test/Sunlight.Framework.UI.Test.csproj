@@ -68,6 +68,7 @@
     <EmbeddedResource Include="RazorTemplates\RazorStylesExtra.css" />
     <EmbeddedResource Include="RazorTemplates\RazorStyledTemplate.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorMultiStyled.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeachMixedMarkers.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

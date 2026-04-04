@@ -1,0 +1,11 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="1">
+@foreach (var item in Model.Items)
+{
+    <div class="mixed-row">
+        <span class="item-label">@item.Name</span>
+        <input class="item-input" value="@item.Status" />
+    </div>
+}
+</div>

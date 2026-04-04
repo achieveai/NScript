@@ -1146,20 +1146,25 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
-        /// Collects span elements from an item clone for use as element refs in child graph states.
-        /// Returns a NativeArray with each span as an entry. If no spans found, returns
-        /// a single-element array containing the clone itself.
+        /// Collects compiler-generated marker elements from an item clone for use as
+        /// element refs in child graph states. Markers are identified by data-ns-ph
+        /// (text placeholders), data-ns-bind (value/attribute bindings), or data-ns-evt
+        /// (event bindings). Returns a NativeArray with each marker as an entry.
+        /// If no markers found, returns a single-element array containing the clone itself.
         /// </summary>
         public static NativeArray CollectSpanElements(Element clone)
         {
-            NativeArray<Element> spans = clone.GetElementsByTagName("span");
-            int spanCount = spans.Length;
-            NativeArray result = new NativeArray(spanCount > 0 ? spanCount : 1);
-            for (int i = 0; i < spanCount; i++)
+            // Collect only compiler-generated markers — elements carrying data-ns-ph,
+            // data-ns-bind, or data-ns-evt. User-authored spans (e.g. <span class="label">)
+            // must NOT be collected as they are not counted by the compiler's element indexing.
+            NativeArray<Element> allMarkers = clone.QuerySelectorAll("[data-ns-ph], [data-ns-bind], [data-ns-evt]");
+            int count = allMarkers.Length;
+            NativeArray result = new NativeArray(count > 0 ? count : 1);
+            for (int i = 0; i < count; i++)
             {
-                result[i] = spans[i];
+                result[i] = allMarkers[i];
             }
-            if (spanCount == 0)
+            if (count == 0)
             {
                 result[0] = clone;
             }
@@ -1179,7 +1184,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 {
                     if ((object)elemRefs[j] == (object)span)
                     {
-                        elemRefs[j] = (Element)span.ParentNode;
+                        // Only replace span markers with their parent; non-span
+                        // elements (e.g. <button data-ns-evt/>) bind to themselves.
+                        if (span.TagName == "SPAN")
+                            elemRefs[j] = (Element)span.ParentNode;
                         break;
                     }
                 }
@@ -1199,7 +1207,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 {
                     if ((object)elemRefs[j] == (object)span)
                     {
-                        elemRefs[j] = (Element)span.ParentNode;
+                        // Only replace span markers with their parent; non-span
+                        // elements (e.g. <input data-ns-bind/>) bind to themselves.
+                        if (span.TagName == "SPAN")
+                            elemRefs[j] = (Element)span.ParentNode;
                         break;
                     }
                 }
