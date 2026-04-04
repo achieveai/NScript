@@ -84,7 +84,7 @@ namespace NScript.RazorSkin.CodeGen
             // move the bind marker to a data-ns-bind attribute on the void element.
             html = System.Text.RegularExpressions.Regex.Replace(
                 html,
-                @"(<(?:input|br|img|hr)\b[^>]*?)(\s*/?>)((?:<span data-ns-evt></span>)*)<span data-ns-bind></span>",
+                @"(<(?:input|br|img|hr|area|base|col|embed|link|meta|param|source|track|wbr)\b[^>]*?)(\s*/?>)((?:<span data-ns-evt></span>)*)<span data-ns-bind></span>",
                 "$1 data-ns-bind$2$3",
                 System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 

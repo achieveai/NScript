@@ -927,8 +927,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (!object.IsNullOrUndefined(childStates))
                 {
                     GraphState childState = childStates[j];
-                    if (!object.IsNullOrUndefined(childState))
+                    if (!object.IsNullOrUndefined(childState) && !object.IsNullOrUndefined(colInfo.ItemGraph))
                     {
+                        // Dispose child graph state: unwire subscriptions, events,
+                        // nested collections, and remove gate DOM elements.
+                        GraphEngine.UnwireChildSubscriptions(colInfo.ItemGraph, childState);
+                        GraphEngine.CleanupEventListeners(colInfo.ItemGraph, childState);
+                        GraphEngine.CleanupCollectionListeners(colInfo.ItemGraph, childState);
                         GraphEngine.RemoveChildGateElements(childState);
                     }
                 }
@@ -977,6 +982,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     // Unwire old child subscriptions to avoid leaks.
                     GraphEngine.UnwireChildSubscriptions(colInfo.ItemGraph, oldChild);
                     GraphEngine.CleanupEventListeners(colInfo.ItemGraph, oldChild);
+                    GraphEngine.CleanupCollectionListeners(colInfo.ItemGraph, oldChild);
+                    GraphEngine.RemoveChildGateElements(oldChild);
                 }
 
                 // Update the child graph's DataContext to the new item and re-push.
@@ -1179,15 +1186,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             for (int i = 0; i < evtSpans.Length; i++)
             {
-                Element span = evtSpans[i];
+                Element marker = evtSpans[i];
                 for (int j = 0; j < elemRefs.Length; j++)
                 {
-                    if ((object)elemRefs[j] == (object)span)
+                    if ((object)elemRefs[j] == (object)marker)
                     {
                         // Only replace span markers with their parent; non-span
                         // elements (e.g. <button data-ns-evt/>) bind to themselves.
-                        if (span.TagName == "SPAN")
-                            elemRefs[j] = (Element)span.ParentNode;
+                        if (marker.TagName == "SPAN")
+                            elemRefs[j] = (Element)marker.ParentNode;
                         break;
                     }
                 }
@@ -1202,15 +1209,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             for (int i = 0; i < bindSpans.Length; i++)
             {
-                Element span = bindSpans[i];
+                Element marker = bindSpans[i];
                 for (int j = 0; j < elemRefs.Length; j++)
                 {
-                    if ((object)elemRefs[j] == (object)span)
+                    if ((object)elemRefs[j] == (object)marker)
                     {
                         // Only replace span markers with their parent; non-span
                         // elements (e.g. <input data-ns-bind/>) bind to themselves.
-                        if (span.TagName == "SPAN")
-                            elemRefs[j] = (Element)span.ParentNode;
+                        if (marker.TagName == "SPAN")
+                            elemRefs[j] = (Element)marker.ParentNode;
                         break;
                     }
                 }

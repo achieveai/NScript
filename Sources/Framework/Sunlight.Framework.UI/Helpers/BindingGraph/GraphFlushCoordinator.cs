@@ -95,6 +95,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 pendingByDepth[depth] = new NativeArray<GraphState>(0);
             }
 
+            maxDepth = 0;
             pendingCount = 0;
             flushScheduled = false;
         }

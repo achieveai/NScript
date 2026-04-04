@@ -83,22 +83,16 @@ namespace TodoApp.Test.ViewModels
             var vm = new AppViewModel();
             vm.InitializeWithData();
 
-            // Select Tasks folder to get all todos
             var tasksFolder = vm.Folders[3];
             vm.OnSelectFolder(tasksFolder);
 
-            if (vm.CurrentTodos.Count > 0)
-            {
-                var todo = vm.CurrentTodos[0];
-                vm.OnSelectTodo(todo);
+            // Add a todo so the test is self-contained (no sample-data dependency)
+            vm.AddTodo();
+            var todo = vm.CurrentTodos[0];
+            vm.OnSelectTodo(todo);
 
-                assert.Equal(todo, vm.SelectedTodo, "Selected todo should be set");
-                assert.Equal(false, vm.IsRightPaneCollapsed, "Detail pane should open");
-            }
-            else
-            {
-                assert.IsTrue(true, "No todos to select (DB-dependent)");
-            }
+            assert.Equal(todo, vm.SelectedTodo, "Selected todo should be set");
+            assert.Equal(false, vm.IsRightPaneCollapsed, "Detail pane should open");
         }
 
         [Test]
@@ -113,6 +107,57 @@ namespace TodoApp.Test.ViewModels
 
             vm.AddTodo();
             assert.Equal(initialCount + 1, vm.CurrentTodos.Count, "Todo count should increase by 1");
+        }
+
+        [Test]
+        public static void TestAddTodoWithTitle(Assert assert)
+        {
+            var vm = new AppViewModel();
+            vm.InitializeWithData();
+
+            var tasksFolder = vm.Folders[3];
+            vm.OnSelectFolder(tasksFolder);
+            int initialCount = vm.CurrentTodos.Count;
+
+            vm.AddTodoWithTitle("Buy groceries");
+
+            assert.Equal(initialCount + 1, vm.CurrentTodos.Count, "Todo count should increase by 1");
+            // The newly added todo is appended before RefreshCurrentTodos reorders,
+            // so search the list for the title we just added.
+            bool found = false;
+            for (int i = 0; i < vm.CurrentTodos.Count; i++)
+            {
+                if (vm.CurrentTodos[i].Title == "Buy groceries")
+                {
+                    found = true;
+                }
+            }
+
+            assert.IsTrue(found, "New todo with custom title should appear in CurrentTodos");
+        }
+
+        [Test]
+        public static void TestDeleteSelectedTodo(Assert assert)
+        {
+            var vm = new AppViewModel();
+            vm.InitializeWithData();
+
+            var tasksFolder = vm.Folders[3];
+            vm.OnSelectFolder(tasksFolder);
+
+            // Add a dedicated todo so the test is self-contained
+            vm.AddTodo();
+            int countAfterAdd = vm.CurrentTodos.Count;
+
+            // Select the last todo (the one we just added)
+            var todo = vm.CurrentTodos[countAfterAdd - 1];
+            vm.OnSelectTodo(todo);
+
+            vm.DeleteSelectedTodo();
+
+            assert.Equal(countAfterAdd - 1, vm.CurrentTodos.Count, "Todo count should decrease by 1");
+            assert.Equal(null, vm.SelectedTodo, "Selected todo should be null after delete");
+            assert.Equal(true, vm.IsRightPaneCollapsed, "Detail pane should close after delete");
         }
     }
 }
