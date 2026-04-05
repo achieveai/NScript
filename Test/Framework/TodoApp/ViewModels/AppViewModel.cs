@@ -43,7 +43,7 @@ namespace TodoApp.ViewModels
         private TodoItemViewModel draggedTodo;
 
         private string completedSectionClass;
-        private string detailFolderName;
+        private ObservableCollection<FolderTagViewModel> detailFolderTags;
 
         public AppViewModel()
         {
@@ -58,6 +58,7 @@ namespace TodoApp.ViewModels
             this.isCompletedSectionExpanded = false;
             this.completedCount = 0;
             this.completedSectionClass = AppShellCss.CompletedSection + " " + AppShellCss.Collapsed;
+            this.detailFolderTags = new ObservableCollection<FolderTagViewModel>();
         }
 
         public bool IsLeftPaneCollapsed
@@ -170,17 +171,18 @@ namespace TodoApp.ViewModels
         }
 
         /// <summary>
-        /// Name of the folder the selected todo belongs to. Empty when in default Tasks folder.
+        /// Collection of folder tag chips for the selected todo.
+        /// Each tag represents a folder membership (physical or virtual) with its own remove action.
         /// </summary>
-        public string DetailFolderName
+        public ObservableCollection<FolderTagViewModel> DetailFolderTags
         {
-            get { return this.detailFolderName; }
+            get { return this.detailFolderTags; }
             set
             {
-                if (this.detailFolderName != value)
+                if (this.detailFolderTags != value)
                 {
-                    this.detailFolderName = value;
-                    base.FirePropertyChanged("DetailFolderName");
+                    this.detailFolderTags = value;
+                    base.FirePropertyChanged("DetailFolderTags");
                 }
             }
         }
@@ -279,45 +281,59 @@ namespace TodoApp.ViewModels
             {
                 this.DetailTitle = this.selectedTodo.Title;
                 this.DetailSubTasks = this.selectedTodo.SubTasks;
-                this.DetailFolderName = this.GetFolderNameForTodo(this.selectedTodo);
+                this.RefreshFolderTags(this.selectedTodo);
             }
             else
             {
                 this.DetailTitle = "";
                 this.DetailSubTasks = new ObservableCollection<SubTaskViewModel>();
-                this.DetailFolderName = "";
+                this.DetailFolderTags = new ObservableCollection<FolderTagViewModel>();
             }
         }
 
-        private string GetFolderNameForTodo(TodoItemViewModel todo)
+        private void RefreshFolderTags(TodoItemViewModel todo)
         {
-            if (todo == null) return "Tasks";
+            var tags = new ObservableCollection<FolderTagViewModel>();
 
-            // Build the folder name from physical folder + virtual memberships
-            string folderId = todo.FolderId;
-            string physicalFolder = "Tasks";
-            if (folderId != null && folderId != "" && folderId != "tasks")
+            if (todo != null)
             {
-                for (int i = 0; i < this.Folders.Count; i++)
+                // Physical folder
+                string folderId = todo.FolderId;
+                string folderName = "Tasks";
+                if (folderId != null && folderId != "" && folderId != "tasks")
                 {
-                    if (this.Folders[i].Id == folderId)
+                    for (int i = 0; i < this.Folders.Count; i++)
                     {
-                        physicalFolder = this.Folders[i].Name;
-                        break;
+                        if (this.Folders[i].Id == folderId)
+                        {
+                            folderName = this.Folders[i].Name;
+                            break;
+                        }
                     }
+                }
+                var folderTag = new FolderTagViewModel(this);
+                folderTag.Name = folderName;
+                folderTag.TagType = "folder";
+                tags.Add(folderTag);
+
+                // Virtual memberships
+                if (todo.IsMyDay)
+                {
+                    var tag = new FolderTagViewModel(this);
+                    tag.Name = "My Day";
+                    tag.TagType = "myday";
+                    tags.Add(tag);
+                }
+                if (todo.IsImportant)
+                {
+                    var tag = new FolderTagViewModel(this);
+                    tag.Name = "Important";
+                    tag.TagType = "important";
+                    tags.Add(tag);
                 }
             }
 
-            // Append virtual folder flags
-            string result = physicalFolder;
-            if (todo.IsMyDay)
-                result = result + " · My Day";
-            if (todo.IsImportant)
-                result = result + " · Important";
-            if (todo.IsCompleted)
-                result = result + " · Completed";
-
-            return result;
+            this.DetailFolderTags = tags;
         }
 
         public string NewTodoTitle
@@ -574,11 +590,30 @@ namespace TodoApp.ViewModels
             }
 
             this.SaveTodo(this.selectedTodo);
-            this.DetailFolderName = this.GetFolderNameForTodo(this.selectedTodo);
+            this.RefreshFolderTags(this.selectedTodo);
         }
+
         /// <summary>
-        /// Removes the selected todo from its current folder context, moving it back to plain Tasks.
-        /// Clears both the physical folder assignment and virtual folder flags.
+        /// Removes a specific folder membership from the selected todo.
+        /// Called by FolderTagViewModel.Remove() with the tag type.
+        /// </summary>
+        public void RemoveFolderTag(string tagType)
+        {
+            if (this.selectedTodo == null) return;
+
+            if (tagType == "myday")
+                this.selectedTodo.IsMyDay = false;
+            else if (tagType == "important")
+                this.selectedTodo.IsImportant = false;
+            else if (tagType == "folder")
+                this.selectedTodo.FolderId = "tasks";
+
+            this.SaveTodo(this.selectedTodo);
+            this.RefreshCurrentTodos();
+        }
+
+        /// <summary>
+        /// Removes all folder memberships, moving the todo back to plain Tasks.
         /// </summary>
         public void RemoveFromFolder()
         {
@@ -586,7 +621,6 @@ namespace TodoApp.ViewModels
             this.selectedTodo.FolderId = "tasks";
             this.selectedTodo.IsMyDay = false;
             this.selectedTodo.IsImportant = false;
-            this.DetailFolderName = "Tasks";
             this.SaveTodo(this.selectedTodo);
             this.RefreshCurrentTodos();
         }
@@ -625,7 +659,7 @@ namespace TodoApp.ViewModels
             // Update the folder chip if the dragged todo is currently selected
             if (this.draggedTodo == this.selectedTodo)
             {
-                this.DetailFolderName = this.GetFolderNameForTodo(this.draggedTodo);
+                this.RefreshFolderTags(this.draggedTodo);
             }
 
             this.draggedTodo = null;
@@ -704,10 +738,10 @@ namespace TodoApp.ViewModels
                     todo.Notes);
             }
 
-            // Keep the folder chip in sync when the selected todo's properties change
+            // Keep the folder tags in sync when the selected todo's properties change
             if (todo == this.selectedTodo)
             {
-                this.DetailFolderName = this.GetFolderNameForTodo(todo);
+                this.RefreshFolderTags(todo);
             }
 
             // Refresh the current view so folder counts and filtered lists stay in sync

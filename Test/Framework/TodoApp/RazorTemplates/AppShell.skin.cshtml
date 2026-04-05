@@ -60,11 +60,14 @@
         <div class="task-detail">
             <input type="text" class="detail-title-input" value="@Model.DetailTitle" onchange="@Model.OnDetailTitleChange" />
             <div class="detail-section folder-assignment">
-                <div class="folder-chip">
-                    <div class="folder-chip-icon">&#128193;</div>
-                    <div class="folder-chip-name">@Model.DetailFolderName</div>
-                    <div class="folder-chip-remove" onclick="@Model.RemoveFromFolder">&#10005;</div>
-                </div>
+                @foreach (var tag in Model.DetailFolderTags)
+                {
+                    <div class="folder-chip">
+                        <div class="folder-chip-icon">&#128193;</div>
+                        <div class="folder-chip-name">@tag.Name</div>
+                        <div class="folder-chip-remove" onclick="@tag.Remove">&#10005;</div>
+                    </div>
+                }
             </div>
             <div class="detail-section">
                 <div class="section-label">Move to</div>

@@ -411,9 +411,10 @@ function sel(classMap, selector) {
     await page.click(s('.todo-item'));
     await page.waitForTimeout(500);
 
-    // The folder chip shows all folder memberships (physical + virtual flags)
-    const folderLabel = await page.$eval(s('.folder-chip-name'), el => el.textContent.trim());
-    assert(folderLabel.includes('Tasks'), 'Should include Tasks in folder chip, got: ' + folderLabel);
+    // The folder tags show individual chips for each membership
+    const chipNames = await page.$$eval(s('.folder-chip-name'), els => els.map(el => el.textContent.trim()));
+    assert(chipNames.length >= 1, 'Should have at least one folder chip, got: ' + chipNames.length);
+    assert(chipNames.includes('Tasks'), 'Should include Tasks chip, got: ' + JSON.stringify(chipNames));
   });
 
   await runTest('BUG-016: Folder picker lists all folders', async (page, s) => {

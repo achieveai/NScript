@@ -560,6 +560,9 @@
 
 .folder-assignment {
     padding: 4px 0 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .folder-chip {
