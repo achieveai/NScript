@@ -289,7 +289,8 @@ namespace NScript.RazorSkin.CodeGen
             // tmplStore[dataIndex] = tmplStore[dataIndex] ? tmplStore[dataIndex] : graphDescriptor
             var graphEmitter = new GraphDescriptorJSTEmitter(
                 topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames,
-                _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers);
+                _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers,
+                cssManager: _cssManager);
             var graphDescriptorExpr = graphEmitter.Emit();
 
             initStatements.Add(

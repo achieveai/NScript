@@ -81,8 +81,11 @@ namespace NScript.RazorSkin
                 return TransformScopeBlock(scopeBlock);
             }
 
-            // For other statement types (ForLoop, WhileLoop, Switch, etc.),
-            // CSS class strings in those contexts is unlikely but we can extend later
+            if (stmt is ForLoop forLoop)
+            {
+                return TransformForLoop(forLoop);
+            }
+
             return stmt;
         }
 
@@ -133,6 +136,29 @@ namespace NScript.RazorSkin
             if (ReferenceEquals(newStmts, stmts)) return scopeBlock;
 
             return new ScopeBlock(scopeBlock.Location, scopeBlock.Scope, newStmts);
+        }
+
+        private Statement TransformForLoop(ForLoop forLoop)
+        {
+            var newCond = forLoop.Condition != null ? TransformExpression(forLoop.Condition) : null;
+            var newInit = forLoop.InitializationBlock != null ? TransformStatement(forLoop.InitializationBlock) : null;
+            var newIncr = forLoop.IncrementBlock != null ? TransformStatement(forLoop.IncrementBlock) : null;
+            var newLoop = forLoop.Loop != null ? TransformStatement(forLoop.Loop) : null;
+
+            if (!ReferenceEquals(newCond, forLoop.Condition) ||
+                !ReferenceEquals(newInit, forLoop.InitializationBlock) ||
+                !ReferenceEquals(newIncr, forLoop.IncrementBlock) ||
+                !ReferenceEquals(newLoop, forLoop.Loop))
+            {
+                return new ForLoop(
+                    forLoop.Location, forLoop.Scope,
+                    newCond ?? forLoop.Condition,
+                    newInit ?? forLoop.InitializationBlock,
+                    newIncr ?? forLoop.IncrementBlock,
+                    newLoop ?? forLoop.Loop);
+            }
+
+            return forLoop;
         }
 
         /// <summary>
@@ -198,9 +224,23 @@ namespace NScript.RazorSkin
                 return TransformArrayLiteral(arrayLit);
             }
 
-            // FunctionExpression, IdentifierExpression, IndexExpression,
-            // NewObjectExpression, etc. — unlikely to contain CSS string literals
-            // in property getter contexts. Skip for now.
+            if (expr is FunctionExpression funcExpr)
+            {
+                return TransformFunctionExpression(funcExpr);
+            }
+
+            if (expr is InlineObjectInitializer objInit)
+            {
+                return TransformInlineObject(objInit);
+            }
+
+            if (expr is InlineNewArrayInitialization newArrayInit)
+            {
+                return TransformNewArrayInitialization(newArrayInit);
+            }
+
+            // IdentifierExpression, IndexExpression, NewObjectExpression, etc.
+            // — unlikely to contain CSS string literals. Skip for now.
             return expr;
         }
 
@@ -246,6 +286,61 @@ namespace NScript.RazorSkin
             if (!changed) return arrayLit;
 
             return new ArrayLiteralExpression(arrayLit.Location, arrayLit.Scope, newElements);
+        }
+
+        private Expression TransformFunctionExpression(FunctionExpression funcExpr)
+        {
+            var stmts = new List<Statement>(funcExpr.Statements);
+            var newStmts = TransformStatements(stmts);
+            if (ReferenceEquals(newStmts, stmts)) return funcExpr;
+
+            var newFunc = new FunctionExpression(
+                funcExpr.Location, funcExpr.Scope, funcExpr.InnerScope,
+                funcExpr.Parameters, funcExpr.Name,
+                funcExpr.IsAsync, funcExpr.IsGenerator);
+            newFunc.AddStatements(newStmts);
+            return newFunc;
+        }
+
+        private Expression TransformInlineObject(InlineObjectInitializer objInit)
+        {
+            bool changed = false;
+            var newObj = new InlineObjectInitializer(objInit.Location, objInit.Scope);
+
+            foreach (var init in objInit.Initializers)
+            {
+                var newValue = TransformExpression(init.Item2);
+                if (!ReferenceEquals(newValue, init.Item2))
+                    changed = true;
+
+                if (init.Item1 is IdentifierExpression idExpr)
+                    newObj.AddInitializer(idExpr.Identifier, newValue);
+                else if (init.Item1 is StringLiteralExpression strKey)
+                    newObj.AddInitializer(strKey.StringLiteral, newValue);
+                else
+                    newObj.AddInitializer(init.Item1.ToString(), newValue);
+            }
+
+            return changed ? newObj : objInit;
+        }
+
+        private Expression TransformNewArrayInitialization(InlineNewArrayInitialization arrayInit)
+        {
+            bool changed = false;
+            var values = arrayInit.Values;
+            var newValues = new List<Expression>(values.Count);
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                var newVal = TransformExpression(values[i]);
+                newValues.Add(newVal);
+                if (!ReferenceEquals(newVal, values[i]))
+                    changed = true;
+            }
+
+            if (!changed) return arrayInit;
+
+            return new InlineNewArrayInitialization(arrayInit.Location, arrayInit.Scope, newValues);
         }
 
         /// <summary>

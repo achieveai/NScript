@@ -152,12 +152,13 @@ namespace NScript.RazorSkin
         }
 
         /// <summary>
-        /// Optimizes CSS class name identifiers for minification.
-        /// Call after all templates using this CSS have been processed.
+        /// Assigns minified names to CSS class identifiers.
+        /// When <paramref name="releaseNaming"/> is true, produces pure short names (e.g., "a").
+        /// When false, produces debug names: "originalName_shortId" (e.g., "pane-left_a").
         /// </summary>
-        public void CompressNames()
+        public void CompressNames(bool releaseNaming = true)
         {
-            IdentifierScope.IdentifierMinifiedNamer.MinifyNames(_cssScope, releaseNaming: true);
+            IdentifierScope.IdentifierMinifiedNamer.MinifyNames(_cssScope, releaseNaming);
         }
 
         /// <summary>

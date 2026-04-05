@@ -347,11 +347,13 @@ namespace Sunlight.Framework.Observables
 
             if (_cssClassMap.Count > 0)
             {
-                // Note: CompressNames() is deferred to when -minify is requested.
-                // Without minification, IdentifierStringExpression still resolves
-                // through the identifier system — names stay original but the wiring
-                // is in place for when CompressNames() is called.
-                // TODO: Accept minify flag from Builder and call CompressNames() conditionally.
+                // Always run CompressNames so identifiers get assigned names.
+                // In debug mode (releaseNaming: false), names become "original_XY"
+                // (e.g., "pane-left_a") proving the pipeline is active.
+                // In release/minify mode, names become pure short ("a").
+                // TODO: Accept minify flag from Builder to switch releaseNaming.
+                foreach (var mgr in _templateCssManagers.Values)
+                    mgr.CompressNames(releaseNaming: false);
 
                 _cssLiteralReplacer = new CssLiteralReplacer(_cssClassMap);
 
@@ -1305,7 +1307,13 @@ namespace Sunlight.Framework.Observables
                     _templateGetterIdentifiers.TryGetValue(kvp.Value.TemplateName, out preCreatedGetter);
 
                     RazorCssManager cssManager = null;
-                    _templateCssManagers.TryGetValue(kvp.Value.TemplateName, out cssManager);
+                    if (!_templateCssManagers.TryGetValue(kvp.Value.TemplateName, out cssManager)
+                        && _templateCssManagers.Count > 0)
+                    {
+                        // Sub-templates without @styles inherit the parent's CSS manager
+                        // so their static HTML class names get resolved through the CSS scope.
+                        cssManager = _templateCssManagers.Values.First();
+                    }
 
                     var jstGenerator = new RazorSkinJSTGenerator(
                         kvp.Value,
@@ -1344,6 +1352,14 @@ namespace Sunlight.Framework.Observables
 
             // Emit CSS <style> element for templates with @styles directives
             statements.AddRange(EmitCssStatements());
+
+            // Apply CssLiteralReplacer to all template-generated code (binding graph
+            // getters contain StringLiteralExpression nodes from const-folded [CssClass]
+            // references that need CSS scope resolution).
+            if (_cssLiteralReplacer != null)
+            {
+                statements = _cssLiteralReplacer.TransformStatements(statements);
+            }
 
             Log.Debug("GetPostJavascript emitting {StatementCount} statements for {TemplateCount} templates",
                 statements.Count, emittedTemplates.Count);

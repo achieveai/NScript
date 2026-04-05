@@ -50,5 +50,12 @@ namespace TodoApp.ViewModels
         // Section classes
         [CssClass(Res + ":completed-section")]
         public const string CompletedSection = "completed-section";
+
+        // Star/importance toggle
+        [CssClass(Res + ":star")]
+        public const string Star = "star";
+
+        [CssClass(Res + ":important")]
+        public const string Important = "important";
     }
 }

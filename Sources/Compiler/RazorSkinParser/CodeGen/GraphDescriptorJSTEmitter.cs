@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using NScript.CLR;
@@ -33,6 +34,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly string _parentModelTypeName;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
         private readonly CecilTypeHelper _typeHelper;
+        private readonly RazorCssManager _cssManager;
 
         // Cached maps for ToJsGetterWithFieldAccess — identical across all invocations
         // since _modelTypeName doesn't change.
@@ -103,7 +105,8 @@ namespace NScript.RazorSkin.CodeGen
             ClrContext clrContext,
             string modelTypeName,
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null,
-            string parentModelTypeName = null)
+            string parentModelTypeName = null,
+            RazorCssManager cssManager = null)
         {
             _topology = topology;
             _scope = scope;
@@ -115,6 +118,7 @@ namespace NScript.RazorSkin.CodeGen
             _parentModelTypeName = parentModelTypeName;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
             _typeHelper = new CecilTypeHelper(clrContext);
+            _cssManager = cssManager;
 
             // Resolve all field identifiers at construction time
             ResolveFieldIdentifiers(
@@ -1584,6 +1588,21 @@ namespace NScript.RazorSkin.CodeGen
                 ? RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(ct.IrNode.ItemTemplate)
                 : "";
 
+            // Replace CSS class names in item template HTML (same as main template)
+            if (_cssManager != null && _cssManager.HasStylesheets && !string.IsNullOrEmpty(itemHtml))
+            {
+                itemHtml = System.Text.RegularExpressions.Regex.Replace(
+                    itemHtml,
+                    @"class=""([^""]*)""|class='([^']*)'",
+                    match =>
+                    {
+                        var classValue = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+                        var quote = match.Groups[1].Success ? "\"" : "'";
+                        var replaced = _cssManager.ReplaceCssClassNames(classValue);
+                        return $"class={quote}{replaced}{quote}";
+                    });
+            }
+
             Expression itemGraphExpr = null;
             if (ct.ItemTopology != null)
             {
@@ -1595,7 +1614,8 @@ namespace NScript.RazorSkin.CodeGen
                     ct.ItemTopology, _scope, _scopeManager, _knownTypes, _knownFunctionNames,
                     _clrContext, itemTypeName ?? _modelTypeName,
                     _resolvedTypeIdentifiers,
-                    parentModelTypeName: _modelTypeName);
+                    parentModelTypeName: _modelTypeName,
+                    cssManager: _cssManager);
                 itemGraphExpr = nestedEmitter.Emit();
             }
 
