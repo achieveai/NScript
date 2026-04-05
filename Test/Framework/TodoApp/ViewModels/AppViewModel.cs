@@ -43,6 +43,7 @@ namespace TodoApp.ViewModels
         private TodoItemViewModel draggedTodo;
 
         private string completedSectionClass;
+        private string detailFolderName;
 
         public AppViewModel()
         {
@@ -168,6 +169,22 @@ namespace TodoApp.ViewModels
             }
         }
 
+        /// <summary>
+        /// Name of the folder the selected todo belongs to. Empty when in default Tasks folder.
+        /// </summary>
+        public string DetailFolderName
+        {
+            get { return this.detailFolderName; }
+            set
+            {
+                if (this.detailFolderName != value)
+                {
+                    this.detailFolderName = value;
+                    base.FirePropertyChanged("DetailFolderName");
+                }
+            }
+        }
+
         public ObservableCollection<TodoItemViewModel> CompletedCurrentTodos
         {
             get { return this.completedCurrentTodos; }
@@ -262,12 +279,27 @@ namespace TodoApp.ViewModels
             {
                 this.DetailTitle = this.selectedTodo.Title;
                 this.DetailSubTasks = this.selectedTodo.SubTasks;
+                this.DetailFolderName = this.GetFolderNameForTodo(this.selectedTodo);
             }
             else
             {
                 this.DetailTitle = "";
                 this.DetailSubTasks = new ObservableCollection<SubTaskViewModel>();
+                this.DetailFolderName = "";
             }
+        }
+
+        private string GetFolderNameForTodo(TodoItemViewModel todo)
+        {
+            if (todo == null) return "";
+            string folderId = todo.FolderId;
+            if (folderId == null || folderId == "" || folderId == "tasks") return "";
+            for (int i = 0; i < this.Folders.Count; i++)
+            {
+                if (this.Folders[i].Id == folderId)
+                    return this.Folders[i].Name;
+            }
+            return "";
         }
 
         public string NewTodoTitle
@@ -524,6 +556,18 @@ namespace TodoApp.ViewModels
             }
 
             this.SaveTodo(this.selectedTodo);
+            this.DetailFolderName = this.GetFolderNameForTodo(this.selectedTodo);
+        }
+        /// <summary>
+        /// Removes the selected todo from its current folder, moving it back to Tasks.
+        /// </summary>
+        public void RemoveFromFolder()
+        {
+            if (this.selectedTodo == null) return;
+            this.selectedTodo.FolderId = "tasks";
+            this.DetailFolderName = "";
+            this.SaveTodo(this.selectedTodo);
+            this.RefreshCurrentTodos();
         }
 
         /// <summary>

@@ -60,7 +60,8 @@
         <div class="task-detail">
             <input type="text" class="detail-title-input" value="@Model.DetailTitle" onchange="@Model.OnDetailTitleChange" />
             <div class="detail-section">
-                <div class="current-folder-label">@Model.SelectedFolderName</div>
+                <div class="current-folder-label">@Model.DetailFolderName</div>
+                <div class="btn-remove-folder" onclick="@Model.RemoveFromFolder">&#10005;</div>
             </div>
             <div class="detail-section">
                 <div class="section-label">Move to</div>
