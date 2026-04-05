@@ -292,14 +292,32 @@ namespace TodoApp.ViewModels
         private string GetFolderNameForTodo(TodoItemViewModel todo)
         {
             if (todo == null) return "Tasks";
+
+            // Build the folder name from physical folder + virtual memberships
             string folderId = todo.FolderId;
-            if (folderId == null || folderId == "" || folderId == "tasks") return "Tasks";
-            for (int i = 0; i < this.Folders.Count; i++)
+            string physicalFolder = "Tasks";
+            if (folderId != null && folderId != "" && folderId != "tasks")
             {
-                if (this.Folders[i].Id == folderId)
-                    return this.Folders[i].Name;
+                for (int i = 0; i < this.Folders.Count; i++)
+                {
+                    if (this.Folders[i].Id == folderId)
+                    {
+                        physicalFolder = this.Folders[i].Name;
+                        break;
+                    }
+                }
             }
-            return "Tasks";
+
+            // Append virtual folder flags
+            string result = physicalFolder;
+            if (todo.IsMyDay)
+                result = result + " · My Day";
+            if (todo.IsImportant)
+                result = result + " · Important";
+            if (todo.IsCompleted)
+                result = result + " · Completed";
+
+            return result;
         }
 
         public string NewTodoTitle
@@ -559,12 +577,15 @@ namespace TodoApp.ViewModels
             this.DetailFolderName = this.GetFolderNameForTodo(this.selectedTodo);
         }
         /// <summary>
-        /// Removes the selected todo from its current folder, moving it back to Tasks.
+        /// Removes the selected todo from its current folder context, moving it back to plain Tasks.
+        /// Clears both the physical folder assignment and virtual folder flags.
         /// </summary>
         public void RemoveFromFolder()
         {
             if (this.selectedTodo == null) return;
             this.selectedTodo.FolderId = "tasks";
+            this.selectedTodo.IsMyDay = false;
+            this.selectedTodo.IsImportant = false;
             this.DetailFolderName = "Tasks";
             this.SaveTodo(this.selectedTodo);
             this.RefreshCurrentTodos();
@@ -681,6 +702,12 @@ namespace TodoApp.ViewModels
                     todo.IsMyDay,
                     todo.DueDate,
                     todo.Notes);
+            }
+
+            // Keep the folder chip in sync when the selected todo's properties change
+            if (todo == this.selectedTodo)
+            {
+                this.DetailFolderName = this.GetFolderNameForTodo(todo);
             }
 
             // Refresh the current view so folder counts and filtered lists stay in sync

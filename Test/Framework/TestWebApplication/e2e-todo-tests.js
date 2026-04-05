@@ -411,9 +411,9 @@ function sel(classMap, selector) {
     await page.click(s('.todo-item'));
     await page.waitForTimeout(500);
 
-    // The folder chip shows the todo's assigned folder name
+    // The folder chip shows all folder memberships (physical + virtual flags)
     const folderLabel = await page.$eval(s('.folder-chip-name'), el => el.textContent.trim());
-    assert(folderLabel === 'Tasks', 'Should show Tasks as folder name, got: ' + folderLabel);
+    assert(folderLabel.includes('Tasks'), 'Should include Tasks in folder chip, got: ' + folderLabel);
   });
 
   await runTest('BUG-016: Folder picker lists all folders', async (page, s) => {
