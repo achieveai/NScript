@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="RazorTemplates\AppShell.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\TodoItemControl.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AppShell.css" />
   </ItemGroup>
 

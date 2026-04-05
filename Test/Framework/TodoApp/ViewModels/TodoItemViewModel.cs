@@ -24,6 +24,8 @@ namespace TodoApp.ViewModels
         private ObservableCollection<SubTaskViewModel> subTasks;
         private string cssClass;
         private string checkboxClass;
+        private string starClass;
+        private string starText;
         private bool hasDueDate;
         private string dueDateDisplay;
 
@@ -38,6 +40,8 @@ namespace TodoApp.ViewModels
             this.subTasks = new ObservableCollection<SubTaskViewModel>();
             this.cssClass = AppShellCss.TodoItem;
             this.checkboxClass = AppShellCss.BtnCheck;
+            this.starClass = AppShellCss.Star;
+            this.starText = "☆";
             this.hasDueDate = false;
             this.dueDateDisplay = "";
             this.UpdateComputedProperties();
@@ -114,6 +118,7 @@ namespace TodoApp.ViewModels
                 {
                     this.isImportant = value;
                     base.FirePropertyChanged("IsImportant");
+                    this.UpdateComputedProperties();
                 }
             }
         }
@@ -231,6 +236,38 @@ namespace TodoApp.ViewModels
         }
 
         /// <summary>
+        /// CSS class for the star/importance icon.
+        /// </summary>
+        public string StarClass
+        {
+            get { return this.starClass; }
+            set
+            {
+                if (this.starClass != value)
+                {
+                    this.starClass = value;
+                    base.FirePropertyChanged("StarClass");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Text glyph for the star icon (★ filled, ☆ empty).
+        /// </summary>
+        public string StarText
+        {
+            get { return this.starText; }
+            set
+            {
+                if (this.starText != value)
+                {
+                    this.starText = value;
+                    base.FirePropertyChanged("StarText");
+                }
+            }
+        }
+
+        /// <summary>
         /// True when this item has a due date set.
         /// </summary>
         public bool HasDueDate
@@ -272,6 +309,10 @@ namespace TodoApp.ViewModels
 
             // CheckboxClass
             this.CheckboxClass = this.isCompleted ? AppShellCss.BtnCheck + " " + AppShellCss.Checked : AppShellCss.BtnCheck;
+
+            // StarClass / StarText
+            this.StarClass = this.isImportant ? AppShellCss.Star + " " + AppShellCss.Important : AppShellCss.Star;
+            this.StarText = this.isImportant ? "★" : "☆";
 
             // HasDueDate
             this.HasDueDate = this.dueDate != null && this.dueDate != "";
@@ -325,6 +366,14 @@ namespace TodoApp.ViewModels
         public void OnSelect()
         {
             this.appViewModel.OnSelectTodo(this);
+        }
+
+        /// <summary>
+        /// Initiates drag of this todo item. Called by the sub-control's ondragstart.
+        /// </summary>
+        public void OnDragStart(object e, object ev)
+        {
+            this.appViewModel.OnDragStart(this);
         }
 
         /// <summary>

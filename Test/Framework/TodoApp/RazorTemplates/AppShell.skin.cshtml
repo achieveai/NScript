@@ -25,10 +25,10 @@
         <div class="todo-list">
             @foreach (var todo in Model.CurrentTodos)
             {
-                <div class="@todo.CssClass" draggable="true" onclick="@Model.OnSelectTodo(todo)" ondragstart="@Model.OnDragStart(todo)">
-                    <div class="@(todo.IsCompleted ? "btn-check checked" : "btn-check")" onclick="@todo.ToggleComplete">&#10003;</div>
+                <div class="@todo.CssClass" draggable="true" onclick="@todo.OnSelect" ondragstart="@todo.OnDragStart">
+                    <div class="@todo.CheckboxClass" onclick="@todo.ToggleComplete">&#10003;</div>
                     <div class="todo-title">@todo.Title</div>
-                    <div class="@(todo.IsImportant ? "star important" : "star")" onclick="@todo.ToggleImportant">@(todo.IsImportant ? "★" : "☆")</div>
+                    <div class="@todo.StarClass" onclick="@todo.ToggleImportant">@todo.StarText</div>
                 </div>
             }
         </div>
@@ -40,10 +40,10 @@
             <div class="completed-list">
                 @foreach (var todo in Model.CompletedCurrentTodos)
                 {
-                    <div class="@todo.CssClass" onclick="@Model.OnSelectTodo(todo)">
-                        <div class="@(todo.IsCompleted ? "btn-check checked" : "btn-check")" onclick="@todo.ToggleComplete">&#10003;</div>
+                    <div class="@todo.CssClass" onclick="@todo.OnSelect">
+                        <div class="@todo.CheckboxClass" onclick="@todo.ToggleComplete">&#10003;</div>
                         <div class="todo-title">@todo.Title</div>
-                        <div class="@(todo.IsImportant ? "star important" : "star")" onclick="@todo.ToggleImportant">@(todo.IsImportant ? "★" : "☆")</div>
+                        <div class="@todo.StarClass" onclick="@todo.ToggleImportant">@todo.StarText</div>
                     </div>
                 }
             </div>

@@ -1,71 +1,39 @@
 # Design: TodoItemControl — Reusable Todo Item Sub-Control
 
 **Date:** 2026-04-05  
-**Status:** Approved
+**Status:** Partially Implemented
 
 ## Problem
 
 `AppShell.skin.cshtml` has near-identical todo item templates in two places:
-- Active todo list (lines 28-32): checkbox + title + star, with draggable + onclick + ondragstart
-- Completed todo list (lines 43-47): checkbox + title + star, with onclick
+- Active todo list: checkbox + title + star, with draggable + onclick + ondragstart
+- Completed todo list: checkbox + title + star, with onclick
 
-This duplication means any UI change to a todo item must be made twice.
+This duplication means any UI change to a todo item must be made twice. Additionally, inline ternary expressions for CSS classes (checked/star states) add noise to the template.
 
-## Solution
+## Solution: ViewModel-Driven Templates
 
-Extract a `TodoItemControl` Razor sub-control that:
-1. Renders a single todo item (checkbox, title, star) from a `TodoItemViewModel` data context
-2. Handles drag-start as a drag source
-3. Replaces both inline foreach bodies in `AppShell.skin.cshtml`
+### What was implemented
 
-## Components
+Moved computed display logic from inline template expressions into `TodoItemViewModel` properties:
+- `StarClass` — computed CSS class for star icon (`star` vs `star important`)
+- `StarText` — computed text glyph (`★` vs `☆`)
+- `CheckboxClass` — (already existed, now used consistently)
+- `OnDragStart(object e, object ev)` — delegates drag to `AppViewModel`
+- `OnSelect()` — (already existed) delegates selection to `AppViewModel`
 
-### 1. `TodoItemControl.cs` (new)
-- Extends `UISkinableElement`
-- Has a `[Skin]` static property pointing to `TodoItemControl.skin.cshtml`
-- Data context is `TodoItemViewModel` (set automatically by the parent `@foreach`)
+Both template loops now use clean property bindings (`@todo.StarClass`, `@todo.StarText`, `@todo.OnSelect`) instead of inline ternary expressions and parent-model lambda closures.
 
-### 2. `TodoItemControl.skin.cshtml` (new)
-- `@model TodoApp.ViewModels.TodoItemViewModel`
-- `@styles "TodoApp.RazorTemplates.AppShell.css"` (shares parent CSS)
-- Template:
-  ```html
-  <div class="@Model.CssClass" draggable="true" ondragstart="@Model.OnDragStart">
-      <div class="@Model.CheckboxClass" onclick="@Model.ToggleComplete">✓</div>
-      <div class="todo-title">@Model.Title</div>
-      <div class="@Model.StarClass" onclick="@Model.ToggleImportant">@Model.StarText</div>
-  </div>
-  ```
+### What was NOT implemented (deferred)
 
-### 3. `TodoItemViewModel` changes
-- Add `OnDragStart(object e, object ev)` method — calls `appViewModel.OnDragStart(this)`
-- Add `StarClass` computed property (replaces inline ternary)
-- Add `StarText` computed property (replaces inline ternary for ★/☆)
+The `<TodoItemControl />` sub-control approach was attempted but the compiler's `SubControlNode` code generation is not yet implemented for `@foreach` loops. The `GraphTopologyBuilder` has a placeholder comment: "Sub-controls could be expanded later." The runtime `GraphEngine__RenderCollectionItems` treats item templates as raw HTML strings and doesn't instantiate sub-control types.
 
-### 4. `AppShell.skin.cshtml` changes
-Both foreach blocks simplify to:
-```html
-@foreach (var todo in Model.CurrentTodos)
-{
-    <TodoItemControl onclick="@Model.OnSelectTodo(todo)" />
-}
-```
+The `TodoItemControl.cs` and `TodoItemControl.skin.cshtml` files are retained as groundwork for when sub-control support in foreach loops is added to the compiler.
 
-## Drag-and-Drop
+## Files Changed
 
-- **Drag source only** (no drop target on items, only folders accept drops)
-- `draggable="true"` set on the control's root div
-- `ondragstart` calls `TodoItemViewModel.OnDragStart()` → `AppViewModel.OnDragStart(this)`
-- This moves drag responsibility from parent template closures into the ViewModel
-
-## CSS
-
-- The control shares `AppShell.css` via `@styles`
-- All CSS class names already registered via `[CssClass]` in `AppShellCss.cs`
-- No new CSS classes needed
-
-## Testing
-
-- Existing E2E tests should continue passing (same DOM structure)
-- Update `buildClassMap` if the control introduces a new wrapper element
-- Verify drag-drop still works in E2E drag tests
+- `TodoItemViewModel.cs` — Added `StarClass`, `StarText`, `OnDragStart` + updated `UpdateComputedProperties`
+- `AppShell.skin.cshtml` — Both foreach bodies use ViewModel properties instead of inline ternaries
+- `Controls/TodoItemControl.cs` — New (groundwork for future sub-control support)
+- `RazorTemplates/TodoItemControl.skin.cshtml` — New (groundwork)
+- `TodoApp.csproj` — Added TodoItemControl.skin.cshtml as EmbeddedResource

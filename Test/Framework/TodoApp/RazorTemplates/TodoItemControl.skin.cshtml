@@ -1,0 +1,8 @@
+@model TodoApp.ViewModels.TodoItemViewModel
+@styles "TodoApp.RazorTemplates.AppShell.css"
+
+<div draggable="true" class="@Model.CssClass" onclick="@Model.OnSelect" ondragstart="@Model.OnDragStart">
+    <div class="@Model.CheckboxClass" onclick="@Model.ToggleComplete">&#10003;</div>
+    <div class="todo-title">@Model.Title</div>
+    <div class="@Model.StarClass" onclick="@Model.ToggleImportant">@Model.StarText</div>
+</div>
