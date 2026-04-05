@@ -1007,16 +1007,7 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private string ReplaceCssClassNamesInHtml(string html)
         {
-            return System.Text.RegularExpressions.Regex.Replace(
-                html,
-                @"class=""([^""]*)""|class='([^']*)'",
-                match =>
-                {
-                    var classValue = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
-                    var quote = match.Groups[1].Success ? "\"" : "'";
-                    var replaced = _cssManager.ReplaceCssClassNames(classValue);
-                    return $"class={quote}{replaced}{quote}";
-                });
+            return RazorCssManager.ReplaceCssClassNamesInHtml(html, _cssManager);
         }
     }
 

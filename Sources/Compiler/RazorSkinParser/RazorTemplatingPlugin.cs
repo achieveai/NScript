@@ -351,7 +351,8 @@ namespace Sunlight.Framework.Observables
                 // In debug mode (releaseNaming: false), names become "original_XY"
                 // (e.g., "pane-left_a") proving the pipeline is active.
                 // In release/minify mode, names become pure short ("a").
-                // TODO: Accept minify flag from Builder to switch releaseNaming.
+                // releaseNaming is hardcoded to false until Builder exposes a minify flag
+                // that the plugin can read during Initialize().
                 foreach (var mgr in _templateCssManagers.Values)
                     mgr.CompressNames(releaseNaming: false);
 

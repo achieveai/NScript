@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NScript.JST;
+
+[assembly: InternalsVisibleTo("RazorSkinParser.Test")]
 
 namespace NScript.RazorSkin
 {

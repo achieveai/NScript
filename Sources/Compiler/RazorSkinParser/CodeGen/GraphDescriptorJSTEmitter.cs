@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using NScript.CLR;
@@ -1589,18 +1588,9 @@ namespace NScript.RazorSkin.CodeGen
                 : "";
 
             // Replace CSS class names in item template HTML (same as main template)
-            if (_cssManager != null && _cssManager.HasStylesheets && !string.IsNullOrEmpty(itemHtml))
+            if (!string.IsNullOrEmpty(itemHtml))
             {
-                itemHtml = System.Text.RegularExpressions.Regex.Replace(
-                    itemHtml,
-                    @"class=""([^""]*)""|class='([^']*)'",
-                    match =>
-                    {
-                        var classValue = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
-                        var quote = match.Groups[1].Success ? "\"" : "'";
-                        var replaced = _cssManager.ReplaceCssClassNames(classValue);
-                        return $"class={quote}{replaced}{quote}";
-                    });
+                itemHtml = RazorCssManager.ReplaceCssClassNamesInHtml(itemHtml, _cssManager);
             }
 
             Expression itemGraphExpr = null;

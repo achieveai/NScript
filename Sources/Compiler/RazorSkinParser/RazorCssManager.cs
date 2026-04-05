@@ -51,6 +51,11 @@ namespace NScript.RazorSkin
         /// </summary>
         public void AddStylesheet(string resourceName, string cssText)
         {
+            if (string.IsNullOrEmpty(resourceName))
+                throw new ArgumentNullException(nameof(resourceName));
+            if (cssText == null)
+                throw new ArgumentNullException(nameof(cssText));
+
             var sheet = new RazorCssSheet(resourceName);
 
             try
@@ -197,6 +202,27 @@ namespace NScript.RazorSkin
         /// Replaces CSS class names in an HTML class attribute value with their minified versions.
         /// Returns the original string unchanged if no CSS manager is active.
         /// </summary>
+        /// <summary>
+        /// Replaces CSS class names in an HTML class="..." attribute string with their minified versions.
+        /// Uses regex to find class="..." or class='...' and replace each class token.
+        /// </summary>
+        public static string ReplaceCssClassNamesInHtml(string html, RazorCssManager cssManager)
+        {
+            if (string.IsNullOrEmpty(html) || cssManager == null || !cssManager.HasStylesheets)
+                return html;
+
+            return Regex.Replace(
+                html,
+                @"class=""([^""]*)""|class='([^']*)'",
+                match =>
+                {
+                    var classValue = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+                    var quote = match.Groups[1].Success ? "\"" : "'";
+                    var replaced = cssManager.ReplaceCssClassNames(classValue);
+                    return $"class={quote}{replaced}{quote}";
+                });
+        }
+
         public string ReplaceCssClassNames(string classAttrValue)
         {
             if (string.IsNullOrEmpty(classAttrValue)) return classAttrValue;
