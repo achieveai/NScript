@@ -558,18 +558,44 @@
     padding: 4px 0 8px 0;
 }
 
-.btn-remove-folder {
-    display: inline-block;
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--color-text-secondary, #605e5c);
-    margin-left: 6px;
-    padding: 2px 5px;
-    border-radius: 3px;
+.folder-assignment {
+    padding: 4px 0 0 0;
 }
 
-.btn-remove-folder:hover {
-    background: rgba(200, 50, 50, 0.12);
+.folder-chip {
+    display: inline-flex;
+    align-items: center;
+    background: var(--color-selected-bg, #edebe9);
+    border-radius: 16px;
+    padding: 4px 8px 4px 10px;
+    font-size: 13px;
+    color: var(--color-text-secondary, #605e5c);
+    gap: 6px;
+}
+
+.folder-chip-icon {
+    font-size: 14px;
+}
+
+.folder-chip-name {
+    white-space: nowrap;
+}
+
+.folder-chip-remove {
+    cursor: pointer;
+    font-size: 11px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--color-text-secondary, #605e5c);
+    transition: background 0.15s, color 0.15s;
+}
+
+.folder-chip-remove:hover {
+    background: rgba(200, 50, 50, 0.15);
     color: #c83232;
 }
 

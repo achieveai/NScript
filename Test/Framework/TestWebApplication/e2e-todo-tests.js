@@ -411,10 +411,9 @@ function sel(classMap, selector) {
     await page.click(s('.todo-item'));
     await page.waitForTimeout(500);
 
-    // When todo is in the default Tasks folder, the folder label should be empty
-    // (the label only shows for custom folders, with a remove button)
-    const folderLabel = await page.$eval(s('.current-folder-label'), el => el.textContent.trim());
-    assert(folderLabel === '', 'Default Tasks folder should show empty label, got: ' + folderLabel);
+    // The folder chip shows the todo's assigned folder name
+    const folderLabel = await page.$eval(s('.folder-chip-name'), el => el.textContent.trim());
+    assert(folderLabel === 'Tasks', 'Should show Tasks as folder name, got: ' + folderLabel);
   });
 
   await runTest('BUG-016: Folder picker lists all folders', async (page, s) => {

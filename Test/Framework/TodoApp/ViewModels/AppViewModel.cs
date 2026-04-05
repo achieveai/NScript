@@ -291,15 +291,15 @@ namespace TodoApp.ViewModels
 
         private string GetFolderNameForTodo(TodoItemViewModel todo)
         {
-            if (todo == null) return "";
+            if (todo == null) return "Tasks";
             string folderId = todo.FolderId;
-            if (folderId == null || folderId == "" || folderId == "tasks") return "";
+            if (folderId == null || folderId == "" || folderId == "tasks") return "Tasks";
             for (int i = 0; i < this.Folders.Count; i++)
             {
                 if (this.Folders[i].Id == folderId)
                     return this.Folders[i].Name;
             }
-            return "";
+            return "Tasks";
         }
 
         public string NewTodoTitle
@@ -565,7 +565,7 @@ namespace TodoApp.ViewModels
         {
             if (this.selectedTodo == null) return;
             this.selectedTodo.FolderId = "tasks";
-            this.DetailFolderName = "";
+            this.DetailFolderName = "Tasks";
             this.SaveTodo(this.selectedTodo);
             this.RefreshCurrentTodos();
         }
