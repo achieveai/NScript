@@ -157,7 +157,7 @@ namespace NScript.RazorSkin
         /// </summary>
         public void CompressNames()
         {
-            _cssScope.Optimize();
+            IdentifierScope.IdentifierMinifiedNamer.MinifyNames(_cssScope, releaseNaming: true);
         }
 
         /// <summary>

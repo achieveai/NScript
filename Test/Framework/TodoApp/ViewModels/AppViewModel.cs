@@ -47,8 +47,8 @@ namespace TodoApp.ViewModels
         public AppViewModel()
         {
             this.isRightPaneCollapsed = true;
-            this.leftPaneClass = "pane-left";
-            this.rightPaneClass = "pane-right collapsed";
+            this.leftPaneClass = AppShellCss.PaneLeft;
+            this.rightPaneClass = AppShellCss.PaneRight + " " + AppShellCss.Collapsed;
             this.detailTitle = "";
             this.allTodos = new ObservableCollection<TodoItemViewModel>();
             this.completedCurrentTodos = new ObservableCollection<TodoItemViewModel>();
@@ -56,7 +56,7 @@ namespace TodoApp.ViewModels
             this.isCompletedSectionVisible = true;
             this.isCompletedSectionExpanded = false;
             this.completedCount = 0;
-            this.completedSectionClass = "completed-section collapsed";
+            this.completedSectionClass = AppShellCss.CompletedSection + " " + AppShellCss.Collapsed;
         }
 
         public bool IsLeftPaneCollapsed
@@ -249,11 +249,11 @@ namespace TodoApp.ViewModels
         private void UpdateCompletedSectionClass()
         {
             if (!this.isCompletedSectionVisible)
-                this.CompletedSectionClass = "completed-section hidden";
+                this.CompletedSectionClass = AppShellCss.CompletedSection + " " + AppShellCss.Hidden;
             else if (!this.isCompletedSectionExpanded)
-                this.CompletedSectionClass = "completed-section collapsed";
+                this.CompletedSectionClass = AppShellCss.CompletedSection + " " + AppShellCss.Collapsed;
             else
-                this.CompletedSectionClass = "completed-section";
+                this.CompletedSectionClass = AppShellCss.CompletedSection;
         }
 
         private void UpdateDetailProperties()
@@ -320,8 +320,8 @@ namespace TodoApp.ViewModels
 
         private void UpdatePaneClasses()
         {
-            this.LeftPaneClass = this.isLeftPaneCollapsed ? "pane-left collapsed" : "pane-left";
-            this.RightPaneClass = this.isRightPaneCollapsed ? "pane-right collapsed" : "pane-right";
+            this.LeftPaneClass = this.isLeftPaneCollapsed ? AppShellCss.PaneLeft + " " + AppShellCss.Collapsed : AppShellCss.PaneLeft;
+            this.RightPaneClass = this.isRightPaneCollapsed ? AppShellCss.PaneRight + " " + AppShellCss.Collapsed : AppShellCss.PaneRight;
         }
 
         /// <summary>

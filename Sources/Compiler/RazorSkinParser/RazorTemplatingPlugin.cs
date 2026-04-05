@@ -71,6 +71,20 @@ namespace NScript.RazorSkin
             = new Dictionary<string, RazorCssManager>();
 
         /// <summary>
+        /// Global CSS class map: class name → IIdentifier (from CSS scope).
+        /// Built from [CssClass] attribute scanning across all assemblies.
+        /// Used by CssLiteralReplacer to swap string literals → IdentifierStringExpression.
+        /// </summary>
+        private readonly Dictionary<string, IIdentifier> _cssClassMap
+            = new Dictionary<string, IIdentifier>();
+
+        /// <summary>
+        /// Lazily initialized CSS literal replacer.
+        /// Created after [CssClass] scanning if any CSS classes were registered.
+        /// </summary>
+        private CssLiteralReplacer _cssLiteralReplacer;
+
+        /// <summary>
         /// All embedded CSS resources found during module scanning, keyed by resource name.
         /// Used to resolve @styles references to actual CSS content.
         /// </summary>
@@ -229,6 +243,9 @@ namespace Sunlight.Framework.Observables
 
                 // Load CSS for templates with @styles directives
                 LoadCssForTemplates(runtimeScopeManager);
+
+                // Scan [CssClass] const fields and enable minification
+                ScanCssClassAttributes(runtimeScopeManager);
             }
         }
 
@@ -285,11 +302,9 @@ namespace Sunlight.Framework.Observables
                         // Validate class names used in template HTML
                         TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, cssManager);
 
-                        // Note: CompressNames() is intentionally NOT called here.
-                        // Minification would break templates with dynamic class references
-                        // (e.g., @Model.CssClass = "pane-left") since C# strings stay unminified.
-                        // The @styles pipeline still provides compile-time class validation
-                        // and CSS emission without minification.
+                        // Note: CompressNames() is called later in ScanCssClassAttributes()
+                        // once [CssClass] const fields are validated, ensuring all dynamic
+                        // class references are tracked before minification.
 
                         _templateCssManagers[ir.TemplateName] = cssManager;
 
@@ -304,6 +319,154 @@ namespace Sunlight.Framework.Observables
                         null,
                         $"Error loading CSS for Razor template '{ir.TemplateName}': {ex.Message}",
                         false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Scans assembly types for [CssClass] const string fields.
+        /// Validates each field and registers its value in the global CSS class map.
+        /// Must be called after LoadCssForTemplates so CSS managers are available.
+        /// </summary>
+        private void ScanCssClassAttributes(RuntimeScopeManager runtimeScopeManager)
+        {
+            if (_templateCssManagers.Count == 0) return;
+
+            foreach (var module in _clrContext.Modules)
+            {
+                foreach (var type in module.Types)
+                {
+                    ScanTypeForCssClassFields(type, runtimeScopeManager);
+                    if (type.HasNestedTypes)
+                    {
+                        foreach (var nested in type.NestedTypes)
+                            ScanTypeForCssClassFields(nested, runtimeScopeManager);
+                    }
+                }
+            }
+
+            if (_cssClassMap.Count > 0)
+            {
+                // Note: CompressNames() is deferred to when -minify is requested.
+                // Without minification, IdentifierStringExpression still resolves
+                // through the identifier system — names stay original but the wiring
+                // is in place for when CompressNames() is called.
+                // TODO: Accept minify flag from Builder and call CompressNames() conditionally.
+
+                _cssLiteralReplacer = new CssLiteralReplacer(_cssClassMap);
+
+                Log.Information("Registered {Count} [CssClass] const fields, CSS literal replacement enabled",
+                    _cssClassMap.Count);
+            }
+        }
+
+        private void ScanTypeForCssClassFields(TypeDefinition type, RuntimeScopeManager runtimeScopeManager)
+        {
+            if (!type.HasFields) return;
+
+            foreach (var field in type.Fields)
+            {
+                if (field.CustomAttributes == null || field.CustomAttributes.Count == 0) continue;
+
+                var cssClassAttr = field.CustomAttributes.FirstOrDefault(
+                    a => a.AttributeType.Name == "CssClassAttribute" ||
+                         a.AttributeType.FullName.EndsWith(".CssClassAttribute"));
+
+                if (cssClassAttr == null) continue;
+
+                if (!field.HasConstant || field.FieldType.FullName != "System.String")
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass] can only be applied to const string fields. " +
+                        $"'{type.FullName}.{field.Name}' is not a const string.",
+                        false);
+                    continue;
+                }
+
+                // Parse attribute argument: "ResourceName:ClassName"
+                if (!cssClassAttr.HasConstructorArguments)
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass] on '{type.FullName}.{field.Name}' is missing the " +
+                        $"CSS class reference argument (format: \"ResourceName:ClassName\").",
+                        false);
+                    continue;
+                }
+
+                var reference = cssClassAttr.ConstructorArguments[0].Value as string;
+                if (string.IsNullOrEmpty(reference) || !reference.Contains(":"))
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}' has invalid format. " +
+                        $"Expected \"EmbeddedResourceName:CssClassName\".",
+                        false);
+                    continue;
+                }
+
+                var colonIdx = reference.LastIndexOf(':');
+                var resourceName = reference.Substring(0, colonIdx);
+                var className = reference.Substring(colonIdx + 1);
+
+                // Find the CSS manager for this resource
+                RazorCssManager targetManager = null;
+                foreach (var kvp in _templateCssManagers)
+                {
+                    var manager = kvp.Value;
+                    foreach (var sheet in manager.Sheets)
+                    {
+                        if (sheet.ResourceName == resourceName)
+                        {
+                            targetManager = manager;
+                            break;
+                        }
+                    }
+                    if (targetManager != null) break;
+                }
+
+                if (targetManager == null)
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}': " +
+                        $"CSS resource '{resourceName}' not found. Make sure the resource is " +
+                        $"loaded via @styles directive in a .skin.cshtml template.",
+                        false);
+                    continue;
+                }
+
+                // Validate className exists in CSS
+                IIdentifier cssId;
+                if (!targetManager.TryGetCssClassIdentifier(className, out cssId))
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}': " +
+                        $"CSS class '{className}' not found in resource '{resourceName}'.",
+                        false);
+                    continue;
+                }
+
+                // Validate const value matches className
+                var constValue = field.Constant as string;
+                if (constValue != className)
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}': " +
+                        $"const value \"{constValue}\" doesn't match CSS class name \"{className}\".",
+                        false);
+                    continue;
+                }
+
+                // Register in global map
+                if (!_cssClassMap.ContainsKey(constValue))
+                {
+                    _cssClassMap[constValue] = cssId;
+                    Log.Debug("Registered CSS class '{ClassName}' from {TypeName}.{FieldName}",
+                        className, type.FullName, field.Name);
                 }
             }
         }
@@ -789,14 +952,27 @@ namespace Sunlight.Framework.Observables
             // Check if this is a [Skin("...")] property getter where the template
             // name corresponds to a compiled .skin.cshtml template
             PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
-            if (propertyDefinition == null) return IntrestLevel.None;
-            if (propertyDefinition.SetMethod != null) return IntrestLevel.None;
+            if (propertyDefinition == null)
+            {
+                // Not a property — check if CSS literal replacement is active
+                return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
+            }
+
+            if (propertyDefinition.SetMethod != null)
+            {
+                // Property with setter — check if CSS literal replacement is active
+                return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
+            }
 
             var skinAttr = propertyDefinition.CustomAttributes?.FirstOrDefault(
                 a => a.AttributeType.Name == "SkinAttribute" ||
                      a.AttributeType.FullName.EndsWith(".SkinAttribute"));
 
-            if (skinAttr == null) return IntrestLevel.None;
+            if (skinAttr == null)
+            {
+                // Not a [Skin] property — check for CSS replacement
+                return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
+            }
 
             // Check if the template name is a Razor template
             if (skinAttr.HasConstructorArguments)
@@ -810,7 +986,7 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
-            return IntrestLevel.None;
+            return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
         }
 
         // Not used: RazorTemplatingPlugin only returns IntrestLevel.Overwrite or None.
@@ -820,7 +996,11 @@ namespace Sunlight.Framework.Observables
 
         public List<Statement> GetEncapsulationStatements(
             MethodConverter methodConverter,
-            List<Statement> methodStatments) => null;
+            List<Statement> methodStatments)
+        {
+            if (_cssLiteralReplacer == null) return methodStatments;
+            return _cssLiteralReplacer.TransformStatements(methodStatments);
+        }
 
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {

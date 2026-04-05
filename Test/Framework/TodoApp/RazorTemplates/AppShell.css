@@ -294,3 +294,19 @@
     color: #605e5c;
     margin-top: 8px;
 }
+
+/* State modifier classes — tracked via [CssClass] consts for minification.
+   Visual rules for these modifiers live in the host page (TodoApp.htm)
+   using compound selectors (e.g. .pane-left.collapsed, .todo-item.completed).
+   These empty declarations register the class names in the CSS scope
+   so the compiler can track and eventually minify them. */
+
+.collapsed { }
+
+.hidden { }
+
+.selected { }
+
+.completed { }
+
+.checked { }

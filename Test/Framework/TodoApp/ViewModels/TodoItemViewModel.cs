@@ -36,8 +36,8 @@ namespace TodoApp.ViewModels
         {
             this.appViewModel = appViewModel;
             this.subTasks = new ObservableCollection<SubTaskViewModel>();
-            this.cssClass = "todo-item";
-            this.checkboxClass = "btn-check";
+            this.cssClass = AppShellCss.TodoItem;
+            this.checkboxClass = AppShellCss.BtnCheck;
             this.hasDueDate = false;
             this.dueDateDisplay = "";
             this.UpdateComputedProperties();
@@ -265,13 +265,13 @@ namespace TodoApp.ViewModels
         private void UpdateComputedProperties()
         {
             // CssClass
-            string css = "todo-item";
-            if (this.isSelected) css = css + " selected";
-            if (this.isCompleted) css = css + " completed";
+            string css = AppShellCss.TodoItem;
+            if (this.isSelected) css = css + " " + AppShellCss.Selected;
+            if (this.isCompleted) css = css + " " + AppShellCss.Completed;
             this.CssClass = css;
 
             // CheckboxClass
-            this.CheckboxClass = this.isCompleted ? "btn-check checked" : "btn-check";
+            this.CheckboxClass = this.isCompleted ? AppShellCss.BtnCheck + " " + AppShellCss.Checked : AppShellCss.BtnCheck;
 
             // HasDueDate
             this.HasDueDate = this.dueDate != null && this.dueDate != "";

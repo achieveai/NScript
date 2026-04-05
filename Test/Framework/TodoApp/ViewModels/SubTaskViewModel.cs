@@ -17,7 +17,7 @@ namespace TodoApp.ViewModels
         public SubTaskViewModel()
         {
             this.cssClass = "subtask-item";
-            this.checkboxClass = "btn-check";
+            this.checkboxClass = AppShellCss.BtnCheck;
             this.UpdateComputedProperties();
         }
 
@@ -96,11 +96,11 @@ namespace TodoApp.ViewModels
         private void UpdateComputedProperties()
         {
             if (this.isCompleted)
-                this.CssClass = "subtask-item completed";
+                this.CssClass = AppShellCss.SubtaskItem + " " + AppShellCss.Completed;
             else
-                this.CssClass = "subtask-item";
+                this.CssClass = AppShellCss.SubtaskItem;
 
-            this.CheckboxClass = this.isCompleted ? "btn-check checked" : "btn-check";
+            this.CheckboxClass = this.isCompleted ? AppShellCss.BtnCheck + " " + AppShellCss.Checked : AppShellCss.BtnCheck;
         }
 
         /// <summary>

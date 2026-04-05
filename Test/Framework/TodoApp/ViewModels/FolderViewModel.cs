@@ -24,7 +24,7 @@ namespace TodoApp.ViewModels
         public FolderViewModel(AppViewModel appViewModel)
         {
             this.appViewModel = appViewModel;
-            this.cssClass = "folder-item";
+            this.cssClass = AppShellCss.FolderItem;
             this.UpdateComputedProperties();
         }
 
@@ -139,9 +139,9 @@ namespace TodoApp.ViewModels
         private void UpdateComputedProperties()
         {
             if (this.isSelected)
-                this.CssClass = "folder-item selected";
+                this.CssClass = AppShellCss.FolderItem + " " + AppShellCss.Selected;
             else
-                this.CssClass = "folder-item";
+                this.CssClass = AppShellCss.FolderItem;
         }
 
         /// <summary>
