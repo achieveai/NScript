@@ -197,6 +197,8 @@
     border-radius: 4px;
     margin: 1px 8px;
     transition: background 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .todo-item:hover {

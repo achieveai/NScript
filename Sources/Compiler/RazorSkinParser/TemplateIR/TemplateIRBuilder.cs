@@ -265,7 +265,7 @@ namespace NScript.RazorSkin.TemplateIR
                                     var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                         StringComparison.OrdinalIgnoreCase);
                                     if (idx >= 0)
-                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                                 }
 
                                 currentParent.Children.Add(binding);
@@ -340,6 +340,11 @@ namespace NScript.RazorSkin.TemplateIR
 
                     if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
                     {
+                        // Ensure preceding HTML ends with space for proper attribute separation.
+                        // Razor consumes inter-attribute whitespace when extracting structured attributes;
+                        // we must restore it so the next static attribute doesn't fuse with the tag name.
+                        EnsureTrailingSpaceOnPrecedingHtml(currentParent.Children);
+
                         // Check if this is an event attribute
                         if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
                         {
@@ -362,7 +367,7 @@ namespace NScript.RazorSkin.TemplateIR
                                 var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                     StringComparison.OrdinalIgnoreCase);
                                 if (idx >= 0)
-                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                             }
 
                             currentParent.Children.Add(binding);
@@ -511,7 +516,7 @@ namespace NScript.RazorSkin.TemplateIR
                                     var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                         StringComparison.OrdinalIgnoreCase);
                                     if (idx >= 0)
-                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                                 }
                                 targetBranch.Add(binding);
 
@@ -543,6 +548,8 @@ namespace NScript.RazorSkin.TemplateIR
 
                     if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
                     {
+                        EnsureTrailingSpaceOnPrecedingHtml(targetBranch);
+
                         if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
                         {
                             targetBranch.Add(CreateEventNode(attrName, exprValue.Trim()));
@@ -562,7 +569,7 @@ namespace NScript.RazorSkin.TemplateIR
                                 var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                     StringComparison.OrdinalIgnoreCase);
                                 if (idx >= 0)
-                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                             }
                             targetBranch.Add(binding);
                         }
@@ -693,7 +700,7 @@ namespace NScript.RazorSkin.TemplateIR
                                     var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                         StringComparison.OrdinalIgnoreCase);
                                     if (idx >= 0)
-                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                                 }
 
                                 loop.ItemTemplate.Add(binding);
@@ -728,6 +735,8 @@ namespace NScript.RazorSkin.TemplateIR
 
                     if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
                     {
+                        EnsureTrailingSpaceOnPrecedingHtml(loop.ItemTemplate);
+
                         if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
                         {
                             loop.ItemTemplate.Add(CreateEventNode(attrName, exprValue.Trim()));
@@ -749,7 +758,7 @@ namespace NScript.RazorSkin.TemplateIR
                                 var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                     StringComparison.OrdinalIgnoreCase);
                                 if (idx >= 0)
-                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                             }
 
                             loop.ItemTemplate.Add(binding);
@@ -762,6 +771,23 @@ namespace NScript.RazorSkin.TemplateIR
 
             parent.Children.Add(loop);
             return i;
+        }
+
+        /// <summary>
+        /// Ensures the last HtmlNode in a node list ends with a space.
+        /// Razor consumes inter-attribute whitespace when extracting structured HtmlAttributeIntermediateNode,
+        /// so the preceding HTML (e.g., "&lt;div") loses its trailing space. Without this fix,
+        /// the next static attribute fuses with the tag name (e.g., "&lt;divdraggable" instead of "&lt;div draggable").
+        /// </summary>
+        private static void EnsureTrailingSpaceOnPrecedingHtml(IList<IRNode> nodes)
+        {
+            if (nodes.Count == 0) return;
+            var lastHtml = nodes[nodes.Count - 1] as HtmlNode;
+            if (lastHtml != null && lastHtml.HtmlContent.Length > 0
+                && !lastHtml.HtmlContent.EndsWith(" ") && !lastHtml.HtmlContent.EndsWith("\n"))
+            {
+                lastHtml.HtmlContent += " ";
+            }
         }
 
         private static ExpressionBindingNode CreateExpressionBinding(string expression)
