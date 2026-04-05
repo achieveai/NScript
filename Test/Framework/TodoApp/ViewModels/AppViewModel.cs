@@ -591,6 +591,8 @@ namespace TodoApp.ViewModels
                     this.draggedTodo.IsMyDay = true;
                 else if (folder.SystemType == "important")
                     this.draggedTodo.IsImportant = true;
+                else
+                    this.draggedTodo.FolderId = folder.Id;
             }
             else
             {
@@ -598,6 +600,13 @@ namespace TodoApp.ViewModels
             }
 
             this.SaveTodo(this.draggedTodo);
+
+            // Update the folder chip if the dragged todo is currently selected
+            if (this.draggedTodo == this.selectedTodo)
+            {
+                this.DetailFolderName = this.GetFolderNameForTodo(this.draggedTodo);
+            }
+
             this.draggedTodo = null;
         }
 
