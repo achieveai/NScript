@@ -94,6 +94,7 @@ namespace NScript.RazorSkin.CodeGen
         private static void CollectItemTemplateHtmlRecursive(
             List<IRNode> nodes, StringBuilder sb, ref int pendingEvtMarkers, ref int pendingBindMarkers)
         {
+            int subControlIdx = 0;
             foreach (var node in nodes)
             {
                 if (node is HtmlNode html)
@@ -146,7 +147,7 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else if (node is SubControlNode)
                 {
-                    sb.Append("<span data-ns-ph></span>");
+                    sb.Append($"<div data-ns-subctl=\"{subControlIdx++}\"></div>");
                 }
                 else
                 {
@@ -231,7 +232,8 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else if (node is SubControlNode)
                 {
-                    sb.Append("<span data-ns-ph></span>");
+                    // Top-level sub-controls: emit marker div (future support)
+                    sb.Append("<div data-ns-subctl></div>");
                 }
                 else
                 {

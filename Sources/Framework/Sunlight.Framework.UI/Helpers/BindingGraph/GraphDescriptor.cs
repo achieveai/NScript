@@ -129,6 +129,33 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public int MarkerIdx;
         public GraphDescriptor ItemGraph;
         public object ItemTemplate;
+        /// <summary>
+        /// Sub-control descriptors for controls inside the foreach item template.
+        /// Null when no sub-controls are used.
+        /// </summary>
+        public NativeArray<SubControlInfo> SubControlInfos;
+    }
+
+    /// <summary>
+    /// Descriptor for a sub-control inside a collection item template.
+    /// At runtime, GraphEngine creates a control instance per collection item.
+    /// </summary>
+    public class SubControlInfo
+    {
+        /// <summary>
+        /// Index of the marker element in the item template's DOM.
+        /// </summary>
+        public int MarkerIdx;
+
+        /// <summary>
+        /// Factory function that creates the control instance: (Element) => UISkinableElement.
+        /// </summary>
+        public Func<object, object> TypeFactory;
+
+        /// <summary>
+        /// Factory function that returns the Skin: () => Skin.
+        /// </summary>
+        public Func<object> SkinFactory;
     }
 
     /// <summary>

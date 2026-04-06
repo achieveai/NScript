@@ -332,14 +332,14 @@ function sel(classMap, selector) {
   });
 
   await runTest('Completed todo moves to completed section', async (page, s) => {
-    const pendingBefore = (await page.$$(s('.todo-list > .todo-item'))).length;
+    const pendingBefore = (await page.$$(s('.todo-list .todo-item'))).length;
 
     // Complete the first todo
     const checkbox = await page.$(s('.todo-item .btn-check'));
     await checkbox.click();
     await page.waitForTimeout(500);
 
-    const pendingAfter = (await page.$$(s('.todo-list > .todo-item'))).length;
+    const pendingAfter = (await page.$$(s('.todo-list .todo-item'))).length;
     assert(pendingAfter === pendingBefore - 1, 'Pending count should decrease by 1, was ' + pendingBefore + ' now ' + pendingAfter);
 
     // Completed section should have the item
@@ -489,10 +489,11 @@ function sel(classMap, selector) {
   // ─── BUG-019: DRAG AND DROP ──────────────────────────────────────────────────
 
   // Helper: simulate HTML5 drag-and-drop with DataTransfer between two elements
-  async function simulateDragDrop(page, sourceSelector, targetSelector) {
-    await page.evaluate(({ src, tgt }) => {
-      const source = document.querySelectorAll(src)[0];
-      const target = document.querySelectorAll(tgt)[0];
+  // sourceSelector/targetSelector are CSS selectors; srcIdx/tgtIdx pick which match (default 0)
+  async function simulateDragDrop(page, sourceSelector, targetSelector, srcIdx = 0, tgtIdx = 0) {
+    await page.evaluate(({ src, tgt, si, ti }) => {
+      const source = document.querySelectorAll(src)[si];
+      const target = document.querySelectorAll(tgt)[ti];
       if (!source || !target) return;
 
       const dt = new DataTransfer();
@@ -501,7 +502,7 @@ function sel(classMap, selector) {
       target.dispatchEvent(new DragEvent('dragover', { dataTransfer: dt, bubbles: true }));
       target.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true }));
       source.dispatchEvent(new DragEvent('dragend', { dataTransfer: dt, bubbles: true }));
-    }, { src: sourceSelector, tgt: targetSelector });
+    }, { src: sourceSelector, tgt: targetSelector, si: srcIdx, ti: tgtIdx });
   }
 
   await runTest('BUG-019: Drag todo to My Day folder sets IsMyDay', async (page, s) => {
@@ -509,8 +510,8 @@ function sel(classMap, selector) {
     const todos = await page.$$(s('.todo-item'));
     assert(todos.length >= 2, 'Need at least 2 todos');
 
-    // Simulate drag-and-drop with proper DataTransfer
-    await simulateDragDrop(page, s('.todo-item:nth-child(2)'), s('.folder-item:nth-child(1)'));
+    // Simulate drag-and-drop: 2nd todo (index 1) to My Day folder (index 0)
+    await simulateDragDrop(page, s('.todo-item'), s('.folder-item'), 1, 0);
     await page.waitForTimeout(500);
 
     // Switch to My Day folder to verify the todo now appears
@@ -526,8 +527,8 @@ function sel(classMap, selector) {
     const todos = await page.$$(s('.todo-item'));
     assert(todos.length >= 2, 'Need at least 2 todos');
 
-    // Drag second todo to Important folder (index 1 in list = nth-child(2))
-    await simulateDragDrop(page, s('.todo-item:nth-child(2)'), s('.folder-item:nth-child(2)'));
+    // Drag second todo (index 1) to Important folder (index 1)
+    await simulateDragDrop(page, s('.todo-item'), s('.folder-item'), 1, 1);
     await page.waitForTimeout(500);
 
     // Switch to Important folder to verify

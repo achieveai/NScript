@@ -671,10 +671,59 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
                     childStates[idx] = childState;
                 }
+
+                // Instantiate sub-controls inside this item's DOM.
+                if (!object.IsNullOrUndefined(colInfo.SubControlInfos))
+                {
+                    GraphEngine.InstantiateSubControls(clone, colInfo.SubControlInfos, item);
+                }
             }
 
             state.ChildGraphStates[nodeIdx] = childStates;
             state.ItemElements[nodeIdx] = itemElems;
+        }
+
+        /// <summary>
+        /// Creates sub-control instances inside a cloned item element.
+        /// Finds marker elements with data-ns-subctl attribute, creates the control,
+        /// sets its Skin and DataContext.
+        /// </summary>
+        private static void InstantiateSubControls(
+            Element itemRoot, NativeArray<SubControlInfo> subControls, object dataContext)
+        {
+            for (int i = 0; i < subControls.Length; i++)
+            {
+                SubControlInfo info = subControls[i];
+                if (object.IsNullOrUndefined(info)) continue;
+
+                // Find the marker element by data-ns-subctl attribute
+                Element marker = GraphEngine.FindSubControlMarker(itemRoot, i);
+                if (object.IsNullOrUndefined(marker)) continue;
+
+                // Create the control instance using the type factory
+                object ctlObj = info.TypeFactory(marker);
+                UISkinableElement ctl = (UISkinableElement)ctlObj;
+
+                // Set the skin
+                object skinObj = info.SkinFactory();
+                ctl.Skin = (Skin)skinObj;
+
+                // Set DataContext so bindings inside the sub-control resolve
+                ctl.DataContext = dataContext;
+
+                // Activate the control to trigger skin rendering and binding
+                ctl.Activate();
+            }
+        }
+
+        private static Element FindSubControlMarker(Element itemRoot, int index)
+        {
+            // Check if the itemRoot itself is the marker (happens when the item
+            // template consists solely of a sub-control placeholder).
+            string selector = "[data-ns-subctl=\"" + index + "\"]";
+            if (itemRoot.Matches(selector))
+                return itemRoot;
+            return itemRoot.QuerySelector(selector);
         }
 
         /// <summary>
@@ -887,6 +936,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
                     GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
                     newChildStates[insertIdx + j] = childState;
+                }
+
+                // Instantiate sub-controls inside this item's DOM.
+                if (!object.IsNullOrUndefined(colInfo.SubControlInfos))
+                {
+                    GraphEngine.InstantiateSubControls(clone, colInfo.SubControlInfos, item);
                 }
             }
 

@@ -1085,6 +1085,7 @@ namespace Sunlight.Framework.Observables
                 foreach (var kvp in _compiledIRs)
                 {
                     CollectEventMethodReferences(kvp.Value, kvp.Value.ModelTypeName, methods, seen);
+                    CollectSubControlMethodReferences(kvp.Value, methods, seen);
                 }
             }
 
@@ -1165,6 +1166,60 @@ namespace Sunlight.Framework.Observables
                 foreach (var child in node.Children)
                     CollectEventMethodReferences(child, modelTypeName, methods, seen);
             }
+        }
+
+        /// <summary>
+        /// Walks an IR tree and collects constructor + DefaultSkin getter references
+        /// for SubControlNodes so the demand-driven converter emits their factory functions.
+        /// </summary>
+        private void CollectSubControlMethodReferences(
+            IRNode node, List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (node is TemplateIR.SubControlNode sub)
+            {
+                var controlType = FindSubControlTypeInAssemblies(sub.ResolvedTypeName);
+                if (controlType != null)
+                {
+                    // Constructor with 1 parameter (Element)
+                    var ctor = controlType.Methods.FirstOrDefault(m =>
+                        m.IsConstructor && !m.IsStatic && m.Parameters.Count == 1);
+                    if (ctor != null && seen.Add(ctor.FullName))
+                        methods.Add(ctor);
+
+                    // DefaultSkin getter
+                    var skinProp = controlType.Properties.FirstOrDefault(p =>
+                        p.Name == "DefaultSkin" && p.GetMethod != null && p.GetMethod.IsStatic);
+                    if (skinProp?.GetMethod != null && seen.Add(skinProp.GetMethod.FullName))
+                        methods.Add(skinProp.GetMethod);
+                }
+            }
+
+            if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
+            {
+                foreach (var child in loop.ItemTemplate)
+                    CollectSubControlMethodReferences(child, methods, seen);
+            }
+
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                    CollectSubControlMethodReferences(child, methods, seen);
+            }
+        }
+
+        /// <summary>
+        /// Searches loaded assemblies for a type by short or full name.
+        /// </summary>
+        private Mono.Cecil.TypeDefinition FindSubControlTypeInAssemblies(string typeName)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(typeName)) return null;
+
+            foreach (var type in _clrContext.GetTypes())
+            {
+                if (type.FullName == typeName || type.Name == typeName)
+                    return type;
+            }
+            return null;
         }
 
         /// <summary>

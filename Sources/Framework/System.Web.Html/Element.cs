@@ -631,6 +631,13 @@ namespace System.Web.Html
         public extern Element QuerySelector(string selector);
 
         /// <summary>
+        /// Tests whether the element matches the given CSS selector.
+        /// </summary>
+        /// <param name="selector">CSS selector to test.</param>
+        /// <returns>true if the element matches the selector.</returns>
+        public extern bool Matches(string selector);
+
+        /// <summary>
         /// Scroll into view.
         /// </summary>
         public extern void ScrollIntoView();

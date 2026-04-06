@@ -650,7 +650,14 @@ namespace NScript.RazorSkin.TemplateIR
                     var content = GetTokenContent(htmlNode);
                     if (!string.IsNullOrWhiteSpace(content))
                     {
-                        loop.ItemTemplate.Add(new HtmlNode { HtmlContent = content.Trim() });
+                        // Use a dummy container to collect SubControlNodes,
+                        // then move them to the loop's ItemTemplate.
+                        var dummy = new SkinTemplateNode();
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy);
+                        if (!string.IsNullOrWhiteSpace(processed))
+                            loop.ItemTemplate.Add(new HtmlNode { HtmlContent = processed });
+                        foreach (var child in dummy.Children)
+                            loop.ItemTemplate.Add(child);
                         lastHtmlContent = content;
                     }
                 }

@@ -25,11 +25,7 @@
         <div class="todo-list">
             @foreach (var todo in Model.CurrentTodos)
             {
-                <div class="@todo.CssClass" draggable="true" onclick="@todo.OnSelect" ondragstart="@todo.OnDragStart">
-                    <div class="@todo.CheckboxClass" onclick="@todo.ToggleComplete">&#10003;</div>
-                    <div class="todo-title">@todo.Title</div>
-                    <div class="@todo.StarClass" onclick="@todo.ToggleImportant">@todo.StarText</div>
-                </div>
+                <TodoItemControl />
             }
         </div>
         <div class="@Model.CompletedSectionClass">
@@ -40,11 +36,7 @@
             <div class="completed-list">
                 @foreach (var todo in Model.CompletedCurrentTodos)
                 {
-                    <div class="@todo.CssClass" onclick="@todo.OnSelect">
-                        <div class="@todo.CheckboxClass" onclick="@todo.ToggleComplete">&#10003;</div>
-                        <div class="todo-title">@todo.Title</div>
-                        <div class="@todo.StarClass" onclick="@todo.ToggleImportant">@todo.StarText</div>
-                    </div>
+                    <TodoItemControl />
                 }
             </div>
         </div>
