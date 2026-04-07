@@ -130,5 +130,32 @@ namespace RazorSkinParser.Test
                 ItemTemplate = itemTemplate
             };
         }
+        /// <summary>
+        /// Creates an ExpressionBindingNode with a chained property path (LIMIT-005).
+        /// E.g., propertyChain="Customer.Address.City", rootPropName="Customer"
+        /// </summary>
+        internal static ExpressionBindingNode MakeChainBinding(
+            string csharpExpr,
+            ExpressionTarget target,
+            string elementId,
+            string rootPropName,
+            string propertyChain)
+        {
+            return new ExpressionBindingNode
+            {
+                Target = target,
+                ElementId = elementId,
+                Classification = new BindingClassification
+                {
+                    CSharpExpression = csharpExpr,
+                    Mode = BindingMode.OneWay,
+                    SourceKind = BindingSourceKind.DataContext,
+                    Dependencies = new List<ObservableDependency>
+                    {
+                        new ObservableDependency(BindingSourceKind.DataContext, rootPropName, propertyChain)
+                    }
+                }
+            };
+        }
     }
 }

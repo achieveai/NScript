@@ -69,14 +69,6 @@ namespace NScript.RazorSkin.CodeGen
         public int MarkerIdx { get; set; }
         public LoopNode IrNode { get; set; }
         public GraphTopology ItemTopology { get; set; }
-        public List<SubControlTopology> SubControls { get; set; } = new List<SubControlTopology>();
-    }
-
-    public class SubControlTopology
-    {
-        public string TypeName { get; set; }
-        public string ResolvedTypeName { get; set; }
-        public int MarkerIdx { get; set; }
     }
 
     /// <summary>
@@ -485,8 +477,7 @@ namespace NScript.RazorSkin.CodeGen
                 NodeIdx = collIdx,
                 MarkerIdx = ctx.NextElemIdx(),
                 IrNode = loop,
-                ItemTopology = itemTopology,
-                SubControls = CollectSubControls(loop.ItemTemplate)
+                ItemTopology = itemTopology
             });
         }
 

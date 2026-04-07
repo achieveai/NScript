@@ -83,7 +83,6 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _collectionMarkerIdxField;
         private readonly IIdentifier _collectionItemGraphField;
         private readonly IIdentifier _collectionItemTemplateField;
-        private readonly IIdentifier _collectionSubControlInfosField;
 
         // Resolved field identifiers for SubControlInfo
         private readonly IIdentifier _subControlMarkerIdxField;
@@ -147,7 +146,7 @@ namespace NScript.RazorSkin.CodeGen
                 out _gateTrueElemCountField, out _gateFalseElemCountField,
                 out _gateTrueChildElemIndicesField, out _gateFalseChildElemIndicesField,
                 out _collectionMarkerIdxField, out _collectionItemGraphField,
-                out _collectionItemTemplateField, out _collectionSubControlInfosField,
+                out _collectionItemTemplateField,
                 out _subControlMarkerIdxField, out _subControlTypeFactoryField,
                 out _subControlSkinFactoryField,
                 out _eventElemIdxField, out _eventNameField);
@@ -182,7 +181,6 @@ namespace NScript.RazorSkin.CodeGen
             out IIdentifier gateTrueElemCount, out IIdentifier gateFalseElemCount,
             out IIdentifier gateTrueChildElemIndices, out IIdentifier gateFalseChildElemIndices,
             out IIdentifier collMarkerIdx, out IIdentifier collItemGraph, out IIdentifier collItemTemplate,
-            out IIdentifier collSubControlInfos,
             out IIdentifier scMarkerIdx, out IIdentifier scTypeFactory, out IIdentifier scSkinFactory,
             out IIdentifier eventElemIdx, out IIdentifier eventName)
         {
@@ -228,7 +226,6 @@ namespace NScript.RazorSkin.CodeGen
             collMarkerIdx = ResolveFieldId(collType, "MarkerIdx");
             collItemGraph = ResolveFieldId(collType, "ItemGraph");
             collItemTemplate = ResolveFieldId(collType, "ItemTemplate");
-            collSubControlInfos = ResolveFieldId(collType, "SubControlInfos");
 
             // SubControlInfo fields
             var scType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
@@ -1677,10 +1674,6 @@ namespace NScript.RazorSkin.CodeGen
                 if (itemGraphExpr != null)
                     fields.Add((_collectionItemGraphField, "ItemGraph", itemGraphExpr));
 
-                var subControlsExpr = EmitSubControlInfosArray(ct.SubControls);
-                if (subControlsExpr != null)
-                    fields.Add((_collectionSubControlInfosField, "SubControlInfos", subControlsExpr));
-
                 return EmitTypedObject(_collectionTargetInfoFactory, fields);
             }
 
@@ -1691,87 +1684,6 @@ namespace NScript.RazorSkin.CodeGen
             if (itemGraphExpr != null)
                 AddField(info, _collectionItemGraphField, "ItemGraph", itemGraphExpr);
             return info;
-        }
-
-        /// <summary>
-        /// Emits an array of SubControlInfo instances for sub-controls inside a collection
-        /// item template. Returns null if no sub-controls are present.
-        /// Each entry has: MarkerIdx, TypeFactory (constructor), SkinFactory (DefaultSkin getter).
-        /// </summary>
-        private Expression EmitSubControlInfosArray(List<SubControlTopology> subControls)
-        {
-            if (subControls == null || subControls.Count == 0) return null;
-
-            var items = new List<Expression>();
-            foreach (var sc in subControls)
-            {
-                var scExpr = EmitSingleSubControlInfo(sc);
-                if (scExpr != null)
-                    items.Add(scExpr);
-            }
-
-            if (items.Count == 0) return null;
-            return new InlineNewArrayInitialization(null, _scope, items);
-        }
-
-        /// <summary>
-        /// Emits a single SubControlInfo typed instance.
-        /// Resolves the control type from loaded assemblies, finds its 1-param constructor
-        /// (Element), and its static DefaultSkin property getter.
-        /// </summary>
-        private Expression EmitSingleSubControlInfo(SubControlTopology sc)
-        {
-            // Find the sub-control type. ResolvedTypeName may be short (e.g. "TodoItemControl"),
-            // so we search all loaded assemblies for a type matching the name.
-            var controlTypeDef = FindSubControlType(sc.ResolvedTypeName);
-            if (controlTypeDef == null)
-            {
-                Log.Warning("SubControl: Cannot find type definition for '{TypeName}'", sc.ResolvedTypeName);
-                return null;
-            }
-
-            // Find the constructor with 1 parameter (Element)
-            var ctor = controlTypeDef.Methods.FirstOrDefault(m =>
-                m.IsConstructor && !m.IsStatic && m.Parameters.Count == 1);
-            if (ctor == null)
-            {
-                Log.Warning("SubControl: No single-param constructor on '{TypeName}'", controlTypeDef.FullName);
-                return null;
-            }
-
-            // Resolve the constructor factory: TodoItemControl_factory(element)
-            var typeFactoryId = _scopeManager.ResolveFactory(ctor);
-            if (typeFactoryId == null)
-            {
-                Log.Warning("SubControl: Cannot resolve factory for '{TypeName}'", controlTypeDef.FullName);
-                return null;
-            }
-
-            // Find the DefaultSkin property getter (static property with [Skin] attribute)
-            var skinProp = controlTypeDef.Properties.FirstOrDefault(p =>
-                p.Name == "DefaultSkin" && p.GetMethod != null && p.GetMethod.IsStatic);
-            if (skinProp == null)
-            {
-                Log.Warning("SubControl: No DefaultSkin property on '{TypeName}'", controlTypeDef.FullName);
-                return null;
-            }
-
-            var skinGetterId = _scopeManager.ResolveStatic(skinProp.GetMethod);
-            if (skinGetterId == null)
-            {
-                Log.Warning("SubControl: Cannot resolve DefaultSkin getter on '{TypeName}'", controlTypeDef.FullName);
-                return null;
-            }
-
-            if (_subControlInfoFactory == null) return null;
-
-            var fields = new List<(IIdentifier, string, Expression)>
-            {
-                (_subControlMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, sc.MarkerIdx)),
-                (_subControlTypeFactoryField, "TypeFactory", new IdentifierExpression(typeFactoryId, _scope)),
-                (_subControlSkinFactoryField, "SkinFactory", new IdentifierExpression(skinGetterId, _scope))
-            };
-            return EmitTypedObject(_subControlInfoFactory, fields);
         }
 
         /// <summary>

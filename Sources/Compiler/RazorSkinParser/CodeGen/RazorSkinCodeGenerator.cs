@@ -145,9 +145,23 @@ namespace NScript.RazorSkin.CodeGen
                 {
                     sb.Append("<span data-ns-ph></span>");
                 }
-                else if (node is SubControlNode)
+                else if (node is SubControlNode sub1)
                 {
-                    sb.Append($"<div data-ns-subctl=\"{subControlIdx++}\"></div>");
+                    var tag = sub1.TagName ?? "div";
+                    sb.Append("<");
+                    sb.Append(tag);
+                    if (sub1.DomAttributes != null)
+                    {
+                        foreach (var kvp in sub1.DomAttributes)
+                        {
+                            sb.Append(" ");
+                            sb.Append(kvp.Key);
+                            sb.Append("=\"");
+                            sb.Append(System.Net.WebUtility.HtmlEncode(kvp.Value));
+                            sb.Append("\"");
+                        }
+                    }
+                    sb.Append($" data-ns-subctl=\"{subControlIdx++}\"></{tag}>");
                 }
                 else
                 {
@@ -230,10 +244,25 @@ namespace NScript.RazorSkin.CodeGen
                     // by GraphEngine for each collection item.
                     sb.Append("<span data-ns-ph></span>");
                 }
-                else if (node is SubControlNode)
+                else if (node is SubControlNode sub2)
                 {
-                    // Top-level sub-controls: emit marker div (future support)
-                    sb.Append("<div data-ns-subctl></div>");
+                    var tag = sub2.TagName ?? "div";
+                    sb.Append("<");
+                    sb.Append(tag);
+                    if (sub2.DomAttributes != null)
+                    {
+                        foreach (var kvp in sub2.DomAttributes)
+                        {
+                            sb.Append(" ");
+                            sb.Append(kvp.Key);
+                            sb.Append("=\"");
+                            sb.Append(System.Net.WebUtility.HtmlEncode(kvp.Value));
+                            sb.Append("\"");
+                        }
+                    }
+                    sb.Append(" data-ns-subctl></");
+                    sb.Append(tag);
+                    sb.Append(">");
                 }
                 else
                 {

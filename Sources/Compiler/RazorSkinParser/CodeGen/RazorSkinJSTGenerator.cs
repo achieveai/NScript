@@ -135,6 +135,10 @@ namespace NScript.RazorSkin.CodeGen
             _objStorageIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                 _factoryScope, "objStorage", false);
 
+            // Resolve sub-control attributes (TagName, DomAttributes) via Cecil
+            // Must happen before CollectHtmlWithPathsPublic which reads SubControlNode.TagName
+            ResolveSubControlAttributes(_ir.Children);
+
             // Collect bindings, events, and HTML content
             var bindings = RazorSkinCodeGenerator.CollectBindingsPublic(_ir.Children);
             var events = RazorSkinCodeGenerator.CollectEventsPublic(_ir.Children);
@@ -1008,6 +1012,130 @@ namespace NScript.RazorSkin.CodeGen
         private string ReplaceCssClassNamesInHtml(string html)
         {
             return RazorCssManager.ReplaceCssClassNamesInHtml(html, _cssManager);
+        }
+
+        /// <summary>
+        /// Recursively resolves TagName and DomAttributes on SubControlNode instances
+        /// by looking up the control type via Cecil and reading [TagName] and [DomAttribute] attributes.
+        /// </summary>
+        private void ResolveSubControlAttributes(List<IRNode> nodes)
+        {
+            if (nodes == null) return;
+
+            foreach (var node in nodes)
+            {
+                if (node is SubControlNode sub)
+                {
+                    ResolveSubControlTagInfo(sub);
+                }
+
+                if (node.Children?.Count > 0)
+                    ResolveSubControlAttributes(node.Children);
+
+                if (node is ConditionalNode cond)
+                {
+                    ResolveSubControlAttributes(cond.TrueBranch);
+                    ResolveSubControlAttributes(cond.FalseBranch);
+                }
+
+                if (node is LoopNode loop)
+                {
+                    ResolveSubControlAttributes(loop.ItemTemplate);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resolves tag name and DOM attributes for a single SubControlNode by looking up its
+        /// CLR type via Cecil and reading [TagName] and [DomAttribute] custom attributes.
+        /// </summary>
+        private void ResolveSubControlTagInfo(SubControlNode sub)
+        {
+            if (_clrContext == null || _knownTypes == null) return;
+
+            var typeDef = FindSubControlType(sub.TypeName);
+            if (typeDef == null)
+            {
+                Log.Debug("ResolveSubControlTagInfo: Cannot find type for {TypeName}", sub.TypeName);
+                return;
+            }
+
+            sub.ResolvedTypeName = typeDef.FullName;
+
+            // Read [TagName("xxx")] attribute
+            if (_knownTypes.TagNameAttribute != null)
+            {
+                foreach (var attr in typeDef.CustomAttributes)
+                {
+                    if (attr.AttributeType.FullName == _knownTypes.TagNameAttribute.FullName
+                        && attr.ConstructorArguments.Count > 0)
+                    {
+                        sub.TagName = attr.ConstructorArguments[0].Value as string ?? "div";
+                        break;
+                    }
+                }
+            }
+
+            // Read [DomAttribute("name", "value")] attributes
+            if (_knownTypes.DomAttributeAttribute != null)
+            {
+                foreach (var attr in typeDef.CustomAttributes)
+                {
+                    if (attr.AttributeType.FullName == _knownTypes.DomAttributeAttribute.FullName
+                        && attr.ConstructorArguments.Count >= 2)
+                    {
+                        var name = attr.ConstructorArguments[0].Value as string;
+                        var value = attr.ConstructorArguments[1].Value as string;
+                        if (name != null)
+                        {
+                            if (sub.DomAttributes == null)
+                                sub.DomAttributes = new List<KeyValuePair<string, string>>();
+                            sub.DomAttributes.Add(new KeyValuePair<string, string>(name, value ?? ""));
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds a SubControlNode's TypeDefinition by trying the type name directly,
+        /// then trying each using namespace as a prefix.
+        /// </summary>
+        private TypeDefinition FindSubControlType(string typeName)
+        {
+            if (string.IsNullOrEmpty(typeName)) return null;
+
+            var typeDef = FindTypeDefinitionByName(typeName);
+            if (typeDef != null) return typeDef;
+
+            if (_ir.UsingNamespaces != null)
+            {
+                foreach (var ns in _ir.UsingNamespaces)
+                {
+                    typeDef = FindTypeDefinitionByName(ns + "." + typeName);
+                    if (typeDef != null) return typeDef;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Finds a TypeDefinition by full name across all loaded assemblies.
+        /// </summary>
+        private TypeDefinition FindTypeDefinitionByName(string fullName)
+        {
+            try
+            {
+                foreach (var type in _clrContext.GetTypeDefinitions())
+                {
+                    if (type.FullName == fullName)
+                        return type;
+                }
+            }
+            catch { }
+
+            return null;
         }
     }
 

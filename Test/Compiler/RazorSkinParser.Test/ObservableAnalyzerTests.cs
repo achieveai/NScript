@@ -97,35 +97,61 @@ public class TestVM
             ObservableAnalyzer.IsObservableCollection(prop.Type).Should().BeFalse();
         }
 
+        // --- LIMIT-001: Getter-only property tests ---
+
         [TestMethod]
-        public void GetterOnlyPropertyOnObservableObject_ReturnsTrue()
+        public void GetterOnlyPropertyOnObservableType_IsObservable()
         {
             var source = @"
 using Sunlight.Framework.Observables;
-public class AddressVM : ObservableObject
+public class TestVM : ObservableObject
 {
-    public string FullAddress => ""test"";
+    private string first;
+    private string last;
+    public string FirstName { get { return first; } set { first = value; FirePropertyChanged(""FirstName""); } }
+    public string LastName { get { return last; } set { last = value; FirePropertyChanged(""LastName""); } }
+    public string FullName { get { return first + "" "" + last; } }
 }";
             var compilation = CreateCompilationWithTypes(source);
-            var type = compilation.GetTypeByMetadataName("AddressVM");
-            var prop = type.GetMembers("FullAddress")[0] as IPropertySymbol;
+            var type = compilation.GetTypeByMetadataName("TestVM");
+            var prop = type.GetMembers("FullName")[0] as IPropertySymbol;
 
-            ObservableAnalyzer.IsObservableProperty(prop).Should().BeTrue();
+            ObservableAnalyzer.IsObservableProperty(prop).Should().BeTrue(
+                "getter-only computed properties on observable types should be observable (LIMIT-001 fix)");
         }
 
         [TestMethod]
-        public void GetterOnlyPropertyOnPlainClass_ReturnsFalse()
+        public void ExpressionBodiedGetterOnlyProperty_IsObservable()
         {
             var source = @"
-public class PlainHelper
+using Sunlight.Framework.Observables;
+public class TestVM : ObservableObject
 {
-    public string Label => ""static"";
+    public string Name { get; set; }
+    public int NameLength => Name?.Length ?? 0;
 }";
             var compilation = CreateCompilationWithTypes(source);
-            var type = compilation.GetTypeByMetadataName("PlainHelper");
-            var prop = type.GetMembers("Label")[0] as IPropertySymbol;
+            var type = compilation.GetTypeByMetadataName("TestVM");
+            var prop = type.GetMembers("NameLength")[0] as IPropertySymbol;
 
-            ObservableAnalyzer.IsObservableProperty(prop).Should().BeFalse();
+            ObservableAnalyzer.IsObservableProperty(prop).Should().BeTrue(
+                "expression-bodied getter-only properties on observable types should be observable");
+        }
+
+        [TestMethod]
+        public void GetterOnlyPropertyOnPlainClass_IsNotObservable()
+        {
+            var source = @"
+public class PlainClass
+{
+    public string Name => ""Hello"";
+}";
+            var compilation = CreateCompilationWithTypes(source);
+            var type = compilation.GetTypeByMetadataName("PlainClass");
+            var prop = type.GetMembers("Name")[0] as IPropertySymbol;
+
+            ObservableAnalyzer.IsObservableProperty(prop).Should().BeFalse(
+                "getter-only properties on non-observable types should NOT be observable");
         }
     }
 }

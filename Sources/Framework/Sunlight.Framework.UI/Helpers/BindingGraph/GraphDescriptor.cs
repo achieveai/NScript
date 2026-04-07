@@ -144,28 +144,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
     }
 
     /// <summary>
-    /// Descriptor for a sub-control inside a collection item template.
-    /// At runtime, GraphEngine creates a control instance per collection item.
-    /// </summary>
-    public class SubControlInfo
-    {
-        /// <summary>
-        /// Index of the marker element in the item template's DOM.
-        /// </summary>
-        public int MarkerIdx;
-
-        /// <summary>
-        /// Factory function that creates the control instance: (Element) => UISkinableElement.
-        /// </summary>
-        public Func<object, object> TypeFactory;
-
-        /// <summary>
-        /// Factory function that returns the Skin: () => Skin.
-        /// </summary>
-        public Func<object> SkinFactory;
-    }
-
-    /// <summary>
     /// Target info for EventBinding nodes.
     /// </summary>
     public class EventTargetInfo
@@ -175,12 +153,18 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
     }
 
     /// <summary>
-    /// LIMIT-006: Describes a sub-control in the template.
-    /// Contains the element index, type, and property bindings that wire
-    /// parent observable values to the sub-control's properties.
+    /// Describes a sub-control in the template.
+    /// Used for both collection item sub-controls (MarkerIdx/TypeFactory/SkinFactory)
+    /// and LIMIT-006 top-level property bindings (ElemIdx/Bindings).
     /// </summary>
     public class SubControlInfo
     {
+        // Collection item sub-control fields (existing)
+        public int MarkerIdx;
+        public Func<object, object> TypeFactory;
+        public Func<object> SkinFactory;
+
+        // LIMIT-006: Top-level sub-control property binding fields
         public int ElemIdx;
         public NativeArray<SubControlPropertyInfo> Bindings;
     }

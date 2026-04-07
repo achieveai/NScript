@@ -98,6 +98,8 @@ namespace NScript.RazorSkin.TemplateIR
         public string TypeName { get; set; }               // "ListView", "SearchBox"
         public string ResolvedTypeName { get; set; }       // Fully qualified type name
         public string ElementId { get; set; }              // Part ID from id= attribute
+        public string TagName { get; set; } = "div";       // Custom HTML tag from [TagName] attribute
+        public List<KeyValuePair<string, string>> DomAttributes { get; set; } // From [DomAttribute] attributes
         public List<SubControlPropertyBinding> PropertyBindings { get; set; } = new List<SubControlPropertyBinding>();
         public List<EventNode> EventBindings { get; set; } = new List<EventNode>();
     }
