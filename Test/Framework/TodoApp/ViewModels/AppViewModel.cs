@@ -52,6 +52,7 @@ namespace TodoApp.ViewModels
             this.rightPaneClass = AppShellCss.PaneRight + " " + AppShellCss.Collapsed;
             this.detailTitle = "";
             this.allTodos = new ObservableCollection<TodoItemViewModel>();
+            this.currentTodos = new ObservableCollection<TodoItemViewModel>();
             this.completedCurrentTodos = new ObservableCollection<TodoItemViewModel>();
             this.detailSubTasks = new ObservableCollection<SubTaskViewModel>();
             this.isCompletedSectionVisible = true;
