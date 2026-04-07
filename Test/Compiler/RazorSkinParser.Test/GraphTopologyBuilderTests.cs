@@ -273,10 +273,11 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
-        public void SubControlNode_WithBindings_OnlyProcessesExpressionBindings()
+        public void SubControlNode_WithBindings_ProcessesBothBindingsAndSubControls()
         {
-            // SubControlNode with property bindings — the sub-control itself is skipped,
-            // but sibling expression bindings are still processed.
+            // LIMIT-006: SubControlNode property bindings are now processed.
+            // The sub-control's "SearchQuery" creates a Property node,
+            // and the sibling expression binding "Title" also creates nodes.
             var template = MakeTemplate(
                 new SubControlNode
                 {
@@ -301,10 +302,78 @@ namespace RazorSkinParser.Test
 
             var topology = GraphTopologyBuilder.Build(template);
 
-            // Only the expression binding is processed, not the sub-control
-            topology.NodeCount.Should().Be(3);
+            // Sub-control binding creates a Property node + the expression binding creates Property + DomTarget
+            // Node 0 = Source, Node 1 = Property("Model.SearchQuery"), Node 2 = Property("Title"), Node 3 = DomTarget
+            topology.NodeCount.Should().Be(4);
             topology.Subscriptions.Should().HaveCount(1);
             topology.Subscriptions[0].PropertyName.Should().Be("Title");
+
+            // LIMIT-006: Sub-control is tracked
+            topology.SubControls.Should().HaveCount(1);
+            topology.SubControls[0].ControlTypeName.Should().Be("SearchBox");
+            topology.SubControls[0].PropertyBindings.Should().HaveCount(1);
+            topology.SubControls[0].PropertyBindings[0].TargetPropertyName.Should().Be("Query");
+        }
+
+        [TestMethod]
+        public void SubControlNode_WithReactiveDep_CreatesSubscription()
+        {
+            // Sub-control with a reactive dependency — should create subscription
+            var template = MakeTemplate(
+                new SubControlNode
+                {
+                    TypeName = "SearchBox",
+                    ResolvedTypeName = "App.SearchBox",
+                    ElementId = "search",
+                    PropertyBindings = new List<SubControlPropertyBinding>
+                    {
+                        new SubControlPropertyBinding
+                        {
+                            PropertyName = "Query",
+                            Classification = new BindingClassification
+                            {
+                                CSharpExpression = "Model.SearchQuery",
+                                Mode = BindingMode.OneWay,
+                                SourceKind = BindingSourceKind.DataContext,
+                                Dependencies = new List<ObservableDependency>
+                                {
+                                    new ObservableDependency(BindingSourceKind.DataContext, "SearchQuery", "SearchQuery")
+                                }
+                            }
+                        }
+                    }
+                });
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Should have subscription for "SearchQuery"
+            topology.Subscriptions.Should().HaveCount(1);
+            topology.Subscriptions[0].PropertyName.Should().Be("SearchQuery");
+
+            // Sub-control tracked with property binding
+            topology.SubControls.Should().HaveCount(1);
+            topology.SubControls[0].PropertyBindings[0].NodeIdx.Should().BeGreaterThan(0);
+        }
+
+        [TestMethod]
+        public void SubControlNode_NoBindings_TrackedButNoNodes()
+        {
+            // Sub-control with no property bindings — still tracked but no extra nodes
+            var template = MakeTemplate(
+                new SubControlNode
+                {
+                    TypeName = "StatusBar",
+                    ResolvedTypeName = "App.StatusBar",
+                    ElementId = "status"
+                });
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Only Source node
+            topology.NodeCount.Should().Be(1);
+            topology.SubControls.Should().HaveCount(1);
+            topology.SubControls[0].ControlTypeName.Should().Be("StatusBar");
+            topology.SubControls[0].PropertyBindings.Should().BeEmpty();
         }
 
         // ------------------------------------------------------------------

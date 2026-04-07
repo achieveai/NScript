@@ -73,6 +73,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Pre-computed at compile time for O(1) parent lookup at runtime.
         /// </summary>
         public NativeArray<NativeArray<int>> ParentIndices;
+
+        /// <summary>
+        /// LIMIT-006: Sub-control entries. Each entry describes a child control
+        /// embedded in the template, with property bindings that wire graph nodes
+        /// to the sub-control's properties.
+        /// </summary>
+        public NativeArray<SubControlInfo> SubControls;
     }
 
     /// <summary>
@@ -165,5 +172,27 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
     {
         public int ElemIdx;
         public string EventName;
+    }
+
+    /// <summary>
+    /// LIMIT-006: Describes a sub-control in the template.
+    /// Contains the element index, type, and property bindings that wire
+    /// parent observable values to the sub-control's properties.
+    /// </summary>
+    public class SubControlInfo
+    {
+        public int ElemIdx;
+        public NativeArray<SubControlPropertyInfo> Bindings;
+    }
+
+    /// <summary>
+    /// LIMIT-006: Describes a single property binding on a sub-control.
+    /// NodeIdx references the graph node whose value should be assigned
+    /// to the sub-control via the Setter function.
+    /// </summary>
+    public class SubControlPropertyInfo
+    {
+        public int NodeIdx;
+        public Action<object, object> Setter;
     }
 }

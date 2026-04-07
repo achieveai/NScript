@@ -123,6 +123,10 @@ namespace NScript.RazorSkin
                         RefineNodes(loop.ItemTemplate, modelType, controlType, compilation, semanticModel, modelPrefix);
                     }
                 }
+                else if (node is SubControlNode sub)
+                {
+                    RefineSubControlBindings(sub, modelType, controlType, modelPrefix);
+                }
 
                 // Recurse into generic children
                 RefineNodes(node.Children, modelType, controlType, compilation, semanticModel, modelPrefix);
@@ -282,6 +286,63 @@ namespace NScript.RazorSkin
             }
         }
 
+        /// <summary>
+        /// LIMIT-006: Refines property bindings on sub-controls.
+        /// Sub-control property bindings like &lt;SearchBox Query="@Model.SearchQuery" /&gt;
+        /// need to be analyzed for reactivity just like regular expression bindings.
+        /// </summary>
+        private static void RefineSubControlBindings(
+            SubControlNode sub,
+            INamedTypeSymbol modelType,
+            INamedTypeSymbol controlType,
+            string modelPrefix)
+        {
+            foreach (var propBinding in sub.PropertyBindings)
+            {
+                var classification = propBinding.Classification;
+                if (classification.Mode != BindingMode.OneTime)
+                    continue; // Already promoted
+
+                if (modelType != null)
+                {
+                    var chains = ExtractPropertyReferences(
+                        classification.CSharpExpression, modelPrefix);
+                    foreach (var chain in chains)
+                    {
+                        var rootPropName = chain.Contains(".")
+                            ? chain.Substring(0, chain.IndexOf('.'))
+                            : chain;
+                        var prop = FindProperty(modelType, rootPropName);
+                        if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                        {
+                            classification.Mode = BindingMode.OneWay;
+                            classification.Dependencies.Add(new ObservableDependency(
+                                BindingSourceKind.DataContext, rootPropName, chain));
+                        }
+                    }
+                }
+
+                if (controlType != null)
+                {
+                    var controlChains = ExtractPropertyReferences(
+                        classification.CSharpExpression, "Control.");
+                    foreach (var chain in controlChains)
+                    {
+                        var rootPropName = chain.Contains(".")
+                            ? chain.Substring(0, chain.IndexOf('.'))
+                            : chain;
+                        var prop = FindProperty(controlType, rootPropName);
+                        if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                        {
+                            classification.Mode = BindingMode.OneWay;
+                            classification.Dependencies.Add(new ObservableDependency(
+                                BindingSourceKind.TemplateParent, rootPropName, chain));
+                        }
+                    }
+                }
+            }
+        }
+
         private static int CountPromotions(List<IRNode> nodes)
         {
             int count = 0;
@@ -298,6 +359,14 @@ namespace NScript.RazorSkin
                 else if (node is LoopNode loop)
                 {
                     count += CountPromotions(loop.ItemTemplate);
+                }
+                else if (node is SubControlNode sub)
+                {
+                    foreach (var propBinding in sub.PropertyBindings)
+                    {
+                        if (propBinding.Classification.Mode == BindingMode.OneWay)
+                            count++;
+                    }
                 }
             }
             return count;

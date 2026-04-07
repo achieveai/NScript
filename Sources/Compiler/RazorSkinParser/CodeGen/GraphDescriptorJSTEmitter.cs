@@ -94,6 +94,13 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _eventElemIdxField;
         private readonly IIdentifier _eventNameField;
 
+        // LIMIT-006: Resolved field identifiers for SubControlInfo/SubControlPropertyInfo
+        private readonly IIdentifier _subControlsField;
+        private readonly IIdentifier _subControlElemIdxField;
+        private readonly IIdentifier _subControlBindingsField;
+        private readonly IIdentifier _subControlPropNodeIdxField;
+        private readonly IIdentifier _subControlPropSetterField;
+
         // Factory identifiers for sub-types (used to emit proper typed instances)
         private readonly IIdentifier _domTargetInfoFactory;
         private readonly IIdentifier _subscriptionEntryFactory;
@@ -101,6 +108,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _collectionTargetInfoFactory;
         private readonly IIdentifier _eventTargetInfoFactory;
         private readonly IIdentifier _subControlInfoFactory;
+        private readonly IIdentifier _subControlPropertyInfoFactory;
 
         public GraphDescriptorJSTEmitter(
             GraphTopology topology,
@@ -144,11 +152,17 @@ namespace NScript.RazorSkin.CodeGen
                 out _subControlSkinFactoryField,
                 out _eventElemIdxField, out _eventNameField);
 
+            // LIMIT-006: Resolve sub-control field identifiers
+            ResolveSubControlFieldIdentifiers(
+                out _subControlsField, out _subControlElemIdxField, out _subControlBindingsField,
+                out _subControlPropNodeIdxField, out _subControlPropSetterField);
+
             // Resolve factory identifiers for sub-types so we can emit proper typed instances
             ResolveFactoryIdentifiers(
                 out _domTargetInfoFactory, out _subscriptionEntryFactory,
                 out _gateTargetInfoFactory, out _collectionTargetInfoFactory,
-                out _eventTargetInfoFactory, out _subControlInfoFactory);
+                out _eventTargetInfoFactory,
+                out _subControlInfoFactory, out _subControlPropertyInfoFactory);
         }
 
         /// <summary>
@@ -229,6 +243,25 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
+        /// LIMIT-006: Resolves field identifiers for SubControlInfo and SubControlPropertyInfo.
+        /// </summary>
+        private void ResolveSubControlFieldIdentifiers(
+            out IIdentifier subControlsField, out IIdentifier scElemIdx, out IIdentifier scBindings,
+            out IIdentifier scpNodeIdx, out IIdentifier scpSetter)
+        {
+            var graphDescType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GraphDescriptor");
+            subControlsField = ResolveFieldId(graphDescType, "SubControls");
+
+            var subControlType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
+            scElemIdx = ResolveFieldId(subControlType, "ElemIdx");
+            scBindings = ResolveFieldId(subControlType, "Bindings");
+
+            var subControlPropType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlPropertyInfo");
+            scpNodeIdx = ResolveFieldId(subControlPropType, "NodeIdx");
+            scpSetter = ResolveFieldId(subControlPropType, "Setter");
+        }
+
+        /// <summary>
         /// Resolves factory (constructor) identifiers for sub-types so that emitted objects
         /// are proper NScript typed instances instead of plain object literals.
         /// The runtime casts these with Type__CastType_d which requires type metadata.
@@ -236,7 +269,8 @@ namespace NScript.RazorSkin.CodeGen
         private void ResolveFactoryIdentifiers(
             out IIdentifier domTargetInfoFactory, out IIdentifier subscriptionEntryFactory,
             out IIdentifier gateTargetInfoFactory, out IIdentifier collectionTargetInfoFactory,
-            out IIdentifier eventTargetInfoFactory, out IIdentifier subControlInfoFactory)
+            out IIdentifier eventTargetInfoFactory,
+            out IIdentifier subControlInfoFactory, out IIdentifier subControlPropertyInfoFactory)
         {
             domTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.DomTargetInfo");
             subscriptionEntryFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.SubscriptionEntry");
@@ -244,6 +278,7 @@ namespace NScript.RazorSkin.CodeGen
             collectionTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.CollectionTargetInfo");
             eventTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.EventTargetInfo");
             subControlInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
+            subControlPropertyInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlPropertyInfo");
         }
 
         /// <summary>
@@ -315,6 +350,10 @@ namespace NScript.RazorSkin.CodeGen
 
             AddField(obj, _parentIndicesField, "parentIndices", EmitParentIndices());
             AddField(obj, _rootSourceSlotField, "rootSourceSlot", new NumberLiteralExpression(_scope, 0));
+
+            // LIMIT-006: Emit sub-control entries if any exist
+            if (_topology.SubControls.Count > 0)
+                AddField(obj, _subControlsField, "subControls", EmitSubControls());
 
             return obj;
         }
@@ -1853,6 +1892,110 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// LIMIT-006: Emits the subControls array for the graph descriptor.
+        /// Each entry is a SubControlInfo with ElemIdx and Bindings array.
+        /// </summary>
+        private Expression EmitSubControls()
+        {
+            var items = new List<Expression>();
+            foreach (var sc in _topology.SubControls)
+            {
+                // Build bindings array
+                var bindingItems = new List<Expression>();
+                foreach (var propBinding in sc.PropertyBindings)
+                {
+                    var setter = BuildSubControlPropertySetter(
+                        sc.ResolvedTypeName ?? sc.ControlTypeName,
+                        propBinding.TargetPropertyName);
+
+                    if (_subControlPropertyInfoFactory != null)
+                    {
+                        var fields = new List<(IIdentifier, string, Expression)>
+                        {
+                            (_subControlPropNodeIdxField, "NodeIdx", new NumberLiteralExpression(_scope, propBinding.NodeIdx)),
+                            (_subControlPropSetterField, "Setter", setter ?? new NullLiteralExpression(_scope))
+                        };
+                        bindingItems.Add(EmitTypedObject(_subControlPropertyInfoFactory, fields));
+                    }
+                    else
+                    {
+                        var propObj = new InlineObjectInitializer(null, _scope);
+                        AddField(propObj, _subControlPropNodeIdxField, "NodeIdx",
+                            new NumberLiteralExpression(_scope, propBinding.NodeIdx));
+                        AddField(propObj, _subControlPropSetterField, "Setter",
+                            setter ?? new NullLiteralExpression(_scope));
+                        bindingItems.Add(propObj);
+                    }
+                }
+
+                var bindingsExpr = new InlineNewArrayInitialization(null, _scope, bindingItems);
+
+                if (_subControlInfoFactory != null)
+                {
+                    var fields = new List<(IIdentifier, string, Expression)>
+                    {
+                        (_subControlElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, sc.ElemIdx)),
+                        (_subControlBindingsField, "Bindings", bindingsExpr)
+                    };
+                    items.Add(EmitTypedObject(_subControlInfoFactory, fields));
+                }
+                else
+                {
+                    var scObj = new InlineObjectInitializer(null, _scope);
+                    AddField(scObj, _subControlElemIdxField, "ElemIdx",
+                        new NumberLiteralExpression(_scope, sc.ElemIdx));
+                    AddField(scObj, _subControlBindingsField, "Bindings", bindingsExpr);
+                    items.Add(scObj);
+                }
+            }
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// LIMIT-006: Builds a setter function for a sub-control property.
+        /// Emits: function(ctrl, val) { ctrl.set_PropertyName(val); }
+        /// </summary>
+        private Expression BuildSubControlPropertySetter(string controlTypeName, string propertyName)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(controlTypeName))
+                return null;
+
+            var typeDef = FindTypeDefinition(controlTypeName);
+            if (typeDef == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve sub-control type {TypeName}", controlTypeName);
+                return null;
+            }
+
+            var property = FindProperty(typeDef, propertyName);
+            if (property?.SetMethod == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot find setter for {PropName} on {TypeName}",
+                    propertyName, controlTypeName);
+                return null;
+            }
+
+            // Build: function(ctrl, val) { ctrl.set_PropertyName(val); }
+            var setterScope = new IdentifierScope(_scope, new[] { "ctrl", "val" }, false);
+            var ctrlParam = setterScope.ParameterIdentifiers[0];
+            var valParam = setterScope.ParameterIdentifiers[1];
+
+            var setterMethodId = _scopeManager.Resolve(property.SetMethod);
+            var callExpr = new MethodCallExpression(
+                null, setterScope,
+                new IndexExpression(
+                    null, setterScope,
+                    new IdentifierExpression(ctrlParam, setterScope),
+                    new IdentifierExpression(setterMethodId, setterScope)),
+                new Expression[] { new IdentifierExpression(valParam, setterScope) });
+
+            var fn = new FunctionExpression(null, _scope, setterScope, setterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ExpressionStatement(null, setterScope, callExpr));
+            return fn;
         }
     }
 

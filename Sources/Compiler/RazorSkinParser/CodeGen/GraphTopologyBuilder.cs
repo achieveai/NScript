@@ -79,6 +79,26 @@ namespace NScript.RazorSkin.CodeGen
         public int MarkerIdx { get; set; }
     }
 
+    /// <summary>
+    /// LIMIT-006: Tracks a sub-control's property bindings in the graph topology.
+    /// Each reactive property binding on a sub-control creates a graph node that,
+    /// when evaluated, assigns the new value to the sub-control's property.
+    /// </summary>
+    public class SubControlTopology
+    {
+        public int ElemIdx { get; set; }
+        public string ControlTypeName { get; set; }
+        public string ResolvedTypeName { get; set; }
+        public List<SubControlPropertyTopology> PropertyBindings { get; set; } = new List<SubControlPropertyTopology>();
+    }
+
+    public class SubControlPropertyTopology
+    {
+        public int NodeIdx { get; set; }
+        public string TargetPropertyName { get; set; }
+        public string GetterExpression { get; set; }
+    }
+
     public class GraphTopology
     {
         public int NodeCount { get; set; }
@@ -92,6 +112,7 @@ namespace NScript.RazorSkin.CodeGen
         public List<EventTopology> Events { get; set; } = new List<EventTopology>();
         public List<GateTopology> Gates { get; set; } = new List<GateTopology>();
         public List<CollectionTopology> Collections { get; set; } = new List<CollectionTopology>();
+        public List<SubControlTopology> SubControls { get; set; } = new List<SubControlTopology>();
         public string ModelTypeName { get; set; }
         public int RootSourceSlot { get; set; }
         public int TotalElemSlots { get; set; }
@@ -167,7 +188,7 @@ namespace NScript.RazorSkin.CodeGen
                         // Static HTML — no graph nodes needed
                         break;
                     case SubControlNode sub:
-                        // Sub-controls could be expanded later
+                        ProcessSubControl(sub, ctx, gateIndex);
                         break;
                     default:
                         // Walk generic children
@@ -470,29 +491,94 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Walks item template IR to find SubControlNode instances and create
-        /// SubControlTopology entries with sequential marker indices.
+        /// LIMIT-006: Process sub-control property bindings.
+        /// Each reactive property binding gets a Property node in the graph and a subscription.
+        /// OneTime bindings are tracked but don't create subscriptions.
         /// </summary>
-        private static List<SubControlTopology> CollectSubControls(List<IRNode> itemTemplate)
+        private static void ProcessSubControl(SubControlNode sub, BuildContext ctx, int gateIndex)
         {
-            var result = new List<SubControlTopology>();
-            if (itemTemplate == null) return result;
+            int elemIdx = ctx.NextElemIdx();
 
-            int markerIdx = 0;
-            foreach (var node in itemTemplate)
+            var subTopo = new SubControlTopology
             {
-                if (node is SubControlNode sub)
+                ElemIdx = elemIdx,
+                ControlTypeName = sub.TypeName,
+                ResolvedTypeName = sub.ResolvedTypeName
+            };
+
+            foreach (var propBinding in sub.PropertyBindings)
+            {
+                var deps = propBinding.Classification.Dependencies;
+                var isOneWay = propBinding.Classification.Mode == BindingMode.OneWay;
+
+                if (deps.Count == 0)
                 {
-                    result.Add(new SubControlTopology
+                    // No dependencies — create a property node from the expression
+                    int propIdx = ctx.GetOrCreatePropertyNode(
+                        propBinding.Classification.CSharpExpression, 0);
+                    if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+
+                    subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {
-                        TypeName = sub.TypeName,
-                        ResolvedTypeName = sub.ResolvedTypeName,
-                        MarkerIdx = markerIdx++
+                        NodeIdx = propIdx,
+                        TargetPropertyName = propBinding.PropertyName,
+                        GetterExpression = propBinding.Classification.CSharpExpression
+                    });
+                }
+                else if (deps.Count == 1)
+                {
+                    var dep = deps[0];
+                    int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                    if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+
+                    if (isOneWay)
+                    {
+                        ctx.AddSubscription(dep.PropertyName, propIdx,
+                            dep.SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
+                    }
+
+                    subTopo.PropertyBindings.Add(new SubControlPropertyTopology
+                    {
+                        NodeIdx = propIdx,
+                        TargetPropertyName = propBinding.PropertyName,
+                        GetterExpression = propBinding.Classification.CSharpExpression
+                    });
+                }
+                else
+                {
+                    // Multiple dependencies — create Computed node
+                    var propIndices = new List<int>();
+                    foreach (var dep in deps)
+                    {
+                        int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                        if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+                        propIndices.Add(propIdx);
+
+                        if (isOneWay)
+                        {
+                            ctx.AddSubscription(dep.PropertyName, propIdx,
+                                dep.SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
+                        }
+                    }
+
+                    int computedIdx = ctx.AddNode(GraphNodeTypeConstants.Computed,
+                        propBinding.Classification.CSharpExpression, null);
+                    if (gateIndex != -1) ctx.SetGateIndex(computedIdx, gateIndex);
+
+                    ctx.AddEdge(0, computedIdx);
+                    foreach (int propIdx in propIndices)
+                        ctx.AddEdge(propIdx, computedIdx);
+
+                    subTopo.PropertyBindings.Add(new SubControlPropertyTopology
+                    {
+                        NodeIdx = computedIdx,
+                        TargetPropertyName = propBinding.PropertyName,
+                        GetterExpression = propBinding.Classification.CSharpExpression
                     });
                 }
             }
 
-            return result;
+            ctx.Topology.SubControls.Add(subTopo);
         }
 
         /// <summary>
