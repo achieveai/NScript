@@ -150,27 +150,28 @@ namespace Sunlight.Framework
         /// the same convention as React DevTools / Angular ng.probe.
         /// </summary>
         [Script(@"
-            window.__callContext = {
-                getCurrent: function() {
-                    var c = @{[Sunlight.Framework]Sunlight.Framework.CallContext::current};
-                    if (!c) return null;
-                    return {
-                        actionId: c.@{ActionId},
-                        traceId: c.@{TraceId},
-                        spanId: c.@{SpanId},
-                        parentSpanId: c.@{ParentSpanId},
-                        depth: c.@{Depth},
-                        traceparent: c.@{ToTraceparent}()
-                    };
-                },
-                testXhrHook: function() {
-                    var headers = {};
-                    var mockReq = { setRequestHeader: function(k, v) { headers[k] = v; } };
-                    var hook = @{[System.Web]System.Web.XMLHttpRequest::OnBeforeSend};
-                    if (hook) { hook(mockReq); }
-                    return headers;
-                }
+            var ctx = {};
+            ctx.getCurrent = function() {
+                var c = @{[Sunlight.Framework]Sunlight.Framework.CallContext::current};
+                if (!c) return null;
+                var r = {};
+                r.actionId = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::ActionId};
+                r.traceId = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::TraceId};
+                r.spanId = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::SpanId};
+                r.parentSpanId = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::ParentSpanId};
+                r.depth = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::Depth};
+                r.traceparent = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::ToTraceparent()}();
+                return r;
             };
+            ctx.testXhrHook = function() {
+                var headers = {};
+                var mockReq = {};
+                mockReq.setRequestHeader = function(k, v) { headers[k] = v; };
+                var hook = @{[System.Web]System.Web.XMLHttpRequest::OnBeforeSend};
+                if (hook) { hook(mockReq); }
+                return headers;
+            };
+            if (typeof window !== 'undefined') { window.__callContext = ctx; }
         ")]
         private static extern void ExposeDebugAccessors();
 
