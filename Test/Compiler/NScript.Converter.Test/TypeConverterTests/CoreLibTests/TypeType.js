@@ -34,6 +34,8 @@ function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   if (!Type__typeMapping)
     Type__typeMapping = { };
   Type__typeMapping[this_.fullName] = this_;
+  if (this_.prototype)
+    this_.prototype.constructor = this_;
 }
 function Type__RegisterStructType(this_, typeName, interfaces) {
   this_.isStruct = true;
@@ -107,7 +109,7 @@ function Type__InitializeBaseInterfaces(type) {
     baseType = type.baseType;
     if (baseType != null && baseType != Object) {
       if (baseType)
-        Type__InitializeBaseInterfaces(type);
+        Type__InitializeBaseInterfaces(baseType);
       baseInterfaces = baseType.baseInterfaces;
       if (baseInterfaces) {
         keys = { }.constructor.keys(baseInterfaces);

@@ -8,6 +8,8 @@ function Type__RegisterReferenceType(this_, typeName, parentType, interfaces) {
   if (!Type__typeMapping)
     Type__typeMapping = { };
   Type__typeMapping[this_.fullName] = this_;
+  if (this_.prototype)
+    this_.prototype.constructor = this_;
 }
 ptyp_ = Function.prototype;
 ptyp_.isClass = false;

@@ -22,6 +22,19 @@ namespace System
         private object target;
         private bool disposed = false;
 
+        /// <summary>
+        /// Hook called before dispatching a DOM event. Set by the framework
+        /// (e.g., CallContext.StartRoot) to create a new action context.
+        /// Returns the previous context so OnEventDispatchEnd can restore it.
+        /// </summary>
+        public static Func<object> OnEventDispatch;
+
+        /// <summary>
+        /// Hook called after a DOM event handler returns. Restores the
+        /// previous context to avoid stale context leaking into background work.
+        /// </summary>
+        public static Action<object> OnEventDispatchEnd;
+
         private EventBinder(object element)
         {
             this.target = element;
@@ -280,7 +293,16 @@ namespace System
         private void EventHandlerCapture(object evt)
         {
             if (this.disposed) return;
-            ((Action<object,object>)this.capturePhaseEvents[GetEventType(evt)])(this.target, evt);
+            object prev = null;
+            if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
+            try
+            {
+                ((Action<object,object>)this.capturePhaseEvents[GetEventType(evt)])(this.target, evt);
+            }
+            finally
+            {
+                if (EventBinder.OnEventDispatchEnd != null) EventBinder.OnEventDispatchEnd(prev);
+            }
         }
 
         private void EventHandlerBubble(object evt)
@@ -288,7 +310,18 @@ namespace System
             if (this.disposed) return;
             Delegate del;
             if (this.bubblePhaseEvents.TryGetValue(GetEventType(evt), out del))
-            { ((Action<object, object>)del)(this.target, evt); }
+            {
+                object prev = null;
+                if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
+                try
+                {
+                    ((Action<object, object>)del)(this.target, evt);
+                }
+                finally
+                {
+                    if (EventBinder.OnEventDispatchEnd != null) EventBinder.OnEventDispatchEnd(prev);
+                }
+            }
         }
     }
 }

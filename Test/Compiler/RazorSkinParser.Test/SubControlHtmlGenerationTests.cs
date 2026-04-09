@@ -45,7 +45,8 @@ namespace RazorSkinParser.Test
             var paths = new List<List<int>>();
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
-            html.Should().Contain("<todo>");
+            html.Should().Contain("<todo");
+            html.Should().Contain("data-ns-subctl");
             html.Should().Contain("</todo>");
             html.Should().NotContain("<span>");
         }
@@ -93,7 +94,8 @@ namespace RazorSkinParser.Test
             var paths = new List<List<int>>();
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
-            html.Should().Contain("<div>");
+            html.Should().Contain("<div");
+            html.Should().Contain("data-ns-subctl");
             html.Should().Contain("</div>");
         }
 
@@ -111,7 +113,8 @@ namespace RazorSkinParser.Test
             var paths = new List<List<int>>();
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
-            html.Should().Contain("<div>");
+            html.Should().Contain("<div");
+            html.Should().Contain("data-ns-subctl");
             html.Should().Contain("</div>");
         }
 
@@ -129,8 +132,10 @@ namespace RazorSkinParser.Test
             var paths = new List<List<int>>();
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
-            html.Should().Contain("<section>");
-            html.Should().Contain("<p>Hello</p>");
+            // Sub-control is a marker element — its children are rendered by the control itself,
+            // not inlined into the parent template HTML
+            html.Should().Contain("<section");
+            html.Should().Contain("data-ns-subctl");
             html.Should().Contain("</section>");
         }
 
@@ -147,7 +152,8 @@ namespace RazorSkinParser.Test
             var paths = new List<List<int>>();
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
-            html.Should().Contain("<ul>");
+            html.Should().Contain("<ul");
+            html.Should().Contain("data-ns-subctl");
             html.Should().Contain("</ul>");
         }
 
