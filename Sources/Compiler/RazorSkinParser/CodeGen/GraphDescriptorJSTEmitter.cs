@@ -1308,21 +1308,32 @@ namespace NScript.RazorSkin.CodeGen
                 // Resolve method — for Model methods in item graphs, look up on parent type
                 var resolveTypeName = (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
                     ? _parentModelTypeName : null;
-                var methodId = TryResolveMethodIdentifier(expr, resolveTypeName);
+                var methodId = TryResolveMethodIdentifier(expr, out bool isDevirtualized, resolveTypeName);
                 if (methodId != null)
                 {
                     var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
                     var dcParam = outerScope.ParameterIdentifiers[0];
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    // For item graphs: dc[2].method (item) or dc[0].method (Model)
                     int tupleIdx = isModelMethodRef ? 0 : 2;
                     var dcRef = CreateTupleAccessExpression(dcParam, innerScope, tupleIdx);
-                    var methodAccess = new IndexExpression(null, innerScope, dcRef,
-                        new IdentifierExpression(methodId, innerScope));
                     var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
                     var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
-                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess, eParam, evParam);
+
+                    MethodCallExpression methodCall;
+                    if (isDevirtualized)
+                    {
+                        // Devirtualized: method(instance, e, ev)
+                        var methodRef = new IdentifierExpression(methodId, innerScope);
+                        methodCall = new MethodCallExpression(null, innerScope, methodRef, dcRef, eParam, evParam);
+                    }
+                    else
+                    {
+                        // Virtual/instance: instance.method(e, ev)
+                        var methodAccess = new IndexExpression(null, innerScope, dcRef,
+                            new IdentifierExpression(methodId, innerScope));
+                        methodCall = new MethodCallExpression(null, innerScope, methodAccess, eParam, evParam);
+                    }
 
                     var innerFn = new FunctionExpression(null, outerScope, innerScope,
                         innerScope.ParameterIdentifiers, null);
@@ -1354,7 +1365,7 @@ namespace NScript.RazorSkin.CodeGen
                 // For lambdas in item graphs, resolve on parent type (lambdas reference Model methods)
                 var resolveTypeName = (IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
                     ? _parentModelTypeName : null;
-                var lambdaMethodId = TryResolveMethodIdentifier(lambdaMethodName, resolveTypeName);
+                var lambdaMethodId = TryResolveMethodIdentifier(lambdaMethodName, out bool lambdaIsDevirt, resolveTypeName);
                 if (lambdaMethodId != null)
                 {
                     var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
@@ -1363,9 +1374,19 @@ namespace NScript.RazorSkin.CodeGen
 
                     // Lambdas reference Model methods → tuple index 0 for item graphs
                     var dcRef = CreateTupleAccessExpression(dcParam, innerScope, 0);
-                    var methodAccess = new IndexExpression(null, innerScope, dcRef,
-                        new IdentifierExpression(lambdaMethodId, innerScope));
-                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+
+                    MethodCallExpression methodCall;
+                    if (lambdaIsDevirt)
+                    {
+                        var methodRef = new IdentifierExpression(lambdaMethodId, innerScope);
+                        methodCall = new MethodCallExpression(null, innerScope, methodRef, dcRef);
+                    }
+                    else
+                    {
+                        var methodAccess = new IndexExpression(null, innerScope, dcRef,
+                            new IdentifierExpression(lambdaMethodId, innerScope));
+                        methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+                    }
 
                     var innerFn = new FunctionExpression(null, outerScope, innerScope,
                         innerScope.ParameterIdentifiers, null);
@@ -1418,6 +1439,12 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private IIdentifier TryResolveMethodIdentifier(string handlerExpression, string typeNameOverride = null)
         {
+            return TryResolveMethodIdentifier(handlerExpression, out _, typeNameOverride);
+        }
+
+        private IIdentifier TryResolveMethodIdentifier(string handlerExpression, out bool isDevirtualized, string typeNameOverride = null)
+        {
+            isDevirtualized = false;
             var typeName = typeNameOverride ?? _modelTypeName;
             if (_clrContext == null || string.IsNullOrEmpty(typeName))
                 return null;
@@ -1438,11 +1465,42 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (method.Name == methodName && method.IsPublic && !method.IsConstructor)
                 {
+                    isDevirtualized = IsMethodDevirtualized(method);
+                    if (isDevirtualized)
+                        return _scopeManager.ResolveStatic(method);
                     return _scopeManager.Resolve(method);
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether a method is devirtualized to a free static function
+        /// (called as method(instance, args)) rather than an instance method on the
+        /// prototype (called as instance.method(args)). Mirrors the logic in
+        /// MethodCallExpressionConverter.IsMethodInstanceCall.
+        /// </summary>
+        private bool IsMethodDevirtualized(MethodDefinition method)
+        {
+            if (!method.HasThis)
+                return false; // Already static
+
+            bool isVirtualCall = method.IsVirtual && !method.IsFinal;
+            if (isVirtualCall)
+                return false; // Virtual methods stay on prototype
+
+            var declaringType = method.DeclaringType;
+            if (declaringType.HasGenericParameters || declaringType.IsGenericInstance)
+                return false; // Generic types keep instance methods
+
+            if (declaringType.IsInterface)
+                return false;
+
+            if (!_scopeManager.ImplementInstanceAsStatic)
+                return false;
+
+            return true;
         }
 
         /// <summary>
@@ -1495,28 +1553,38 @@ namespace NScript.RazorSkin.CodeGen
             if (targetMethod == null)
                 return null;
 
-            var methodId = _scopeManager.Resolve(targetMethod);
+            bool isDevirt = IsMethodDevirtualized(targetMethod);
+            var methodId = isDevirt
+                ? _scopeManager.ResolveStatic(targetMethod)
+                : _scopeManager.Resolve(targetMethod);
             if (methodId == null)
                 return null;
 
-            // Build: function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }
-            // dc[0] = parent DataContext, dc[2] = loop item
+            // Build: function(dc) { return function(e, ev) { method(dc[0], dc[2], e, ev); }; }  (devirtualized)
+            //   or:  function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }  (virtual)
             var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
             var dcParam = outerScope.ParameterIdentifiers[0];
             var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-            // dc[0].method
             var parentAccess = CreateTupleAccessExpression(dcParam, innerScope, 0);
-            var methodAccess = new IndexExpression(null, innerScope, parentAccess,
-                new IdentifierExpression(methodId, innerScope));
-
-            // dc[2] = item argument
             var itemAccess = CreateTupleAccessExpression(dcParam, innerScope, 2);
             var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
             var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
 
-            // dc[0].method(dc[2], e, ev)
-            var methodCall = new MethodCallExpression(null, innerScope, methodAccess, itemAccess, eParam, evParam);
+            MethodCallExpression methodCall;
+            if (isDevirt)
+            {
+                // Devirtualized: method(dc[0], dc[2], e, ev)
+                var methodRef = new IdentifierExpression(methodId, innerScope);
+                methodCall = new MethodCallExpression(null, innerScope, methodRef, parentAccess, itemAccess, eParam, evParam);
+            }
+            else
+            {
+                // Virtual: dc[0].method(dc[2], e, ev)
+                var methodAccess = new IndexExpression(null, innerScope, parentAccess,
+                    new IdentifierExpression(methodId, innerScope));
+                methodCall = new MethodCallExpression(null, innerScope, methodAccess, itemAccess, eParam, evParam);
+            }
 
             var innerFn = new FunctionExpression(null, outerScope, innerScope,
                 innerScope.ParameterIdentifiers, null);

@@ -19,6 +19,7 @@ namespace Sunlight.Framework
     {
         private static int nextId;
         private static CallContext current;
+        private static int eventDispatchDepth;
 
         public readonly int ActionId;
         public readonly string TraceId;
@@ -30,13 +31,19 @@ namespace Sunlight.Framework
         {
             EventBinder.OnEventDispatch = () =>
             {
+                CallContext.eventDispatchDepth++;
                 var prev = CallContext.current;
                 CallContext.StartRoot();
                 return prev;
             };
             EventBinder.OnEventDispatchEnd = (prev) =>
             {
-                CallContext.current = (CallContext)prev;
+                CallContext.eventDispatchDepth--;
+                // Only restore for nested event dispatches (depth > 0).
+                // Top-level handlers keep their context active for async
+                // continuations and TaskScheduler work after the handler returns.
+                if (CallContext.eventDispatchDepth > 0)
+                    CallContext.current = (CallContext)prev;
             };
             System.Web.XMLHttpRequest.OnBeforeSend = (request) =>
             {
@@ -160,7 +167,7 @@ namespace Sunlight.Framework
                 r.spanId = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::SpanId};
                 r.parentSpanId = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::ParentSpanId};
                 r.depth = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::Depth};
-                r.traceparent = c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::ToTraceparent()}();
+                r.traceparent = '00-' + c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::TraceId} + '-' + c.@{[Sunlight.Framework]Sunlight.Framework.CallContext::SpanId} + '-01';
                 return r;
             };
             ctx.testXhrHook = function() {
