@@ -46,6 +46,7 @@ namespace Sunlight.Framework
                     request.SetRequestHeader("traceparent", ctx.ToTraceparent());
                 }
             };
+            CallContext.ExposeForTesting();
         }
 
         private CallContext(int actionId, string traceId, string spanId,
@@ -153,6 +154,36 @@ namespace Sunlight.Framework
             );
         ")]
         public static extern Promise WrapPromise(Promise p);
+
+        /// <summary>
+        /// Expose a diagnostic accessor on window.__callContext so Playwright
+        /// tests can inspect the current CallContext even though the generated
+        /// JS runs inside an IIFE.
+        /// </summary>
+        [Script(@"
+            window.__callContext = {
+                getCurrent: function() {
+                    var c = @{[Sunlight.Framework]Sunlight.Framework.CallContext::current};
+                    if (!c) return null;
+                    return {
+                        actionId: c.@{ActionId},
+                        traceId: c.@{TraceId},
+                        spanId: c.@{SpanId},
+                        parentSpanId: c.@{ParentSpanId},
+                        depth: c.@{Depth},
+                        traceparent: c.@{ToTraceparent}()
+                    };
+                },
+                testXhrHook: function() {
+                    var headers = {};
+                    var mockReq = { setRequestHeader: function(k, v) { headers[k] = v; } };
+                    var hook = @{[System.Web]System.Web.XMLHttpRequest::OnBeforeSend};
+                    if (hook) { hook(mockReq); }
+                    return headers;
+                }
+            };
+        ")]
+        private static extern void ExposeForTesting();
 
         private static string GenerateHexSegment()
         {
