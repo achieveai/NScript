@@ -67,7 +67,7 @@ function sel(classMap, selector) {
   // Dynamic port: use E2E_PORT env var, CLI arg, or find a free port
   const PORT = process.env.E2E_PORT || process.argv[2] || 0;
   const BASE_URL = await startServer(PORT);
-  console.log('=== To Do App E2E Tests ===\n');
+  console.log(`=== To Do App E2E Tests (${BASE_URL}) ===\n`);
 
   const browser = await chromium.launch({ headless: true });
   const results = { passed: 0, failed: 0, tests: [] };
