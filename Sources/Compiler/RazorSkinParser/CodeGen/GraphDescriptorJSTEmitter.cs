@@ -83,6 +83,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _collectionMarkerIdxField;
         private readonly IIdentifier _collectionItemGraphField;
         private readonly IIdentifier _collectionItemTemplateField;
+        private readonly IIdentifier _collectionSubControlInfosField;
 
         // Resolved field identifiers for SubControlInfo
         private readonly IIdentifier _subControlMarkerIdxField;
@@ -146,7 +147,7 @@ namespace NScript.RazorSkin.CodeGen
                 out _gateTrueElemCountField, out _gateFalseElemCountField,
                 out _gateTrueChildElemIndicesField, out _gateFalseChildElemIndicesField,
                 out _collectionMarkerIdxField, out _collectionItemGraphField,
-                out _collectionItemTemplateField,
+                out _collectionItemTemplateField, out _collectionSubControlInfosField,
                 out _subControlMarkerIdxField, out _subControlTypeFactoryField,
                 out _subControlSkinFactoryField,
                 out _eventElemIdxField, out _eventNameField);
@@ -181,6 +182,7 @@ namespace NScript.RazorSkin.CodeGen
             out IIdentifier gateTrueElemCount, out IIdentifier gateFalseElemCount,
             out IIdentifier gateTrueChildElemIndices, out IIdentifier gateFalseChildElemIndices,
             out IIdentifier collMarkerIdx, out IIdentifier collItemGraph, out IIdentifier collItemTemplate,
+            out IIdentifier collSubControlInfos,
             out IIdentifier scMarkerIdx, out IIdentifier scTypeFactory, out IIdentifier scSkinFactory,
             out IIdentifier eventElemIdx, out IIdentifier eventName)
         {
@@ -226,6 +228,7 @@ namespace NScript.RazorSkin.CodeGen
             collMarkerIdx = ResolveFieldId(collType, "MarkerIdx");
             collItemGraph = ResolveFieldId(collType, "ItemGraph");
             collItemTemplate = ResolveFieldId(collType, "ItemTemplate");
+            collSubControlInfos = ResolveFieldId(collType, "SubControlInfos");
 
             // SubControlInfo fields
             var scType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
@@ -407,7 +410,7 @@ namespace NScript.RazorSkin.CodeGen
 
         /// <summary>
         /// getters: [null, function(dc) { return dc.get_name(); }, null, ...]
-        /// Uses <see cref="RawBodyFunctionExpression"/> for getter bodies since getter
+        /// Uses ScriptLiteralExpression for getter bodies since getter
         /// expressions reference virtual method accessors that are already correctly mangled.
         /// </summary>
         private Expression EmitGetters()
@@ -678,19 +681,12 @@ namespace NScript.RazorSkin.CodeGen
         /// and complex expressions that can't be resolved through Cecil.
         /// Uses enforceSuggestion=true so "dc" stays as-is since the raw body references it literally.
         /// </summary>
-        private RawBodyFunctionExpression CreateRawGetterFunction(string rawBody)
+        private ScriptLiteralExpression CreateRawGetterFunction(string rawBody)
         {
-            var innerScope = new IdentifierScope(
-                _scope,
-                new string[] { "dc" },
-                true);
-
-            return new RawBodyFunctionExpression(
-                null,
-                _scope,
-                innerScope,
-                innerScope.ParameterIdentifiers,
-                rawBody);
+            // Emit the entire function as a raw script literal to avoid the JST
+            // TransformerVisitor replacing it with an empty FunctionExpression.
+            // Parameter "dc" is the data-context array, referenced literally in rawBody.
+            return new ScriptLiteralExpression(null, _scope, $"function(dc){{{rawBody};}}");
         }
 
         /// <summary>
@@ -1535,14 +1531,12 @@ namespace NScript.RazorSkin.CodeGen
         /// <summary>
         /// Creates a raw setter function: function(e, v) { body }
         /// </summary>
-        private RawBodyFunctionExpression CreateRawSetterFunction(string rawBody)
+        private ScriptLiteralExpression CreateRawSetterFunction(string rawBody)
         {
-            var innerScope = new IdentifierScope(
-                _scope,
-                new string[] { "e", "v" },
-                true);
-            return new RawBodyFunctionExpression(
-                null, _scope, innerScope, innerScope.ParameterIdentifiers, rawBody);
+            // Emit the entire function as a raw script literal to avoid the JST
+            // TransformerVisitor replacing it with an empty FunctionExpression.
+            // Parameters "e" (element) and "v" (value) are referenced literally in rawBody.
+            return new ScriptLiteralExpression(null, _scope, $"function(e,v){{{rawBody};}}");
         }
 
         /// <summary>
@@ -1674,6 +1668,11 @@ namespace NScript.RazorSkin.CodeGen
                 if (itemGraphExpr != null)
                     fields.Add((_collectionItemGraphField, "ItemGraph", itemGraphExpr));
 
+                // Emit SubControlInfos for sub-controls inside the collection item template
+                var subControlInfosExpr = EmitCollectionSubControlInfos(ct);
+                if (subControlInfosExpr != null)
+                    fields.Add((_collectionSubControlInfosField, "SubControlInfos", subControlInfosExpr));
+
                 return EmitTypedObject(_collectionTargetInfoFactory, fields);
             }
 
@@ -1683,7 +1682,165 @@ namespace NScript.RazorSkin.CodeGen
             AddField(info, _collectionItemTemplateField, "ItemTemplate", new StringLiteralExpression(_scope, itemHtml));
             if (itemGraphExpr != null)
                 AddField(info, _collectionItemGraphField, "ItemGraph", itemGraphExpr);
+
+            // Emit SubControlInfos for fallback path too
+            var fallbackSubControlInfos = EmitCollectionSubControlInfos(ct);
+            if (fallbackSubControlInfos != null)
+                AddField(info, _collectionSubControlInfosField, "SubControlInfos", fallbackSubControlInfos);
+
             return info;
+        }
+
+        /// <summary>
+        /// Emits SubControlInfos array for sub-controls inside a collection item template.
+        /// Each SubControlInfo has MarkerIdx, TypeFactory, and SkinFactory so the GraphEngine
+        /// can instantiate sub-controls when rendering collection items.
+        /// Returns null if no sub-controls exist in the item topology.
+        /// </summary>
+        private Expression EmitCollectionSubControlInfos(CollectionTopology ct)
+        {
+            if (ct.ItemTopology?.SubControls == null || ct.ItemTopology.SubControls.Count == 0)
+                return null;
+
+            if (_clrContext == null)
+                return null;
+
+            var items = new List<Expression>();
+            int markerIdx = 0;
+
+            foreach (var sc in ct.ItemTopology.SubControls)
+            {
+                var typeName = sc.ResolvedTypeName ?? sc.ControlTypeName;
+                if (string.IsNullOrEmpty(typeName))
+                {
+                    markerIdx++;
+                    continue;
+                }
+
+                var typeDef = FindSubControlType(typeName);
+                if (typeDef == null)
+                {
+                    Log.Debug("EmitCollectionSubControlInfos: Cannot find type {TypeName}", typeName);
+                    markerIdx++;
+                    continue;
+                }
+
+                var typeFactoryExpr = BuildSubControlTypeFactory(typeDef);
+                var skinFactoryExpr = BuildSubControlSkinFactory(typeDef);
+
+                if (typeFactoryExpr == null || skinFactoryExpr == null)
+                {
+                    Log.Debug("EmitCollectionSubControlInfos: Cannot build factories for {TypeName}", typeName);
+                    markerIdx++;
+                    continue;
+                }
+
+                if (_subControlInfoFactory != null)
+                {
+                    var fields = new List<(IIdentifier, string, Expression)>
+                    {
+                        (_subControlMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, markerIdx)),
+                        (_subControlTypeFactoryField, "TypeFactory", typeFactoryExpr),
+                        (_subControlSkinFactoryField, "SkinFactory", skinFactoryExpr)
+                    };
+                    items.Add(EmitTypedObject(_subControlInfoFactory, fields));
+                }
+                else
+                {
+                    var scObj = new InlineObjectInitializer(null, _scope);
+                    AddField(scObj, _subControlMarkerIdxField, "MarkerIdx",
+                        new NumberLiteralExpression(_scope, markerIdx));
+                    AddField(scObj, _subControlTypeFactoryField, "TypeFactory", typeFactoryExpr);
+                    AddField(scObj, _subControlSkinFactoryField, "SkinFactory", skinFactoryExpr);
+                    items.Add(scObj);
+                }
+
+                markerIdx++;
+            }
+
+            if (items.Count == 0)
+                return null;
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// Builds a TypeFactory function expression for a sub-control type:
+        /// function(elem) { return ControlType_factory(elem); }
+        /// The factory creates a new control instance given a DOM element.
+        /// </summary>
+        private Expression BuildSubControlTypeFactory(TypeDefinition typeDef)
+        {
+            // Find the constructor that takes an Element parameter
+            var ctor = typeDef.Methods.FirstOrDefault(m =>
+                m.IsConstructor && !m.IsStatic && m.Parameters.Count == 1);
+
+            if (ctor == null)
+            {
+                Log.Debug("BuildSubControlTypeFactory: No single-param constructor on {TypeName}", typeDef.FullName);
+                return null;
+            }
+
+            var factoryId = _scopeManager.ResolveFactory(ctor.Resolve());
+
+            // Build: function(elem) { return factory(elem); }
+            var innerScope = new IdentifierScope(_scope, new[] { "elem" }, false);
+            var elemParam = innerScope.ParameterIdentifiers[0];
+
+            var callExpr = new MethodCallExpression(
+                null, innerScope,
+                new IdentifierExpression(factoryId, innerScope),
+                new Expression[] { new IdentifierExpression(elemParam, innerScope) });
+
+            var fn = new FunctionExpression(null, _scope, innerScope, innerScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, innerScope, callExpr));
+            return fn;
+        }
+
+        /// <summary>
+        /// Builds a SkinFactory function expression for a sub-control type:
+        /// function() { return ControlType__get_DefaultSkin(); }
+        /// Finds the static DefaultSkin property (annotated with [Skin]) and resolves its getter.
+        /// </summary>
+        private Expression BuildSubControlSkinFactory(TypeDefinition typeDef)
+        {
+            // Find the static DefaultSkin property (has [Skin] attribute)
+            PropertyDefinition skinProp = null;
+            foreach (var prop in typeDef.Properties)
+            {
+                if (!prop.GetMethod?.IsStatic == true) continue;
+                if (prop.GetMethod == null || !prop.GetMethod.IsStatic) continue;
+
+                foreach (var attr in prop.CustomAttributes)
+                {
+                    if (attr.AttributeType.Name == "SkinAttribute")
+                    {
+                        skinProp = prop;
+                        break;
+                    }
+                }
+                if (skinProp != null) break;
+            }
+
+            if (skinProp?.GetMethod == null)
+            {
+                Log.Debug("BuildSubControlSkinFactory: No [Skin] property on {TypeName}", typeDef.FullName);
+                return null;
+            }
+
+            var getterId = _scopeManager.ResolveStatic(skinProp.GetMethod.Resolve());
+
+            // Build: function() { return get_DefaultSkin(); }
+            var innerScope = new IdentifierScope(_scope, 0);
+
+            var callExpr = new MethodCallExpression(
+                null, innerScope,
+                new IdentifierExpression(getterId, innerScope),
+                new Expression[0]);
+
+            var fn = new FunctionExpression(null, _scope, innerScope, innerScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, innerScope, callExpr));
+            return fn;
         }
 
         /// <summary>
@@ -1908,71 +2065,6 @@ namespace NScript.RazorSkin.CodeGen
             var fn = new FunctionExpression(null, _scope, setterScope, setterScope.ParameterIdentifiers, null);
             fn.AddStatement(new ExpressionStatement(null, setterScope, callExpr));
             return fn;
-        }
-    }
-
-    /// <summary>
-    /// A function expression that writes a raw JS body string. Used for graph descriptor
-    /// getter functions whose bodies contain property accessor calls that are already
-    /// correctly mangled (e.g., "return dc.get_name()"). The function wrapper and
-    /// parameter list are proper JST nodes; only the body is raw text.
-    /// </summary>
-    public class RawBodyFunctionExpression : Expression
-    {
-        private readonly IdentifierScope _innerScope;
-        private readonly IList<SimpleIdentifier> _parameters;
-        private readonly string _rawBody;
-
-        /// <summary>
-        /// Creates a new raw-body function expression.
-        /// </summary>
-        /// <param name="location">Source location (may be null).</param>
-        /// <param name="outerScope">The enclosing scope.</param>
-        /// <param name="innerScope">The function's own scope (contains parameter identifiers).</param>
-        /// <param name="parameters">The function parameter identifiers.</param>
-        /// <param name="rawBody">The raw JS function body text (without braces or semicolons).</param>
-        public RawBodyFunctionExpression(
-            Location location,
-            IdentifierScope outerScope,
-            IdentifierScope innerScope,
-            IList<SimpleIdentifier> parameters,
-            string rawBody)
-            : base(location, outerScope)
-        {
-            _innerScope = innerScope;
-            _parameters = parameters;
-            _rawBody = rawBody;
-        }
-
-        public override Precedence Precedence => Precedence.Assignment;
-
-        public override bool IsLeftToRight => false;
-
-        public override void Serialize(ICustomSerializer serializer)
-        {
-            serializer.AddValue("rawBody", _rawBody);
-        }
-
-        /// <summary>
-        /// Writes: function(param1, param2) { rawBody; }
-        /// Parameters use proper JST identifiers; the body is emitted as raw text.
-        /// </summary>
-        public override void Write(JSWriter writer)
-        {
-            writer.Write(Keyword.Function);
-            writer.Write(Symbols.BracketOpenRound);
-
-            for (int i = 0; i < _parameters.Count; i++)
-            {
-                if (i > 0) writer.Write(Symbols.Comma);
-                writer.Write(_parameters[i]);
-            }
-
-            writer.Write(Symbols.BracketCloseRound);
-            writer.Write(Symbols.BracketOpenCurly);
-            writer.WriteIdentifier(_rawBody);
-            writer.Write(Symbols.SemiColon);
-            writer.Write(Symbols.BracketCloseCurly);
         }
     }
 }

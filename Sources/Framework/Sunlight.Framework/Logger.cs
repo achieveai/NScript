@@ -81,9 +81,10 @@ namespace Sunlight.Framework
                     entry.parentSpanId = ctx.@{[Sunlight.Framework]Sunlight.Framework.CallContext::ParentSpanId};
                 }
             }
-            if (level >= 3) console.error(JSON.stringify(entry));
-            else if (level >= 2) console.warn(JSON.stringify(entry));
-            else console.log(JSON.stringify(entry));
+            var str = @:JSON.stringify(entry);
+            if (level >= 3) console.error(str);
+            else if (level >= 2) console.warn(str);
+            else console.log(str);
         ")]
         private static extern void Emit(LogLevel level, string message);
     }
