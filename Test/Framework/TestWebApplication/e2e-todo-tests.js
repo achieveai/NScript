@@ -1,4 +1,36 @@
 const { chromium } = require('playwright');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const MIME = {
+  '.html': 'text/html', '.htm': 'text/html', '.js': 'application/javascript',
+  '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml'
+};
+
+let _server;
+
+// Start a static file server on the given port (0 = OS picks a free port).
+// Returns the base URL, e.g. "http://localhost:54321".
+function startServer(port) {
+  return new Promise((resolve, reject) => {
+    const root = __dirname;
+    _server = http.createServer((req, res) => {
+      const filePath = path.join(root, req.url === '/' ? 'TodoApp.htm' : decodeURIComponent(req.url));
+      const ext = path.extname(filePath).toLowerCase();
+      fs.readFile(filePath, (err, data) => {
+        if (err) { res.writeHead(404); res.end('Not found'); return; }
+        res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+        res.end(data);
+      });
+    });
+    _server.listen(parseInt(port) || 0, () => {
+      const addr = _server.address();
+      resolve(`http://localhost:${addr.port}`);
+    });
+    _server.on('error', reject);
+  });
+}
 
 // CSS class name mapping for suffixed/minified names.
 // The NScript compiler appends _XY suffixes to CSS class names in debug mode
@@ -32,6 +64,11 @@ function sel(classMap, selector) {
 
 
 (async () => {
+  // Dynamic port: use E2E_PORT env var, CLI arg, or find a free port
+  const PORT = process.env.E2E_PORT || process.argv[2] || 0;
+  const BASE_URL = await startServer(PORT);
+  console.log('=== To Do App E2E Tests ===\n');
+
   const browser = await chromium.launch({ headless: true });
   const results = { passed: 0, failed: 0, tests: [] };
 
@@ -40,7 +77,7 @@ function sel(classMap, selector) {
     const page = await context.newPage();
     try {
       // Clear IndexedDB before each test so the app always starts from sample data
-      await page.goto('http://localhost:3000/TodoApp.htm', { waitUntil: 'domcontentloaded' });
+      await page.goto(BASE_URL + '/TodoApp.htm', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => {
         return new Promise((resolve) => {
           var req = indexedDB.deleteDatabase('TodoAppDb');
@@ -50,7 +87,7 @@ function sel(classMap, selector) {
         });
       });
       // Reload after DB clear so the app re-initialises with sample data
-      await page.goto('http://localhost:3000/TodoApp.htm', { waitUntil: 'domcontentloaded' });
+      await page.goto(BASE_URL + '/TodoApp.htm', { waitUntil: 'domcontentloaded' });
       // Wait for the generated <style> element to be injected by TodoApp.js
       await page.waitForFunction(() => {
         const styles = document.querySelectorAll('style');
@@ -80,8 +117,6 @@ function sel(classMap, selector) {
   function assert(condition, message) {
     if (!condition) throw new Error('Assertion failed: ' + message);
   }
-
-  console.log('\n=== To Do App E2E Tests ===\n');
 
   // ─── LAYOUT TESTS ───────────────────────────────────────────────────────────
 
@@ -953,5 +988,6 @@ function sel(classMap, selector) {
   });
 
   await browser.close();
+  if (_server) _server.close();
   process.exit(results.failed > 0 ? 1 : 0);
 })();
