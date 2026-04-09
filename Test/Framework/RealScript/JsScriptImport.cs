@@ -44,6 +44,8 @@ namespace RealScript
 
         public static extern T ExternGenericCall<T>(object t);
 
+        public static extern Promise<string> FetchData(string url);
+
         public static int AccessStringElement(string str, int index)
         {
             return str[index] + str[index + 1];

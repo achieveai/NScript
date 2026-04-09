@@ -41,12 +41,23 @@
         }
 
         /// <summary>
-        /// Returns true if the awaited expression comes from an external (imported) type.
-        /// External types are JS libraries or browser APIs whose promises bypass TaskScheduler.
+        /// Returns true if the awaited expression is a direct method call on an
+        /// external (imported) type — i.e., a JS library or browser API whose
+        /// promises bypass TaskScheduler.
+        ///
+        /// Only method calls are checked because:
+        /// - Delegate invocations (func()) run user code, not external code
+        /// - Local function calls run in NScript context
+        /// - Variable/property access (await someVar) — if the promise came from
+        ///   an external source, WrapPromise was already applied at the original call site
+        /// - Custom awaiters (await nativeArray) are handled by TaskScheduler
+        ///
+        /// The result type is NOT checked because many NScript facade types
+        /// (Promise, NativeArray, etc.) are classified as Imported by GetTypeKind
+        /// due to having extern methods, which would cause false positive wrapping.
         /// </summary>
         private static bool IsExternalAwaitable(Expression awaitable, IMethodScopeConverter methodConverter)
         {
-            // If the awaitable is a method call, check the declaring type
             if (awaitable is MethodCallExpression methodCall
                 && methodCall.MethodReference is MethodReferenceExpression methodRefExpr)
             {
@@ -56,17 +67,6 @@
                     var context = methodConverter.RuntimeManager.Context;
                     return context.IsImportedType(declaringType);
                 }
-            }
-
-            // For non-method-call expressions (variables, properties, fields),
-            // check if the result type itself is an imported promise type.
-            // This handles: await someVariable, await this.SomeProp, etc.
-            // where the original promise source is an external library.
-            var resultType = awaitable.ResultType?.Resolve();
-            if (resultType != null)
-            {
-                var context = methodConverter.RuntimeManager.Context;
-                return context.IsImportedType(resultType);
             }
 
             return false;

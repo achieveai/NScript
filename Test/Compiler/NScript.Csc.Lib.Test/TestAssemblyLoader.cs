@@ -83,6 +83,27 @@
 
             TestAssemblyLoader.DllBuilder.LoadAst(Path.Combine(basePath, @"realScript.Debug.dll"));
             TestAssemblyLoader.Context.LoadAssembly(Path.Combine(basePath, @"realScript.Debug.dll"));
+
+            // Load framework assemblies to enable WrapPromiseMethod resolution
+            // for testing await wrapping of external/imported type calls.
+            // System.Web is needed because CallContext's static constructor
+            // references XMLHttpRequest (for the OnBeforeSend hook).
+            string repoRoot = Path.GetFullPath(Path.Combine(
+                Path.GetDirectoryName(typeof(TestAssemblyLoader).Assembly.Location),
+                @"..\..\..\..\"));
+            string systemWebPath = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release\System.Web.dll");
+            if (File.Exists(systemWebPath))
+            {
+                TestAssemblyLoader.DllBuilder.LoadAst(systemWebPath);
+                TestAssemblyLoader.Context.LoadAssembly(systemWebPath);
+            }
+
+            string frameworkPath = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release\Sunlight.Framework.dll");
+            if (File.Exists(frameworkPath))
+            {
+                TestAssemblyLoader.DllBuilder.LoadAst(frameworkPath);
+                TestAssemblyLoader.Context.LoadAssembly(frameworkPath);
+            }
         }
 
         /// <summary>

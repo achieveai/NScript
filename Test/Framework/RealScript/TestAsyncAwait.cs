@@ -100,6 +100,24 @@
             await Type.AS<Promise, Task>(Test9());
         }
 
+        /// <summary>
+        /// Tests that awaiting an imported type method gets wrapped
+        /// in CallContext.WrapPromise for context propagation.
+        /// </summary>
+        public static async Promise<string> TestExternalAwait()
+        {
+            return await JsScriptImport.FetchData("test");
+        }
+
+        /// <summary>
+        /// Tests that awaiting an internal method does NOT get wrapped
+        /// in CallContext.WrapPromise (no wrapping needed).
+        /// </summary>
+        public static async Promise<int> TestInternalAwait()
+        {
+            return await Test1();
+        }
+
         public static async Promise<int> Sum(int a, int b)
             => a + b;
 
