@@ -294,9 +294,9 @@ namespace System
         {
             if (this.disposed) return;
             object prev = null;
-            if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
             try
             {
+                if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
                 ((Action<object,object>)this.capturePhaseEvents[GetEventType(evt)])(this.target, evt);
             }
             finally
@@ -312,9 +312,9 @@ namespace System
             if (this.bubblePhaseEvents.TryGetValue(GetEventType(evt), out del))
             {
                 object prev = null;
-                if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
                 try
                 {
+                    if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
                     ((Action<object, object>)del)(this.target, evt);
                 }
                 finally

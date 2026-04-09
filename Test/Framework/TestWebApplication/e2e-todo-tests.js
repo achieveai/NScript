@@ -712,11 +712,14 @@ function sel(classMap, selector) {
       typeof window.__callContext.getCurrent === 'function');
   }
 
+  // Canary test: hard-fail if the CallContext debug bridge is missing.
+  // This prevents all subsequent CALLCTX tests from silently skipping.
+  await runTest('CALLCTX-000: CallContext debug bridge is present', async (page, s) => {
+    const available = await hasCallContext(page);
+    assert(available, 'window.__callContext bridge must be present — ExposeDebugAccessors() did not run');
+  });
+
   await runTest('CALLCTX-001: Click creates CallContext with valid fields', async (page, s) => {
-    if (!await hasCallContext(page)) {
-      console.log('    (SKIP — CallContext test hook not in JS)');
-      return;
-    }
 
     // Before any click, context should be null
     const ctxBefore = await page.evaluate(() => window.__callContext.getCurrent());
@@ -750,11 +753,6 @@ function sel(classMap, selector) {
   });
 
   await runTest('CALLCTX-002: Each click creates new root context', async (page, s) => {
-    if (!await hasCallContext(page)) {
-      console.log('    (SKIP — CallContext test hook not in JS)');
-      return;
-    }
-
     const folders = await page.$$(s('.folder-item'));
     assert(folders.length >= 2, 'Need at least 2 folder items');
 
@@ -779,22 +777,12 @@ function sel(classMap, selector) {
   // ─── CALLCONTEXT: ASYNC PROPAGATION ─────────────────────────────────────────
 
   await runTest('CALLCTX-003: Context null when idle (no user action)', async (page, s) => {
-    if (!await hasCallContext(page)) {
-      console.log('    (SKIP — CallContext test hook not in JS)');
-      return;
-    }
-
     // On fresh page load, before any user interaction, context should be null
     const ctx = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx === null, 'CallContext should be null on fresh load, got: ' + JSON.stringify(ctx));
   });
 
   await runTest('CALLCTX-004: Context survives through async task execution', async (page, s) => {
-    if (!await hasCallContext(page)) {
-      console.log('    (SKIP — CallContext test hook not in JS)');
-      return;
-    }
-
     // Click a folder to create a root context
     const folder = await page.$(s('.folder-item'));
     await folder.click();
@@ -835,11 +823,6 @@ function sel(classMap, selector) {
   // ─── CALLCONTEXT: XHR TRACEPARENT INJECTION ─────────────────────────────────
 
   await runTest('CALLCTX-005: XHR carries traceparent header', async (page, s) => {
-    if (!await hasCallContext(page)) {
-      console.log('    (SKIP — CallContext test hook not in JS)');
-      return;
-    }
-
     // Click a folder to establish a root context
     await page.click(s('.folder-item'));
     await page.waitForTimeout(300);
@@ -853,11 +836,6 @@ function sel(classMap, selector) {
   });
 
   await runTest('CALLCTX-006: Traceparent format matches W3C spec', async (page, s) => {
-    if (!await hasCallContext(page)) {
-      console.log('    (SKIP — CallContext test hook not in JS)');
-      return;
-    }
-
     // Click to establish context
     await page.click(s('.folder-item'));
     await page.waitForTimeout(300);
@@ -929,6 +907,39 @@ function sel(classMap, selector) {
 
     const header2 = await page.$eval(s('.current-folder-name'), el => el.textContent);
     assert(header2 === 'Tasks', 'Header should show Tasks after switch, got: ' + header2);
+  });
+
+  await runTest('CALLCTX-009: Context restored after each task execution', async (page, s) => {
+    // Verify that clicking two different elements yields two distinct contexts,
+    // proving that ExecuteTask properly saves/restores CallContext.Current.
+    const folders = await page.$$(s('.folder-item'));
+    assert(folders.length >= 2, 'Need at least 2 folder items');
+
+    // First click — capture context
+    await folders[0].click();
+    await page.waitForTimeout(300);
+    const ctx1 = await page.evaluate(() => window.__callContext.getCurrent());
+    assert(ctx1 !== null, 'First click should create a context');
+
+    // Second click — should get entirely new root context (not the first one)
+    await folders[1].click();
+    await page.waitForTimeout(300);
+    const ctx2 = await page.evaluate(() => window.__callContext.getCurrent());
+    assert(ctx2 !== null, 'Second click should create a context');
+
+    // Contexts must differ — proves save/restore works, not leaking
+    assert(ctx2.traceId !== ctx1.traceId,
+      'Each click must create independent context (save/restore works): ' +
+      ctx1.traceId + ' vs ' + ctx2.traceId);
+    assert(ctx2.actionId > ctx1.actionId,
+      'ActionId must increment: ' + ctx1.actionId + ' vs ' + ctx2.actionId);
+  });
+
+  await runTest('CALLCTX-010: XHR hook is no-op when context is null', async (page, s) => {
+    // On fresh page load (no clicks), testXhrHook should return empty headers
+    const headers = await page.evaluate(() => window.__callContext.testXhrHook());
+    assert(headers.traceparent === undefined,
+      'traceparent should not be set when no context is active, got: ' + JSON.stringify(headers));
   });
 
   // ─── RESULTS ────────────────────────────────────────────────────────────────

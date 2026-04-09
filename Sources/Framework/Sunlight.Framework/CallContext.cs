@@ -46,7 +46,7 @@ namespace Sunlight.Framework
                     request.SetRequestHeader("traceparent", ctx.ToTraceparent());
                 }
             };
-            CallContext.ExposeForTesting();
+            CallContext.ExposeDebugAccessors();
         }
 
         private CallContext(int actionId, string traceId, string spanId,
@@ -119,6 +119,7 @@ namespace Sunlight.Framework
         /// <summary>
         /// Compiler-inserted wrapper for external async calls: captures context
         /// before await, restores it when the promise resolves or rejects.
+        /// Handles both Promise and Promise&lt;T&gt; (same type at JS runtime).
         /// </summary>
         /// <remarks>
         /// [Script] is required here because:
@@ -138,27 +139,15 @@ namespace Sunlight.Framework
                 function(e) { @{[Sunlight.Framework]Sunlight.Framework.CallContext::current} = ctx; throw e; }
             );
         ")]
-        public static extern Promise<T> WrapPromise<T>(Promise<T> p);
-
-        /// <summary>
-        /// Non-generic overload for void-returning promises (Task in C# = Promise in JS).
-        /// </summary>
-        /// <remarks>
-        /// See generic overload remarks for why [Script] is required.
-        /// </remarks>
-        [Script(@"
-            var ctx = @{[Sunlight.Framework]Sunlight.Framework.CallContext::current};
-            return p.then(
-                function(v) { @{[Sunlight.Framework]Sunlight.Framework.CallContext::current} = ctx; return v; },
-                function(e) { @{[Sunlight.Framework]Sunlight.Framework.CallContext::current} = ctx; throw e; }
-            );
-        ")]
         public static extern Promise WrapPromise(Promise p);
 
         /// <summary>
-        /// Expose a diagnostic accessor on window.__callContext so Playwright
-        /// tests can inspect the current CallContext even though the generated
-        /// JS runs inside an IIFE.
+        /// Expose diagnostic accessors on window.__callContext so that Playwright
+        /// tests (and browser DevTools) can inspect the current CallContext even
+        /// though the generated JS runs inside an IIFE.
+        /// Always-on by design: NScript lacks conditional compilation, and all JS
+        /// state is already client-visible. The underscore-prefixed global follows
+        /// the same convention as React DevTools / Angular ng.probe.
         /// </summary>
         [Script(@"
             window.__callContext = {
@@ -183,7 +172,7 @@ namespace Sunlight.Framework
                 }
             };
         ")]
-        private static extern void ExposeForTesting();
+        private static extern void ExposeDebugAccessors();
 
         private static string GenerateHexSegment()
         {

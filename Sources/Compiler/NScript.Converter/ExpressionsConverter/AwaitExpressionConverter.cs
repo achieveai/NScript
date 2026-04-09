@@ -49,7 +49,10 @@
         /// - Delegate invocations (func()) run user code, not external code
         /// - Local function calls run in NScript context
         /// - Variable/property access (await someVar) — if the promise came from
-        ///   an external source, WrapPromise was already applied at the original call site
+        ///   an external source, WrapPromise was already applied at the original call site.
+        ///   KNOWN LIMITATION: if a method returns an external promise without awaiting
+        ///   it (e.g., Promise p = JsLib.Fetch("x"); ... return await p;), the variable
+        ///   await won't be wrapped. The workaround is to await at the call site.
         /// - Custom awaiters (await nativeArray) are handled by TaskScheduler
         ///
         /// The result type is NOT checked because many NScript facade types
@@ -61,7 +64,7 @@
             if (awaitable is MethodCallExpression methodCall
                 && methodCall.MethodReference is MethodReferenceExpression methodRefExpr)
             {
-                var declaringType = methodRefExpr.MethodReference.DeclaringType?.Resolve();
+                var declaringType = methodRefExpr.MethodReference?.DeclaringType?.Resolve();
                 if (declaringType != null)
                 {
                     var context = methodConverter.RuntimeManager.Context;

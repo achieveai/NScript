@@ -253,6 +253,10 @@ namespace Sunlight.Framework
                     CallContext.Current = task.Context;
                     task.Work();
                 }
+                catch (Exception ex)
+                {
+                    Logger.Error("TaskScheduler timer callback failed: " + ex.Message);
+                }
                 finally
                 {
                     CallContext.Current = previousContext;
@@ -392,8 +396,9 @@ namespace Sunlight.Framework
                     task.State = TaskState.Running;
                     task.Work();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.Error("TaskScheduler.ExecuteTask failed: " + ex.Message);
                 }
                 finally
                 {
