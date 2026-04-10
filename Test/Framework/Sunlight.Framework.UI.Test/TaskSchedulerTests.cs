@@ -72,6 +72,38 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(timer.PendingCount, 0, "Unhandled exception callback should be drained after it runs");
         }
 
+        [Test]
+        public static void TestLowPriTaskFailuresBubbleToUnhandledPath(Assert assert)
+        {
+            var timer = new QueuedWindowTimer();
+            var scheduler = new TaskScheduler(timer, 10, 10);
+
+            scheduler.EnqueueLowPriTask(
+                delegate
+                {
+                    throw new Exception("low-pri task boom");
+                },
+                "low-pri-task-failure");
+
+            assert.Equal(timer.PendingCount, 1, "Low-pri work should schedule a scheduler callback");
+
+            timer.RunNext();
+            assert.Equal(timer.PendingCount, 1, "A failed low-pri task should queue an unhandled exception callback");
+
+            string message = "";
+            try
+            {
+                timer.RunNext();
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+
+            assert.Equal(message, "low-pri task boom", "Unhandled low-pri callback should rethrow the original exception");
+            assert.Equal(timer.PendingCount, 0, "Unhandled exception callback should be drained after it runs");
+        }
+
         private class QueuedWindowTimer : IWindowTimer
         {
             private readonly Queue<Action> pendingActions = new Queue<Action>();

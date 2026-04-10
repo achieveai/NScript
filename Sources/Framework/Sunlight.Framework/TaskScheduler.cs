@@ -335,6 +335,7 @@ namespace Sunlight.Framework
             var task = new Task(
                     this.nextTimerId++,
                     work);
+            task.DispatchUnhandledOnFailure = true;
             this.idleTasks.Enqueue(task);
             this.tasks.Add(task.TaskId, task);
             this.ScheduleQuanta(false);
