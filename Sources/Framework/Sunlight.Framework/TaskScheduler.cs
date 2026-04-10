@@ -34,6 +34,7 @@ namespace Sunlight.Framework
     {
         Waiting,
         Canceled,
+        Faulted,
         Completed,
         Running
     }
@@ -48,20 +49,23 @@ namespace Sunlight.Framework
         public Number TaskId;
         public CallContext Context;
         public int RootActionId;
+        public bool DispatchUnhandledOnFailure;
 
-        public Task(int taskId, Action work)
+        public Task(int taskId, Action work, bool dispatchUnhandledOnFailure = false)
         {
             this.TaskId = taskId;
             this.Work = work;
             this.Context = CallContext.Current;
             this.RootActionId = this.Context != null ? this.Context.ActionId : -1;
+            this.DispatchUnhandledOnFailure = dispatchUnhandledOnFailure;
         }
 
         public Task(
             int taskId,
             int nativeTimerId,
             NativeTimerHandleType nativeTimerType,
-            Action work)
+            Action work,
+            bool dispatchUnhandledOnFailure = false)
         {
             this.TaskId = taskId;
             this.NativeTimerId = nativeTimerId;
@@ -69,6 +73,7 @@ namespace Sunlight.Framework
             this.Work = work;
             this.Context = CallContext.Current;
             this.RootActionId = this.Context != null ? this.Context.ActionId : -1;
+            this.DispatchUnhandledOnFailure = dispatchUnhandledOnFailure;
         }
     }
 
@@ -251,11 +256,18 @@ namespace Sunlight.Framework
                 try
                 {
                     CallContext.Current = task.Context;
+                    task.State = TaskState.Running;
                     task.Work();
+                    task.State = TaskState.Completed;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("TaskScheduler timer callback failed: " + ex.Message);
+                    task.State = TaskState.Faulted;
+                    Logger.Error("TaskScheduler timer callback failed: " + this.FormatTaskException(ex));
+                    if (task.DispatchUnhandledOnFailure)
+                    {
+                        this.DispatchUnhandledTaskException(ex);
+                    }
                 }
                 finally
                 {
@@ -274,7 +286,8 @@ namespace Sunlight.Framework
                 this.nextTimerId++,
                 this.windowTimer.RequestAnimationFrame(cb),
                 NativeTimerHandleType.Timeout,
-                work);
+                work,
+                true);
 
             this.tasks.Add(taskRef[0].TaskId, taskRef[0]);
             return new TaskHandle(taskRef[0].TaskId);
@@ -289,7 +302,8 @@ namespace Sunlight.Framework
                 this.nextTimerId++,
                 this.windowTimer.SetTimeout(cb, timeout),
                 NativeTimerHandleType.Timeout,
-                work);
+                work,
+                true);
 
             this.tasks.Add(taskRef[0].TaskId, taskRef[0]);
             return new TaskHandle(taskRef[0].TaskId);
@@ -299,7 +313,8 @@ namespace Sunlight.Framework
         {
             var task = new Task(
                     this.nextTimerId++,
-                    work);
+                    work,
+                    true);
             this.hiPriTasks.Enqueue(task);
             this.tasks.Add(task.TaskId, task);
             this.ScheduleQuanta(false);
@@ -395,10 +410,16 @@ namespace Sunlight.Framework
                     CallContext.Current = task.Context;
                     task.State = TaskState.Running;
                     task.Work();
+                    task.State = TaskState.Completed;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("TaskScheduler.ExecuteTask failed: " + ex.Message);
+                    task.State = TaskState.Faulted;
+                    Logger.Error("TaskScheduler ExecuteTask failed: " + this.FormatTaskException(ex));
+                    if (task.DispatchUnhandledOnFailure)
+                    {
+                        this.DispatchUnhandledTaskException(ex);
+                    }
                 }
                 finally
                 {
@@ -406,9 +427,39 @@ namespace Sunlight.Framework
                     this.currentTask = null;
                 }
             }
-
-            task.State = TaskState.Completed;
             this.tasks.Remove(task.TaskId);
+        }
+
+        private void DispatchUnhandledTaskException(Exception ex)
+        {
+            this.windowTimer.SetTimeout(
+                delegate
+                {
+                    throw ex;
+                },
+                0);
+        }
+
+        private string FormatTaskException(Exception ex)
+        {
+            if (ex == null)
+            {
+                return "unknown error";
+            }
+
+            string message = ex.Message ?? string.Empty;
+            string stack = ex.Stack ?? string.Empty;
+            if (stack == string.Empty)
+            {
+                return message;
+            }
+
+            if (message == string.Empty)
+            {
+                return stack;
+            }
+
+            return message + "\n" + stack;
         }
 
         private void ScheduleQuanta(bool force)

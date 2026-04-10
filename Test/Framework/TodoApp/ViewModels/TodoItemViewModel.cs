@@ -407,7 +407,9 @@ namespace TodoApp.ViewModels
             sub.Id = TodoItemViewModel.GenerateId();
             sub.Title = "New step";
             sub.IsCompleted = false;
+            sub.BindToTodo(this.appViewModel, this);
             this.SubTasks.Add(sub);
+            this.appViewModel.SaveTodo(this);
         }
 
     }

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, feature/** ]
+    branches: [ master, feature/** ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build-and-test:
@@ -56,6 +56,10 @@ jobs:
           npm install
           npx playwright install chromium
 
+      - name: Run QUnit browser tests
+        working-directory: Test/Framework/TestWebApplication
+        run: npm run test:unit
+
       - name: Run E2E tests
         working-directory: Test/Framework/TestWebApplication
-        run: node e2e-todo-tests.js
+        run: npm run test:e2e

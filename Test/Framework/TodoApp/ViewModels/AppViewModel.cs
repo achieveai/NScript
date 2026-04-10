@@ -564,8 +564,10 @@ namespace TodoApp.ViewModels
                 sub.Id = TodoItemViewModel.GenerateId();
                 sub.Title = title;
                 sub.IsCompleted = false;
+                sub.BindToTodo(this, this.selectedTodo);
                 this.selectedTodo.SubTasks.Add(sub);
                 input.Value = "";
+                this.SaveTodo(this.selectedTodo);
             }
         }
 
@@ -736,7 +738,8 @@ namespace TodoApp.ViewModels
                     todo.IsImportant,
                     todo.IsMyDay,
                     todo.DueDate,
-                    todo.Notes);
+                    todo.Notes,
+                    todo.SubTasks);
             }
 
             // Keep the folder tags in sync when the selected todo's properties change
@@ -841,7 +844,7 @@ namespace TodoApp.ViewModels
         /// </summary>
         private void LoadFoldersFromJson(string json)
         {
-            object parsed = System.Serialization.Json.Parse(json);
+            object parsed = JsonHelper.Parse(json);
             int length = JsonHelper.GetArrayLength(parsed);
 
             for (int i = 0; i < length; i++)
@@ -871,7 +874,7 @@ namespace TodoApp.ViewModels
         /// </summary>
         private void LoadTodosFromJson(string json)
         {
-            object parsed = System.Serialization.Json.Parse(json);
+            object parsed = JsonHelper.Parse(json);
             int length = JsonHelper.GetArrayLength(parsed);
 
             if (length > 0)
@@ -895,6 +898,20 @@ namespace TodoApp.ViewModels
                     todo.IsMyDay = JsonHelper.GetIsMyDay(obj);
                     todo.DueDate = JsonHelper.GetDueDate(obj);
                     todo.Notes = JsonHelper.GetNotes(obj);
+
+                    object subTasks = JsonHelper.GetSubTasks(obj);
+                    int subTaskCount = JsonHelper.GetArrayLength(subTasks);
+                    for (int j = 0; j < subTaskCount; j++)
+                    {
+                        object subTaskObj = JsonHelper.GetArrayItem(subTasks, j);
+                        var subTask = new SubTaskViewModel();
+                        subTask.Id = JsonHelper.GetId(subTaskObj);
+                        subTask.Title = JsonHelper.GetTitle(subTaskObj);
+                        subTask.IsCompleted = JsonHelper.GetIsCompleted(subTaskObj);
+                        subTask.BindToTodo(this, todo);
+                        todo.SubTasks.Add(subTask);
+                    }
+
                     this.allTodos.Add(todo);
                 }
             }

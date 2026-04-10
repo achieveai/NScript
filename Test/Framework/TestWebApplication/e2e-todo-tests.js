@@ -98,7 +98,7 @@ function sel(classMap, selector) {
       const s = (selector) => sel(_classMap, selector);
       // Wait for app to render
       await page.waitForSelector(s('.folder-item'), { timeout: 10000 });
-      await page.waitForTimeout(500);
+      await waitForSelectorCount(page, s('.todo-item'));
 
       await fn(page, s);
       results.passed++;
@@ -116,6 +116,82 @@ function sel(classMap, selector) {
 
   function assert(condition, message) {
     if (!condition) throw new Error('Assertion failed: ' + message);
+  }
+
+  async function getPersistedTodos(page) {
+    return await page.evaluate(() => new Promise(resolve => {
+      const openRequest = indexedDB.open('TodoAppDb', 1);
+      openRequest.onsuccess = () => {
+        const db = openRequest.result;
+        const tx = db.transaction('todos', 'readonly');
+        const store = tx.objectStore('todos');
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => resolve(getAllRequest.result || []);
+        getAllRequest.onerror = () => resolve([]);
+      };
+      openRequest.onerror = () => resolve([]);
+    }));
+  }
+
+  async function waitForSelectorCount(page, selector, minCount = 1, timeout = 10000) {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      const count = await page.$$eval(selector, els => els.length);
+      if (count >= minCount) {
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    throw new Error('Timed out waiting for selector "' + selector + '" to reach count ' + minCount);
+  }
+
+  async function waitForPersistedSubtask(page, todoTitle, subtaskTitle, timeout = 10000) {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      const todos = await getPersistedTodos(page);
+      const todo = todos.find(item => item && item.Title === todoTitle);
+      const hasPersistedSubtask = !!todo &&
+        Array.isArray(todo.SubTasks) &&
+        todo.SubTasks.some(item => item && item.Title === subtaskTitle);
+      if (hasPersistedSubtask) {
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    throw new Error('Timed out waiting for IndexedDB to persist subtask "' + subtaskTitle + '" for todo "' + todoTitle + '"');
+  }
+
+  async function waitForDetailPane(page, s, timeout = 10000) {
+    await page.waitForSelector(s('.pane-right:not(.collapsed)'), { timeout });
+    await page.waitForSelector(s('.detail-title-input'), { timeout });
+  }
+
+  async function waitForTodoCount(page, s, expectedCount, timeout = 10000) {
+    await page.waitForFunction(({ selector, expectedCount }) => {
+      return document.querySelectorAll(selector).length === expectedCount;
+    }, { selector: s('.todo-item'), expectedCount }, { timeout });
+  }
+
+  async function waitForTodoTitle(page, s, title, timeout = 10000) {
+    await page.waitForFunction(({ selector, title }) => {
+      return Array.from(document.querySelectorAll(selector)).some(el => (el.textContent || '').includes(title));
+    }, { selector: s('.todo-title'), title }, { timeout });
+  }
+
+  async function waitForClassState(page, selector, requiredClass, shouldContain = true, timeout = 10000) {
+    await page.waitForFunction(({ selector, requiredClass, shouldContain }) => {
+      const element = document.querySelector(selector);
+      if (!element) {
+        return false;
+      }
+
+      const hasClass = (element.className || '').includes(requiredClass);
+      return shouldContain ? hasClass : !hasClass;
+    }, { selector, requiredClass, shouldContain }, { timeout });
   }
 
   // ─── LAYOUT TESTS ───────────────────────────────────────────────────────────
@@ -162,7 +238,7 @@ function sel(classMap, selector) {
     const todoItem = await page.$(s('.todo-item'));
     assert(todoItem, 'Should have a todo to click');
     await todoItem.click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // Verify right pane exists (may already be open, or opens after click)
     const rightPane = await page.$(s('.pane-right'));
@@ -176,7 +252,8 @@ function sel(classMap, selector) {
     assert(input, 'Add task input should exist');
     await input.fill('Test new task');
     await input.press('Enter');
-    await page.waitForTimeout(500);
+    await waitForTodoCount(page, s, initialCount + 1);
+    await waitForTodoTitle(page, s, 'Test new task');
 
     const newCount = (await page.$$(s('.todo-item'))).length;
     assert(newCount === initialCount + 1, 'Todo count should increase by 1, was ' + initialCount + ' now ' + newCount);
@@ -191,7 +268,7 @@ function sel(classMap, selector) {
     const todoItem = await page.$(s('.todo-item'));
     assert(todoItem, 'Should have a todo');
     await todoItem.click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // Verify right pane is visible (not collapsed)
     const pane = await page.$(s('.pane-right:not(.collapsed)'));
@@ -207,7 +284,7 @@ function sel(classMap, selector) {
     const todoItem = await page.$(s('.todo-item'));
     assert(todoItem, 'Should have a todo');
     await todoItem.click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // Clear the detail title input and type a new name
     const input = await page.$(s('.detail-title-input'));
@@ -215,7 +292,7 @@ function sel(classMap, selector) {
     await input.fill('Renamed task');
     // Trigger onchange by pressing Tab (moves focus away)
     await input.press('Tab');
-    await page.waitForTimeout(500);
+    await waitForTodoTitle(page, s, 'Renamed task');
 
     // Verify the todo list reflects the new title
     const titles = await page.$$eval(s('.todo-title'), els => els.map(e => e.textContent));
@@ -227,14 +304,14 @@ function sel(classMap, selector) {
     const todoItem = await page.$(s('.todo-item'));
     assert(todoItem, 'Should have a todo');
     await todoItem.click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // Type in the add-step input and press Enter
     const addInput = await page.$(s('.add-step-input'));
     assert(addInput, 'Add step input should exist');
     await addInput.fill('My test step');
     await addInput.press('Enter');
-    await page.waitForTimeout(500);
+    await waitForSelectorCount(page, s('.subtask-item'));
 
     // Verify a subtask appeared
     const subtasks = await page.$$(s('.subtask-item'));
@@ -252,7 +329,7 @@ function sel(classMap, selector) {
     assert(!classBefore.includes('selected'), 'Should not be selected initially, got: ' + classBefore);
 
     await firstTodo.click();
-    await page.waitForTimeout(500);
+    await waitForClassState(page, s('.todo-item'), 'selected', true);
 
     // After click: should have "selected" class
     const classAfter = await firstTodo.evaluate(el => el.className);
@@ -264,12 +341,17 @@ function sel(classMap, selector) {
     assert(todos.length >= 2, 'Need at least 2 todos');
 
     await todos[0].click();
-    await page.waitForTimeout(500);
+    await waitForClassState(page, s('.todo-item'), 'selected', true);
     const class1 = await todos[0].evaluate(el => el.className);
     assert(class1.includes('selected'), 'First todo should be selected');
 
     await todos[1].click();
-    await page.waitForTimeout(500);
+    await page.waitForFunction(({ selector }) => {
+      const items = document.querySelectorAll(selector);
+      return items.length >= 2 &&
+        !items[0].className.includes('selected') &&
+        items[1].className.includes('selected');
+    }, { selector: s('.todo-item') }, { timeout: 10000 });
     const class1After = await todos[0].evaluate(el => el.className);
     const class2After = await todos[1].evaluate(el => el.className);
     assert(!class1After.includes('selected'), 'First todo should lose selected');
@@ -280,12 +362,12 @@ function sel(classMap, selector) {
 
   await runTest('BUG-014: Subtask title shows typed text', async (page, s) => {
     await page.click(s('.todo-item'));
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     const addInput = await page.$(s('.add-step-input'));
     await addInput.fill('Custom step name');
     await addInput.press('Enter');
-    await page.waitForTimeout(500);
+    await waitForSelectorCount(page, s('.subtask-title-input'));
 
     // Verify the subtask input has the correct value
     const val = await page.$eval(s('.subtask-title-input'), el => el.value);
@@ -294,21 +376,59 @@ function sel(classMap, selector) {
 
   await runTest('BUG-014: Subtask title is editable', async (page, s) => {
     await page.click(s('.todo-item'));
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     const addInput = await page.$(s('.add-step-input'));
     await addInput.fill('Original step');
     await addInput.press('Enter');
-    await page.waitForTimeout(500);
+    await waitForSelectorCount(page, s('.subtask-title-input'));
 
     // Edit the subtask title
     const subtaskInput = await page.$(s('.subtask-title-input'));
     await subtaskInput.fill('Renamed step');
     await subtaskInput.press('Tab');
-    await page.waitForTimeout(500);
+    await page.waitForFunction(({ selector, expectedValue }) => {
+      const input = document.querySelector(selector);
+      return input && input.value === expectedValue;
+    }, { selector: s('.subtask-title-input'), expectedValue: 'Renamed step' }, { timeout: 10000 });
 
     const val = await page.$eval(s('.subtask-title-input'), el => el.value);
     assert(val === 'Renamed step', 'Subtask title should be updated, got: ' + val);
+  });
+
+  await runTest('BUG-014: Subtasks survive page refresh', async (page, s) => {
+    await page.click(s('.todo-item'));
+    await waitForDetailPane(page, s);
+
+    const selectedTodoTitle = await page.$eval(s('.detail-title-input'), el => el.value);
+
+    const addInput = await page.$(s('.add-step-input'));
+    await addInput.fill('Original persisted step');
+    await addInput.press('Enter');
+    await waitForSelectorCount(page, s('.subtask-title-input'));
+
+    const subtaskInput = await page.$(s('.subtask-title-input'));
+    await subtaskInput.fill('Persisted renamed step');
+    await subtaskInput.press('Tab');
+    await page.waitForTimeout(1000);
+    await waitForPersistedSubtask(page, selectedTodoTitle, 'Persisted renamed step');
+
+    await page.goto(BASE_URL + '/TodoApp.htm', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('[class*="folder-item"]', { timeout: 10000 });
+    await waitForSelectorCount(page, '[class*="todo-item"]');
+
+    const todoTitles = await page.$$eval('[class*="todo-title"]', els => els.map(e => e.textContent));
+    const todoIndex = todoTitles.indexOf(selectedTodoTitle);
+    assert(todoIndex >= 0, 'Expected todo to still be present after reload: ' + selectedTodoTitle);
+
+    const todos = await page.$$('[class*="todo-item"]');
+    await todos[todoIndex].click();
+    await waitForSelectorCount(page, '[class*="subtask-title-input"]');
+
+    const persistedValues = await page.$$eval('[class*="subtask-title-input"]', els => els.map(el => el.value));
+    assert(
+      persistedValues.includes('Persisted renamed step'),
+      'Subtask title should survive refresh, got: ' + persistedValues.join(', '));
   });
 
   // ─── BUG-015: FOLDER COUNTS ON LOAD ────────────────────────────────────────

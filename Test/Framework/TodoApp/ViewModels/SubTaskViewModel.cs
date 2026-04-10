@@ -13,6 +13,8 @@ namespace TodoApp.ViewModels
         private bool isCompleted;
         private string cssClass;
         private string checkboxClass;
+        private AppViewModel appViewModel;
+        private TodoItemViewModel parentTodo;
 
         public SubTaskViewModel()
         {
@@ -109,6 +111,7 @@ namespace TodoApp.ViewModels
         public void ToggleComplete(object e, object ev)
         {
             this.IsCompleted = !this.IsCompleted;
+            this.Persist();
         }
 
         /// <summary>
@@ -116,13 +119,28 @@ namespace TodoApp.ViewModels
         /// </summary>
         public void OnTitleChange(Element e, ElementEvent ev)
         {
-            InputElement input = (InputElement)e;
+            Element source = ev != null && ev.Target != null ? ev.Target : e;
+            InputElement input = (InputElement)source;
             string newTitle = input.Value;
             if (newTitle != null && newTitle != "")
             {
                 this.Title = newTitle;
+                this.Persist();
             }
         }
 
+        public void BindToTodo(AppViewModel appViewModel, TodoItemViewModel parentTodo)
+        {
+            this.appViewModel = appViewModel;
+            this.parentTodo = parentTodo;
+        }
+
+        private void Persist()
+        {
+            if (this.appViewModel != null && this.parentTodo != null)
+            {
+                this.appViewModel.SaveTodo(this.parentTodo);
+            }
+        }
     }
 }

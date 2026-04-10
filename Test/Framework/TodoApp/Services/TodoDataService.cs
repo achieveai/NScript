@@ -1,6 +1,8 @@
 namespace TodoApp.Services
 {
     using System;
+    using Sunlight.Framework.Observables;
+    using TodoApp.ViewModels;
 
     /// <summary>
     /// Typed data access service. Wraps IndexedDbService with C#-friendly methods
@@ -27,7 +29,7 @@ namespace TodoApp.Services
         /// Persists a todo item to the 'todos' object store.
         /// All fields are serialized as a plain JSON object with well-known keys.
         /// </summary>
-        public Promise<bool> SaveTodo(string id, string folderId, string title, bool isCompleted, bool isImportant, bool isMyDay, string dueDate, string notes)
+        public Promise<bool> SaveTodo(string id, string folderId, string title, bool isCompleted, bool isImportant, bool isMyDay, string dueDate, string notes, ObservableCollection<SubTaskViewModel> subTasks)
         {
             string json = "{";
             json = json + "\"Id\":\"" + id + "\"";
@@ -38,6 +40,7 @@ namespace TodoApp.Services
             json = json + ",\"IsMyDay\":" + (isMyDay ? "true" : "false");
             json = json + ",\"DueDate\":\"" + (dueDate != null ? EscapeJson(dueDate) : "") + "\"";
             json = json + ",\"Notes\":\"" + (notes != null ? EscapeJson(notes) : "") + "\"";
+            json = json + ",\"SubTasks\":" + BuildSubTasksJson(subTasks);
             json = json + "}";
             return this.dbService.PutRaw("todos", json);
         }
@@ -108,6 +111,33 @@ namespace TodoApp.Services
             result = result.Replace("\b", "\\b");
             result = result.Replace("\f", "\\f");
             return result;
+        }
+
+        private static string BuildSubTasksJson(ObservableCollection<SubTaskViewModel> subTasks)
+        {
+            if (subTasks == null || subTasks.Count == 0)
+            {
+                return "[]";
+            }
+
+            string json = "[";
+            for (int i = 0; i < subTasks.Count; i++)
+            {
+                if (i > 0)
+                {
+                    json = json + ",";
+                }
+
+                var subTask = subTasks[i];
+                json = json + "{";
+                json = json + "\"Id\":\"" + (subTask.Id != null ? EscapeJson(subTask.Id) : "") + "\"";
+                json = json + ",\"Title\":\"" + (subTask.Title != null ? EscapeJson(subTask.Title) : "") + "\"";
+                json = json + ",\"IsCompleted\":" + (subTask.IsCompleted ? "true" : "false");
+                json = json + "}";
+            }
+
+            json = json + "]";
+            return json;
         }
     }
 }

@@ -33,6 +33,9 @@ namespace TodoApp.Services
         [Script(@"return obj ? (obj.Notes || '') : '';")]
         public static extern string GetNotes(object obj);
 
+        [Script(@"return obj ? (obj.SubTasks || []) : [];")]
+        public static extern object GetSubTasks(object obj);
+
         [Script(@"return obj ? (obj.Name || '') : '';")]
         public static extern string GetName(object obj);
 
@@ -47,6 +50,9 @@ namespace TodoApp.Services
 
         [Script(@"return obj ? (obj.SortOrder || 0) : 0;")]
         public static extern int GetSortOrder(object obj);
+
+        [Script(@"return json ? @:JSON.parse(json) : [];")]
+        public static extern object Parse(string json);
 
         /// <summary>
         /// Returns the length of a native JS array, or 0 if null.
