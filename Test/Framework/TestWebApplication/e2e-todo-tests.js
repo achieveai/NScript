@@ -431,6 +431,37 @@ function sel(classMap, selector) {
       'Subtask title should survive refresh, got: ' + persistedValues.join(', '));
   });
 
+  await runTest('BUG-014: Created subtask survives page refresh without edit', async (page, s) => {
+    await page.click(s('.todo-item'));
+    await waitForDetailPane(page, s);
+
+    const selectedTodoTitle = await page.$eval(s('.detail-title-input'), el => el.value);
+    const createdSubtaskTitle = 'Persisted created-only step';
+
+    const addInput = await page.$(s('.add-step-input'));
+    await addInput.fill(createdSubtaskTitle);
+    await addInput.press('Enter');
+    await waitForSelectorCount(page, s('.subtask-title-input'));
+    await waitForPersistedSubtask(page, selectedTodoTitle, createdSubtaskTitle);
+
+    await page.goto(BASE_URL + '/TodoApp.htm', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('[class*="folder-item"]', { timeout: 10000 });
+    await waitForSelectorCount(page, '[class*="todo-item"]');
+
+    const todoTitles = await page.$$eval('[class*="todo-title"]', els => els.map(e => e.textContent));
+    const todoIndex = todoTitles.indexOf(selectedTodoTitle);
+    assert(todoIndex >= 0, 'Expected todo to still be present after reload: ' + selectedTodoTitle);
+
+    const todos = await page.$$('[class*="todo-item"]');
+    await todos[todoIndex].click();
+    await waitForSelectorCount(page, '[class*="subtask-title-input"]');
+
+    const persistedValues = await page.$$eval('[class*="subtask-title-input"]', els => els.map(el => el.value));
+    assert(
+      persistedValues.includes(createdSubtaskTitle),
+      'Created subtask should survive refresh, got: ' + persistedValues.join(', '));
+  });
+
   // ─── BUG-015: FOLDER COUNTS ON LOAD ────────────────────────────────────────
 
   await runTest('BUG-015: All folder counts correct on initial load', async (page, s) => {
