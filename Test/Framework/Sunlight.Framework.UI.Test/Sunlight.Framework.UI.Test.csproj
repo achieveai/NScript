@@ -64,6 +64,11 @@
     <EmbeddedResource Include="RazorTemplates\RazorEventClick.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorEventLambda.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorTodoApp.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorStyles.css" />
+    <EmbeddedResource Include="RazorTemplates\RazorStylesExtra.css" />
+    <EmbeddedResource Include="RazorTemplates\RazorStyledTemplate.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorMultiStyled.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorForeachMixedMarkers.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

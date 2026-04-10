@@ -79,3 +79,4 @@ launchsettings.json
 /scratchpad/
 **/node_modules/
 **/logs/*.jsonl
+**/screenshots/*.png

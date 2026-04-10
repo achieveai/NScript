@@ -189,6 +189,8 @@ namespace NScript.CLR
         private TypeReference taskGenericTypeReference;
         private TypeReference taskAwaiterTypeReference;
         private TypeReference taskAwaiterGenericTypeReference;
+        private MethodReference wrapPromiseMethod;
+        private bool wrapPromiseMethodSearched;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClrKnownReferences"/> class.
@@ -947,6 +949,46 @@ namespace NScript.CLR
                 }
 
                 throw new InvalidProgramException("Object.IsNullOrUndefined could not be resolved");
+            }
+        }
+
+        /// <summary>
+        /// Gets the CallContext.WrapPromise(Promise) method reference from
+        /// Sunlight.Framework. Returns null if the assembly is not loaded.
+        /// Used by the compiler to wrap external async awaits for context propagation.
+        /// </summary>
+        public MethodReference WrapPromiseMethod
+        {
+            get
+            {
+                if (this.wrapPromiseMethod != null || this.wrapPromiseMethodSearched)
+                {
+                    return this.wrapPromiseMethod;
+                }
+
+                this.wrapPromiseMethodSearched = true;
+
+                ModuleDefinition frameworkModule;
+                if (!this.clrContext.TryGetModuleDefinition("Sunlight.Framework", out frameworkModule))
+                {
+                    return null;
+                }
+
+                var callContextType = frameworkModule.GetType("Sunlight.Framework.CallContext");
+                if (callContextType == null)
+                {
+                    return null;
+                }
+
+                foreach (var method in callContextType.Methods)
+                {
+                    if (method.Name == "WrapPromise" && !method.HasGenericParameters)
+                    {
+                        return this.wrapPromiseMethod = method;
+                    }
+                }
+
+                return null;
             }
         }
 

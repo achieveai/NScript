@@ -265,12 +265,7 @@ namespace Sunlight.Framework.UI.Helpers
                 var elementsOfIntrest = this.elementsOfIntrest;
                 var dataContext = this.dataContext;
 
-                if (!this.isGraphMode)
-                {
-                    var legacy = (LegacyBinderStrategy)this.bindingStrategy;
-                    legacy.DataContextUpdated = this.dataContextUpdated;
-                    legacy.TemplateParentUpdated = this.templateParentUpdated;
-                }
+                this.bindingStrategy.OnDataContextUpdated(this.dataContextUpdated, this.templateParentUpdated);
 
                 this.bindingStrategy.PushInitialValues(dataContext, this.skinableParent, elementsOfIntrest);
 
@@ -365,10 +360,7 @@ namespace Sunlight.Framework.UI.Helpers
                 return;
             }
 
-            if (!this.isGraphMode)
-            {
-                ((LegacyBinderStrategy)this.bindingStrategy).QueuedDeactivation(false, false);
-            }
+            this.bindingStrategy.OnQueuedDeactivation(false, false);
         }
 
         /// <summary>

@@ -26,6 +26,19 @@ namespace NScript.RazorSkin.CodeGen
         public readonly MethodDefinition SkinCtor;
         public readonly TypeDefinition UISkinableElement;
 
+        // Exposed type definitions for use by ResolveRuntimeIdentifiers
+        public readonly TypeDefinition SkinType;
+        public readonly TypeDefinition SkinInstanceType;
+        public readonly TypeDefinition SkinBinderInfoType;
+        public readonly TypeDefinition BinderHelperType;
+        public readonly TypeDefinition ElementRefType;
+        public readonly TypeDefinition NodeRefType;
+        public readonly TypeDefinition DocumentRefType;
+
+        // Framework attribute types for sub-control tag resolution
+        public readonly TypeDefinition TagNameAttribute;
+        public readonly TypeDefinition DomAttributeAttribute;
+
         public RazorKnownTypes(ClrContext clrContext, ClrKnownReferences clrKnownRefs)
         {
             // --- Look up key framework types (same as KnownTemplateTypes) ---
@@ -46,6 +59,15 @@ namespace NScript.RazorSkin.CodeGen
 
             UISkinableElement = clrContext.GetTypeDefinition(
                 Tuple.Create(UiFrameworkDll, UiFrameworkDll + ".UISkinableElement"));
+
+            // Store for external access by ResolveRuntimeIdentifiers
+            SkinType = skinType;
+            SkinInstanceType = skinInstanceType;
+            SkinBinderInfoType = skinBinderInfoType;
+            BinderHelperType = binderHelperType;
+            ElementRefType = elementRefType;
+            NodeRefType = nodeRefType;
+            DocumentRefType = documentRefType;
 
             // --- Generic type building for constructor signatures ---
             var nativeArray = clrContext.GetTypeDefinition(
@@ -93,7 +115,7 @@ namespace NScript.RazorSkin.CodeGen
             }
             catch (Exception ex)
             {
-                Log.Debug("Could not resolve SetCssClass: {Error}", ex.Message);
+                Log.Debug(ex, "Could not resolve SetCssClass — optional method");
                 SetCssClass = null;
             }
 
@@ -135,6 +157,29 @@ namespace NScript.RazorSkin.CodeGen
                 clrKnownRefs.TypeType,
                 func3SkinDocSI,
                 clrKnownRefs.String).Resolve();
+
+            // --- Resolve framework attribute types for sub-control tag resolution ---
+            try
+            {
+                TagNameAttribute = clrContext.GetTypeDefinition(
+                    Tuple.Create(UiFrameworkDll, "Sunlight.Framework.UI.Attributes.TagNameAttribute"));
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Could not resolve TagNameAttribute — custom tags disabled");
+                TagNameAttribute = null;
+            }
+
+            try
+            {
+                DomAttributeAttribute = clrContext.GetTypeDefinition(
+                    Tuple.Create(UiFrameworkDll, "Sunlight.Framework.UI.Attributes.DomAttributeAttribute"));
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Could not resolve DomAttributeAttribute — custom DOM attributes disabled");
+                DomAttributeAttribute = null;
+            }
         }
 
         /// <summary>

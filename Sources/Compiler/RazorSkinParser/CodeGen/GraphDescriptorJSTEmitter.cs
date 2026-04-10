@@ -30,7 +30,21 @@ namespace NScript.RazorSkin.CodeGen
         private readonly ISet<string> _knownFunctionNames;
         private readonly ClrContext _clrContext;
         private readonly string _modelTypeName;
+        private readonly string _parentModelTypeName;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
+        private readonly CecilTypeHelper _typeHelper;
+        private readonly RazorCssManager _cssManager;
+
+        // Cached maps for ToJsGetterWithFieldAccess — identical across all invocations
+        // since _modelTypeName doesn't change.
+        private Dictionary<string, string> _cachedFieldMap;
+        private Dictionary<string, string> _cachedMethodMap;
+
+        /// <summary>
+        /// Whether this emitter generates for an item graph (inside a @foreach loop).
+        /// Item graphs use tuple DataContext: [parentDC, control, item].
+        /// </summary>
+        private bool IsItemGraph => !string.IsNullOrEmpty(_topology.ItemVariablePrefix);
 
         // Resolved field identifiers for GraphDescriptor
         private readonly IIdentifier _nodeCountField;
@@ -54,6 +68,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _subscriptionPropertyNameField;
         private readonly IIdentifier _subscriptionNodeIdxField;
         private readonly IIdentifier _subscriptionSourceSlotField;
+        private readonly IIdentifier _subscriptionPathSegmentsField;
 
         // Resolved field identifiers for GateTargetInfo
         private readonly IIdentifier _gateMarkerIdxField;
@@ -68,10 +83,23 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _collectionMarkerIdxField;
         private readonly IIdentifier _collectionItemGraphField;
         private readonly IIdentifier _collectionItemTemplateField;
+        private readonly IIdentifier _collectionSubControlInfosField;
+
+        // Resolved field identifiers for SubControlInfo
+        private readonly IIdentifier _subControlMarkerIdxField;
+        private readonly IIdentifier _subControlTypeFactoryField;
+        private readonly IIdentifier _subControlSkinFactoryField;
 
         // Resolved field identifiers for EventTargetInfo
         private readonly IIdentifier _eventElemIdxField;
         private readonly IIdentifier _eventNameField;
+
+        // LIMIT-006: Resolved field identifiers for SubControlInfo/SubControlPropertyInfo
+        private readonly IIdentifier _subControlsField;
+        private readonly IIdentifier _subControlElemIdxField;
+        private readonly IIdentifier _subControlBindingsField;
+        private readonly IIdentifier _subControlPropNodeIdxField;
+        private readonly IIdentifier _subControlPropSetterField;
 
         // Factory identifiers for sub-types (used to emit proper typed instances)
         private readonly IIdentifier _domTargetInfoFactory;
@@ -79,6 +107,8 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _gateTargetInfoFactory;
         private readonly IIdentifier _collectionTargetInfoFactory;
         private readonly IIdentifier _eventTargetInfoFactory;
+        private readonly IIdentifier _subControlInfoFactory;
+        private readonly IIdentifier _subControlPropertyInfoFactory;
 
         public GraphDescriptorJSTEmitter(
             GraphTopology topology,
@@ -88,7 +118,9 @@ namespace NScript.RazorSkin.CodeGen
             ISet<string> knownFunctionNames,
             ClrContext clrContext,
             string modelTypeName,
-            Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null)
+            Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null,
+            string parentModelTypeName = null,
+            RazorCssManager cssManager = null)
         {
             _topology = topology;
             _scope = scope;
@@ -97,7 +129,10 @@ namespace NScript.RazorSkin.CodeGen
             _knownFunctionNames = knownFunctionNames;
             _clrContext = clrContext;
             _modelTypeName = modelTypeName;
+            _parentModelTypeName = parentModelTypeName;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
+            _typeHelper = new CecilTypeHelper(clrContext);
+            _cssManager = cssManager;
 
             // Resolve all field identifiers at construction time
             ResolveFieldIdentifiers(
@@ -107,19 +142,27 @@ namespace NScript.RazorSkin.CodeGen
                 out _subscribeModeField, out _parentIndicesField, out _rootSourceSlotField,
                 out _domTargetElemIdxField, out _domTargetSetterField,
                 out _subscriptionPropertyNameField, out _subscriptionNodeIdxField,
-                out _subscriptionSourceSlotField,
+                out _subscriptionSourceSlotField, out _subscriptionPathSegmentsField,
                 out _gateMarkerIdxField, out _gateTrueTemplateField, out _gateFalseTemplateField,
                 out _gateTrueElemCountField, out _gateFalseElemCountField,
                 out _gateTrueChildElemIndicesField, out _gateFalseChildElemIndicesField,
                 out _collectionMarkerIdxField, out _collectionItemGraphField,
-                out _collectionItemTemplateField,
+                out _collectionItemTemplateField, out _collectionSubControlInfosField,
+                out _subControlMarkerIdxField, out _subControlTypeFactoryField,
+                out _subControlSkinFactoryField,
                 out _eventElemIdxField, out _eventNameField);
+
+            // LIMIT-006: Resolve sub-control field identifiers
+            ResolveSubControlFieldIdentifiers(
+                out _subControlsField, out _subControlElemIdxField, out _subControlBindingsField,
+                out _subControlPropNodeIdxField, out _subControlPropSetterField);
 
             // Resolve factory identifiers for sub-types so we can emit proper typed instances
             ResolveFactoryIdentifiers(
                 out _domTargetInfoFactory, out _subscriptionEntryFactory,
                 out _gateTargetInfoFactory, out _collectionTargetInfoFactory,
-                out _eventTargetInfoFactory);
+                out _eventTargetInfoFactory,
+                out _subControlInfoFactory, out _subControlPropertyInfoFactory);
         }
 
         /// <summary>
@@ -134,10 +177,13 @@ namespace NScript.RazorSkin.CodeGen
             out IIdentifier subscribeMode, out IIdentifier parentIndices, out IIdentifier rootSourceSlot,
             out IIdentifier domElemIdx, out IIdentifier domSetter,
             out IIdentifier subPropertyName, out IIdentifier subNodeIdx, out IIdentifier subSourceSlot,
+            out IIdentifier subPathSegments,
             out IIdentifier gateMarkerIdx, out IIdentifier gateTrueTemplate, out IIdentifier gateFalseTemplate,
             out IIdentifier gateTrueElemCount, out IIdentifier gateFalseElemCount,
             out IIdentifier gateTrueChildElemIndices, out IIdentifier gateFalseChildElemIndices,
             out IIdentifier collMarkerIdx, out IIdentifier collItemGraph, out IIdentifier collItemTemplate,
+            out IIdentifier collSubControlInfos,
+            out IIdentifier scMarkerIdx, out IIdentifier scTypeFactory, out IIdentifier scSkinFactory,
             out IIdentifier eventElemIdx, out IIdentifier eventName)
         {
             // GraphDescriptor fields
@@ -165,6 +211,7 @@ namespace NScript.RazorSkin.CodeGen
             subPropertyName = ResolveFieldId(subEntryType, "PropertyName");
             subNodeIdx = ResolveFieldId(subEntryType, "NodeIdx");
             subSourceSlot = ResolveFieldId(subEntryType, "SourceSlot");
+            subPathSegments = ResolveFieldId(subEntryType, "PathSegments");
 
             // GateTargetInfo fields
             var gateType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GateTargetInfo");
@@ -181,11 +228,37 @@ namespace NScript.RazorSkin.CodeGen
             collMarkerIdx = ResolveFieldId(collType, "MarkerIdx");
             collItemGraph = ResolveFieldId(collType, "ItemGraph");
             collItemTemplate = ResolveFieldId(collType, "ItemTemplate");
+            collSubControlInfos = ResolveFieldId(collType, "SubControlInfos");
+
+            // SubControlInfo fields
+            var scType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
+            scMarkerIdx = ResolveFieldId(scType, "MarkerIdx");
+            scTypeFactory = ResolveFieldId(scType, "TypeFactory");
+            scSkinFactory = ResolveFieldId(scType, "SkinFactory");
 
             // EventTargetInfo fields
             var eventType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.EventTargetInfo");
             eventElemIdx = ResolveFieldId(eventType, "ElemIdx");
             eventName = ResolveFieldId(eventType, "EventName");
+        }
+
+        /// <summary>
+        /// LIMIT-006: Resolves field identifiers for SubControlInfo and SubControlPropertyInfo.
+        /// </summary>
+        private void ResolveSubControlFieldIdentifiers(
+            out IIdentifier subControlsField, out IIdentifier scElemIdx, out IIdentifier scBindings,
+            out IIdentifier scpNodeIdx, out IIdentifier scpSetter)
+        {
+            var graphDescType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GraphDescriptor");
+            subControlsField = ResolveFieldId(graphDescType, "SubControls");
+
+            var subControlType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
+            scElemIdx = ResolveFieldId(subControlType, "ElemIdx");
+            scBindings = ResolveFieldId(subControlType, "Bindings");
+
+            var subControlPropType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlPropertyInfo");
+            scpNodeIdx = ResolveFieldId(subControlPropType, "NodeIdx");
+            scpSetter = ResolveFieldId(subControlPropType, "Setter");
         }
 
         /// <summary>
@@ -196,13 +269,16 @@ namespace NScript.RazorSkin.CodeGen
         private void ResolveFactoryIdentifiers(
             out IIdentifier domTargetInfoFactory, out IIdentifier subscriptionEntryFactory,
             out IIdentifier gateTargetInfoFactory, out IIdentifier collectionTargetInfoFactory,
-            out IIdentifier eventTargetInfoFactory)
+            out IIdentifier eventTargetInfoFactory,
+            out IIdentifier subControlInfoFactory, out IIdentifier subControlPropertyInfoFactory)
         {
             domTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.DomTargetInfo");
             subscriptionEntryFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.SubscriptionEntry");
             gateTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.GateTargetInfo");
             collectionTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.CollectionTargetInfo");
             eventTargetInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.EventTargetInfo");
+            subControlInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
+            subControlPropertyInfoFactory = ResolveFactoryForType("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlPropertyInfo");
         }
 
         /// <summary>
@@ -268,11 +344,16 @@ namespace NScript.RazorSkin.CodeGen
             AddField(obj, _subscribeModeField, "subscribeMode", new NumberLiteralExpression(_scope, 0));
             AddField(obj, _nodeCountField, "nodeCount", new NumberLiteralExpression(_scope, _topology.NodeCount));
 
-            if (!string.IsNullOrEmpty(_topology.ModelTypeName))
+            // Skip SourceType for item graphs — DataContext is a tuple, not the model type.
+            if (!string.IsNullOrEmpty(_topology.ModelTypeName) && !IsItemGraph)
                 AddField(obj, _sourceTypeField, "sourceType", EmitSourceType(_topology.ModelTypeName));
 
             AddField(obj, _parentIndicesField, "parentIndices", EmitParentIndices());
             AddField(obj, _rootSourceSlotField, "rootSourceSlot", new NumberLiteralExpression(_scope, 0));
+
+            // LIMIT-006: Emit sub-control entries if any exist
+            if (_topology.SubControls.Count > 0)
+                AddField(obj, _subControlsField, "subControls", EmitSubControls());
 
             return obj;
         }
@@ -329,7 +410,7 @@ namespace NScript.RazorSkin.CodeGen
 
         /// <summary>
         /// getters: [null, function(dc) { return dc.get_name(); }, null, ...]
-        /// Uses <see cref="RawBodyFunctionExpression"/> for getter bodies since getter
+        /// Uses ScriptLiteralExpression for getter bodies since getter
         /// expressions reference virtual method accessors that are already correctly mangled.
         /// </summary>
         private Expression EmitGetters()
@@ -369,21 +450,23 @@ namespace NScript.RazorSkin.CodeGen
                         return resolved;
 
                     // Fallback: known function names stay as-is, others get getter prefix.
-                    // Strip "Model." or item variable prefix — these map to the DataContext.
                     var fallbackExpr = getterExpression;
-                    if (fallbackExpr.StartsWith("Model."))
+                    bool fallbackIsModel = fallbackExpr.StartsWith("Model.");
+                    if (fallbackIsModel)
                         fallbackExpr = fallbackExpr.Substring(6);
                     if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
                         && fallbackExpr.StartsWith(_topology.ItemVariablePrefix))
                         fallbackExpr = fallbackExpr.Substring(_topology.ItemVariablePrefix.Length);
 
+                    // For item graphs: dc[2] for item props, dc[0] for Model props
+                    string dcRef = IsItemGraph ? (fallbackIsModel ? "dc[0]" : "dc[2]") : "dc";
                     string body;
                     if (_knownFunctionNames != null && _knownFunctionNames.Contains(fallbackExpr))
-                        body = "return dc." + fallbackExpr;
+                        body = "return " + dcRef + "." + fallbackExpr;
                     else
                     {
                         var getterName = ExpressionJsEmitter.PropertyToGetterName(fallbackExpr);
-                        body = "return dc." + getterName + "()";
+                        body = "return " + dcRef + "." + getterName + "()";
                     }
 
                     return CreateRawGetterFunction(body);
@@ -413,6 +496,13 @@ namespace NScript.RazorSkin.CodeGen
                     if (jstExpr != null)
                         return jstExpr;
 
+                    // Try building a proper JST expression tree for ternary expressions.
+                    // Ternary expressions like "item.IsComplete ? \"done\" : \"pending\""
+                    // need resolved field identifiers to produce correct minified names.
+                    var ternaryExpr = TryBuildTernaryJSTExpression(getterExpression);
+                    if (ternaryExpr != null)
+                        return ternaryExpr;
+
                     // Final fallback: use raw body with field-access replacement
                     var jsExpr = ToJsGetterWithFieldAccess(
                         getterExpression, "dc", "tp", _knownFunctionNames);
@@ -436,6 +526,14 @@ namespace NScript.RazorSkin.CodeGen
         {
             if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
                 return null;
+
+            // Check for negation prefix (from gate conditions like "!IsCollapsed")
+            bool isNegated = false;
+            if (propertyName.StartsWith("!"))
+            {
+                isNegated = true;
+                propertyName = propertyName.Substring(1);
+            }
 
             // Strip "Model." prefix — in Razor templates, Model IS the DataContext.
             // OneTime bindings pass the full CSharpExpression (e.g., "Model.AppVersion").
@@ -477,20 +575,22 @@ namespace NScript.RazorSkin.CodeGen
             // IMPORTANT: Find the backing field on the SAME TypeDefinition from _clrContext
             // (not via IL resolution) to ensure the scope manager returns the correct identifier.
             var backingField = TryFindBackingFieldOnType(typeDefinition, property);
+            // For item graphs, access the item element of the tuple: dc[2]
+            var dcAccess = CreateTupleAccessExpression(paramIdentifier, getterScope);
             Expression currentExpr;
             if (backingField != null)
             {
-                // Simple getter inlined by NScript — use field access: dc.fieldName
+                // Simple getter inlined by NScript — use field access: dc.fieldName (or dc[2].fieldName)
                 var fieldId = _scopeManager.Resolve(backingField);
                 currentExpr = new IndexExpression(
                     null,
                     getterScope,
-                    new IdentifierExpression(paramIdentifier, getterScope),
+                    dcAccess,
                     new IdentifierExpression(fieldId, getterScope));
             }
             else
             {
-                // Complex getter — use method call: dc.get_propName()
+                // Complex getter — use method call: dc.get_propName() (or dc[2].get_propName())
                 var getterMethodId = _scopeManager.Resolve(property.GetMethod);
                 currentExpr = new MethodCallExpression(
                     null,
@@ -498,9 +598,16 @@ namespace NScript.RazorSkin.CodeGen
                     new IndexExpression(
                         null,
                         getterScope,
-                        new IdentifierExpression(paramIdentifier, getterScope),
+                        dcAccess,
                         new IdentifierExpression(getterMethodId, getterScope)),
                     System.Array.Empty<Expression>());
+            }
+
+            // Apply negation for gate conditions like "!IsCollapsed"
+            if (isNegated)
+            {
+                currentExpr = new UnaryExpression(
+                    null, getterScope, UnaryOperator.LogicalNot, currentExpr);
             }
 
             // Wrap in: function(dc) { return <expr>; }
@@ -561,7 +668,8 @@ namespace NScript.RazorSkin.CodeGen
                 var field = current.Fields.FirstOrDefault(f => f.Name == fieldName);
                 if (field != null) return field;
                 try { current = current.BaseType?.Resolve(); }
-                catch (Exception) { break; }
+                catch (Mono.Cecil.AssemblyResolutionException) { break; }
+                catch (System.Exception) { break; } // Cecil resolution — external assembly not loaded
             }
 
             return null;
@@ -573,19 +681,29 @@ namespace NScript.RazorSkin.CodeGen
         /// and complex expressions that can't be resolved through Cecil.
         /// Uses enforceSuggestion=true so "dc" stays as-is since the raw body references it literally.
         /// </summary>
-        private RawBodyFunctionExpression CreateRawGetterFunction(string rawBody)
+        private ScriptLiteralExpression CreateRawGetterFunction(string rawBody)
         {
-            var innerScope = new IdentifierScope(
-                _scope,
-                new string[] { "dc" },
-                true);
+            // Emit the entire function as a raw script literal to avoid the JST
+            // TransformerVisitor replacing it with an empty FunctionExpression.
+            // Parameter "dc" is the data-context array, referenced literally in rawBody.
+            return new ScriptLiteralExpression(null, _scope, $"function(dc){{{rawBody};}}");
+        }
 
-            return new RawBodyFunctionExpression(
-                null,
-                _scope,
-                innerScope,
-                innerScope.ParameterIdentifiers,
-                rawBody);
+        /// <summary>
+        /// Creates a JST expression to access a DataContext element.
+        /// For root graphs: returns the dc parameter directly.
+        /// For item graphs: returns dc[tupleIndex] — tuple layout: [0]=parentDC, [1]=control, [2]=item.
+        /// </summary>
+        private Expression CreateTupleAccessExpression(
+            IIdentifier dcParam, IdentifierScope scope, int tupleIndex = 2)
+        {
+            Expression dcExpr = new IdentifierExpression(dcParam, scope);
+            if (IsItemGraph)
+            {
+                dcExpr = new IndexExpression(null, scope, dcExpr,
+                    new NumberLiteralExpression(scope, tupleIndex));
+            }
+            return dcExpr;
         }
 
         /// <summary>
@@ -608,10 +726,20 @@ namespace NScript.RazorSkin.CodeGen
                     csharpExpression, dataContextParam, templateParentParam, knownFunctionNames);
             }
 
-            // Replace "Model." with DataContext param and "Control." with TemplateParent param
+            // Replace "Model.", "Control.", and the item variable prefix (e.g. "folder.")
+            // with the appropriate function parameter names.
+            // For item graphs (tuple DataContext): Model. → dc[0]., itemVar. → dc[2].
+            // For root graphs: Model. → dc.
+            string modelRef = IsItemGraph ? dataContextParam + "[0]." : dataContextParam + ".";
+            string itemRef = IsItemGraph ? dataContextParam + "[2]." : dataContextParam + ".";
             var expr = csharpExpression
-                .Replace("Model.", dataContextParam + ".")
+                .Replace("Model.", modelRef)
                 .Replace("Control.", templateParentParam + ".");
+
+            // For foreach item templates, the item variable prefix (e.g. "folder.") must
+            // be replaced with the appropriate dc reference.
+            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix))
+                expr = expr.Replace(_topology.ItemVariablePrefix, itemRef);
 
             // Build method name map for resolving method calls
             var methodMap = BuildMethodNameMap();
@@ -650,6 +778,8 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Dictionary<string, string> BuildPropertyFieldNameMap()
         {
+            if (_cachedFieldMap != null) return _cachedFieldMap;
+
             if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
                 return null;
 
@@ -673,7 +803,8 @@ namespace NScript.RazorSkin.CodeGen
                     map[prop.Name] = fieldId.SuggestedName;
             }
 
-            return map;
+            _cachedFieldMap = map;
+            return _cachedFieldMap;
         }
 
         /// <summary>
@@ -682,6 +813,8 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Dictionary<string, string> BuildMethodNameMap()
         {
+            if (_cachedMethodMap != null) return _cachedMethodMap;
+
             if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
                 return null;
 
@@ -701,36 +834,15 @@ namespace NScript.RazorSkin.CodeGen
                     map[method.Name] = methodId.SuggestedName;
             }
 
-            return map;
+            _cachedMethodMap = map;
+            return _cachedMethodMap;
         }
 
-        /// <summary>
-        /// Finds a TypeDefinition by fully qualified name across all loaded assemblies.
-        /// </summary>
         private TypeDefinition FindTypeDefinition(string fullTypeName)
-        {
-            if (string.IsNullOrEmpty(fullTypeName)) return null;
+            => _typeHelper.FindTypeDefinition(fullTypeName);
 
-            return _clrContext.GetTypes()
-                .FirstOrDefault(t => t.FullName == fullTypeName);
-        }
-
-        /// <summary>
-        /// Finds a property on a type, walking up the inheritance hierarchy.
-        /// </summary>
-        private static PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
-        {
-            var current = type;
-            while (current != null)
-            {
-                var prop = current.Properties.FirstOrDefault(p => p.Name == propertyName);
-                if (prop != null) return prop;
-
-                try { current = current.BaseType?.Resolve(); }
-                catch (Exception) { break; }
-            }
-            return null;
-        }
+        private PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
+            => _typeHelper.FindProperty(type, propertyName);
 
         /// <summary>consumers: [[1], [2], [], ...]</summary>
         private Expression EmitConsumers()
@@ -908,10 +1020,20 @@ namespace NScript.RazorSkin.CodeGen
 
                 case ExpressionTarget.Attribute:
                 {
-                    // Emit: function(e, v) { if (v != null) e.setAttribute("attrName", v); else e.removeAttribute("attrName"); }
                     var attrName = EscapeJsString(dt.AttributeName ?? "");
-                    setterExpr = CreateRawSetterFunction(
-                        $"if (v != null) e.setAttribute(\"{attrName}\", v); else e.removeAttribute(\"{attrName}\")");
+                    // "value" attribute must use the DOM property (e.value), not setAttribute.
+                    // setAttribute("value", x) only updates the HTML attribute, not the displayed
+                    // input value after user interaction. Browsers render .value, not the attribute.
+                    if (string.Equals(dt.AttributeName, "value", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        setterExpr = CreateRawSetterFunction("e.value = v || \"\"");
+                    }
+                    else
+                    {
+                        // Emit: function(e, v) { if (v != null) e.setAttribute("attrName", v); else e.removeAttribute("attrName"); }
+                        setterExpr = CreateRawSetterFunction(
+                            $"if (v != null) e.setAttribute(\"{attrName}\", v); else e.removeAttribute(\"{attrName}\")");
+                    }
                     break;
                 }
 
@@ -1021,6 +1143,100 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
+        /// Tries to build a proper JST expression tree for a ternary expression like
+        /// "Model.IsActive ? \"yes\" : \"no\"" or "item.IsComplete ? \"done\" : \"pending\"".
+        /// Uses resolved field identifiers so the output participates in NScript's minification system.
+        /// Returns function(dc) { return dc.isActive_I ? "yes" : "no"; } with resolved identifiers.
+        /// Returns null if the expression cannot be parsed as a ternary.
+        /// </summary>
+        private Expression TryBuildTernaryJSTExpression(string expression)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+                return null;
+
+            // Match pattern: <propertyExpr> ? <trueExpr> : <falseExpr>
+            // The condition must be a simple property access (possibly negated).
+            // True/false branches can be string literals or property accesses.
+            // NOTE: Nested ternaries (e.g., "A ? B ? c : d : e") are NOT supported —
+            // the non-greedy capture will mis-split them. They fall through to raw emission.
+            var match = System.Text.RegularExpressions.Regex.Match(
+                expression.Trim(),
+                @"^(!?\s*(?:Model\.|" +
+                System.Text.RegularExpressions.Regex.Escape(_topology?.ItemVariablePrefix ?? "NOMATCH") +
+                @")?\s*[A-Z]\w*)\s*\?\s*(.*?)\s*:\s*(.*?)\s*$");
+
+            if (!match.Success) return null;
+
+            var conditionPart = match.Groups[1].Value.Trim();
+            var truePart = match.Groups[2].Value.Trim();
+            var falsePart = match.Groups[3].Value.Trim();
+
+            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var paramIdentifier = getterScope.ParameterIdentifiers[0];
+
+            // Build condition expression (property field access, possibly negated)
+            bool isNegated = conditionPart.StartsWith("!");
+            if (isNegated)
+                conditionPart = conditionPart.Substring(1).Trim();
+
+            Expression conditionExpr = TryResolvePropertyToFieldAccess(conditionPart, getterScope, paramIdentifier);
+            if (conditionExpr == null) return null;
+
+            if (isNegated)
+                conditionExpr = new UnaryExpression(null, getterScope, UnaryOperator.LogicalNot, conditionExpr);
+
+            // Build true/false branch expressions
+            Expression trueExpr = TryParseLiteralOrProperty(truePart, getterScope, paramIdentifier);
+            if (trueExpr == null) return null;
+
+            Expression falseExpr = TryParseLiteralOrProperty(falsePart, getterScope, paramIdentifier);
+            if (falseExpr == null) return null;
+
+            // Build: condition ? trueExpr : falseExpr
+            var ternary = new ConditionalOperatorExpression(null, getterScope, conditionExpr, trueExpr, falseExpr);
+
+            // Wrap in: function(dc) { return <ternary>; }
+            var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, getterScope, ternary));
+            return fn;
+        }
+
+        /// <summary>
+        /// Parses a ternary branch value as either a string literal or a property field access.
+        /// String literals are enclosed in double quotes: "someValue"
+        /// Property accesses are Model.Prop or item.Prop references.
+        /// </summary>
+        private Expression TryParseLiteralOrProperty(
+            string value, IdentifierScope scope, IIdentifier dcParam)
+        {
+            if (string.IsNullOrEmpty(value)) return null;
+
+            // String literal: "value"
+            if (value.StartsWith("\"") && value.EndsWith("\"") && value.Length >= 2)
+            {
+                var unquoted = value.Substring(1, value.Length - 2);
+                return new StringLiteralExpression(scope, unquoted);
+            }
+
+            // Boolean literals
+            if (value == "true")
+                return new BooleanLiteralExpression(scope, true);
+            if (value == "false")
+                return new BooleanLiteralExpression(scope, false);
+
+            // Numeric literals
+            if (int.TryParse(value, out var intVal))
+                return new NumberLiteralExpression(scope, intVal);
+
+            // null
+            if (value == "null")
+                return new NullLiteralExpression(scope);
+
+            // Property access
+            return TryResolvePropertyToFieldAccess(value, scope, dcParam);
+        }
+
+        /// <summary>
         /// Resolves a property expression like "Model.Price" to a field access JST expression.
         /// Returns: dc.price_I (using the resolved field identifier).
         /// </summary>
@@ -1041,11 +1257,13 @@ namespace NScript.RazorSkin.CodeGen
             if (property == null) return null;
 
             var backingField = TryFindBackingFieldOnType(typeDefinition, property);
+            // For item graphs, access the item element of the tuple: dc[2]
+            var dcAccess = CreateTupleAccessExpression(dcParam, scope);
             if (backingField != null)
             {
                 var fieldId = _scopeManager.Resolve(backingField);
                 return new IndexExpression(null, scope,
-                    new IdentifierExpression(dcParam, scope),
+                    dcAccess,
                     new IdentifierExpression(fieldId, scope));
             }
 
@@ -1055,7 +1273,7 @@ namespace NScript.RazorSkin.CodeGen
                 var getterId = _scopeManager.Resolve(property.GetMethod);
                 return new MethodCallExpression(null, scope,
                     new IndexExpression(null, scope,
-                        new IdentifierExpression(dcParam, scope),
+                        dcAccess,
                         new IdentifierExpression(getterId, scope)),
                     System.Array.Empty<Expression>());
             }
@@ -1066,40 +1284,56 @@ namespace NScript.RazorSkin.CodeGen
         /// <summary>
         /// Emits a getter function for an EventBinding node.
         /// The handler expression is like "Model.IncrementClick" or a lambda "(e) => Model.IncrementClick()".
-        /// For method references: function(dc) { return dc.incrementClick_x; }
-        /// For lambdas: use the raw expression with field access replacement.
+        /// For item graphs, uses tuple DataContext: dc[2] for item methods, dc[0] for Model methods.
         /// </summary>
         private Expression EmitEventGetter(string handlerExpression)
         {
             if (string.IsNullOrEmpty(handlerExpression))
                 return new NullLiteralExpression(_scope);
 
-            // Strip Model. prefix
+            // Track whether this is a Model-level method reference (for tuple index selection)
+            bool isModelMethodRef = handlerExpression.StartsWith("Model.");
+
+            // Strip Model. or item variable prefix (e.g., "folder.", "todo.")
             var expr = handlerExpression;
             if (expr.StartsWith("Model."))
                 expr = expr.Substring(6);
+            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix)
+                && expr.StartsWith(_topology.ItemVariablePrefix))
+                expr = expr.Substring(_topology.ItemVariablePrefix.Length);
 
             // For simple method references (no parens, no lambda)
             if (expr.IndexOfAny(new[] { '(', ')', '=', '>' }) < 0)
             {
-                // Build a proper JST getter that returns a wrapper function:
-                // function(dc) { return function(e, ev) { dc.method(); }; }
-                // Using resolved identifiers so the method name matches minification.
-                var methodId = TryResolveMethodIdentifier(handlerExpression);
+                // Resolve method — for Model methods in item graphs, look up on parent type
+                var resolveTypeName = (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
+                    ? _parentModelTypeName : null;
+                var methodId = TryResolveMethodIdentifier(expr, out bool isDevirtualized, resolveTypeName);
                 if (methodId != null)
                 {
-                    // Outer function: function(dc) { ... }
                     var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
                     var dcParam = outerScope.ParameterIdentifiers[0];
-
-                    // Inner function: function(e, ev) { dc.method(); }
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    // dc.method()
-                    var dcRef = new IdentifierExpression(dcParam, innerScope);
-                    var methodAccess = new IndexExpression(null, innerScope, dcRef,
-                        new IdentifierExpression(methodId, innerScope));
-                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+                    int tupleIdx = isModelMethodRef ? 0 : 2;
+                    var dcRef = CreateTupleAccessExpression(dcParam, innerScope, tupleIdx);
+                    var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
+                    var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
+
+                    MethodCallExpression methodCall;
+                    if (isDevirtualized)
+                    {
+                        // Devirtualized: method(instance, e, ev)
+                        var methodRef = new IdentifierExpression(methodId, innerScope);
+                        methodCall = new MethodCallExpression(null, innerScope, methodRef, dcRef, eParam, evParam);
+                    }
+                    else
+                    {
+                        // Virtual/instance: instance.method(e, ev)
+                        var methodAccess = new IndexExpression(null, innerScope, dcRef,
+                            new IdentifierExpression(methodId, innerScope));
+                        methodCall = new MethodCallExpression(null, innerScope, methodAccess, eParam, evParam);
+                    }
 
                     var innerFn = new FunctionExpression(null, outerScope, innerScope,
                         innerScope.ParameterIdentifiers, null);
@@ -1113,28 +1347,46 @@ namespace NScript.RazorSkin.CodeGen
 
                 // Fallback: raw body (unresolved name — may not match minification)
                 var methodName = char.ToLower(expr[0]) + expr.Substring(1);
+                var rawPrefix = IsItemGraph ? (isModelMethodRef ? "dc[0]" : "dc[2]") : "dc";
                 return CreateRawGetterFunction(
-                    "return function(e,ev){dc." + methodName + "()}");
+                    "return function(e,ev){" + rawPrefix + "." + methodName + "()}");
             }
 
+            // Parent-context method invocation inside a foreach item template:
+            // Pattern: "Model.Method(itemVar)" → function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }
+            var parentMethodResult = TryEmitParentMethodInvocation(handlerExpression);
+            if (parentMethodResult != null)
+                return parentMethodResult;
+
             // Lambda expression: try to extract the method call and build proper JST.
-            // Pattern: "(e) => Model.MethodName()" or "(e) => Model.MethodName(args)"
             var lambdaMethodName = TryExtractLambdaMethodName(handlerExpression);
             if (lambdaMethodName != null)
             {
-                var lambdaMethodId = TryResolveMethodIdentifier("Model." + lambdaMethodName);
+                // For lambdas in item graphs, resolve on parent type (lambdas reference Model methods)
+                var resolveTypeName = (IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
+                    ? _parentModelTypeName : null;
+                var lambdaMethodId = TryResolveMethodIdentifier(lambdaMethodName, out bool lambdaIsDevirt, resolveTypeName);
                 if (lambdaMethodId != null)
                 {
-                    // Build: function(dc) { return function(e, ev) { dc.method(); }; }
                     var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
                     var dcParam = outerScope.ParameterIdentifiers[0];
-
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    var dcRef = new IdentifierExpression(dcParam, innerScope);
-                    var methodAccess = new IndexExpression(null, innerScope, dcRef,
-                        new IdentifierExpression(lambdaMethodId, innerScope));
-                    var methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+                    // Lambdas reference Model methods → tuple index 0 for item graphs
+                    var dcRef = CreateTupleAccessExpression(dcParam, innerScope, 0);
+
+                    MethodCallExpression methodCall;
+                    if (lambdaIsDevirt)
+                    {
+                        var methodRef = new IdentifierExpression(lambdaMethodId, innerScope);
+                        methodCall = new MethodCallExpression(null, innerScope, methodRef, dcRef);
+                    }
+                    else
+                    {
+                        var methodAccess = new IndexExpression(null, innerScope, dcRef,
+                            new IdentifierExpression(lambdaMethodId, innerScope));
+                        methodCall = new MethodCallExpression(null, innerScope, methodAccess);
+                    }
 
                     var innerFn = new FunctionExpression(null, outerScope, innerScope,
                         innerScope.ParameterIdentifiers, null);
@@ -1185,16 +1437,27 @@ namespace NScript.RazorSkin.CodeGen
         /// Resolves a method identifier through the scope system.
         /// Returns the IIdentifier that tracks minification, or null if not found.
         /// </summary>
-        private IIdentifier TryResolveMethodIdentifier(string handlerExpression)
+        private IIdentifier TryResolveMethodIdentifier(string handlerExpression, string typeNameOverride = null)
         {
-            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
+            return TryResolveMethodIdentifier(handlerExpression, out _, typeNameOverride);
+        }
+
+        private IIdentifier TryResolveMethodIdentifier(string handlerExpression, out bool isDevirtualized, string typeNameOverride = null)
+        {
+            isDevirtualized = false;
+            var typeName = typeNameOverride ?? _modelTypeName;
+            if (_clrContext == null || string.IsNullOrEmpty(typeName))
                 return null;
 
             var methodName = handlerExpression;
             if (methodName.StartsWith("Model."))
                 methodName = methodName.Substring(6);
+            // Strip item variable prefix for foreach item templates
+            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix)
+                && methodName.StartsWith(_topology.ItemVariablePrefix))
+                methodName = methodName.Substring(_topology.ItemVariablePrefix.Length);
 
-            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            var typeDefinition = FindTypeDefinition(typeName);
             if (typeDefinition == null)
                 return null;
 
@@ -1202,6 +1465,9 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (method.Name == methodName && method.IsPublic && !method.IsConstructor)
                 {
+                    isDevirtualized = IsMethodDevirtualized(method);
+                    if (isDevirtualized)
+                        return _scopeManager.ResolveStatic(method);
                     return _scopeManager.Resolve(method);
                 }
             }
@@ -1210,16 +1476,135 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
+        /// Determines whether a method is devirtualized to a free static function
+        /// (called as method(instance, args)) rather than an instance method on the
+        /// prototype (called as instance.method(args)). Mirrors the logic in
+        /// MethodCallExpressionConverter.IsMethodInstanceCall.
+        /// </summary>
+        private bool IsMethodDevirtualized(MethodDefinition method)
+        {
+            if (!method.HasThis)
+                return false; // Already static
+
+            bool isVirtualCall = method.IsVirtual && !method.IsFinal;
+            if (isVirtualCall)
+                return false; // Virtual methods stay on prototype
+
+            var declaringType = method.DeclaringType;
+            if (declaringType.HasGenericParameters || declaringType.IsGenericInstance)
+                return false; // Generic types keep instance methods
+
+            if (declaringType.IsInterface)
+                return false;
+
+            if (!_scopeManager.ImplementInstanceAsStatic)
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to emit a parent-context method invocation for event handlers inside foreach item templates.
+        /// Handles the pattern: "Model.MethodName(itemVar)" where the method lives on the parent ViewModel
+        /// and the argument is the loop variable (the item itself).
+        /// 
+        /// Generated JS: function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }
+        /// where dc[0] = parent DataContext (tuple element 0), dc[2] = loop item (tuple element 2).
+        /// </summary>
+        private Expression TryEmitParentMethodInvocation(string handlerExpression)
+        {
+            // Only applies inside foreach item templates with known parent type
+            if (!IsItemGraph || string.IsNullOrEmpty(_parentModelTypeName) || _clrContext == null)
+                return null;
+
+            // Parse "Model.MethodName(argName)" pattern
+            var expr = handlerExpression;
+            if (!expr.StartsWith("Model."))
+                return null;
+            expr = expr.Substring(6); // strip "Model."
+
+            var parenOpen = expr.IndexOf('(');
+            var parenClose = expr.LastIndexOf(')');
+            if (parenOpen < 1 || parenClose <= parenOpen)
+                return null;
+
+            var methodName = expr.Substring(0, parenOpen);
+            var argName = expr.Substring(parenOpen + 1, parenClose - parenOpen - 1).Trim();
+
+            // Verify the argument matches the loop variable
+            var itemVarName = _topology.ItemVariablePrefix.TrimEnd('.');
+            if (argName != itemVarName)
+                return null;
+
+            // Look up the method on the parent type
+            var parentTypeDef = FindTypeDefinition(_parentModelTypeName);
+            if (parentTypeDef == null)
+                return null;
+
+            MethodDefinition targetMethod = null;
+            foreach (var m in parentTypeDef.Methods)
+            {
+                if (m.Name == methodName && m.IsPublic && !m.IsConstructor)
+                {
+                    targetMethod = m;
+                    break;
+                }
+            }
+            if (targetMethod == null)
+                return null;
+
+            bool isDevirt = IsMethodDevirtualized(targetMethod);
+            var methodId = isDevirt
+                ? _scopeManager.ResolveStatic(targetMethod)
+                : _scopeManager.Resolve(targetMethod);
+            if (methodId == null)
+                return null;
+
+            // Build: function(dc) { return function(e, ev) { method(dc[0], dc[2], e, ev); }; }  (devirtualized)
+            //   or:  function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }  (virtual)
+            var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var dcParam = outerScope.ParameterIdentifiers[0];
+            var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
+
+            var parentAccess = CreateTupleAccessExpression(dcParam, innerScope, 0);
+            var itemAccess = CreateTupleAccessExpression(dcParam, innerScope, 2);
+            var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
+            var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
+
+            MethodCallExpression methodCall;
+            if (isDevirt)
+            {
+                // Devirtualized: method(dc[0], dc[2], e, ev)
+                var methodRef = new IdentifierExpression(methodId, innerScope);
+                methodCall = new MethodCallExpression(null, innerScope, methodRef, parentAccess, itemAccess, eParam, evParam);
+            }
+            else
+            {
+                // Virtual: dc[0].method(dc[2], e, ev)
+                var methodAccess = new IndexExpression(null, innerScope, parentAccess,
+                    new IdentifierExpression(methodId, innerScope));
+                methodCall = new MethodCallExpression(null, innerScope, methodAccess, itemAccess, eParam, evParam);
+            }
+
+            var innerFn = new FunctionExpression(null, outerScope, innerScope,
+                innerScope.ParameterIdentifiers, null);
+            innerFn.AddStatement(new ExpressionStatement(null, innerScope, methodCall));
+
+            var outerFn = new FunctionExpression(null, _scope, outerScope,
+                outerScope.ParameterIdentifiers, null);
+            outerFn.AddStatement(new ReturnStatement(null, outerScope, innerFn));
+            return outerFn;
+        }
+
+        /// <summary>
         /// Creates a raw setter function: function(e, v) { body }
         /// </summary>
-        private RawBodyFunctionExpression CreateRawSetterFunction(string rawBody)
+        private ScriptLiteralExpression CreateRawSetterFunction(string rawBody)
         {
-            var innerScope = new IdentifierScope(
-                _scope,
-                new string[] { "e", "v" },
-                true);
-            return new RawBodyFunctionExpression(
-                null, _scope, innerScope, innerScope.ParameterIdentifiers, rawBody);
+            // Emit the entire function as a raw script literal to avoid the JST
+            // TransformerVisitor replacing it with an empty FunctionExpression.
+            // Parameters "e" (element) and "v" (value) are referenced literally in rawBody.
+            return new ScriptLiteralExpression(null, _scope, $"function(e,v){{{rawBody};}}");
         }
 
         /// <summary>
@@ -1313,9 +1698,17 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Expression EmitCollectionTargetInfo(CollectionTopology ct)
         {
+            // Use CollectItemTemplateHtmlPublic to preserve data-evt-idx markers
+            // for runtime event element resolution in item graphs.
             var itemHtml = (ct.IrNode.ItemTemplate != null && ct.IrNode.ItemTemplate.Count > 0)
-                ? RazorSkinCodeGenerator.CollectHtmlPublic(ct.IrNode.ItemTemplate)
+                ? RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(ct.IrNode.ItemTemplate)
                 : "";
+
+            // Replace CSS class names in item template HTML (same as main template)
+            if (!string.IsNullOrEmpty(itemHtml))
+            {
+                itemHtml = RazorCssManager.ReplaceCssClassNamesInHtml(itemHtml, _cssManager);
+            }
 
             Expression itemGraphExpr = null;
             if (ct.ItemTopology != null)
@@ -1327,7 +1720,9 @@ namespace NScript.RazorSkin.CodeGen
                 var nestedEmitter = new GraphDescriptorJSTEmitter(
                     ct.ItemTopology, _scope, _scopeManager, _knownTypes, _knownFunctionNames,
                     _clrContext, itemTypeName ?? _modelTypeName,
-                    _resolvedTypeIdentifiers);
+                    _resolvedTypeIdentifiers,
+                    parentModelTypeName: _modelTypeName,
+                    cssManager: _cssManager);
                 itemGraphExpr = nestedEmitter.Emit();
             }
 
@@ -1340,6 +1735,12 @@ namespace NScript.RazorSkin.CodeGen
                 };
                 if (itemGraphExpr != null)
                     fields.Add((_collectionItemGraphField, "ItemGraph", itemGraphExpr));
+
+                // Emit SubControlInfos for sub-controls inside the collection item template
+                var subControlInfosExpr = EmitCollectionSubControlInfos(ct);
+                if (subControlInfosExpr != null)
+                    fields.Add((_collectionSubControlInfosField, "SubControlInfos", subControlInfosExpr));
+
                 return EmitTypedObject(_collectionTargetInfoFactory, fields);
             }
 
@@ -1349,7 +1750,184 @@ namespace NScript.RazorSkin.CodeGen
             AddField(info, _collectionItemTemplateField, "ItemTemplate", new StringLiteralExpression(_scope, itemHtml));
             if (itemGraphExpr != null)
                 AddField(info, _collectionItemGraphField, "ItemGraph", itemGraphExpr);
+
+            // Emit SubControlInfos for fallback path too
+            var fallbackSubControlInfos = EmitCollectionSubControlInfos(ct);
+            if (fallbackSubControlInfos != null)
+                AddField(info, _collectionSubControlInfosField, "SubControlInfos", fallbackSubControlInfos);
+
             return info;
+        }
+
+        /// <summary>
+        /// Emits SubControlInfos array for sub-controls inside a collection item template.
+        /// Each SubControlInfo has MarkerIdx, TypeFactory, and SkinFactory so the GraphEngine
+        /// can instantiate sub-controls when rendering collection items.
+        /// Returns null if no sub-controls exist in the item topology.
+        /// </summary>
+        private Expression EmitCollectionSubControlInfos(CollectionTopology ct)
+        {
+            if (ct.ItemTopology?.SubControls == null || ct.ItemTopology.SubControls.Count == 0)
+                return null;
+
+            if (_clrContext == null)
+                return null;
+
+            var items = new List<Expression>();
+            int markerIdx = 0;
+
+            foreach (var sc in ct.ItemTopology.SubControls)
+            {
+                var typeName = sc.ResolvedTypeName ?? sc.ControlTypeName;
+                if (string.IsNullOrEmpty(typeName))
+                {
+                    markerIdx++;
+                    continue;
+                }
+
+                var typeDef = FindSubControlType(typeName);
+                if (typeDef == null)
+                {
+                    Log.Debug("EmitCollectionSubControlInfos: Cannot find type {TypeName}", typeName);
+                    markerIdx++;
+                    continue;
+                }
+
+                var typeFactoryExpr = BuildSubControlTypeFactory(typeDef);
+                var skinFactoryExpr = BuildSubControlSkinFactory(typeDef);
+
+                if (typeFactoryExpr == null || skinFactoryExpr == null)
+                {
+                    Log.Debug("EmitCollectionSubControlInfos: Cannot build factories for {TypeName}", typeName);
+                    markerIdx++;
+                    continue;
+                }
+
+                if (_subControlInfoFactory != null)
+                {
+                    var fields = new List<(IIdentifier, string, Expression)>
+                    {
+                        (_subControlMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, markerIdx)),
+                        (_subControlTypeFactoryField, "TypeFactory", typeFactoryExpr),
+                        (_subControlSkinFactoryField, "SkinFactory", skinFactoryExpr)
+                    };
+                    items.Add(EmitTypedObject(_subControlInfoFactory, fields));
+                }
+                else
+                {
+                    var scObj = new InlineObjectInitializer(null, _scope);
+                    AddField(scObj, _subControlMarkerIdxField, "MarkerIdx",
+                        new NumberLiteralExpression(_scope, markerIdx));
+                    AddField(scObj, _subControlTypeFactoryField, "TypeFactory", typeFactoryExpr);
+                    AddField(scObj, _subControlSkinFactoryField, "SkinFactory", skinFactoryExpr);
+                    items.Add(scObj);
+                }
+
+                markerIdx++;
+            }
+
+            if (items.Count == 0)
+                return null;
+
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// Builds a TypeFactory function expression for a sub-control type:
+        /// function(elem) { return ControlType_factory(elem); }
+        /// The factory creates a new control instance given a DOM element.
+        /// </summary>
+        private Expression BuildSubControlTypeFactory(TypeDefinition typeDef)
+        {
+            // Find the constructor that takes an Element parameter
+            var ctor = typeDef.Methods.FirstOrDefault(m =>
+                m.IsConstructor && !m.IsStatic && m.Parameters.Count == 1);
+
+            if (ctor == null)
+            {
+                Log.Debug("BuildSubControlTypeFactory: No single-param constructor on {TypeName}", typeDef.FullName);
+                return null;
+            }
+
+            var factoryId = _scopeManager.ResolveFactory(ctor.Resolve());
+
+            // Build: function(elem) { return factory(elem); }
+            var innerScope = new IdentifierScope(_scope, new[] { "elem" }, false);
+            var elemParam = innerScope.ParameterIdentifiers[0];
+
+            var callExpr = new MethodCallExpression(
+                null, innerScope,
+                new IdentifierExpression(factoryId, innerScope),
+                new Expression[] { new IdentifierExpression(elemParam, innerScope) });
+
+            var fn = new FunctionExpression(null, _scope, innerScope, innerScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, innerScope, callExpr));
+            return fn;
+        }
+
+        /// <summary>
+        /// Builds a SkinFactory function expression for a sub-control type:
+        /// function() { return ControlType__get_DefaultSkin(); }
+        /// Finds the static DefaultSkin property (annotated with [Skin]) and resolves its getter.
+        /// </summary>
+        private Expression BuildSubControlSkinFactory(TypeDefinition typeDef)
+        {
+            // Find the static DefaultSkin property (has [Skin] attribute)
+            PropertyDefinition skinProp = null;
+            foreach (var prop in typeDef.Properties)
+            {
+                if (!prop.GetMethod?.IsStatic == true) continue;
+                if (prop.GetMethod == null || !prop.GetMethod.IsStatic) continue;
+
+                foreach (var attr in prop.CustomAttributes)
+                {
+                    if (attr.AttributeType.Name == "SkinAttribute")
+                    {
+                        skinProp = prop;
+                        break;
+                    }
+                }
+                if (skinProp != null) break;
+            }
+
+            if (skinProp?.GetMethod == null)
+            {
+                Log.Debug("BuildSubControlSkinFactory: No [Skin] property on {TypeName}", typeDef.FullName);
+                return null;
+            }
+
+            var getterId = _scopeManager.ResolveStatic(skinProp.GetMethod.Resolve());
+
+            // Build: function() { return get_DefaultSkin(); }
+            var innerScope = new IdentifierScope(_scope, 0);
+
+            var callExpr = new MethodCallExpression(
+                null, innerScope,
+                new IdentifierExpression(getterId, innerScope),
+                new Expression[0]);
+
+            var fn = new FunctionExpression(null, _scope, innerScope, innerScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(null, innerScope, callExpr));
+            return fn;
+        }
+
+        /// <summary>
+        /// Searches loaded assemblies for a type matching the given name.
+        /// Supports both short names ("TodoItemControl") and fully qualified names.
+        /// </summary>
+        private TypeDefinition FindSubControlType(string typeName)
+        {
+            // Try fully qualified first
+            var result = FindTypeDefinition(typeName);
+            if (result != null) return result;
+
+            // Search all types for a match by short name
+            foreach (var type in _clrContext.GetTypes())
+            {
+                if (type.Name == typeName)
+                    return type;
+            }
+            return null;
         }
 
         /// <summary>
@@ -1370,6 +1948,19 @@ namespace NScript.RazorSkin.CodeGen
                         (_subscriptionNodeIdxField, "NodeIdx", new NumberLiteralExpression(_scope, sub.NodeIdx)),
                         (_subscriptionSourceSlotField, "SourceSlot", new NumberLiteralExpression(_scope, sub.SourceSlot))
                     };
+
+                    // Emit PathSegments array for chained property paths
+                    if (sub.PathSegments != null && sub.PathSegments.Length > 1)
+                    {
+                        var pathArray = new List<Expression>();
+                        foreach (var segment in sub.PathSegments)
+                        {
+                            pathArray.Add(new StringLiteralExpression(_scope, segment));
+                        }
+                        fields.Add((_subscriptionPathSegmentsField, "PathSegments",
+                            new InlineNewArrayInitialization(null, _scope, pathArray)));
+                    }
+
                     items.Add(EmitTypedObject(_subscriptionEntryFactory, fields));
                 }
                 else
@@ -1382,6 +1973,19 @@ namespace NScript.RazorSkin.CodeGen
                         new NumberLiteralExpression(_scope, sub.NodeIdx));
                     AddField(subObj, _subscriptionSourceSlotField, "SourceSlot",
                         new NumberLiteralExpression(_scope, sub.SourceSlot));
+
+                    // Emit PathSegments array for chained property paths
+                    if (sub.PathSegments != null && sub.PathSegments.Length > 1)
+                    {
+                        var pathArray = new List<Expression>();
+                        foreach (var segment in sub.PathSegments)
+                        {
+                            pathArray.Add(new StringLiteralExpression(_scope, segment));
+                        }
+                        AddField(subObj, _subscriptionPathSegmentsField, "PathSegments",
+                            new InlineNewArrayInitialization(null, _scope, pathArray));
+                    }
+
                     items.Add(subObj);
                 }
             }
@@ -1426,70 +2030,109 @@ namespace NScript.RazorSkin.CodeGen
 
             return new InlineNewArrayInitialization(null, _scope, items);
         }
-    }
-
-    /// <summary>
-    /// A function expression that writes a raw JS body string. Used for graph descriptor
-    /// getter functions whose bodies contain property accessor calls that are already
-    /// correctly mangled (e.g., "return dc.get_name()"). The function wrapper and
-    /// parameter list are proper JST nodes; only the body is raw text.
-    /// </summary>
-    public class RawBodyFunctionExpression : Expression
-    {
-        private readonly IdentifierScope _innerScope;
-        private readonly IList<SimpleIdentifier> _parameters;
-        private readonly string _rawBody;
 
         /// <summary>
-        /// Creates a new raw-body function expression.
+        /// LIMIT-006: Emits the subControls array for the graph descriptor.
+        /// Each entry is a SubControlInfo with ElemIdx and Bindings array.
         /// </summary>
-        /// <param name="location">Source location (may be null).</param>
-        /// <param name="outerScope">The enclosing scope.</param>
-        /// <param name="innerScope">The function's own scope (contains parameter identifiers).</param>
-        /// <param name="parameters">The function parameter identifiers.</param>
-        /// <param name="rawBody">The raw JS function body text (without braces or semicolons).</param>
-        public RawBodyFunctionExpression(
-            Location location,
-            IdentifierScope outerScope,
-            IdentifierScope innerScope,
-            IList<SimpleIdentifier> parameters,
-            string rawBody)
-            : base(location, outerScope)
+        private Expression EmitSubControls()
         {
-            _innerScope = innerScope;
-            _parameters = parameters;
-            _rawBody = rawBody;
-        }
-
-        public override Precedence Precedence => Precedence.Assignment;
-
-        public override bool IsLeftToRight => false;
-
-        public override void Serialize(ICustomSerializer serializer)
-        {
-            serializer.AddValue("rawBody", _rawBody);
-        }
-
-        /// <summary>
-        /// Writes: function(param1, param2) { rawBody; }
-        /// Parameters use proper JST identifiers; the body is emitted as raw text.
-        /// </summary>
-        public override void Write(JSWriter writer)
-        {
-            writer.Write(Keyword.Function);
-            writer.Write(Symbols.BracketOpenRound);
-
-            for (int i = 0; i < _parameters.Count; i++)
+            var items = new List<Expression>();
+            foreach (var sc in _topology.SubControls)
             {
-                if (i > 0) writer.Write(Symbols.Comma);
-                writer.Write(_parameters[i]);
+                // Build bindings array
+                var bindingItems = new List<Expression>();
+                foreach (var propBinding in sc.PropertyBindings)
+                {
+                    var setter = BuildSubControlPropertySetter(
+                        sc.ResolvedTypeName ?? sc.ControlTypeName,
+                        propBinding.TargetPropertyName);
+
+                    if (_subControlPropertyInfoFactory != null)
+                    {
+                        var fields = new List<(IIdentifier, string, Expression)>
+                        {
+                            (_subControlPropNodeIdxField, "NodeIdx", new NumberLiteralExpression(_scope, propBinding.NodeIdx)),
+                            (_subControlPropSetterField, "Setter", setter ?? new NullLiteralExpression(_scope))
+                        };
+                        bindingItems.Add(EmitTypedObject(_subControlPropertyInfoFactory, fields));
+                    }
+                    else
+                    {
+                        var propObj = new InlineObjectInitializer(null, _scope);
+                        AddField(propObj, _subControlPropNodeIdxField, "NodeIdx",
+                            new NumberLiteralExpression(_scope, propBinding.NodeIdx));
+                        AddField(propObj, _subControlPropSetterField, "Setter",
+                            setter ?? new NullLiteralExpression(_scope));
+                        bindingItems.Add(propObj);
+                    }
+                }
+
+                var bindingsExpr = new InlineNewArrayInitialization(null, _scope, bindingItems);
+
+                if (_subControlInfoFactory != null)
+                {
+                    var fields = new List<(IIdentifier, string, Expression)>
+                    {
+                        (_subControlElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, sc.ElemIdx)),
+                        (_subControlBindingsField, "Bindings", bindingsExpr)
+                    };
+                    items.Add(EmitTypedObject(_subControlInfoFactory, fields));
+                }
+                else
+                {
+                    var scObj = new InlineObjectInitializer(null, _scope);
+                    AddField(scObj, _subControlElemIdxField, "ElemIdx",
+                        new NumberLiteralExpression(_scope, sc.ElemIdx));
+                    AddField(scObj, _subControlBindingsField, "Bindings", bindingsExpr);
+                    items.Add(scObj);
+                }
             }
 
-            writer.Write(Symbols.BracketCloseRound);
-            writer.Write(Symbols.BracketOpenCurly);
-            writer.WriteIdentifier(_rawBody);
-            writer.Write(Symbols.SemiColon);
-            writer.Write(Symbols.BracketCloseCurly);
+            return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// LIMIT-006: Builds a setter function for a sub-control property.
+        /// Emits: function(ctrl, val) { ctrl.set_PropertyName(val); }
+        /// </summary>
+        private Expression BuildSubControlPropertySetter(string controlTypeName, string propertyName)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(controlTypeName))
+                return null;
+
+            var typeDef = FindTypeDefinition(controlTypeName);
+            if (typeDef == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve sub-control type {TypeName}", controlTypeName);
+                return null;
+            }
+
+            var property = FindProperty(typeDef, propertyName);
+            if (property?.SetMethod == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot find setter for {PropName} on {TypeName}",
+                    propertyName, controlTypeName);
+                return null;
+            }
+
+            // Build: function(ctrl, val) { ctrl.set_PropertyName(val); }
+            var setterScope = new IdentifierScope(_scope, new[] { "ctrl", "val" }, false);
+            var ctrlParam = setterScope.ParameterIdentifiers[0];
+            var valParam = setterScope.ParameterIdentifiers[1];
+
+            var setterMethodId = _scopeManager.Resolve(property.SetMethod);
+            var callExpr = new MethodCallExpression(
+                null, setterScope,
+                new IndexExpression(
+                    null, setterScope,
+                    new IdentifierExpression(ctrlParam, setterScope),
+                    new IdentifierExpression(setterMethodId, setterScope)),
+                new Expression[] { new IdentifierExpression(valParam, setterScope) });
+
+            var fn = new FunctionExpression(null, _scope, setterScope, setterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ExpressionStatement(null, setterScope, callExpr));
+            return fn;
         }
     }
 }

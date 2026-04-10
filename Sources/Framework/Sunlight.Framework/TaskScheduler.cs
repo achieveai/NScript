@@ -34,6 +34,7 @@ namespace Sunlight.Framework
     {
         Waiting,
         Canceled,
+        Faulted,
         Completed,
         Running
     }
@@ -46,11 +47,16 @@ namespace Sunlight.Framework
         public Task ParentTask;
         public Action Work;
         public Number TaskId;
+        public CallContext Context;
+        public int RootActionId;
+        public bool DispatchUnhandledOnFailure;
 
         public Task(int taskId, Action work)
         {
             this.TaskId = taskId;
             this.Work = work;
+            this.Context = CallContext.Current;
+            this.RootActionId = this.Context != null ? this.Context.ActionId : -1;
         }
 
         public Task(
@@ -63,6 +69,8 @@ namespace Sunlight.Framework
             this.NativeTimerId = nativeTimerId;
             this.NativeTimerType = nativeTimerType;
             this.Work = work;
+            this.Context = CallContext.Current;
+            this.RootActionId = this.Context != null ? this.Context.ActionId : -1;
         }
     }
 
@@ -226,6 +234,8 @@ namespace Sunlight.Framework
                         new WindowTimer(),
                         16,
                         25);
+                    CallContext.OnNewRootAction = (actionId) =>
+                        TaskScheduler.instance.DemoteOlderActions(actionId);
                 }
 
                 return TaskScheduler.instance;
@@ -234,46 +244,66 @@ namespace Sunlight.Framework
             set { TaskScheduler.instance = value; }
         }
 
+        private Action CreateTimerCallback(Task[] taskRef)
+        {
+            return () =>
+            {
+                Task task = taskRef[0];
+                var previousContext = CallContext.Current;
+                try
+                {
+                    CallContext.Current = task.Context;
+                    task.State = TaskState.Running;
+                    task.Work();
+                    task.State = TaskState.Completed;
+                }
+                catch (Exception ex)
+                {
+                    task.State = TaskState.Faulted;
+                    Logger.Error("TaskScheduler timer callback failed: " + this.FormatTaskException(ex));
+                    if (task.DispatchUnhandledOnFailure)
+                    {
+                        this.DispatchUnhandledTaskException(ex);
+                    }
+                }
+                finally
+                {
+                    CallContext.Current = previousContext;
+                    this.tasks.Remove(task.TaskId);
+                }
+            };
+        }
+
         public TaskHandle EnqueueOnAnimationFrame(Action work, string traceId)
         {
-            Task task = null;
-            Action cb = () =>
-             {
-                 try
-                 { task.Work(); }
-                 finally
-                 { this.tasks.Remove(task.TaskId); }
-             };
+            var taskRef = new Task[1];
+            Action cb = this.CreateTimerCallback(taskRef);
 
-            task = new Task(
+            taskRef[0] = new Task(
                 this.nextTimerId++,
                 this.windowTimer.RequestAnimationFrame(cb),
                 NativeTimerHandleType.Timeout,
                 work);
+            taskRef[0].DispatchUnhandledOnFailure = true;
 
-            this.tasks.Add(task.TaskId, task);
-            return new TaskHandle(task.TaskId);
+            this.tasks.Add(taskRef[0].TaskId, taskRef[0]);
+            return new TaskHandle(taskRef[0].TaskId);
         }
 
         public TaskHandle EnqueueOnTimeout(Action work, string traceId, int timeout)
         {
-            Task task = null;
-            Action cb = () =>
-             {
-                 try
-                 { task.Work(); }
-                 finally
-                 { this.tasks.Remove(task.TaskId); }
-             };
+            var taskRef = new Task[1];
+            Action cb = this.CreateTimerCallback(taskRef);
 
-            task = new Task(
+            taskRef[0] = new Task(
                 this.nextTimerId++,
                 this.windowTimer.SetTimeout(cb, timeout),
                 NativeTimerHandleType.Timeout,
                 work);
+            taskRef[0].DispatchUnhandledOnFailure = true;
 
-            this.tasks.Add(task.TaskId, task);
-            return new TaskHandle(task.TaskId);
+            this.tasks.Add(taskRef[0].TaskId, taskRef[0]);
+            return new TaskHandle(taskRef[0].TaskId);
         }
 
         public TaskHandle EnqueHighPriTask(Action work, string traceId)
@@ -281,6 +311,7 @@ namespace Sunlight.Framework
             var task = new Task(
                     this.nextTimerId++,
                     work);
+            task.DispatchUnhandledOnFailure = true;
             this.hiPriTasks.Enqueue(task);
             this.tasks.Add(task.TaskId, task);
             this.ScheduleQuanta(false);
@@ -292,6 +323,7 @@ namespace Sunlight.Framework
             var task = new Task(
                     this.nextTimerId++,
                     work);
+            task.DispatchUnhandledOnFailure = true;
             this.lowPriTasks.Enqueue(task);
             this.tasks.Add(task.TaskId, task);
             this.ScheduleQuanta(false);
@@ -303,10 +335,34 @@ namespace Sunlight.Framework
             var task = new Task(
                     this.nextTimerId++,
                     work);
+            task.DispatchUnhandledOnFailure = true;
             this.idleTasks.Enqueue(task);
             this.tasks.Add(task.TaskId, task);
             this.ScheduleQuanta(false);
             return new TaskHandle(task.TaskId);
+        }
+
+        public void DemoteOlderActions(int currentActionId)
+        {
+            this.DemoteQueue(this.hiPriTasks, this.lowPriTasks, currentActionId);
+            this.DemoteQueue(this.lowPriTasks, this.idleTasks, currentActionId);
+        }
+
+        private void DemoteQueue(Queue<Task> source, Queue<Task> target, int currentActionId)
+        {
+            int count = source.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Task task = source.Dequeue();
+                if (task.RootActionId >= 0 && task.RootActionId < currentActionId)
+                {
+                    target.Enqueue(task);
+                }
+                else
+                {
+                    source.Enqueue(task);
+                }
+            }
         }
 
         private void RunQuanta()
@@ -315,13 +371,13 @@ namespace Sunlight.Framework
             {
                 this.FlushQueue(this.hiPriTasks, DateTime.Now + this.workQuanta);
             }
-            else if (this.idleTasks.Count > 0)
-            {
-                this.FlushQueue(this.idleTasks, DateTime.Now + this.workQuanta / 2);
-            }
             else if (this.lowPriTasks.Count > 0)
             {
                 this.FlushQueue(this.lowPriTasks, DateTime.Now + this.workQuanta / 2);
+            }
+            else if (this.idleTasks.Count > 0)
+            {
+                this.FlushQueue(this.idleTasks, DateTime.Now + this.workQuanta / 2);
             }
 
             this.timerId = -1;
@@ -346,21 +402,63 @@ namespace Sunlight.Framework
         {
             if (task.State == TaskState.Waiting)
             {
+                var previousContext = CallContext.Current;
                 try
                 {
                     this.currentTask = task;
+                    CallContext.Current = task.Context;
                     task.State = TaskState.Running;
                     task.Work();
+                    task.State = TaskState.Completed;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    task.State = TaskState.Faulted;
+                    Logger.Error("TaskScheduler ExecuteTask failed: " + this.FormatTaskException(ex));
+                    if (task.DispatchUnhandledOnFailure)
+                    {
+                        this.DispatchUnhandledTaskException(ex);
+                    }
                 }
+                finally
+                {
+                    CallContext.Current = previousContext;
+                    this.currentTask = null;
+                }
+            }
+            this.tasks.Remove(task.TaskId);
+        }
 
-                this.currentTask = null;
+        private void DispatchUnhandledTaskException(Exception ex)
+        {
+            this.windowTimer.SetTimeout(
+                delegate
+                {
+                    throw ex;
+                },
+                0);
+        }
+
+        private string FormatTaskException(Exception ex)
+        {
+            if (ex == null)
+            {
+                return "unknown error";
             }
 
-            task.State = TaskState.Completed;
-            this.tasks.Remove(task.TaskId);
+            string message = ex.Message ?? string.Empty;
+            string stack = ex.Stack ?? string.Empty;
+            if (stack == string.Empty)
+            {
+                return message;
+            }
+
+            if (message == string.Empty)
+            {
+                return stack;
+            }
+
+            return message + "\n" + stack;
         }
 
         private void ScheduleQuanta(bool force)

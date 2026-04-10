@@ -135,6 +135,16 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
+        /// No-op for graph mode: data context flags are managed internally.
+        /// </summary>
+        public void OnDataContextUpdated(bool dcUpdated, bool tpUpdated) { }
+
+        /// <summary>
+        /// No-op for graph mode: deactivation is handled by Deactivate().
+        /// </summary>
+        public void OnQueuedDeactivation(bool isActive, bool isDisposed) { }
+
+        /// <summary>
         /// Creates a property change callback with its own closure scope.
         /// This avoids the JS closure-in-loop bug where all callbacks would share
         /// the same capturedNodeIdx variable (last loop value) if created inline.
@@ -144,6 +154,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             return delegate(INotifyPropertyChanged sender, string propName)
             {
+                // Synchronous flush: mark node dirty and evaluate immediately.
+                // This ensures DOM is up-to-date before the next line of application
+                // code executes. The reentrancy guard in Flush() (try-finally)
+                // prevents cascading flushes if a DOM write triggers further changes.
                 state.Dirty[nodeIdx] = true;
                 GraphEngine.Flush(descriptor, state);
             };

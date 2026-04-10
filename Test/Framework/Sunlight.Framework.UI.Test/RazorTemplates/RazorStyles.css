@@ -1,0 +1,12 @@
+.styled-header {
+    font-weight: bold;
+    color: red;
+}
+.styled-content {
+    padding: 10px;
+    background-color: blue;
+}
+.styled-footer {
+    margin-top: 20px;
+    font-style: italic;
+}

@@ -179,6 +179,67 @@ namespace RazorSkinParser.Test
             binding.Classification.CSharpExpression.Should().Contain("Control.");
         }
 
+        // --- Attribute binding IR classification tests ---
+
+        [TestMethod]
+        public void AttributeBinding_CssClass_ProducesCssClassTarget()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div class=\"@Model.CssClass\">Hello</div>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("class attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.CssClass);
+            binding.Classification.CSharpExpression.Should().Contain("Model.CssClass");
+            binding.Classification.SourceKind.Should().Be(BindingSourceKind.DataContext);
+        }
+
+        [TestMethod]
+        public void AttributeBinding_Style_ProducesStyleTarget()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div style=\"display: @Model.DisplayStyle\">Content</div>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("style attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.Style);
+            binding.AttributePrefix.Should().Contain("display");
+            binding.Classification.CSharpExpression.Should().Contain("Model.DisplayStyle");
+        }
+
+        [TestMethod]
+        public void EventBinding_OnClick_ProducesEventNode()
+        {
+            var ir = BuildIR("@model TestVM\n\n<button onclick=\"@Model.HandleClick\">Click</button>");
+
+            var eventNode = ir.Children.OfType<EventNode>().FirstOrDefault();
+            eventNode.Should().NotBeNull("onclick attribute should produce an EventNode");
+            eventNode.DomEventName.Should().Be("click");
+            eventNode.HandlerExpression.Should().Contain("Model.HandleClick");
+        }
+
+        [TestMethod]
+        public void AttributeBinding_DataAttribute_ProducesGenericAttributeBinding()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div data-id=\"@Model.Id\">Content</div>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("data-* attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.Attribute);
+            binding.AttributeName.Should().Be("data-id");
+            binding.Classification.CSharpExpression.Should().Contain("Model.Id");
+        }
+
+        [TestMethod]
+        public void AttributeBinding_Title_ProducesAttributeBinding()
+        {
+            var ir = BuildIR("@model TestVM\n\n<span title=\"@Model.Tooltip\">Hover me</span>");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().FirstOrDefault();
+            binding.Should().NotBeNull("title attribute binding should produce an ExpressionBindingNode");
+            binding.Target.Should().Be(ExpressionTarget.Attribute);
+            binding.AttributeName.Should().Be("title");
+            binding.Classification.CSharpExpression.Should().Contain("Model.Tooltip");
+        }
+
         private SkinTemplateNode BuildIR(string template)
         {
             var preprocessed = RazorSkinPreprocessor.Process(template);
@@ -188,6 +249,64 @@ namespace RazorSkinParser.Test
                 "TestSkin",
                 preprocessed,
                 parsed);
+        }
+
+        // --- Attribute stripping whitespace preservation ---
+
+        [TestMethod]
+        public void BindingAttributeStrip_PreservesSpaceBeforeStaticAttributes()
+        {
+            // When class="@Model.X" is stripped, the space before the next attribute must remain.
+            // Regression: Razor eats inter-attribute whitespace for structured attributes;
+            // EnsureTrailingSpaceOnPrecedingHtml() restores it.
+            var ir = BuildIR(
+                "@model TestVM\n\n<div class=\"@Model.CssClass\" draggable=\"true\">Hello</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain(" draggable=\"true\"",
+                "space between tag name and static attribute must be preserved when binding attribute is stripped");
+            html.Should().NotContain("<divdraggable",
+                "binding attribute removal must not eat the whitespace separator");
+        }
+
+        [TestMethod]
+        public void EventAttributeStrip_PreservesSpaceBeforeStaticAttributes()
+        {
+            // When onclick="@Model.X" is stripped, the space before the next attribute must remain.
+            var ir = BuildIR(
+                "@model TestVM\n\n<div onclick=\"@Model.Click\" title=\"hello\">Hello</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("title=\"hello\"",
+                "static attribute after stripped event should remain intact");
+        }
+
+        [TestMethod]
+        public void MultipleBindingStrips_PreserveAllSpaces()
+        {
+            // Both class and onclick are bindings; draggable is static and must survive.
+            var ir = BuildIR(
+                "@model TestVM\n\n<div class=\"@Model.Css\" draggable=\"true\" onclick=\"@Model.Click\">Hello</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("draggable=\"true\"",
+                "static attribute between two bindings must be preserved");
+        }
+
+        [TestMethod]
+        public void ForeachItemTemplate_BindingStrip_PreservesSpaces()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n\n@foreach (var item in Model.Items)\n{\n    <div class=\"@item.Css\" draggable=\"true\">@item.Name</div>\n}");
+
+            var loop = ir.Children.OfType<LoopNode>().FirstOrDefault();
+            loop.Should().NotBeNull();
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(loop.ItemTemplate);
+            html.Should().Contain("<div draggable=\"true\"",
+                "foreach item template must preserve space when binding attribute is stripped");
+            html.Should().NotContain("<divdraggable",
+                "binding attribute removal must not eat the whitespace separator in item templates");
         }
     }
 }

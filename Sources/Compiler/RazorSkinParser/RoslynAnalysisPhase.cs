@@ -123,6 +123,10 @@ namespace NScript.RazorSkin
                         RefineNodes(loop.ItemTemplate, modelType, controlType, compilation, semanticModel, modelPrefix);
                     }
                 }
+                else if (node is SubControlNode sub)
+                {
+                    RefineSubControlBindings(sub, modelType, controlType, modelPrefix);
+                }
 
                 // Recurse into generic children
                 RefineNodes(node.Children, modelType, controlType, compilation, semanticModel, modelPrefix);
@@ -176,14 +180,14 @@ namespace NScript.RazorSkin
             // Extract property references from model expressions (Model.* or item.*)
             if (modelType != null)
             {
-                var propertyNames = ExtractPropertyReferences(expr, modelPrefix);
-                foreach (var propName in propertyNames)
+                var propertyRefs = ExtractPropertyReferencesWithChains(expr, modelPrefix);
+                foreach (var (rootProperty, fullChain) in propertyRefs)
                 {
-                    var prop = FindProperty(modelType, propName);
+                    var prop = FindProperty(modelType, rootProperty);
                     if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
                     {
                         dependencies.Add(new ObservableDependency(
-                            BindingSourceKind.DataContext, propName, propName));
+                            BindingSourceKind.DataContext, rootProperty, fullChain));
                     }
                 }
             }
@@ -191,14 +195,14 @@ namespace NScript.RazorSkin
             // Extract property references from Control.* expressions (H5)
             if (controlType != null)
             {
-                var controlPropNames = ExtractPropertyReferences(expr, "Control.");
-                foreach (var propName in controlPropNames)
+                var controlPropertyRefs = ExtractPropertyReferencesWithChains(expr, "Control.");
+                foreach (var (rootProperty, fullChain) in controlPropertyRefs)
                 {
-                    var prop = FindProperty(controlType, propName);
+                    var prop = FindProperty(controlType, rootProperty);
                     if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
                     {
                         dependencies.Add(new ObservableDependency(
-                            BindingSourceKind.TemplateParent, propName, propName));
+                            BindingSourceKind.TemplateParent, rootProperty, fullChain));
                     }
                 }
             }
@@ -249,9 +253,9 @@ namespace NScript.RazorSkin
         {
             if (modelType != null)
             {
-                var propNames = ExtractPropertyReferences(
+                var propRefs = ExtractPropertyReferencesWithChains(
                     cond.Condition.CSharpExpression, modelPrefix);
-                foreach (var propName in propNames)
+                foreach (var (propName, fullChain) in propRefs)
                 {
                     var prop = FindProperty(modelType, propName);
                     if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
@@ -259,16 +263,16 @@ namespace NScript.RazorSkin
                         cond.IsReactive = true;
                         cond.Condition.Mode = BindingMode.OneWay;
                         cond.Condition.Dependencies.Add(new ObservableDependency(
-                            BindingSourceKind.DataContext, propName, propName));
+                            BindingSourceKind.DataContext, propName, fullChain));
                     }
                 }
             }
 
             if (controlType != null)
             {
-                var controlPropNames = ExtractPropertyReferences(
+                var controlPropRefs = ExtractPropertyReferencesWithChains(
                     cond.Condition.CSharpExpression, "Control.");
-                foreach (var propName in controlPropNames)
+                foreach (var (propName, fullChain) in controlPropRefs)
                 {
                     var prop = FindProperty(controlType, propName);
                     if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
@@ -276,7 +280,64 @@ namespace NScript.RazorSkin
                         cond.IsReactive = true;
                         cond.Condition.Mode = BindingMode.OneWay;
                         cond.Condition.Dependencies.Add(new ObservableDependency(
-                            BindingSourceKind.TemplateParent, propName, propName));
+                            BindingSourceKind.TemplateParent, propName, fullChain));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// LIMIT-006: Refines property bindings on sub-controls.
+        /// Sub-control property bindings like &lt;SearchBox Query="@Model.SearchQuery" /&gt;
+        /// need to be analyzed for reactivity just like regular expression bindings.
+        /// </summary>
+        private static void RefineSubControlBindings(
+            SubControlNode sub,
+            INamedTypeSymbol modelType,
+            INamedTypeSymbol controlType,
+            string modelPrefix)
+        {
+            foreach (var propBinding in sub.PropertyBindings)
+            {
+                var classification = propBinding.Classification;
+                if (classification.Mode != BindingMode.OneTime)
+                    continue; // Already promoted
+
+                if (modelType != null)
+                {
+                    var chains = ExtractPropertyReferences(
+                        classification.CSharpExpression, modelPrefix);
+                    foreach (var chain in chains)
+                    {
+                        var rootPropName = chain.Contains(".")
+                            ? chain.Substring(0, chain.IndexOf('.'))
+                            : chain;
+                        var prop = FindProperty(modelType, rootPropName);
+                        if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                        {
+                            classification.Mode = BindingMode.OneWay;
+                            classification.Dependencies.Add(new ObservableDependency(
+                                BindingSourceKind.DataContext, rootPropName, chain));
+                        }
+                    }
+                }
+
+                if (controlType != null)
+                {
+                    var controlChains = ExtractPropertyReferences(
+                        classification.CSharpExpression, "Control.");
+                    foreach (var chain in controlChains)
+                    {
+                        var rootPropName = chain.Contains(".")
+                            ? chain.Substring(0, chain.IndexOf('.'))
+                            : chain;
+                        var prop = FindProperty(controlType, rootPropName);
+                        if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                        {
+                            classification.Mode = BindingMode.OneWay;
+                            classification.Dependencies.Add(new ObservableDependency(
+                                BindingSourceKind.TemplateParent, rootPropName, chain));
+                        }
                     }
                 }
             }
@@ -298,6 +359,14 @@ namespace NScript.RazorSkin
                 else if (node is LoopNode loop)
                 {
                     count += CountPromotions(loop.ItemTemplate);
+                }
+                else if (node is SubControlNode sub)
+                {
+                    foreach (var propBinding in sub.PropertyBindings)
+                    {
+                        if (propBinding.Classification.Mode == BindingMode.OneWay)
+                            count++;
+                    }
                 }
             }
             return count;
@@ -330,22 +399,54 @@ namespace NScript.RazorSkin
             return null;
         }
 
-        private static List<string> ExtractPropertyReferences(string expression, string prefix)
+        /// <summary>
+        /// Extracts property references with full dotted chains from an expression.
+        /// For "Model.Customer.Address.City", returns (rootProperty: "Customer", fullChain: "Customer.Address.City").
+        /// </summary>
+        private static List<(string rootProperty, string fullChain)> ExtractPropertyReferencesWithChains(string expression, string prefix)
         {
-            var props = new List<string>();
+            var props = new List<(string rootProperty, string fullChain)>();
             var idx = 0;
             while ((idx = expression.IndexOf(prefix, idx, StringComparison.Ordinal)) >= 0)
             {
                 idx += prefix.Length;
                 var end = idx;
+                // Scan the first segment (root property name)
                 while (end < expression.Length && (char.IsLetterOrDigit(expression[end]) || expression[end] == '_'))
                     end++;
 
                 if (end > idx)
-                    props.Add(expression.Substring(idx, end - idx));
+                {
+                    var rootProperty = expression.Substring(idx, end - idx);
+                    // Continue scanning for chained segments (e.g., .Address.City)
+                    var chainEnd = end;
+                    while (chainEnd < expression.Length && expression[chainEnd] == '.')
+                    {
+                        chainEnd++; // skip the '.'
+                        var segStart = chainEnd;
+                        while (chainEnd < expression.Length && (char.IsLetterOrDigit(expression[chainEnd]) || expression[chainEnd] == '_'))
+                            chainEnd++;
+                        if (chainEnd == segStart)
+                            break; // '.' not followed by identifier — stop
+                    }
+                    var fullChain = expression.Substring(idx, chainEnd - idx);
+                    props.Add((rootProperty, fullChain));
+                }
                 idx = end;
             }
-            return props.Distinct().ToList();
+            // Deduplicate by full chain
+            return props.GroupBy(p => p.fullChain).Select(g => g.First()).ToList();
+        }
+
+        /// <summary>
+        /// Backward-compatible wrapper that returns only root property names.
+        /// </summary>
+        private static List<string> ExtractPropertyReferences(string expression, string prefix)
+        {
+            return ExtractPropertyReferencesWithChains(expression, prefix)
+                .Select(p => p.rootProperty)
+                .Distinct()
+                .ToList();
         }
 
         private static IPropertySymbol FindProperty(INamedTypeSymbol type, string name)

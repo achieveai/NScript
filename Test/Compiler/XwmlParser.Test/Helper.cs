@@ -37,46 +37,47 @@ namespace XwmlParser.Test
         {
             if (context == null)
             {
-                var path = System.IO.Path.Combine(
-                    System.IO.Path.GetDirectoryName(typeof(Helper).Assembly.Location),
-                    @"..\..\..\Sunlight.Framework.UI.Test\bin\Debug");
+                var testAssemblyDir = System.IO.Path.GetDirectoryName(typeof(Helper).Assembly.Location);
+                var repoRoot = System.IO.Path.GetFullPath(
+                    System.IO.Path.Combine(testAssemblyDir, @"..\..\..\.."));
+
+                // Framework DLLs compiled by NScript custom compiler
+                var libPath = System.IO.Path.Combine(repoRoot, @"NScriptToolSet\lib\Debug");
+
+                // Test framework DLLs (output includes TFM subfolder)
+                var testLibPath = System.IO.Path.Combine(
+                    repoRoot,
+                    @"Test\Framework\Sunlight.Framework.UI.Test\bin\Debug");
+
+                // Find the TFM subfolder (net8.0, net6.0, etc.)
+                if (System.IO.Directory.Exists(testLibPath))
+                {
+                    var subdirs = System.IO.Directory.GetDirectories(testLibPath);
+                    foreach (var dir in subdirs)
+                    {
+                        if (System.IO.File.Exists(System.IO.Path.Combine(dir, SunlightFrameworkUITest)))
+                        {
+                            testLibPath = dir;
+                            break;
+                        }
+                    }
+                }
 
                 context = new ClrContext();
                 context.LoadAssembly(
-                    System.IO.Path.Combine(
-                        path,
-                        MsCorLib),
-                    false);
+                    System.IO.Path.Combine(libPath, MsCorLib), false);
                 context.LoadAssembly(
-                    System.IO.Path.Combine(
-                        path,
-                        SystemWeb),
-                    false);
+                    System.IO.Path.Combine(libPath, SystemWeb), false);
                 context.LoadAssembly(
-                    System.IO.Path.Combine(
-                        path,
-                        SystemWebHtml),
-                    false);
+                    System.IO.Path.Combine(libPath, SystemWebHtml), false);
                 context.LoadAssembly(
-                    System.IO.Path.Combine(
-                        path,
-                        SunlightFramework),
-                    false);
+                    System.IO.Path.Combine(libPath, SunlightFramework), false);
                 context.LoadAssembly(
-                    System.IO.Path.Combine(
-                        path,
-                        SunlightUnit),
-                        false);
+                    System.IO.Path.Combine(libPath, SunlightUnit), false);
                 context.LoadAssembly(
-                    System.IO.Path.Combine(
-                        path,
-                        SunlightFrameworkUi),
-                    false);
+                    System.IO.Path.Combine(libPath, SunlightFrameworkUi), false);
                 context.LoadAssembly(
-                    System.IO.Path.Combine(
-                        path,
-                        SunlightFrameworkUITest),
-                    false);
+                    System.IO.Path.Combine(testLibPath, SunlightFrameworkUITest), false);
 
                 ConverterContext converterContext =
                     new ConverterContext(

@@ -1,0 +1,671 @@
+/* TodoApp template-scoped styles — loaded via @styles directive.
+   All class-based CSS lives here so it goes through the compiler pipeline
+   and gets consistent name suffixing/minification. The host TodoApp.htm
+   only keeps :root variables, *, body, and #app rules. */
+
+:root {
+    --color-primary: #2564cf;
+    --color-primary-hover: #1a4fa0;
+    --color-bg: #f3f2f1;
+    --color-sidebar: #faf9f8;
+    --color-center: #ffffff;
+    --color-detail: #faf9f8;
+    --color-border: #edebe9;
+    --color-text: #323130;
+    --color-text-secondary: #605e5c;
+    --color-completed: #a19f9d;
+    --color-important: #d13438;
+    --color-selected-bg: #edebe9;
+    --color-hover-bg: #f3f2f1;
+    --color-checkbox: #2564cf;
+    --sidebar-width: 280px;
+    --detail-width: 360px;
+}
+
+/* ─── LEFT PANE (folder sidebar) ─── */
+
+.pane-left {
+    width: var(--sidebar-width, 280px);
+    min-width: var(--sidebar-width, 280px);
+    background: var(--color-sidebar, #faf9f8);
+    border-right: 1px solid var(--color-border, #edebe9);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+.pane-left.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right: none;
+}
+
+/* ─── CENTER PANE (todo list) ─── */
+
+.pane-center {
+    flex: 1;
+    background: var(--color-center, #ffffff);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* ─── RIGHT PANE (task detail) ─── */
+
+.pane-right {
+    width: var(--detail-width, 360px);
+    min-width: var(--detail-width, 360px);
+    background: var(--color-detail, #faf9f8);
+    border-left: 1px solid var(--color-border, #edebe9);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+.pane-right.collapsed {
+    width: 0;
+    min-width: 0;
+    border-left: none;
+    overflow: hidden;
+}
+
+/* ─── PANE HEADERS ─── */
+
+.pane-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--color-border, #edebe9);
+}
+
+.app-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-primary, #2564cf);
+}
+
+.current-folder-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-left: 12px;
+}
+
+/* ─── TOGGLE / CLOSE BUTTONS ─── */
+
+.btn-toggle-left {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--color-text-secondary, #605e5c);
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.btn-close-detail {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--color-text-secondary, #605e5c);
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.btn-toggle-left:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+    color: var(--color-text, #323130);
+}
+
+.btn-close-detail:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+    color: var(--color-text, #323130);
+}
+
+/* ─── FOLDER LIST ─── */
+
+.folder-list {
+    padding: 8px 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 1px 8px;
+    transition: background 0.15s;
+}
+
+.folder-item:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+}
+
+.folder-item.selected {
+    background: var(--color-selected-bg, #edebe9);
+    font-weight: 600;
+}
+
+.folder-item.drag-over {
+    background: rgba(37, 100, 207, 0.15);
+    outline: 2px dashed var(--color-primary, #2564cf);
+    outline-offset: -2px;
+}
+
+.folder-icon {
+    margin-right: 10px;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.folder-name {
+    flex: 1;
+    font-size: 14px;
+}
+
+.folder-count {
+    font-size: 12px;
+    color: var(--color-text-secondary, #605e5c);
+    background: var(--color-border, #edebe9);
+    border-radius: 10px;
+    padding: 1px 6px;
+}
+
+/* ─── TODO LIST ─── */
+
+.todo-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 1px 8px;
+    transition: background 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.todo-item:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+}
+
+.todo-item.selected {
+    background: var(--color-selected-bg, #edebe9);
+}
+
+.todo-item.completed .todo-title {
+    text-decoration: line-through;
+    color: var(--color-completed, #a19f9d);
+}
+
+.btn-check {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border: 2px solid var(--color-text-secondary, #605e5c);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 12px;
+    font-size: 12px;
+    color: transparent;
+}
+
+.btn-check:hover {
+    border-color: var(--color-primary, #2564cf);
+}
+
+.btn-check.checked {
+    border-color: var(--color-primary, #2564cf);
+    background: var(--color-primary, #2564cf);
+    color: white;
+}
+
+/* ─── CHECKBOX (todo-check / sub-check) ─── */
+
+.todo-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-checkbox, #2564cf);
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    margin-right: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sub-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-checkbox, #2564cf);
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    margin-right: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+    transition: background 0.15s, color 0.15s;
+}
+
+.todo-check:hover {
+    background: rgba(37, 100, 207, 0.1);
+}
+
+.sub-check:hover {
+    background: rgba(37, 100, 207, 0.1);
+}
+
+.todo-item.completed .todo-check {
+    background: var(--color-checkbox, #2564cf);
+    color: white;
+    border-color: var(--color-checkbox, #2564cf);
+}
+
+.subtask-item.completed .sub-check {
+    background: var(--color-checkbox, #2564cf);
+    color: white;
+    border-color: var(--color-checkbox, #2564cf);
+}
+
+.todo-title {
+    flex: 1;
+    font-size: 14px;
+}
+
+/* ─── STAR / IMPORTANCE ─── */
+
+.star {
+    font-size: 16px;
+    padding: 2px 4px;
+    cursor: pointer;
+    color: var(--color-text-secondary, #605e5c);
+    border-radius: 3px;
+}
+
+.star:hover {
+    color: var(--color-important, #d13438);
+}
+
+.important {
+    color: var(--color-important, #d13438);
+}
+
+/* ─── COMPLETED SECTION ─── */
+
+.completed-section {
+    border-top: 1px solid var(--color-border, #edebe9);
+    margin-top: 8px;
+}
+
+.completed-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text-secondary, #605e5c);
+}
+
+.completed-header:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+}
+
+.completed-toggle {
+    margin-right: 8px;
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.completed-label {
+    font-size: 14px;
+}
+
+.completed-list {
+    padding: 0;
+}
+
+.completed-section:not(.collapsed) .completed-toggle {
+    transform: rotate(90deg);
+}
+
+.completed-section.collapsed .completed-list {
+    display: none;
+}
+
+.completed-section.hidden {
+    display: none;
+}
+
+/* ─── ADD TASK BAR ─── */
+
+.add-todo-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border, #edebe9);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.add-todo-bar:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+}
+
+.add-icon {
+    font-size: 20px;
+    color: var(--color-primary, #2564cf);
+    margin-right: 10px;
+    font-weight: 300;
+}
+
+.add-text {
+    font-size: 14px;
+    color: var(--color-text-secondary, #605e5c);
+}
+
+.add-task-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+    color: var(--color-text, #323130);
+    font-family: inherit;
+}
+
+.add-task-input::placeholder {
+    color: var(--color-text-secondary, #605e5c);
+}
+
+/* ─── TASK DETAIL PANE ─── */
+
+.task-detail {
+    padding: 16px;
+}
+
+.detail-title-input {
+    width: 100%;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text, #323130);
+    border: none;
+    border-bottom: 2px solid transparent;
+    outline: none;
+    padding: 4px 0;
+    margin-bottom: 16px;
+    background: transparent;
+    font-family: inherit;
+}
+
+.detail-title-input:focus {
+    border-bottom-color: var(--color-primary, #2564cf);
+}
+
+.detail-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--color-text, #323130);
+}
+
+.detail-section {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border, #edebe9);
+}
+
+.section-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-secondary, #605e5c);
+    margin-bottom: 8px;
+}
+
+.section-icon {
+    margin-right: 8px;
+}
+
+/* ─── SUBTASK ITEMS ─── */
+
+.subtask-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.subtask-item.completed .subtask-title {
+    text-decoration: line-through;
+    color: var(--color-completed, #a19f9d);
+}
+
+.subtask-title {
+    font-size: 14px;
+    flex: 1;
+}
+
+.subtask-title-input {
+    font-size: 14px;
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--color-text, #323130);
+    padding: 2px 4px;
+    outline: none;
+}
+
+.subtask-title-input:focus {
+    border-bottom: 1px solid var(--color-primary, #2564cf);
+}
+
+.subtask-item.completed .subtask-title-input {
+    text-decoration: line-through;
+    color: var(--color-completed, #a19f9d);
+}
+
+/* ─── ADD SUBTASK ─── */
+
+.add-subtask-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--color-primary, #2564cf);
+    font-size: 14px;
+}
+
+.add-step-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--color-text, #323130);
+    font-size: 14px;
+    outline: none;
+    padding: 4px;
+}
+
+.add-step-input::placeholder {
+    color: var(--color-primary, #2564cf);
+}
+
+.add-subtask {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    cursor: pointer;
+    color: var(--color-text-secondary, #605e5c);
+    font-size: 14px;
+}
+
+.add-subtask:hover {
+    color: var(--color-primary, #2564cf);
+}
+
+/* ─── DUE DATE / MY DAY ─── */
+
+.due-date {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.myday {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.active {
+    color: var(--color-primary, #2564cf);
+}
+
+/* ─── FOLDER PICKER ─── */
+
+.current-folder-label {
+    font-size: 13px;
+    color: var(--color-text-secondary, #605e5c);
+    padding: 4px 0 8px 0;
+}
+
+.folder-assignment {
+    padding: 4px 0 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.folder-chip {
+    display: inline-flex;
+    align-items: center;
+    background: var(--color-selected-bg, #edebe9);
+    border-radius: 16px;
+    padding: 4px 8px 4px 10px;
+    font-size: 13px;
+    color: var(--color-text-secondary, #605e5c);
+    gap: 6px;
+}
+
+.folder-chip-icon {
+    font-size: 14px;
+}
+
+.folder-chip-name {
+    white-space: nowrap;
+}
+
+.folder-chip-remove {
+    cursor: pointer;
+    font-size: 11px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--color-text-secondary, #605e5c);
+    transition: background 0.15s, color 0.15s;
+}
+
+.folder-chip-remove:hover {
+    background: rgba(200, 50, 50, 0.15);
+    color: #c83232;
+}
+
+.folder-picker {
+    padding: 0;
+}
+
+.folder-pick-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.folder-pick-item:hover {
+    background: rgba(37, 100, 207, 0.1);
+}
+
+.folder-pick-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.folder-pick-name {
+    flex: 1;
+}
+
+/* ─── DELETE TASK ─── */
+
+.delete-section {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text-secondary, #605e5c);
+    margin-top: 8px;
+}
+
+.delete-section:hover {
+    color: var(--color-important, #d13438);
+}
+
+/* ─── ADD FOLDER BAR ─── */
+
+.add-folder-bar {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-top: 1px solid var(--color-border, #edebe9);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.add-folder-bar:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+}
+
+/* ─── STATE MODIFIERS ─── */
+
+.collapsed { }
+
+.hidden { }
+
+.selected { }
+
+.completed { }
+
+.checked { }

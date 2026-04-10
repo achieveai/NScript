@@ -1,0 +1,96 @@
+@model TodoApp.ViewModels.AppViewModel
+@styles "TodoApp.RazorTemplates.AppShell.css"
+
+<div data-test="1">
+    <div class="@Model.LeftPaneClass">
+        <div class="pane-header">
+            <div class="app-title">To Do</div>
+        </div>
+        <div class="folder-list">
+            @foreach (var folder in Model.Folders)
+            {
+                <div class="@(folder.IsSelected ? "folder-item selected" : "folder-item")" onclick="@folder.OnSelect" ondragover="@Model.OnDragOver" ondrop="@Model.OnDropToFolder(folder)">
+                    <div class="folder-icon">@folder.Icon</div>
+                    <div class="folder-name">@folder.Name</div>
+                    <div class="folder-count">@folder.TodoCount</div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="pane-center">
+        <div class="pane-header">
+            <div class="btn-toggle-left" onclick="@Model.ToggleLeftPane">&#9776;</div>
+            <div class="current-folder-name">@Model.SelectedFolderName</div>
+        </div>
+        <div class="todo-list">
+            @foreach (var todo in Model.CurrentTodos)
+            {
+                <TodoItemControl />
+            }
+        </div>
+        <div class="@Model.CompletedSectionClass">
+            <div class="completed-header" onclick="@Model.ToggleCompletedSection">
+                <div class="completed-toggle">&#9654;</div>
+                <div class="completed-label">Completed (@Model.CompletedCount)</div>
+            </div>
+            <div class="completed-list">
+                @foreach (var todo in Model.CompletedCurrentTodos)
+                {
+                    <TodoItemControl />
+                }
+            </div>
+        </div>
+        <div class="add-todo-bar">
+            <div class="add-icon">+</div>
+            <input type="text" class="add-task-input" placeholder="Add a task" onkeydown="@Model.AddTodoOnEnter" />
+        </div>
+    </div>
+    <div class="@Model.RightPaneClass">
+        <div class="pane-header">
+            <div class="btn-close-detail" onclick="@Model.ToggleRightPane">&#10005;</div>
+        </div>
+        <div class="task-detail">
+            <input type="text" class="detail-title-input" value="@Model.DetailTitle" onchange="@Model.OnDetailTitleChange" />
+            <div class="detail-section folder-assignment">
+                @foreach (var tag in Model.DetailFolderTags)
+                {
+                    <div class="folder-chip">
+                        <div class="folder-chip-icon">&#128193;</div>
+                        <div class="folder-chip-name">@tag.Name</div>
+                        <div class="folder-chip-remove" onclick="@tag.Remove">&#10005;</div>
+                    </div>
+                }
+            </div>
+            <div class="detail-section">
+                <div class="section-label">Move to</div>
+                <div class="folder-picker">
+                    @foreach (var folder in Model.Folders)
+                    {
+                        <div class="folder-pick-item" onclick="@Model.MoveSelectedToFolder(folder)">
+                            <div class="folder-pick-icon">@folder.Icon</div>
+                            <div class="folder-pick-name">@folder.Name</div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="detail-section">
+                <div class="section-label">Subtasks</div>
+                @foreach (var sub in Model.DetailSubTasks)
+                {
+                    <div class="@(sub.IsCompleted ? "subtask-item completed" : "subtask-item")">
+                        <div class="@(sub.IsCompleted ? "btn-check checked" : "btn-check")" onclick="@sub.ToggleComplete">&#10003;</div>
+                        <input type="text" class="subtask-title-input" value="@sub.Title" onchange="@sub.OnTitleChange" />
+                    </div>
+                }
+                <div class="add-subtask">
+                    <div class="add-icon">+</div>
+                    <input type="text" class="add-step-input" placeholder="Add step" onkeydown="@Model.AddSubTaskOnEnter" />
+                </div>
+            </div>
+            <div class="detail-section delete-section" onclick="@Model.DeleteSelectedTodo">
+                <div class="section-icon">&#128465;</div>
+                <div>Delete task</div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -31,7 +31,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 // Convention: gateIdx >= 0 means "only when gate is open".
                 //             gateIdx <= -2 means "only when gate at index -(gateIdx+2) is CLOSED" (inverted gate).
                 int gateIdx = desc.GateIndices[i];
-                if (gateIdx >= 0 && !state.GateOpen[gateIdx])
+                // A gate node must never skip itself — it is the controller, not a gated child.
+                if (gateIdx >= 0 && gateIdx != i && !state.GateOpen[gateIdx])
                 {
                     state.Values[i] = desc.DefaultValues[i];
                     continue;
@@ -42,54 +43,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     continue;
                 }
 
-                if (nodeType == GraphNodeType.Source)
-                {
-                    // Read from state.Sources[desc.RootSourceSlot].
-                    // Type-check against desc.SourceType at the boundary.
-                    object sourceVal = state.Sources[desc.RootSourceSlot];
-                    if (!object.IsNullOrUndefined(sourceVal)
-                        && !object.IsNullOrUndefined(desc.SourceType)
-                        && !desc.SourceType.IsInstanceOfType(sourceVal))
-                    {
-                        sourceVal = null;
-                    }
-                    state.Values[i] = sourceVal;
-                }
-                else if (nodeType == GraphNodeType.Property
-                    || nodeType == GraphNodeType.Computed
-                    || nodeType == GraphNodeType.TypeGuard)
-                {
-                    // Call getter(parentValue). If parent value is null, output null.
-                    object parentVal = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> getter = desc.Getters[i];
-                    if (!object.IsNullOrUndefined(parentVal) && !object.IsNullOrUndefined(getter))
-                    {
-                        state.Values[i] = getter(parentVal);
-                    }
-                    else
-                    {
-                        state.Values[i] = null;
-                    }
-                }
-                else if (nodeType == GraphNodeType.Gate)
-                {
-                    // Evaluate gate condition, then set gateOpen[i].
-                    // If getter is null, use parentVal directly as the condition
-                    // (the parent Property node already evaluated it to a boolean).
-                    object parentVal = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> getter = desc.Getters[i];
-                    object condVal = null;
-                    if (!object.IsNullOrUndefined(parentVal))
-                    {
-                        if (!object.IsNullOrUndefined(getter))
-                            condVal = getter(parentVal);
-                        else
-                            condVal = parentVal;
-                    }
+                // Evaluate the node value using the shared dispatch method.
+                object nodeVal = GraphEngine.EvaluateNodeValue(desc, state, i, nodeType);
+                state.Values[i] = nodeVal;
 
-                    state.Values[i] = condVal;
-
-                    bool gateIsOpen = GraphEngine.IsTruthyValue(condVal);
+                // Side effects per node type (DOM writes, gate swaps, event wiring, collection rendering).
+                if (nodeType == GraphNodeType.Gate)
+                {
+                    bool gateIsOpen = GraphEngine.IsTruthyValue(nodeVal);
                     bool wasOpen = state.GateOpen[i];
                     state.GateOpen[i] = gateIsOpen;
 
@@ -104,7 +65,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                         if (!object.IsNullOrUndefined(templateObj) && !object.IsNullOrUndefined(marker))
                         {
-                            // Template is an HTML string — parse it into a DOM element.
                             Element clone = GraphEngine.ParseTemplateHtml((string)templateObj, marker);
 
                             if (!object.IsNullOrUndefined(clone))
@@ -116,16 +76,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                 }
                                 state.GateElements[i] = clone;
 
-                                // Resolve child elem refs from the rendered template.
-                                // Elements inside gate branches don't exist in static HTML;
-                                // they're created when the gate renders its template.
                                 GraphEngine.ResolveGateChildElems(
                                     state, gateInfo, clone, gateIsOpen);
                             }
                         }
                     }
 
-                    // If gate just closed, apply defaults to all gated children.
                     if (!gateIsOpen && wasOpen)
                     {
                         GraphEngine.ApplyGateClosure(desc, state, i);
@@ -133,18 +89,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
                 else if (nodeType == GraphNodeType.DomTarget)
                 {
-                    // Get input from parent, write to DOM via targetInfo.Setter(element, value).
-                    object inputVal = GraphEngine.FindParentValue(desc, state, i);
-                    state.Values[i] = inputVal;
-
                     DomTargetInfo targetInfo = (DomTargetInfo)desc.TargetInfos[i];
                     if (!object.IsNullOrUndefined(targetInfo))
                     {
                         object elem = state.ElemRefs[targetInfo.ElemIdx];
                         if (!object.IsNullOrUndefined(targetInfo.Setter) && !object.IsNullOrUndefined(elem))
                         {
-                            object val = !object.IsNullOrUndefined(inputVal)
-                                ? inputVal
+                            object val = !object.IsNullOrUndefined(nodeVal)
+                                ? nodeVal
                                 : desc.DefaultValues[i];
                             targetInfo.Setter(elem, val);
                         }
@@ -152,21 +104,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
                 else if (nodeType == GraphNodeType.EventBinding)
                 {
-                    // Get method reference by applying getter to parent value.
-                    object evtParentVal = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> evtGetter = desc.Getters[i];
-                    object methodRef = null;
-                    if (!object.IsNullOrUndefined(evtParentVal) && !object.IsNullOrUndefined(evtGetter))
-                        methodRef = evtGetter(evtParentVal);
-                    state.Values[i] = methodRef;
-
                     EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
-                    if (!object.IsNullOrUndefined(evtInfo) && !object.IsNullOrUndefined(methodRef))
+                    if (!object.IsNullOrUndefined(evtInfo) && !object.IsNullOrUndefined(nodeVal))
                     {
                         Element evtElem = (Element)state.ElemRefs[evtInfo.ElemIdx];
                         if (!object.IsNullOrUndefined(evtElem))
                         {
-                            Action<Element, ElementEvent> handler = (Action<Element, ElementEvent>)methodRef;
+                            Action<Element, ElementEvent> handler = (Action<Element, ElementEvent>)nodeVal;
                             evtElem.Bind(evtInfo.EventName, handler);
                             state.EventListeners[i] = handler;
                         }
@@ -174,18 +118,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
                 else if (nodeType == GraphNodeType.CollectionManager)
                 {
-                    // Get collection by applying getter to the parent value (same as Property nodes).
-                    object parentVal = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> getter = desc.Getters[i];
-                    object collection = null;
-                    if (!object.IsNullOrUndefined(parentVal) && !object.IsNullOrUndefined(getter))
-                        collection = getter(parentVal);
-                    state.Values[i] = collection;
-
                     CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
-                    if (!object.IsNullOrUndefined(colInfo) && !object.IsNullOrUndefined(collection))
+                    if (!object.IsNullOrUndefined(colInfo) && !object.IsNullOrUndefined(nodeVal))
                     {
-                        IObservableCollection obsCol = GraphEngine.AsObservableCollection(collection);
+                        IObservableCollection obsCol = GraphEngine.AsObservableCollection(nodeVal);
                         if (!object.IsNullOrUndefined(obsCol))
                         {
                             GraphEngine.RenderCollection(desc, state, i, colInfo, obsCol);
@@ -210,264 +146,208 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             if (state.Flushing) return;
             state.Flushing = true;
             state.FlushScheduled = false;
-            int n = desc.NodeCount;
 
-            for (int i = 0; i < n; i++)
+            try
             {
-                // Skip clean nodes.
-                if (!state.Dirty[i])
-                {
-                    continue;
-                }
+                int n = desc.NodeCount;
 
-                // Skip gated nodes whose gate is closed (or inverted gate that is open).
-                int gateIdx = desc.GateIndices[i];
-                if (gateIdx >= 0 && !state.GateOpen[gateIdx])
+                for (int i = 0; i < n; i++)
                 {
+                    // Skip clean nodes.
+                    if (!state.Dirty[i])
+                    {
+                        continue;
+                    }
+
+                    // Skip gated nodes whose gate is closed (or inverted gate that is open).
+                    // A gate node must never skip itself — it is the controller, not a gated child.
+                    int gateIdx = desc.GateIndices[i];
+                    if (gateIdx >= 0 && gateIdx != i && !state.GateOpen[gateIdx])
+                    {
+                        state.Dirty[i] = false;
+                        continue;
+                    }
+                    if (gateIdx <= -2 && state.GateOpen[-(gateIdx + 2)])
+                    {
+                        state.Dirty[i] = false;
+                        continue;
+                    }
+
+                    int nodeType = desc.NodeTypes[i];
+
+                    // Evaluate the new value using the shared dispatch method.
+                    object newVal = GraphEngine.EvaluateNodeValue(desc, state, i, nodeType);
+
+                    // Flip-flop elimination: compare new value to cached value.
+                    // If unchanged (reference equality), clear dirty flag and DON'T dirty consumers.
+                    object oldVal = state.Values[i];
                     state.Dirty[i] = false;
-                    continue;
-                }
-                if (gateIdx <= -2 && state.GateOpen[-(gateIdx + 2)])
-                {
-                    state.Dirty[i] = false;
-                    continue;
-                }
 
-                int nodeType = desc.NodeTypes[i];
-                object newVal = null;
-
-                if (nodeType == GraphNodeType.Source)
-                {
-                    newVal = state.Sources[desc.RootSourceSlot];
-                    if (!object.IsNullOrUndefined(newVal)
-                        && !object.IsNullOrUndefined(desc.SourceType)
-                        && !desc.SourceType.IsInstanceOfType(newVal))
+                    if (newVal == oldVal)
                     {
-                        newVal = null;
+                        // No change — skip propagation.
+                        continue;
                     }
-                }
-                else if (nodeType == GraphNodeType.Property
-                    || nodeType == GraphNodeType.Computed
-                    || nodeType == GraphNodeType.TypeGuard)
-                {
-                    object parentVal = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> getter = desc.Getters[i];
-                    if (!object.IsNullOrUndefined(parentVal) && !object.IsNullOrUndefined(getter))
-                    {
-                        newVal = getter(parentVal);
-                    }
-                    else
-                    {
-                        newVal = null;
-                    }
-                }
-                else if (nodeType == GraphNodeType.Gate)
-                {
-                    // Gate: use parentVal directly (getter is null — parent Property already evaluated condition)
-                    object parentVal = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> getter = desc.Getters[i];
-                    if (!object.IsNullOrUndefined(parentVal))
-                    {
-                        if (!object.IsNullOrUndefined(getter))
-                            newVal = getter(parentVal);
-                        else
-                            newVal = parentVal;
-                    }
-                    else
-                    {
-                        newVal = null;
-                    }
-                }
-                else if (nodeType == GraphNodeType.DomTarget)
-                {
-                    newVal = GraphEngine.FindParentValue(desc, state, i);
-                }
-                else if (nodeType == GraphNodeType.EventBinding)
-                {
-                    object evtFlushParent = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> evtFlushGetter = desc.Getters[i];
-                    if (!object.IsNullOrUndefined(evtFlushParent) && !object.IsNullOrUndefined(evtFlushGetter))
-                        newVal = evtFlushGetter(evtFlushParent);
-                    else
-                        newVal = evtFlushParent;
-                }
-                else if (nodeType == GraphNodeType.CollectionManager)
-                {
-                    object colParentVal = GraphEngine.FindParentValue(desc, state, i);
-                    Func<object, object> colGetter = desc.Getters[i];
-                    if (!object.IsNullOrUndefined(colParentVal) && !object.IsNullOrUndefined(colGetter))
-                        newVal = colGetter(colParentVal);
-                    else
-                        newVal = colParentVal;
-                }
 
-                // Flip-flop elimination: compare new value to cached value.
-                // If unchanged (reference equality), clear dirty flag and DON'T dirty consumers.
-                object oldVal = state.Values[i];
-                state.Dirty[i] = false;
+                    // Value changed — update cache.
+                    state.Values[i] = newVal;
 
-                if (newVal == oldVal)
-                {
-                    // No change — skip propagation.
-                    continue;
-                }
-
-                // Value changed — update cache.
-                state.Values[i] = newVal;
-
-                // Handle gate open/close side effects.
-                if (nodeType == GraphNodeType.Gate)
-                {
-                    bool gateIsOpen = GraphEngine.IsTruthyValue(newVal);
-                    bool wasOpen = state.GateOpen[i];
-                    state.GateOpen[i] = gateIsOpen;
-
-                    // DOM swap: remove old branch, insert new branch.
-                    if (gateIsOpen != wasOpen)
+                    // Handle gate open/close side effects.
+                    if (nodeType == GraphNodeType.Gate)
                     {
-                        GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[i];
-                        if (!object.IsNullOrUndefined(gateInfo))
+                        bool gateIsOpen = GraphEngine.IsTruthyValue(newVal);
+                        bool wasOpen = state.GateOpen[i];
+                        state.GateOpen[i] = gateIsOpen;
+
+                        // DOM swap: remove old branch, insert new branch.
+                        if (gateIsOpen != wasOpen)
                         {
-                            // Clear child elem refs from the OLD branch before removing.
-                            GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
-
-                            // Remove current branch element.
-                            Element oldElem = (Element)state.GateElements[i];
-                            if (!object.IsNullOrUndefined(oldElem))
+                            GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[i];
+                            if (!object.IsNullOrUndefined(gateInfo))
                             {
-                                oldElem.Remove();
-                                state.GateElements[i] = null;
-                            }
+                                // Clear child elem refs from the OLD branch before removing.
+                                GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
 
-                            // Insert new branch template.
-                            object templateObj = gateIsOpen
-                                ? gateInfo.TrueTemplate
-                                : gateInfo.FalseTemplate;
-                            Element marker = (Element)state.ElemRefs[gateInfo.MarkerIdx];
-
-                            if (!object.IsNullOrUndefined(templateObj) && !object.IsNullOrUndefined(marker))
-                            {
-                                Element clone = GraphEngine.ParseTemplateHtml((string)templateObj, marker);
-                                if (!object.IsNullOrUndefined(clone))
+                                // Remove current branch element.
+                                Element oldElem = (Element)state.GateElements[i];
+                                if (!object.IsNullOrUndefined(oldElem))
                                 {
-                                    Node parent = marker.ParentNode;
-                                    if (!object.IsNullOrUndefined(parent))
-                                    {
-                                        parent.InsertBefore(clone, marker);
-                                    }
-                                    state.GateElements[i] = clone;
+                                    oldElem.Remove();
+                                    state.GateElements[i] = null;
+                                }
 
-                                    // Resolve child elem refs from the new branch.
-                                    GraphEngine.ResolveGateChildElems(
-                                        state, gateInfo, clone, gateIsOpen);
+                                // Insert new branch template.
+                                object templateObj = gateIsOpen
+                                    ? gateInfo.TrueTemplate
+                                    : gateInfo.FalseTemplate;
+                                Element marker = (Element)state.ElemRefs[gateInfo.MarkerIdx];
+
+                                if (!object.IsNullOrUndefined(templateObj) && !object.IsNullOrUndefined(marker))
+                                {
+                                    Element clone = GraphEngine.ParseTemplateHtml((string)templateObj, marker);
+                                    if (!object.IsNullOrUndefined(clone))
+                                    {
+                                        Node parent = marker.ParentNode;
+                                        if (!object.IsNullOrUndefined(parent))
+                                        {
+                                            parent.InsertBefore(clone, marker);
+                                        }
+                                        state.GateElements[i] = clone;
+
+                                        // Resolve child elem refs from the new branch.
+                                        GraphEngine.ResolveGateChildElems(
+                                            state, gateInfo, clone, gateIsOpen);
+                                    }
+                                }
+                            }
+                        }
+
+                        int invertedRef = -(i + 2);
+
+                        if (!gateIsOpen && wasOpen)
+                        {
+                            // Gate closed: reset true-branch, activate false-branch
+                            GraphEngine.ApplyGateClosure(desc, state, i);
+                            GraphEngine.MarkGatedConsumersDirty(desc, state, invertedRef);
+                        }
+                        else if (gateIsOpen && !wasOpen)
+                        {
+                            // Gate opened: activate true-branch, reset false-branch
+                            GraphEngine.MarkGatedConsumersDirty(desc, state, i);
+                            GraphEngine.ApplyGateClosure(desc, state, invertedRef);
+                        }
+                    }
+
+                    // Apply DOM write for DomTarget nodes.
+                    if (nodeType == GraphNodeType.DomTarget)
+                    {
+                        DomTargetInfo targetInfo = (DomTargetInfo)desc.TargetInfos[i];
+                        if (!object.IsNullOrUndefined(targetInfo))
+                        {
+                            object elem = state.ElemRefs[targetInfo.ElemIdx];
+                            if (!object.IsNullOrUndefined(targetInfo.Setter) && !object.IsNullOrUndefined(elem))
+                            {
+                                object val = !object.IsNullOrUndefined(newVal)
+                                    ? newVal
+                                    : desc.DefaultValues[i];
+                                targetInfo.Setter(elem, val);
+                            }
+                        }
+                    }
+
+                    // EventBinding: re-wire listener when method reference changes.
+                    if (nodeType == GraphNodeType.EventBinding)
+                    {
+                        EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
+                        if (!object.IsNullOrUndefined(evtInfo))
+                        {
+                            Element evtElem = (Element)state.ElemRefs[evtInfo.ElemIdx];
+                            if (!object.IsNullOrUndefined(evtElem))
+                            {
+                                // Remove old listener.
+                                Action<Element, ElementEvent> oldHandler =
+                                    (Action<Element, ElementEvent>)state.EventListeners[i];
+                                if (!object.IsNullOrUndefined(oldHandler))
+                                {
+                                    evtElem.UnBind(evtInfo.EventName, oldHandler);
+                                }
+
+                                // Wire new listener.
+                                if (!object.IsNullOrUndefined(newVal))
+                                {
+                                    Action<Element, ElementEvent> newHandler =
+                                        (Action<Element, ElementEvent>)newVal;
+                                    evtElem.Bind(evtInfo.EventName, newHandler);
+                                    state.EventListeners[i] = newHandler;
+                                }
+                                else
+                                {
+                                    state.EventListeners[i] = null;
                                 }
                             }
                         }
                     }
 
-                    int invertedRef = -(i + 2);
-
-                    if (!gateIsOpen && wasOpen)
+                    // CollectionManager: re-render when collection reference changes.
+                    if (nodeType == GraphNodeType.CollectionManager)
                     {
-                        // Gate closed: reset true-branch, activate false-branch
-                        GraphEngine.ApplyGateClosure(desc, state, i);
-                        GraphEngine.MarkGatedConsumersDirty(desc, state, invertedRef);
-                    }
-                    else if (gateIsOpen && !wasOpen)
-                    {
-                        // Gate opened: activate true-branch, reset false-branch
-                        GraphEngine.MarkGatedConsumersDirty(desc, state, i);
-                        GraphEngine.ApplyGateClosure(desc, state, invertedRef);
-                    }
-                }
-
-                // Apply DOM write for DomTarget nodes.
-                if (nodeType == GraphNodeType.DomTarget)
-                {
-                    DomTargetInfo targetInfo = (DomTargetInfo)desc.TargetInfos[i];
-                    if (!object.IsNullOrUndefined(targetInfo))
-                    {
-                        object elem = state.ElemRefs[targetInfo.ElemIdx];
-                        if (!object.IsNullOrUndefined(targetInfo.Setter) && !object.IsNullOrUndefined(elem))
+                        CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
+                        if (!object.IsNullOrUndefined(colInfo))
                         {
-                            object val = !object.IsNullOrUndefined(newVal)
-                                ? newVal
-                                : desc.DefaultValues[i];
-                            targetInfo.Setter(elem, val);
-                        }
-                    }
-                }
+                            // Clear old collection items.
+                            GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
 
-                // EventBinding: re-wire listener when method reference changes.
-                if (nodeType == GraphNodeType.EventBinding)
-                {
-                    EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
-                    if (!object.IsNullOrUndefined(evtInfo))
-                    {
-                        Element evtElem = (Element)state.ElemRefs[evtInfo.ElemIdx];
-                        if (!object.IsNullOrUndefined(evtElem))
-                        {
-                            // Remove old listener.
-                            Action<Element, ElementEvent> oldHandler =
-                                (Action<Element, ElementEvent>)state.EventListeners[i];
-                            if (!object.IsNullOrUndefined(oldHandler))
+                            // Detach old collection listener.
+                            if (!object.IsNullOrUndefined(oldVal))
                             {
-                                evtElem.UnBind(evtInfo.EventName, oldHandler);
+                                GraphEngine.DetachCollectionListener(state, i, oldVal);
                             }
 
-                            // Wire new listener.
+                            // Render new collection.
                             if (!object.IsNullOrUndefined(newVal))
                             {
-                                Action<Element, ElementEvent> newHandler =
-                                    (Action<Element, ElementEvent>)newVal;
-                                evtElem.Bind(evtInfo.EventName, newHandler);
-                                state.EventListeners[i] = newHandler;
-                            }
-                            else
-                            {
-                                state.EventListeners[i] = null;
+                                IObservableCollection newObsCol = GraphEngine.AsObservableCollection(newVal);
+                                if (!object.IsNullOrUndefined(newObsCol))
+                                    GraphEngine.RenderCollection(desc, state, i, colInfo, newObsCol);
                             }
                         }
                     }
-                }
 
-                // CollectionManager: re-render when collection reference changes.
-                if (nodeType == GraphNodeType.CollectionManager)
-                {
-                    CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
-                    if (!object.IsNullOrUndefined(colInfo))
+                    // Mark all consumers dirty.
+                    NativeArray<int> consumers = desc.Consumers[i];
+                    if (!object.IsNullOrUndefined(consumers))
                     {
-                        // Clear old collection items.
-                        GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
-
-                        // Detach old collection listener.
-                        if (!object.IsNullOrUndefined(oldVal))
+                        for (int c = 0; c < consumers.Length; c++)
                         {
-                            GraphEngine.DetachCollectionListener(state, i, oldVal);
+                            state.Dirty[consumers[c]] = true;
                         }
-
-                        // Render new collection.
-                        if (!object.IsNullOrUndefined(newVal))
-                        {
-                            IObservableCollection newObsCol = GraphEngine.AsObservableCollection(newVal);
-                            if (!object.IsNullOrUndefined(newObsCol))
-                                GraphEngine.RenderCollection(desc, state, i, colInfo, newObsCol);
-                        }
-                    }
-                }
-
-                // Mark all consumers dirty.
-                NativeArray<int> consumers = desc.Consumers[i];
-                if (!object.IsNullOrUndefined(consumers))
-                {
-                    for (int c = 0; c < consumers.Length; c++)
-                    {
-                        state.Dirty[consumers[c]] = true;
                     }
                 }
             }
-
-            state.Flushing = false;
+            finally
+            {
+                state.Flushing = false;
+            }
         }
 
         /// <summary>
@@ -485,6 +365,74 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 state.FlushScheduled = true;
                 GraphFlushCoordinator.ScheduleDirty(state);
             }
+        }
+
+        /// <summary>
+        /// Evaluates the new value for a node based on its type.
+        /// Shared by PushInitialValues and Flush to eliminate duplicate dispatch logic.
+        /// Does NOT perform side effects (DOM writes, gate swaps, event wiring) —
+        /// those remain in each caller since they differ between initial push and flush.
+        /// </summary>
+        public static object EvaluateNodeValue(GraphDescriptor desc, GraphState state, int i, int nodeType)
+        {
+            if (nodeType == GraphNodeType.Source)
+            {
+                object sourceVal = state.Sources[desc.RootSourceSlot];
+                if (!object.IsNullOrUndefined(sourceVal)
+                    && !object.IsNullOrUndefined(desc.SourceType)
+                    && !desc.SourceType.IsInstanceOfType(sourceVal))
+                {
+                    sourceVal = null;
+                }
+                return sourceVal;
+            }
+            else if (nodeType == GraphNodeType.Property
+                || nodeType == GraphNodeType.Computed
+                || nodeType == GraphNodeType.TypeGuard)
+            {
+                object parentVal = GraphEngine.FindParentValue(desc, state, i);
+                Func<object, object> getter = desc.Getters[i];
+                if (!object.IsNullOrUndefined(parentVal) && !object.IsNullOrUndefined(getter))
+                {
+                    return getter(parentVal);
+                }
+                return null;
+            }
+            else if (nodeType == GraphNodeType.Gate)
+            {
+                object parentVal = GraphEngine.FindParentValue(desc, state, i);
+                Func<object, object> getter = desc.Getters[i];
+                if (!object.IsNullOrUndefined(parentVal))
+                {
+                    if (!object.IsNullOrUndefined(getter))
+                        return getter(parentVal);
+                    else
+                        return parentVal;
+                }
+                return null;
+            }
+            else if (nodeType == GraphNodeType.DomTarget)
+            {
+                return GraphEngine.FindParentValue(desc, state, i);
+            }
+            else if (nodeType == GraphNodeType.EventBinding)
+            {
+                object evtParent = GraphEngine.FindParentValue(desc, state, i);
+                Func<object, object> evtGetter = desc.Getters[i];
+                if (!object.IsNullOrUndefined(evtParent) && !object.IsNullOrUndefined(evtGetter))
+                    return evtGetter(evtParent);
+                return evtParent;
+            }
+            else if (nodeType == GraphNodeType.CollectionManager)
+            {
+                object colParent = GraphEngine.FindParentValue(desc, state, i);
+                Func<object, object> colGetter = desc.Getters[i];
+                if (!object.IsNullOrUndefined(colParent) && !object.IsNullOrUndefined(colGetter))
+                    return colGetter(colParent);
+                return colParent;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -507,7 +455,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 return null;
             }
 
-            // Fallback: scan consumers adjacency list. O(nodes * edges).
+            // Fallback: scan consumers adjacency list.
+            // WARNING: This is O(nodes * edges) — quadratic in the worst case.
+            // ParentIndices should always be populated by the compiler.
+            // This fallback exists only as a safety net for malformed descriptors.
             for (int p = 0; p < nodeIdx; p++)
             {
                 NativeArray<int> consumers = desc.Consumers[p];
@@ -657,6 +608,21 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphDescriptor desc, GraphState state, int nodeIdx,
             CollectionTargetInfo colInfo, IObservableCollection collection)
         {
+            GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, collection);
+
+            // Attach collection change listener.
+            GraphEngine.AttachCollectionListener(desc, state, nodeIdx, colInfo, collection);
+        }
+
+        /// <summary>
+        /// Renders all items in a collection without attaching a collection listener.
+        /// Used by RenderCollection (which adds the listener) and by Reset handling
+        /// (where the listener is already attached).
+        /// </summary>
+        public static void RenderCollectionItems(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, IObservableCollection collection)
+        {
             Element marker = (Element)state.ElemRefs[colInfo.MarkerIdx];
             if (object.IsNullOrUndefined(marker)) return;
 
@@ -667,13 +633,20 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             NativeArray<GraphState> childStates = new NativeArray<GraphState>(count);
             NativeArray itemElems = new NativeArray(count);
 
+            // Parse the template HTML once, then clone per item to avoid
+            // repeated innerHTML parsing.
+            Element templateElement = null;
+            if (!object.IsNullOrUndefined(colInfo.ItemTemplate))
+            {
+                templateElement = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
+            }
+            if (object.IsNullOrUndefined(templateElement)) return;
+
             for (int idx = 0; idx < count; idx++)
             {
                 object item = collection[idx];
 
-                // Item template is an HTML string — parse to DOM element.
-                Element clone = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
-                if (object.IsNullOrUndefined(clone)) continue;
+                Element clone = (Element)templateElement.CloneNode(true);
 
                 parent.InsertBefore(clone, marker);
                 itemElems[idx] = clone;
@@ -684,20 +657,73 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     // Build element refs for the item's bindings.
                     // Find all <span> elements inside the clone — these are the binding markers.
                     NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
+                    GraphEngine.ResolveEventElements(clone, childElemRefs);
+                    GraphEngine.ResolveBindElements(clone, childElemRefs);
 
                     GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                    childState.Sources[GraphSourceSlot.DataContext] = item;
+                    // Item graphs receive a [parentDC, control, item] tuple as DataContext.
+                    NativeArray itemContext = new NativeArray(3);
+                    itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
+                    itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
+                    itemContext[2] = item;
+                    childState.Sources[GraphSourceSlot.DataContext] = itemContext;
                     GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
                     GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
                     childStates[idx] = childState;
+                }
+
+                // Instantiate sub-controls inside this item's DOM.
+                if (!object.IsNullOrUndefined(colInfo.SubControlInfos))
+                {
+                    GraphEngine.InstantiateSubControls(clone, colInfo.SubControlInfos, item);
                 }
             }
 
             state.ChildGraphStates[nodeIdx] = childStates;
             state.ItemElements[nodeIdx] = itemElems;
+        }
 
-            // Attach collection change listener.
-            GraphEngine.AttachCollectionListener(desc, state, nodeIdx, colInfo, collection);
+        /// <summary>
+        /// Creates sub-control instances inside a cloned item element.
+        /// Finds marker elements with data-ns-subctl attribute, creates the control,
+        /// sets its Skin and DataContext.
+        /// </summary>
+        private static void InstantiateSubControls(
+            Element itemRoot, NativeArray<SubControlInfo> subControls, object dataContext)
+        {
+            for (int i = 0; i < subControls.Length; i++)
+            {
+                SubControlInfo info = subControls[i];
+                if (object.IsNullOrUndefined(info)) continue;
+
+                // Find the marker element by data-ns-subctl attribute
+                Element marker = GraphEngine.FindSubControlMarker(itemRoot, i);
+                if (object.IsNullOrUndefined(marker)) continue;
+
+                // Create the control instance using the type factory
+                object ctlObj = info.TypeFactory(marker);
+                UISkinableElement ctl = (UISkinableElement)ctlObj;
+
+                // Set the skin
+                object skinObj = info.SkinFactory();
+                ctl.Skin = (Skin)skinObj;
+
+                // Set DataContext so bindings inside the sub-control resolve
+                ctl.DataContext = dataContext;
+
+                // Activate the control to trigger skin rendering and binding
+                ctl.Activate();
+            }
+        }
+
+        private static Element FindSubControlMarker(Element itemRoot, int index)
+        {
+            // Check if the itemRoot itself is the marker (happens when the item
+            // template consists solely of a sub-control placeholder).
+            string selector = "[data-ns-subctl=\"" + index + "\"]";
+            if (itemRoot.Matches(selector))
+                return itemRoot;
+            return itemRoot.QuerySelector(selector);
         }
 
         /// <summary>
@@ -819,187 +845,216 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             if (args.Action == CollectionChangedAction.Add)
             {
-                int insertIdx = args.ChangeIndex;
-                IList newItems = args.NewItems;
-                NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
-                NativeArray itemElems = state.ItemElements[nodeIdx];
-
-                int oldCount = object.IsNullOrUndefined(itemElems) ? 0 : itemElems.Length;
-                int addCount = newItems.Count;
-                int newCount = oldCount + addCount;
-
-                // Build new arrays with items inserted at position.
-                NativeArray<GraphState> newChildStates = new NativeArray<GraphState>(newCount);
-                NativeArray newItemElems = new NativeArray(newCount);
-
-                // Copy items before insertion point.
-                for (int j = 0; j < insertIdx && j < oldCount; j++)
-                {
-                    newChildStates[j] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
-                    newItemElems[j] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
-                }
-
-                // Find the reference node for InsertBefore.
-                Node refNode = marker;
-                if (insertIdx < oldCount && !object.IsNullOrUndefined(itemElems))
-                {
-                    refNode = (Node)itemElems[insertIdx];
-                }
-
-                // Insert new items.
-                for (int j = 0; j < addCount; j++)
-                {
-                    object item = newItems[j];
-                    Element clone = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
-                    if (object.IsNullOrUndefined(clone)) return;
-                    parent.InsertBefore(clone, refNode);
-                    newItemElems[insertIdx + j] = clone;
-
-                    if (!object.IsNullOrUndefined(colInfo.ItemGraph))
-                    {
-                        NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
-
-                        GraphState childState = new GraphState(
-                            colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                        childState.Sources[GraphSourceSlot.DataContext] = item;
-                        GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
-                        GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
-                        newChildStates[insertIdx + j] = childState;
-                    }
-                }
-
-                // Copy items after insertion point.
-                for (int j = insertIdx; j < oldCount; j++)
-                {
-                    newChildStates[j + addCount] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
-                    newItemElems[j + addCount] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
-                }
-
-                state.ChildGraphStates[nodeIdx] = newChildStates;
-                state.ItemElements[nodeIdx] = newItemElems;
+                GraphEngine.HandleCollectionAdd(state, nodeIdx, colInfo, args, marker, parent);
             }
             else if (args.Action == CollectionChangedAction.Remove)
             {
-                int removeIdx = args.ChangeIndex;
-                int removeCount = args.OldItems.Count;
-                NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
-                NativeArray itemElems = state.ItemElements[nodeIdx];
-
-                if (object.IsNullOrUndefined(itemElems)) return;
-
-                int oldCount = itemElems.Length;
-                int newCount = oldCount - removeCount;
-
-                // Remove DOM elements (backwards to avoid index shifting).
-                // Also remove any gate elements from child graph states —
-                // gates render their content as siblings of the item element,
-                // so removing just the item element leaves gate content behind.
-                for (int j = removeIdx + removeCount - 1; j >= removeIdx; j--)
-                {
-                    if (!object.IsNullOrUndefined(childStates))
-                    {
-                        GraphState childState = childStates[j];
-                        if (!object.IsNullOrUndefined(childState))
-                        {
-                            GraphEngine.RemoveChildGateElements(childState);
-                        }
-                    }
-
-                    Element elem = (Element)itemElems[j];
-                    if (!object.IsNullOrUndefined(elem))
-                    {
-                        elem.Remove();
-                    }
-                }
-
-                // Rebuild arrays without removed items.
-                NativeArray<GraphState> newChildStates = new NativeArray<GraphState>(newCount);
-                NativeArray newItemElems = new NativeArray(newCount);
-
-                for (int j = 0; j < removeIdx; j++)
-                {
-                    newChildStates[j] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
-                    newItemElems[j] = itemElems[j];
-                }
-                for (int j = removeIdx + removeCount; j < oldCount; j++)
-                {
-                    newChildStates[j - removeCount] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
-                    newItemElems[j - removeCount] = itemElems[j];
-                }
-
-                state.ChildGraphStates[nodeIdx] = newChildStates;
-                state.ItemElements[nodeIdx] = newItemElems;
+                GraphEngine.HandleCollectionRemove(state, nodeIdx, colInfo, args);
             }
             else if (args.Action == CollectionChangedAction.Replace)
             {
-                int replaceIdx = args.ChangeIndex;
-                NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
-
-                if (!object.IsNullOrUndefined(childStates) && replaceIdx < childStates.Length)
-                {
-                    GraphState oldChild = childStates[replaceIdx];
-                    if (!object.IsNullOrUndefined(oldChild) && !object.IsNullOrUndefined(colInfo.ItemGraph))
-                    {
-                        // Unwire old child subscriptions to avoid leaks.
-                        GraphEngine.UnwireChildSubscriptions(colInfo.ItemGraph, oldChild);
-                        GraphEngine.CleanupEventListeners(colInfo.ItemGraph, oldChild);
-                    }
-
-                    // Update the child graph's DataContext to the new item and re-push.
-                    object newItem = args.NewItems[0];
-                    if (!object.IsNullOrUndefined(oldChild) && !object.IsNullOrUndefined(colInfo.ItemGraph))
-                    {
-                        oldChild.Sources[GraphSourceSlot.DataContext] = newItem;
-                        oldChild.SubscriptionsActive = false;
-                        GraphEngine.PushInitialValues(colInfo.ItemGraph, oldChild);
-                        GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, oldChild, newItem);
-                    }
-                }
+                GraphEngine.HandleCollectionReplace(state, nodeIdx, colInfo, args);
             }
             else if (args.Action == CollectionChangedAction.Reset)
             {
-                // Full reset: clear and re-render.
+                // Full reset: clear and re-render items without re-attaching the collection listener
+                // (we're already inside the listener callback).
                 GraphEngine.ClearCollectionItems(desc, state, nodeIdx, colInfo);
                 object collection = state.Values[nodeIdx];
                 if (!object.IsNullOrUndefined(collection))
                 {
                     IObservableCollection obsCol = GraphEngine.AsObservableCollection(collection);
-                    if (object.IsNullOrUndefined(obsCol)) return;
-                    Element resetMarker = (Element)state.ElemRefs[colInfo.MarkerIdx];
-                    if (!object.IsNullOrUndefined(resetMarker))
+                    if (!object.IsNullOrUndefined(obsCol))
+                        GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, obsCol);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles CollectionChangedAction.Add: inserts new items at the specified index.
+        /// </summary>
+        private static void HandleCollectionAdd(
+            GraphState state, int nodeIdx, CollectionTargetInfo colInfo,
+            CollectionChangedEventArgs args, Element marker, Node parent)
+        {
+            int insertIdx = args.ChangeIndex;
+            IList newItems = args.NewItems;
+            NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
+            NativeArray itemElems = state.ItemElements[nodeIdx];
+
+            int oldCount = object.IsNullOrUndefined(itemElems) ? 0 : itemElems.Length;
+            int addCount = newItems.Count;
+            int newCount = oldCount + addCount;
+
+            // Build new arrays with items inserted at position.
+            NativeArray<GraphState> newChildStates = new NativeArray<GraphState>(newCount);
+            NativeArray newItemElems = new NativeArray(newCount);
+
+            // Copy items before insertion point.
+            for (int j = 0; j < insertIdx && j < oldCount; j++)
+            {
+                newChildStates[j] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                newItemElems[j] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
+            }
+
+            // Find the reference node for InsertBefore.
+            Node refNode = marker;
+            if (insertIdx < oldCount && !object.IsNullOrUndefined(itemElems))
+            {
+                refNode = (Node)itemElems[insertIdx];
+            }
+
+            // Parse template once, then clone per item.
+            Element templateElement = null;
+            if (!object.IsNullOrUndefined(colInfo.ItemTemplate))
+            {
+                templateElement = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
+            }
+            if (object.IsNullOrUndefined(templateElement)) return;
+
+            // Insert new items.
+            for (int j = 0; j < addCount; j++)
+            {
+                object item = newItems[j];
+                Element clone = (Element)templateElement.CloneNode(true);
+                parent.InsertBefore(clone, refNode);
+                newItemElems[insertIdx + j] = clone;
+
+                if (!object.IsNullOrUndefined(colInfo.ItemGraph))
+                {
+                    NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
+                    GraphEngine.ResolveEventElements(clone, childElemRefs);
+                    GraphEngine.ResolveBindElements(clone, childElemRefs);
+
+                    GraphState childState = new GraphState(
+                        colInfo.ItemGraph, childElemRefs, state.Depth + 1);
+                    NativeArray itemContext = new NativeArray(3);
+                    itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
+                    itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
+                    itemContext[2] = item;
+                    childState.Sources[GraphSourceSlot.DataContext] = itemContext;
+                    GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
+                    GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
+                    newChildStates[insertIdx + j] = childState;
+                }
+
+                // Instantiate sub-controls inside this item's DOM.
+                if (!object.IsNullOrUndefined(colInfo.SubControlInfos))
+                {
+                    GraphEngine.InstantiateSubControls(clone, colInfo.SubControlInfos, item);
+                }
+            }
+
+            // Copy items after insertion point.
+            for (int j = insertIdx; j < oldCount; j++)
+            {
+                newChildStates[j + addCount] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                newItemElems[j + addCount] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
+            }
+
+            state.ChildGraphStates[nodeIdx] = newChildStates;
+            state.ItemElements[nodeIdx] = newItemElems;
+        }
+
+        /// <summary>
+        /// Handles CollectionChangedAction.Remove: removes items at the specified index.
+        /// </summary>
+        private static void HandleCollectionRemove(
+            GraphState state, int nodeIdx, CollectionTargetInfo colInfo,
+            CollectionChangedEventArgs args)
+        {
+            int removeIdx = args.ChangeIndex;
+            int removeCount = args.OldItems.Count;
+            NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
+            NativeArray itemElems = state.ItemElements[nodeIdx];
+
+            if (object.IsNullOrUndefined(itemElems)) return;
+
+            int oldCount = itemElems.Length;
+            int newCount = oldCount - removeCount;
+
+            // Remove DOM elements (backwards to avoid index shifting).
+            // Also remove any gate elements from child graph states —
+            // gates render their content as siblings of the item element,
+            // so removing just the item element leaves gate content behind.
+            for (int j = removeIdx + removeCount - 1; j >= removeIdx; j--)
+            {
+                if (!object.IsNullOrUndefined(childStates))
+                {
+                    GraphState childState = childStates[j];
+                    if (!object.IsNullOrUndefined(childState) && !object.IsNullOrUndefined(colInfo.ItemGraph))
                     {
-                        Node resetParent = resetMarker.ParentNode;
-                        if (!object.IsNullOrUndefined(resetParent))
-                        {
-                            int count = obsCol.Count;
-                            NativeArray<GraphState> newStates = new NativeArray<GraphState>(count);
-                            NativeArray newElems = new NativeArray(count);
-
-                            for (int idx = 0; idx < count; idx++)
-                            {
-                                object item = obsCol[idx];
-                                Element clone = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, resetMarker);
-                                if (object.IsNullOrUndefined(clone)) continue;
-                                resetParent.InsertBefore(clone, resetMarker);
-                                newElems[idx] = clone;
-
-                                if (!object.IsNullOrUndefined(colInfo.ItemGraph))
-                                {
-                                    NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
-
-                                    GraphState childState = new GraphState(
-                                        colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                                    childState.Sources[GraphSourceSlot.DataContext] = item;
-                                    GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
-                                    GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
-                                    newStates[idx] = childState;
-                                }
-                            }
-
-                            state.ChildGraphStates[nodeIdx] = newStates;
-                            state.ItemElements[nodeIdx] = newElems;
-                        }
+                        // Dispose child graph state: unwire subscriptions, events,
+                        // nested collections, and remove gate DOM elements.
+                        GraphEngine.UnwireChildSubscriptions(colInfo.ItemGraph, childState);
+                        GraphEngine.CleanupEventListeners(colInfo.ItemGraph, childState);
+                        GraphEngine.CleanupCollectionListeners(colInfo.ItemGraph, childState);
+                        GraphEngine.RemoveChildGateElements(childState);
                     }
+                }
+
+                Element elem = (Element)itemElems[j];
+                if (!object.IsNullOrUndefined(elem))
+                {
+                    elem.Remove();
+                }
+            }
+
+            // Rebuild arrays without removed items.
+            NativeArray<GraphState> newChildStates = new NativeArray<GraphState>(newCount);
+            NativeArray newItemElems = new NativeArray(newCount);
+
+            for (int j = 0; j < removeIdx; j++)
+            {
+                newChildStates[j] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                newItemElems[j] = itemElems[j];
+            }
+            for (int j = removeIdx + removeCount; j < oldCount; j++)
+            {
+                newChildStates[j - removeCount] = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                newItemElems[j - removeCount] = itemElems[j];
+            }
+
+            state.ChildGraphStates[nodeIdx] = newChildStates;
+            state.ItemElements[nodeIdx] = newItemElems;
+        }
+
+        /// <summary>
+        /// Handles CollectionChangedAction.Replace: replaces item at the specified index.
+        /// </summary>
+        private static void HandleCollectionReplace(
+            GraphState state, int nodeIdx, CollectionTargetInfo colInfo,
+            CollectionChangedEventArgs args)
+        {
+            int replaceIdx = args.ChangeIndex;
+            NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
+
+            if (!object.IsNullOrUndefined(childStates) && replaceIdx < childStates.Length)
+            {
+                GraphState oldChild = childStates[replaceIdx];
+                if (!object.IsNullOrUndefined(oldChild) && !object.IsNullOrUndefined(colInfo.ItemGraph))
+                {
+                    // Unwire old child subscriptions to avoid leaks.
+                    GraphEngine.UnwireChildSubscriptions(colInfo.ItemGraph, oldChild);
+                    GraphEngine.CleanupEventListeners(colInfo.ItemGraph, oldChild);
+                    GraphEngine.CleanupCollectionListeners(colInfo.ItemGraph, oldChild);
+                    GraphEngine.RemoveChildGateElements(oldChild);
+                }
+
+                // Update the child graph's DataContext to the new item and re-push.
+                object newItem = args.NewItems[0];
+                if (!object.IsNullOrUndefined(oldChild) && !object.IsNullOrUndefined(colInfo.ItemGraph))
+                {
+                    // Item graph DC is [parentDC, control, item] tuple — update item in-place.
+                    object existingDc = oldChild.Sources[GraphSourceSlot.DataContext];
+                    NativeArray tuple = (NativeArray)existingDc;
+                    if (!object.IsNullOrUndefined(tuple) && tuple.Length >= 3)
+                        tuple[2] = newItem;
+                    else
+                        oldChild.Sources[GraphSourceSlot.DataContext] = newItem;
+                    oldChild.SubscriptionsActive = false;
+                    GraphEngine.PushInitialValues(colInfo.ItemGraph, oldChild);
+                    GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, oldChild, newItem);
                 }
             }
         }
@@ -1120,6 +1175,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 object source = childState.Sources[entry.SourceSlot];
                 if (object.IsNullOrUndefined(source)) continue;
 
+                // Item graphs store a [parentDC, control, item] tuple as DataContext.
+                // Extract the actual item (tuple[2]) for unwiring.
+                if (entry.SourceSlot == GraphSourceSlot.DataContext)
+                {
+                    NativeArray tuple = (NativeArray)source;
+                    if (!object.IsNullOrUndefined(tuple) && tuple.Length >= 3)
+                        source = tuple[2];
+                }
+
                 INotifyPropertyChanged observable = source as INotifyPropertyChanged;
                 if (object.IsNullOrUndefined(observable)) continue;
 
@@ -1144,24 +1208,75 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
-        /// Collects span elements from an item clone for use as element refs in child graph states.
-        /// Returns a NativeArray with each span as an entry. If no spans found, returns
-        /// a single-element array containing the clone itself.
+        /// Collects compiler-generated marker elements from an item clone for use as
+        /// element refs in child graph states. Markers are identified by data-ns-ph
+        /// (text placeholders), data-ns-bind (value/attribute bindings), or data-ns-evt
+        /// (event bindings). Returns a NativeArray with each marker as an entry.
+        /// If no markers found, returns a single-element array containing the clone itself.
         /// </summary>
         public static NativeArray CollectSpanElements(Element clone)
         {
-            NativeArray<Element> spans = clone.GetElementsByTagName("span");
-            int spanCount = spans.Length;
-            NativeArray result = new NativeArray(spanCount > 0 ? spanCount : 1);
-            for (int i = 0; i < spanCount; i++)
+            // Collect only compiler-generated markers — elements carrying data-ns-ph,
+            // data-ns-bind, or data-ns-evt. User-authored spans (e.g. <span class="label">)
+            // must NOT be collected as they are not counted by the compiler's element indexing.
+            NativeArray<Element> allMarkers = clone.QuerySelectorAll("[data-ns-ph], [data-ns-bind], [data-ns-evt]");
+            int count = allMarkers.Length;
+            NativeArray result = new NativeArray(count > 0 ? count : 1);
+            for (int i = 0; i < count; i++)
             {
-                result[i] = spans[i];
+                result[i] = allMarkers[i];
             }
-            if (spanCount == 0)
+            if (count == 0)
             {
                 result[0] = clone;
             }
             return result;
+        }
+
+        public static void ResolveEventElements(Element clone, NativeArray elemRefs)
+        {
+            NativeArray<Element> evtSpans = clone.QuerySelectorAll("[data-ns-evt]");
+            if (object.IsNullOrUndefined(evtSpans) || evtSpans.Length == 0)
+                return;
+
+            for (int i = 0; i < evtSpans.Length; i++)
+            {
+                Element marker = evtSpans[i];
+                for (int j = 0; j < elemRefs.Length; j++)
+                {
+                    if ((object)elemRefs[j] == (object)marker)
+                    {
+                        // Only replace span markers with their parent; non-span
+                        // elements (e.g. <button data-ns-evt/>) bind to themselves.
+                        if (marker.TagName == "SPAN")
+                            elemRefs[j] = (Element)marker.ParentNode;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public static void ResolveBindElements(Element clone, NativeArray elemRefs)
+        {
+            NativeArray<Element> bindSpans = clone.QuerySelectorAll("[data-ns-bind]");
+            if (object.IsNullOrUndefined(bindSpans) || bindSpans.Length == 0)
+                return;
+
+            for (int i = 0; i < bindSpans.Length; i++)
+            {
+                Element marker = bindSpans[i];
+                for (int j = 0; j < elemRefs.Length; j++)
+                {
+                    if ((object)elemRefs[j] == (object)marker)
+                    {
+                        // Only replace span markers with their parent; non-span
+                        // elements (e.g. <input data-ns-bind/>) bind to themselves.
+                        if (marker.TagName == "SPAN")
+                            elemRefs[j] = (Element)marker.ParentNode;
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>

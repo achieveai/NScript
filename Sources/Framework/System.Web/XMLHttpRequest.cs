@@ -59,6 +59,13 @@ namespace System.Web
     public class XMLHttpRequest
     {
         /// <summary>
+        /// Hook called before Send() to inject trace headers (e.g., traceparent).
+        /// Set by the framework (e.g., CallContext) at initialization.
+        /// Receives the XMLHttpRequest instance to call SetRequestHeader on.
+        /// </summary>
+        public static Action<XMLHttpRequest> OnBeforeSend;
+
+        /// <summary>
         /// Type of the BLOB.
         /// </summary>
         public const string BlobType = "blob";
@@ -380,6 +387,18 @@ namespace System.Web
             if (!string.IsNullOrEmpty(responseType))
             { request.ResponseType = responseType; }
 
+            try
+            {
+                if (XMLHttpRequest.OnBeforeSend != null)
+                {
+                    XMLHttpRequest.OnBeforeSend(request);
+                }
+            }
+            catch
+            {
+                // Best-effort: header injection must not block the request
+            }
+
             request.Send();
         }
 
@@ -499,6 +518,18 @@ namespace System.Web
                 request.OnError += OnError;
 
                 request.OnTimeout += OnError;
+            }
+
+            try
+            {
+                if (XMLHttpRequest.OnBeforeSend != null)
+                {
+                    XMLHttpRequest.OnBeforeSend(request);
+                }
+            }
+            catch
+            {
+                // Best-effort: header injection must not block the request
             }
 
             request.Send(data);

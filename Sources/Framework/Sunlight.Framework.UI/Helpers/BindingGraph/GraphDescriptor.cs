@@ -73,6 +73,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Pre-computed at compile time for O(1) parent lookup at runtime.
         /// </summary>
         public NativeArray<NativeArray<int>> ParentIndices;
+
+        /// <summary>
+        /// LIMIT-006: Sub-control entries. Each entry describes a child control
+        /// embedded in the template, with property bindings that wire graph nodes
+        /// to the sub-control's properties.
+        /// </summary>
+        public NativeArray<SubControlInfo> SubControls;
     }
 
     /// <summary>
@@ -92,6 +99,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public string PropertyName;
         public int NodeIdx;
         public int SourceSlot;
+        /// <summary>
+        /// For chained property paths (e.g., ["Customer", "Address", "City"]).
+        /// Null for simple single-property subscriptions.
+        /// </summary>
+        public NativeArray<string> PathSegments;
     }
 
     /// <summary>
@@ -124,6 +136,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public int MarkerIdx;
         public GraphDescriptor ItemGraph;
         public object ItemTemplate;
+        /// <summary>
+        /// Sub-control descriptors for controls inside the foreach item template.
+        /// Null when no sub-controls are used.
+        /// </summary>
+        public NativeArray<SubControlInfo> SubControlInfos;
     }
 
     /// <summary>
@@ -133,5 +150,33 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
     {
         public int ElemIdx;
         public string EventName;
+    }
+
+    /// <summary>
+    /// Describes a sub-control in the template.
+    /// Used for both collection item sub-controls (MarkerIdx/TypeFactory/SkinFactory)
+    /// and LIMIT-006 top-level property bindings (ElemIdx/Bindings).
+    /// </summary>
+    public class SubControlInfo
+    {
+        // Collection item sub-control fields (existing)
+        public int MarkerIdx;
+        public Func<object, object> TypeFactory;
+        public Func<object> SkinFactory;
+
+        // LIMIT-006: Top-level sub-control property binding fields
+        public int ElemIdx;
+        public NativeArray<SubControlPropertyInfo> Bindings;
+    }
+
+    /// <summary>
+    /// LIMIT-006: Describes a single property binding on a sub-control.
+    /// NodeIdx references the graph node whose value should be assigned
+    /// to the sub-control via the Setter function.
+    /// </summary>
+    public class SubControlPropertyInfo
+    {
+        public int NodeIdx;
+        public Action<object, object> Setter;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:e2e": "node e2e-todo-tests.js",
+    "test:unit": "node run-qunit.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  }
+}

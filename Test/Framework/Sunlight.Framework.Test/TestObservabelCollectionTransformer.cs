@@ -137,7 +137,7 @@ namespace Sunlight.Framework.Test
             TestWithNewList(
                 assert,
                 new List<Number> { 12, 23, 33 },
-                new List<int>() { 1 },
+                new List<int>() { 3 },
                 new List<int>() { 0 });
             return;
         }

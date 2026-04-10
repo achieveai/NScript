@@ -135,6 +135,12 @@ namespace NScript.Converter
         private readonly List<Tuple<Location, string>> warnings = new();
 
         /// <summary>
+        /// CSS contributions from plugins (e.g., Razor templates) to be merged
+        /// into the main CSS output block. Each entry is a serialized CSS string.
+        /// </summary>
+        private readonly List<string> additionalCssContributions = new();
+
+        /// <summary>
         /// The method converter plugins.
         /// </summary>
         private readonly IList<IMethodConverterPlugin> methodConverterPlugins;
@@ -351,6 +357,25 @@ namespace NScript.Converter
         {
             List<Tuple<Location, string>> list = isWarning ? this.warnings : this.errors;
             list.Add(Tuple.Create(location, error));
+        }
+
+        /// <summary>
+        /// Adds a CSS string contribution from a plugin for merged output.
+        /// Called by Razor templates to contribute their CSS to the main style block.
+        /// </summary>
+        public void AddCssContribution(string css)
+        {
+            if (!string.IsNullOrEmpty(css))
+                this.additionalCssContributions.Add(css);
+        }
+
+        /// <summary>
+        /// Gets CSS contributions added by plugins for merged output.
+        /// Called by XWML's CodeGenerator to include Razor CSS in GetAllCss().
+        /// </summary>
+        public IList<string> GetCssContributions()
+        {
+            return this.additionalCssContributions;
         }
 
         /// <summary>

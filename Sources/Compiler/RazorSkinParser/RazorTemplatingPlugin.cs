@@ -8,6 +8,7 @@ using NScript.Converter;
 using NScript.Converter.TypeSystemConverter;
 using NScript.JST;
 using NScript.RazorSkin.CodeGen;
+using NScript.RazorSkin.TemplateIR;
 using Serilog;
 
 namespace NScript.RazorSkin
@@ -23,6 +24,14 @@ namespace NScript.RazorSkin
 
         private RuntimeScopeManager _runtimeScopeManager;
         private ClrContext _clrContext;
+        private CecilTypeHelper _typeHelper;
+        private CecilModelStubGenerator _stubGenerator;
+
+        /// <summary>
+        /// Per-compilation data index counter for Razor templates.
+        /// Starts at 100 to avoid collision with XWML's sequential indices (starting from 0).
+        /// </summary>
+        private int _nextDataIndex = 100;
 
         /// <summary>
         /// Map of template name to compiled template IR.
@@ -42,10 +51,45 @@ namespace NScript.RazorSkin
         private bool _hasRazorTemplates;
 
         /// <summary>
+        /// Flag set when the Razor plugin had to create its own DocStorageGetter
+        /// identifier because XWML was not active. When true,
+        /// <see cref="GetPostJavascript"/> must also emit the function body.
+        /// </summary>
+        private bool _needsDocStorageGetterEmission;
+
+        /// <summary>
         /// Resolved runtime types needed for graph descriptor JST emission.
         /// Created during Initialize when Razor templates are found.
         /// </summary>
         private RazorKnownTypes _razorKnownTypes;
+
+        /// <summary>
+        /// Per-template CSS managers, keyed by template name.
+        /// Populated during Initialize when templates have @styles directives.
+        /// </summary>
+        private readonly Dictionary<string, RazorCssManager> _templateCssManagers
+            = new Dictionary<string, RazorCssManager>();
+
+        /// <summary>
+        /// Global CSS class map: class name → IIdentifier (from CSS scope).
+        /// Built from [CssClass] attribute scanning across all assemblies.
+        /// Used by CssLiteralReplacer to swap string literals → IdentifierStringExpression.
+        /// </summary>
+        private readonly Dictionary<string, IIdentifier> _cssClassMap
+            = new Dictionary<string, IIdentifier>();
+
+        /// <summary>
+        /// Lazily initialized CSS literal replacer.
+        /// Created after [CssClass] scanning if any CSS classes were registered.
+        /// </summary>
+        private CssLiteralReplacer _cssLiteralReplacer;
+
+        /// <summary>
+        /// All embedded CSS resources found during module scanning, keyed by resource name.
+        /// Used to resolve @styles references to actual CSS content.
+        /// </summary>
+        private readonly Dictionary<string, EmbeddedResource> _cssResources
+            = new Dictionary<string, EmbeddedResource>();
 
         /// <summary>
         /// Maps template name to its JST getter function identifier.
@@ -100,12 +144,13 @@ namespace Sunlight.Framework.Observables
         {
             _clrContext = clrContext;
             _runtimeScopeManager = runtimeScopeManager;
+            _typeHelper = new CecilTypeHelper(clrContext);
+            _stubGenerator = new CecilModelStubGenerator(clrContext);
 
-            // Reset per-compilation state to ensure deterministic output
-            // when the compiler is hosted in a long-running process.
-            RazorSkinJSTGenerator.ResetDataIndex();
+            // Reset per-compilation data index counter
+            _nextDataIndex = 100;
 
-            // Scan embedded resources for .skin.cshtml files
+            // Scan embedded resources for .skin.cshtml and .css files
             foreach (var module in clrContext.Modules)
             {
                 foreach (var resource in module.Resources)
@@ -113,17 +158,23 @@ namespace Sunlight.Framework.Observables
                     var embeddedResource = resource as EmbeddedResource;
                     if (embeddedResource == null) continue;
 
+                    // Collect CSS resources for @styles resolution
+                    if (embeddedResource.Name.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _cssResources[embeddedResource.Name] = embeddedResource;
+                        Log.Debug("Discovered CSS resource {ResourceName}", embeddedResource.Name);
+                    }
+
                     var fileName = runtimeScopeManager.Context.GetResourceFileName(
                         module, embeddedResource.Name);
 
                     if (fileName != null && CanHandle(fileName))
                     {
-                        Log.Debug("Discovered .skin.cshtml resource {ResourceName} (size {ResourceSize} bytes)",
-                            embeddedResource.Name, embeddedResource.GetResourceStream().Length);
-
                         try
                         {
                             using var stream = embeddedResource.GetResourceStream();
+                            Log.Debug("Discovered .skin.cshtml resource {ResourceName} (size {ResourceSize} bytes)",
+                                embeddedResource.Name, stream.Length);
                             using var reader = new StreamReader(stream);
                             var templateSource = reader.ReadToEnd();
 
@@ -133,7 +184,7 @@ namespace Sunlight.Framework.Observables
                             // Generate C# stubs for the model type from Cecil type info.
                             // This allows the Roslyn analysis phase to detect observable
                             // properties and promote bindings from OneTime to OneWay.
-                            var modelTypeStub = GenerateModelTypeStub(templateSource, clrContext);
+                            var modelTypeStub = _stubGenerator.GenerateModelTypeStub(templateSource);
                             var additionalSources = modelTypeStub != null
                                 ? new[] { FrameworkTypeStubs, modelTypeStub }
                                 : new[] { FrameworkTypeStubs };
@@ -161,8 +212,7 @@ namespace Sunlight.Framework.Observables
                         }
                         catch (Exception ex)
                         {
-                            Log.Debug("Compilation failed for resource {ResourceName}: {ErrorMessage}",
-                                embeddedResource.Name, ex.Message);
+                            Log.Error(ex, "Compilation failed for resource {ResourceName}", embeddedResource.Name);
 
                             runtimeScopeManager.Context.AddError(
                                 null,
@@ -175,18 +225,350 @@ namespace Sunlight.Framework.Observables
 
             if (_hasRazorTemplates)
             {
-                ResolveRuntimeIdentifiers(clrContext, runtimeScopeManager);
-
                 try
                 {
                     _razorKnownTypes = new RazorKnownTypes(clrContext, runtimeScopeManager.Context.ClrKnownReferences);
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug("Could not create RazorKnownTypes: {Error}. " +
-                        "Graph descriptor emission will fail.", ex.Message);
+                    Log.Warning(ex, "Could not create RazorKnownTypes — graph descriptor emission will fail");
+
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"Could not create RazorKnownTypes: {ex.Message}",
+                        false);
+                }
+
+                ResolveRuntimeIdentifiers(clrContext, runtimeScopeManager);
+
+                // Load CSS for templates with @styles directives
+                LoadCssForTemplates(runtimeScopeManager);
+
+                // Scan [CssClass] const fields and enable minification
+                ScanCssClassAttributes(runtimeScopeManager);
+            }
+        }
+
+        /// <summary>
+        /// Loads CSS for templates with @styles directives.
+        /// Creates a RazorCssManager per template, loads referenced CSS from embedded resources,
+        /// validates class usage, and optimizes names for minification.
+        /// </summary>
+        private void LoadCssForTemplates(RuntimeScopeManager runtimeScopeManager)
+        {
+            // Deduplicate — _compiledIRs stores each IR under both short name and resource name
+            var processedTemplates = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var kvp in _compiledIRs)
+            {
+                var ir = kvp.Value;
+                if (!processedTemplates.Add(ir.TemplateName))
+                    continue;
+
+                if (ir.StylesheetResourceNames == null || ir.StylesheetResourceNames.Count == 0)
+                    continue;
+
+                try
+                {
+                    var cssManager = new RazorCssManager();
+
+                    foreach (var cssResourceName in ir.StylesheetResourceNames)
+                    {
+                        EmbeddedResource cssResource;
+                        if (!_cssResources.TryGetValue(cssResourceName, out cssResource))
+                        {
+                            runtimeScopeManager.Context.AddError(
+                                null,
+                                $"CSS resource '{cssResourceName}' referenced by @styles in template " +
+                                $"'{ir.TemplateName}' was not found as an embedded resource.",
+                                false);
+                            continue;
+                        }
+
+                        using var stream = cssResource.GetResourceStream();
+                        using var reader = new StreamReader(stream);
+                        var cssText = reader.ReadToEnd();
+
+                        cssManager.AddStylesheet(cssResourceName, cssText);
+                        Log.Debug("Loaded CSS {ResourceName} for template {TemplateName}",
+                            cssResourceName, ir.TemplateName);
+                    }
+
+                    if (cssManager.HasStylesheets)
+                    {
+                        // Validate CSS variables are declared
+                        cssManager.ValidateCssVariables();
+
+                        // Validate class names used in template HTML
+                        TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, cssManager);
+
+                        // Note: CompressNames() is called later in ScanCssClassAttributes()
+                        // once [CssClass] const fields are validated, ensuring all dynamic
+                        // class references are tracked before minification.
+
+                        _templateCssManagers[ir.TemplateName] = cssManager;
+
+                        Log.Debug("CSS loaded for template {TemplateName}: {SheetCount} sheets",
+                            ir.TemplateName, cssManager.Sheets.Count);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "CSS loading failed for template {TemplateName}", ir.TemplateName);
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"Error loading CSS for Razor template '{ir.TemplateName}': {ex.Message}",
+                        false);
                 }
             }
+        }
+
+        /// <summary>
+        /// Scans assembly types for [CssClass] const string fields.
+        /// Validates each field and registers its value in the global CSS class map.
+        /// Must be called after LoadCssForTemplates so CSS managers are available.
+        /// </summary>
+        private void ScanCssClassAttributes(RuntimeScopeManager runtimeScopeManager)
+        {
+            if (_templateCssManagers.Count == 0) return;
+
+            foreach (var module in _clrContext.Modules)
+            {
+                foreach (var type in module.Types)
+                {
+                    ScanTypeForCssClassFields(type, runtimeScopeManager);
+                    if (type.HasNestedTypes)
+                    {
+                        foreach (var nested in type.NestedTypes)
+                            ScanTypeForCssClassFields(nested, runtimeScopeManager);
+                    }
+                }
+            }
+
+            if (_cssClassMap.Count > 0)
+            {
+                // Always run CompressNames so identifiers get assigned names.
+                // In debug mode (releaseNaming: false), names become "original_XY"
+                // (e.g., "pane-left_a") proving the pipeline is active.
+                // In release/minify mode, names become pure short ("a").
+                // releaseNaming is hardcoded to false until Builder exposes a minify flag
+                // that the plugin can read during Initialize().
+                foreach (var mgr in _templateCssManagers.Values)
+                    mgr.CompressNames(releaseNaming: false);
+
+                _cssLiteralReplacer = new CssLiteralReplacer(_cssClassMap);
+
+                Log.Information("Registered {Count} [CssClass] const fields, CSS literal replacement enabled",
+                    _cssClassMap.Count);
+            }
+        }
+
+        private void ScanTypeForCssClassFields(TypeDefinition type, RuntimeScopeManager runtimeScopeManager)
+        {
+            if (!type.HasFields) return;
+
+            foreach (var field in type.Fields)
+            {
+                if (field.CustomAttributes == null || field.CustomAttributes.Count == 0) continue;
+
+                var cssClassAttr = field.CustomAttributes.FirstOrDefault(
+                    a => a.AttributeType.Name == "CssClassAttribute" ||
+                         a.AttributeType.FullName.EndsWith(".CssClassAttribute"));
+
+                if (cssClassAttr == null) continue;
+
+                if (!field.HasConstant || field.FieldType.FullName != "System.String")
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass] can only be applied to const string fields. " +
+                        $"'{type.FullName}.{field.Name}' is not a const string.",
+                        false);
+                    continue;
+                }
+
+                // Parse attribute argument: "ResourceName:ClassName"
+                if (!cssClassAttr.HasConstructorArguments)
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass] on '{type.FullName}.{field.Name}' is missing the " +
+                        $"CSS class reference argument (format: \"ResourceName:ClassName\").",
+                        false);
+                    continue;
+                }
+
+                var reference = cssClassAttr.ConstructorArguments[0].Value as string;
+                if (string.IsNullOrEmpty(reference) || !reference.Contains(":"))
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}' has invalid format. " +
+                        $"Expected \"EmbeddedResourceName:CssClassName\".",
+                        false);
+                    continue;
+                }
+
+                var colonIdx = reference.LastIndexOf(':');
+                var resourceName = reference.Substring(0, colonIdx);
+                var className = reference.Substring(colonIdx + 1);
+
+                // Find the CSS manager for this resource
+                RazorCssManager targetManager = null;
+                foreach (var kvp in _templateCssManagers)
+                {
+                    var manager = kvp.Value;
+                    foreach (var sheet in manager.Sheets)
+                    {
+                        if (sheet.ResourceName == resourceName)
+                        {
+                            targetManager = manager;
+                            break;
+                        }
+                    }
+                    if (targetManager != null) break;
+                }
+
+                if (targetManager == null)
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}': " +
+                        $"CSS resource '{resourceName}' not found. Make sure the resource is " +
+                        $"loaded via @styles directive in a .skin.cshtml template.",
+                        false);
+                    continue;
+                }
+
+                // Validate className exists in CSS
+                IIdentifier cssId;
+                if (!targetManager.TryGetCssClassIdentifier(className, out cssId))
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}': " +
+                        $"CSS class '{className}' not found in resource '{resourceName}'.",
+                        false);
+                    continue;
+                }
+
+                // Validate const value matches className
+                var constValue = field.Constant as string;
+                if (constValue != className)
+                {
+                    runtimeScopeManager.Context.AddError(
+                        null,
+                        $"[CssClass(\"{reference}\")] on '{type.FullName}.{field.Name}': " +
+                        $"const value \"{constValue}\" doesn't match CSS class name \"{className}\".",
+                        false);
+                    continue;
+                }
+
+                // Register in global map
+                if (!_cssClassMap.ContainsKey(constValue))
+                {
+                    _cssClassMap[constValue] = cssId;
+                    Log.Debug("Registered CSS class '{ClassName}' from {TypeName}.{FieldName}",
+                        className, type.FullName, field.Name);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Emits CSS from Razor templates as JST statements.
+        /// Creates a &lt;style&gt; element, sets textContent to the serialized CSS, and appends to document.head.
+        /// Also contributes to ConverterContext for XWML merge (when XWML plugin is active).
+        /// </summary>
+        private List<Statement> EmitCssStatements()
+        {
+            var result = new List<Statement>();
+            if (_templateCssManagers.Count == 0) return result;
+
+            // Collect all serialized CSS
+            var allCss = new System.Text.StringBuilder();
+            var emittedManagers = new HashSet<RazorCssManager>();
+            foreach (var cssManager in _templateCssManagers.Values)
+            {
+                if (!emittedManagers.Add(cssManager))
+                    continue;
+
+                var css = cssManager.GetSerializedCss();
+                if (!string.IsNullOrEmpty(css))
+                    allCss.Append(css);
+            }
+
+            if (allCss.Length == 0) return result;
+
+            var cssText = allCss.ToString();
+
+            // Also contribute to ConverterContext for XWML merge (if XWML plugin is active)
+            _runtimeScopeManager?.Context?.AddCssContribution(cssText);
+
+            // Emit standalone <style> element creation via IIFE:
+            // (function(d){var s=d.createElement("style");s.textContent="...";d.head.appendChild(s)})(document)
+            var scope = _runtimeScopeManager.Scope;
+            var iifeScope = new IdentifierScope(scope, new[] { "d" }, false);
+            var docParam = iifeScope.ParameterIdentifiers[0];
+
+            var styleVar = SimpleIdentifier.CreateScopeIdentifier(iifeScope, "s", true);
+            var iifeName = SimpleIdentifier.CreateScopeIdentifier(scope, "_razorCssInit", false);
+            var body = new List<Statement>();
+
+            // s = d.createElement("style")
+            body.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IdentifierExpression(styleVar, iifeScope),
+                    new MethodCallExpression(
+                        null,
+                        iifeScope,
+                        new IndexExpression(
+                            null, iifeScope,
+                            new IdentifierExpression(docParam, iifeScope),
+                            new StringLiteralExpression(iifeScope, "createElement")),
+                        new StringLiteralExpression(iifeScope, "style"))));
+
+            // s.textContent = "...css..."
+            body.Add(
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IndexExpression(
+                        null, iifeScope,
+                        new IdentifierExpression(styleVar, iifeScope),
+                        new StringLiteralExpression(iifeScope, "textContent")),
+                    new StringLiteralExpression(iifeScope, cssText)));
+
+            // d.head.appendChild(s)
+            body.Add(
+                new ExpressionStatement(
+                    null,
+                    iifeScope,
+                    new MethodCallExpression(
+                        null,
+                        iifeScope,
+                        new IndexExpression(
+                            null, iifeScope,
+                            new IndexExpression(
+                                null, iifeScope,
+                                new IdentifierExpression(docParam, iifeScope),
+                                new StringLiteralExpression(iifeScope, "head")),
+                            new StringLiteralExpression(iifeScope, "appendChild")),
+                        new IdentifierExpression(styleVar, iifeScope))));
+
+            // Wrap in IIFE: (function(d){ ... })(document)
+            var iifeFunc = new FunctionExpression(
+                null, scope, iifeScope,
+                iifeScope.ParameterIdentifiers,
+                iifeName);
+            iifeFunc.AddStatements(body);
+
+            var iife = new MethodCallExpression(
+                null, scope, iifeFunc,
+                new IdentifierExpression(
+                    RawNameIdentifier.Create(scope, "document"), scope));
+
+            result.Add(new ExpressionStatement(null, scope, iife));
+
+            Log.Debug("Emitted CSS style element with {CssLength} chars", cssText.Length);
+            return result;
         }
 
         /// <summary>
@@ -203,24 +585,28 @@ namespace Sunlight.Framework.Observables
             const string uiFrameworkDll = "Sunlight.Framework.UI";
             const string systemWebHtmlDll = "System.Web.Html";
 
+            // Use types from _razorKnownTypes when available to avoid redundant lookups.
+            // Fall back to direct lookup if RazorKnownTypes creation failed.
+            var skinType = _razorKnownTypes?.SkinType
+                ?? clrContext.GetTypeDefinition(Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Skin"));
+            var skinInstanceType = _razorKnownTypes?.SkinInstanceType
+                ?? clrContext.GetTypeDefinition(Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinInstance"));
+            var skinBinderInfoType = _razorKnownTypes?.SkinBinderInfoType
+                ?? clrContext.GetTypeDefinition(Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderInfo"));
+            var binderHelperType = _razorKnownTypes?.BinderHelperType
+                ?? clrContext.GetTypeDefinition(Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderHelper"));
+            var elementRefType = _razorKnownTypes?.ElementRefType
+                ?? clrContext.GetTypeDefinition(Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Element"));
+            var documentRefType = _razorKnownTypes?.DocumentRefType
+                ?? clrContext.GetTypeDefinition(Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Document"));
+            var nodeRefType = _razorKnownTypes?.NodeRefType
+                ?? clrContext.GetTypeDefinition(Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Node"));
+            var uiSkinableElementType = _razorKnownTypes?.UISkinableElement
+                ?? clrContext.GetTypeDefinition(Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".UISkinableElement"));
+
+            // --- Resolve constructor factories ---
             try
             {
-                // Look up key framework types (same as KnownTemplateTypes)
-                var skinType = clrContext.GetTypeDefinition(
-                    Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Skin"));
-                var skinInstanceType = clrContext.GetTypeDefinition(
-                    Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinInstance"));
-                var skinBinderInfoType = clrContext.GetTypeDefinition(
-                    Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderInfo"));
-                var binderHelperType = clrContext.GetTypeDefinition(
-                    Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderHelper"));
-                var elementRefType = clrContext.GetTypeDefinition(
-                    Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Element"));
-                var documentRefType = clrContext.GetTypeDefinition(
-                    Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Document"));
-                var uiSkinableElementType = clrContext.GetTypeDefinition(
-                    Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".UISkinableElement"));
-
                 // Generic type building for constructor signatures
                 var nativeArray1 = clrContext.GetTypeDefinition(
                     Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.NativeArray`1"));
@@ -232,8 +618,6 @@ namespace Sunlight.Framework.Observables
                     Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Func`3"));
                 var act2 = clrContext.GetTypeDefinition(
                     Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`2"));
-                var act3 = clrContext.GetTypeDefinition(
-                    Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`3"));
 
                 var funcObjObj = new GenericInstanceType(func2);
                 funcObjObj.GenericArguments.Add(clrKnownRefs.Object);
@@ -242,11 +626,6 @@ namespace Sunlight.Framework.Observables
                 var act2ObjObj = new GenericInstanceType(act2);
                 act2ObjObj.GenericArguments.Add(clrKnownRefs.Object);
                 act2ObjObj.GenericArguments.Add(clrKnownRefs.Object);
-
-                var act3ObjObjObj = new GenericInstanceType(act3);
-                act3ObjObjObj.GenericArguments.Add(clrKnownRefs.Object);
-                act3ObjObjObj.GenericArguments.Add(clrKnownRefs.Object);
-                act3ObjObjObj.GenericArguments.Add(clrKnownRefs.Object);
 
                 var nativeArray1Func2 = new GenericInstanceType(nativeArray1);
                 nativeArray1Func2.GenericArguments.Add(funcObjObj);
@@ -257,14 +636,7 @@ namespace Sunlight.Framework.Observables
                 var nativeArrayInt = new GenericInstanceType(nativeArray1);
                 nativeArrayInt.GenericArguments.Add(clrKnownRefs.Int32);
 
-                var nativeArrayObject = new GenericInstanceType(nativeArray1);
-                nativeArrayObject.GenericArguments.Add(clrKnownRefs.Object);
-
-                var nativeArraySkinBinderInfo = new GenericInstanceType(nativeArray1);
-                nativeArraySkinBinderInfo.GenericArguments.Add(skinBinderInfoType);
-
                 // --- Resolve Skin constructor factory ---
-                // Skin(Type controlType, Type modelType, Func<Skin,Document,SkinInstance> factory, string dataIndex)
                 var func3SkinDocSI = new GenericInstanceType(func3);
                 func3SkinDocSI.GenericArguments.Add(skinType);
                 func3SkinDocSI.GenericArguments.Add(documentRefType);
@@ -279,7 +651,6 @@ namespace Sunlight.Framework.Observables
                 _resolvedIdentifiers["Sunlight__Framework__UI__Skin_factory"] = skinFactoryId;
 
                 // --- Resolve SkinInstance graph-mode constructor factory ---
-                // SkinInstance(Skin, Element, NativeArray<int>, NativeArray, GraphDescriptor, object, int, int)
                 var graphDescriptorType = clrContext.GetTypeDefinition(
                     Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.BindingGraph.GraphDescriptor"));
 
@@ -293,7 +664,6 @@ namespace Sunlight.Framework.Observables
                 _resolvedIdentifiers["Sunlight__Framework__UI__Helpers__SkinInstance_factory"] = skinInstanceFactoryId;
 
                 // --- Resolve SkinBinderInfo constructor factory ---
-                // Use the OneWay1 overload (8 params): the one most commonly used by Razor templates
                 var skinBinderCtorOneWay1 = clrContext.GetMethodReference(
                     ".ctor", clrKnownRefs.Void, skinBinderInfoType,
                     nativeArray1Func2, nativeArray1Str, act2ObjObj,
@@ -304,8 +674,24 @@ namespace Sunlight.Framework.Observables
 
                 var skinBinderInfoFactoryId = runtimeScopeManager.ResolveFactory(skinBinderCtorOneWay1);
                 _resolvedIdentifiers["Sunlight__Framework__UI__Helpers__SkinBinderInfo_factory"] = skinBinderInfoFactoryId;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error resolving constructor factories for Razor templates");
+                runtimeScopeManager.Context.AddError(
+                    null,
+                    $"Error resolving constructor factories for Razor templates: {ex.Message}",
+                    false);
+            }
 
-                // --- Resolve SkinBinderHelper static methods ---
+            // --- Resolve SkinBinderHelper static methods ---
+            try
+            {
+                var nativeArray1 = clrContext.GetTypeDefinition(
+                    Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.NativeArray`1"));
+                var nativeArrayInt = new GenericInstanceType(nativeArray1);
+                nativeArrayInt.GenericArguments.Add(clrKnownRefs.Int32);
+
                 // GetElementFromPath(Element root, NativeArray<int> path)
                 var getElementFromPath = clrContext.GetMethodReference(
                     "GetElementFromPath", elementRefType, binderHelperType,
@@ -323,8 +709,6 @@ namespace Sunlight.Framework.Observables
                 _resolvedIdentifiers["Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetTextContent"] = setTextContentId;
 
                 // SetAttribute(Node node, string attrName, string attrValue)
-                var nodeRefType = clrContext.GetTypeDefinition(
-                    Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Node"));
                 var setAttributeMethod = clrContext.GetMethodReference(
                     "SetAttribute", clrKnownRefs.Void, binderHelperType,
                     nodeRefType, clrKnownRefs.String, clrKnownRefs.String).Resolve();
@@ -332,7 +716,7 @@ namespace Sunlight.Framework.Observables
                     runtimeScopeManager, setAttributeMethod);
                 _resolvedIdentifiers["Sunlight__Framework__UI__Helpers__SkinBinderHelper__SetAttribute"] = setAttributeId;
 
-                // SetCssClass(Element elem, bool add, string className)
+                // SetCssClass(Element elem, bool add, string className) — optional
                 try
                 {
                     var setCssClass = clrContext.GetMethodReference(
@@ -344,29 +728,44 @@ namespace Sunlight.Framework.Observables
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug("Could not resolve SetCssClass: {Error}", ex.Message);
+                    Log.Debug(ex, "Could not resolve SetCssClass — optional method");
                 }
-
-                // --- Resolve type identifiers for UISkinableElement ---
-                ResolveTypeIdentifier(runtimeScopeManager, uiSkinableElementType,
-                    "Sunlight.Framework.UI.UISkinableElement");
-
-                // --- Resolve type identifiers for model types referenced in compiled templates ---
-                ResolveModelTypeIdentifiers(clrContext, runtimeScopeManager);
-
-                // --- Force resolution of event handler methods referenced in templates ---
-                // This ensures the compiler emits them in the JS output, even if they're
-                // not directly called from compiled C# code.
-                ResolveEventHandlerMethods(clrContext, runtimeScopeManager);
-
-                Log.Debug("Resolved {Count} runtime identifiers for Razor template JS replacement",
-                    _resolvedIdentifiers.Count + _resolvedTypeIdentifiers.Count);
             }
             catch (Exception ex)
             {
-                Log.Debug("Error resolving runtime identifiers: {Error}. " +
-                    "Razor templates will emit unresolved identifiers.", ex.Message);
+                Log.Warning(ex, "Error resolving SkinBinderHelper static methods for Razor templates");
+                runtimeScopeManager.Context.AddError(
+                    null,
+                    $"Error resolving SkinBinderHelper methods: {ex.Message}",
+                    false);
             }
+
+            // --- Resolve type identifiers ---
+            try
+            {
+                if (uiSkinableElementType != null)
+                    ResolveTypeIdentifier(runtimeScopeManager, uiSkinableElementType,
+                        "Sunlight.Framework.UI.UISkinableElement");
+
+                ResolveModelTypeIdentifiers(clrContext, runtimeScopeManager);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error resolving type identifiers for Razor templates");
+            }
+
+            // --- Force resolution of event handler methods ---
+            try
+            {
+                ResolveEventHandlerMethods(clrContext, runtimeScopeManager);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error resolving event handler methods for Razor templates");
+            }
+
+            Log.Debug("Resolved {Count} runtime identifiers for Razor template JS replacement",
+                _resolvedIdentifiers.Count + _resolvedTypeIdentifiers.Count);
         }
 
         /// <summary>
@@ -439,27 +838,21 @@ namespace Sunlight.Framework.Observables
             // Convert double-underscore mangling back to dotted C# name
             var csharpName = mangledName.Replace("__", ".");
 
-            // Try to find the type in loaded assemblies
-            foreach (var module in clrContext.Modules)
+            // Use CecilTypeHelper's cached lookup instead of iterating all modules
+            var typeDef = _typeHelper.FindTypeDefinition(csharpName);
+            if (typeDef != null)
             {
-                foreach (var typeDef in module.Types)
-                {
-                    if (typeDef.FullName == csharpName)
-                    {
-                        ResolveTypeIdentifier(runtimeScopeManager, typeDef, csharpName);
-                        return;
-                    }
+                ResolveTypeIdentifier(runtimeScopeManager, typeDef, csharpName);
+                return;
+            }
 
-                    // Check nested types
-                    foreach (var nestedType in typeDef.NestedTypes)
-                    {
-                        if (nestedType.FullName == csharpName || nestedType.FullName.Replace("/", ".") == csharpName)
-                        {
-                            ResolveTypeIdentifier(runtimeScopeManager, nestedType, csharpName);
-                            return;
-                        }
-                    }
-                }
+            // Check nested types (CecilTypeHelper indexes by FullName which uses '/' for nested)
+            var nestedName = csharpName.Replace(".", "/");
+            typeDef = _typeHelper.FindTypeDefinition(nestedName);
+            if (typeDef != null)
+            {
+                ResolveTypeIdentifier(runtimeScopeManager, typeDef, csharpName);
+                return;
             }
 
             Log.Debug("Could not find type definition for mangled name {MangledName}", mangledName);
@@ -479,20 +872,8 @@ namespace Sunlight.Framework.Observables
                 var ir = kvp.Value;
                 if (string.IsNullOrEmpty(ir.ModelTypeName)) continue;
 
-                // Find the model type in Cecil
-                TypeDefinition modelType = null;
-                foreach (var module in clrContext.Modules)
-                {
-                    foreach (var t in module.Types)
-                    {
-                        if (t.FullName == ir.ModelTypeName)
-                        {
-                            modelType = t;
-                            break;
-                        }
-                    }
-                    if (modelType != null) break;
-                }
+                // Find the model type in Cecil using cached lookup
+                var modelType = _typeHelper.FindTypeDefinition(ir.ModelTypeName);
                 if (modelType == null) continue;
 
                 // Walk IR nodes to find EventNode references
@@ -553,234 +934,10 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
-        /// Generates a C# source stub for the model type referenced by @model in the template.
-        /// Uses Cecil type information to produce a minimal class declaration with properties,
-        /// so the Roslyn analysis phase can detect observable properties and promote bindings
-        /// from OneTime to OneWay.
+        /// Delegates to CecilModelStubGenerator for model type stub generation.
         /// </summary>
-        private string GenerateModelTypeStub(string templateSource, ClrContext clrContext)
-        {
-            // Extract @model type name from the template source
-            string modelTypeName = null;
-            foreach (var line in templateSource.Split('\n'))
-            {
-                var trimmed = line.Trim();
-                if (trimmed.StartsWith("@model "))
-                {
-                    modelTypeName = trimmed.Substring("@model ".Length).Trim();
-                    break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(modelTypeName))
-                return null;
-
-            // Find the type in Cecil
-            TypeDefinition typeDef = null;
-            foreach (var module in clrContext.Modules)
-            {
-                foreach (var t in module.Types)
-                {
-                    if (t.FullName == modelTypeName)
-                    {
-                        typeDef = t;
-                        break;
-                    }
-                }
-                if (typeDef != null) break;
-            }
-
-            if (typeDef == null)
-            {
-                Log.Debug("Could not find Cecil type {TypeName} for model stub generation", modelTypeName);
-                return null;
-            }
-
-            // Determine base class
-            var baseTypeName = "object";
-            var currentBase = typeDef.BaseType;
-            while (currentBase != null)
-            {
-                if (currentBase.FullName == "Sunlight.Framework.Observables.ObservableObject")
-                {
-                    baseTypeName = "Sunlight.Framework.Observables.ObservableObject";
-                    break;
-                }
-                try { currentBase = currentBase.Resolve()?.BaseType; }
-                catch (Exception) { break; }
-            }
-
-            // Build namespace and class declaration
-            var ns = typeDef.Namespace;
-            var className = typeDef.Name;
-            var sb = new System.Text.StringBuilder();
-
-            if (!string.IsNullOrEmpty(ns))
-            {
-                sb.AppendLine($"namespace {ns} {{");
-            }
-
-            sb.AppendLine($"  public class {className} : {baseTypeName} {{");
-
-            // Generate property stubs
-            foreach (var prop in typeDef.Properties)
-            {
-                var propTypeName = MapCecilTypeToSimpleName(prop.PropertyType);
-                if (prop.GetMethod != null && prop.SetMethod != null)
-                {
-                    sb.AppendLine($"    public {propTypeName} {prop.Name} {{ get; set; }}");
-                }
-                else if (prop.GetMethod != null)
-                {
-                    sb.AppendLine($"    public {propTypeName} {prop.Name} {{ get; }}");
-                }
-            }
-
-            // Generate method stubs (for event handlers)
-            foreach (var method in typeDef.Methods)
-            {
-                if (!method.IsPublic || method.IsConstructor || method.IsGetter || method.IsSetter)
-                    continue;
-                var retType = MapCecilTypeToSimpleName(method.ReturnType);
-                var paramStrs = method.Parameters
-                    .Select(p => $"{MapCecilTypeToSimpleName(p.ParameterType)} {p.Name}");
-                sb.AppendLine($"    public {retType} {method.Name}({string.Join(", ", paramStrs)}) {{ }}");
-            }
-
-            sb.AppendLine("  }");
-
-            if (!string.IsNullOrEmpty(ns))
-            {
-                sb.AppendLine("}");
-            }
-
-            // Generate stubs for types referenced in collection properties AFTER
-            // closing the main namespace, so they get their own proper namespace blocks.
-            var referencedTypes = new HashSet<string>();
-            foreach (var prop in typeDef.Properties)
-            {
-                if (prop.PropertyType is GenericInstanceType genPropType)
-                {
-                    foreach (var arg in genPropType.GenericArguments)
-                    {
-                        if (!arg.IsPrimitive && arg.FullName != "System.String" && arg.FullName != "System.Object")
-                        {
-                            referencedTypes.Add(arg.FullName);
-                        }
-                    }
-                }
-            }
-
-            foreach (var refTypeName in referencedTypes)
-            {
-                GenerateReferencedTypeStub(sb, refTypeName, clrContext);
-            }
-
-            var stub = sb.ToString();
-            Log.Debug("Generated model type stub for {TypeName}: {StubLength} chars, base={BaseType}",
-                modelTypeName, stub.Length, baseTypeName);
-            return stub;
-        }
-
-        private void GenerateReferencedTypeStub(
-            System.Text.StringBuilder sb,
-            string fullTypeName,
-            ClrContext clrContext)
-        {
-            TypeDefinition refTypeDef = null;
-            foreach (var module in clrContext.Modules)
-            {
-                foreach (var t in module.Types)
-                {
-                    if (t.FullName == fullTypeName)
-                    {
-                        refTypeDef = t;
-                        break;
-                    }
-                }
-                if (refTypeDef != null) break;
-            }
-
-            if (refTypeDef == null) return;
-
-            // Determine base class for the referenced type
-            var refBaseType = "object";
-            var refBase = refTypeDef.BaseType;
-            while (refBase != null)
-            {
-                if (refBase.FullName == "Sunlight.Framework.Observables.ObservableObject")
-                {
-                    refBaseType = "Sunlight.Framework.Observables.ObservableObject";
-                    break;
-                }
-                try { refBase = refBase.Resolve()?.BaseType; }
-                catch (Exception) { break; }
-            }
-
-            // If the type is in a different namespace, wrap in its own namespace block
-            var refNs = refTypeDef.Namespace;
-            var refClassName = refTypeDef.Name;
-            bool needsNamespaceClose = false;
-
-            // Only open a namespace if it differs from what's already open
-            if (!string.IsNullOrEmpty(refNs))
-            {
-                sb.AppendLine($"  namespace {refNs} {{");
-                needsNamespaceClose = true;
-            }
-
-            sb.AppendLine($"    public class {refClassName} : {refBaseType} {{");
-
-            foreach (var prop in refTypeDef.Properties)
-            {
-                var propTypeName = MapCecilTypeToSimpleName(prop.PropertyType);
-                if (prop.GetMethod != null && prop.SetMethod != null)
-                    sb.AppendLine($"      public {propTypeName} {prop.Name} {{ get; set; }}");
-                else if (prop.GetMethod != null)
-                    sb.AppendLine($"      public {propTypeName} {prop.Name} {{ get; }}");
-            }
-
-            sb.AppendLine("    }");
-
-            if (needsNamespaceClose)
-                sb.AppendLine("  }");
-        }
-
-        /// <summary>
-        /// Maps a Cecil TypeReference to a simple C# type name for stub generation.
-        /// </summary>
-        private static string MapCecilTypeToSimpleName(TypeReference typeRef)
-        {
-            if (typeRef == null) return "object";
-
-            switch (typeRef.FullName)
-            {
-                case "System.String": return "string";
-                case "System.Int32": return "int";
-                case "System.Boolean": return "bool";
-                case "System.Double": return "double";
-                case "System.Single": return "float";
-                case "System.Int64": return "long";
-                case "System.Decimal": return "decimal";
-                case "System.Object": return "object";
-                case "System.Void": return "void";
-            }
-
-            // Handle generic types like ObservableCollection<RazorItemVM>
-            if (typeRef is GenericInstanceType genType)
-            {
-                var baseName = genType.ElementType.FullName;
-                // Strip arity suffix (e.g., ObservableCollection`1 → ObservableCollection)
-                var arityIdx = baseName.IndexOf('`');
-                if (arityIdx >= 0) baseName = baseName.Substring(0, arityIdx);
-                var args = string.Join(", ", genType.GenericArguments
-                    .Select(a => MapCecilTypeToSimpleName(a)));
-                return $"{baseName}<{args}>";
-            }
-
-            // For other non-primitive types, return the full type name
-            return typeRef.FullName;
-        }
+        private string GenerateModelTypeStub(string templateSource)
+            => _stubGenerator.GenerateModelTypeStub(templateSource);
 
         public void ParseArgs(IList<Tuple<string, string>> args)
         {
@@ -798,14 +955,27 @@ namespace Sunlight.Framework.Observables
             // Check if this is a [Skin("...")] property getter where the template
             // name corresponds to a compiled .skin.cshtml template
             PropertyDefinition propertyDefinition = methodDefinition.GetPropertyDefinition();
-            if (propertyDefinition == null) return IntrestLevel.None;
-            if (propertyDefinition.SetMethod != null) return IntrestLevel.None;
+            if (propertyDefinition == null)
+            {
+                // Not a property — check if CSS literal replacement is active
+                return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
+            }
+
+            if (propertyDefinition.SetMethod != null)
+            {
+                // Property with setter — check if CSS literal replacement is active
+                return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
+            }
 
             var skinAttr = propertyDefinition.CustomAttributes?.FirstOrDefault(
                 a => a.AttributeType.Name == "SkinAttribute" ||
                      a.AttributeType.FullName.EndsWith(".SkinAttribute"));
 
-            if (skinAttr == null) return IntrestLevel.None;
+            if (skinAttr == null)
+            {
+                // Not a [Skin] property — check for CSS replacement
+                return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
+            }
 
             // Check if the template name is a Razor template
             if (skinAttr.HasConstructorArguments)
@@ -819,7 +989,7 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
-            return IntrestLevel.None;
+            return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
         }
 
         // Not used: RazorTemplatingPlugin only returns IntrestLevel.Overwrite or None.
@@ -829,7 +999,11 @@ namespace Sunlight.Framework.Observables
 
         public List<Statement> GetEncapsulationStatements(
             MethodConverter methodConverter,
-            List<Statement> methodStatments) => null;
+            List<Statement> methodStatments)
+        {
+            if (_cssLiteralReplacer == null) return methodStatments;
+            return _cssLiteralReplacer.TransformStatements(methodStatments);
+        }
 
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {
@@ -901,7 +1075,21 @@ namespace Sunlight.Framework.Observables
                 TryResolveDocStorageGetter();
             }
 
-            return new List<MethodReference>();
+            // Collect methods referenced by template event handlers so the demand-driven
+            // converter emits their bodies. Without this, methods called only from
+            // templates (e.g., onclick="@Model.OnSelectTodo(todo)") would be dead-code-eliminated.
+            var methods = new List<MethodReference>();
+            if (_hasRazorTemplates && _clrContext != null)
+            {
+                var seen = new HashSet<string>();
+                foreach (var kvp in _compiledIRs)
+                {
+                    CollectEventMethodReferences(kvp.Value, kvp.Value.ModelTypeName, methods, seen);
+                    CollectSubControlMethodReferences(kvp.Value, methods, seen);
+                }
+            }
+
+            return methods;
         }
 
         /// <summary>
@@ -922,7 +1110,213 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
-            Log.Debug("DocStorageGetter identifier not found in scope — XWML plugin may not be active");
+            // Not found — create it ourselves so the emitted call is minification-safe.
+            var newId = SimpleIdentifier.CreateScopeIdentifier(scope, "DocStorageGetter", false);
+            _resolvedIdentifiers["DocStorageGetter"] = newId;
+            _needsDocStorageGetterEmission = true;
+            Log.Debug("Created DocStorageGetter identifier (XWML not active); will emit function body");
+        }
+
+        /// <summary>
+        /// Walks an IR tree and collects MethodDefinition references for all event handlers
+        /// so the demand-driven converter emits their bodies.
+        /// </summary>
+        private void CollectEventMethodReferences(
+            IRNode node, string modelTypeName, List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (node is TemplateIR.EventNode evt && !string.IsNullOrEmpty(evt.HandlerExpression))
+            {
+                var methodDef = TryFindEventMethodDefinition(evt.HandlerExpression, modelTypeName);
+                if (methodDef != null && seen.Add(methodDef.FullName))
+                    methods.Add(methodDef);
+            }
+
+            // For loops, also scan item template with the item type for item-level methods
+            if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
+            {
+                // Resolve item type from collection property on the model
+                string itemTypeName = TryResolveItemTypeName(modelTypeName, loop);
+
+                foreach (var child in loop.ItemTemplate)
+                {
+                    // Model.XXX references inside item templates
+                    CollectEventMethodReferences(child, modelTypeName, methods, seen);
+
+                    // Item-level methods (e.g., "todo.ToggleImportant")
+                    if (!string.IsNullOrEmpty(itemTypeName)
+                        && child is TemplateIR.EventNode itemEvt
+                        && !string.IsNullOrEmpty(itemEvt.HandlerExpression)
+                        && !itemEvt.HandlerExpression.StartsWith("Model."))
+                    {
+                        // Strip item variable prefix: "todo.ToggleImportant" → "ToggleImportant"
+                        var itemHandler = itemEvt.HandlerExpression;
+                        var dotIdx = itemHandler.IndexOf('.');
+                        if (dotIdx > 0)
+                            itemHandler = itemHandler.Substring(dotIdx + 1);
+
+                        var itemMethod = TryFindEventMethodDefinition(itemHandler, itemTypeName);
+                        if (itemMethod != null && seen.Add(itemMethod.FullName))
+                            methods.Add(itemMethod);
+                    }
+                }
+            }
+
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                    CollectEventMethodReferences(child, modelTypeName, methods, seen);
+            }
+        }
+
+        /// <summary>
+        /// Walks an IR tree and collects constructor + DefaultSkin getter references
+        /// for SubControlNodes so the demand-driven converter emits their factory functions.
+        /// </summary>
+        private void CollectSubControlMethodReferences(
+            IRNode node, List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (node is TemplateIR.SubControlNode sub)
+            {
+                var controlType = FindSubControlTypeInAssemblies(sub.ResolvedTypeName);
+                if (controlType != null)
+                {
+                    // Constructor with 1 parameter (Element)
+                    var ctor = controlType.Methods.FirstOrDefault(m =>
+                        m.IsConstructor && !m.IsStatic && m.Parameters.Count == 1);
+                    if (ctor != null && seen.Add(ctor.FullName))
+                        methods.Add(ctor);
+
+                    // DefaultSkin getter
+                    var skinProp = controlType.Properties.FirstOrDefault(p =>
+                        p.Name == "DefaultSkin" && p.GetMethod != null && p.GetMethod.IsStatic);
+                    if (skinProp?.GetMethod != null && seen.Add(skinProp.GetMethod.FullName))
+                        methods.Add(skinProp.GetMethod);
+                }
+            }
+
+            if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
+            {
+                foreach (var child in loop.ItemTemplate)
+                    CollectSubControlMethodReferences(child, methods, seen);
+            }
+
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                    CollectSubControlMethodReferences(child, methods, seen);
+            }
+        }
+
+        /// <summary>
+        /// Searches loaded assemblies for a type by short or full name.
+        /// </summary>
+        private Mono.Cecil.TypeDefinition FindSubControlTypeInAssemblies(string typeName)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(typeName)) return null;
+
+            foreach (var type in _clrContext.GetTypes())
+            {
+                if (type.FullName == typeName || type.Name == typeName)
+                    return type;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves the item type name for a foreach loop by inspecting
+        /// the collection property's generic type argument on the model type.
+        /// </summary>
+        private string TryResolveItemTypeName(string modelTypeName, TemplateIR.LoopNode loop)
+        {
+            try
+            {
+                // CollectionExpression is like "Model.CurrentTodos"
+                var collExpr = loop.CollectionExpression;
+                if (string.IsNullOrEmpty(collExpr)) return null;
+
+                if (collExpr.StartsWith("Model."))
+                    collExpr = collExpr.Substring(6);
+
+                // Find the property on the model type
+                TypeDefinition modelType = null;
+                foreach (var t in _clrContext.GetTypes())
+                {
+                    if (t.FullName == modelTypeName || t.Name == modelTypeName)
+                    {
+                        modelType = t;
+                        break;
+                    }
+                }
+                if (modelType == null) return null;
+
+                var prop = modelType.Properties.FirstOrDefault(p => p.Name == collExpr);
+                if (prop == null) return null;
+
+                // Extract generic type argument from ObservableCollection<T>
+                var propType = prop.PropertyType;
+                if (propType is Mono.Cecil.GenericInstanceType git && git.GenericArguments.Count > 0)
+                    return git.GenericArguments[0].FullName;
+            }
+            catch { }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Extracts a method name from a handler expression and looks up the MethodDefinition.
+        /// Handles patterns: "Model.Method", "Model.Method(arg)", "item.Method", "Method".
+        /// </summary>
+        private MethodDefinition TryFindEventMethodDefinition(string handler, string modelTypeName)
+        {
+            if (string.IsNullOrEmpty(handler) || string.IsNullOrEmpty(modelTypeName))
+                return null;
+
+            var expr = handler;
+
+            // Strip Model. prefix — method is on the model type
+            if (expr.StartsWith("Model."))
+                expr = expr.Substring(6);
+
+            // Remove parenthesized arguments: "Method(arg)" → "Method"
+            var parenIdx = expr.IndexOf('(');
+            if (parenIdx > 0)
+                expr = expr.Substring(0, parenIdx);
+
+            // Skip lambdas
+            if (expr.Contains("=>"))
+                return null;
+
+            // Skip if it contains dots (nested access not supported here)
+            if (expr.Contains("."))
+                return null;
+
+            var methodName = expr.Trim();
+            if (string.IsNullOrEmpty(methodName))
+                return null;
+
+            try
+            {
+                // Search all loaded types for the model type
+                TypeDefinition typeDef = null;
+                foreach (var t in _clrContext.GetTypes())
+                {
+                    if (t.FullName == modelTypeName || t.Name == modelTypeName)
+                    {
+                        typeDef = t;
+                        break;
+                    }
+                }
+                if (typeDef == null) return null;
+
+                foreach (var m in typeDef.Methods)
+                {
+                    if (m.Name == methodName && m.IsPublic && !m.IsConstructor)
+                        return m;
+                }
+            }
+            catch { }
+
+            return null;
         }
 
         public List<Statement> GetPreJavascript()
@@ -935,7 +1329,23 @@ namespace Sunlight.Framework.Observables
             if (!_hasRazorTemplates)
                 return new List<Statement>();
 
+            // Re-attempt DocStorageGetter resolution here because XWML's GetPostJavascript()
+            // creates the identifier lazily during template emission.  GetMethodsToEmitPassN()
+            // runs before GetPostJavascript(), so the first attempt may have been too early.
+            if (!_resolvedIdentifiers.ContainsKey("DocStorageGetter"))
+            {
+                TryResolveDocStorageGetter();
+            }
+
             var statements = new List<Statement>();
+
+            // If Razor created its own DocStorageGetter identifier (no XWML), emit the function body.
+            if (_needsDocStorageGetterEmission)
+            {
+                var docStorageGetterStatements = EmitDocStorageGetterFunction();
+                if (docStorageGetterStatements != null)
+                    statements.AddRange(docStorageGetterStatements);
+            }
 
             // Track which template IRs we've already emitted to avoid duplicates
             // (_compiledIRs stores the same IR under both short name and resource name)
@@ -952,6 +1362,15 @@ namespace Sunlight.Framework.Observables
                     IIdentifier preCreatedGetter = null;
                     _templateGetterIdentifiers.TryGetValue(kvp.Value.TemplateName, out preCreatedGetter);
 
+                    RazorCssManager cssManager = null;
+                    if (!_templateCssManagers.TryGetValue(kvp.Value.TemplateName, out cssManager)
+                        && _templateCssManagers.Count > 0)
+                    {
+                        // Sub-templates without @styles inherit the parent's CSS manager
+                        // so their static HTML class names get resolved through the CSS scope.
+                        cssManager = _templateCssManagers.Values.First();
+                    }
+
                     var jstGenerator = new RazorSkinJSTGenerator(
                         kvp.Value,
                         _runtimeScopeManager,
@@ -959,7 +1378,9 @@ namespace Sunlight.Framework.Observables
                         _resolvedIdentifiers,
                         _resolvedTypeIdentifiers,
                         _razorKnownTypes,
-                        preCreatedGetter);
+                        _nextDataIndex++,
+                        preCreatedGetter,
+                        cssManager);
 
                     var jstStatements = jstGenerator.Generate();
                     statements.AddRange(jstStatements);
@@ -985,10 +1406,102 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
+            // Emit CSS <style> element for templates with @styles directives
+            statements.AddRange(EmitCssStatements());
+
+            // Apply CssLiteralReplacer to all template-generated code (binding graph
+            // getters contain StringLiteralExpression nodes from const-folded [CssClass]
+            // references that need CSS scope resolution).
+            if (_cssLiteralReplacer != null)
+            {
+                statements = _cssLiteralReplacer.TransformStatements(statements);
+            }
+
             Log.Debug("GetPostJavascript emitting {StatementCount} statements for {TemplateCount} templates",
                 statements.Count, emittedTemplates.Count);
 
             return statements;
+        }
+
+        /// <summary>
+        /// This mirrors the function generated by XWML's CodeGenerator.GenerateDocumentInitializerMethod().
+        /// </summary>
+        private List<Statement> EmitDocStorageGetterFunction()
+        {
+            try
+            {
+                var scope = _runtimeScopeManager.Scope;
+                IIdentifier docStorageGetterId = _resolvedIdentifiers["DocStorageGetter"];
+
+                // Look up the Document type so we can create the stateStore field identifier on it.
+                var documentTypeDef = _clrContext.GetTypeDefinition(
+                    Tuple.Create("System.Web.Html", "System.Web.Html.Document"));
+
+                if (documentTypeDef == null)
+                {
+                    Log.Warning("Could not find Document type for DocStorageGetter emission");
+                    return null;
+                }
+
+                // Get or create the 'stateStore' extension field on Document's type scope.
+                IIdentifier stateStoreId = _runtimeScopeManager.GetTypeScope(documentTypeDef)
+                    .GetIdentifier("stateStore", true, false);
+
+                // Build: function DocStorageGetter(doc) { if (!doc.stateStore) { doc.stateStore = []; } return doc.stateStore; }
+                var methodScope = new IdentifierScope(
+                    scope,
+                    new string[] { "doc" },
+                    false);
+
+                IIdentifier docParam = methodScope.ParameterIdentifiers[0];
+
+                // doc.stateStore = []
+                var initStmts = new List<Statement>();
+                initStmts.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
+                        IdentifierExpression.Create(
+                            null, methodScope,
+                            new IIdentifier[] { docParam, stateStoreId }),
+                        new NewArrayExpression(null, methodScope, null)));
+
+                // if (!doc.stateStore) { doc.stateStore = []; }
+                var ifStmt = new IfBlockStatement(
+                    null, methodScope,
+                    new UnaryExpression(
+                        null, methodScope,
+                        UnaryOperator.LogicalNot,
+                        IdentifierExpression.Create(
+                            null, methodScope,
+                            new IIdentifier[] { docParam, stateStoreId })),
+                    new ScopeBlock(null, methodScope, initStmts),
+                    null);
+
+                // function DocStorageGetter(doc) { ... }
+                var funcExpr = new FunctionExpression(
+                    null, scope, methodScope,
+                    methodScope.ParameterIdentifiers,
+                    docStorageGetterId);
+
+                funcExpr.AddStatement(ifStmt);
+
+                // return doc.stateStore;
+                funcExpr.AddStatement(
+                    new ReturnStatement(
+                        null, methodScope,
+                        IdentifierExpression.Create(
+                            null, methodScope,
+                            new IIdentifier[] { docParam, stateStoreId })));
+
+                return new List<Statement>
+                {
+                    new ExpressionStatement(null, scope, funcExpr)
+                };
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error(ex, "Failed to emit DocStorageGetter function");
+                return null;
+            }
         }
     }
 }

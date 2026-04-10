@@ -6,6 +6,7 @@
     <div class="item-row">
         <span class="item-name">@item.Name</span>
         <span class="item-status">@item.IsComplete</span>
+        <span class="@(item.IsComplete ? "done" : "pending")">status</span>
     </div>
 }
 </div>

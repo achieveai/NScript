@@ -1,59 +1,18 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="CssSerializerVisitor.cs" company="">
-//     Copyright (c) . All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
-
-namespace XwmlParser
+namespace CssParser
 {
     using System;
     using System.Collections.Generic;
-    using CssParser;
-using System.Text;
+    using System.Text;
 
     /// <summary>
-    /// Definition for CssSerializerVisitor
+    /// Serializes parsed CSS rules back to CSS text with support for class name
+    /// and ID renaming via callbacks. Shared by XwmlParser and RazorSkinParser.
     /// </summary>
     public class CssSerializerVisitor : CssParser.CssVisitor
     {
         private static string[] browserPrefixes = new string[] {"-webkit-", "-moz-", "-o-", "-ms-", String.Empty};
         private static string[] standardNoPrefixes = new string[] { String.Empty };
         private static HashSet<string> verndorSpecificProperties = new HashSet<string>{
-            // "transform",
-            // "animation",
-            // "animation-delay",
-            // "animation-direction",
-            // "animation-duration",
-            // "animation-fill-mode",
-            // "animation-iteration-count",
-            // "animation-name",
-            // "animation-play-state",
-            // "animation-timing-function",
-            // "backface-visibility",
-            // "background-clip",
-            // "background-origin",
-            // "box-shadow",
-            // "box-sizing",
-            // "clip-path",
-            // "column-count",
-            // "column-fill",
-            // "column-gap",
-            // "column-rule",
-            // "column-rule-color",
-            // "column-rule-style",
-            // "column-rule-width",
-            // "column-span",
-            // "column-width",
-            // "columns",
-            // "filter",
-            // "flex",
-            // "flex-align",
-            // "flex-direction",
-            // "flex-wrap",
-            // "text-overflow",
-            // "writing-mode",
-            // "word-wrap",
-            // "zoom"
         };
 
         private static CssSerializerVisitor instance;

@@ -25,6 +25,8 @@
         [DataRow(TestClassNameStr, "Test8", "Test8.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "Test10", "Test10.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "Test3", "Test3.static.js", TestType.All, true)]
+        [DataRow(TestClassNameStr, "TestExternalAwait", "TestExternalAwait.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "TestInternalAwait", "TestInternalAwait.js", TestType.All, false)]
         public void TestMcs(
             string className,
             string methodName,

@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, feature/** ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ─── Phase 1: Build ───────────────────────────────────────────────
+      - name: Build solution
+        run: dotnet build NScript_Full.sln -c Release
+
+      # ─── Phase 2: Compiler tests ─────────────────────────────────────
+      - name: Test CssParser
+        run: dotnet test Test/Compiler/CssParser.Test/CssParser.Test.csproj -c Release --no-build
+
+      - name: Test JSParser
+        run: dotnet test Test/Compiler/NScript.JSParser.Test/NScript.JSParser.Test.csproj -c Release --no-build
+
+      - name: Test CLR
+        run: dotnet test Test/Compiler/NScript.CLR.Test/NScript.CLR.Test.csproj -c Release --no-build
+
+      - name: Test Converter
+        run: dotnet test Test/Compiler/NScript.Converter.Test/NScript.Converter.Test.csproj -c Release --no-build
+
+      - name: Test XwmlParser
+        run: dotnet test Test/Compiler/XwmlParser.Test/XwmlParser.Test.csproj -c Release --no-build
+
+      - name: Test RazorSkinParser
+        run: dotnet test Test/Compiler/RazorSkinParser.Test/RazorSkinParser.Test.csproj -c Release --no-build
+
+      # ─── Phase 3: Playwright E2E ──────────────────────────────────────
+      - name: Install Playwright
+        working-directory: Test/Framework/TestWebApplication
+        run: |
+          npm install
+          npx playwright install chromium
+
+      - name: Run QUnit browser tests
+        working-directory: Test/Framework/TestWebApplication
+        run: npm run test:unit
+
+      - name: Run E2E tests
+        working-directory: Test/Framework/TestWebApplication
+        run: npm run test:e2e

@@ -1,0 +1,38 @@
+<Project>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.props" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>TodoApp</RootNamespace>
+    <AssemblyName>TodoApp</AssemblyName>
+    <GenerateJs>True</GenerateJs>
+    <JsOutputPath>../TestWebApplication/GeneratedScripts</JsOutputPath>
+    <NoWarn>0824;0169</NoWarn>
+    <CscToolPath>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</CscToolPath>
+    <CscToolExe>csc.exe</CscToolExe>
+    <NScriptExe>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\nscript.exe</NScriptExe>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="PluginConfig.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="RazorTemplates\AppShell.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\TodoItemControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AppShell.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
+  </ItemGroup>
+
+  <Target Name="EnsureJsOutputDirectory" BeforeTargets="ScriptGenerate" Condition="$(GenerateJs) == 'True'">
+    <MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />
+  </Target>
+
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />
+</Project>

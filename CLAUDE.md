@@ -62,7 +62,7 @@ Forked binaries are checked into `Dependencies/Roslyn/`. See `roslyn/CLAUDE.md` 
 | `Test/Framework/` | Framework behavioral tests (compiled to JS) | `netstandard2.1` |
 | `Dependencies/Roslyn/` | Checked-in forked Roslyn binaries | — |
 | `NScriptToolSet/` | Build output + NuGet packages | — |
-| `docs/adr/` | 16 Architecture Decision Records | — |
+| `docs/adr/` | 24 Architecture Decision Records | — |
 
 ### Framework projects compile with a custom CSC
 
@@ -91,13 +91,63 @@ Application entry detected via `[EntryPoint]` attribute on a class containing a 
 
 ## ADR Index
 
-Architecture Decision Records in `docs/adr/` document all major design decisions. Key ones:
-- **ADR-0002–0005**: Roslyn fork strategy, consumption, refresh process, integration contract
-- **ADR-0006**: Two-stage compiler pipeline (Bound C# → JavaScript)
-- **ADR-0007–0008**: JavaScript runtime type model and class hierarchy mapping
-- **ADR-0010**: Attributed CLR facades for native JS types
-- **ADR-0014**: Observable framework as reactive binding contract
-- **ADR-0016**: XWML template language with strict CSS/binding diagnostics
+Architecture Decision Records in `docs/adr/` document all major design decisions (24 total, all Accepted).
+
+### Engineering Process
+| ADR | File | Decision |
+|-----|------|----------|
+| 0001 | `0001-adopt-architecture-decision-records.md` | Adopt ADRs in `docs/adr/` with sequential numbering and standardized template |
+
+### Roslyn Fork & Compiler Integration
+| ADR | File | Decision |
+|-----|------|----------|
+| 0002 | `0002-maintain-a-minimal-roslyn-fork-for-nscript-hooks.md` | Minimal Roslyn fork on `features/physhi-updated` with surgical extension points for bound-body access |
+| 0003 | `0003-define-how-nscript-consumes-and-updates-forked-roslyn-binaries.md` | Submodule is source of truth; normal builds consume checked-in binaries from `Dependencies/Roslyn` |
+| 0004 | `0004-define-when-and-how-to-refresh-the-checked-in-roslyn-drop.md` | Refresh binary drop deliberately on concrete need; validate via full build + integration tests |
+| 0005 | `0005-constrain-nscript-to-a-small-roslyn-integration-contract.md` | Roslyn internals isolated to `NScript.Csc.Lib`; downstream stages consume serialized AST resources only |
+
+### Compiler Pipeline & Architecture
+| ADR | File | Decision |
+|-----|------|----------|
+| 0006 | `0006-standardize-the-compiler-pipeline-from-bound-csharp-to-javascript.md` | Two-stage pipeline: Roslyn compile → DLL with embedded AST → `cs2jsc` → JavaScript |
+| 0013 | `0013-define-nscript-as-a-multi-frontend-translation-architecture.md` | Multiple frontends (C#/Roslyn, inline JS, XWML, Razor) converge on shared JST backend |
+
+### JavaScript Runtime & Type System
+| ADR | File | Decision |
+|-----|------|----------|
+| 0007 | `0007-define-the-javascript-runtime-type-model.md` | JS function objects as type objects with .NET-like metadata (FullName, TypeId, BaseType, interfaces) |
+| 0008 | `0008-define-how-class-and-interface-hierarchies-map-to-javascript.md` | Classes use prototype chains; interfaces use explicit runtime metadata maps via `baseInterfaces` |
+| 0010 | `0010-model-native-javascript-types-through-attributed-clr-facades.md` | Native JS types modeled via attributed CLR facades (`ImportedType`, `Extended`, `JsonType`) |
+| 0011 | `0011-treat-arrays-as-a-special-wrapped-runtime-substrate.md` | Arrays wrapped via `ArrayG<T>`/`NativeArray<T>` backed by native JS arrays |
+
+### JavaScript Interop
+| ADR | File | Decision |
+|-----|------|----------|
+| 0009 | `0009-prefer-inline-script-attribute-for-javascript-dependencies.md` | JS dependency bodies inline on `ScriptAttribute` annotations, not in separate files |
+| 0012 | `0012-parse-and-resolve-script-blocks-against-types-members-and-known-globals.md` | Inline script bodies parsed into JST, resolved against scope; unresolved names fail compilation |
+
+### Template System
+| ADR | File | Decision |
+|-----|------|----------|
+| 0016 | `0016-standardize-xwml-as-the-canonical-template-language-with-strict-css-and-binding-diagnostics.md` | XWML is canonical template language with strict CSS class matching and typed binding syntax |
+| 0017 | `0017-add-razor-skin-templates-as-a-second-template-frontend.md` | Razor `.skin.cshtml` added as second frontend with full C# expressions; both coexist |
+| 0018 | `0018-replace-independent-binders-with-compile-time-reactive-binding-graph.md` | Razor uses compile-time DAG binding model with deduplication and comment markers |
+| 0019 | `0019-extract-ibindingstrategy-from-skininstance.md` | `SkinInstance` delegates binding to `IBindingStrategy` (`LegacyBinderStrategy`/`GraphBindingStrategy`) |
+| 0020 | `0020-auto-detect-binding-mode-from-roslyn-semantic-analysis.md` | Auto-classify binding modes via Roslyn semantic analysis; no manual mode annotations |
+
+### Framework & Reactive System
+| ADR | File | Decision |
+|-----|------|----------|
+| 0014 | `0014-standardize-the-observable-framework-as-the-reactive-binding-contract.md` | `Sunlight.Framework.Observables` is the canonical reactive binding contract |
+| 0015 | `0015-defer-layout-sensitive-dom-reads-and-batch-them.md` | Layout-sensitive DOM reads batched through deferred `requestAnimationFrame` callbacks |
+
+### Optimization & Code Generation
+| ADR | File | Decision |
+|-----|------|----------|
+| 0021 | `0021-require-resolved-identifiers-for-all-generated-javascript-symbols.md` | All generated JS symbols must be resolved `IIdentifier` objects, never raw strings |
+| 0022 | `0022-demand-driven-conversion-and-dead-code-elimination.md` | Demand-driven conversion from entry points; identifier-level dead code elimination |
+| 0023 | `0023-devirtualize-non-virtual-methods-and-inline-trivial-accessors.md` | Non-virtual methods devirtualized to static functions; trivial accessors inlined |
+| 0024 | `0024-deduplicate-structurally-identical-functions-after-minification.md` | Post-minification deduplication of structurally identical function bodies |
 
 ## C# Feature Support
 

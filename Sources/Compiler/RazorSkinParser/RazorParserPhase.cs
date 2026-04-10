@@ -50,6 +50,18 @@ namespace NScript.RazorSkin
                 csharpDocument.GeneratedCode?.Length ?? 0,
                 syntaxTree.Diagnostics?.Count ?? 0);
 
+            if (syntaxTree.Diagnostics != null)
+            {
+                foreach (var diagnostic in syntaxTree.Diagnostics)
+                {
+                    if (diagnostic.Severity == RazorDiagnosticSeverity.Error)
+                    {
+                        Log.Warning("Razor parse error in {TemplateName}: {Diagnostic}",
+                            templateName, diagnostic.GetMessage(System.Globalization.CultureInfo.InvariantCulture));
+                    }
+                }
+            }
+
             return result;
         }
     }

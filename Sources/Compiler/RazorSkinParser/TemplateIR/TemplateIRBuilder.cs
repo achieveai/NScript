@@ -18,7 +18,8 @@ namespace NScript.RazorSkin.TemplateIR
             "onclick", "onchange", "onfocus", "onblur", "oninput", "onkeyup",
             "onkeydown", "onsubmit", "onmousedown", "onmouseup", "onmouseover",
             "onmouseout", "onmousemove", "ondblclick", "onscroll", "onresize",
-            "onkeypress", "ontouchstart", "ontouchend", "ontouchmove"
+            "onkeypress", "ontouchstart", "ontouchend", "ontouchmove",
+            "ondragstart", "ondragend", "ondragover", "ondragenter", "ondragleave", "ondrop"
         };
 
         // Regex to detect an event attribute at the end of an HTML fragment: onclick="
@@ -83,7 +84,8 @@ namespace NScript.RazorSkin.TemplateIR
                 TemplateName = templateName,
                 ModelTypeName = preprocessed.ModelTypeName,
                 ControlTypeName = preprocessed.ControlTypeName,
-                UsingNamespaces = preprocessed.UsingNamespaces
+                UsingNamespaces = preprocessed.UsingNamespaces,
+                StylesheetResourceNames = preprocessed.StylesheetReferences
             };
 
             var irDoc = parsed.CodeDocument.GetDocumentIntermediateNode();
@@ -263,7 +265,7 @@ namespace NScript.RazorSkin.TemplateIR
                                     var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                         StringComparison.OrdinalIgnoreCase);
                                     if (idx >= 0)
-                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                                 }
 
                                 currentParent.Children.Add(binding);
@@ -338,6 +340,11 @@ namespace NScript.RazorSkin.TemplateIR
 
                     if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
                     {
+                        // Ensure preceding HTML ends with space for proper attribute separation.
+                        // Razor consumes inter-attribute whitespace when extracting structured attributes;
+                        // we must restore it so the next static attribute doesn't fuse with the tag name.
+                        EnsureTrailingSpaceOnPrecedingHtml(currentParent.Children);
+
                         // Check if this is an event attribute
                         if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
                         {
@@ -360,7 +367,7 @@ namespace NScript.RazorSkin.TemplateIR
                                 var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
                                     StringComparison.OrdinalIgnoreCase);
                                 if (idx >= 0)
-                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx).TrimEnd();
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
                             }
 
                             currentParent.Children.Add(binding);
@@ -405,6 +412,7 @@ namespace NScript.RazorSkin.TemplateIR
 
             int i = startIndex + 1;
             bool inElseBranch = false;
+            string lastHtmlContent = null;
 
             // Collect content nodes until we hit the closing brace
             while (i < nodes.Count)
@@ -460,13 +468,112 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     var content = GetTokenContent(htmlNode);
                     if (!string.IsNullOrWhiteSpace(content))
+                    {
                         targetBranch.Add(new HtmlNode { HtmlContent = content.Trim() });
+                        lastHtmlContent = content;
+                    }
                 }
                 else if (node is CSharpExpressionIntermediateNode exprNode)
                 {
                     var expr = GetTokenContent(exprNode);
                     if (!string.IsNullOrWhiteSpace(expr))
-                        targetBranch.Add(CreateExpressionBinding(expr));
+                    {
+                        // Check if expression is inside an event attribute context
+                        var eventAttr = DetectEventAttributeContext(lastHtmlContent);
+                        if (eventAttr != null)
+                        {
+                            targetBranch.Add(CreateEventNode(eventAttr, expr.Trim()));
+                            if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                            {
+                                var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                closingHtml = closingHtml.TrimStart('"', ' ');
+                                if (!string.IsNullOrWhiteSpace(closingHtml))
+                                {
+                                    targetBranch.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                    lastHtmlContent = closingHtml;
+                                }
+                                i += 2;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // Check attribute binding context
+                            var attrCtx = DetectAttributeBindingContext(lastHtmlContent);
+                            if (attrCtx != null)
+                            {
+                                var (attrName, prefix) = attrCtx.Value;
+                                var target = ClassifyAttributeTarget(attrName);
+                                var binding = CreateExpressionBinding(expr);
+                                binding.Target = target;
+                                binding.AttributeName = attrName;
+                                binding.AttributePrefix = prefix;
+
+                                var lastChild = targetBranch.Count > 0
+                                    ? targetBranch[targetBranch.Count - 1] as HtmlNode : null;
+                                if (lastChild != null)
+                                {
+                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                        StringComparison.OrdinalIgnoreCase);
+                                    if (idx >= 0)
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
+                                }
+                                targetBranch.Add(binding);
+
+                                if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                                {
+                                    var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                    closingHtml = closingHtml.TrimStart('"', ' ');
+                                    if (!string.IsNullOrWhiteSpace(closingHtml))
+                                    {
+                                        targetBranch.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                        lastHtmlContent = closingHtml;
+                                    }
+                                    i += 2;
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                targetBranch.Add(CreateExpressionBinding(expr));
+                            }
+                        }
+                    }
+                }
+                else if (node is HtmlAttributeIntermediateNode attrNode)
+                {
+                    var attrName = attrNode.AttributeName;
+                    var exprValue = ExtractCSharpExpressionFromAttribute(attrNode);
+                    var attrPrefix = ExtractAttributePrefix(attrNode);
+
+                    if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
+                    {
+                        EnsureTrailingSpaceOnPrecedingHtml(targetBranch);
+
+                        if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetBranch.Add(CreateEventNode(attrName, exprValue.Trim()));
+                        }
+                        else
+                        {
+                            var target = ClassifyAttributeTarget(attrName);
+                            var binding = CreateExpressionBinding(exprValue);
+                            binding.Target = target;
+                            binding.AttributeName = attrName;
+                            binding.AttributePrefix = attrPrefix ?? "";
+
+                            var lastChild = targetBranch.Count > 0
+                                ? targetBranch[targetBranch.Count - 1] as HtmlNode : null;
+                            if (lastChild != null)
+                            {
+                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                    StringComparison.OrdinalIgnoreCase);
+                                if (idx >= 0)
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
+                            }
+                            targetBranch.Add(binding);
+                        }
+                    }
                 }
 
                 i++;
@@ -503,6 +610,7 @@ namespace NScript.RazorSkin.TemplateIR
             };
 
             int i = startIndex + 1;
+            string lastHtmlContent = null;
 
             // Collect content nodes until we hit the closing brace
             while (i < nodes.Count)
@@ -541,13 +649,128 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     var content = GetTokenContent(htmlNode);
                     if (!string.IsNullOrWhiteSpace(content))
-                        loop.ItemTemplate.Add(new HtmlNode { HtmlContent = content.Trim() });
+                    {
+                        // Use a dummy container to collect SubControlNodes,
+                        // then move them to the loop's ItemTemplate.
+                        var dummy = new SkinTemplateNode();
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy);
+                        if (!string.IsNullOrWhiteSpace(processed))
+                            loop.ItemTemplate.Add(new HtmlNode { HtmlContent = processed });
+                        foreach (var child in dummy.Children)
+                            loop.ItemTemplate.Add(child);
+                        lastHtmlContent = content;
+                    }
                 }
                 else if (node is CSharpExpressionIntermediateNode exprNode)
                 {
                     var expr = GetTokenContent(exprNode);
                     if (!string.IsNullOrWhiteSpace(expr))
-                        loop.ItemTemplate.Add(CreateExpressionBinding(expr));
+                    {
+                        // Check if expression is inside an event attribute context
+                        var eventAttr = DetectEventAttributeContext(lastHtmlContent);
+                        if (eventAttr != null)
+                        {
+                            loop.ItemTemplate.Add(CreateEventNode(eventAttr, expr.Trim()));
+                            // Skip closing quote in the next HTML node
+                            if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                            {
+                                var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                closingHtml = closingHtml.TrimStart('"', ' ');
+                                if (!string.IsNullOrWhiteSpace(closingHtml))
+                                {
+                                    loop.ItemTemplate.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                    lastHtmlContent = closingHtml;
+                                }
+                                i += 2;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // Check if expression is inside an attribute context
+                            var attrCtx = DetectAttributeBindingContext(lastHtmlContent);
+                            if (attrCtx != null)
+                            {
+                                var (attrName, prefix) = attrCtx.Value;
+                                var target = ClassifyAttributeTarget(attrName);
+                                var binding = CreateExpressionBinding(expr);
+                                binding.Target = target;
+                                binding.AttributeName = attrName;
+                                binding.AttributePrefix = prefix;
+
+                                // Trim the incomplete attribute from the last HTML node
+                                var lastChild = loop.ItemTemplate.Count > 0
+                                    ? loop.ItemTemplate[loop.ItemTemplate.Count - 1] as HtmlNode
+                                    : null;
+                                if (lastChild != null)
+                                {
+                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                        StringComparison.OrdinalIgnoreCase);
+                                    if (idx >= 0)
+                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
+                                }
+
+                                loop.ItemTemplate.Add(binding);
+
+                                // Consume closing quote
+                                if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
+                                {
+                                    var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                    closingHtml = closingHtml.TrimStart('"', ' ');
+                                    if (!string.IsNullOrWhiteSpace(closingHtml))
+                                    {
+                                        loop.ItemTemplate.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                        lastHtmlContent = closingHtml;
+                                    }
+                                    i += 2;
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                loop.ItemTemplate.Add(CreateExpressionBinding(expr));
+                            }
+                        }
+                    }
+                }
+                else if (node is HtmlAttributeIntermediateNode attrNode)
+                {
+                    // Structured attribute bindings (e.g., onclick="@folder.OnSelect", class="@Model.X")
+                    var attrName = attrNode.AttributeName;
+                    var exprValue = ExtractCSharpExpressionFromAttribute(attrNode);
+                    var attrPrefix = ExtractAttributePrefix(attrNode);
+
+                    if (!string.IsNullOrWhiteSpace(exprValue) && !string.IsNullOrWhiteSpace(attrName))
+                    {
+                        EnsureTrailingSpaceOnPrecedingHtml(loop.ItemTemplate);
+
+                        if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+                        {
+                            loop.ItemTemplate.Add(CreateEventNode(attrName, exprValue.Trim()));
+                        }
+                        else
+                        {
+                            var target = ClassifyAttributeTarget(attrName);
+                            var binding = CreateExpressionBinding(exprValue);
+                            binding.Target = target;
+                            binding.AttributeName = attrName;
+                            binding.AttributePrefix = attrPrefix ?? "";
+
+                            // Trim incomplete attribute from preceding HTML node
+                            var lastChild = loop.ItemTemplate.Count > 0
+                                ? loop.ItemTemplate[loop.ItemTemplate.Count - 1] as HtmlNode
+                                : null;
+                            if (lastChild != null)
+                            {
+                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
+                                    StringComparison.OrdinalIgnoreCase);
+                                if (idx >= 0)
+                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
+                            }
+
+                            loop.ItemTemplate.Add(binding);
+                        }
+                    }
                 }
 
                 i++;
@@ -555,6 +778,23 @@ namespace NScript.RazorSkin.TemplateIR
 
             parent.Children.Add(loop);
             return i;
+        }
+
+        /// <summary>
+        /// Ensures the last HtmlNode in a node list ends with a space.
+        /// Razor consumes inter-attribute whitespace when extracting structured HtmlAttributeIntermediateNode,
+        /// so the preceding HTML (e.g., "&lt;div") loses its trailing space. Without this fix,
+        /// the next static attribute fuses with the tag name (e.g., "&lt;divdraggable" instead of "&lt;div draggable").
+        /// </summary>
+        private static void EnsureTrailingSpaceOnPrecedingHtml(IList<IRNode> nodes)
+        {
+            if (nodes.Count == 0) return;
+            var lastHtml = nodes[nodes.Count - 1] as HtmlNode;
+            if (lastHtml != null && lastHtml.HtmlContent.Length > 0
+                && !lastHtml.HtmlContent.EndsWith(" ") && !lastHtml.HtmlContent.EndsWith("\n"))
+            {
+                lastHtml.HtmlContent += " ";
+            }
         }
 
         private static ExpressionBindingNode CreateExpressionBinding(string expression)
@@ -1022,6 +1262,88 @@ namespace NScript.RazorSkin.TemplateIR
                 if (found != null) return found;
             }
             return null;
+        }
+
+        // Regex to match class="..." attributes in HTML content
+        private static readonly Regex ClassAttributeRegex = new Regex(
+            @"\bclass\s*=\s*""([^""]*)""|class\s*=\s*'([^']*)'",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Validates that all static CSS class names used in template HTML actually exist
+        /// in the referenced @styles stylesheets. Throws ConverterLocationException if
+        /// a class is not found.
+        /// </summary>
+        public static void ValidateCssClasses(SkinTemplateNode ir, RazorCssManager cssManager)
+        {
+            if (cssManager == null || !cssManager.HasStylesheets)
+                return;
+
+            ValidateCssClassesInNodes(ir.Children, cssManager, ir.TemplateName);
+        }
+
+        private static void ValidateCssClassesInNodes(
+            List<IRNode> nodes,
+            RazorCssManager cssManager,
+            string templateName)
+        {
+            foreach (var node in nodes)
+            {
+                if (node is HtmlNode htmlNode)
+                {
+                    ValidateCssClassesInHtml(htmlNode.HtmlContent, cssManager, templateName);
+                }
+
+                // Recurse into children
+                if (node.Children.Count > 0)
+                    ValidateCssClassesInNodes(node.Children, cssManager, templateName);
+
+                // Recurse into conditional branches
+                if (node is ConditionalNode conditional)
+                {
+                    if (conditional.TrueBranch.Count > 0)
+                        ValidateCssClassesInNodes(conditional.TrueBranch, cssManager, templateName);
+                    if (conditional.FalseBranch.Count > 0)
+                        ValidateCssClassesInNodes(conditional.FalseBranch, cssManager, templateName);
+                }
+
+                // Recurse into loop body
+                if (node is LoopNode loop && loop.ItemTemplate.Count > 0)
+                    ValidateCssClassesInNodes(loop.ItemTemplate, cssManager, templateName);
+            }
+        }
+
+        private static void ValidateCssClassesInHtml(
+            string htmlContent,
+            RazorCssManager cssManager,
+            string templateName)
+        {
+            if (string.IsNullOrEmpty(htmlContent)) return;
+
+            var matches = ClassAttributeRegex.Matches(htmlContent);
+            foreach (Match match in matches)
+            {
+                // Get the class value from whichever group matched (double or single quotes)
+                var classValue = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+                if (string.IsNullOrWhiteSpace(classValue)) continue;
+
+                var classNames = classValue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var className in classNames)
+                {
+                    // Skip dynamic expressions (contain @ or { })
+                    if (className.Contains("@") || className.Contains("{") || className.Contains("}"))
+                        continue;
+
+                    NScript.JST.IIdentifier identifier;
+                    if (!cssManager.TryGetCssClassIdentifier(className, out identifier))
+                    {
+                        throw new NScript.Converter.ConverterLocationException(
+                            new NScript.Utils.Location(templateName, 0, 0),
+                            $"CSS class name '{className}' not found in any @styles stylesheet. " +
+                            "Ensure the class is defined in a referenced CSS file.");
+                    }
+                }
+            }
         }
     }
 }

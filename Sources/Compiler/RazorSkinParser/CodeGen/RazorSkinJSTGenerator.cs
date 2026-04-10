@@ -26,9 +26,13 @@ namespace NScript.RazorSkin.CodeGen
         private readonly Dictionary<string, IIdentifier> _resolvedIdentifiers;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
         private readonly RazorKnownTypes _knownTypes;
+        private readonly CecilTypeHelper _typeHelper;
 
         // Topology reference for marker path computation
         private GraphTopology _topology;
+
+        // Event element paths computed from data-evt-idx markers
+        private List<List<int>> _eventPaths;
 
         // Scope for the factory function body (has "skinFactory" and "doc" parameters)
         private IdentifierScope _factoryScope;
@@ -43,22 +47,14 @@ namespace NScript.RazorSkin.CodeGen
         private IIdentifier _objStorageIdentifier;
 
         // Data index for doc.stateStore — must be unique across ALL templates (XWML + Razor).
-        // XWML templates use sequential indices starting from 0 (one per skin).
-        // We start at 100 to avoid collision. If a project has 100+ XWML templates,
-        // this offset must be increased. A shared counter with XWML's CodeGenerator
-        // would be the proper long-term fix.
-        private const int RazorDataIndexOffset = 100;
-        private static int _next_dataIndex = RazorDataIndexOffset;
+        // The starting offset is passed in from the plugin to avoid collision with XWML indices.
         private readonly int _dataIndex;
 
         /// <summary>
-        /// Resets the data index counter. Must be called at the start of each compilation
-        /// to ensure deterministic output when the compiler is hosted in a long-running process.
+        /// Optional CSS manager for templates with @styles directives.
+        /// When set, class names in HTML output are replaced with minified versions.
         /// </summary>
-        public static void ResetDataIndex()
-        {
-            _next_dataIndex = RazorDataIndexOffset;
-        }
+        private readonly RazorCssManager _cssManager;
 
 
         /// <summary>
@@ -74,7 +70,9 @@ namespace NScript.RazorSkin.CodeGen
             Dictionary<string, IIdentifier> resolvedIdentifiers,
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers,
             RazorKnownTypes knownTypes,
-            IIdentifier preCreatedGetterIdentifier = null)
+            int dataIndex,
+            IIdentifier preCreatedGetterIdentifier = null,
+            RazorCssManager cssManager = null)
         {
             _ir = ir;
             _scopeManager = scopeManager;
@@ -82,8 +80,10 @@ namespace NScript.RazorSkin.CodeGen
             _resolvedIdentifiers = resolvedIdentifiers;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
             _knownTypes = knownTypes;
+            _typeHelper = new CecilTypeHelper(clrContext);
             _preCreatedGetterIdentifier = preCreatedGetterIdentifier;
-            _dataIndex = _next_dataIndex++;
+            _dataIndex = dataIndex;
+            _cssManager = cssManager;
         }
 
         /// <summary>
@@ -135,12 +135,24 @@ namespace NScript.RazorSkin.CodeGen
             _objStorageIdentifier = SimpleIdentifier.CreateScopeIdentifier(
                 _factoryScope, "objStorage", false);
 
+            // Resolve sub-control attributes (TagName, DomAttributes) via Cecil
+            // Must happen before CollectHtmlWithPathsPublic which reads SubControlNode.TagName
+            ResolveSubControlAttributes(_ir.Children);
+
             // Collect bindings, events, and HTML content
             var bindings = RazorSkinCodeGenerator.CollectBindingsPublic(_ir.Children);
             var events = RazorSkinCodeGenerator.CollectEventsPublic(_ir.Children);
             var elementPaths = new List<List<int>>();
+            var eventPaths = new List<List<int>>();
             var htmlContent = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(
-                _ir.Children, events, elementPaths);
+                _ir.Children, events, elementPaths, eventPaths);
+
+            // Replace CSS class names with minified versions when @styles are active
+            if (_cssManager != null && _cssManager.HasStylesheets)
+            {
+                htmlContent = ReplaceCssClassNamesInHtml(htmlContent);
+            }
+
             // Build graph topology from IR
             var topology = GraphTopologyBuilder.Build(_ir);
             _topology = topology;
@@ -170,7 +182,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // 2. Factory function
             var factoryStatements = BuildFactoryBody(
-                bindings, events, htmlContent, elementPaths, knownFunctionNames, topology);
+                bindings, events, htmlContent, elementPaths, eventPaths, knownFunctionNames, topology);
 
             var factoryFunction = new FunctionExpression(
                 null,
@@ -210,9 +222,11 @@ namespace NScript.RazorSkin.CodeGen
             List<EventNode> events,
             string htmlContent,
             List<List<int>> elementPaths,
+            List<List<int>> eventPaths,
             HashSet<string> knownFunctionNames,
             GraphTopology topology)
         {
+            _eventPaths = eventPaths;
             var stmts = new List<Statement>();
 
             // Get the "doc" parameter identifier
@@ -279,7 +293,8 @@ namespace NScript.RazorSkin.CodeGen
             // tmplStore[dataIndex] = tmplStore[dataIndex] ? tmplStore[dataIndex] : graphDescriptor
             var graphEmitter = new GraphDescriptorJSTEmitter(
                 topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames,
-                _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers);
+                _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers,
+                cssManager: _cssManager);
             var graphDescriptorExpr = graphEmitter.Emit();
 
             initStatements.Add(
@@ -701,33 +716,11 @@ namespace NScript.RazorSkin.CodeGen
             return currentExpr;
         }
 
-        /// <summary>
-        /// Finds a TypeDefinition by fully qualified name across all loaded assemblies.
-        /// </summary>
         private TypeDefinition FindTypeDefinition(string fullTypeName)
-        {
-            if (string.IsNullOrEmpty(fullTypeName)) return null;
+            => _typeHelper.FindTypeDefinition(fullTypeName);
 
-            return _clrContext.GetTypes()
-                .FirstOrDefault(t => t.FullName == fullTypeName);
-        }
-
-        /// <summary>
-        /// Finds a property on a type, walking up the inheritance hierarchy.
-        /// </summary>
-        private static PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
-        {
-            var current = type;
-            while (current != null)
-            {
-                var prop = current.Properties.FirstOrDefault(p => p.Name == propertyName);
-                if (prop != null) return prop;
-
-                try { current = current.BaseType?.Resolve(); }
-                catch (Exception) { break; }
-            }
-            return null;
-        }
+        private PropertyDefinition FindProperty(TypeDefinition type, string propertyName)
+            => _typeHelper.FindProperty(type, propertyName);
 
         /// <summary>
         /// Finds the DomTarget node index for the i-th binding (in document order).
@@ -904,10 +897,10 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Expression BuildEventElementRef(string htmlContent, EventTopology evt)
         {
-            // Events target specific elements (buttons, etc.) in the template HTML.
-            // The event target element was identified during IR building and its path
-            // is computed relative to htmlRoot. For now, find buttons/elements by
-            // looking at the HTML structure.
+            // Events target specific elements in the template HTML.
+            // The event target element was identified during IR building and marked
+            // with data-evt-idx attributes. The paths were computed from those markers
+            // by ComputePathsFromHtml and passed via _eventPaths.
             // The topology assigns event element indices in document order.
             // Find the ordinal position of this event among all events.
             int ordinal = 0;
@@ -917,8 +910,17 @@ namespace NScript.RazorSkin.CodeGen
                 ordinal++;
             }
 
-            // Parse HTML to find the (ordinal+1)-th interactive element (button, a, input, etc.)
-            var path = FindNthInteractiveElementPath(htmlContent, ordinal);
+            // Use the marker-computed path if available, otherwise fall back to heuristic
+            List<int> path;
+            if (_eventPaths != null && ordinal < _eventPaths.Count)
+            {
+                path = _eventPaths[ordinal];
+            }
+            else
+            {
+                path = FindNthInteractiveElementPath(htmlContent, ordinal);
+            }
+
             var pathElements = new List<Expression>();
             foreach (var p in path)
                 pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
@@ -1003,6 +1005,138 @@ namespace NScript.RazorSkin.CodeGen
             return new List<int> { 0 };
         }
 
+        /// <summary>
+        /// Replaces CSS class names in HTML class="..." attributes with their minified versions.
+        /// Uses the same regex pattern as TemplateIRBuilder.ValidateCssClassesInHtml.
+        /// </summary>
+        private string ReplaceCssClassNamesInHtml(string html)
+        {
+            return RazorCssManager.ReplaceCssClassNamesInHtml(html, _cssManager);
+        }
+
+        /// <summary>
+        /// Recursively resolves TagName and DomAttributes on SubControlNode instances
+        /// by looking up the control type via Cecil and reading [TagName] and [DomAttribute] attributes.
+        /// </summary>
+        private void ResolveSubControlAttributes(List<IRNode> nodes)
+        {
+            if (nodes == null) return;
+
+            foreach (var node in nodes)
+            {
+                if (node is SubControlNode sub)
+                {
+                    ResolveSubControlTagInfo(sub);
+                }
+
+                if (node.Children?.Count > 0)
+                    ResolveSubControlAttributes(node.Children);
+
+                if (node is ConditionalNode cond)
+                {
+                    ResolveSubControlAttributes(cond.TrueBranch);
+                    ResolveSubControlAttributes(cond.FalseBranch);
+                }
+
+                if (node is LoopNode loop)
+                {
+                    ResolveSubControlAttributes(loop.ItemTemplate);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resolves tag name and DOM attributes for a single SubControlNode by looking up its
+        /// CLR type via Cecil and reading [TagName] and [DomAttribute] custom attributes.
+        /// </summary>
+        private void ResolveSubControlTagInfo(SubControlNode sub)
+        {
+            if (_clrContext == null || _knownTypes == null) return;
+
+            var typeDef = FindSubControlType(sub.TypeName);
+            if (typeDef == null)
+            {
+                Log.Debug("ResolveSubControlTagInfo: Cannot find type for {TypeName}", sub.TypeName);
+                return;
+            }
+
+            sub.ResolvedTypeName = typeDef.FullName;
+
+            // Read [TagName("xxx")] attribute
+            if (_knownTypes.TagNameAttribute != null)
+            {
+                foreach (var attr in typeDef.CustomAttributes)
+                {
+                    if (attr.AttributeType.FullName == _knownTypes.TagNameAttribute.FullName
+                        && attr.ConstructorArguments.Count > 0)
+                    {
+                        sub.TagName = attr.ConstructorArguments[0].Value as string ?? "div";
+                        break;
+                    }
+                }
+            }
+
+            // Read [DomAttribute("name", "value")] attributes
+            if (_knownTypes.DomAttributeAttribute != null)
+            {
+                foreach (var attr in typeDef.CustomAttributes)
+                {
+                    if (attr.AttributeType.FullName == _knownTypes.DomAttributeAttribute.FullName
+                        && attr.ConstructorArguments.Count >= 2)
+                    {
+                        var name = attr.ConstructorArguments[0].Value as string;
+                        var value = attr.ConstructorArguments[1].Value as string;
+                        if (name != null)
+                        {
+                            if (sub.DomAttributes == null)
+                                sub.DomAttributes = new List<KeyValuePair<string, string>>();
+                            sub.DomAttributes.Add(new KeyValuePair<string, string>(name, value ?? ""));
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds a SubControlNode's TypeDefinition by trying the type name directly,
+        /// then trying each using namespace as a prefix.
+        /// </summary>
+        private TypeDefinition FindSubControlType(string typeName)
+        {
+            if (string.IsNullOrEmpty(typeName)) return null;
+
+            var typeDef = FindTypeDefinitionByName(typeName);
+            if (typeDef != null) return typeDef;
+
+            if (_ir.UsingNamespaces != null)
+            {
+                foreach (var ns in _ir.UsingNamespaces)
+                {
+                    typeDef = FindTypeDefinitionByName(ns + "." + typeName);
+                    if (typeDef != null) return typeDef;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Finds a TypeDefinition by full name across all loaded assemblies.
+        /// </summary>
+        private TypeDefinition FindTypeDefinitionByName(string fullName)
+        {
+            try
+            {
+                foreach (var type in _clrContext.GetTypeDefinitions())
+                {
+                    if (type.FullName == fullName)
+                        return type;
+                }
+            }
+            catch { }
+
+            return null;
+        }
     }
 
     /// <summary>

@@ -1,16 +1,11 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="CssClassNameFinderVisitor.cs" company="">
-//     Copyright (c) . All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
-
-namespace XwmlParser
+namespace CssParser
 {
     using System;
     using System.Collections.Generic;
 
     /// <summary>
-    /// Definition for CssClassNameFinderVisitor
+    /// Visitor that extracts CSS class names from parsed CSS rules.
+    /// Shared by XwmlParser and RazorSkinParser for CSS class validation.
     /// </summary>
     public class CssClassNameFinderVisitor : CssParser.CssVisitor
     {
