@@ -51,21 +51,19 @@ namespace Sunlight.Framework
         public int RootActionId;
         public bool DispatchUnhandledOnFailure;
 
-        public Task(int taskId, Action work, bool dispatchUnhandledOnFailure = false)
+        public Task(int taskId, Action work)
         {
             this.TaskId = taskId;
             this.Work = work;
             this.Context = CallContext.Current;
             this.RootActionId = this.Context != null ? this.Context.ActionId : -1;
-            this.DispatchUnhandledOnFailure = dispatchUnhandledOnFailure;
         }
 
         public Task(
             int taskId,
             int nativeTimerId,
             NativeTimerHandleType nativeTimerType,
-            Action work,
-            bool dispatchUnhandledOnFailure = false)
+            Action work)
         {
             this.TaskId = taskId;
             this.NativeTimerId = nativeTimerId;
@@ -73,7 +71,6 @@ namespace Sunlight.Framework
             this.Work = work;
             this.Context = CallContext.Current;
             this.RootActionId = this.Context != null ? this.Context.ActionId : -1;
-            this.DispatchUnhandledOnFailure = dispatchUnhandledOnFailure;
         }
     }
 
@@ -286,8 +283,8 @@ namespace Sunlight.Framework
                 this.nextTimerId++,
                 this.windowTimer.RequestAnimationFrame(cb),
                 NativeTimerHandleType.Timeout,
-                work,
-                true);
+                work);
+            taskRef[0].DispatchUnhandledOnFailure = true;
 
             this.tasks.Add(taskRef[0].TaskId, taskRef[0]);
             return new TaskHandle(taskRef[0].TaskId);
@@ -302,8 +299,8 @@ namespace Sunlight.Framework
                 this.nextTimerId++,
                 this.windowTimer.SetTimeout(cb, timeout),
                 NativeTimerHandleType.Timeout,
-                work,
-                true);
+                work);
+            taskRef[0].DispatchUnhandledOnFailure = true;
 
             this.tasks.Add(taskRef[0].TaskId, taskRef[0]);
             return new TaskHandle(taskRef[0].TaskId);
@@ -313,8 +310,8 @@ namespace Sunlight.Framework
         {
             var task = new Task(
                     this.nextTimerId++,
-                    work,
-                    true);
+                    work);
+            task.DispatchUnhandledOnFailure = true;
             this.hiPriTasks.Enqueue(task);
             this.tasks.Add(task.TaskId, task);
             this.ScheduleQuanta(false);
@@ -326,6 +323,7 @@ namespace Sunlight.Framework
             var task = new Task(
                     this.nextTimerId++,
                     work);
+            task.DispatchUnhandledOnFailure = true;
             this.lowPriTasks.Enqueue(task);
             this.tasks.Add(task.TaskId, task);
             this.ScheduleQuanta(false);

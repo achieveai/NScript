@@ -7,12 +7,6 @@ namespace Sunlight.Framework.UI.Test
     [TestFixture]
     public class TaskSchedulerTests
     {
-        [TestSetup]
-        public static void Setup()
-        {
-            TaskScheduler.Instance = new TaskScheduler(new TestWindowTimer(), 10, 10);
-        }
-
         [Test]
         public static void TestQueuedTaskFailuresBubbleToUnhandledPath(Assert assert)
         {
