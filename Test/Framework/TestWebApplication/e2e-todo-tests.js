@@ -206,6 +206,10 @@ function sel(classMap, selector) {
   }
 
   async function waitForCallContext(page, predicate, timeout = 10000) {
+    const predStr = typeof predicate === 'string' ? predicate : 'non-null';
+    if (predStr.startsWith('traceId!=') && predStr.length <= 9) {
+      throw new Error('waitForCallContext: traceId!= predicate requires a non-empty old traceId');
+    }
     await page.waitForFunction(
       (predStr) => {
         const ctx = window.__callContext ? window.__callContext.getCurrent() : null;
@@ -215,7 +219,7 @@ function sel(classMap, selector) {
         }
         return ctx !== null;
       },
-      typeof predicate === 'string' ? predicate : 'non-null',
+      predStr,
       { timeout }
     );
   }
@@ -654,6 +658,15 @@ function sel(classMap, selector) {
     // Select second todo
     await todos[1].click();
     await waitForDetailPane(page, s);
+    // Wait for the title input value to actually change from the first todo's title
+    await page.waitForFunction(
+      ({ sel, oldTitle }) => {
+        const el = document.querySelector(sel);
+        return el && el.value !== oldTitle;
+      },
+      { sel: s('.detail-title-input'), oldTitle: title1 },
+      { timeout: 10000 }
+    );
     const title2 = await page.$eval(s('.detail-title-input'), el => el.value);
 
     assert(title1 !== title2, 'Switching todos should change detail title, first: ' + title1 + ', second: ' + title2);
