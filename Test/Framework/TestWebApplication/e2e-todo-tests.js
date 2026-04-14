@@ -194,6 +194,38 @@ function sel(classMap, selector) {
     }, { selector, requiredClass, shouldContain }, { timeout });
   }
 
+  async function waitForFolderHeader(page, s, expectedName, timeout = 10000) {
+    await page.waitForFunction(
+      ({ selector, name }) => {
+        const el = document.querySelector(selector);
+        return el && el.textContent.trim() === name;
+      },
+      { selector: s('.current-folder-name'), name: expectedName },
+      { timeout }
+    );
+  }
+
+  async function waitForCallContext(page, timeout = 10000) {
+    await page.waitForFunction(
+      () => {
+        const ctx = window.__callContext ? window.__callContext.getCurrent() : null;
+        return ctx !== null;
+      },
+      { timeout }
+    );
+  }
+
+  async function waitForNewCallContext(page, oldTraceId, timeout = 10000) {
+    await page.waitForFunction(
+      (oldId) => {
+        const ctx = window.__callContext ? window.__callContext.getCurrent() : null;
+        return ctx !== null && ctx.traceId !== oldId;
+      },
+      oldTraceId,
+      { timeout }
+    );
+  }
+
   // ─── LAYOUT TESTS ───────────────────────────────────────────────────────────
 
   await runTest('App renders with layout', async (page, s) => {
@@ -410,7 +442,6 @@ function sel(classMap, selector) {
     const subtaskInput = await page.$(s('.subtask-title-input'));
     await subtaskInput.fill('Persisted renamed step');
     await subtaskInput.press('Tab');
-    await page.waitForTimeout(1000);
     await waitForPersistedSubtask(page, selectedTodoTitle, 'Persisted renamed step');
 
     await page.goto(BASE_URL + '/TodoApp.htm', { waitUntil: 'domcontentloaded' });
@@ -511,7 +542,7 @@ function sel(classMap, selector) {
     const checkbox = await firstTodo.$(s('.btn-check'));
     assert(checkbox, 'Todo should have a checkbox');
     await checkbox.click();
-    await page.waitForTimeout(500);
+    await page.waitForFunction(el => el.className.includes('completed'), firstTodo, { timeout: 10000 });
 
     const classAfter = await firstTodo.evaluate(el => el.className);
     assert(classAfter.includes('completed'), 'Todo should have completed class after checkbox click, got: ' + classAfter);
@@ -523,7 +554,9 @@ function sel(classMap, selector) {
     // Complete the first todo
     const checkbox = await page.$(s('.todo-item .btn-check'));
     await checkbox.click();
-    await page.waitForTimeout(500);
+    await page.waitForFunction(({ selector, expected }) => {
+      return document.querySelectorAll(selector).length === expected;
+    }, { selector: s('.todo-list .todo-item'), expected: pendingBefore - 1 }, { timeout: 10000 });
 
     const pendingAfter = (await page.$$(s('.todo-list .todo-item'))).length;
     assert(pendingAfter === pendingBefore - 1, 'Pending count should decrease by 1, was ' + pendingBefore + ' now ' + pendingAfter);
@@ -535,19 +568,19 @@ function sel(classMap, selector) {
 
   await runTest('Toggle subtask completion', async (page, s) => {
     await page.click(s('.todo-item'));
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // Add a subtask
     const addInput = await page.$(s('.add-step-input'));
     await addInput.fill('Test step');
     await addInput.press('Enter');
-    await page.waitForTimeout(500);
+    await waitForSelectorCount(page, s('.subtask-item'));
 
     // Click the subtask checkbox
     const subCheck = await page.$(s('.subtask-item .btn-check'));
     assert(subCheck, 'Subtask should have a checkbox');
     await subCheck.click();
-    await page.waitForTimeout(500);
+    await waitForClassState(page, s('.subtask-item'), 'completed', true);
 
     const subClass = await page.$eval(s('.subtask-item'), el => el.className);
     assert(subClass.includes('completed'), 'Subtask should have completed class, got: ' + subClass);
@@ -567,7 +600,7 @@ function sel(classMap, selector) {
     const header = await page.$(s('.completed-header'));
     assert(header, 'Completed header should exist');
     await header.click();
-    await page.waitForTimeout(300);
+    await waitForClassState(page, s('.completed-section'), 'collapsed', false);
 
     const cls = await page.$eval(s('.completed-section'), el => el.className);
     assert(!cls.includes('collapsed'), 'Completed section should expand after click, got: ' + cls);
@@ -580,7 +613,8 @@ function sel(classMap, selector) {
     assert(completedIdx >= 0, 'Should have Completed folder');
 
     await folders[completedIdx].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'Completed');
+    await waitForSelectorCount(page, s('.todo-item'));
 
     // Completed folder should show items directly in the main todo list (not in completed section)
     const todos = await page.$$(s('.todo-item'));
@@ -595,7 +629,7 @@ function sel(classMap, selector) {
 
   await runTest('BUG-016: Detail pane shows current folder name', async (page, s) => {
     await page.click(s('.todo-item'));
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // The folder tags show individual chips for each membership
     const chipNames = await page.$$eval(s('.folder-chip-name'), els => els.map(el => el.textContent.trim()));
@@ -605,7 +639,7 @@ function sel(classMap, selector) {
 
   await runTest('BUG-016: Folder picker lists all folders', async (page, s) => {
     await page.click(s('.todo-item'));
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     const pickerNames = await page.$$eval(s('.folder-pick-name'), els => els.map(e => e.textContent));
     assert(pickerNames.includes('Tasks'), 'Picker should include Tasks');
@@ -620,12 +654,21 @@ function sel(classMap, selector) {
 
     // Select first todo
     await todos[0].click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
     const title1 = await page.$eval(s('.detail-title-input'), el => el.value);
 
     // Select second todo
     await todos[1].click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
+    // Wait for the title input value to actually change from the first todo's title
+    await page.waitForFunction(
+      ({ selector, oldTitle }) => {
+        const el = document.querySelector(selector);
+        return el && el.value !== oldTitle;
+      },
+      { selector: s('.detail-title-input'), oldTitle: title1 },
+      { timeout: 10000 }
+    );
     const title2 = await page.$eval(s('.detail-title-input'), el => el.value);
 
     assert(title1 !== title2, 'Switching todos should change detail title, first: ' + title1 + ', second: ' + title2);
@@ -637,7 +680,8 @@ function sel(classMap, selector) {
     const folders = await page.$$(s('.folder-item'));
     assert(folders.length >= 1, 'Should have folders');
     await folders[0].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'My Day');
+    await waitForSelectorCount(page, s('.todo-item'));
 
     // My Day should show "Buy groceries" (IsMyDay = true in sample data)
     const todos = await page.$$(s('.todo-item'));
@@ -648,7 +692,8 @@ function sel(classMap, selector) {
     const folders = await page.$$(s('.folder-item'));
     assert(folders.length >= 2, 'Should have at least 2 folders');
     await folders[1].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'Important');
+    await waitForSelectorCount(page, s('.todo-item'));
 
     const todos = await page.$$(s('.todo-item'));
     assert(todos.length >= 1, 'Important should show at least 1 todo');
@@ -660,13 +705,13 @@ function sel(classMap, selector) {
     const toggleBtn = await page.$(s('.btn-toggle-left'));
     assert(toggleBtn, 'Toggle button should exist');
     await toggleBtn.click();
-    await page.waitForTimeout(300);
+    await waitForClassState(page, s('.pane-left'), 'collapsed', true);
 
     const collapsed = await page.$(s('.pane-left.collapsed'));
     assert(collapsed, 'Left pane should have collapsed class');
 
     await toggleBtn.click();
-    await page.waitForTimeout(300);
+    await waitForClassState(page, s('.pane-left'), 'collapsed', false);
 
     const expanded = await page.$(s('.pane-left:not(.collapsed)'));
     assert(expanded, 'Left pane should expand again');
@@ -698,12 +743,12 @@ function sel(classMap, selector) {
 
     // Simulate drag-and-drop: 2nd todo (index 1) to My Day folder (index 0)
     await simulateDragDrop(page, s('.todo-item'), s('.folder-item'), 1, 0);
-    await page.waitForTimeout(500);
 
     // Switch to My Day folder to verify the todo now appears
     const folders = await page.$$(s('.folder-item'));
     await folders[0].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'My Day');
+    await waitForTodoTitle(page, s, 'Read a book');
     const myDayTodos = await page.$$eval(s('.todo-title'), els => els.map(e => e.textContent));
     assert(myDayTodos.includes('Read a book'), 'Read a book should appear in My Day after drag, got: ' + myDayTodos.join(', '));
   });
@@ -715,12 +760,12 @@ function sel(classMap, selector) {
 
     // Drag second todo (index 1) to Important folder (index 1)
     await simulateDragDrop(page, s('.todo-item'), s('.folder-item'), 1, 1);
-    await page.waitForTimeout(500);
 
     // Switch to Important folder to verify
     const folders = await page.$$(s('.folder-item'));
     await folders[1].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'Important');
+    await waitForTodoTitle(page, s, 'Read a book');
     const impTodos = await page.$$eval(s('.todo-title'), els => els.map(e => e.textContent));
     assert(impTodos.includes('Read a book'), 'Read a book should appear in Important after drag, got: ' + impTodos.join(', '));
   });
@@ -744,7 +789,7 @@ function sel(classMap, selector) {
 
     // Click the empty star to toggle importance
     await star2.click();
-    await page.waitForTimeout(500);
+    await page.waitForFunction(el => el.className.includes('important'), star2, { timeout: 10000 });
 
     // After click, the star should now be important (gate should flip)
     const updatedTodo = (await page.$$(s('.todo-item')))[1];
@@ -764,7 +809,7 @@ function sel(classMap, selector) {
 
     // Click to un-star
     await star.click();
-    await page.waitForTimeout(500);
+    await page.waitForFunction(el => !el.className.includes('important'), star, { timeout: 10000 });
 
     // Re-query after DOM update
     const updatedTodo = (await page.$$(s('.todo-item')))[0];
@@ -774,7 +819,7 @@ function sel(classMap, selector) {
 
     // Click again to re-star — verify round-trip
     await updatedStar.click();
-    await page.waitForTimeout(500);
+    await page.waitForFunction(el => el.className.includes('important'), updatedStar, { timeout: 10000 });
 
     const reTodo = (await page.$$(s('.todo-item')))[0];
     const reStar = await reTodo.$(s('.star'));
@@ -789,7 +834,7 @@ function sel(classMap, selector) {
     const names = await page.$$eval(s('.folder-name'), els => els.map(e => e.textContent));
     const completedIdx = names.indexOf('Completed');
     await folders[completedIdx].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'Completed');
 
     // Items should be in the main todo-list, not the completed section
     const mainTodos = await page.$$(s('.todo-list .todo-item'));
@@ -813,7 +858,7 @@ function sel(classMap, selector) {
     // Reload the page — IndexedDB sample data should survive
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForSelector(s('.folder-item'), { timeout: 10000 });
-    await page.waitForTimeout(1000);
+    await waitForSelectorCount(page, s('.todo-item'));
 
     // Assert sample data is still present after reload
     titles = await page.$$eval(s('.todo-title'), els => els.map(e => e.textContent));
@@ -832,7 +877,7 @@ function sel(classMap, selector) {
 
     // Click the second todo and check it gets a selected visual cue
     await todoItems[1].click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // The right pane should exist after selection
     const rightPane = await page.$(s('.pane-right'));
@@ -845,11 +890,11 @@ function sel(classMap, selector) {
 
     // Click first todo
     await todoItems[0].click();
-    await page.waitForTimeout(300);
+    await waitForDetailPane(page, s);
 
     // Click second todo
     await todoItems[1].click();
-    await page.waitForTimeout(300);
+    await waitForDetailPane(page, s);
 
     // Right pane should still be visible
     const pane = await page.$(s('.pane-right'));
@@ -868,7 +913,12 @@ function sel(classMap, selector) {
     const classBefore = await star.evaluate(el => el.className);
 
     await star.click();
-    await page.waitForTimeout(500);
+    // Wait for the star's class to change (important toggled)
+    if (classBefore.includes('important')) {
+      await page.waitForFunction(el => !el.className.includes('important'), star, { timeout: 10000 });
+    } else {
+      await page.waitForFunction(el => el.className.includes('important'), star, { timeout: 10000 });
+    }
 
     const updatedItems = await page.$$(s('.todo-item'));
     const updatedStar = await updatedItems[0].$(s('.star'));
@@ -880,7 +930,7 @@ function sel(classMap, selector) {
 
     // Now click the todo itself (not the star) to trigger selection
     await updatedItems[0].click();
-    await page.waitForTimeout(500);
+    await waitForDetailPane(page, s);
 
     // Right pane should appear (selection via Model.OnSelect)
     const pane = await page.$(s('.pane-right'));
@@ -919,7 +969,7 @@ function sel(classMap, selector) {
     } else {
       await todoItem.click();
     }
-    await page.waitForTimeout(300);
+    await waitForCallContext(page);
 
     // Verify CallContext.Current was set
     const ctx = await page.evaluate(() => window.__callContext.getCurrent());
@@ -944,13 +994,13 @@ function sel(classMap, selector) {
 
     // Click first folder, capture traceId
     await folders[0].click();
-    await page.waitForTimeout(300);
+    await waitForCallContext(page);
     const ctx1 = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx1 !== null, 'First click should create a context');
 
     // Click second folder, capture new traceId
     await folders[1].click();
-    await page.waitForTimeout(300);
+    await waitForNewCallContext(page, ctx1.traceId);
     const ctx2 = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx2 !== null, 'Second click should create a context');
 
@@ -972,7 +1022,7 @@ function sel(classMap, selector) {
     // Click a folder to create a root context
     const folder = await page.$(s('.folder-item'));
     await folder.click();
-    await page.waitForTimeout(300);
+    await waitForCallContext(page);
 
     const traceIdAfterClick = await page.evaluate(() => {
       var c = window.__callContext.getCurrent();
@@ -985,13 +1035,13 @@ function sel(classMap, selector) {
     if (input) {
       await input.fill('CallContext test task');
       await input.press('Enter');
-      await page.waitForTimeout(1000);
+      await waitForNewCallContext(page, traceIdAfterClick);
     } else {
       // Fallback: click another folder (still triggers async skin work)
       const folders = await page.$$(s('.folder-item'));
       if (folders.length >= 2) {
         await folders[1].click();
-        await page.waitForTimeout(500);
+        await waitForNewCallContext(page, traceIdAfterClick);
       }
     }
 
@@ -1011,7 +1061,7 @@ function sel(classMap, selector) {
   await runTest('CALLCTX-005: XHR carries traceparent header', async (page, s) => {
     // Click a folder to establish a root context
     await page.click(s('.folder-item'));
-    await page.waitForTimeout(300);
+    await waitForCallContext(page);
 
     // Invoke the OnBeforeSend hook via our test bridge — it calls the real
     // hook with a mock request object that captures setRequestHeader calls
@@ -1024,7 +1074,7 @@ function sel(classMap, selector) {
   await runTest('CALLCTX-006: Traceparent format matches W3C spec', async (page, s) => {
     // Click to establish context
     await page.click(s('.folder-item'));
-    await page.waitForTimeout(300);
+    await waitForCallContext(page);
 
     const ctx = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx !== null, 'Should have context after click');
@@ -1063,7 +1113,7 @@ function sel(classMap, selector) {
     const initialCount = (await page.$$(s('.todo-item'))).length;
     await input.fill('Integration test task');
     await input.press('Enter');
-    await page.waitForTimeout(500);
+    await waitForSelectorCount(page, s('.todo-item'), initialCount + 1);
 
     const newCount = (await page.$$(s('.todo-item'))).length;
     assert(newCount >= initialCount,
@@ -1081,7 +1131,7 @@ function sel(classMap, selector) {
     const myDayIdx = folderNames.indexOf('My Day');
     assert(myDayIdx >= 0, 'Should find My Day folder');
     await folders[myDayIdx].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'My Day');
 
     const header = await page.$eval(s('.current-folder-name'), el => el.textContent);
     assert(header === 'My Day', 'Header should show My Day after switch, got: ' + header);
@@ -1089,7 +1139,7 @@ function sel(classMap, selector) {
     // Switch to Tasks
     const tasksIdx = folderNames.indexOf('Tasks');
     await folders[tasksIdx].click();
-    await page.waitForTimeout(500);
+    await waitForFolderHeader(page, s, 'Tasks');
 
     const header2 = await page.$eval(s('.current-folder-name'), el => el.textContent);
     assert(header2 === 'Tasks', 'Header should show Tasks after switch, got: ' + header2);
@@ -1103,13 +1153,13 @@ function sel(classMap, selector) {
 
     // First click — capture context
     await folders[0].click();
-    await page.waitForTimeout(300);
+    await waitForCallContext(page);
     const ctx1 = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx1 !== null, 'First click should create a context');
 
     // Second click — should get entirely new root context (not the first one)
     await folders[1].click();
-    await page.waitForTimeout(300);
+    await waitForNewCallContext(page, ctx1.traceId);
     const ctx2 = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx2 !== null, 'Second click should create a context');
 
