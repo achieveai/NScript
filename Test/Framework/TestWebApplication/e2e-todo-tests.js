@@ -196,30 +196,32 @@ function sel(classMap, selector) {
 
   async function waitForFolderHeader(page, s, expectedName, timeout = 10000) {
     await page.waitForFunction(
-      ({ sel, name }) => {
-        const el = document.querySelector(sel);
+      ({ selector, name }) => {
+        const el = document.querySelector(selector);
         return el && el.textContent.trim() === name;
       },
-      { sel: s('.current-folder-name'), name: expectedName },
+      { selector: s('.current-folder-name'), name: expectedName },
       { timeout }
     );
   }
 
-  async function waitForCallContext(page, predicate, timeout = 10000) {
-    const predStr = typeof predicate === 'string' ? predicate : 'non-null';
-    if (predStr.startsWith('traceId!=') && predStr.length <= 9) {
-      throw new Error('waitForCallContext: traceId!= predicate requires a non-empty old traceId');
-    }
+  async function waitForCallContext(page, timeout = 10000) {
     await page.waitForFunction(
-      (predStr) => {
+      () => {
         const ctx = window.__callContext ? window.__callContext.getCurrent() : null;
-        if (predStr === 'non-null') return ctx !== null;
-        if (predStr.startsWith('traceId!=')) {
-          return ctx !== null && ctx.traceId !== predStr.slice(9);
-        }
         return ctx !== null;
       },
-      predStr,
+      { timeout }
+    );
+  }
+
+  async function waitForNewCallContext(page, oldTraceId, timeout = 10000) {
+    await page.waitForFunction(
+      (oldId) => {
+        const ctx = window.__callContext ? window.__callContext.getCurrent() : null;
+        return ctx !== null && ctx.traceId !== oldId;
+      },
+      oldTraceId,
       { timeout }
     );
   }
@@ -660,11 +662,11 @@ function sel(classMap, selector) {
     await waitForDetailPane(page, s);
     // Wait for the title input value to actually change from the first todo's title
     await page.waitForFunction(
-      ({ sel, oldTitle }) => {
-        const el = document.querySelector(sel);
+      ({ selector, oldTitle }) => {
+        const el = document.querySelector(selector);
         return el && el.value !== oldTitle;
       },
-      { sel: s('.detail-title-input'), oldTitle: title1 },
+      { selector: s('.detail-title-input'), oldTitle: title1 },
       { timeout: 10000 }
     );
     const title2 = await page.$eval(s('.detail-title-input'), el => el.value);
@@ -746,7 +748,7 @@ function sel(classMap, selector) {
     const folders = await page.$$(s('.folder-item'));
     await folders[0].click();
     await waitForFolderHeader(page, s, 'My Day');
-    await waitForSelectorCount(page, s('.todo-item'));
+    await waitForTodoTitle(page, s, 'Read a book');
     const myDayTodos = await page.$$eval(s('.todo-title'), els => els.map(e => e.textContent));
     assert(myDayTodos.includes('Read a book'), 'Read a book should appear in My Day after drag, got: ' + myDayTodos.join(', '));
   });
@@ -763,7 +765,7 @@ function sel(classMap, selector) {
     const folders = await page.$$(s('.folder-item'));
     await folders[1].click();
     await waitForFolderHeader(page, s, 'Important');
-    await waitForSelectorCount(page, s('.todo-item'));
+    await waitForTodoTitle(page, s, 'Read a book');
     const impTodos = await page.$$eval(s('.todo-title'), els => els.map(e => e.textContent));
     assert(impTodos.includes('Read a book'), 'Read a book should appear in Important after drag, got: ' + impTodos.join(', '));
   });
@@ -998,7 +1000,7 @@ function sel(classMap, selector) {
 
     // Click second folder, capture new traceId
     await folders[1].click();
-    await waitForCallContext(page, 'traceId!=' + ctx1.traceId);
+    await waitForNewCallContext(page, ctx1.traceId);
     const ctx2 = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx2 !== null, 'Second click should create a context');
 
@@ -1033,13 +1035,13 @@ function sel(classMap, selector) {
     if (input) {
       await input.fill('CallContext test task');
       await input.press('Enter');
-      await waitForCallContext(page, 'traceId!=' + traceIdAfterClick);
+      await waitForNewCallContext(page, traceIdAfterClick);
     } else {
       // Fallback: click another folder (still triggers async skin work)
       const folders = await page.$$(s('.folder-item'));
       if (folders.length >= 2) {
         await folders[1].click();
-        await waitForCallContext(page, 'traceId!=' + traceIdAfterClick);
+        await waitForNewCallContext(page, traceIdAfterClick);
       }
     }
 
@@ -1157,7 +1159,7 @@ function sel(classMap, selector) {
 
     // Second click — should get entirely new root context (not the first one)
     await folders[1].click();
-    await waitForCallContext(page, 'traceId!=' + ctx1.traceId);
+    await waitForNewCallContext(page, ctx1.traceId);
     const ctx2 = await page.evaluate(() => window.__callContext.getCurrent());
     assert(ctx2 !== null, 'Second click should create a context');
 
