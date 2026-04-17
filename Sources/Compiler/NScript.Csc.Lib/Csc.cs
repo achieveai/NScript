@@ -17,17 +17,129 @@ namespace NScript.Csc.Lib
     using Microsoft.CodeAnalysis.Emit;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using NScript.Utils;
 
     public static class CscCompiler
     {
         public static int Main(string[] args)
         {
-            var loader = new NScriptAnalyzerAssemblyLoader();
-            return DesktopBuildClient.Run(
-                args,
-                RequestLanguage.CSharpCompile,
-                Csc.Run,
-                loader);
+            // Strip NScript-specific flags (--log, --run-id) out of args before Roslyn
+            // sees them; Roslyn's CommandLineParser would reject unknown switches.
+            // Supports both space-delimited ("--log path") and colon-delimited ("--log:path") forms,
+            // matching csc conventions. Also honors NSCRIPT_LOG_PATH / NSCRIPT_LOG_RUNID env vars.
+            var strippedArgs = ExtractNScriptFlags(args, out var logPath, out var runId);
+
+            CompilerLog.Initialize(logPath, "csc", runId);
+
+            try
+            {
+                var loader = new NScriptAnalyzerAssemblyLoader();
+                return DesktopBuildClient.Run(
+                    strippedArgs,
+                    RequestLanguage.CSharpCompile,
+                    Csc.Run,
+                    loader);
+            }
+            finally
+            {
+                CompilerLog.Shutdown();
+            }
+        }
+
+        /// <summary>
+        /// Removes NScript-only switches (<c>--log</c>, <c>--run-id</c>, and their
+        /// short aliases) from the argv and returns the path and run id through out
+        /// parameters. Supports both <c>--log path</c> and <c>--log:path</c> forms.
+        /// Public for testability — downstream callers should not rely on it.
+        /// </summary>
+        public static string[] ExtractNScriptFlags(string[] args, out string logPath, out string runId)
+        {
+            logPath = null;
+            runId = null;
+            if (args == null)
+            {
+                return Array.Empty<string>();
+            }
+
+            var filtered = new List<string>(args.Length);
+            for (int i = 0; i < args.Length; i++)
+            {
+                var arg = args[i];
+                if (TryConsumeFlag(args, ref i, arg, "--log", "-log", "/log", out var pathValue))
+                {
+                    logPath = pathValue;
+                    continue;
+                }
+
+                if (TryConsumeFlag(args, ref i, arg, "--run-id", "-runid", "/runid", out var runIdValue))
+                {
+                    runId = runIdValue;
+                    continue;
+                }
+
+                filtered.Add(arg);
+            }
+
+            return filtered.ToArray();
+        }
+
+        private static bool TryConsumeFlag(
+            string[] args,
+            ref int index,
+            string current,
+            string longForm,
+            string shortForm,
+            string slashForm,
+            out string value)
+        {
+            value = null;
+            if (string.IsNullOrEmpty(current))
+            {
+                return false;
+            }
+
+            // Space-delimited: "--log" <path>
+            if (string.Equals(current, longForm, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(current, shortForm, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(current, slashForm, StringComparison.OrdinalIgnoreCase))
+            {
+                if (index + 1 < args.Length)
+                {
+                    value = args[index + 1];
+                    index++; // consume the value
+                }
+
+                return true;
+            }
+
+            // Colon- or equals-delimited: "--log:path", "--log=path"
+            if (TryParseInline(current, longForm, out value)
+                || TryParseInline(current, shortForm, out value)
+                || TryParseInline(current, slashForm, out value))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryParseInline(string current, string flagName, out string value)
+        {
+            value = null;
+            if (current.Length <= flagName.Length
+                || !current.StartsWith(flagName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var delimiter = current[flagName.Length];
+            if (delimiter != ':' && delimiter != '=')
+            {
+                return false;
+            }
+
+            value = current.Substring(flagName.Length + 1);
+            return true;
         }
     }
 

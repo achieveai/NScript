@@ -1,10 +1,11 @@
-﻿namespace NScript.Lib
+namespace NScript.Lib
 {
     using System;
     using System.Collections.Generic;
     using NScript.Converter;
     using NScript.Converter.Plugins;
     using NScript.RazorSkin;
+    using NScript.Utils;
     using XwmlParser;
 
     public static class NScriptCompiler
@@ -20,32 +21,51 @@
                 return 1;
             }
 
-            var plugins = new List<IConverterPlugin>()
+            // Opt-in: only initialize structured logging when --log is supplied
+            // (or the NSCRIPT_LOG_PATH env var is set, resolved by CompilerLog).
+            CompilerLog.Initialize(parseOptions.LogPath, "cs2jsc", parseOptions.RunId);
+
+            try
             {
-                // Razor MUST be before XWML: the first plugin returning Overwrite wins,
-                // and XWML would claim [Skin] attributes for .skin.cshtml templates
-                // then fail because it only handles .html templates.
-                new RazorTemplatingPlugin(),
-                new XwmlTemplatingPlugin(),
-                new TestGenerator()
-            };
+                var plugins = new List<IConverterPlugin>()
+                {
+                    // Razor MUST be before XWML: the first plugin returning Overwrite wins,
+                    // and XWML would claim [Skin] attributes for .skin.cshtml templates
+                    // then fail because it only handles .html templates.
+                    new RazorTemplatingPlugin(),
+                    new XwmlTemplatingPlugin(),
+                    new TestGenerator()
+                };
 
-            var builder = new Builder(
-                parseOptions.JsFileName,
-                parseOptions.JsParts,
-                parseOptions.EntryAssembly,
-                parseOptions.ReferenceDlls.ToArray(),
-                plugins.ToArray(),
-                (parseOptions.Minify, parseOptions.Uglify, parseOptions.Optimize));
+                var builder = new Builder(
+                    parseOptions.JsFileName,
+                    parseOptions.JsParts,
+                    parseOptions.EntryAssembly,
+                    parseOptions.ReferenceDlls.ToArray(),
+                    plugins.ToArray(),
+                    (parseOptions.Minify, parseOptions.Uglify, parseOptions.Optimize));
 
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+                var stopWatch = new System.Diagnostics.Stopwatch();
+                stopWatch.Start();
 
-            _ = builder.Execute();
+                _ = builder.Execute();
 
-            stopWatch.Stop();
-            System.Console.WriteLine("TimeTaken[cs2jsc]: {0}ms", stopWatch.ElapsedMilliseconds);
-            return 0;
+                stopWatch.Stop();
+                System.Console.WriteLine("TimeTaken[cs2jsc]: {0}ms", stopWatch.ElapsedMilliseconds);
+
+                if (CompilerLog.IsEnabled)
+                {
+                    CompilerLog.ForComponent("NScriptCompiler").Information(
+                        "cs2jsc total duration {ElapsedMs}ms",
+                        stopWatch.ElapsedMilliseconds);
+                }
+
+                return 0;
+            }
+            finally
+            {
+                CompilerLog.Shutdown();
+            }
         }
     }
 }

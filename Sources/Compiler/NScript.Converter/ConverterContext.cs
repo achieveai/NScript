@@ -357,6 +357,29 @@ namespace NScript.Converter
         {
             List<Tuple<Location, string>> list = isWarning ? this.warnings : this.errors;
             list.Add(Tuple.Create(location, error));
+
+            if (CompilerLog.IsEnabled)
+            {
+                var log = CompilerLog.ForComponent("Converter");
+                if (isWarning)
+                {
+                    log.Warning(
+                        "ConverterWarning {File}({Line},{Column}): {Message}",
+                        location?.FileName,
+                        location?.StartLine ?? 0,
+                        location?.StartColumn ?? 0,
+                        error);
+                }
+                else
+                {
+                    log.Error(
+                        "ConverterError {File}({Line},{Column}): {Message}",
+                        location?.FileName,
+                        location?.StartLine ?? 0,
+                        location?.StartColumn ?? 0,
+                        error);
+                }
+            }
         }
 
         /// <summary>

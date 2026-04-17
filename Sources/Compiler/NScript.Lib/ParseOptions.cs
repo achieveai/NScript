@@ -62,6 +62,16 @@ namespace NScript.Lib
         private bool optimize = false;
 
         /// <summary>
+        /// Optional structured log file path (null => logging disabled).
+        /// </summary>
+        private string logPath;
+
+        /// <summary>
+        /// Optional run id for cross-stage log correlation.
+        /// </summary>
+        private string runId;
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
         /// </summary>
         private ParseOptions()
@@ -120,6 +130,16 @@ namespace NScript.Lib
         public bool Uglify => this.uglify;
 
         public bool Optimize => this.optimize;
+
+        /// <summary>
+        /// Gets the structured log file path, or null when <c>--log</c> was not supplied.
+        /// </summary>
+        public string LogPath => this.logPath;
+
+        /// <summary>
+        /// Gets the run id for cross-stage log correlation, or null when <c>--run-id</c> was not supplied.
+        /// </summary>
+        public string RunId => this.runId;
 
         /// <summary>
         /// Parses the args.
@@ -206,6 +226,32 @@ namespace NScript.Lib
                         continue;
                     case "-optimize":
                         options.optimize = true;
+                        continue;
+                    case "-log":
+                    case "--log":
+                        option = CurrentOption.None;
+                        if (++iArg < args.Length)
+                        {
+                            options.logPath = args[iArg];
+                        }
+                        else
+                        {
+                            Logger.Instance.LogError("-log requires a path argument");
+                            return null;
+                        }
+                        continue;
+                    case "-runid":
+                    case "--run-id":
+                        option = CurrentOption.None;
+                        if (++iArg < args.Length)
+                        {
+                            options.runId = args[iArg];
+                        }
+                        else
+                        {
+                            Logger.Instance.LogError("-runid requires an id argument");
+                            return null;
+                        }
                         continue;
                     default:
                         break;
@@ -318,7 +364,7 @@ namespace NScript.Lib
         /// </summary>
         public static void PrintUsage()
         {
-            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>]");
+            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-log <jsonl path>] [-runid <id>]");
             Environment.Exit(1);
         }
 

@@ -8,6 +8,7 @@
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Symbols;
     using Microsoft.CodeAnalysis.Emit;
+    using NScript.Utils;
 
     public static class SerializationHelper
     {
@@ -85,11 +86,27 @@
                         (IMethodSymbol)((ISymbolInternal)methodSymbol).GetISymbol(),
                         methodBody);
                 }
+
+                if (CompilerLog.IsEnabled)
+                {
+                    CompilerLog.ForComponent("Csc.Serialization").Debug(
+                        "BoundBodyCaptured {Method}",
+                        methodSymbol?.ToDisplayString());
+                }
             };
 
             var astResource = new ResourceDescription(
                 "$$BstInfo$$",
-                () => ToAstStream(context, rv),
+                () =>
+                {
+                    if (CompilerLog.IsEnabled)
+                    {
+                        CompilerLog.ForComponent("Csc.Serialization").Information(
+                            "BstInfoResourceWritten MethodCount={MethodCount}",
+                            rv.Count);
+                    }
+                    return ToAstStream(context, rv);
+                },
                 true);
 
             return (new ResourceDescription[] { astResource }, rv);

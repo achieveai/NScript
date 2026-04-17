@@ -211,6 +211,47 @@ dotnet test NScript_Full.sln -c Release
 # (See "Building NuGet Packages" section above)
 ```
 
+## Structured Logging (opt-in)
+
+Both compiler stages support opt-in structured JSONL logging. When you pass
+`--log <path>` to either `csc` (Stage 1) or `cs2jsc` (Stage 2), every stage of
+the pipeline writes structured events to that single file. When the flag is
+omitted the pipeline performs no logger bootstrap and no file I/O — default
+behavior is unchanged.
+
+```bash
+# Stage 2 (cs2jsc)
+NScript -outJs app.js -references Foo.dll -entryAssembly App.dll --log build.jsonl --runid my-build-001
+
+# Stage 1 (csc)
+csc.exe Program.cs --log build.jsonl --run-id my-build-001
+```
+
+Cross-stage correlation: pass the **same** `--log` path and the **same**
+`--run-id` to both stages in a build; every event carries the `RunId` property
+so records from `csc` and `cs2jsc` can be joined on the shared timeline.
+
+Environment variable fallbacks:
+
+- `NSCRIPT_LOG_PATH` — used when `--log` is not supplied
+- `NSCRIPT_LOG_RUNID` — used when `--run-id` is not supplied
+
+Each line is a single JSON object (Serilog `CompactJsonFormatter`) with these
+standard fields:
+
+- `@t` — ISO-8601 timestamp
+- `@l` — log level (`Information`, `Warning`, `Error`, `Debug`, `Verbose`)
+- `Component` — source component (e.g. `Builder`, `Converter`, `XwmlParser`,
+  `RazorSkinParser`, `Csc.Serialization`, `NScriptCompiler`)
+- `Stage` — `csc` or `cs2jsc`
+- `RunId` — correlation id
+- `Pid`, `MachineName` — process and host identifiers
+
+See `docs/adr/0025-opt-in-structured-jsonl-logging.md` for the design
+rationale. Prior to this feature `RazorSkinParser` wrote to a hard-coded
+`logs/razor-skin-compiler.log.jsonl` file; that file is no longer produced.
+Pass `--log` (or set `NSCRIPT_LOG_PATH`) to re-enable a log stream.
+
 ## Directory Structure
 
 ```text
