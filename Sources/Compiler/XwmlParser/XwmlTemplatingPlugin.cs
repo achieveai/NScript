@@ -90,12 +90,13 @@
                 runtimeScopeManager,
                 runtimeScopeManager.Context.ClrContext);
             this.codeGenerator = new CodeGenerator(runtimeScopeManager, this.knownTemplateTypes);
+            var cssClassEntries = this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries);
             this.parserContext = new ParserContext(
                 this.knownTemplateTypes,
                 this.codeGenerator,
                 this.typeResolver,
                 this.typeResolver,
-                this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries));
+                cssClassEntries);
 
             this.parserContext.ConverterContext = runtimeScopeManager.Context;
 
@@ -103,9 +104,7 @@
             {
                 CompilerLog.ForComponent("XwmlParser").Information(
                     "XwmlParser.Initialized KnownCssClassCount={Count}",
-                    string.IsNullOrEmpty(this.knownCssClasses)
-                        ? 0
-                        : this.knownCssClasses.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Length);
+                    cssClassEntries.Length);
             }
         }
 

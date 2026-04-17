@@ -7,6 +7,7 @@
 namespace NScript.Utils
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Diagnostics;
     using System.IO;
     using Serilog;
@@ -45,6 +46,13 @@ namespace NScript.Utils
         /// </summary>
         private static readonly ILogger silentLogger =
             new LoggerConfiguration().CreateLogger();
+
+        /// <summary>
+        /// Cache of per-component enriched loggers. Cleared on <see cref="Shutdown"/>
+        /// so cached values never outlive the underlying sink.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, ILogger> componentCache =
+            new ConcurrentDictionary<string, ILogger>();
 
         private static volatile bool isEnabled;
 
@@ -145,15 +153,26 @@ namespace NScript.Utils
         /// <summary>
         /// Returns a logger enriched with the given <c>Component</c> name. When the
         /// shared logger has not been initialized, returns a silent no-op logger.
+        /// Returned loggers are cached per component name and invalidated on
+        /// <see cref="Shutdown"/> so callers may store the result without lifecycle concerns.
         /// </summary>
         public static ILogger ForComponent(string component)
         {
-            if (!isEnabled || rootLogger == null)
+            var logger = rootLogger;
+            if (!isEnabled || logger == null)
             {
                 return silentLogger;
             }
 
-            return rootLogger.ForContext("Component", component ?? "unknown");
+            var key = component ?? "unknown";
+            if (componentCache.TryGetValue(key, out var cached))
+            {
+                return cached;
+            }
+
+            var enriched = logger.ForContext("Component", key);
+            componentCache.TryAdd(key, enriched);
+            return enriched;
         }
 
         /// <summary>
@@ -177,12 +196,13 @@ namespace NScript.Utils
                 {
                     Log.CloseAndFlush();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Swallow on shutdown — nothing we can do about a logger that is already disposed.
+                    Console.Error.WriteLine($"CompilerLog: flush failed during shutdown ({ex.Message}).");
                 }
                 finally
                 {
+                    componentCache.Clear();
                     rootLogger = null;
                     resolvedLogPath = null;
                     resolvedRunId = null;

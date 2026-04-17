@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="$(CompilerSources)\NScript.Utils\NScript.Utils.csproj" />
     <ProjectReference Include="$(CompilerSources)\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
+    <ProjectReference Include="$(CompilerSources)\NScript.Lib\NScript.Lib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />

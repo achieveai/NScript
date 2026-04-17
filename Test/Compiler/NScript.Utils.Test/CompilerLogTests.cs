@@ -10,6 +10,7 @@ namespace NScript.Utils.Test
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Newtonsoft.Json.Linq;
+    using NScript.Lib;
     using NScript.Utils;
 
     /// <summary>
@@ -248,6 +249,115 @@ namespace NScript.Utils.Test
             Assert.IsNull(logPath);
             Assert.IsNull(runId);
             Assert.AreEqual(0, filtered.Length);
+        }
+    }
+
+    /// <summary>
+    /// Tests for Stage-2 (<c>ParseOptions.ParseArgs</c>) log/runid flag parsing.
+    /// Uses temp files to satisfy <c>ParseOptions</c> file-existence validation.
+    /// </summary>
+    [TestClass]
+    public class ParseOptionsLogFlagTests
+    {
+        private string tempRefDll;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            // Reset Logger so HasErrors doesn't leak between tests.
+            Logger.Instance = new Logger();
+            this.tempRefDll = Path.GetTempFileName();
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if (!string.IsNullOrEmpty(this.tempRefDll) && File.Exists(this.tempRefDll))
+            {
+                try { File.Delete(this.tempRefDll); } catch { /* best effort */ }
+            }
+        }
+
+        private string[] BaseArgs => new[]
+        {
+            "-outJs", "out.js",
+            "-entryAssembly", "fake.dll",
+            "-references", this.tempRefDll,
+        };
+
+        private string[] ArgsWithSuffix(params string[] suffix)
+        {
+            var list = new System.Collections.Generic.List<string>(this.BaseArgs);
+            list.AddRange(suffix);
+            return list.ToArray();
+        }
+
+        [TestMethod]
+        public void ParseArgs_SpaceDelimited_LogAndRunId()
+        {
+            var options = ParseOptions.ParseArgs(
+                ArgsWithSuffix("--log", "build.jsonl", "--run-id", "run-42"));
+            Assert.IsNotNull(options, "ParseArgs should succeed");
+            Assert.AreEqual("build.jsonl", options.LogPath);
+            Assert.AreEqual("run-42", options.RunId);
+        }
+
+        [TestMethod]
+        public void ParseArgs_ColonDelimited_LogAndRunId()
+        {
+            var options = ParseOptions.ParseArgs(
+                ArgsWithSuffix("--log:build.jsonl", "-runid:run-99"));
+            Assert.IsNotNull(options, "ParseArgs should succeed");
+            Assert.AreEqual("build.jsonl", options.LogPath);
+            Assert.AreEqual("run-99", options.RunId);
+        }
+
+        [TestMethod]
+        public void ParseArgs_EqualsDelimited_LogAndRunId()
+        {
+            var options = ParseOptions.ParseArgs(
+                ArgsWithSuffix("-log=my.jsonl", "--run-id=abc"));
+            Assert.IsNotNull(options, "ParseArgs should succeed");
+            Assert.AreEqual("my.jsonl", options.LogPath);
+            Assert.AreEqual("abc", options.RunId);
+        }
+
+        [TestMethod]
+        public void ParseArgs_SlashForm_LogAndRunId()
+        {
+            var options = ParseOptions.ParseArgs(
+                ArgsWithSuffix("/log", "slash.jsonl", "/runid", "slash-run"));
+            Assert.IsNotNull(options, "ParseArgs should succeed");
+            Assert.AreEqual("slash.jsonl", options.LogPath);
+            Assert.AreEqual("slash-run", options.RunId);
+        }
+
+        [TestMethod]
+        public void ParseArgs_LogAsLastArg_GracefulNoAbort()
+        {
+            // --log with no value should not abort; logPath stays null.
+            var options = ParseOptions.ParseArgs(
+                ArgsWithSuffix("--log"));
+            Assert.IsNotNull(options, "ParseArgs should not abort when --log has no value");
+            Assert.IsNull(options.LogPath);
+        }
+
+        [TestMethod]
+        public void ParseArgs_RunIdAsLastArg_GracefulNoAbort()
+        {
+            var options = ParseOptions.ParseArgs(
+                ArgsWithSuffix("--run-id"));
+            Assert.IsNotNull(options, "ParseArgs should not abort when --run-id has no value");
+            Assert.IsNull(options.RunId);
+        }
+
+        [TestMethod]
+        public void ParseArgs_NoLogFlags_PathAndRunIdAreNull()
+        {
+            var options = ParseOptions.ParseArgs(this.BaseArgs);
+            Assert.IsNotNull(options, "ParseArgs should succeed");
+            Assert.IsNull(options.LogPath);
+            Assert.IsNull(options.RunId);
         }
     }
 }
