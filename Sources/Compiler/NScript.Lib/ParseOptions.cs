@@ -62,6 +62,16 @@ namespace NScript.Lib
         private bool optimize = false;
 
         /// <summary>
+        /// Optional structured log file path (null => logging disabled).
+        /// </summary>
+        private string logPath;
+
+        /// <summary>
+        /// Optional run id for cross-stage log correlation.
+        /// </summary>
+        private string runId;
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
         /// </summary>
         private ParseOptions()
@@ -122,6 +132,16 @@ namespace NScript.Lib
         public bool Optimize => this.optimize;
 
         /// <summary>
+        /// Gets the structured log file path, or null when <c>--log</c> was not supplied.
+        /// </summary>
+        public string LogPath => this.logPath;
+
+        /// <summary>
+        /// Gets the run id for cross-stage log correlation, or null when <c>--run-id</c> was not supplied.
+        /// </summary>
+        public string RunId => this.runId;
+
+        /// <summary>
         /// Parses the args.
         /// </summary>
         /// <param name="args">The args.</param>
@@ -139,7 +159,25 @@ namespace NScript.Lib
 
             for (int iArg = 0; iArg < args.Length; iArg++)
             {
-                switch (args[iArg].ToLowerInvariant())
+                var argLower = args[iArg].ToLowerInvariant();
+
+                // Handle inline-delimited log/runid flags: --log:path, /log=path, etc.
+                // This mirrors Stage 1 (Csc.cs) colon/equals support.
+                if (TryExtractInlineValue(argLower, args[iArg],
+                    new[] { "--log", "-log", "/log" }, out var inlineLogPath))
+                {
+                    options.logPath = inlineLogPath;
+                    continue;
+                }
+
+                if (TryExtractInlineValue(argLower, args[iArg],
+                    new[] { "--run-id", "-runid", "/runid" }, out var inlineRunId))
+                {
+                    options.runId = inlineRunId;
+                    continue;
+                }
+
+                switch (argLower)
                 {
                     case "-outjs":
                         option = CurrentOption.None;
@@ -206,6 +244,30 @@ namespace NScript.Lib
                         continue;
                     case "-optimize":
                         options.optimize = true;
+                        continue;
+                    case "-log":
+                    case "--log":
+                    case "/log":
+                        option = CurrentOption.None;
+                        if (iArg + 1 < args.Length)
+                        {
+                            iArg++;
+                            options.logPath = args[iArg];
+                        }
+
+                        // No value provided — logging stays disabled (matches Stage 1).
+                        continue;
+                    case "-runid":
+                    case "--run-id":
+                    case "/runid":
+                        option = CurrentOption.None;
+                        if (iArg + 1 < args.Length)
+                        {
+                            iArg++;
+                            options.runId = args[iArg];
+                        }
+
+                        // No value provided — a GUID is generated at init (matches Stage 1).
                         continue;
                     default:
                         break;
@@ -318,8 +380,37 @@ namespace NScript.Lib
         /// </summary>
         public static void PrintUsage()
         {
-            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>]");
+            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-log <jsonl path>] [-runid <id>]");
             Environment.Exit(1);
+        }
+
+        /// <summary>
+        /// Tries to extract an inline value from an arg like <c>--log:path</c> or <c>--log=path</c>.
+        /// </summary>
+        /// <param name="argLower">The arg lowercased.</param>
+        /// <param name="originalArg">The original arg (preserves case for the value).</param>
+        /// <param name="prefixes">Lowercase flag prefixes to match (e.g. "--log", "-log", "/log").</param>
+        /// <param name="value">The extracted value, or null.</param>
+        /// <returns>True if an inline-delimited match was found.</returns>
+        internal static bool TryExtractInlineValue(
+            string argLower,
+            string originalArg,
+            string[] prefixes,
+            out string value)
+        {
+            value = null;
+            foreach (var prefix in prefixes)
+            {
+                if (argLower.Length > prefix.Length
+                    && argLower.StartsWith(prefix, StringComparison.Ordinal)
+                    && (argLower[prefix.Length] == ':' || argLower[prefix.Length] == '='))
+                {
+                    value = originalArg.Substring(prefix.Length + 1);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

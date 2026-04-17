@@ -122,6 +122,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mscorlib", "mscorlib", "{15
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoApp.Test", "Test\Framework\TodoApp.Test\TodoApp.Test.csproj", "{7560273A-C5D9-476B-B984-B8968CEAB353}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NScript.Utils.Test", "Test\Compiler\NScript.Utils.Test\NScript.Utils.Test.csproj", "{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -588,6 +590,18 @@ Global
 		{7560273A-C5D9-476B-B984-B8968CEAB353}.Release|x86.Build.0 = Release|Any CPU
 		{7560273A-C5D9-476B-B984-B8968CEAB353}.Release|x64.ActiveCfg = Release|Any CPU
 		{7560273A-C5D9-476B-B984-B8968CEAB353}.Release|x64.Build.0 = Release|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Debug|x86.Build.0 = Debug|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Debug|x64.Build.0 = Debug|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Release|x86.ActiveCfg = Release|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Release|x86.Build.0 = Release|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Release|x64.ActiveCfg = Release|Any CPU
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -638,6 +652,7 @@ Global
 		{533DC821-2D4A-4DC2-B99D-4677DCFE9EA1} = {83E63E0D-A2F7-6880-9B65-A58BDBC8FCDE}
 		{15C1B9CC-9023-6FFC-7B44-DDC839BB22D3} = {E2815404-3C9B-4873-AAA1-696B75755BDF}
 		{7560273A-C5D9-476B-B984-B8968CEAB353} = {83E63E0D-A2F7-6880-9B65-A58BDBC8FCDE}
+		{39C46A80-E00B-481C-B1E4-1A28FE0AD66E} = {C3E4332C-8AEF-4CE7-B1CF-030E7A42342C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {583A0EE8-123E-4527-835C-EF2149A86292}

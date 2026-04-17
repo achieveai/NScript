@@ -93,11 +93,17 @@ namespace NScript.Converter
         /// </returns>
         public bool Execute()
         {
+            var log = CompilerLog.ForComponent("Builder");
+            var totalSw = System.Diagnostics.Stopwatch.StartNew();
+            log.Information("Builder.Start {MainAssembly} {ReferenceCount}", this.mainAssembly, this.references?.Length ?? 0);
+
             if (!this.VerifyPaths())
             {
+                log.Warning("Builder.VerifyPaths failed");
                 return false;
             }
 
+            var loadSw = System.Diagnostics.Stopwatch.StartNew();
             ClrContext clrContext = new ClrContext();
             foreach (var reference in references)
             {
@@ -105,6 +111,8 @@ namespace NScript.Converter
             }
 
             clrContext.LoadAssembly(this.mainAssembly);
+            loadSw.Stop();
+            log.Information("LoadAssemblies completed in {ElapsedMs}ms", loadSw.ElapsedMilliseconds);
 
             RuntimeScopeManager runtimeManager;
             ConverterContext converterContext;
@@ -221,11 +229,13 @@ namespace NScript.Converter
                     scriptGenerateSettings.minify);
                 stopWatch.Stop();
                 System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
+                log.Information("RootScopeNaming completed in {ElapsedMs}ms", stopWatch.ElapsedMilliseconds);
                 stopWatch.Restart();
                 IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
                     runtimeManager.JSBaseObjectScopeManager.InstanceScope,
                     scriptGenerateSettings.minify);
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
+                log.Information("InstanceScopeNaming completed in {ElapsedMs}ms", stopWatch.ElapsedMilliseconds);
 
                 var writer = new JSWriter(true, scriptGenerateSettings.uglify);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
@@ -247,6 +257,7 @@ namespace NScript.Converter
                     string.Format(
                         "SrcMapper.ashx?js={0}&fname=",
                         Path.GetFileName(this.jsScript)));
+                log.Information("JSWriter.End {JsScript}", this.jsScript);
             }
             catch(ConverterLocationException ex)
             {
@@ -307,6 +318,13 @@ namespace NScript.Converter
                             warning.Item2));
                 }
             }
+
+            totalSw.Stop();
+            log.Information(
+                "Builder.End {ElapsedMs}ms Warnings={WarningCount} Errors={ErrorCount}",
+                totalSw.ElapsedMilliseconds,
+                converterContext.Warnings.Count,
+                converterContext.Errors.Count);
 
             return true;
         }

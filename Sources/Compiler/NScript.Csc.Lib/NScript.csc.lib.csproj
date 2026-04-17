@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\JsCsc.Lib\JsCsc.Lib.csproj" />
     <ProjectReference Include="..\NScript.CLR\NScript.CLR.csproj" />
+    <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

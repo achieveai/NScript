@@ -90,14 +90,22 @@
                 runtimeScopeManager,
                 runtimeScopeManager.Context.ClrContext);
             this.codeGenerator = new CodeGenerator(runtimeScopeManager, this.knownTemplateTypes);
+            var cssClassEntries = this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries);
             this.parserContext = new ParserContext(
                 this.knownTemplateTypes,
                 this.codeGenerator,
                 this.typeResolver,
                 this.typeResolver,
-                this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries));
+                cssClassEntries);
 
             this.parserContext.ConverterContext = runtimeScopeManager.Context;
+
+            if (CompilerLog.IsEnabled)
+            {
+                CompilerLog.ForComponent("XwmlParser").Information(
+                    "XwmlParser.Initialized KnownCssClassCount={Count}",
+                    cssClassEntries.Length);
+            }
         }
 
         public void ParseArgs(IList<Tuple<string, string>> args)
@@ -140,6 +148,12 @@
                 .CustomAttributes.SelectAttribute(knownTemplateTypes.SkinAttribute);
 
             var templateName = attr.ConstructorArguments[0].Value as string;
+
+            if (CompilerLog.IsEnabled)
+            {
+                CompilerLog.ForComponent("XwmlParser").Information(
+                    "XwmlParser.Template {TemplateName}", templateName);
+            }
 
             try
             {
