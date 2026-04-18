@@ -346,6 +346,19 @@ namespace NScript.JST
         }
 
         /// <summary>
+        /// Writes javascript to the given writer and returns the generated source map in-memory.
+        /// Intended as a test seam so callers can inspect mappings without serializing to disk.
+        /// </summary>
+        /// <param name="writer">     The writer that receives the generated JavaScript. </param>
+        /// <param name="jsFileName"> Filename that will be recorded in the source map's "file"
+        ///     field (pass null to disable map generation and get a minimal empty map). </param>
+        /// <returns> The populated <see cref="OwaSourceMapper.SourceMap"/>. Never null. </returns>
+        public OwaSourceMapper.SourceMap WriteWithMap(TextWriter writer, string jsFileName)
+        {
+            return this.Write(writer, jsFileName, null, outputMap: false);
+        }
+
+        /// <summary>
         /// Writes javascript to given writer with mapping file generated using jsFileName, sourceRoot
         /// and mapFileName.
         /// </summary>
@@ -355,7 +368,7 @@ namespace NScript.JST
         /// <param name="jsFileName">  Filename of the js file. </param>
         /// <param name="sourceRoot">  Source root. </param>
         /// <param name="mapFileName"> Filename of the map file. </param>
-        private void Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap)
+        private OwaSourceMapper.SourceMap Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap)
         {
             this.ArrangeSpaces();
 
@@ -512,6 +525,8 @@ namespace NScript.JST
             {
                 sourceMapping.Write(outputDirectory);
             }
+
+            return sourceMapping;
         }
 
         /// <summary>

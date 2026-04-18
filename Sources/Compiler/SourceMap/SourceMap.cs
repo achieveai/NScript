@@ -80,13 +80,19 @@ namespace OwaSourceMapper
         }
 
         /// <summary>
-        /// Converts a previousMapping to a string relative.
+        /// Converts this mapping to its V3 source map segment representation, encoded relative
+        /// to the prior mapping state.
         /// </summary>
-        /// <param name="previousMapping"> The previous mapping. </param>
+        /// <param name="previousMapping"> The previous mapping (used for source column, file index,
+        ///     target line, target column deltas). </param>
+        /// <param name="previousNameIndex"> The last emitted source name index — used to encode
+        ///     this mapping's name index relative to it per V3 spec. Starts at 0 and only advances
+        ///     when a name is actually written. </param>
+        /// <param name="firstSegment"> True when this is the first segment on a line. </param>
         /// <returns>
-        /// previousMapping as a string.
+        /// The Base64 VLQ-encoded segment string.
         /// </returns>
-        public string ToStringRelative(SourceMapping previousMapping, bool firstSegment)
+        public string ToStringRelative(SourceMapping previousMapping, int previousNameIndex, bool firstSegment)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(
@@ -103,7 +109,7 @@ namespace OwaSourceMapper
 
                 if (this.SourceNameIndex != -1)
                 {
-                    sb.Append(Base64VLQ.ConvertToBase64VLQ(this.SourceNameIndex));
+                    sb.Append(Base64VLQ.ConvertToBase64VLQ(this.SourceNameIndex - previousNameIndex));
                 }
             }
 
@@ -220,6 +226,11 @@ namespace OwaSourceMapper
             if (name != null)
             {
                 sNameIndex = this.names.IndexOf(name);
+                if (sNameIndex == -1)
+                {
+                    this.names.Add(name);
+                    sNameIndex = this.names.Count - 1;
+                }
             }
 
             SourceMapping mapping = new SourceMapping(
@@ -260,7 +271,14 @@ namespace OwaSourceMapper
                 sb.Append("\t\"file\": \"" + this.File + "\",\n");
             }
 
-            sb.Append("\t\"sourceRoot\": \"" + Path.GetFileNameWithoutExtension(this.File) + ".ashx\",\n");
+            // Prefer explicitly configured SourceRoot (e.g. repo URL, custom handler path);
+            // fall back to the legacy "{file}.ashx" default for backward compatibility with
+            // deployments that still use the bundled SrcMapper.ashx handler.
+            string sourceRoot = this.SourceRoot
+                ?? (this.File != null
+                    ? Path.GetFileNameWithoutExtension(this.File) + ".ashx"
+                    : string.Empty);
+            sb.Append("\t\"sourceRoot\": \"" + sourceRoot + "\",\n");
 
             if (this.files.Count > 0)
             {
@@ -290,8 +308,12 @@ namespace OwaSourceMapper
             }
             
             sb.Append("\t\"mappings\": \"");
-            
+
             SourceMapping previousMapping = SourceMapping.DefaultMapping;
+            // Per V3 spec, name indices are encoded relative to the LAST EMITTED name index
+            // (not the previous mapping's name field) and start at 0. Tracking this separately
+            // prevents mappings without names from poisoning the delta baseline.
+            int previousNameIndex = 0;
 
             int currentSourceLine = 0;
             bool firstSegment = true;
@@ -314,11 +336,15 @@ namespace OwaSourceMapper
                     firstSegment = false;
                 }
 
-                mappingSb.Append(mapping.ToStringRelative(previousMapping, firstSegment));
+                mappingSb.Append(mapping.ToStringRelative(previousMapping, previousNameIndex, firstSegment));
                 currentSourceLine = mapping.SourceLine;
                 if (mapping.SourceFileIndex >= 0)
                 {
                     previousMapping = mapping;
+                    if (mapping.SourceNameIndex >= 0)
+                    {
+                        previousNameIndex = mapping.SourceNameIndex;
+                    }
                 }
             }
 
