@@ -122,27 +122,102 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// Strong regression test for the V3 name-index delta encoding — uses three
+        /// distinct names so the third name's delta (1) differs from its absolute
+        /// index (2). Under the old buggy encoding that emitted absolute indices this
+        /// test would fail on the third segment.
+        /// </summary>
+        [TestMethod]
+        public void ToString_ThreeDistinctNames_ThirdEncodedRelativeToSecond()
+        {
+            var map = new SourceMap { File = "out.js" };
+            map.AddMapping(0, 0, 0, 0, "Program.cs", name: "alpha");  // index 0
+            map.AddMapping(0, 1, 0, 5, "Program.cs", name: "beta");   // index 1
+            map.AddMapping(0, 2, 0, 10, "Program.cs", name: "gamma"); // index 2
+
+            var segments = DecodeFirstLineSegments(ExtractMappingsField(map.ToString()));
+
+            Assert.AreEqual(3, segments.Count, "Expected three segments on the first line");
+            Assert.AreEqual(0, segments[0][4], "alpha: delta from 0 = 0");
+            Assert.AreEqual(1, segments[1][4], "beta: delta from 0 = 1");
+            Assert.AreEqual(1, segments[2][4], "gamma: delta from beta(1) = 1, NOT absolute 2");
+        }
+
+        /// <summary>
         /// When a mapping has no name, subsequent name-bearing mappings must still be
         /// encoded relative to the last emitted name index — NOT poisoned by the
-        /// nameless mapping in between.
+        /// nameless mapping in between. Uses three named mappings so the final delta
+        /// (1) differs from the absolute index (2), making the test fail under the
+        /// old buggy encoding.
         /// </summary>
         [TestMethod]
         public void ToString_NamelessMappingBetween_DoesNotPoisonNameIndexBaseline()
         {
             var map = new SourceMap { File = "out.js" };
-            map.AddMapping(0, 0, 0, 0, "Program.cs", name: "alpha");
-            map.AddMapping(0, 1, 0, 5, "Program.cs");
-            map.AddMapping(0, 2, 0, 10, "Program.cs", name: "beta");
+            map.AddMapping(0, 0, 0, 0, "Program.cs", name: "alpha");   // name index 0
+            map.AddMapping(0, 1, 0, 5, "Program.cs", name: "beta");    // name index 1
+            map.AddMapping(0, 2, 0, 10, "Program.cs");                 // nameless
+            map.AddMapping(0, 3, 0, 15, "Program.cs", name: "gamma");  // name index 2
 
             string json = map.ToString();
             string mappings = ExtractMappingsField(json);
             var segments = DecodeFirstLineSegments(mappings);
 
-            Assert.AreEqual(3, segments.Count);
+            Assert.AreEqual(4, segments.Count);
             Assert.AreEqual(5, segments[0].Count, "Named segment must emit 5 fields (last is name index)");
-            Assert.AreEqual(4, segments[1].Count, "Nameless middle segment must NOT emit a name field");
-            Assert.AreEqual(5, segments[2].Count, "Named segment must emit 5 fields");
-            Assert.AreEqual(1, segments[2][4], "Name index for 'beta' must be 1 (relative to 'alpha'=0)");
+            Assert.AreEqual(5, segments[1].Count, "Named segment must emit 5 fields");
+            Assert.AreEqual(4, segments[2].Count, "Nameless middle segment must NOT emit a name field");
+            Assert.AreEqual(5, segments[3].Count, "Named segment must emit 5 fields");
+            Assert.AreEqual(0, segments[0][4], "alpha: delta from 0 = 0");
+            Assert.AreEqual(1, segments[1][4], "beta: delta from 0 = 1");
+            Assert.AreEqual(
+                1,
+                segments[3][4],
+                "gamma: delta from last emitted name index (beta=1) = 1, NOT absolute 2. "
+                + "Nameless segment must not poison the baseline.");
+        }
+
+        /// <summary>
+        /// When the same name is added twice, the <c>names</c> array must contain a
+        /// single entry and both mappings must reference the same name index.
+        /// </summary>
+        [TestMethod]
+        public void AddMapping_DuplicateName_ReusesSingleNamesEntry()
+        {
+            var map = new SourceMap { File = "out.js" };
+            map.AddMapping(0, 0, 0, 0, "Program.cs", name: "shared");
+            map.AddMapping(0, 1, 0, 5, "Program.cs", name: "shared");
+
+            string json = map.ToString();
+
+            StringAssert.Contains(json, "\"names\": [\"shared\"]");
+            Assert.IsFalse(
+                json.Contains("\"shared\", \"shared\""),
+                "Duplicate name must not be appended a second time to the names array");
+
+            var segments = DecodeFirstLineSegments(ExtractMappingsField(json));
+            Assert.AreEqual(2, segments.Count);
+            Assert.AreEqual(0, segments[0][4], "First occurrence: delta from 0 = 0");
+            Assert.AreEqual(
+                0,
+                segments[1][4],
+                "Second occurrence of the same name must reuse the existing index (delta = 0)");
+        }
+
+        /// <summary>
+        /// When neither <see cref="SourceMap.File"/> nor <see cref="SourceMap.SourceRoot"/>
+        /// is set, the emitted <c>sourceRoot</c> must fall back to <see cref="string.Empty"/>
+        /// rather than producing a broken <c>.ashx</c> reference or throwing.
+        /// </summary>
+        [TestMethod]
+        public void ToString_NoFileAndNoSourceRoot_FallsBackToEmptyString()
+        {
+            var map = new SourceMap();
+
+            string json = map.ToString();
+
+            StringAssert.Contains(json, "\"sourceRoot\": \"\"");
+            Assert.IsFalse(json.Contains(".ashx"), "Without a File there is nothing to base a .ashx fallback on");
         }
 
         private static string ExtractMappingsField(string json)

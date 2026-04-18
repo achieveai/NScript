@@ -333,7 +333,8 @@ namespace NScript.JST
                 streamWriter,
                 Path.GetFileName(jsFileName),
                 Path.GetDirectoryName(jsFileName),
-                true);
+                true,
+                sourceRoot);
         }
 
         /// <summary>
@@ -342,7 +343,7 @@ namespace NScript.JST
         /// <param name="writer"> The TextWriter to write. </param>
         public void Write(TextWriter writer)
         {
-            this.Write(writer, null, null, false);
+            this.Write(writer, null, null, false, null);
         }
 
         /// <summary>
@@ -355,20 +356,25 @@ namespace NScript.JST
         /// <returns> The populated <see cref="OwaSourceMapper.SourceMap"/>. Never null. </returns>
         public OwaSourceMapper.SourceMap WriteWithMap(TextWriter writer, string jsFileName)
         {
-            return this.Write(writer, jsFileName, null, outputMap: false);
+            return this.Write(writer, jsFileName, null, outputMap: false, sourceRoot: null);
         }
 
         /// <summary>
-        /// Writes javascript to given writer with mapping file generated using jsFileName, sourceRoot
-        /// and mapFileName.
+        /// Writes javascript to the given writer and optionally emits a source map file
+        /// alongside the generated JavaScript.
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException"> Thrown when one or more arguments are outside
-        ///     the required range. </exception>
-        /// <param name="writer">      The writer. </param>
-        /// <param name="jsFileName">  Filename of the js file. </param>
-        /// <param name="sourceRoot">  Source root. </param>
-        /// <param name="mapFileName"> Filename of the map file. </param>
-        private OwaSourceMapper.SourceMap Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap)
+        /// <param name="writer">          The writer that receives the generated JavaScript. </param>
+        /// <param name="jsFileName">      Filename recorded in the source map's <c>file</c>
+        ///     field (pass null to skip map metadata). </param>
+        /// <param name="outputDirectory"> Directory into which the <c>.map</c> file is written
+        ///     when <paramref name="outputMap"/> is true. May be null when no file output is
+        ///     requested. </param>
+        /// <param name="outputMap">       When true, serializes the source map to
+        ///     <c>{outputDirectory}/{jsFileName}.map</c>. </param>
+        /// <param name="sourceRoot">      When non-null/non-empty, sets the <c>sourceRoot</c>
+        ///     field of the emitted map, overriding the legacy <c>{file}.ashx</c> fallback. </param>
+        /// <returns> The populated <see cref="OwaSourceMapper.SourceMap"/>. Never null. </returns>
+        private OwaSourceMapper.SourceMap Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap, string sourceRoot)
         {
             this.ArrangeSpaces();
 
@@ -380,6 +386,11 @@ namespace NScript.JST
             if (jsFileName != null)
             {
                 sourceMapping.File = jsFileName;
+            }
+
+            if (!string.IsNullOrEmpty(sourceRoot))
+            {
+                sourceMapping.SourceRoot = sourceRoot;
             }
 
             sourceMapping.AddMapping(

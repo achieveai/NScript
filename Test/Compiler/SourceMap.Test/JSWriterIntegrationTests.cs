@@ -157,11 +157,18 @@ namespace OwaSourceMapper.Test
                 {
                     srcStart += sourcesLongMarker.Length;
                     int srcEnd = json.IndexOf("\"]", srcStart, System.StringComparison.Ordinal);
+                    Assert.IsTrue(
+                        srcEnd > srcStart,
+                        "sourcesLong array was not terminated with '\"]' — source-map JSON format may have changed.");
                     string inside = json.Substring(srcStart, srcEnd - srcStart);
                     foreach (string s in inside.Split(new[] { "\",\n\t\t\"" }, System.StringSplitOptions.None))
                     {
                         result.Sources.Add(s);
                     }
+
+                    Assert.IsTrue(
+                        result.Sources.Count > 0,
+                        "sourcesLong marker was present but no source entries were parsed.");
                 }
 
                 // Extract the mappings field.
@@ -170,6 +177,9 @@ namespace OwaSourceMapper.Test
                 if (mapStart < 0) return result;
                 mapStart += mappingsMarker.Length;
                 int mapEnd = json.IndexOf('"', mapStart);
+                Assert.IsTrue(
+                    mapEnd > mapStart,
+                    "mappings field was not terminated — source-map JSON format may have changed.");
                 string mappings = json.Substring(mapStart, mapEnd - mapStart);
 
                 // Decode lines separated by ';'.
