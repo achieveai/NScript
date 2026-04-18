@@ -95,24 +95,17 @@ namespace Sunlight.Framework
                 sb.Append("}");
             }
 
-            // CallContext correlation block — emitted as a single group so the
-            // server can cleanly branch on its presence.
+            // Correlation fields are owned by CallContext itself so that
+            // adding/removing a field is a one-place change — this sink and
+            // any future ones (e.g. WebSocket) stay automatically in sync.
+            // Wrapped in a lambda (not passed as a method group) because
+            // JsonEscape is a [Script]-bodied extern and NScript's C#-to-JS
+            // converter is not guaranteed to synthesize a delegate for such
+            // methods safely.
             var ctx = evt.Context;
             if (ctx != null)
             {
-                sb.Append(",\"actionId\":");
-                sb.Append(ctx.ActionId.ToString());
-                sb.Append(",\"traceId\":");
-                sb.Append(LogJsonBuilder.JsonEscape(ctx.TraceId));
-                sb.Append(",\"spanId\":");
-                sb.Append(LogJsonBuilder.JsonEscape(ctx.SpanId));
-                if (ctx.ParentSpanId != null)
-                {
-                    sb.Append(",\"parentSpanId\":");
-                    sb.Append(LogJsonBuilder.JsonEscape(ctx.ParentSpanId));
-                }
-                sb.Append(",\"depth\":");
-                sb.Append(ctx.Depth.ToString());
+                ctx.AppendCorrelationJson(sb, s => LogJsonBuilder.JsonEscape(s));
             }
 
             sb.Append("}");

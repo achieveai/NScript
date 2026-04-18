@@ -124,6 +124,39 @@ namespace Sunlight.Framework
         }
 
         /// <summary>
+        /// Append this context's correlation fields — <c>actionId</c>,
+        /// <c>traceId</c>, <c>spanId</c>, <c>parentSpanId</c> (when non-null),
+        /// <c>depth</c> — to a JSON object currently being assembled in
+        /// <paramref name="sb"/>. The builder assumes a preceding key/value
+        /// has already been written and prefixes each field with a comma.
+        /// </summary>
+        /// <remarks>
+        /// Owning the correlation serialization contract here keeps
+        /// <see cref="LogJsonBuilder"/> and future sinks (e.g. WebSocket)
+        /// decoupled from the set of fields — adding a new correlation field
+        /// is a one-place change instead of a multi-sink sweep.
+        /// <paramref name="escape"/> is passed in because this type lives in
+        /// <c>Sunlight.Framework</c> and must not take a dependency on the
+        /// internal <see cref="LogJsonBuilder"/> JS-escape bridge.
+        /// </remarks>
+        public void AppendCorrelationJson(StringBuilder sb, Func<string, string> escape)
+        {
+            sb.Append(",\"actionId\":");
+            sb.Append(this.ActionId.ToString());
+            sb.Append(",\"traceId\":");
+            sb.Append(escape(this.TraceId));
+            sb.Append(",\"spanId\":");
+            sb.Append(escape(this.SpanId));
+            if (this.ParentSpanId != null)
+            {
+                sb.Append(",\"parentSpanId\":");
+                sb.Append(escape(this.ParentSpanId));
+            }
+            sb.Append(",\"depth\":");
+            sb.Append(this.Depth.ToString());
+        }
+
+        /// <summary>
         /// Compiler-inserted wrapper for external async calls: captures context
         /// before await, restores it when the promise resolves or rejects.
         /// Handles both Promise and Promise&lt;T&gt; (same type at JS runtime).

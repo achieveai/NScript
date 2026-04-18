@@ -33,58 +33,93 @@ namespace Sunlight.Framework
             get { return this.category; }
         }
 
+        // Each level applies the MinLevel gate *before* DispatchInternal so
+        // filtered call sites don't pay the function-call overhead — matching
+        // the static facade on Logger.* (see Logger.Info/Warn/Error). The check
+        // inside DispatchInternal is a defensive backstop, not the primary gate.
+
         [Conditional("DEBUG")]
         public void Trace(string message)
         {
-            Logger.DispatchInternal(LogLevel.Trace, this.category, message, null);
+            if (Logger.MinLevel <= LogLevel.Trace)
+            {
+                Logger.DispatchInternal(LogLevel.Trace, this.category, message, null);
+            }
         }
 
         [Conditional("DEBUG")]
         public void Trace(string message, string[] properties)
         {
-            Logger.DispatchInternal(LogLevel.Trace, this.category, message, properties);
+            if (Logger.MinLevel <= LogLevel.Trace)
+            {
+                Logger.DispatchInternal(LogLevel.Trace, this.category, message, properties);
+            }
         }
 
         [Conditional("DEBUG")]
         public void Debug(string message)
         {
-            Logger.DispatchInternal(LogLevel.Debug, this.category, message, null);
+            if (Logger.MinLevel <= LogLevel.Debug)
+            {
+                Logger.DispatchInternal(LogLevel.Debug, this.category, message, null);
+            }
         }
 
         [Conditional("DEBUG")]
         public void Debug(string message, string[] properties)
         {
-            Logger.DispatchInternal(LogLevel.Debug, this.category, message, properties);
+            if (Logger.MinLevel <= LogLevel.Debug)
+            {
+                Logger.DispatchInternal(LogLevel.Debug, this.category, message, properties);
+            }
         }
 
         public void Info(string message)
         {
-            Logger.DispatchInternal(LogLevel.Info, this.category, message, null);
+            if (Logger.MinLevel <= LogLevel.Info)
+            {
+                Logger.DispatchInternal(LogLevel.Info, this.category, message, null);
+            }
         }
 
         public void Info(string message, string[] properties)
         {
-            Logger.DispatchInternal(LogLevel.Info, this.category, message, properties);
+            if (Logger.MinLevel <= LogLevel.Info)
+            {
+                Logger.DispatchInternal(LogLevel.Info, this.category, message, properties);
+            }
         }
 
         public void Warn(string message)
         {
-            Logger.DispatchInternal(LogLevel.Warn, this.category, message, null);
+            if (Logger.MinLevel <= LogLevel.Warn)
+            {
+                Logger.DispatchInternal(LogLevel.Warn, this.category, message, null);
+            }
         }
 
         public void Warn(string message, string[] properties)
         {
-            Logger.DispatchInternal(LogLevel.Warn, this.category, message, properties);
+            if (Logger.MinLevel <= LogLevel.Warn)
+            {
+                Logger.DispatchInternal(LogLevel.Warn, this.category, message, properties);
+            }
         }
 
         public void Error(string message)
         {
-            Logger.DispatchInternal(LogLevel.Error, this.category, message, null);
+            if (Logger.MinLevel <= LogLevel.Error)
+            {
+                Logger.DispatchInternal(LogLevel.Error, this.category, message, null);
+            }
         }
 
         public void Error(string message, string[] properties)
         {
-            Logger.DispatchInternal(LogLevel.Error, this.category, message, properties);
+            if (Logger.MinLevel <= LogLevel.Error)
+            {
+                Logger.DispatchInternal(LogLevel.Error, this.category, message, properties);
+            }
         }
     }
 }

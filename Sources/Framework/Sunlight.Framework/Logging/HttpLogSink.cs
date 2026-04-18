@@ -38,6 +38,8 @@ namespace Sunlight.Framework
         private readonly int maxQueueSize;
         private readonly IWindowTimer timer;
 
+        private readonly Action<string, string> transportOverride;
+
         private List<LogEvent> queue;
         private int droppedCount;
         private int timerHandle;
@@ -51,6 +53,24 @@ namespace Sunlight.Framework
             int flushIntervalMs,
             int maxQueueSize,
             IWindowTimer timer)
+            : this(endpoint, batchSize, flushIntervalMs, maxQueueSize, timer, null)
+        {
+        }
+
+        /// <summary>
+        /// Test-only constructor: <paramref name="transportOverride"/> replaces
+        /// both the XHR POST and <c>sendBeacon</c> paths, so unit tests can
+        /// capture the serialized envelope without touching the network. When
+        /// <paramref name="transportOverride"/> is <c>null</c> the production
+        /// transports are used.
+        /// </summary>
+        internal HttpLogSink(
+            string endpoint,
+            int batchSize,
+            int flushIntervalMs,
+            int maxQueueSize,
+            IWindowTimer timer,
+            Action<string, string> transportOverride)
         {
             if (endpoint == null) { throw new ArgumentNullException("endpoint"); }
             if (timer == null) { throw new ArgumentNullException("timer"); }
@@ -60,6 +80,7 @@ namespace Sunlight.Framework
             this.flushIntervalMs = flushIntervalMs;
             this.maxQueueSize = maxQueueSize;
             this.timer = timer;
+            this.transportOverride = transportOverride;
 
             this.queue = new List<LogEvent>();
             this.droppedCount = 0;
@@ -77,13 +98,24 @@ namespace Sunlight.Framework
         {
             if (this.detached) { return; }
 
-            // Overflow: drop oldest events, count the drops. We bias toward
-            // keeping the *most recent* entries because those are usually what
-            // the developer wants to see when triaging a crash.
-            while (this.queue.Count >= this.maxQueueSize)
+            // Overflow: drop the oldest events in one pass, count the drops.
+            // We bias toward keeping the *most recent* entries because those
+            // are usually what the developer wants to see when triaging a
+            // crash. A previous implementation used List<T>.RemoveAt(0) in a
+            // loop, which is O(n) per drop (Array.splice(0,1) shifts every
+            // remaining element); with maxQueueSize=500 under sustained
+            // overflow that compounds badly. Rebuilding the tail into a new
+            // list is a single O(n) pass instead.
+            if (this.queue.Count >= this.maxQueueSize)
             {
-                this.queue.RemoveAt(0);
-                this.droppedCount++;
+                int excess = this.queue.Count - this.maxQueueSize + 1;
+                this.droppedCount += excess;
+                var trimmed = new List<LogEvent>();
+                for (int i = excess; i < this.queue.Count; i++)
+                {
+                    trimmed.Add(this.queue[i]);
+                }
+                this.queue = trimmed;
             }
 
             this.queue.Add(evt);
@@ -105,14 +137,16 @@ namespace Sunlight.Framework
             this.flushing = true;
             try
             {
+                // Single protection boundary covering BOTH payload construction
+                // and transport. LogJsonBuilder.BuildEnvelope (called via
+                // ExtractBatchAsPayload) can throw on JSON serialization
+                // failure; the outer timer/unload callers cannot meaningfully
+                // react to any failure here. Lost batches are the documented
+                // fire-and-forget contract.
                 string payload = this.ExtractBatchAsPayload();
-                // Transport failures must not escape — callers include the
-                // timer tick and page-unload handler, neither of which can
-                // meaningfully react to a network error. Lost batches are the
-                // documented fire-and-forget contract.
-                try { HttpLogSink.PostPayload(this.endpoint, payload); }
-                catch { /* fire-and-forget transport */ }
+                this.SendPayload(payload, false);
             }
+            catch { /* fire-and-forget: payload build or transport failure */ }
             finally
             {
                 this.flushing = false;
@@ -134,21 +168,33 @@ namespace Sunlight.Framework
             this.unloadHandler = null;
 
             // Best-effort final flush — use sendBeacon because the normal XHR
-            // path cannot be trusted to complete once we stop listening.
+            // path cannot be trusted to complete once we stop listening. The
+            // try/catch covers ExtractBatchAsPayload too, because serialization
+            // failure after the destructive queue swap would otherwise escape
+            // through RemoveSink/ClearSinks up into arbitrary caller code.
             if (this.queue.Count > 0)
             {
-                string payload = this.ExtractBatchAsPayload();
-                try { HttpLogSink.SendBeacon(this.endpoint, payload); }
+                try
+                {
+                    string payload = this.ExtractBatchAsPayload();
+                    this.SendPayload(payload, true);
+                }
                 catch { /* fire-and-forget transport */ }
             }
         }
 
         private void OnTimerTick()
         {
+            // Runs directly on window.setInterval — OUTSIDE any application
+            // try/catch. An unhandled exception here would fire every
+            // flushIntervalMs for the lifetime of the page as an unhandled
+            // setInterval error, so the outer try/catch is mandatory even
+            // though Flush() is also internally guarded.
             if (this.detached) { return; }
             if (this.queue.Count > 0)
             {
-                this.Flush();
+                try { this.Flush(); }
+                catch { /* timer callback must not throw */ }
             }
         }
 
@@ -160,12 +206,36 @@ namespace Sunlight.Framework
 
         private void OnPageUnload()
         {
+            // beforeunload/pagehide dispatchers have no application-level
+            // protection, same rationale as OnTimerTick.
             if (this.detached) { return; }
             if (this.queue.Count == 0) { return; }
 
-            string payload = this.ExtractBatchAsPayload();
-            try { HttpLogSink.SendBeacon(this.endpoint, payload); }
+            try
+            {
+                string payload = this.ExtractBatchAsPayload();
+                this.SendPayload(payload, true);
+            }
             catch { /* fire-and-forget transport — unload path cannot react */ }
+        }
+
+        /// <summary>
+        /// Dispatch the serialized payload to the appropriate transport: the
+        /// XHR path for live flushes and the <c>sendBeacon</c> path for unload
+        /// / detach. Routed through <see cref="transportOverride"/> when the
+        /// test-only constructor injected one so unit tests can capture the
+        /// envelope without touching the network.
+        /// </summary>
+        private void SendPayload(string payload, bool isUnload)
+        {
+            if (this.transportOverride != null)
+            {
+                this.transportOverride(this.endpoint, payload);
+                return;
+            }
+
+            if (isUnload) { HttpLogSink.SendBeacon(this.endpoint, payload); }
+            else { HttpLogSink.PostPayload(this.endpoint, payload); }
         }
 
         /// <summary>

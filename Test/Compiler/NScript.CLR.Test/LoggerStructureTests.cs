@@ -86,9 +86,13 @@ namespace NScript.CLR.Test
             // overload so pre-WI-11 call sites keep compiling untouched. (The
             // WI-11 refactor also adds (string, string[]) overloads — those are
             // verified separately by Logger_LogLevelMethodsHavePropertiesOverload.)
+            // Trace is included even though it's [Conditional("DEBUG")]:
+            // [Conditional] strips *call sites*, not the method definition, so
+            // the overload is still present in the Release DLL and must be
+            // protected against accidental removal.
             var loggerType = GetLoggerType();
 
-            foreach (var name in new[] { "Debug", "Info", "Warn", "Error" })
+            foreach (var name in new[] { "Trace", "Debug", "Info", "Warn", "Error" })
             {
                 var singleStringOverload = loggerType.Methods
                     .FirstOrDefault(m => m.Name == name
@@ -107,9 +111,12 @@ namespace NScript.CLR.Test
             // WI-11 adds a (string, string[]) overload on each level so callers
             // can attach structured key/value pairs without boxing. string[] is
             // used (rather than object) to survive NScript minification.
+            // Trace is included here for the same reason as in the single-
+            // string-overload test above: [Conditional] strips call sites, not
+            // the method definition.
             var loggerType = GetLoggerType();
 
-            foreach (var name in new[] { "Debug", "Info", "Warn", "Error" })
+            foreach (var name in new[] { "Trace", "Debug", "Info", "Warn", "Error" })
             {
                 var overload = loggerType.Methods
                     .FirstOrDefault(m => m.Name == name

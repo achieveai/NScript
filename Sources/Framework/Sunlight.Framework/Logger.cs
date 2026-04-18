@@ -216,10 +216,11 @@ namespace Sunlight.Framework
         /// caller, which may be an exception handler).
         /// </summary>
         /// <remarks>
-        /// Internal (not public) because the facade and <see cref="NamedLogger"/>
-        /// already apply the <see cref="MinLevel"/> check. External callers
-        /// should always go through the level-specific methods so level filters
-        /// and <c>[Conditional]</c> stripping are honored.
+        /// Internal (not public) because the static facade already applies the
+        /// <see cref="MinLevel"/> check; <see cref="NamedLogger"/> must apply it
+        /// too to match that contract. External callers should always go through
+        /// the level-specific methods so level filters and <c>[Conditional]</c>
+        /// stripping are honored.
         /// </remarks>
         internal static void DispatchInternal(
             LogLevel level,
@@ -261,6 +262,15 @@ namespace Sunlight.Framework
                     try { Logger.sinks[i].Handle(evt); }
                     catch { /* sink faults must not escape — protects exception-path callers */ }
                 }
+            }
+            catch
+            {
+                // Event construction failed (e.g. GetIsoTimestamp bridge threw,
+                // ConsoleSink allocation failed). Swallowing is the only safe
+                // action: Logger.Error() is called from inside TaskScheduler's
+                // catch blocks, so an escaping exception would bypass its
+                // finally cleanup (currentTask / CallContext restore) and
+                // produce cascading failures.
             }
             finally
             {

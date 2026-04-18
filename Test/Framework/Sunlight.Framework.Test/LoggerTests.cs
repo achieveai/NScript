@@ -317,23 +317,34 @@ namespace Sunlight.Framework.Test
         {
             ResetLogger();
             var timer = new ControllableTimer();
-            var sink = new HttpLogSink("/ClientLogs.ashx", 3, 5000, 500, timer);
+            var payloads = new List<string>();
+            // Inject a transport override via the internal test-only constructor
+            // so we can observe the serialized envelopes and verify batch-size
+            // triggering behaviorally, not just "did not throw".
+            var sink = new HttpLogSink(
+                "/ClientLogs.ashx", 3, 5000, 500, timer,
+                (endpoint, payload) => payloads.Add(payload));
             Logger.AddSink(sink);
 
             // Two events — under the batch size of 3, so no flush yet.
             Logger.Info("one");
             Logger.Info("two");
-            // We can't directly verify the XHR, but we can observe queue state
-            // indirectly: a third event triggers a flush and the queue resets.
-            // After flush we add a fourth event: the queue has one item, not four.
+            assert.Equal(0, payloads.Count, "No flush before reaching batchSize");
+
+            // Third event crosses the batchSize threshold and triggers flush.
             Logger.Info("three");
+            assert.Equal(1, payloads.Count, "Batch flushed when queue reaches batchSize");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"one\"") >= 0, "First batch includes 'one'");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"three\"") >= 0, "First batch includes 'three'");
+
+            // Queue is drained; the next event should accumulate, not flush.
             Logger.Info("four");
+            assert.Equal(1, payloads.Count, "Queue reset after flush — no additional flush yet");
 
-            // Trigger timer tick — if the queue was flushed at size 3, only
-            // the fourth event remains and should flush now.
+            // Timer tick drains the residual event.
             timer.Tick();
-
-            assert.IsTrue(true, "Batch size flush exercised without exceptions");
+            assert.Equal(2, payloads.Count, "Timer tick flushes the residual event");
+            assert.IsTrue(payloads[1].IndexOf("\"msg\":\"four\"") >= 0, "Second batch contains 'four'");
 
             Logger.RemoveSink(sink);
         }
@@ -358,22 +369,197 @@ namespace Sunlight.Framework.Test
         {
             ResetLogger();
             var timer = new ControllableTimer();
+            var payloads = new List<string>();
             // maxQueueSize=2, batchSize=100 so only overflow (not batch) triggers.
-            var sink = new HttpLogSink("/ClientLogs.ashx", 100, 5000, 2, timer);
+            var sink = new HttpLogSink(
+                "/ClientLogs.ashx", 100, 5000, 2, timer,
+                (endpoint, payload) => payloads.Add(payload));
             Logger.AddSink(sink);
 
             Logger.Info("a");
             Logger.Info("b");
-            Logger.Info("c"); // Should push out "a"
-            Logger.Info("d"); // Should push out "b"
+            Logger.Info("c"); // Pushes out "a"
+            Logger.Info("d"); // Pushes out "b"
 
-            // No assertion on internal queue contents (private). Instead verify
-            // the flow survives bounded-queue pressure without throwing.
+            // Timer tick forces the current queue to be serialized so we can
+            // inspect the envelope's dropped count and retained messages.
             timer.Tick();
 
-            assert.IsTrue(true, "Overflow path exercised without exceptions");
+            assert.Equal(1, payloads.Count, "One batch produced on timer flush after overflow");
+            assert.IsTrue(payloads[0].IndexOf("\"dropped\":2") >= 0,
+                "Envelope reports the two overflow drops");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"c\"") >= 0, "Retained 'c'");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"d\"") >= 0, "Retained 'd'");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"a\"") < 0, "Dropped 'a'");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"b\"") < 0, "Dropped 'b'");
 
             Logger.RemoveSink(sink);
+        }
+
+        [Test]
+        public static void TestReentrancyGuardDropsNestedDispatch(Assert assert)
+        {
+            // Anchors the Logger.dispatching guard against accidental removal:
+            // a sink that logs from its own Handle() must not recursively
+            // fan-out the nested event to any sink (including itself).
+            ResetLogger();
+            var reentrant = new ReentrantSink();
+            var observer = new FakeSink();
+            Logger.AddSink(reentrant);
+            Logger.AddSink(observer);
+
+            Logger.Info("outer");
+
+            assert.Equal(1, reentrant.HandleCount,
+                "Re-entrant sink receives only the outer event; nested call is dropped");
+            assert.Equal(1, observer.Events.Count,
+                "Observer sink receives only the outer event");
+        }
+
+        /// <summary>
+        /// Sink whose Handle() re-enters <see cref="Logger"/>. Verifies the
+        /// dispatching guard short-circuits the nested call rather than
+        /// fanning it out (which would recurse indefinitely or duplicate
+        /// events).
+        /// </summary>
+        private class ReentrantSink : ILogSink
+        {
+            public int HandleCount;
+
+            public void Handle(LogEvent evt)
+            {
+                this.HandleCount++;
+                // Recursive call — guarded by Logger.dispatching.
+                Logger.Info("nested-from-sink");
+            }
+
+            public void Flush() { }
+
+            public void Detach() { }
+        }
+
+        // -----------------------------------------------------------------
+        // LogJsonBuilder direct tests
+        //
+        // LogJsonBuilder is internal; the Sunlight.Framework assembly grants
+        // InternalsVisibleTo this test assembly so the JSON wire format can
+        // be locked down with behavioral assertions. Field names ('ts',
+        // 'level', 'msg', 'cat', 'props', 'dropped') are contractual with
+        // the ingestion server and must not be changed by minification.
+        // -----------------------------------------------------------------
+
+        [Test]
+        public static void TestLogJsonBuilderEventBasicShape(Assert assert)
+        {
+            var evt = new LogEvent(
+                "2026-04-17T00:00:00.000Z",
+                LogLevel.Info,
+                string.Empty,
+                "hello",
+                null,
+                null);
+
+            string json = LogJsonBuilder.BuildEvent(evt);
+
+            assert.IsTrue(json.IndexOf("\"ts\":\"2026-04-17T00:00:00.000Z\"") >= 0, "Has ts");
+            assert.IsTrue(json.IndexOf("\"level\":\"INFO\"") >= 0, "Level serialized as INFO");
+            assert.IsTrue(json.IndexOf("\"msg\":\"hello\"") >= 0, "Has msg");
+            assert.IsTrue(json.IndexOf("\"cat\":") < 0, "Empty category is omitted");
+            assert.IsTrue(json.IndexOf("\"props\":") < 0, "No props block when null");
+        }
+
+        [Test]
+        public static void TestLogJsonBuilderLevelToString(Assert assert)
+        {
+            var trace = LogJsonBuilder.BuildEvent(
+                new LogEvent("ts", LogLevel.Trace, string.Empty, "m", null, null));
+            var debug = LogJsonBuilder.BuildEvent(
+                new LogEvent("ts", LogLevel.Debug, string.Empty, "m", null, null));
+            var warn = LogJsonBuilder.BuildEvent(
+                new LogEvent("ts", LogLevel.Warn, string.Empty, "m", null, null));
+            var error = LogJsonBuilder.BuildEvent(
+                new LogEvent("ts", LogLevel.Error, string.Empty, "m", null, null));
+
+            assert.IsTrue(trace.IndexOf("\"level\":\"TRACE\"") >= 0, "Trace → TRACE");
+            assert.IsTrue(debug.IndexOf("\"level\":\"DEBUG\"") >= 0, "Debug → DEBUG");
+            assert.IsTrue(warn.IndexOf("\"level\":\"WARN\"") >= 0, "Warn → WARN");
+            assert.IsTrue(error.IndexOf("\"level\":\"ERROR\"") >= 0, "Error → ERROR");
+        }
+
+        [Test]
+        public static void TestLogJsonBuilderPropertiesFlattening(Assert assert)
+        {
+            var evt = new LogEvent(
+                "ts",
+                LogLevel.Info,
+                "c1",
+                "m",
+                new string[] { "k1", "v1", "k2", "v2" },
+                null);
+
+            string json = LogJsonBuilder.BuildEvent(evt);
+
+            // Flat [k,v,k,v] becomes a nested object under "props".
+            assert.IsTrue(json.IndexOf("\"props\":{\"k1\":\"v1\",\"k2\":\"v2\"}") >= 0,
+                "Flat properties array pairs into an object");
+            assert.IsTrue(json.IndexOf("\"cat\":\"c1\"") >= 0, "Category present");
+        }
+
+        [Test]
+        public static void TestLogJsonBuilderOddPropertiesDropsTrailing(Assert assert)
+        {
+            // An odd-length properties array is a caller bug; trailing key is
+            // dropped silently rather than emitting a malformed key:value pair.
+            var evt = new LogEvent(
+                "ts",
+                LogLevel.Info,
+                string.Empty,
+                "m",
+                new string[] { "k1", "v1", "orphan" },
+                null);
+
+            string json = LogJsonBuilder.BuildEvent(evt);
+
+            assert.IsTrue(json.IndexOf("\"k1\":\"v1\"") >= 0, "Even pair kept");
+            assert.IsTrue(json.IndexOf("\"orphan\"") < 0, "Trailing key dropped");
+        }
+
+        [Test]
+        public static void TestLogJsonBuilderEnvelopeIncludesDropped(Assert assert)
+        {
+            var events = new List<LogEvent>();
+            events.Add(new LogEvent("ts", LogLevel.Info, string.Empty, "a", null, null));
+            events.Add(new LogEvent("ts", LogLevel.Info, string.Empty, "b", null, null));
+
+            string json = LogJsonBuilder.BuildEnvelope(events, 7);
+
+            assert.IsTrue(json.IndexOf("\"events\":[") >= 0, "Has events array");
+            assert.IsTrue(json.IndexOf("\"dropped\":7") >= 0, "Dropped count in envelope");
+            assert.IsTrue(json.IndexOf("\"msg\":\"a\"") >= 0, "First event present");
+            assert.IsTrue(json.IndexOf("\"msg\":\"b\"") >= 0, "Second event present");
+        }
+
+        [Test]
+        public static void TestLogJsonBuilderCallContextCorrelation(Assert assert)
+        {
+            var ctx = CallContext.StartRoot();
+            var evt = new LogEvent(
+                "ts",
+                LogLevel.Info,
+                string.Empty,
+                "m",
+                null,
+                ctx);
+
+            string json = LogJsonBuilder.BuildEvent(evt);
+
+            assert.IsTrue(json.IndexOf("\"actionId\":") >= 0, "actionId present");
+            assert.IsTrue(json.IndexOf("\"traceId\":") >= 0, "traceId present");
+            assert.IsTrue(json.IndexOf("\"spanId\":") >= 0, "spanId present");
+            assert.IsTrue(json.IndexOf("\"depth\":0") >= 0, "Root depth is 0");
+            // Root context has no ParentSpanId, so the key must be absent.
+            assert.IsTrue(json.IndexOf("\"parentSpanId\":") < 0,
+                "parentSpanId omitted for root context");
         }
     }
 }
