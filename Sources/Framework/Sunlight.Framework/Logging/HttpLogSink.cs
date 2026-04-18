@@ -74,6 +74,16 @@ namespace Sunlight.Framework
         {
             if (endpoint == null) { throw new ArgumentNullException("endpoint"); }
             if (timer == null) { throw new ArgumentNullException("timer"); }
+            // Numeric guards: zero/negative values would make the sink silently
+            // pathological — a zero batchSize flushes on every event, zero
+            // flushIntervalMs makes setInterval a tight loop, and zero
+            // maxQueueSize means Handle() always drops. Fail fast at ctor time
+            // instead of producing confusing runtime behavior. NScript's
+            // mscorlib does not expose ArgumentOutOfRangeException, so we use
+            // ArgumentException with a descriptive parameter name.
+            if (batchSize < 1) { throw new ArgumentException("batchSize must be >= 1"); }
+            if (flushIntervalMs < 1) { throw new ArgumentException("flushIntervalMs must be >= 1"); }
+            if (maxQueueSize < 1) { throw new ArgumentException("maxQueueSize must be >= 1"); }
 
             this.endpoint = endpoint;
             this.batchSize = batchSize;
@@ -239,18 +249,25 @@ namespace Sunlight.Framework
         }
 
         /// <summary>
-        /// Atomically swap the queue + <c>droppedCount</c> out, reset both, and
-        /// return the JSON envelope. Shared by <see cref="Flush"/>,
+        /// Serialize the current queue + <c>droppedCount</c> into a JSON
+        /// envelope, then reset both. Shared by <see cref="Flush"/>,
         /// <see cref="Detach"/>, and <see cref="OnPageUnload"/> so the three
         /// paths stay in sync and cannot drift.
         /// </summary>
+        /// <remarks>
+        /// Serialization happens BEFORE the queue is reset so that a
+        /// <c>BuildEnvelope</c> throw leaves the buffered events in place for
+        /// the next flush attempt. Resetting first would silently drop an
+        /// entire batch on any JSON build failure.
+        /// </remarks>
         private string ExtractBatchAsPayload()
         {
             var batch = this.queue;
             int dropped = this.droppedCount;
+            string payload = LogJsonBuilder.BuildEnvelope(batch, dropped);
             this.queue = new List<LogEvent>();
             this.droppedCount = 0;
-            return LogJsonBuilder.BuildEnvelope(batch, dropped);
+            return payload;
         }
 
         /// <summary>

@@ -540,6 +540,89 @@ namespace Sunlight.Framework.Test
         }
 
         [Test]
+        public static void TestLogJsonBuilderNullKeySkipped(Assert assert)
+        {
+            // A null slot in the properties array (e.g. from a caller that
+            // forgot to initialize one entry) must NOT emit "null":"value" —
+            // that would produce an unintentional string-literal key. The
+            // pair is silently skipped instead.
+            var evt = new LogEvent(
+                "ts",
+                LogLevel.Info,
+                string.Empty,
+                "m",
+                new string[] { "k1", "v1", null, "orphan-val", "k2", "v2" },
+                null);
+
+            string json = LogJsonBuilder.BuildEvent(evt);
+
+            assert.IsTrue(json.IndexOf("\"k1\":\"v1\"") >= 0, "First pair kept");
+            assert.IsTrue(json.IndexOf("\"k2\":\"v2\"") >= 0, "Third pair kept");
+            assert.IsTrue(json.IndexOf("\"null\"") < 0, "Null key is not serialized as the literal \"null\"");
+            assert.IsTrue(json.IndexOf("orphan-val") < 0, "Value paired with null key is dropped");
+        }
+
+        [Test]
+        public static void TestHttpLogSinkDetachFlushesQueuedEvents(Assert assert)
+        {
+            // Detach should ship any residual queued events via the beacon
+            // path before going quiet — otherwise the last events before a
+            // sink removal or page unload would be lost silently.
+            ResetLogger();
+            var timer = new ControllableTimer();
+            var payloads = new List<string>();
+            var sink = new HttpLogSink(
+                "/ClientLogs.ashx", 100, 5000, 500, timer,
+                (endpoint, payload) => payloads.Add(payload));
+            Logger.AddSink(sink);
+
+            Logger.Info("queued-1");
+            Logger.Info("queued-2");
+            assert.Equal(0, payloads.Count, "No flush yet — below batchSize");
+
+            Logger.RemoveSink(sink);
+
+            assert.Equal(1, payloads.Count, "Detach drained the queue through the transport");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"queued-1\"") >= 0, "Residual event 'queued-1' included");
+            assert.IsTrue(payloads[0].IndexOf("\"msg\":\"queued-2\"") >= 0, "Residual event 'queued-2' included");
+        }
+
+        [Test]
+        public static void TestNamedLoggerPassesPropertiesThrough(Assert assert)
+        {
+            // NamedLogger.Info(msg, props) must hand the properties array
+            // straight to DispatchInternal without wrapping/copying. The
+            // test locks this in so a future refactor cannot silently drop
+            // the properties argument on the category path.
+            ResetLogger();
+            var fake = new FakeSink();
+            Logger.AddSink(fake);
+
+            var props = new string[] { "userId", "42", "op", "save" };
+            var log = Logger.ForCategory("named-props");
+            log.Info("named-with-props", props);
+
+            assert.Equal(1, fake.Events.Count, "One event dispatched through NamedLogger");
+            assert.StrictEqual(props, fake.Events[0].Properties, "Properties array forwarded unchanged");
+            assert.Equal("named-props", fake.Events[0].Category, "Category preserved");
+        }
+
+        [Test]
+        public static void TestForCategoryNullAndEmptyShareCacheSlot(Assert assert)
+        {
+            // ForCategory(null) normalizes to the empty string and then looks
+            // up the same cache bucket as ForCategory(""). Without this
+            // guarantee, a caller that drifts between null and "" would get
+            // two distinct NamedLogger instances silently.
+            ResetLogger();
+            var nullLog = Logger.ForCategory(null);
+            var emptyLog = Logger.ForCategory(string.Empty);
+
+            assert.StrictEqual(emptyLog, nullLog,
+                "Null and empty string resolve to the same cached NamedLogger");
+        }
+
+        [Test]
         public static void TestLogJsonBuilderCallContextCorrelation(Assert assert)
         {
             var ctx = CallContext.StartRoot();

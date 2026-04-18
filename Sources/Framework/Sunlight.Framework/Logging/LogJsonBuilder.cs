@@ -76,6 +76,9 @@ namespace Sunlight.Framework
 
             // Flat [k,v,k,v,...] → {k:v,k:v,...}. Odd trailing element is
             // dropped: a key without a value is almost always a caller bug.
+            // Null keys are skipped (not emitted as "null":...) — a null key
+            // would produce invalid-looking JSON-object semantics and is
+            // almost certainly an accidental slot in the caller's string[].
             var props = evt.Properties;
             if (props != null && props.Length >= 2)
             {
@@ -85,9 +88,11 @@ namespace Sunlight.Framework
                 int i = 0;
                 while (i + 1 < n)
                 {
+                    string key = props[i];
+                    if (key == null) { i = i + 2; continue; }
                     if (!first) { sb.Append(","); }
                     first = false;
-                    sb.Append(LogJsonBuilder.JsonEscape(props[i]));
+                    sb.Append(LogJsonBuilder.JsonEscape(key));
                     sb.Append(":");
                     sb.Append(LogJsonBuilder.JsonEscape(props[i + 1]));
                     i = i + 2;
