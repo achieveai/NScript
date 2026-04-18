@@ -50,17 +50,21 @@ namespace NScript.CLR.Test
         }
 
         [TestMethod]
-        public void Logger_EmitMethodHasScriptAttribute()
+        public void Logger_GetIsoTimestampHasScriptAttribute()
         {
+            // After WI-11, Logger dispatches through ILogSink instances rather than a
+            // private Emit method. The only remaining [Script]-bodied helper is the
+            // ISO timestamp bridge, which must stay private and carry the attribute
+            // so Stage 2 emits the inline JS body.
             var loggerType = GetLoggerType();
-            var emitMethod = loggerType.Methods.FirstOrDefault(m => m.Name == "Emit");
+            var tsMethod = loggerType.Methods.FirstOrDefault(m => m.Name == "GetIsoTimestamp");
 
-            Assert.IsNotNull(emitMethod, "Logger should have private Emit method");
-            Assert.IsTrue(emitMethod.IsPrivate, "Emit should be private");
+            Assert.IsNotNull(tsMethod, "Logger should have private GetIsoTimestamp method");
+            Assert.IsTrue(tsMethod.IsPrivate, "GetIsoTimestamp should be private");
 
-            var scriptAttr = emitMethod.CustomAttributes
+            var scriptAttr = tsMethod.CustomAttributes
                 .FirstOrDefault(a => a.AttributeType.Name == "ScriptAttribute");
-            Assert.IsNotNull(scriptAttr, "Emit method should have [Script] attribute for JS body");
+            Assert.IsNotNull(scriptAttr, "GetIsoTimestamp should have [Script] attribute for JS body");
         }
 
         [TestMethod]
@@ -78,16 +82,44 @@ namespace NScript.CLR.Test
         [TestMethod]
         public void Logger_LogLevelMethodsAcceptSingleStringParameter()
         {
+            // Back-compat guarantee: every level must retain the single-string
+            // overload so pre-WI-11 call sites keep compiling untouched. (The
+            // WI-11 refactor also adds (string, string[]) overloads — those are
+            // verified separately by Logger_LogLevelMethodsHavePropertiesOverload.)
             var loggerType = GetLoggerType();
 
             foreach (var name in new[] { "Debug", "Info", "Warn", "Error" })
             {
-                var method = loggerType.Methods.FirstOrDefault(m => m.Name == name);
-                Assert.IsNotNull(method, $"Logger should have {name} method");
-                Assert.AreEqual(1, method.Parameters.Count,
-                    $"Logger.{name} should accept exactly 1 parameter");
-                Assert.AreEqual("String", method.Parameters[0].ParameterType.Name,
-                    $"Logger.{name} parameter should be a string");
+                var singleStringOverload = loggerType.Methods
+                    .FirstOrDefault(m => m.Name == name
+                        && m.Parameters.Count == 1
+                        && m.Parameters[0].ParameterType.Name == "String");
+
+                Assert.IsNotNull(
+                    singleStringOverload,
+                    $"Logger.{name}(string) back-compat overload should exist");
+            }
+        }
+
+        [TestMethod]
+        public void Logger_LogLevelMethodsHavePropertiesOverload()
+        {
+            // WI-11 adds a (string, string[]) overload on each level so callers
+            // can attach structured key/value pairs without boxing. string[] is
+            // used (rather than object) to survive NScript minification.
+            var loggerType = GetLoggerType();
+
+            foreach (var name in new[] { "Debug", "Info", "Warn", "Error" })
+            {
+                var overload = loggerType.Methods
+                    .FirstOrDefault(m => m.Name == name
+                        && m.Parameters.Count == 2
+                        && m.Parameters[0].ParameterType.Name == "String"
+                        && m.Parameters[1].ParameterType.Name == "String[]");
+
+                Assert.IsNotNull(
+                    overload,
+                    $"Logger.{name}(string, string[]) properties overload should exist");
             }
         }
     }
