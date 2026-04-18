@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
     <ProjectReference Include="../System.Web/System.Web.csproj" />
+    <ProjectReference Include="../System.Web.Html/System.Web.Html.csproj" />
   </ItemGroup>
 
   <ItemGroup>

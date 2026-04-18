@@ -1,0 +1,70 @@
+//-----------------------------------------------------------------------
+// <copyright file="LogEvent.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace Sunlight.Framework
+{
+    /// <summary>
+    /// Immutable snapshot of a single log invocation, fanned out to every
+    /// registered <see cref="ILogSink"/> by <see cref="Logger"/>.
+    /// </summary>
+    /// <remarks>
+    /// Fields are intentionally <c>readonly</c> so a batching sink can queue
+    /// events without worrying about mutation-after-queue from the caller.
+    /// </remarks>
+    public class LogEvent
+    {
+        /// <summary> ISO-8601 timestamp captured at emit time, e.g. "2026-04-17T18:00:00.000Z". </summary>
+        public readonly string TimestampIso;
+
+        /// <summary> Severity classification. </summary>
+        public readonly LogLevel Level;
+
+        /// <summary>
+        /// Category tag from <see cref="Logger.ForCategory"/>; empty string for
+        /// uncategorized calls through the static <see cref="Logger"/> facade.
+        /// </summary>
+        public readonly string Category;
+
+        /// <summary> Primary human-readable message. </summary>
+        public readonly string Message;
+
+        /// <summary>
+        /// Flat key-value property bag: <c>[k1, v1, k2, v2, ...]</c>. Null when
+        /// the caller passed no structured properties.
+        /// </summary>
+        /// <remarks>
+        /// <c>string[]</c> (not <c>object</c>) is intentional: NScript minifies
+        /// field names in generated JS, so a caller-supplied object would emit
+        /// with unreadable minified keys. The flat array encodes both keys and
+        /// values as plain strings that survive minification unchanged.
+        /// </remarks>
+        public readonly string[] Properties;
+
+        /// <summary>
+        /// Snapshot of <see cref="CallContext.Current"/> at emit time; <c>null</c>
+        /// when no ambient context is active. Sink serializers conditionally
+        /// include <c>traceId</c>, <c>spanId</c>, <c>parentSpanId</c>, <c>actionId</c>,
+        /// and <c>depth</c> based on this reference.
+        /// </summary>
+        public readonly CallContext Context;
+
+        public LogEvent(
+            string timestampIso,
+            LogLevel level,
+            string category,
+            string message,
+            string[] properties,
+            CallContext context)
+        {
+            this.TimestampIso = timestampIso;
+            this.Level = level;
+            this.Category = category;
+            this.Message = message;
+            this.Properties = properties;
+            this.Context = context;
+        }
+    }
+}
