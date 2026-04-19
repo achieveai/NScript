@@ -74,6 +74,65 @@ namespace XwmlParser.Test
         }
 
         /// <summary>
+        /// Isolates the <see cref="BinderInfo.GenerateCode"/> contribution from the
+        /// skin-level locations checked by <see cref="Generate_LocationsPointAtSkinOrChildLines"/>.
+        /// Lines 12-13 of <c>TestArrayBinding.html</c> are the two bound <c>&lt;div&gt;</c>
+        /// elements; BinderInfo emits a <see cref="MethodCallExpression"/> per binding
+        /// anchored at those lines. The skin factory/getter anchors to line 11 and
+        /// <see cref="HtmlNodeInfo.GenerateCode"/> emits <see cref="IndexExpression"/>
+        /// (not <see cref="MethodCallExpression"/>) for the DOM-node slot, so a
+        /// <see cref="MethodCallExpression"/> on lines 12-13 must come from BinderInfo.
+        /// This catches a regression where <c>BinderInfo.cs</c> reverts to passing
+        /// <c>null</c> locations — a gap the earlier <c>Count &gt; 0</c> assertion
+        /// would not catch because the skin-factory path alone produces many locations.
+        /// </summary>
+        [TestMethod]
+        public void Generate_BindingNodesCarryBinderLocation()
+        {
+            IList<Statement> statements = GenerateTemplateStatements("TestArrayBinding");
+
+            IReadOnlyList<Location> binderCallLocations =
+                CollectLocationsOfType<MethodCallExpression>(statements, "TestArrayBinding.html")
+                    .Where(loc => loc.StartLine == 12 || loc.StartLine == 13)
+                    .ToList();
+
+            Assert.IsTrue(
+                binderCallLocations.Count >= 2,
+                "Expected at least two binder-contributed MethodCallExpression locations on " +
+                "lines 12-13 of TestArrayBinding.html (one per <div> binding). " +
+                "A regression in BinderInfo.GenerateCode that drops the location argument " +
+                "would leave zero MethodCallExpressions at those lines. Got: " +
+                string.Join(", ", binderCallLocations.Select(l => "L" + l.StartLine)));
+        }
+
+        /// <summary>
+        /// Exercises <see cref="TypeNodeInfo.GenerateCode"/>,
+        /// <see cref="TypeNodeInfo.GetCtorExpression(SkinCodeGenerator, Location)"/>,
+        /// <see cref="TypeNodeInfo.GenerateStaticInitializers"/>, and
+        /// <see cref="UIElementNodeInfo.GenerateCode"/> — none of which are covered
+        /// by the <c>TestArrayBinding.html</c>-based tests (which only contain plain
+        /// <c>&lt;div&gt;</c> elements). <c>TestStaticValues.html</c> has a typed
+        /// element <c>&lt;vm:TestUIElement&gt;</c> on line 11 with static property
+        /// values, driving all four code paths. Asserting a location on line 11
+        /// proves the typed-element pipeline threads the template location end-to-end.
+        /// </summary>
+        [TestMethod]
+        public void Generate_TypedElementCarriesTemplateLocation()
+        {
+            IList<Statement> statements = GenerateTemplateStatements("TestStaticValues");
+
+            IReadOnlyList<Location> templateLocations =
+                CollectLocationsPointingAt(statements, "TestStaticValues.html");
+
+            Assert.IsTrue(
+                templateLocations.Any(loc => loc.StartLine == 11),
+                "Expected at least one JST node to carry a Location on line 11 " +
+                "(the <vm:TestUIElement> typed-element line) of TestStaticValues.html, " +
+                "but got lines: " +
+                string.Join(", ", templateLocations.Select(l => l.StartLine.ToString())));
+        }
+
+        /// <summary>
         /// End-to-end source-map emission: writing the template JST via
         /// <see cref="JSWriter.WriteWithMap"/> must produce a source-map JSON whose
         /// <c>sources</c> array includes the originating .html template. Without this,
@@ -133,11 +192,33 @@ namespace XwmlParser.Test
             return collected;
         }
 
+        /// <summary>
+        /// Like <see cref="CollectLocationsPointingAt"/> but narrowed to a specific JST
+        /// node type. Use this when a test needs to attribute a location to a specific
+        /// code path (e.g. only <see cref="MethodCallExpression"/>s emitted by
+        /// <c>BinderInfo.GenerateCode</c>) rather than any node in the tree.
+        /// </summary>
+        private static IReadOnlyList<Location> CollectLocationsOfType<T>(
+            IEnumerable<Statement> statements,
+            string templateFileName)
+            where T : Node
+        {
+            var collected = new List<Location>();
+            var visited = new HashSet<object>();
+            foreach (var stmt in statements)
+            {
+                WalkNode(stmt, templateFileName, collected, visited, typeof(T));
+            }
+
+            return collected;
+        }
+
         private static void WalkNode(
             object node,
             string templateFileName,
             List<Location> collected,
-            HashSet<object> visited)
+            HashSet<object> visited,
+            System.Type nodeTypeFilter = null)
         {
             if (node == null || !visited.Add(node))
             {
@@ -148,7 +229,9 @@ namespace XwmlParser.Test
             {
                 var fileName = jstNode.Location.FileName;
                 if (fileName != null
-                    && fileName.EndsWith(templateFileName, System.StringComparison.Ordinal))
+                    && fileName.EndsWith(templateFileName, System.StringComparison.Ordinal)
+                    && (nodeTypeFilter == null
+                        || nodeTypeFilter.IsInstanceOfType(jstNode)))
                 {
                     collected.Add(jstNode.Location);
                 }
@@ -185,7 +268,7 @@ namespace XwmlParser.Test
 
                 if (value is Node childNode)
                 {
-                    WalkNode(childNode, templateFileName, collected, visited);
+                    WalkNode(childNode, templateFileName, collected, visited, nodeTypeFilter);
                 }
                 else if (value is System.Collections.IEnumerable enumerable
                     && !(value is string))
@@ -194,7 +277,7 @@ namespace XwmlParser.Test
                     {
                         if (item is Node itemNode)
                         {
-                            WalkNode(itemNode, templateFileName, collected, visited);
+                            WalkNode(itemNode, templateFileName, collected, visited, nodeTypeFilter);
                         }
                     }
                 }
