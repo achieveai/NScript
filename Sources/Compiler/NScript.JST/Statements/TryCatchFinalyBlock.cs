@@ -8,6 +8,7 @@ namespace NScript.JST
 {
     using System;
     using System.Collections.Generic;
+    using NScript.Utils;
 
     /// <summary>
     /// Definition for TryCatchFinalyBlock
@@ -36,12 +37,14 @@ namespace NScript.JST
         /// <param name="tryStatement">The try statement.</param>
         /// <param name="catchHandler">The catch handler.</param>
         /// <param name="finallyStatement">The finally statement.</param>
+        /// <param name="location">Optional source location for the try block.</param>
         public TryCatchFinalyBlock(
             IdentifierScope scope,
             ScopeBlock tryStatement,
             CatchHandler catchHandler,
-            ScopeBlock finallyStatement)
-            :base (null, scope)
+            ScopeBlock finallyStatement,
+            Location location = null)
+            : base(location, scope)
         {
             this.tryStatement = tryStatement;
             this.catchHandler = catchHandler;

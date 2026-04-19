@@ -6,6 +6,8 @@
 
 namespace NScript.JST
 {
+    using NScript.Utils;
+
     /// <summary>
     /// Literal expression is used for all literals.
     /// </summary>
@@ -21,10 +23,12 @@ namespace NScript.JST
         /// </summary>
         /// <param name="literalString">The literal string.</param>
         /// <param name="scope">The scope.</param>
+        /// <param name="location">Optional source location for the literal.</param>
         public LiteralExpression(
             string literalString,
-            IdentifierScope scope)
-            : base(null, scope)
+            IdentifierScope scope,
+            Location location = null)
+            : base(location, scope)
         {
             this.literalString = literalString;
         }

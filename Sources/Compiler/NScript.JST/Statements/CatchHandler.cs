@@ -8,6 +8,7 @@ namespace NScript.JST
 {
     using System;
     using System.Collections.Generic;
+    using NScript.Utils;
 
     /// <summary>
     /// Definition for CatchHandler
@@ -30,11 +31,13 @@ namespace NScript.JST
         /// <param name="scope">The scope.</param>
         /// <param name="catchIdentifier">The catch identifier.</param>
         /// <param name="catchBlock">The catch block.</param>
+        /// <param name="location">Optional source location for the catch clause.</param>
         public CatchHandler(
             IdentifierScope scope,
             IdentifierExpression catchIdentifier,
-            ScopeBlock catchBlock)
-            : base(null, scope)
+            ScopeBlock catchBlock,
+            Location location = null)
+            : base(location, scope)
         {
             this.catchIdentifier = catchIdentifier;
             this.catchBlock = catchBlock;

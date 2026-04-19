@@ -6,6 +6,8 @@
 
 namespace NScript.JST
 {
+    using NScript.Utils;
+
     /// <summary>
     /// Boolean literal expression.
     /// </summary>
@@ -21,10 +23,12 @@ namespace NScript.JST
         /// </summary>
         /// <param name="scope">The scope.</param>
         /// <param name="value">The boolean.</param>
+        /// <param name="location">Optional source location for the literal.</param>
         public BooleanLiteralExpression(
             IdentifierScope scope,
-            bool value)
-            : base(value ? "true" : "false", scope)
+            bool value,
+            Location location = null)
+            : base(value ? "true" : "false", scope, location)
         {
             this.booleanLiteral = value;
         }

@@ -83,7 +83,8 @@ namespace NScript.Converter.StatementsConverter
                 converter.Scope,
                 tryBlock,
                 catchHandler,
-                finallyBlock);
+                finallyBlock,
+                statement.Location);
         }
 
         /// <summary>
@@ -142,7 +143,8 @@ namespace NScript.Converter.StatementsConverter
                 return new JST.CatchHandler(
                     converter.Scope,
                     catchVariable,
-                    catchBlock);
+                    catchBlock,
+                    handler.Location);
             }
             finally
             {

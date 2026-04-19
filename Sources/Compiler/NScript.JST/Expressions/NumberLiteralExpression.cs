@@ -6,6 +6,8 @@
 
 namespace NScript.JST
 {
+    using NScript.Utils;
+
     /// <summary>
     /// Number literal expression.
     /// </summary>
@@ -21,10 +23,12 @@ namespace NScript.JST
         /// </summary>
         /// <param name="scope">The scope.</param>
         /// <param name="number">The number.</param>
+        /// <param name="location">Optional source location for the literal.</param>
         public NumberLiteralExpression(
             IdentifierScope scope,
-            long number)
-            : base(number.ToString(), scope)
+            long number,
+            Location location = null)
+            : base(number.ToString(), scope, location)
         {
             this.numberLiteral = number;
         }

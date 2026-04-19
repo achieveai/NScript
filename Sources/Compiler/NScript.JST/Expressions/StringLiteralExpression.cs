@@ -6,6 +6,8 @@
 
 namespace NScript.JST
 {
+    using NScript.Utils;
+
     /// <summary>
     /// String literal expression.
     /// </summary>
@@ -21,10 +23,12 @@ namespace NScript.JST
         /// </summary>
         /// <param name="scope">The scope.</param>
         /// <param name="stringLiteral">The string literal.</param>
+        /// <param name="location">Optional source location for the literal.</param>
         public StringLiteralExpression(
             IdentifierScope scope,
-            string stringLiteral)
-            : base(stringLiteral, scope)
+            string stringLiteral,
+            Location location = null)
+            : base(stringLiteral, scope, location)
         {
             this.stringLiteral = stringLiteral;
         }
