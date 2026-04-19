@@ -6,6 +6,7 @@ using NScript.CLR;
 using NScript.Converter.TypeSystemConverter;
 using NScript.JST;
 using NScript.RazorSkin.TemplateIR;
+using NScript.Utils;
 using Serilog;
 
 namespace NScript.RazorSkin.CodeGen
@@ -84,6 +85,22 @@ namespace NScript.RazorSkin.CodeGen
             _preCreatedGetterIdentifier = preCreatedGetterIdentifier;
             _dataIndex = dataIndex;
             _cssManager = cssManager;
+        }
+
+        /// <summary>
+        /// Returns a non-null <see cref="Location"/> anchored at the originating
+        /// <c>.skin.cshtml</c> template. Uses the root <see cref="SkinTemplateNode.Location"/>
+        /// wired by <c>TemplateIRBuilder</c>; falls back to a line 1 anchor on
+        /// <c>TemplateName</c> so the source map always traces generated JST back
+        /// to the template file rather than reporting null positions (which would
+        /// drop the mapping entry entirely per V3 source-map semantics).
+        /// The <c>_ir</c> field is populated by the ctor and <c>_ir.TemplateName</c>
+        /// is always set by <c>TemplateIRBuilder</c>, so no null-defensive branches
+        /// are needed — callers always hit this after <see cref="Generate"/> starts.
+        /// </summary>
+        private Location GetTemplateLocation()
+        {
+            return _ir.Location ?? new Location(_ir.TemplateName, 1, 0);
         }
 
         /// <summary>
@@ -168,12 +185,14 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
 
+            var templateLocation = GetTemplateLocation();
+
             // 1. tmplStore = new Array(1)
             statements.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IdentifierExpression(_tmplStoreIdentifier, _scopeManager.Scope),
                     new MethodCallExpression(
-                        null,
+                        templateLocation,
                         _scopeManager.Scope,
                         new IdentifierExpression(
                             RawNameIdentifier.Create(_scopeManager.Scope, "Array"),
@@ -185,7 +204,7 @@ namespace NScript.RazorSkin.CodeGen
                 bindings, events, htmlContent, elementPaths, eventPaths, knownFunctionNames, topology);
 
             var factoryFunction = new FunctionExpression(
-                null,
+                templateLocation,
                 _scopeManager.Scope,
                 _factoryScope,
                 _factoryScope.ParameterIdentifiers,
@@ -195,7 +214,7 @@ namespace NScript.RazorSkin.CodeGen
 
             statements.Add(
                 new ExpressionStatement(
-                    null,
+                    templateLocation,
                     _scopeManager.Scope,
                     factoryFunction));
 
@@ -228,6 +247,7 @@ namespace NScript.RazorSkin.CodeGen
         {
             _eventPaths = eventPaths;
             var stmts = new List<Statement>();
+            var templateLocation = GetTemplateLocation();
 
             // Get the "doc" parameter identifier
             IIdentifier docParam = _factoryScope.ParameterIdentifiers[1];
@@ -238,7 +258,7 @@ namespace NScript.RazorSkin.CodeGen
             // Build the if-block: if (!(domStore = DocStorageGetter(doc))[0]) { ... }
             Expression checkStateInitialized =
                 new UnaryExpression(
-                    null,
+                    templateLocation,
                     _factoryScope,
                     UnaryOperator.LogicalNot,
                     new IndexExpression(
@@ -294,7 +314,8 @@ namespace NScript.RazorSkin.CodeGen
             var graphEmitter = new GraphDescriptorJSTEmitter(
                 topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames,
                 _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers,
-                cssManager: _cssManager);
+                cssManager: _cssManager,
+                fallbackLocation: GetTemplateLocation());
             var graphDescriptorExpr = graphEmitter.Emit();
 
             initStatements.Add(
@@ -322,10 +343,10 @@ namespace NScript.RazorSkin.CodeGen
             // Wrap in if block
             stmts.Add(
                 new IfBlockStatement(
-                    null,
+                    templateLocation,
                     _factoryScope,
                     checkStateInitialized,
-                    new ScopeBlock(null, _factoryScope, initStatements),
+                    new ScopeBlock(templateLocation, _factoryScope, initStatements),
                     null));
 
             // htmlRoot = domStore[0].cloneNode(true)
@@ -474,10 +495,10 @@ namespace NScript.RazorSkin.CodeGen
 
             stmts.Add(
                 new ReturnStatement(
-                    null,
+                    templateLocation,
                     _factoryScope,
                     new MethodCallExpression(
-                        null,
+                        templateLocation,
                         _factoryScope,
                         new IdentifierExpression(skinInstanceFactoryId, _factoryScope),
                         // skinFactory param
@@ -515,9 +536,10 @@ namespace NScript.RazorSkin.CodeGen
         private Statement BuildGetterFunction()
         {
             var methodScope = new IdentifierScope(_scopeManager.Scope, 0);
+            var templateLocation = GetTemplateLocation();
 
             var getterFunction = new FunctionExpression(
-                null,
+                templateLocation,
                 _scopeManager.Scope,
                 methodScope,
                 methodScope.ParameterIdentifiers,
@@ -537,7 +559,7 @@ namespace NScript.RazorSkin.CodeGen
             var initialization = ExpressionStatement.CreateAssignmentExpression(
                 new IdentifierExpression(_skinStorageVariable, methodScope),
                 new MethodCallExpression(
-                    null,
+                    templateLocation,
                     methodScope,
                     new IdentifierExpression(skinFactoryId, methodScope),
                     controlTypeExpr,
@@ -547,15 +569,15 @@ namespace NScript.RazorSkin.CodeGen
 
             // if (!TemplateName_var)
             var initIfStatement = new IfBlockStatement(
-                null,
+                templateLocation,
                 methodScope,
                 new UnaryExpression(
-                    null,
+                    templateLocation,
                     methodScope,
                     UnaryOperator.LogicalNot,
                     new IdentifierExpression(_skinStorageVariable, methodScope)),
                 new ScopeBlock(
-                    null,
+                    templateLocation,
                     methodScope,
                     new List<Statement> { initialization }),
                 null);
@@ -563,12 +585,12 @@ namespace NScript.RazorSkin.CodeGen
             getterFunction.AddStatement(initIfStatement);
             getterFunction.AddStatement(
                 new ReturnStatement(
-                    null,
+                    templateLocation,
                     methodScope,
                     new IdentifierExpression(_skinStorageVariable, methodScope)));
 
             return new ExpressionStatement(
-                null,
+                templateLocation,
                 _scopeManager.Scope,
                 getterFunction);
         }

@@ -1,10 +1,24 @@
 using System.Collections.Generic;
+using NScript.Utils;
 
 namespace NScript.RazorSkin.TemplateIR
 {
     public abstract class IRNode
     {
         public List<IRNode> Children { get; set; } = new List<IRNode>();
+
+        /// <summary>
+        /// Optional source position of this IR node in the originating
+        /// <c>.skin.cshtml</c> template. Populated by
+        /// <see cref="TemplateIRBuilder"/> from the upstream Razor
+        /// <c>IntermediateNode.Source</c> span and forwarded by the JST
+        /// code generators onto emitted <c>JST</c> nodes so the final
+        /// source map can trace generated JavaScript back to the template.
+        /// Null when the Razor parser could not attribute a position to
+        /// the node (e.g. synthetic / whitespace-only nodes); callers must
+        /// short-circuit on null.
+        /// </summary>
+        public Location Location { get; set; }
     }
 
     /// <summary>Root of a skin template IR tree.</summary>

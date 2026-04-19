@@ -35,6 +35,17 @@ namespace NScript.RazorSkin.CodeGen
         private readonly CecilTypeHelper _typeHelper;
         private readonly RazorCssManager _cssManager;
 
+        /// <summary>
+        /// Fallback <see cref="Location"/> stamped on emitted JST nodes (function expressions,
+        /// return statements, etc.) when no per-binding source position is available. Supplied
+        /// by the caller (typically <see cref="RazorSkinJSTGenerator"/>) as the template root
+        /// location so the final source map can attribute every generated descriptor expression
+        /// back to the originating <c>.skin.cshtml</c> file. Null when the caller has no
+        /// location context — downstream emission falls through to passing null, matching
+        /// the pre-Phase-3b behavior.
+        /// </summary>
+        private readonly Location _fallbackLocation;
+
         // Cached maps for ToJsGetterWithFieldAccess — identical across all invocations
         // since _modelTypeName doesn't change.
         private Dictionary<string, string> _cachedFieldMap;
@@ -120,7 +131,8 @@ namespace NScript.RazorSkin.CodeGen
             string modelTypeName,
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null,
             string parentModelTypeName = null,
-            RazorCssManager cssManager = null)
+            RazorCssManager cssManager = null,
+            Location fallbackLocation = null)
         {
             _topology = topology;
             _scope = scope;
@@ -133,6 +145,7 @@ namespace NScript.RazorSkin.CodeGen
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
             _typeHelper = new CecilTypeHelper(clrContext);
             _cssManager = cssManager;
+            _fallbackLocation = fallbackLocation;
 
             // Resolve all field identifiers at construction time
             ResolveFieldIdentifiers(
@@ -611,8 +624,8 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             // Wrap in: function(dc) { return <expr>; }
-            var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(null, getterScope, currentExpr));
+            var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope, getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, currentExpr));
             return fn;
         }
 
@@ -987,15 +1000,15 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             // return o;
-            stmts.Add(new ReturnStatement(null, innerScope,
+            stmts.Add(new ReturnStatement(_fallbackLocation, innerScope,
                 new IdentifierExpression(objVar, innerScope)));
 
             // Build the IIFE: (function() { ... })()
-            var fn = new FunctionExpression(null, _scope, innerScope,
+            var fn = new FunctionExpression(_fallbackLocation, _scope, innerScope,
                 innerScope.ParameterIdentifiers, null);
             fn.AddStatements(stmts);
 
-            return new MethodCallExpression(null, _scope, fn);
+            return new MethodCallExpression(_fallbackLocation, _scope, fn);
         }
 
         /// <summary>
@@ -1137,8 +1150,8 @@ namespace NScript.RazorSkin.CodeGen
             if (result == null) return null;
 
             // Wrap in: function(dc) { return <expr>; }
-            var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(null, getterScope, result));
+            var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope, getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, result));
             return fn;
         }
 
@@ -1196,8 +1209,8 @@ namespace NScript.RazorSkin.CodeGen
             var ternary = new ConditionalOperatorExpression(null, getterScope, conditionExpr, trueExpr, falseExpr);
 
             // Wrap in: function(dc) { return <ternary>; }
-            var fn = new FunctionExpression(null, _scope, getterScope, getterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(null, getterScope, ternary));
+            var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope, getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, ternary));
             return fn;
         }
 
@@ -1335,13 +1348,13 @@ namespace NScript.RazorSkin.CodeGen
                         methodCall = new MethodCallExpression(null, innerScope, methodAccess, eParam, evParam);
                     }
 
-                    var innerFn = new FunctionExpression(null, outerScope, innerScope,
+                    var innerFn = new FunctionExpression(_fallbackLocation, outerScope, innerScope,
                         innerScope.ParameterIdentifiers, null);
-                    innerFn.AddStatement(new ExpressionStatement(null, innerScope, methodCall));
+                    innerFn.AddStatement(new ExpressionStatement(_fallbackLocation, innerScope, methodCall));
 
-                    var outerFn = new FunctionExpression(null, _scope, outerScope,
+                    var outerFn = new FunctionExpression(_fallbackLocation, _scope, outerScope,
                         outerScope.ParameterIdentifiers, null);
-                    outerFn.AddStatement(new ReturnStatement(null, outerScope, innerFn));
+                    outerFn.AddStatement(new ReturnStatement(_fallbackLocation, outerScope, innerFn));
                     return outerFn;
                 }
 
@@ -1388,13 +1401,13 @@ namespace NScript.RazorSkin.CodeGen
                         methodCall = new MethodCallExpression(null, innerScope, methodAccess);
                     }
 
-                    var innerFn = new FunctionExpression(null, outerScope, innerScope,
+                    var innerFn = new FunctionExpression(_fallbackLocation, outerScope, innerScope,
                         innerScope.ParameterIdentifiers, null);
-                    innerFn.AddStatement(new ExpressionStatement(null, innerScope, methodCall));
+                    innerFn.AddStatement(new ExpressionStatement(_fallbackLocation, innerScope, methodCall));
 
-                    var outerFn = new FunctionExpression(null, _scope, outerScope,
+                    var outerFn = new FunctionExpression(_fallbackLocation, _scope, outerScope,
                         outerScope.ParameterIdentifiers, null);
-                    outerFn.AddStatement(new ReturnStatement(null, outerScope, innerFn));
+                    outerFn.AddStatement(new ReturnStatement(_fallbackLocation, outerScope, innerFn));
                     return outerFn;
                 }
             }
@@ -1586,13 +1599,13 @@ namespace NScript.RazorSkin.CodeGen
                 methodCall = new MethodCallExpression(null, innerScope, methodAccess, itemAccess, eParam, evParam);
             }
 
-            var innerFn = new FunctionExpression(null, outerScope, innerScope,
+            var innerFn = new FunctionExpression(_fallbackLocation, outerScope, innerScope,
                 innerScope.ParameterIdentifiers, null);
-            innerFn.AddStatement(new ExpressionStatement(null, innerScope, methodCall));
+            innerFn.AddStatement(new ExpressionStatement(_fallbackLocation, innerScope, methodCall));
 
-            var outerFn = new FunctionExpression(null, _scope, outerScope,
+            var outerFn = new FunctionExpression(_fallbackLocation, _scope, outerScope,
                 outerScope.ParameterIdentifiers, null);
-            outerFn.AddStatement(new ReturnStatement(null, outerScope, innerFn));
+            outerFn.AddStatement(new ReturnStatement(_fallbackLocation, outerScope, innerFn));
             return outerFn;
         }
 
@@ -1722,7 +1735,8 @@ namespace NScript.RazorSkin.CodeGen
                     _clrContext, itemTypeName ?? _modelTypeName,
                     _resolvedTypeIdentifiers,
                     parentModelTypeName: _modelTypeName,
-                    cssManager: _cssManager);
+                    cssManager: _cssManager,
+                    fallbackLocation: ct.IrNode?.Location ?? _fallbackLocation);
                 itemGraphExpr = nestedEmitter.Emit();
             }
 
@@ -1860,8 +1874,8 @@ namespace NScript.RazorSkin.CodeGen
                 new IdentifierExpression(factoryId, innerScope),
                 new Expression[] { new IdentifierExpression(elemParam, innerScope) });
 
-            var fn = new FunctionExpression(null, _scope, innerScope, innerScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(null, innerScope, callExpr));
+            var fn = new FunctionExpression(_fallbackLocation, _scope, innerScope, innerScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, innerScope, callExpr));
             return fn;
         }
 
@@ -1906,8 +1920,8 @@ namespace NScript.RazorSkin.CodeGen
                 new IdentifierExpression(getterId, innerScope),
                 new Expression[0]);
 
-            var fn = new FunctionExpression(null, _scope, innerScope, innerScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(null, innerScope, callExpr));
+            var fn = new FunctionExpression(_fallbackLocation, _scope, innerScope, innerScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, innerScope, callExpr));
             return fn;
         }
 
@@ -2130,8 +2144,8 @@ namespace NScript.RazorSkin.CodeGen
                     new IdentifierExpression(setterMethodId, setterScope)),
                 new Expression[] { new IdentifierExpression(valParam, setterScope) });
 
-            var fn = new FunctionExpression(null, _scope, setterScope, setterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ExpressionStatement(null, setterScope, callExpr));
+            var fn = new FunctionExpression(_fallbackLocation, _scope, setterScope, setterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ExpressionStatement(_fallbackLocation, setterScope, callExpr));
             return fn;
         }
     }
