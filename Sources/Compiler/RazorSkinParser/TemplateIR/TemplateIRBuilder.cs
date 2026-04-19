@@ -31,7 +31,10 @@ namespace NScript.RazorSkin.TemplateIR
             if (!span.HasValue)
                 return null;
             var s = span.Value;
-            // Mirror the XWML guard: reject non-positive line indices as unattributable.
+            // Equivalent to the XWML guard after the 0→1-based offset: XWML guards
+            // `Line <= 0` on already-1-based spans; Razor's LineIndex is 0-based, so
+            // rejecting `< 0` keeps LineIndex == 0 (template line 1) as a valid map
+            // entry while still filtering synthetic nodes with negative indices.
             if (s.LineIndex < 0)
                 return null;
             return new Location(templateName, s.LineIndex + 1, s.CharacterIndex);
@@ -246,7 +249,7 @@ namespace NScript.RazorSkin.TemplateIR
                         // Check for event attributes and sub-controls before adding HTML
                         var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
                         // Also detect sub-controls in the HTML
-                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName);
+                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, TryGetLocation(htmlNode, templateName));
                         if (!string.IsNullOrWhiteSpace(processed))
                         {
                             currentParent.Children.Add(new HtmlNode
@@ -287,7 +290,7 @@ namespace NScript.RazorSkin.TemplateIR
                                 if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
                                     var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
-                                    processed = ExtractSubControlsFromHtml(processed, currentParent, templateName);
+                                    processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, TryGetLocation(closingNode, templateName));
                                     if (!string.IsNullOrWhiteSpace(processed))
                                         currentParent.Children.Add(new HtmlNode
                                         {
@@ -342,7 +345,7 @@ namespace NScript.RazorSkin.TemplateIR
                                     if (!string.IsNullOrWhiteSpace(closingHtml))
                                     {
                                         var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
-                                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName);
+                                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, TryGetLocation(closingNode, templateName));
                                         if (!string.IsNullOrWhiteSpace(processed))
                                             currentParent.Children.Add(new HtmlNode
                                             {
@@ -735,9 +738,11 @@ namespace NScript.RazorSkin.TemplateIR
                     if (!string.IsNullOrWhiteSpace(content))
                     {
                         // Use a dummy container to collect SubControlNodes,
-                        // then move them to the loop's ItemTemplate.
+                        // then move them to the loop's ItemTemplate. Pass the host
+                        // htmlNode location so sub-controls pin to the loop-body line
+                        // rather than collapsing to the dummy container's null Location.
                         var dummy = new SkinTemplateNode();
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName);
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, TryGetLocation(htmlNode, templateName));
                         if (!string.IsNullOrWhiteSpace(processed))
                             loop.ItemTemplate.Add(new HtmlNode
                             {
@@ -1184,19 +1189,24 @@ namespace NScript.RazorSkin.TemplateIR
 
         /// <summary>
         /// Scans HTML content for PascalCase tags that represent sub-controls.
-        /// Extracts them into SubControlNode instances.
+        /// Extracts them into SubControlNode instances. <paramref name="hostLocation"/>
+        /// is the preferred source anchor (e.g., the surrounding
+        /// <c>HtmlContentIntermediateNode</c>'s location, which pins sub-controls to
+        /// the line they actually appear on); callers without an htmlNode in scope
+        /// pass <c>null</c> and fall back to <paramref name="parent"/>'s Location.
+        /// Without the host-level anchor, all sub-controls would collapse to the
+        /// parent's line (often line 1 for the <see cref="SkinTemplateNode"/> root).
         /// </summary>
-        private static string ExtractSubControlsFromHtml(string html, IRNode parent, string templateName = null)
+        private static string ExtractSubControlsFromHtml(string html, IRNode parent, string templateName = null, Location hostLocation = null)
         {
             if (string.IsNullOrEmpty(html)) return html;
 
             var matches = PascalCaseTagRegex.Matches(html);
 
             // Sub-controls have no Razor intermediate node available, but they live inside
-            // the parent's HTML content. Inherit the parent's Location as a best-effort
-            // anchor so emitted JST gets a non-null position rather than silently losing
-            // the source trail.
-            var parentLocation = parent?.Location;
+            // the host html content. Prefer the host htmlNode's Location; fall back to the
+            // parent's Location only when the caller lacks an htmlNode in scope.
+            var parentLocation = hostLocation ?? parent?.Location;
 
             foreach (Match match in matches)
             {

@@ -94,11 +94,13 @@ namespace NScript.RazorSkin.CodeGen
         /// <c>TemplateName</c> so the source map always traces generated JST back
         /// to the template file rather than reporting null positions (which would
         /// drop the mapping entry entirely per V3 source-map semantics).
+        /// The <c>_ir</c> field is populated by the ctor and <c>_ir.TemplateName</c>
+        /// is always set by <c>TemplateIRBuilder</c>, so no null-defensive branches
+        /// are needed — callers always hit this after <see cref="Generate"/> starts.
         /// </summary>
         private Location GetTemplateLocation()
         {
-            return _ir?.Location
-                ?? new Location(_ir?.TemplateName ?? string.Empty, 1, 0);
+            return _ir.Location ?? new Location(_ir.TemplateName, 1, 0);
         }
 
         /// <summary>
