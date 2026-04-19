@@ -31,7 +31,8 @@
         public static Expression VisitBooleanLiteralExpressionExt(this ITransformerVisitor self, BooleanLiteralExpression expr)
             => new BooleanLiteralExpression(
                 expr.Scope,
-                expr.Value);
+                expr.Value,
+                expr.Location);
 
         public static Expression VisitConditionalOperatorExpressionExt(this ITransformerVisitor self, ConditionalOperatorExpression expr)
             => new ConditionalOperatorExpression(
@@ -44,7 +45,8 @@
         public static Expression VisitDoubleLiteralExpressionExt(this ITransformerVisitor self, DoubleLiteralExpression expr)
             => new DoubleLiteralExpression(
                 expr.Scope,
-                expr.Double);
+                expr.Double,
+                expr.Location);
 
         public static Expression VisitExpressionListExt(this ITransformerVisitor self, ExpressionsList expr)
             => new ExpressionsList(
@@ -172,10 +174,10 @@
                     .ToArray());
 
         public static Expression VisitNullLiteralExpressionExt(this ITransformerVisitor self, NullLiteralExpression expr)
-            => new NullLiteralExpression(expr.Scope);
+            => new NullLiteralExpression(expr.Scope, expr.Location);
 
         public static Expression VisitNumberLiteralExpressionExt(this ITransformerVisitor self, NumberLiteralExpression expr)
-            => new NumberLiteralExpression(expr.Scope, expr.Number);
+            => new NumberLiteralExpression(expr.Scope, expr.Number, expr.Location);
 
         public static Expression VisitScriptLiteralExpressionExt(this ITransformerVisitor self, ScriptLiteralExpression expr)
             => new ScriptLiteralExpression(
@@ -189,7 +191,8 @@
         public static Expression VisitStringLiteralExpressionExt(this ITransformerVisitor self, StringLiteralExpression expr)
             => new StringLiteralExpression(
                 expr.Scope,
-                expr.StringLiteral);
+                expr.StringLiteral,
+                expr.Location);
 
         public static Expression VisitThisExpressionExt(this ITransformerVisitor self, ThisExpression expr)
             => new ThisExpression(
@@ -290,7 +293,8 @@
             => new CatchHandler(
                 catchHandler.Scope,
                 (IdentifierExpression)self.DispatchExpression(catchHandler.Identifier),
-                (ScopeBlock)self.DispatchStatement(catchHandler.CatchBlock));
+                (ScopeBlock)self.DispatchStatement(catchHandler.CatchBlock),
+                catchHandler.Location);
 
         public static Statement VisitDoWhileLoopExt(this ITransformerVisitor self, DoWhileLoop doWhileLoop)
             => new DoWhileLoop(
@@ -394,7 +398,8 @@
                     : null,
                 tryCatchFinalyBlock.Finally != null
                     ? (ScopeBlock)self.DispatchStatement(tryCatchFinalyBlock.Finally)
-                    : null);
+                    : null,
+                tryCatchFinalyBlock.Location);
 
         public static Statement VisitVarInitializerStatementExt(this ITransformerVisitor self, VarInitializerStatement varInitializerStatement)
             => new VarInitializerStatement(

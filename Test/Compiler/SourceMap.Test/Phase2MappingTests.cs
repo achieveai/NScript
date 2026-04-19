@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NScript.JST;
+using NScript.JST.Visitors;
 using NScript.Utils;
 
 namespace OwaSourceMapper.Test
@@ -240,6 +241,198 @@ namespace OwaSourceMapper.Test
             Assert.IsTrue(
                 decoded.HasMappingFor("TryBlock.cs", sourceLine: 49),
                 "TryCatchFinalyBlock Location should surface in map. Map:\n" + map.ToString());
+        }
+
+        /// <summary>
+        /// Phase 2d: variable-declaration blocks (`int x = 1, y = 2;` in C# → a
+        /// `var`-block in JS) must carry a Location so debuggers can step into
+        /// the declaration line. This test covers <see cref="VarInitializerStatement"/>
+        /// (the hoisted-declaration form used by NScript for `var x, y, z;`
+        /// emissions) going through the dispatcher.
+        /// </summary>
+        [TestMethod]
+        public void Write_VarInitializerStatementWithLocation_MapsToSource()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            var scope = new IdentifierScope(isExecutionScope: true);
+            var location = new Location("Vars.cs", 12, 0, 12, 20);
+            var ident = new IdentifierExpression(
+                SimpleIdentifier.CreateScopeIdentifier(scope, "x", true),
+                scope);
+
+            var stmt = new VarInitializerStatement(
+                location,
+                scope,
+                new List<Expression> { ident });
+            writer.Write(stmt);
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+
+            var decoded = DecodedMapView.Parse(map.ToString());
+            Assert.IsTrue(
+                decoded.HasMappingFor("Vars.cs", sourceLine: 11),
+                "VarInitializerStatement Location should surface in map. Map:\n" + map.ToString());
+        }
+
+        /// <summary>
+        /// Phase 2d: the plain <see cref="InitializerStatement"/> (used by
+        /// <c>BondToAst.ParseVariableInitializers</c> for C# multi-variable
+        /// declarations like `int x = 1, y = 2;`) must also propagate Location.
+        /// Pairs with the Roslyn-side fix that now sets `Location` on
+        /// <c>VariableBlockDeclaration</c> in <c>BoundAstToAstBase</c>.
+        /// </summary>
+        [TestMethod]
+        public void Write_InitializerStatementWithLocation_MapsToSource()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            var scope = new IdentifierScope(isExecutionScope: true);
+            var location = new Location("Multi.cs", 25, 0, 25, 30);
+            var ident = new IdentifierExpression(
+                SimpleIdentifier.CreateScopeIdentifier(scope, "y", true),
+                scope);
+
+            var stmt = new InitializerStatement(
+                location,
+                scope,
+                new List<Expression> { ident });
+            writer.Write(stmt);
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+
+            var decoded = DecodedMapView.Parse(map.ToString());
+            Assert.IsTrue(
+                decoded.HasMappingFor("Multi.cs", sourceLine: 24),
+                "InitializerStatement Location should surface in map. Map:\n" + map.ToString());
+        }
+
+        /// <summary>
+        /// Phase 2a: <see cref="BooleanLiteralExpression"/> must carry a Location.
+        /// Parallel to <c>Write_NumberLiteralWithLocation_MapsToSource</c> for
+        /// the other primitive literal types added in Phase 2.
+        /// </summary>
+        [TestMethod]
+        public void Write_BooleanLiteralWithLocation_MapsToSource()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            var scope = new IdentifierScope(isExecutionScope: true);
+            var location = new Location("Bool.cs", 4, 10, 4, 14);
+
+            var literal = new BooleanLiteralExpression(scope, true, location);
+            writer.Write(literal);
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+
+            var decoded = DecodedMapView.Parse(map.ToString());
+            Assert.IsTrue(
+                decoded.HasMappingFor("Bool.cs", sourceLine: 3),
+                "BooleanLiteral Location should surface in map. Map:\n" + map.ToString());
+        }
+
+        /// <summary>
+        /// Phase 2a: <see cref="DoubleLiteralExpression"/> must carry a Location.
+        /// </summary>
+        [TestMethod]
+        public void Write_DoubleLiteralWithLocation_MapsToSource()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            var scope = new IdentifierScope(isExecutionScope: true);
+            var location = new Location("Dbl.cs", 6, 0, 6, 5);
+
+            var literal = new DoubleLiteralExpression(scope, 3.14, location);
+            writer.Write(literal);
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+
+            var decoded = DecodedMapView.Parse(map.ToString());
+            Assert.IsTrue(
+                decoded.HasMappingFor("Dbl.cs", sourceLine: 5),
+                "DoubleLiteral Location should surface in map. Map:\n" + map.ToString());
+        }
+
+        /// <summary>
+        /// Phase 2a: <see cref="NullLiteralExpression"/> must carry a Location.
+        /// </summary>
+        [TestMethod]
+        public void Write_NullLiteralWithLocation_MapsToSource()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            var scope = new IdentifierScope(isExecutionScope: true);
+            var location = new Location("Null.cs", 9, 2, 9, 6);
+
+            var literal = new NullLiteralExpression(scope, location);
+            writer.Write(literal);
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+
+            var decoded = DecodedMapView.Parse(map.ToString());
+            Assert.IsTrue(
+                decoded.HasMappingFor("Null.cs", sourceLine: 8),
+                "NullLiteral Location should surface in map. Map:\n" + map.ToString());
+        }
+
+        /// <summary>
+        /// Phase 2 regression guard: <see cref="TransformerVisitorExtension"/>
+        /// clones nodes during optimizer passes (e.g., <c>ProxyFixer</c>,
+        /// <c>MethodNameRemover</c>). If the clone drops Location, a release build
+        /// with `-optimize` loses all literal / catch-handler mappings silently.
+        /// This test runs every literal through the transformer's default visit
+        /// (via <see cref="IdentityTransformer"/>) and asserts Location survives.
+        /// </summary>
+        [TestMethod]
+        public void Transformer_ClonesLiteralsAndCatch_PreservesLocation()
+        {
+            var scope = new IdentifierScope(isExecutionScope: true);
+            ITransformerVisitor transformer = new IdentityTransformer();
+
+            var numLoc = new Location("N.cs", 1, 0, 1, 1);
+            var num = (NumberLiteralExpression)transformer.VisitNumberLiteralExpression(
+                new NumberLiteralExpression(scope, 1, numLoc));
+            Assert.AreSame(numLoc, num.Location, "NumberLiteral Location must survive transformer clone.");
+
+            var strLoc = new Location("S.cs", 2, 0, 2, 1);
+            var str = (StringLiteralExpression)transformer.VisitStringLiteralExpression(
+                new StringLiteralExpression(scope, "hi", strLoc));
+            Assert.AreSame(strLoc, str.Location, "StringLiteral Location must survive transformer clone.");
+
+            var boolLoc = new Location("B.cs", 3, 0, 3, 1);
+            var b = (BooleanLiteralExpression)transformer.VisitBooleanLiteralExpression(
+                new BooleanLiteralExpression(scope, false, boolLoc));
+            Assert.AreSame(boolLoc, b.Location, "BooleanLiteral Location must survive transformer clone.");
+
+            var dblLoc = new Location("D.cs", 4, 0, 4, 1);
+            var d = (DoubleLiteralExpression)transformer.VisitDoubleLiteralExpression(
+                new DoubleLiteralExpression(scope, 2.5, dblLoc));
+            Assert.AreSame(dblLoc, d.Location, "DoubleLiteral Location must survive transformer clone.");
+
+            var nullLoc = new Location("Z.cs", 5, 0, 5, 1);
+            var n = (NullLiteralExpression)transformer.VisitNullLiteralExpression(
+                new NullLiteralExpression(scope, nullLoc));
+            Assert.AreSame(nullLoc, n.Location, "NullLiteral Location must survive transformer clone.");
+
+            var catchLoc = new Location("C.cs", 6, 0, 6, 1);
+            var emptyBlock = new ScopeBlock(null, scope, new List<Statement>());
+            var catchHandler = new CatchHandler(scope, null, emptyBlock, catchLoc);
+            var clonedCatch = (CatchHandler)transformer.VisitCatchHandler(catchHandler);
+            Assert.AreSame(catchLoc, clonedCatch.Location, "CatchHandler Location must survive transformer clone.");
+
+            var tryLoc = new Location("T.cs", 7, 0, 7, 1);
+            var tryBlock = new TryCatchFinalyBlock(scope, emptyBlock, null, null, tryLoc);
+            var clonedTry = (TryCatchFinalyBlock)transformer.VisitTryCatchFinallyBlock(tryBlock);
+            Assert.AreSame(tryLoc, clonedTry.Location, "TryCatchFinalyBlock Location must survive transformer clone.");
+        }
+
+        /// <summary>
+        /// Identity transformer: accepts the <see cref="ITransformerVisitor"/>
+        /// default implementations (which delegate to the extension methods).
+        /// Used to exercise the clone paths without customizing any visit.
+        /// </summary>
+        private sealed class IdentityTransformer : ITransformerVisitor
+        {
         }
 
         /// <summary>
