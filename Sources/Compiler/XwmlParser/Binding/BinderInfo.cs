@@ -100,11 +100,13 @@ namespace XwmlParser
                     codeGenerator.CodeGenerator);
             }
 
+            NScript.Utils.Location bindingLocation = codeGenerator.GetLocation(nodeInfo);
+
             return new MethodCallExpression(
-                null,
+                bindingLocation,
                 codeGenerator.Scope,
                 IdentifierExpression.Create(
-                    null,
+                    bindingLocation,
                     codeGenerator.Scope,
                     codeGenerator.CodeGenerator.Resolver.ResolveFactory(
                         this.GetBinderInfoCtor(

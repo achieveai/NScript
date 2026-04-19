@@ -83,10 +83,12 @@ namespace XwmlParser.NodeInfos
         {
             int objectIndex = codeGenerator.GetObjectIndexForNode(this);
 
+            Location location = codeGenerator.GetLocation(this);
+
             codeGenerator.AddStatement(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IndexExpression(
-                        null,
+                        location,
                         codeGenerator.Scope,
                         new IdentifierExpression(
                             codeGenerator.GetObjectStorageIdentifier(),
@@ -94,7 +96,7 @@ namespace XwmlParser.NodeInfos
                         new NumberLiteralExpression(
                             codeGenerator.Scope,
                             objectIndex)),
-                    this.GetCtorExpression(codeGenerator)));
+                    this.GetCtorExpression(codeGenerator, location)));
 
             this.GenerateStaticInitializers(
                 codeGenerator,
@@ -315,14 +317,21 @@ namespace XwmlParser.NodeInfos
         protected Expression GetCtorExpression(
             SkinCodeGenerator codeGenerator)
         {
+            return this.GetCtorExpression(codeGenerator, codeGenerator.GetLocation(this));
+        }
+
+        protected Expression GetCtorExpression(
+            SkinCodeGenerator codeGenerator,
+            Location location)
+        {
             var ctor = this.GetCtorReference(codeGenerator.CodeGenerator.ParserContext);
             var args = new List<Expression>();
             this.GetCtorArgs(codeGenerator, args);
             return new MethodCallExpression(
-                    null,
+                    location,
                     codeGenerator.Scope,
                     IdentifierExpression.Create(
-                        null,
+                        location,
                         codeGenerator.Scope,
                         codeGenerator.CodeGenerator.Resolver.ResolveFactory(ctor)),
                     args);
@@ -387,13 +396,15 @@ namespace XwmlParser.NodeInfos
             SkinCodeGenerator codeGenerator,
             int objectIndex)
         {
+            Location location = codeGenerator.GetLocation(this);
+
             foreach (var propValue in this.staticInitializers)
             {
                 PropertyReference prop = propValue.Key as PropertyReference;
                 CodeGenerator globalCodeGenerator = codeGenerator.CodeGenerator;
                 var instanceExpression =
                         new IndexExpression(
-                            null,
+                            location,
                             codeGenerator.Scope,
                             new IdentifierExpression(
                                 codeGenerator.GetObjectStorageIdentifier(),
@@ -407,7 +418,7 @@ namespace XwmlParser.NodeInfos
                 {
                     codeGenerator.AddStatement(
                         new ExpressionStatement(
-                            null,
+                            location,
                             codeGenerator.Scope,
                             CodeGenerator.GetPropertySetterExpression(
                                 globalCodeGenerator.ScopeManager,
@@ -421,7 +432,7 @@ namespace XwmlParser.NodeInfos
                 {
                     codeGenerator.AddStatement(
                         new ExpressionStatement(
-                            null,
+                            location,
                             codeGenerator.Scope,
                             CodeGenerator.GetFieldSetterExpression(
                                 globalCodeGenerator.ScopeManager,
