@@ -249,13 +249,14 @@ namespace NScript.RazorSkin.TemplateIR
                         // Check for event attributes and sub-controls before adding HTML
                         var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
                         // Also detect sub-controls in the HTML
-                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, TryGetLocation(htmlNode, templateName));
+                        var htmlLocation = TryGetLocation(htmlNode, templateName);
+                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, htmlLocation);
                         if (!string.IsNullOrWhiteSpace(processed))
                         {
                             currentParent.Children.Add(new HtmlNode
                             {
                                 HtmlContent = processed,
-                                Location = TryGetLocation(htmlNode, templateName)
+                                Location = htmlLocation
                             });
                         }
                         lastHtmlContent = content;
@@ -290,12 +291,13 @@ namespace NScript.RazorSkin.TemplateIR
                                 if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
                                     var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
-                                    processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, TryGetLocation(closingNode, templateName));
+                                    var closingLocation = TryGetLocation(closingNode, templateName);
+                                    processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, closingLocation);
                                     if (!string.IsNullOrWhiteSpace(processed))
                                         currentParent.Children.Add(new HtmlNode
                                         {
                                             HtmlContent = processed,
-                                            Location = TryGetLocation(closingNode, templateName)
+                                            Location = closingLocation
                                         });
                                     lastHtmlContent = closingHtml;
                                 }
@@ -345,12 +347,13 @@ namespace NScript.RazorSkin.TemplateIR
                                     if (!string.IsNullOrWhiteSpace(closingHtml))
                                     {
                                         var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
-                                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, TryGetLocation(closingNode, templateName));
+                                        var closingLocation = TryGetLocation(closingNode, templateName);
+                                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, closingLocation);
                                         if (!string.IsNullOrWhiteSpace(processed))
                                             currentParent.Children.Add(new HtmlNode
                                             {
                                                 HtmlContent = processed,
-                                                Location = TryGetLocation(closingNode, templateName)
+                                                Location = closingLocation
                                             });
                                         lastHtmlContent = closingHtml;
                                     }
@@ -742,12 +745,13 @@ namespace NScript.RazorSkin.TemplateIR
                         // htmlNode location so sub-controls pin to the loop-body line
                         // rather than collapsing to the dummy container's null Location.
                         var dummy = new SkinTemplateNode();
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, TryGetLocation(htmlNode, templateName));
+                        var htmlLocation = TryGetLocation(htmlNode, templateName);
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, htmlLocation);
                         if (!string.IsNullOrWhiteSpace(processed))
                             loop.ItemTemplate.Add(new HtmlNode
                             {
                                 HtmlContent = processed,
-                                Location = TryGetLocation(htmlNode, templateName)
+                                Location = htmlLocation
                             });
                         foreach (var child in dummy.Children)
                             loop.ItemTemplate.Add(child);
@@ -1246,7 +1250,8 @@ namespace NScript.RazorSkin.TemplateIR
                         {
                             DomEventName = domEvtName,
                             HandlerExpression = evtExpr,
-                            IsLambda = evtExpr.Contains("=>")
+                            IsLambda = evtExpr.Contains("=>"),
+                            Location = parentLocation
                         });
                     }
                     else if (!attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))

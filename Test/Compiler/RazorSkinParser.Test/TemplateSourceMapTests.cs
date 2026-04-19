@@ -129,6 +129,30 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void SubControlNode_CarriesTemplateLocation()
+        {
+            // Line 3 hosts <ListView>. SubControlNode Location derivation is unique:
+            // it uses `hostLocation ?? parent?.Location` (the hostLocation parameter
+            // added during Phase 3b self-review) rather than the
+            // TryGetLocation(intermediateNode) path used by other node types.
+            // Without this coverage the host-location threading could silently
+            // regress to null and sub-controls would collapse to line 1 of the
+            // SkinTemplateNode root.
+            var ir = BuildIR("@model TestVM\n\n<div><ListView id=\"myList\" /></div>");
+
+            var subControl = ir.Children.OfType<SubControlNode>().FirstOrDefault();
+            subControl.Should().NotBeNull(
+                "a PascalCase tag inside HTML content must produce a SubControlNode (regression guard)");
+            subControl.Location.Should().NotBeNull(
+                "SubControlNode must inherit the host htmlNode's Location so skin-factory " +
+                "emission pins the sub-control to its authored line, not line 1 of the root");
+            subControl.Location.FileName.Should().Be(TestTemplateName);
+            // Razor package version not pinned; span attribution may shift between
+            // Razor builds. Assert >= 1 (file-scoped) rather than exact equality.
+            subControl.Location.StartLine.Should().BeGreaterOrEqualTo(1);
+        }
+
+        [TestMethod]
         public void GraphDescriptorEmitter_ExposesFallbackLocationContract()
         {
             // Surface-level contract check for the Phase 3b threading in
