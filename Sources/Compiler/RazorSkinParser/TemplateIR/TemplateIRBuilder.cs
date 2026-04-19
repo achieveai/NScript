@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using NScript.Utils;
 using Serilog;
 
 namespace NScript.RazorSkin.TemplateIR
@@ -11,6 +12,30 @@ namespace NScript.RazorSkin.TemplateIR
     public static class TemplateIRBuilder
     {
         private static ILogger Log => RazorSkinCompiler.Logger;
+
+        /// <summary>
+        /// Extracts an NScript <see cref="Location"/> from the upstream Razor
+        /// <c>IntermediateNode.Source</c> span. Razor uses 0-based
+        /// <c>LineIndex</c>/<c>CharacterIndex</c>; NScript <see cref="Location"/>
+        /// uses 1-based lines (0-based columns), matching the XWML Phase 3a
+        /// convention in <c>SkinCodeGenerator.GetLocation</c>.
+        /// Returns null when the Razor parser could not attribute a position
+        /// (synthetic/whitespace nodes), so callers must short-circuit before
+        /// wiring the location into emitted JST.
+        /// </summary>
+        private static Location TryGetLocation(IntermediateNode sourceNode, string templateName)
+        {
+            if (sourceNode == null || string.IsNullOrEmpty(templateName))
+                return null;
+            var span = sourceNode.Source;
+            if (!span.HasValue)
+                return null;
+            var s = span.Value;
+            // Mirror the XWML guard: reject non-positive line indices as unattributable.
+            if (s.LineIndex < 0)
+                return null;
+            return new Location(templateName, s.LineIndex + 1, s.CharacterIndex);
+        }
 
         // Known DOM event attribute names (lowercase)
         private static readonly HashSet<string> EventAttributes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -117,8 +142,15 @@ namespace NScript.RazorSkin.TemplateIR
             if (methodNode == null)
                 return root;
 
+            // Anchor the root SkinTemplateNode at the first attributable span in the
+            // method body so the final source map has a non-null fallback Location for
+            // template-level JST (skin factory / getter).
+            root.Location = TryGetLocation(methodNode, templateName)
+                ?? FindFirstAttributableLocation(methodNode, templateName)
+                ?? new Location(templateName, 1, 0);
+
             // Walk the flat sequence of children in the method body
-            WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName);
+            WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName, templateName);
 
             // Count IR nodes by type
             var htmlCount = CountNodes<HtmlNode>(root.Children);
@@ -155,10 +187,30 @@ namespace NScript.RazorSkin.TemplateIR
             return count;
         }
 
+        /// <summary>
+        /// Depth-first search for the first descendant of <paramref name="node"/> that
+        /// carries a usable <c>Source</c> span. Used to anchor the root
+        /// <see cref="SkinTemplateNode"/> when the method declaration itself lacks
+        /// an attributable span.
+        /// </summary>
+        private static Location FindFirstAttributableLocation(IntermediateNode node, string templateName)
+        {
+            if (node == null) return null;
+            var here = TryGetLocation(node, templateName);
+            if (here != null) return here;
+            foreach (var child in node.Children)
+            {
+                var found = FindFirstAttributableLocation(child, templateName);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
         private static void WalkMethodBody(
             IntermediateNodeCollection children,
             IRNode currentParent,
-            string modelTypeName = null)
+            string modelTypeName = null,
+            string templateName = null)
         {
             var childList = children.ToList();
             int i = 0;
@@ -194,10 +246,14 @@ namespace NScript.RazorSkin.TemplateIR
                         // Check for event attributes and sub-controls before adding HTML
                         var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
                         // Also detect sub-controls in the HTML
-                        processed = ExtractSubControlsFromHtml(processed, currentParent);
+                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName);
                         if (!string.IsNullOrWhiteSpace(processed))
                         {
-                            currentParent.Children.Add(new HtmlNode { HtmlContent = processed });
+                            currentParent.Children.Add(new HtmlNode
+                            {
+                                HtmlContent = processed,
+                                Location = TryGetLocation(htmlNode, templateName)
+                            });
                         }
                         lastHtmlContent = content;
                     }
@@ -219,20 +275,25 @@ namespace NScript.RazorSkin.TemplateIR
                         var eventAttr = DetectEventAttributeContext(lastHtmlContent);
                         if (eventAttr != null)
                         {
-                            currentParent.Children.Add(CreateEventNode(eventAttr, expression.Trim()));
+                            currentParent.Children.Add(CreateEventNode(eventAttr, expression.Trim(), exprNode, templateName));
                             // Skip the closing quote/tag in the next HTML node
                             if (i + 1 < childList.Count && childList[i + 1] is HtmlContentIntermediateNode)
                             {
-                                var closingHtml = GetTokenContent(childList[i + 1] as HtmlContentIntermediateNode);
+                                var closingNode = childList[i + 1] as HtmlContentIntermediateNode;
+                                var closingHtml = GetTokenContent(closingNode);
                                 // Remove just the closing " from the event attribute
                                 closingHtml = closingHtml.TrimStart('"', ' ');
                                 closingHtml = StripModelDirectiveEcho(closingHtml, modelTypeName);
                                 if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
                                     var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
-                                    processed = ExtractSubControlsFromHtml(processed, currentParent);
+                                    processed = ExtractSubControlsFromHtml(processed, currentParent, templateName);
                                     if (!string.IsNullOrWhiteSpace(processed))
-                                        currentParent.Children.Add(new HtmlNode { HtmlContent = processed });
+                                        currentParent.Children.Add(new HtmlNode
+                                        {
+                                            HtmlContent = processed,
+                                            Location = TryGetLocation(closingNode, templateName)
+                                        });
                                     lastHtmlContent = closingHtml;
                                 }
                                 i += 2;
@@ -250,7 +311,7 @@ namespace NScript.RazorSkin.TemplateIR
                             {
                                 var (attrName, prefix) = attrCtx.Value;
                                 var target = ClassifyAttributeTarget(attrName);
-                                var binding = CreateExpressionBinding(expression);
+                                var binding = CreateExpressionBinding(expression, exprNode, templateName);
                                 binding.Target = target;
                                 binding.AttributeName = attrName;
                                 binding.AttributePrefix = prefix;
@@ -273,16 +334,21 @@ namespace NScript.RazorSkin.TemplateIR
                                 // Consume the closing quote from the next HTML node (like events do)
                                 if (i + 1 < childList.Count && childList[i + 1] is HtmlContentIntermediateNode)
                                 {
-                                    var closingHtml = GetTokenContent(childList[i + 1] as HtmlContentIntermediateNode);
+                                    var closingNode = childList[i + 1] as HtmlContentIntermediateNode;
+                                    var closingHtml = GetTokenContent(closingNode);
                                     // Remove the closing " from the attribute
                                     closingHtml = closingHtml.TrimStart('"', ' ');
                                     closingHtml = StripModelDirectiveEcho(closingHtml, modelTypeName);
                                     if (!string.IsNullOrWhiteSpace(closingHtml))
                                     {
                                         var processed = ExtractEventAttributesFromHtml(closingHtml.Trim(), currentParent);
-                                        processed = ExtractSubControlsFromHtml(processed, currentParent);
+                                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName);
                                         if (!string.IsNullOrWhiteSpace(processed))
-                                            currentParent.Children.Add(new HtmlNode { HtmlContent = processed });
+                                            currentParent.Children.Add(new HtmlNode
+                                            {
+                                                HtmlContent = processed,
+                                                Location = TryGetLocation(closingNode, templateName)
+                                            });
                                         lastHtmlContent = closingHtml;
                                     }
                                     i += 2;
@@ -294,7 +360,7 @@ namespace NScript.RazorSkin.TemplateIR
                             }
                             else
                             {
-                                currentParent.Children.Add(CreateExpressionBinding(expression));
+                                currentParent.Children.Add(CreateExpressionBinding(expression, exprNode, templateName));
                                 i++;
                             }
                         }
@@ -312,12 +378,12 @@ namespace NScript.RazorSkin.TemplateIR
                     if (trimmedCode.StartsWith("if ") || trimmedCode.StartsWith("if("))
                     {
                         // Parse an if/else block: consumes subsequent siblings
-                        i = ParseIfBlock(childList, i, currentParent);
+                        i = ParseIfBlock(childList, i, currentParent, templateName);
                     }
                     else if (trimmedCode.StartsWith("foreach ") || trimmedCode.StartsWith("foreach("))
                     {
                         // Parse a foreach block: consumes subsequent siblings
-                        i = ParseForeachBlock(childList, i, currentParent);
+                        i = ParseForeachBlock(childList, i, currentParent, templateName);
                     }
                     else
                     {
@@ -348,12 +414,12 @@ namespace NScript.RazorSkin.TemplateIR
                         // Check if this is an event attribute
                         if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
                         {
-                            currentParent.Children.Add(CreateEventNode(attrName, exprValue.Trim()));
+                            currentParent.Children.Add(CreateEventNode(attrName, exprValue.Trim(), attrNode, templateName));
                         }
                         else
                         {
                             var target = ClassifyAttributeTarget(attrName);
-                            var binding = CreateExpressionBinding(exprValue);
+                            var binding = CreateExpressionBinding(exprValue, attrNode, templateName);
                             binding.Target = target;
                             binding.AttributeName = attrName;
                             binding.AttributePrefix = attrPrefix ?? "";
@@ -379,7 +445,7 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     // Recurse into children of unknown nodes
                     if (child.Children.Count > 0)
-                        WalkMethodBody(child.Children, currentParent, modelTypeName);
+                        WalkMethodBody(child.Children, currentParent, modelTypeName, templateName);
 
                     i++;
                 }
@@ -394,7 +460,8 @@ namespace NScript.RazorSkin.TemplateIR
         private static int ParseIfBlock(
             List<IntermediateNode> nodes,
             int startIndex,
-            IRNode parent)
+            IRNode parent,
+            string templateName = null)
         {
             var code = GetTokenContent(nodes[startIndex] as CSharpCodeIntermediateNode);
             var condExpr = ExtractConditionExpression(code);
@@ -407,7 +474,8 @@ namespace NScript.RazorSkin.TemplateIR
                     Mode = BindingMode.OneTime,
                     SourceKind = ClassifySource(condExpr)
                 },
-                IsReactive = false
+                IsReactive = false,
+                Location = TryGetLocation(nodes[startIndex], templateName)
             };
 
             int i = startIndex + 1;
@@ -441,7 +509,7 @@ namespace NScript.RazorSkin.TemplateIR
                         // Nested @if block
                         var targetBranchNested = inElseBranch ? conditional.FalseBranch : conditional.TrueBranch;
                         var dummyParent = new SkinTemplateNode();
-                        i = ParseIfBlock(nodes, i, dummyParent);
+                        i = ParseIfBlock(nodes, i, dummyParent, templateName);
                         targetBranchNested.AddRange(dummyParent.Children);
                         continue;
                     }
@@ -450,7 +518,7 @@ namespace NScript.RazorSkin.TemplateIR
                         // Nested @foreach block
                         var targetBranchNested = inElseBranch ? conditional.FalseBranch : conditional.TrueBranch;
                         var dummyParent = new SkinTemplateNode();
-                        i = ParseForeachBlock(nodes, i, dummyParent);
+                        i = ParseForeachBlock(nodes, i, dummyParent, templateName);
                         targetBranchNested.AddRange(dummyParent.Children);
                         continue;
                     }
@@ -469,7 +537,11 @@ namespace NScript.RazorSkin.TemplateIR
                     var content = GetTokenContent(htmlNode);
                     if (!string.IsNullOrWhiteSpace(content))
                     {
-                        targetBranch.Add(new HtmlNode { HtmlContent = content.Trim() });
+                        targetBranch.Add(new HtmlNode
+                        {
+                            HtmlContent = content.Trim(),
+                            Location = TryGetLocation(htmlNode, templateName)
+                        });
                         lastHtmlContent = content;
                     }
                 }
@@ -482,14 +554,19 @@ namespace NScript.RazorSkin.TemplateIR
                         var eventAttr = DetectEventAttributeContext(lastHtmlContent);
                         if (eventAttr != null)
                         {
-                            targetBranch.Add(CreateEventNode(eventAttr, expr.Trim()));
+                            targetBranch.Add(CreateEventNode(eventAttr, expr.Trim(), exprNode, templateName));
                             if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
                             {
-                                var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                var closingNode = nodes[i + 1] as HtmlContentIntermediateNode;
+                                var closingHtml = GetTokenContent(closingNode);
                                 closingHtml = closingHtml.TrimStart('"', ' ');
                                 if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
-                                    targetBranch.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                    targetBranch.Add(new HtmlNode
+                                    {
+                                        HtmlContent = closingHtml.Trim(),
+                                        Location = TryGetLocation(closingNode, templateName)
+                                    });
                                     lastHtmlContent = closingHtml;
                                 }
                                 i += 2;
@@ -504,7 +581,7 @@ namespace NScript.RazorSkin.TemplateIR
                             {
                                 var (attrName, prefix) = attrCtx.Value;
                                 var target = ClassifyAttributeTarget(attrName);
-                                var binding = CreateExpressionBinding(expr);
+                                var binding = CreateExpressionBinding(expr, exprNode, templateName);
                                 binding.Target = target;
                                 binding.AttributeName = attrName;
                                 binding.AttributePrefix = prefix;
@@ -522,11 +599,16 @@ namespace NScript.RazorSkin.TemplateIR
 
                                 if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
                                 {
-                                    var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                    var closingNode = nodes[i + 1] as HtmlContentIntermediateNode;
+                                    var closingHtml = GetTokenContent(closingNode);
                                     closingHtml = closingHtml.TrimStart('"', ' ');
                                     if (!string.IsNullOrWhiteSpace(closingHtml))
                                     {
-                                        targetBranch.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                        targetBranch.Add(new HtmlNode
+                                        {
+                                            HtmlContent = closingHtml.Trim(),
+                                            Location = TryGetLocation(closingNode, templateName)
+                                        });
                                         lastHtmlContent = closingHtml;
                                     }
                                     i += 2;
@@ -535,7 +617,7 @@ namespace NScript.RazorSkin.TemplateIR
                             }
                             else
                             {
-                                targetBranch.Add(CreateExpressionBinding(expr));
+                                targetBranch.Add(CreateExpressionBinding(expr, exprNode, templateName));
                             }
                         }
                     }
@@ -552,12 +634,12 @@ namespace NScript.RazorSkin.TemplateIR
 
                         if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
                         {
-                            targetBranch.Add(CreateEventNode(attrName, exprValue.Trim()));
+                            targetBranch.Add(CreateEventNode(attrName, exprValue.Trim(), attrNode, templateName));
                         }
                         else
                         {
                             var target = ClassifyAttributeTarget(attrName);
-                            var binding = CreateExpressionBinding(exprValue);
+                            var binding = CreateExpressionBinding(exprValue, attrNode, templateName);
                             binding.Target = target;
                             binding.AttributeName = attrName;
                             binding.AttributePrefix = attrPrefix ?? "";
@@ -591,7 +673,8 @@ namespace NScript.RazorSkin.TemplateIR
         private static int ParseForeachBlock(
             List<IntermediateNode> nodes,
             int startIndex,
-            IRNode parent)
+            IRNode parent,
+            string templateName = null)
         {
             var code = GetTokenContent(nodes[startIndex] as CSharpCodeIntermediateNode);
             var foreachParts = ExtractForeachParts(code);
@@ -606,7 +689,8 @@ namespace NScript.RazorSkin.TemplateIR
                 ItemVariableName = foreachParts.Item1,
                 CollectionExpression = foreachParts.Item2,
                 IsObservableCollection = false,
-                CollectionSourceKind = ClassifySource(foreachParts.Item2)
+                CollectionSourceKind = ClassifySource(foreachParts.Item2),
+                Location = TryGetLocation(nodes[startIndex], templateName)
             };
 
             int i = startIndex + 1;
@@ -629,7 +713,7 @@ namespace NScript.RazorSkin.TemplateIR
                     {
                         // Nested @if block inside foreach
                         var dummyParent = new SkinTemplateNode();
-                        i = ParseIfBlock(nodes, i, dummyParent);
+                        i = ParseIfBlock(nodes, i, dummyParent, templateName);
                         loop.ItemTemplate.AddRange(dummyParent.Children);
                         continue;
                     }
@@ -637,7 +721,7 @@ namespace NScript.RazorSkin.TemplateIR
                     {
                         // Nested @foreach block inside foreach
                         var dummyParent = new SkinTemplateNode();
-                        i = ParseForeachBlock(nodes, i, dummyParent);
+                        i = ParseForeachBlock(nodes, i, dummyParent, templateName);
                         loop.ItemTemplate.AddRange(dummyParent.Children);
                         continue;
                     }
@@ -653,9 +737,13 @@ namespace NScript.RazorSkin.TemplateIR
                         // Use a dummy container to collect SubControlNodes,
                         // then move them to the loop's ItemTemplate.
                         var dummy = new SkinTemplateNode();
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy);
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName);
                         if (!string.IsNullOrWhiteSpace(processed))
-                            loop.ItemTemplate.Add(new HtmlNode { HtmlContent = processed });
+                            loop.ItemTemplate.Add(new HtmlNode
+                            {
+                                HtmlContent = processed,
+                                Location = TryGetLocation(htmlNode, templateName)
+                            });
                         foreach (var child in dummy.Children)
                             loop.ItemTemplate.Add(child);
                         lastHtmlContent = content;
@@ -670,15 +758,20 @@ namespace NScript.RazorSkin.TemplateIR
                         var eventAttr = DetectEventAttributeContext(lastHtmlContent);
                         if (eventAttr != null)
                         {
-                            loop.ItemTemplate.Add(CreateEventNode(eventAttr, expr.Trim()));
+                            loop.ItemTemplate.Add(CreateEventNode(eventAttr, expr.Trim(), exprNode, templateName));
                             // Skip closing quote in the next HTML node
                             if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
                             {
-                                var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                var closingNode = nodes[i + 1] as HtmlContentIntermediateNode;
+                                var closingHtml = GetTokenContent(closingNode);
                                 closingHtml = closingHtml.TrimStart('"', ' ');
                                 if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
-                                    loop.ItemTemplate.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                    loop.ItemTemplate.Add(new HtmlNode
+                                    {
+                                        HtmlContent = closingHtml.Trim(),
+                                        Location = TryGetLocation(closingNode, templateName)
+                                    });
                                     lastHtmlContent = closingHtml;
                                 }
                                 i += 2;
@@ -693,7 +786,7 @@ namespace NScript.RazorSkin.TemplateIR
                             {
                                 var (attrName, prefix) = attrCtx.Value;
                                 var target = ClassifyAttributeTarget(attrName);
-                                var binding = CreateExpressionBinding(expr);
+                                var binding = CreateExpressionBinding(expr, exprNode, templateName);
                                 binding.Target = target;
                                 binding.AttributeName = attrName;
                                 binding.AttributePrefix = prefix;
@@ -715,11 +808,16 @@ namespace NScript.RazorSkin.TemplateIR
                                 // Consume closing quote
                                 if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
                                 {
-                                    var closingHtml = GetTokenContent(nodes[i + 1] as HtmlContentIntermediateNode);
+                                    var closingNode = nodes[i + 1] as HtmlContentIntermediateNode;
+                                    var closingHtml = GetTokenContent(closingNode);
                                     closingHtml = closingHtml.TrimStart('"', ' ');
                                     if (!string.IsNullOrWhiteSpace(closingHtml))
                                     {
-                                        loop.ItemTemplate.Add(new HtmlNode { HtmlContent = closingHtml.Trim() });
+                                        loop.ItemTemplate.Add(new HtmlNode
+                                        {
+                                            HtmlContent = closingHtml.Trim(),
+                                            Location = TryGetLocation(closingNode, templateName)
+                                        });
                                         lastHtmlContent = closingHtml;
                                     }
                                     i += 2;
@@ -728,7 +826,7 @@ namespace NScript.RazorSkin.TemplateIR
                             }
                             else
                             {
-                                loop.ItemTemplate.Add(CreateExpressionBinding(expr));
+                                loop.ItemTemplate.Add(CreateExpressionBinding(expr, exprNode, templateName));
                             }
                         }
                     }
@@ -746,12 +844,12 @@ namespace NScript.RazorSkin.TemplateIR
 
                         if (attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
                         {
-                            loop.ItemTemplate.Add(CreateEventNode(attrName, exprValue.Trim()));
+                            loop.ItemTemplate.Add(CreateEventNode(attrName, exprValue.Trim(), attrNode, templateName));
                         }
                         else
                         {
                             var target = ClassifyAttributeTarget(attrName);
-                            var binding = CreateExpressionBinding(exprValue);
+                            var binding = CreateExpressionBinding(exprValue, attrNode, templateName);
                             binding.Target = target;
                             binding.AttributeName = attrName;
                             binding.AttributePrefix = attrPrefix ?? "";
@@ -797,7 +895,10 @@ namespace NScript.RazorSkin.TemplateIR
             }
         }
 
-        private static ExpressionBindingNode CreateExpressionBinding(string expression)
+        private static ExpressionBindingNode CreateExpressionBinding(
+            string expression,
+            IntermediateNode sourceNode = null,
+            string templateName = null)
         {
             var classification = new BindingClassification
             {
@@ -809,7 +910,8 @@ namespace NScript.RazorSkin.TemplateIR
             return new ExpressionBindingNode
             {
                 Classification = classification,
-                Target = ExpressionTarget.TextContent
+                Target = ExpressionTarget.TextContent,
+                Location = TryGetLocation(sourceNode, templateName)
             };
         }
 
@@ -1043,7 +1145,11 @@ namespace NScript.RazorSkin.TemplateIR
         /// <summary>
         /// Creates an EventNode from an event attribute name and a C# expression.
         /// </summary>
-        private static EventNode CreateEventNode(string eventAttrName, string expression)
+        private static EventNode CreateEventNode(
+            string eventAttrName,
+            string expression,
+            IntermediateNode sourceNode = null,
+            string templateName = null)
         {
             // Strip "on" prefix to get DOM event name: "onclick" -> "click"
             var domEventName = eventAttrName.StartsWith("on")
@@ -1057,7 +1163,8 @@ namespace NScript.RazorSkin.TemplateIR
             {
                 DomEventName = domEventName,
                 HandlerExpression = expression,
-                IsLambda = isLambda
+                IsLambda = isLambda,
+                Location = TryGetLocation(sourceNode, templateName)
             };
         }
 
@@ -1079,11 +1186,17 @@ namespace NScript.RazorSkin.TemplateIR
         /// Scans HTML content for PascalCase tags that represent sub-controls.
         /// Extracts them into SubControlNode instances.
         /// </summary>
-        private static string ExtractSubControlsFromHtml(string html, IRNode parent)
+        private static string ExtractSubControlsFromHtml(string html, IRNode parent, string templateName = null)
         {
             if (string.IsNullOrEmpty(html)) return html;
 
             var matches = PascalCaseTagRegex.Matches(html);
+
+            // Sub-controls have no Razor intermediate node available, but they live inside
+            // the parent's HTML content. Inherit the parent's Location as a best-effort
+            // anchor so emitted JST gets a non-null position rather than silently losing
+            // the source trail.
+            var parentLocation = parent?.Location;
 
             foreach (Match match in matches)
             {
@@ -1094,7 +1207,8 @@ namespace NScript.RazorSkin.TemplateIR
                 var subControl = new SubControlNode
                 {
                     TypeName = tagName,
-                    ResolvedTypeName = tagName // Will be resolved later with namespace resolution
+                    ResolvedTypeName = tagName, // Will be resolved later with namespace resolution
+                    Location = parentLocation
                 };
 
                 // Extract id attribute
