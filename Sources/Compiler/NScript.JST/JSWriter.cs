@@ -305,7 +305,7 @@ namespace NScript.JST
         {
             if (node != null)
             {
-                if (node is JST.Expression
+                if ((node is JST.Expression || node is JST.Statement)
                     && node.Location != null)
                 {
                     this.EnterLocation(node.Location);

@@ -43,6 +43,8 @@
 			<ScriptGenerateOption Include="-optimize" Condition="'$(JsOptimize)' == 'true'" />
 		</ItemGroup>
 
+		<MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />
+
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
 
 	</Target>

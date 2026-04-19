@@ -6,6 +6,8 @@
 
 namespace NScript.JST
 {
+    using NScript.Utils;
+
     /// <summary>
     /// Null literal expression.
     /// </summary>
@@ -15,8 +17,9 @@ namespace NScript.JST
         /// Initializes a new instance of the <see cref="NullLiteralExpression"/> class.
         /// </summary>
         /// <param name="scope">The scope.</param>
-        public NullLiteralExpression(IdentifierScope scope)
-            : base("null", scope)
+        /// <param name="location">Optional source location for the literal.</param>
+        public NullLiteralExpression(IdentifierScope scope, Location location = null)
+            : base("null", scope, location)
         {
         }
 

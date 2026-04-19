@@ -27,7 +27,8 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return new JST.NumberLiteralExpression(
                 methodConverter.Scope,
-                intLiteral.Value);
+                intLiteral.Value,
+                intLiteral.Location);
         }
 
         /// <summary>
@@ -40,7 +41,8 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return new JST.NumberLiteralExpression(
                 methodConverter.Scope,
-                (long)intLiteral.Value);
+                (long)intLiteral.Value,
+                intLiteral.Location);
         }
 
         /// <summary>
@@ -53,7 +55,8 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return new JST.DoubleLiteralExpression(
                 methodConverter.Scope,
-                literal.Value);
+                literal.Value,
+                literal.Location);
         }
 
         /// <summary>
@@ -66,7 +69,8 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return new JST.BooleanLiteralExpression(
                 methodConverter.Scope,
-                literal.Value);
+                literal.Value,
+                literal.Location);
         }
 
         /// <summary>
@@ -78,11 +82,12 @@ namespace NScript.Converter.ExpressionsConverter
         public static JST.Expression ConvertStringLiteral(IMethodScopeConverter methodConverter, StringLiteral literal)
         {
             if (literal.String == null)
-            { return new JST.NullLiteralExpression(methodConverter.Scope); }
+            { return new JST.NullLiteralExpression(methodConverter.Scope, literal.Location); }
 
             return new JST.StringLiteralExpression(
                 methodConverter.Scope,
-                literal.String);
+                literal.String,
+                literal.Location);
         }
 
         /// <summary>
@@ -95,7 +100,8 @@ namespace NScript.Converter.ExpressionsConverter
         {
             return new JST.NumberLiteralExpression(
                 methodConverter.Scope,
-                literal.Value);
+                literal.Value,
+                literal.Location);
         }
 
         /// <summary>
@@ -107,7 +113,8 @@ namespace NScript.Converter.ExpressionsConverter
         public static JST.Expression ConvertNullLiteral(IMethodScopeConverter methodConverter, NullLiteral literal)
         {
             return new JST.NullLiteralExpression(
-                methodConverter.Scope);
+                methodConverter.Scope,
+                literal.Location);
         }
     }
 }

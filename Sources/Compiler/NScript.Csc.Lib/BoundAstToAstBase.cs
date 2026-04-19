@@ -1110,12 +1110,15 @@
                     .Where(e => e != null)
                     .ToList();
 
+            var location = node.Syntax.GetSerLoc();
+
             return initializers.Any()
                 ? (StatementSer)new VariableBlockDeclaration
                 {
+                    Location = location,
                     Initializers = initializers
                 }
-                : new EmptyStatementSer();
+                : new EmptyStatementSer { Location = location };
         }
 
         public override AstBase VisitNameOfOperator(BoundNameOfOperator node, SerializationContext arg)
