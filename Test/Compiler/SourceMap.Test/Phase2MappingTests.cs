@@ -213,6 +213,36 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// Phase 2c: the Location on <see cref="TryCatchFinalyBlock"/> must reach the
+        /// map when the block is written through the dispatcher. Mirrors the
+        /// CatchHandler end-to-end test so both new-Location parameters are covered.
+        /// </summary>
+        [TestMethod]
+        public void Write_TryCatchFinalyBlockWithLocation_MapsToSource()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            var scope = new IdentifierScope(isExecutionScope: true);
+            var location = new Location("TryBlock.cs", 50, 4, 50, 7);
+            var tryBody = new ScopeBlock(null, scope, new List<Statement>());
+
+            var block = new TryCatchFinalyBlock(
+                scope,
+                tryBody,
+                catchHandler: null,
+                finallyStatement: null,
+                location: location);
+            writer.Write(block);
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+
+            var decoded = DecodedMapView.Parse(map.ToString());
+            Assert.IsTrue(
+                decoded.HasMappingFor("TryBlock.cs", sourceLine: 49),
+                "TryCatchFinalyBlock Location should surface in map. Map:\n" + map.ToString());
+        }
+
+        /// <summary>
         /// Lightweight duplicate of the DecodedMap parser from
         /// <see cref="JSWriterIntegrationTests"/> — kept local so Phase 2 tests can
         /// evolve independently without touching the Phase 1 harness.
