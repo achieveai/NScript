@@ -166,6 +166,10 @@ namespace XwmlParser
         /// Builds a <see cref="Location"/> that points at the given HTML node inside the
         /// template file owned by this code generator. Returns <c>null</c> when the node
         /// does not carry positional information so callers can safely short-circuit.
+        /// HtmlAgilityPack reports <c>Line == 0</c> for synthetic / unparsed nodes
+        /// (e.g. nodes inserted by the parser itself with no source position); treating
+        /// those as "no location" is equivalent to the Phase 2 <c>FilePath == null</c>
+        /// guard used elsewhere in the source-map pipeline.
         /// </summary>
         internal Location GetLocation(HtmlNode node)
         {
