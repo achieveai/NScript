@@ -162,6 +162,37 @@ namespace XwmlParser
 
         public IdentifierScope Scope { get; set; }
 
+        /// <summary>
+        /// Builds a <see cref="Location"/> that points at the given HTML node inside the
+        /// template file owned by this code generator. Returns <c>null</c> when the node
+        /// does not carry positional information so callers can safely short-circuit.
+        /// HtmlAgilityPack reports <c>Line == 0</c> for synthetic / unparsed nodes
+        /// (e.g. nodes inserted by the parser itself with no source position); treating
+        /// those as "no location" is equivalent to the Phase 2 <c>FilePath == null</c>
+        /// guard used elsewhere in the source-map pipeline.
+        /// </summary>
+        internal Location GetLocation(HtmlNode node)
+        {
+            if (node == null || node.Line <= 0)
+            {
+                return null;
+            }
+
+            return new Location(
+                this.Parser.HtmlParser.ResourceName,
+                node.Line,
+                node.LinePosition);
+        }
+
+        /// <summary>
+        /// Convenience overload that derives the location from a <see cref="NodeInfo"/>'s
+        /// underlying HTML node.
+        /// </summary>
+        internal Location GetLocation(NodeInfo nodeInfo)
+        {
+            return this.GetLocation(nodeInfo?.Node);
+        }
+
         internal int GetObjectIndexForNode(
             NodeInfo htmlNodeInfo,
             bool domElementIndex = false)
@@ -253,6 +284,8 @@ namespace XwmlParser
 
         private void GenerateSkinFactory()
         {
+            Location skinLocation = this.GetLocation(this.skinNodeInfo);
+
             List<Statement> statements = new List<Statement>();
             this.GetInitializerBlock(statements);
             this.code.InsertRange(0, statements);
@@ -265,7 +298,7 @@ namespace XwmlParser
                     false);
 
             var factoryFunction = new FunctionExpression(
-                null,
+                skinLocation,
                 this.CodeGenerator.ScopeManager.Scope,
                 this.Scope,
                 this.Scope.ParameterIdentifiers,
@@ -275,13 +308,15 @@ namespace XwmlParser
 
             this.codeGenerator.AddStatement(
                 new ExpressionStatement(
-                    null,
+                    skinLocation,
                     this.codeGenerator.ScopeManager.Scope,
                     factoryFunction));
         }
 
         private void GenerateSkinGetter()
         {
+            Location skinLocation = this.GetLocation(this.skinNodeInfo);
+
             this.skinStorageVariable =
                 SimpleIdentifier.CreateScopeIdentifier(
                     codeGenerator.ScopeManager.Scope,
@@ -299,7 +334,7 @@ namespace XwmlParser
 
             var skinGetterFunction =
                 new FunctionExpression(
-                    null,
+                    skinLocation,
                     this.codeGenerator.ScopeManager.Scope,
                     methodScope,
                     methodScope.ParameterIdentifiers,
@@ -310,19 +345,19 @@ namespace XwmlParser
                     this.skinStorageVariable,
                     methodScope),
                 new MethodCallExpression(
-                    null,
+                    skinLocation,
                     methodScope,
                     IdentifierExpression.Create(
-                        null,
+                        skinLocation,
                         methodScope,
                         this.codeGenerator.Resolver.ResolveFactory(
                             this.codeGenerator.KnownTypes.SkinCtor)),
                     IdentifierExpression.Create(
-                        null,
+                        skinLocation,
                         methodScope,
                         this.codeGenerator.Resolver.Resolve(this.parser.ControlType)),
                     IdentifierExpression.Create(
-                        null,
+                        skinLocation,
                         methodScope,
                         this.codeGenerator.Resolver.Resolve(
                             this.parser.DataContextType)),
@@ -334,15 +369,15 @@ namespace XwmlParser
                         this.dataIndex.ToString())));
 
             var initializationIfStatement = new IfBlockStatement(
-                null,
+                skinLocation,
                 methodScope,
                 new UnaryExpression(
-                    null,
+                    skinLocation,
                     methodScope,
                     UnaryOperator.LogicalNot,
                     new IdentifierExpression(skinStorageVariable, methodScope)),
                 new ScopeBlock(
-                    null,
+                    skinLocation,
                     methodScope,
                     new List<Statement>{initialization}),
                 null);
@@ -350,13 +385,13 @@ namespace XwmlParser
             skinGetterFunction.AddStatement(initializationIfStatement);
             skinGetterFunction.AddStatement(
                 new ReturnStatement(
-                    null,
+                    skinLocation,
                     methodScope,
                     new IdentifierExpression(skinStorageVariable, methodScope)));
 
             this.codeGenerator.AddStatement(
                 new ExpressionStatement(
-                    null,
+                    skinLocation,
                     this.codeGenerator.ScopeManager.Scope,
                     skinGetterFunction));
         }

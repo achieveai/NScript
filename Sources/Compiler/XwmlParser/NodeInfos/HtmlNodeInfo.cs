@@ -458,10 +458,12 @@ namespace XwmlParser.NodeInfos
 
             if (objectIndex >= 0)
             {
+                Location location = codeGenerator.GetLocation(this);
+
                 codeGenerator.AddStatement(
                     ExpressionStatement.CreateAssignmentExpression(
                         new IndexExpression(
-                            null,
+                            location,
                             codeGenerator.Scope,
                             new IdentifierExpression(
                                 codeGenerator.GetObjectStorageIdentifier(),

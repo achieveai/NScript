@@ -107,10 +107,12 @@ namespace XwmlParser.NodeInfos
 
             if (htmlObjectIndex >= 0)
             {
+                NScript.Utils.Location location = codeGenerator.GetLocation(this);
+
                 codeGenerator.AddStatement(
                     ExpressionStatement.CreateAssignmentExpression(
                         new IndexExpression(
-                            null,
+                            location,
                             codeGenerator.Scope,
                             new IdentifierExpression(
                                 codeGenerator.GetObjectStorageIdentifier(),
