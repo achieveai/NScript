@@ -54,6 +54,16 @@ namespace Sunlight.Framework
                 }
             };
             CallContext.ExposeDebugAccessors();
+
+            // Force LayoutBatcher's static ctor to run so the Element async-read
+            // hooks are installed before any application code accesses
+            // element.ClientHeightAsync / GetBoundingClientRectAsync. CallContext
+            // itself is reliably touched at startup (EventBinder's first dispatch
+            // uses CallContext.OnEventDispatch, and observable bindings set up
+            // during template initialization also touch it), so piggy-backing on
+            // this ctor guarantees LayoutBatcher is wired before the first DOM
+            // read regardless of whether the app explicitly calls Init().
+            LayoutBatcher.Init();
         }
 
         private CallContext(int actionId, string traceId, string spanId,
@@ -180,6 +190,21 @@ namespace Sunlight.Framework
             );
         ")]
         public static extern Promise WrapPromise(Promise p);
+
+        /// <summary>
+        /// Generic overload of <see cref="WrapPromise"/> for typed promises.
+        /// Ensures <c>.Then</c> / <c>.Catch</c> callbacks attached downstream
+        /// see the call-site context even when they run as microtasks after
+        /// the resolving frame has torn its ambient context down.
+        /// </summary>
+        [Script(@"
+            var ctx = @{[Sunlight.Framework]Sunlight.Framework.CallContext::current};
+            return p.then(
+                function(v) { @{[Sunlight.Framework]Sunlight.Framework.CallContext::current} = ctx; return v; },
+                function(e) { @{[Sunlight.Framework]Sunlight.Framework.CallContext::current} = ctx; throw e; }
+            );
+        ")]
+        public static extern Promise<T> WrapPromise<T>(Promise<T> p);
 
         /// <summary>
         /// Expose diagnostic accessors on window.__callContext so that Playwright

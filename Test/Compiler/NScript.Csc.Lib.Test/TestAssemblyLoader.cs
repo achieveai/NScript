@@ -98,6 +98,17 @@
                 TestAssemblyLoader.Context.LoadAssembly(systemWebPath);
             }
 
+            // System.Web.Html must load BEFORE Sunlight.Framework: LayoutBatcher in
+            // Sunlight.Framework references Element from System.Web.Html at its
+            // static ctor (Element.AsyncReadDouble / AsyncReadClientRect hooks),
+            // so Cecil needs the module available when deserializing Framework.
+            string systemWebHtmlPath = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release\System.Web.Html.dll");
+            if (File.Exists(systemWebHtmlPath))
+            {
+                TestAssemblyLoader.DllBuilder.LoadAst(systemWebHtmlPath);
+                TestAssemblyLoader.Context.LoadAssembly(systemWebHtmlPath);
+            }
+
             string frameworkPath = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release\Sunlight.Framework.dll");
             if (File.Exists(frameworkPath))
             {
