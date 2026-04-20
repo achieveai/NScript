@@ -54,6 +54,16 @@ namespace Sunlight.Framework
                 }
             };
             CallContext.ExposeDebugAccessors();
+
+            // Force LayoutBatcher's static ctor to run so the Element async-read
+            // hooks are installed before any application code accesses
+            // element.ClientHeightAsync / GetBoundingClientRectAsync. CallContext
+            // itself is reliably touched at startup (EventBinder's first dispatch
+            // uses CallContext.OnEventDispatch, and observable bindings set up
+            // during template initialization also touch it), so piggy-backing on
+            // this ctor guarantees LayoutBatcher is wired before the first DOM
+            // read regardless of whether the app explicitly calls Init().
+            LayoutBatcher.Init();
         }
 
         private CallContext(int actionId, string traceId, string spanId,

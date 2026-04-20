@@ -8,7 +8,6 @@ namespace Sunlight.Framework
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using System.Web.Html;
 
     /// <summary>
@@ -44,7 +43,15 @@ namespace Sunlight.Framework
         {
             public Action Measure;
             public Action Dispatch;
+            public Action<object> Reject;
             public CallContext CapturedContext;
+        }
+
+        private sealed class ReadResult<T>
+        {
+            public T Value;
+            public object Error;
+            public bool Ok;
         }
 
         private static IWindowTimer windowTimer;
@@ -60,8 +67,8 @@ namespace Sunlight.Framework
             // GetBoundingClientRect() routes through LayoutBatcher automatically.
             // System.Web.Html lives below Sunlight.Framework in the dependency
             // graph so the hooks are delegates installed at startup.
-            Element.AsyncReadDouble = (el, measurer) => ReadDoubleAsync(el, measurer);
-            Element.AsyncReadClientRect = (el, measurer) => ReadClientRectAsync(el, measurer);
+            Element.AsyncReadDouble = ReadDoubleAsync;
+            Element.AsyncReadClientRect = ReadClientRectAsync;
         }
 
         /// <summary>
@@ -120,38 +127,40 @@ namespace Sunlight.Framework
             var entry = new PendingRead();
             entry.CapturedContext = CallContext.Current;
 
-            // Closure-captured result state — cleaner than boxing through object
-            // and avoids generic-to-object casts that NScript would otherwise
-            // have to round-trip.
-            T value = default(T);
-            object error = null;
-            bool ok = false;
+            // Result state lives on a dedicated carrier object. Using an
+            // instance rather than bare closure locals isolates each enqueued
+            // read from NScript's transpiler-specific closure hoisting and
+            // keeps measured value + error explicit. The carrier also lets
+            // DispatchPhase's catch settle the victim promise via Reject.
+            var result = new ReadResult<T>();
 
             var promise = new Promise<T>((resolve, reject) =>
             {
+                entry.Reject = reject;
+
                 entry.Measure = () =>
                 {
                     try
                     {
-                        value = measurer(el);
-                        ok = true;
+                        result.Value = measurer(el);
+                        result.Ok = true;
                     }
                     catch (Exception ex)
                     {
-                        error = ex;
-                        ok = false;
+                        result.Error = ex;
+                        result.Ok = false;
                     }
                 };
 
                 entry.Dispatch = () =>
                 {
-                    if (ok)
+                    if (result.Ok)
                     {
-                        resolve(value);
+                        resolve(result.Value);
                     }
                     else
                     {
-                        reject(error);
+                        reject(result.Error);
                     }
                 };
             });
@@ -187,6 +196,25 @@ namespace Sunlight.Framework
         public static Promise<ClientRect> ReadClientRectAsync(Element el, Func<Element, ClientRect> measurer)
         {
             return ReadAsync<ClientRect>(el, measurer);
+        }
+
+        private static string FormatException(Exception ex)
+        {
+            if (ex == null)
+            {
+                return "unknown error";
+            }
+            string message = ex.Message ?? string.Empty;
+            string stack = ex.Stack ?? string.Empty;
+            if (stack.Length == 0)
+            {
+                return message;
+            }
+            if (message.Length == 0)
+            {
+                return stack;
+            }
+            return message + "\n" + stack;
         }
 
         private static void ScheduleFlushIfNeeded()
@@ -243,13 +271,27 @@ namespace Sunlight.Framework
                 }
                 catch (Exception ex)
                 {
-                    // Native Promise resolve/reject never throws synchronously,
-                    // so reaching this catch means the Dispatch closure
-                    // construction above was itself buggy. Logging + continuing
-                    // keeps one corrupted entry from poisoning the rest of the
-                    // batch; the victim's promise will remain unresolved and
-                    // the error is surfaced through Logger.
-                    Logger.Error("LayoutBatcher dispatch failed: " + ex.Message);
+                    // Reaching this catch means the Dispatch closure itself
+                    // threw (e.g. CallContext.Current setter tripped). Settle
+                    // the victim promise via Reject so any awaiter sees a
+                    // failure rather than hanging forever, then continue so
+                    // one corrupted entry does not poison the rest of the
+                    // batch. Log Message + Stack for post-mortem; a bare
+                    // Message loses the whole call chain.
+                    try
+                    {
+                        if (entry.Reject != null)
+                        {
+                            entry.Reject(ex);
+                        }
+                    }
+                    catch
+                    {
+                        // Reject itself throwing would be a platform bug;
+                        // swallow so remaining entries still dispatch.
+                    }
+
+                    Logger.Error("LayoutBatcher dispatch failed: " + FormatException(ex));
                 }
                 finally
                 {

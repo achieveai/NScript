@@ -132,22 +132,33 @@ namespace Sunlight.Framework.Test
         {
             var timer = Setup();
             var done = assert.Async(1);
-            bool resolved = false;
+            bool resolvedDuringRaf = false;
+            bool rafFlushCompleted = false;
 
             LayoutBatcher.ReadDoubleAsync(null, e => 7.0).Then(v =>
             {
-                resolved = true;
+                // If this .Then microtask fires before FlushAnimationFrames
+                // returns, rafFlushCompleted would still be false — that
+                // would indicate the resolver ran synchronously inside the
+                // rAF phase, which is exactly what the batcher must avoid.
+                resolvedDuringRaf = !rafFlushCompleted;
+                assert.IsFalse(resolvedDuringRaf,
+                    "resolver did not fire during rAF phase");
                 done();
             });
 
             timer.FlushAnimationFrames();
-            assert.IsFalse(resolved, "resolver did not fire during rAF phase");
+            rafFlushCompleted = true;
             timer.FlushImmediates();
-            assert.IsTrue(resolved, "resolver fired in setImmediate phase");
         }
 
         /// <summary>
         /// Dispatch order matches enqueue order for reads in the same batch.
+        /// Reads are enqueued from separate helper methods rather than a
+        /// loop so each measurer captures its constant from its own lexical
+        /// scope — NScript's transpiler handles for-loop variable capture
+        /// differently from C#, and we want the test to cover batcher
+        /// ordering rather than transpiler closure behavior.
         /// </summary>
         [Test]
         public static void TestMultipleReadsOrdered(Assert assert)
@@ -156,28 +167,32 @@ namespace Sunlight.Framework.Test
             var done = assert.Async(3);
             var order = new List<double>();
 
-            for (int i = 0; i < 3; i++)
-            {
-                double captured = i;
-                LayoutBatcher.ReadDoubleAsync(null, e => captured).Then(v =>
-                {
-                    order.Add(v);
-                    // Microtasks fire in FIFO enqueue order, so when the list has
-                    // three entries this is the last callback — a safe place to
-                    // assert the full collected ordering.
-                    if (order.Count == 3)
-                    {
-                        assert.Equal(order.Count, 3, "three values collected");
-                        assert.Equal(order[0], 0.0, "first-enqueued resolves first");
-                        assert.Equal(order[1], 1.0, "second-enqueued resolves second");
-                        assert.Equal(order[2], 2.0, "third-enqueued resolves third");
-                    }
-                    done();
-                });
-            }
+            EnqueueOrderedRead(order, 0.0, done, assert);
+            EnqueueOrderedRead(order, 1.0, done, assert);
+            EnqueueOrderedRead(order, 2.0, done, assert);
 
             timer.FlushAnimationFrames();
             timer.FlushImmediates();
+        }
+
+        private static void EnqueueOrderedRead(List<double> order, double expected,
+                                               Action done, Assert assert)
+        {
+            LayoutBatcher.ReadDoubleAsync(null, e => expected).Then(v =>
+            {
+                order.Add(v);
+                // Microtasks fire in FIFO enqueue order; once the list has
+                // three entries this is the last callback — the right place
+                // to assert the full ordering.
+                if (order.Count == 3)
+                {
+                    assert.Equal(order.Count, 3, "three values collected");
+                    assert.Equal(order[0], 0.0, "first-enqueued resolves first");
+                    assert.Equal(order[1], 1.0, "second-enqueued resolves second");
+                    assert.Equal(order[2], 2.0, "third-enqueued resolves third");
+                }
+                done();
+            });
         }
 
         /// <summary>
@@ -220,44 +235,49 @@ namespace Sunlight.Framework.Test
 
         /// <summary>
         /// Each read captures <see cref="CallContext.Current"/> at enqueue
-        /// time. During dispatch the captured context is restored, so two
-        /// reads originating from different contexts observe their own
-        /// context inside their resolver.
+        /// time. Two reads originating from different contexts, flushed in
+        /// separate batches, each observe their own context inside their
+        /// resolver.
         /// </summary>
+        /// <remarks>
+        /// The reads are intentionally split across two batches. When two
+        /// reads share a setImmediate tick, each resolve() queues a
+        /// WrapPromise handler microtask that writes <c>CallContext.current</c>
+        /// before the user .Then fires — but the second read's handler runs
+        /// before the first read's user handler, so the last-written context
+        /// wins. Single-read batches avoid that chained-microtask race and
+        /// exercise exactly the DispatchPhase save/restore + WrapPromise path
+        /// that this test is meant to cover.
+        /// </remarks>
         [Test]
         public static void TestCallContextPerReadIsolation(Assert assert)
         {
             var timer = Setup();
             var done = assert.Async(2);
 
+            // Batch 1: ctxA
             var ctxA = CallContext.StartRoot();
-            int observedActionA = -1;
+            int expectedA = ctxA.ActionId;
             LayoutBatcher.ReadDoubleAsync(null, e => 1.0).Then(v =>
             {
                 var cur = CallContext.Current;
-                observedActionA = cur != null ? cur.ActionId : -1;
-                assert.Equal(observedActionA, ctxA.ActionId, "read A sees its captured ActionId");
+                var observedA = cur != null ? cur.ActionId : -1;
+                assert.Equal(observedA, expectedA, "read A sees its captured ActionId");
                 done();
             });
+            timer.FlushAnimationFrames();
+            timer.FlushImmediates();
 
+            // Batch 2: ctxB
             var ctxB = CallContext.StartRoot();
-            int observedActionB = -1;
+            int expectedB = ctxB.ActionId;
             LayoutBatcher.ReadDoubleAsync(null, e => 2.0).Then(v =>
             {
                 var cur = CallContext.Current;
-                observedActionB = cur != null ? cur.ActionId : -1;
-                assert.Equal(observedActionB, ctxB.ActionId, "read B sees its captured ActionId");
+                var observedB = cur != null ? cur.ActionId : -1;
+                assert.Equal(observedB, expectedB, "read B sees its captured ActionId");
                 done();
             });
-
-            // NOTE: The .Then callbacks we register above are raw NScript
-            // lambdas, not compiler-wrapped await continuations. Two
-            // mechanisms cooperate to make them see the captured context:
-            // (1) LayoutBatcher.DispatchPhase sets CallContext.Current to
-            // CapturedContext before calling resolve(); (2) CallContext.WrapPromise
-            // captures Current at ReadAsync-call time and re-installs it in
-            // .then/.catch microtasks. For reads enqueued without an ambient
-            // swap between enqueue and dispatch, both mechanisms agree.
             timer.FlushAnimationFrames();
             timer.FlushImmediates();
         }
@@ -326,6 +346,73 @@ namespace Sunlight.Framework.Test
             var afterActionId = CallContext.Current != null ? CallContext.Current.ActionId : -1;
             assert.Equal(afterActionId, outer.ActionId,
                 "ambient CallContext restored even after resolver threw");
+        }
+
+        /// <summary>
+        /// Exercises <see cref="LayoutBatcher.ReadClientRectAsync"/> — the
+        /// reference-type generic instantiation of <see cref="LayoutBatcher.ReadAsync{T}"/>.
+        /// NScript handles reference-type generics differently from value types
+        /// (no boxing, different default(T) semantics), so this path is worth
+        /// exercising independently from the numeric read tests.
+        /// </summary>
+        [Test]
+        public static void TestClientRectReadResolves(Assert assert)
+        {
+            var timer = Setup();
+            var done = assert.Async(1);
+
+            var rect = new ClientRect();
+            LayoutBatcher.ReadClientRectAsync(null, e => rect).Then(v =>
+            {
+                assert.IsTrue(v != null, "ClientRect resolver received non-null value");
+                assert.StrictEqual(v, rect, "resolved value is the exact instance measured");
+                done();
+            });
+
+            timer.FlushAnimationFrames();
+            timer.FlushImmediates();
+        }
+
+        /// <summary>
+        /// Reads enqueued from within a resolver must land in the NEXT batch,
+        /// not the currently-dispatching one. Guards the snapshot-and-reset
+        /// invariant in <see cref="LayoutBatcher.MeasurePhase"/> — if a refactor
+        /// ever moves the <c>pending</c> reset after the measurement loop, this
+        /// test catches the regression.
+        /// </summary>
+        [Test]
+        public static void TestReadDuringDispatchGoesToNextBatch(Assert assert)
+        {
+            var timer = Setup();
+            var done = assert.Async(1);
+            bool secondResolved = false;
+
+            LayoutBatcher.ReadDoubleAsync(null, e => 1.0).Then(v =>
+            {
+                // Enqueue a new read from inside the first read's resolver.
+                // This must schedule a brand-new rAF rather than piggyback on
+                // the already-dispatched batch.
+                LayoutBatcher.ReadDoubleAsync(null, e => 2.0).Then(v2 =>
+                {
+                    secondResolved = true;
+                    assert.Equal(v2, 2.0, "second-batch read resolved with its own measurer value");
+                    done();
+                });
+            });
+
+            // Flush batch 1: rAF measure + setImmediate dispatch. The first
+            // read resolves; its .Then microtask enqueues the second read.
+            timer.FlushAnimationFrames();
+            timer.FlushImmediates();
+
+            assert.IsFalse(secondResolved,
+                "second read has not resolved yet — it is in the next batch");
+            assert.Equal(timer.PendingAnimationFrameCount, 1,
+                "re-enqueued read scheduled a fresh rAF");
+
+            // Flush batch 2.
+            timer.FlushAnimationFrames();
+            timer.FlushImmediates();
         }
     }
 }
