@@ -240,14 +240,15 @@ namespace Sunlight.Framework.Test
         /// resolver.
         /// </summary>
         /// <remarks>
-        /// The reads are intentionally split across two batches. When two
-        /// reads share a setImmediate tick, each resolve() queues a
-        /// WrapPromise handler microtask that writes <c>CallContext.current</c>
-        /// before the user .Then fires — but the second read's handler runs
-        /// before the first read's user handler, so the last-written context
-        /// wins. Single-read batches avoid that chained-microtask race and
-        /// exercise exactly the DispatchPhase save/restore + WrapPromise path
-        /// that this test is meant to cover.
+        /// Batch B is created and flushed from inside batch A's .Then
+        /// continuation. If we instead laid the two batches out as sibling
+        /// synchronous calls, microtasks from batch A would not drain between
+        /// <c>FlushImmediates</c> and the next <c>StartRoot</c> — both
+        /// WrapPromise handlers would run back-to-back, and the last-written
+        /// <c>CallContext.current</c> would win for every user .Then. Nesting
+        /// the B setup inside A's resolver guarantees A's user handler has
+        /// already run (and its assertion has already captured
+        /// <c>CallContext.Current</c>) before <c>ctxB</c> is installed.
         /// </remarks>
         [Test]
         public static void TestCallContextPerReadIsolation(Assert assert)
@@ -255,29 +256,28 @@ namespace Sunlight.Framework.Test
             var timer = Setup();
             var done = assert.Async(2);
 
-            // Batch 1: ctxA
             var ctxA = CallContext.StartRoot();
             int expectedA = ctxA.ActionId;
             LayoutBatcher.ReadDoubleAsync(null, e => 1.0).Then(v =>
             {
-                var cur = CallContext.Current;
-                var observedA = cur != null ? cur.ActionId : -1;
+                var curA = CallContext.Current;
+                var observedA = curA != null ? curA.ActionId : -1;
                 assert.Equal(observedA, expectedA, "read A sees its captured ActionId");
                 done();
-            });
-            timer.FlushAnimationFrames();
-            timer.FlushImmediates();
 
-            // Batch 2: ctxB
-            var ctxB = CallContext.StartRoot();
-            int expectedB = ctxB.ActionId;
-            LayoutBatcher.ReadDoubleAsync(null, e => 2.0).Then(v =>
-            {
-                var cur = CallContext.Current;
-                var observedB = cur != null ? cur.ActionId : -1;
-                assert.Equal(observedB, expectedB, "read B sees its captured ActionId");
-                done();
+                var ctxB = CallContext.StartRoot();
+                int expectedB = ctxB.ActionId;
+                LayoutBatcher.ReadDoubleAsync(null, e => 2.0).Then(v2 =>
+                {
+                    var curB = CallContext.Current;
+                    var observedB = curB != null ? curB.ActionId : -1;
+                    assert.Equal(observedB, expectedB, "read B sees its captured ActionId");
+                    done();
+                });
+                timer.FlushAnimationFrames();
+                timer.FlushImmediates();
             });
+
             timer.FlushAnimationFrames();
             timer.FlushImmediates();
         }
@@ -385,32 +385,36 @@ namespace Sunlight.Framework.Test
         {
             var timer = Setup();
             var done = assert.Async(1);
-            bool secondResolved = false;
 
             LayoutBatcher.ReadDoubleAsync(null, e => 1.0).Then(v =>
             {
                 // Enqueue a new read from inside the first read's resolver.
                 // This must schedule a brand-new rAF rather than piggyback on
-                // the already-dispatched batch.
+                // the already-dispatched batch. Assertions happen inside this
+                // user-handler microtask so the "second read has been enqueued
+                // but not yet measured" window is observable — from outside the
+                // microtask the check would race the microtask queue.
+                bool secondResolved = false;
+
                 LayoutBatcher.ReadDoubleAsync(null, e => 2.0).Then(v2 =>
                 {
                     secondResolved = true;
                     assert.Equal(v2, 2.0, "second-batch read resolved with its own measurer value");
                     done();
                 });
+
+                assert.IsFalse(secondResolved,
+                    "second read has not resolved yet — it is in the next batch");
+                assert.Equal(timer.PendingAnimationFrameCount, 1,
+                    "re-enqueued read scheduled a fresh rAF");
+
+                // Flush batch 2 from within batch 1's user handler.
+                timer.FlushAnimationFrames();
+                timer.FlushImmediates();
             });
 
             // Flush batch 1: rAF measure + setImmediate dispatch. The first
             // read resolves; its .Then microtask enqueues the second read.
-            timer.FlushAnimationFrames();
-            timer.FlushImmediates();
-
-            assert.IsFalse(secondResolved,
-                "second read has not resolved yet — it is in the next batch");
-            assert.Equal(timer.PendingAnimationFrameCount, 1,
-                "re-enqueued read scheduled a fresh rAF");
-
-            // Flush batch 2.
             timer.FlushAnimationFrames();
             timer.FlushImmediates();
         }
