@@ -182,6 +182,21 @@ namespace Sunlight.Framework
         public static extern Promise WrapPromise(Promise p);
 
         /// <summary>
+        /// Generic overload of <see cref="WrapPromise"/> for typed promises.
+        /// Ensures <c>.Then</c> / <c>.Catch</c> callbacks attached downstream
+        /// see the call-site context even when they run as microtasks after
+        /// the resolving frame has torn its ambient context down.
+        /// </summary>
+        [Script(@"
+            var ctx = @{[Sunlight.Framework]Sunlight.Framework.CallContext::current};
+            return p.then(
+                function(v) { @{[Sunlight.Framework]Sunlight.Framework.CallContext::current} = ctx; return v; },
+                function(e) { @{[Sunlight.Framework]Sunlight.Framework.CallContext::current} = ctx; throw e; }
+            );
+        ")]
+        public static extern Promise<T> WrapPromise<T>(Promise<T> p);
+
+        /// <summary>
         /// Expose diagnostic accessors on window.__callContext so that Playwright
         /// tests (and browser DevTools) can inspect the current CallContext even
         /// though the generated JS runs inside an IIFE.

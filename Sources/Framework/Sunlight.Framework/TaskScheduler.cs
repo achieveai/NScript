@@ -157,10 +157,39 @@ namespace Sunlight.Framework
         }
     }
 
+    /// <summary>
+    /// Test-friendly <see cref="IWindowTimer"/>. The default (synchronous)
+    /// mode preserves legacy behavior: every scheduled action runs inline.
+    /// Deferred mode queues rAF and setImmediate callbacks so tests can
+    /// drive the two-phase layout flush ordering explicitly via
+    /// <see cref="FlushAnimationFrames"/> and <see cref="FlushImmediates"/>.
+    /// </summary>
     public class TestWindowTimer : IWindowTimer
     {
+        private readonly bool deferred;
+        private readonly List<Action> pendingAnimationFrames;
+        private readonly List<Action> pendingImmediates;
+
+        public TestWindowTimer()
+            : this(false)
+        {
+        }
+
+        public TestWindowTimer(bool deferred)
+        {
+            this.deferred = deferred;
+            this.pendingAnimationFrames = new List<Action>();
+            this.pendingImmediates = new List<Action>();
+        }
+
         public int SetImmediate(Action action)
         {
+            if (this.deferred)
+            {
+                this.pendingImmediates.Add(action);
+                return this.pendingImmediates.Count - 1;
+            }
+
             action();
             return 0;
         }
@@ -186,7 +215,61 @@ namespace Sunlight.Framework
 
         public int RequestAnimationFrame(Action action)
         {
-            throw new NotImplementedException();
+            if (this.deferred)
+            {
+                this.pendingAnimationFrames.Add(action);
+                return this.pendingAnimationFrames.Count - 1;
+            }
+
+            action();
+            return 0;
+        }
+
+        /// <summary>
+        /// Invokes all currently-queued animation-frame callbacks in FIFO
+        /// order. Callbacks enqueued during the flush go to the next batch.
+        /// Only meaningful in deferred mode.
+        /// </summary>
+        public void FlushAnimationFrames()
+        {
+            var batch = this.pendingAnimationFrames.ToArray();
+            this.pendingAnimationFrames.Clear();
+            for (int i = 0; i < batch.Length; i++)
+            {
+                batch[i]();
+            }
+        }
+
+        /// <summary>
+        /// Invokes all currently-queued setImmediate callbacks in FIFO order.
+        /// Callbacks enqueued during the flush go to the next batch. Only
+        /// meaningful in deferred mode.
+        /// </summary>
+        public void FlushImmediates()
+        {
+            var batch = this.pendingImmediates.ToArray();
+            this.pendingImmediates.Clear();
+            for (int i = 0; i < batch.Length; i++)
+            {
+                batch[i]();
+            }
+        }
+
+        /// <summary>
+        /// Count of pending animation-frame callbacks — tests assert against
+        /// this to verify batching/deduplication.
+        /// </summary>
+        public int PendingAnimationFrameCount
+        {
+            get { return this.pendingAnimationFrames.Count; }
+        }
+
+        /// <summary>
+        /// Count of pending setImmediate callbacks.
+        /// </summary>
+        public int PendingImmediateCount
+        {
+            get { return this.pendingImmediates.Count; }
         }
     }
 

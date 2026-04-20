@@ -6,7 +6,9 @@
 
 namespace System.Web.Html
 {
+    using System;
     using System.Runtime.CompilerServices;
+    using System.Threading;
     using System.Web.Html.Filters;
 
     /// <summary>
@@ -168,10 +170,24 @@ namespace System.Web.Html
         { get; set; }
 
         /// <summary>
-        /// Height of the client.
+        /// Synchronous height of the client — reads directly from the DOM and
+        /// triggers layout. Kept internal as an escape hatch for framework
+        /// primitives; public callers must use the batched <see cref="ClientHeight"/>.
         /// </summary>
-        public extern double ClientHeight
+        [ScriptName("clientHeight")]
+        internal extern double ClientHeightSync
         { get; }
+
+        /// <summary>
+        /// Batched client height. Returns a <see cref="Task{Double}"/> that
+        /// resolves after the next <c>requestAnimationFrame</c>. All layout
+        /// reads scheduled in the same frame share a single browser layout
+        /// pass. See ADR 0015.
+        /// </summary>
+        public Task<double> ClientHeight
+        {
+            get { return Element.ReadDoubleAsync(this, ClientHeightMeasurer); }
+        }
 
         /// <summary>
         /// The client left.
@@ -186,10 +202,19 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
-        /// Width of the client.
+        /// Synchronous width of the client — see <see cref="ClientHeightSync"/>.
         /// </summary>
-        public extern double ClientWidth
+        [ScriptName("clientWidth")]
+        internal extern double ClientWidthSync
         { get; }
+
+        /// <summary>
+        /// Batched client width. See <see cref="ClientHeight"/>.
+        /// </summary>
+        public Task<double> ClientWidth
+        {
+            get { return Element.ReadDoubleAsync(this, ClientWidthMeasurer); }
+        }
 
         /// <summary>
         /// The current style.
@@ -268,10 +293,19 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
-        /// Height of the offset.
+        /// Synchronous offset height — see <see cref="ClientHeightSync"/>.
         /// </summary>
-        public extern double OffsetHeight
+        [ScriptName("offsetHeight")]
+        internal extern double OffsetHeightSync
         { get; }
+
+        /// <summary>
+        /// Batched offset height. See <see cref="ClientHeight"/>.
+        /// </summary>
+        public Task<double> OffsetHeight
+        {
+            get { return Element.ReadDoubleAsync(this, OffsetHeightMeasurer); }
+        }
 
         /// <summary>
         /// The offset left.
@@ -292,10 +326,19 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
-        /// Width of the offset.
+        /// Synchronous offset width — see <see cref="ClientHeightSync"/>.
         /// </summary>
-        public extern double OffsetWidth
+        [ScriptName("offsetWidth")]
+        internal extern double OffsetWidthSync
         { get; }
+
+        /// <summary>
+        /// Batched offset width. See <see cref="ClientHeight"/>.
+        /// </summary>
+        public Task<double> OffsetWidth
+        {
+            get { return Element.ReadDoubleAsync(this, OffsetWidthMeasurer); }
+        }
 
         /// <summary>
         /// The runtime style.
@@ -304,10 +347,19 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
-        /// Height of the scroll.
+        /// Synchronous scroll height — see <see cref="ClientHeightSync"/>.
         /// </summary>
-        public extern double ScrollHeight
+        [ScriptName("scrollHeight")]
+        internal extern double ScrollHeightSync
         { get; }
+
+        /// <summary>
+        /// Batched scroll height. See <see cref="ClientHeight"/>.
+        /// </summary>
+        public Task<double> ScrollHeight
+        {
+            get { return Element.ReadDoubleAsync(this, ScrollHeightMeasurer); }
+        }
 
         /// <summary>
         /// The scroll left.
@@ -322,10 +374,19 @@ namespace System.Web.Html
         { get; set; }
 
         /// <summary>
-        /// Width of the scroll.
+        /// Synchronous scroll width — see <see cref="ClientHeightSync"/>.
         /// </summary>
-        public extern double ScrollWidth
+        [ScriptName("scrollWidth")]
+        internal extern double ScrollWidthSync
         { get; }
+
+        /// <summary>
+        /// Batched scroll width. See <see cref="ClientHeight"/>.
+        /// </summary>
+        public Task<double> ScrollWidth
+        {
+            get { return Element.ReadDoubleAsync(this, ScrollWidthMeasurer); }
+        }
 
         /// <summary>
         /// The style.
@@ -872,7 +933,22 @@ namespace System.Web.Html
         /// </returns>
         private extern NativeArray<ClientRect> GetClientRects();
 
-        public extern ClientRect GetBoundingClientRect();
+        /// <summary>
+        /// Synchronous bounding rect — reads directly from the DOM and triggers
+        /// layout. Kept internal for framework primitives; public callers must
+        /// use the batched <see cref="GetBoundingClientRect"/> overload.
+        /// </summary>
+        [ScriptName("getBoundingClientRect")]
+        internal extern ClientRect GetBoundingClientRectSync();
+
+        /// <summary>
+        /// Batched bounding rect. Returns a <see cref="Task{ClientRect}"/> that
+        /// resolves after the next <c>requestAnimationFrame</c>. See ADR 0015.
+        /// </summary>
+        public Task<ClientRect> GetBoundingClientRect()
+        {
+            return Element.ReadClientRectAsync(this, BoundingClientRectMeasurer);
+        }
 
         /// <summary>
         /// Gets the elements by class name internal.
@@ -933,5 +1009,77 @@ namespace System.Web.Html
         /// <param name="listener">   The listener to be invoked in response to the event. </param>
         /// <param name="useCapture"> Whether the listener wants to initiate capturing the event. </param>
         internal extern void RemoveEventListener(string eventName, Action<ElementEvent> listener, bool useCapture);
+
+        // ----------------------------------------------------------------
+        //   Layout-read batching hooks (ADR 0015)
+        // ----------------------------------------------------------------
+        //
+        // System.Web.Html sits below Sunlight.Framework in the dependency
+        // graph, so Element cannot reference LayoutBatcher directly. Instead
+        // LayoutBatcher installs delegate hooks at startup (same pattern as
+        // EventBinder.OnEventDispatch). The synchronous *Sync accessors above
+        // remain as the escape hatch the hooks ultimately call during the
+        // rAF measurement phase.
+
+        /// <summary>
+        /// Hook installed by <c>Sunlight.Framework.LayoutBatcher</c> that
+        /// routes <c>double</c>-valued layout reads through the batcher.
+        /// </summary>
+        public static Func<Element, Func<Element, double>, Promise<double>> AsyncReadDouble;
+
+        /// <summary>
+        /// Hook installed by <c>Sunlight.Framework.LayoutBatcher</c> that
+        /// routes <see cref="ClientRect"/> reads through the batcher.
+        /// </summary>
+        public static Func<Element, Func<Element, ClientRect>, Promise<ClientRect>> AsyncReadClientRect;
+
+        // Static measurer delegates — reused across every call-site so each
+        // async property access does not allocate a fresh closure.
+        private static readonly Func<Element, double> ClientHeightMeasurer = e => e.ClientHeightSync;
+        private static readonly Func<Element, double> ClientWidthMeasurer = e => e.ClientWidthSync;
+        private static readonly Func<Element, double> OffsetHeightMeasurer = e => e.OffsetHeightSync;
+        private static readonly Func<Element, double> OffsetWidthMeasurer = e => e.OffsetWidthSync;
+        private static readonly Func<Element, double> ScrollHeightMeasurer = e => e.ScrollHeightSync;
+        private static readonly Func<Element, double> ScrollWidthMeasurer = e => e.ScrollWidthSync;
+        private static readonly Func<Element, ClientRect> BoundingClientRectMeasurer = e => e.GetBoundingClientRectSync();
+
+        /// <summary>
+        /// Routes a double measurement through the installed
+        /// <see cref="AsyncReadDouble"/> hook and returns the result as a
+        /// <see cref="Task{Double}"/>.
+        /// </summary>
+        internal static Task<double> ReadDoubleAsync(Element el, Func<Element, double> measurer)
+        {
+            var hook = AsyncReadDouble;
+            if (hook == null)
+            {
+                throw new Exception(
+                    "LayoutBatcher hook is not installed. Call Sunlight.Framework.LayoutBatcher.Init() during startup.");
+            }
+            return ToTask<double>(hook(el, measurer));
+        }
+
+        /// <summary>
+        /// Routes a <see cref="ClientRect"/> measurement through the
+        /// installed <see cref="AsyncReadClientRect"/> hook.
+        /// </summary>
+        internal static Task<ClientRect> ReadClientRectAsync(Element el, Func<Element, ClientRect> measurer)
+        {
+            var hook = AsyncReadClientRect;
+            if (hook == null)
+            {
+                throw new Exception(
+                    "LayoutBatcher hook is not installed. Call Sunlight.Framework.LayoutBatcher.Init() during startup.");
+            }
+            return ToTask<ClientRect>(hook(el, measurer));
+        }
+
+        /// <summary>
+        /// Zero-cost compile-time bridge from <see cref="Promise{T}"/> to
+        /// <see cref="Task{T}"/>. Both carry <c>[ScriptName("Promise")]</c>,
+        /// so the runtime object is identical — only the CLR type differs.
+        /// </summary>
+        [Script("return p;")]
+        private static extern Task<T> ToTask<T>(Promise<T> p);
     }
 }
