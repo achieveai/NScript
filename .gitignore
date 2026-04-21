@@ -80,3 +80,4 @@ launchsettings.json
 **/node_modules/
 **/logs/*.jsonl
 **/screenshots/*.png
+.playwright-mcp/

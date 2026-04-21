@@ -19,8 +19,7 @@ namespace TodoApp
         {
             TaskScheduler.Instance = new TaskScheduler(new WindowTimer(), 10, 10);
 
-            var dbService = new IndexedDbService();
-            var dataService = new TodoDataService(dbService);
+            var dataService = new TodoDataService();
 
             dataService.Initialize().Then<bool>(delegate(bool ok)
             {

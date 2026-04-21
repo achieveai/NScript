@@ -1,5 +1,6 @@
 namespace TodoApp.ViewModels
 {
+    using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using System.Web.Html;
     using Sunlight.Framework.Observables;
@@ -718,7 +719,12 @@ namespace TodoApp.ViewModels
 
             if (this.dataService != null)
             {
-                this.dataService.SaveFolder(folder.Id, folder.Name, folder.Icon, this.Folders.Count);
+                var entity = new FolderEntity();
+                entity.Id = folder.Id;
+                entity.Name = folder.Name;
+                entity.Icon = folder.Icon;
+                entity.SortOrder = this.Folders.Count;
+                this.dataService.SaveFolder(entity);
             }
         }
 
@@ -730,16 +736,7 @@ namespace TodoApp.ViewModels
         {
             if (this.dataService != null)
             {
-                this.dataService.SaveTodo(
-                    todo.Id,
-                    todo.FolderId,
-                    todo.Title,
-                    todo.IsCompleted,
-                    todo.IsImportant,
-                    todo.IsMyDay,
-                    todo.DueDate,
-                    todo.Notes,
-                    todo.SubTasks);
+                this.dataService.SaveTodo(this.BuildTodoEntity(todo));
             }
 
             // Keep the folder tags in sync when the selected todo's properties change
@@ -768,13 +765,13 @@ namespace TodoApp.ViewModels
             if (this.dataService != null)
             {
                 // Load user-created folders first, then load todos
-                this.dataService.GetAllFolders().Then<bool>(delegate(string foldersJson)
+                this.dataService.GetAllFolders().Then<bool>(delegate(List<FolderEntity> folderList)
                 {
-                    this.LoadFoldersFromJson(foldersJson);
+                    this.LoadFolders(folderList);
 
-                    this.dataService.GetAllTodos().Then<bool>(delegate(string todosJson)
+                    this.dataService.GetAllTodos().Then<bool>(delegate(List<TodoEntity> todoList)
                     {
-                        this.LoadTodosFromJson(todosJson);
+                        this.LoadTodos(todoList);
                         return true;
                     });
 
@@ -840,27 +837,24 @@ namespace TodoApp.ViewModels
         }
 
         /// <summary>
-        /// Parses a JSON array of folder objects and adds user-created folders to the list.
+        /// Adds user-created folder view models for each persisted <see cref="FolderEntity"/>.
         /// </summary>
-        private void LoadFoldersFromJson(string json)
+        private void LoadFolders(List<FolderEntity> entities)
         {
-            object parsed = JsonHelper.Parse(json);
-            int length = JsonHelper.GetArrayLength(parsed);
+            if (entities == null) return;
 
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < entities.Count; i++)
             {
-                object obj = JsonHelper.GetArrayItem(parsed, i);
-                string id = JsonHelper.GetId(obj);
-
-                if (id == null || id == "")
+                var entity = entities[i];
+                if (entity == null || entity.Id == null || entity.Id == "")
                 {
                     continue;
                 }
 
                 var folder = new FolderViewModel(this);
-                folder.Id = id;
-                folder.Name = JsonHelper.GetName(obj);
-                folder.Icon = JsonHelper.GetIcon(obj);
+                folder.Id = entity.Id;
+                folder.Name = entity.Name;
+                folder.Icon = entity.Icon;
                 folder.IsSystem = false;
                 folder.SystemType = "";
                 this.Folders.Add(folder);
@@ -868,46 +862,45 @@ namespace TodoApp.ViewModels
         }
 
         /// <summary>
-        /// Parses a JSON array of todo objects and populates the allTodos collection.
-        /// If the database is empty, creates sample todos and saves them.
+        /// Rehydrates the allTodos collection from persisted <see cref="TodoEntity"/>
+        /// records. When the store is empty, seeds sample data and persists it.
         /// Selects the Tasks folder after loading.
         /// </summary>
-        private void LoadTodosFromJson(string json)
+        private void LoadTodos(List<TodoEntity> entities)
         {
-            object parsed = JsonHelper.Parse(json);
-            int length = JsonHelper.GetArrayLength(parsed);
+            int count = entities != null ? entities.Count : 0;
 
-            if (length > 0)
+            if (count > 0)
             {
-                for (int i = 0; i < length; i++)
+                for (int i = 0; i < count; i++)
                 {
-                    object obj = JsonHelper.GetArrayItem(parsed, i);
-                    string id = JsonHelper.GetId(obj);
-
-                    if (id == null || id == "")
+                    var entity = entities[i];
+                    if (entity == null || entity.Id == null || entity.Id == "")
                     {
                         continue;
                     }
 
                     var todo = new TodoItemViewModel(this);
-                    todo.Id = id;
-                    todo.FolderId = JsonHelper.GetFolderId(obj);
-                    todo.Title = JsonHelper.GetTitle(obj);
-                    todo.IsCompleted = JsonHelper.GetIsCompleted(obj);
-                    todo.IsImportant = JsonHelper.GetIsImportant(obj);
-                    todo.IsMyDay = JsonHelper.GetIsMyDay(obj);
-                    todo.DueDate = JsonHelper.GetDueDate(obj);
-                    todo.Notes = JsonHelper.GetNotes(obj);
+                    todo.Id = entity.Id;
+                    todo.FolderId = entity.FolderId;
+                    todo.Title = entity.Title;
+                    todo.IsCompleted = entity.IsCompleted;
+                    todo.IsImportant = entity.IsImportant;
+                    todo.IsMyDay = entity.IsMyDay;
+                    todo.DueDate = entity.DueDate;
+                    todo.Notes = entity.Notes;
 
-                    object subTasks = JsonHelper.GetSubTasks(obj);
-                    int subTaskCount = JsonHelper.GetArrayLength(subTasks);
+                    var subTasks = entity.SubTasks;
+                    int subTaskCount = subTasks != null ? subTasks.Length : 0;
                     for (int j = 0; j < subTaskCount; j++)
                     {
-                        object subTaskObj = JsonHelper.GetArrayItem(subTasks, j);
+                        var subTaskEntity = subTasks[j];
+                        if (subTaskEntity == null) continue;
+
                         var subTask = new SubTaskViewModel();
-                        subTask.Id = JsonHelper.GetId(subTaskObj);
-                        subTask.Title = JsonHelper.GetTitle(subTaskObj);
-                        subTask.IsCompleted = JsonHelper.GetIsCompleted(subTaskObj);
+                        subTask.Id = subTaskEntity.Id;
+                        subTask.Title = subTaskEntity.Title;
+                        subTask.IsCompleted = subTaskEntity.IsCompleted;
                         subTask.BindToTodo(this, todo);
                         todo.SubTasks.Add(subTask);
                     }
@@ -928,6 +921,39 @@ namespace TodoApp.ViewModels
 
             this.UpdateAllFolderCounts();
             this.OnSelectFolder(this.defaultTasksFolder);
+        }
+
+        /// <summary>
+        /// Projects a <see cref="TodoItemViewModel"/> (plus its subtasks) into the
+        /// plain <see cref="TodoEntity"/> shape expected by <see cref="TodoDataService"/>.
+        /// </summary>
+        private TodoEntity BuildTodoEntity(TodoItemViewModel todo)
+        {
+            var entity = new TodoEntity();
+            entity.Id = todo.Id;
+            entity.FolderId = todo.FolderId;
+            entity.Title = todo.Title;
+            entity.IsCompleted = todo.IsCompleted;
+            entity.IsImportant = todo.IsImportant;
+            entity.IsMyDay = todo.IsMyDay;
+            entity.DueDate = todo.DueDate;
+            entity.Notes = todo.Notes;
+
+            var subTasks = todo.SubTasks;
+            int subTaskCount = subTasks != null ? subTasks.Count : 0;
+            var arr = new SubTaskEntity[subTaskCount];
+            for (int i = 0; i < subTaskCount; i++)
+            {
+                var sub = subTasks[i];
+                var subEntity = new SubTaskEntity();
+                subEntity.Id = sub.Id;
+                subEntity.Title = sub.Title;
+                subEntity.IsCompleted = sub.IsCompleted;
+                arr[i] = subEntity;
+            }
+
+            entity.SubTasks = arr;
+            return entity;
         }
 
         /// <summary>
