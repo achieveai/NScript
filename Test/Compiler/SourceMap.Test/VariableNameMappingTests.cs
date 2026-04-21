@@ -252,6 +252,88 @@ namespace OwaSourceMapper.Test
                 + "Intervening nameless keyword mapping must not poison the baseline.");
         }
 
+        /// <summary>
+        /// <see cref="CompoundIdentifier"/> (member access like <c>counter.field</c>) takes
+        /// the <c>else</c> branch of <see cref="JSWriter.Write(IIdentifier)"/> and recursively
+        /// writes each sub-identifier. When the leading sub-identifier is renamed, its
+        /// original name must still flow into the <c>names</c> array via the recursive
+        /// <see cref="SimpleIdentifier"/> path — guarding against future refactoring that
+        /// might special-case the compound branch and drop name propagation.
+        /// </summary>
+        [TestMethod]
+        public void WriteWithMap_CompoundIdentifier_RenamedLeadingPart_PopulatesNamesArray()
+        {
+            var scope = new IdentifierScope(isExecutionScope: true);
+            SimpleIdentifier.CreateScopeIdentifier(scope, "counter", enforceSuggestion: false);
+            var renamedCounter = SimpleIdentifier.CreateScopeIdentifier(scope, "counter", enforceSuggestion: false);
+            var field = SimpleIdentifier.CreateScopeIdentifier(scope, "field", enforceSuggestion: true);
+
+            var compound = new CompoundIdentifier(renamedCounter, field);
+
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            writer.EnterLocation(new Location("Program.cs", 7, 4, 7, 17));
+            writer.Write(compound);
+            writer.LeaveLocation();
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+            string json = map.ToString();
+
+            StringAssert.Contains(
+                json,
+                "\"names\": [\"counter\"]",
+                "Renamed leading sub-identifier of a CompoundIdentifier must populate the names array.\n" + json);
+
+            var segments = DecodeFirstLineSegments(ExtractMappingsField(json));
+            var nameBearing = segments.FindAll(s => s.Count == 5);
+            Assert.AreEqual(
+                1,
+                nameBearing.Count,
+                "Exactly one mapping segment must carry a name-index field for the renamed leading sub-identifier.\n" + json);
+            Assert.AreEqual(
+                0,
+                nameBearing[0][4],
+                "First-and-only name: delta from baseline 0 = 0.\n" + json);
+        }
+
+        /// <summary>
+        /// When a <see cref="CompoundIdentifier"/>'s sub-identifiers are written under
+        /// separate <see cref="JSWriter.EnterLocation"/> spans (the pattern real codegen
+        /// uses when each member-access part carries its own C# source span), each renamed
+        /// sub-identifier must contribute its own <c>names</c>-array entry. Verifies the
+        /// recursive dispatch still flows original names for every sub-identifier.
+        /// </summary>
+        [TestMethod]
+        public void WriteWithMap_CompoundIdentifierParts_PerPartLocation_BothNamesRecorded()
+        {
+            var scope = new IdentifierScope(isExecutionScope: true);
+            SimpleIdentifier.CreateScopeIdentifier(scope, "alpha", enforceSuggestion: false);
+            var renamedAlpha = SimpleIdentifier.CreateScopeIdentifier(scope, "alpha", enforceSuggestion: false);
+            SimpleIdentifier.CreateScopeIdentifier(scope, "beta", enforceSuggestion: false);
+            var renamedBeta = SimpleIdentifier.CreateScopeIdentifier(scope, "beta", enforceSuggestion: false);
+
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+
+            // Simulate a member-access whose receiver and member live at distinct source
+            // spans — each Write-of-sub-identifier happens inside its own EnterLocation.
+            writer.EnterLocation(new Location("Program.cs", 4, 0, 4, 5));
+            writer.Write((IIdentifier)renamedAlpha);
+            writer.LeaveLocation();
+
+            writer.EnterLocation(new Location("Program.cs", 4, 6, 4, 10));
+            writer.Write((IIdentifier)renamedBeta);
+            writer.LeaveLocation();
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+            string json = map.ToString();
+
+            Assert.IsTrue(
+                json.Contains("\"names\": [\"alpha\",\"beta\"]")
+                    || json.Contains("\"names\": [\"alpha\", \"beta\"]"),
+                "Both sub-identifier original names must appear when each is written under its own location span.\n" + json);
+        }
+
         private static string ExtractMappingsField(string json)
         {
             const string marker = "\"mappings\": \"";
