@@ -21,9 +21,9 @@ namespace System.Web.Html.Data.IndexedDB
         public extern string Error
         { get; }
 
-        public event Action<Event> OnAbort;
-        public event Action<Event> OnComplete;
-        public event Action<Event> OnError;
+        public extern event Action<Event> OnAbort;
+        public extern event Action<Event> OnComplete;
+        public extern event Action<Event> OnError;
 
         /// <summary>Retrieves an object store scoped to this transaction.</summary>
         [IgnoreGenericArguments]

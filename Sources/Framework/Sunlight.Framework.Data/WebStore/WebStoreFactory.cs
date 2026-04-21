@@ -104,10 +104,14 @@ namespace Sunlight.Framework.Data.WebStore
                 _schema.VersionId);
 
             _idbOpenRequest.OnSuccess +=
-                (req, evt) => resolve(
-                    new WebStoreClient(
-                        _schema,
-                        _idbOpenRequest.Result as IDBDatabase));
+                (req, evt) =>
+                {
+                    WebStoreFactory.OpenClientTracker[_schema.DatabaseName] = true;
+                    resolve(
+                        new WebStoreClient(
+                            _schema,
+                            _idbOpenRequest.Result as IDBDatabase));
+                };
 
             _idbOpenRequest.OnError += (req, evt) =>
                 reject(new EventBasedException(

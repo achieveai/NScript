@@ -2,6 +2,7 @@ namespace Sunlight.Framework.Data.WebStore
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
     using System.Web.Html;
     using System.Web.Html.Data.IndexedDB;
 
@@ -10,6 +11,24 @@ namespace Sunlight.Framework.Data.WebStore
         KeyCursor,
         Cursor,
         Count,
+    }
+
+    /// <summary>
+    /// Bridge helpers written as raw JS. Used by <see cref="WebStoreTable{TKey, TValue}"/>
+    /// to keep records compatible with IndexedDB's structured-clone algorithm.
+    /// </summary>
+    internal static class StructuredCloneHelper
+    {
+        /// <summary>
+        /// [JsonType] entities carry a lazy <c>importedExtension</c> wrapper on
+        /// their JS shape. The wrapper contains a <c>toJSON</c> function, which
+        /// IndexedDB's structured-clone cannot clone. Strip that wrapper (and any
+        /// nested ones on array elements) before handing the value to <c>put</c>
+        /// or <c>add</c>. Mutates <paramref name="value"/> in place and returns it
+        /// for chaining.
+        /// </summary>
+        [Script("delete value.importedExtension;")]
+        public static extern void StripImportedExtension(object value);
     }
 
     /// <summary>
@@ -320,7 +339,10 @@ namespace Sunlight.Framework.Data.WebStore
             };
 
             for (int idx = values.Length - 1; idx >= 0; idx--)
-            { registerCallbacks(idx, table.Add(values[idx])); }
+            {
+                StructuredCloneHelper.StripImportedExtension(values[idx]);
+                registerCallbacks(idx, table.Add(values[idx]));
+            }
         }
 
         private void AddInternal(
@@ -334,6 +356,7 @@ namespace Sunlight.Framework.Data.WebStore
                 TransactionKind.ReadWrite);
 
             var table = transaction.Transaction.ObjectStore<TKey, TValue>(_tableSchema.Name);
+            StructuredCloneHelper.StripImportedExtension(value);
             var request = table.Add(value);
 
             request.OnSuccess += (req, evt) =>
@@ -406,7 +429,7 @@ namespace Sunlight.Framework.Data.WebStore
         {
             transaction = this.TransactionOrDefault(
                 transaction,
-                TransactionKind.ReadWrite);
+                TransactionKind.Read);
 
             var table = transaction.Transaction.ObjectStore<TKey, TValue>(_tableSchema.Name);
             var request = this.GetCursor(
@@ -415,7 +438,7 @@ namespace Sunlight.Framework.Data.WebStore
                 reject,
                 CursorOrCountRequestMode.Count);
 
-            if (reject == null)
+            if (request == null)
             { return; }
 
             request.OnSuccess += (req, evt) => resolve(Type.AS<object, int>(req.Result));
@@ -649,19 +672,6 @@ namespace Sunlight.Framework.Data.WebStore
             request.OnError += HandleError(reject);
         }
 
-        private bool IsGoodQueryForIndexes(
-            WebStoreTransaction transaction,
-            Query query,
-            Action<object> reject)
-        {
-            if (_tableSchema.CanUsePrimaryIndex(query)
-                || _tableSchema.GetIndex(query) != null)
-            { return true; }
-
-            reject(new Exception("No suitable index found"));
-            return false;
-        }
-
         private void QueryDeleteInternal(
             WebStoreTransaction transaction,
             Query query,
@@ -820,8 +830,12 @@ namespace Sunlight.Framework.Data.WebStore
             request.OnSuccess += (req, evt) =>
             {
                 if (Object.IsNullOrUndefined(req.Result))
-                { reject(new Exception("Object not found")); }
+                {
+                    reject(new Exception("Object not found"));
+                    return;
+                }
 
+                StructuredCloneHelper.StripImportedExtension(value);
                 request = table.Put(value);
                 request.OnSuccess += (req2, evt2) => resolve(Type.AS<object, TKey>(request.Result));
                 request.OnError += HandleError(reject);
@@ -838,6 +852,7 @@ namespace Sunlight.Framework.Data.WebStore
         {
             transaction = this.TransactionOrDefault(transaction, TransactionKind.ReadWrite);
             var table = transaction.Transaction.ObjectStore<TKey, TValue>(_tableSchema.Name);
+            StructuredCloneHelper.StripImportedExtension(value);
             var request = table.Put(value);
 
             request.OnSuccess += (req, evt) => resolve(Type.AS<object, TKey>(req.Result));
@@ -883,12 +898,14 @@ namespace Sunlight.Framework.Data.WebStore
                 }
                 else
                 {
+                    StructuredCloneHelper.StripImportedExtension(values[idx]);
                     req = table.Put(values[idx]);
                     req.OnSuccess += onSuccess;
                     req.OnError += onError;
                 }
             };
 
+            StructuredCloneHelper.StripImportedExtension(values[idx]);
             var request = table.Put(values[idx]);
             request.OnSuccess += onSuccess;
             request.OnError += onError;

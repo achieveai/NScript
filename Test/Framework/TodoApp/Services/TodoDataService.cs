@@ -22,12 +22,16 @@ namespace TodoApp.Services
             return new Promise<bool>(delegate(Action<bool> resolve, Action<object> reject)
             {
                 var factory = new WebStoreFactory();
-                factory.Create(TodoWebStoreSchema.Create()).Then<bool>(delegate(WebStoreClient opened)
-                {
-                    this.client = opened;
-                    resolve(true);
-                    return true;
-                });
+                factory.Create(TodoWebStoreSchema.Create()).Then<object>(
+                    delegate(WebStoreClient opened)
+                    {
+                        this.client = opened;
+                        resolve(true);
+                    },
+                    delegate(object error)
+                    {
+                        reject(error);
+                    });
             });
         }
 

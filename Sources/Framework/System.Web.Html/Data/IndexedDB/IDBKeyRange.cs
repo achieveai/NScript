@@ -38,7 +38,7 @@ namespace System.Web.Html.Data.IndexedDB
             bool? open = null);
 
         public static extern IDBKeyRange UpperBound(
-            object lower,
+            object upper,
             bool? open = null);
 
         /// <summary>A range that matches a single key.</summary>

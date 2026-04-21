@@ -3,6 +3,7 @@ namespace TodoApp.ViewModels
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using System.Web.Html;
+    using Sunlight.Framework;
     using Sunlight.Framework.Observables;
     using TodoApp.Services;
 
@@ -765,18 +766,25 @@ namespace TodoApp.ViewModels
             if (this.dataService != null)
             {
                 // Load user-created folders first, then load todos
-                this.dataService.GetAllFolders().Then<bool>(delegate(List<FolderEntity> folderList)
-                {
-                    this.LoadFolders(folderList);
-
-                    this.dataService.GetAllTodos().Then<bool>(delegate(List<TodoEntity> todoList)
+                this.dataService.GetAllFolders().Then<object>(
+                    delegate(List<FolderEntity> folderList)
                     {
-                        this.LoadTodos(todoList);
-                        return true;
-                    });
+                        this.LoadFolders(folderList);
 
-                    return true;
-                });
+                        this.dataService.GetAllTodos().Then<object>(
+                            delegate(List<TodoEntity> todoList)
+                            {
+                                this.LoadTodos(todoList);
+                            },
+                            delegate(object todoError)
+                            {
+                                Logger.Error("Load todos failed: " + todoError);
+                            });
+                    },
+                    delegate(object folderError)
+                    {
+                        Logger.Error("Load folders failed: " + folderError);
+                    });
             }
             else
             {
