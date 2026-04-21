@@ -21,11 +21,13 @@ namespace Sunlight.Framework.Data.WebStore
     {
         /// <summary>
         /// [JsonType] entities carry a lazy <c>importedExtension</c> wrapper on
-        /// their JS shape. The wrapper contains a <c>toJSON</c> function, which
-        /// IndexedDB's structured-clone cannot clone. Strip that wrapper (and any
-        /// nested ones on array elements) before handing the value to <c>put</c>
-        /// or <c>add</c>. Mutates <paramref name="value"/> in place and returns it
-        /// for chaining.
+        /// their JS shape that holds a <c>toJSON</c> function. IndexedDB's
+        /// structured-clone algorithm cannot clone <c>Function</c> values, so the
+        /// wrapper must be removed before handing the record to <c>put</c> or
+        /// <c>add</c>. Only strips the top-level wrapper on <paramref name="value"/>
+        /// itself — callers are responsible for recursing into array elements or
+        /// nested JSON types if they also carry the wrapper. Mutates
+        /// <paramref name="value"/> in place.
         /// </summary>
         [Script("delete value.importedExtension;")]
         public static extern void StripImportedExtension(object value);
@@ -385,9 +387,16 @@ namespace Sunlight.Framework.Data.WebStore
             Action<int> doWork = (idx) =>
             {
                 pendingRequests++;
-                var request = values == null
-                    ? objectStore.Delete(keys[idx])
-                    : objectStore.Put(values[idx]);
+                IDBRequest request;
+                if (values == null)
+                {
+                    request = objectStore.Delete(keys[idx]);
+                }
+                else
+                {
+                    StructuredCloneHelper.StripImportedExtension(values[idx]);
+                    request = objectStore.Put(values[idx]);
+                }
 
                 request.OnSuccess += (req, evt) =>
                 {
