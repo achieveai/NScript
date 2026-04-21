@@ -27,10 +27,28 @@ namespace Sunlight.Framework
         public readonly string ParentSpanId;
         public readonly int Depth;
 
+        // Sentinel returned by OnEventDispatch when the event is not a user
+        // gesture (async I/O completion such as IndexedDB success/error).
+        // OnEventDispatchEnd recognises it and skips the depth/current unwind
+        // that only applies to the user-gesture path.
+        private static readonly object NonUserGestureSentinel = new object();
+
         static CallContext()
         {
-            EventBinder.OnEventDispatch = () =>
+            EventBinder.OnEventDispatch = (evt) =>
             {
+                // Async I/O completion events (IndexedDB request success/error,
+                // IDBTransaction complete, etc.) flow through EventBinder but
+                // must NOT start a new action root — they run on behalf of
+                // whichever action issued the request. User-gesture DOM events
+                // (click, input, focus, keydown, …) fire on DOM Element targets
+                // with an associated tagName; async I/O events fire on
+                // EventTarget subclasses whose target is not a DOM Element
+                // (IDBRequest, IDBTransaction, IDBDatabase). Skip the root
+                // here for non-Element targets so boot-time IDB traffic does
+                // not create orphan root contexts that pollute the ambient
+                // context the W3C traceparent propagation relies on.
+                if (!CallContext.IsUserGestureEvent(evt)) return CallContext.NonUserGestureSentinel;
                 CallContext.eventDispatchDepth++;
                 var prev = CallContext.current;
                 CallContext.StartRoot();
@@ -38,6 +56,7 @@ namespace Sunlight.Framework
             };
             EventBinder.OnEventDispatchEnd = (prev) =>
             {
+                if (prev == CallContext.NonUserGestureSentinel) return;
                 CallContext.eventDispatchDepth--;
                 // Only restore for nested event dispatches (depth > 0).
                 // Top-level handlers keep their context active for async
@@ -89,6 +108,33 @@ namespace Sunlight.Framework
         {
             get { return CallContext.current; }
             internal set { CallContext.current = value; }
+        }
+
+        /// <summary>
+        /// Clear the ambient context and reset the event-dispatch depth to 0.
+        /// Intended for application boot sequences that run inside an async
+        /// continuation (e.g. after awaiting IndexedDB initialization): DOM
+        /// events that fire during the init window trigger
+        /// <see cref="EventBinder.OnEventDispatch"/> → <see cref="StartRoot"/>,
+        /// and the depth=0 "keep context active for async continuations" policy
+        /// in <c>OnEventDispatchEnd</c> keeps those root contexts alive past
+        /// boot, polluting the first true user-gesture context. Call this after
+        /// the UI is activated to restore the clean "no action in progress"
+        /// invariant. Does NOT disturb the WI-20 async-continuation preservation
+        /// semantics for user-gesture handlers.
+        /// </summary>
+        /// <remarks>
+        /// Also zeroes <c>eventDispatchDepth</c>. If this is invoked mid-dispatch
+        /// (depth &gt; 0), the subsequent <c>OnEventDispatchEnd</c> would otherwise
+        /// overwrite the cleared <c>current</c> with a stale <c>prev</c> captured
+        /// at dispatch entry, silently undoing the cleanup. Resetting depth turns
+        /// the depth&gt;0 unwind guard into a no-op so the cleared state sticks
+        /// regardless of where the method is called from.
+        /// </remarks>
+        public static void ClearAmbient()
+        {
+            CallContext.eventDispatchDepth = 0;
+            CallContext.current = null;
         }
 
         /// <summary>
@@ -239,6 +285,25 @@ namespace Sunlight.Framework
             if (typeof window !== 'undefined') { window.__callContext = ctx; }
         ")]
         private static extern void ExposeDebugAccessors();
+
+        /// <summary>
+        /// True if the event represents a user gesture that should start a
+        /// new action root. User-gesture DOM events fire on DOM Elements
+        /// (which expose <c>tagName</c>); async I/O completion events
+        /// (IndexedDB <c>success</c>/<c>error</c>/<c>upgradeneeded</c>,
+        /// <c>IDBTransaction</c> <c>complete</c>, etc.) fire on EventTarget
+        /// subclasses whose target has no <c>tagName</c>.
+        /// </summary>
+        /// <remarks>
+        /// Using <c>evt.target.tagName</c> (string truthiness) is the narrowest
+        /// test that holds across all user-gesture DOM event types (click,
+        /// input, focus, keydown, mouseover, drag, etc.) without depending on
+        /// <c>instanceof Element</c>, which is brittle across iframe / Shadow
+        /// DOM boundaries. <c>evt.isTrusted</c> cannot be used because IDB
+        /// completion events are also trusted.
+        /// </remarks>
+        [Script(@"return !!(evt && evt.target && evt.target.tagName);")]
+        private static extern bool IsUserGestureEvent(object evt);
 
         private static string GenerateHexSegment()
         {

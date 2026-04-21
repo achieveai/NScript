@@ -4,36 +4,31 @@
     <OutputType>Library</OutputType>
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RootNamespace>TodoApp</RootNamespace>
-    <AssemblyName>TodoApp</AssemblyName>
+    <RootNamespace>Sunlight.Framework.Data.Test</RootNamespace>
+    <AssemblyName>Sunlight.Framework.Data.Test</AssemblyName>
     <GenerateJs>True</GenerateJs>
+    <PluginConfig>PluginConfig.xml</PluginConfig>
     <JsOutputPath>../TestWebApplication/GeneratedScripts</JsOutputPath>
-    <NoWarn>0824;0169</NoWarn>
     <CscToolPath>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</CscToolPath>
     <CscToolExe>csc.exe</CscToolExe>
     <NScriptExe>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\nscript.exe</NScriptExe>
   </PropertyGroup>
+
   <ItemGroup>
-    <None Include="PluginConfig.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="RazorTemplates\AppShell.skin.cshtml" />
-    <EmbeddedResource Include="RazorTemplates\TodoItemControl.skin.cshtml" />
-    <EmbeddedResource Include="RazorTemplates\AppShell.css" />
+    <None Include="PluginConfig.xml">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\SunlightUnit\SunlightUnit.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj" />
-    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.Data\Sunlight.Framework.Data.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.Data\Sunlight.Framework.Data.csproj" />
   </ItemGroup>
-
-  <Target Name="EnsureJsOutputDirectory" BeforeTargets="ScriptGenerate" Condition="$(GenerateJs) == 'True'">
-    <MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />
-  </Target>
 
   <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />
 </Project>

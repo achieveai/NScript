@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Sunlight.Framework.Data</AssemblyName>
+    <RootNamespace>Sunlight.Framework.Data</RootNamespace>
+    <PackageId>Mcqdb.NScript.Sunlight.Framework.Data</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../System.Web/System.Web.csproj" />
+    <ProjectReference Include="../System.Web.Html/System.Web.Html.csproj" />
+    <ProjectReference Include="../Sunlight.Framework/Sunlight.Framework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)$(AssemblyName).pdb">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

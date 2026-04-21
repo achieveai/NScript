@@ -67,8 +67,23 @@ namespace Sunlight.Framework
             // GetBoundingClientRect() routes through LayoutBatcher automatically.
             // System.Web.Html lives below Sunlight.Framework in the dependency
             // graph so the hooks are delegates installed at startup.
-            Element.AsyncReadDouble = ReadDoubleAsync;
-            Element.AsyncReadClientRect = ReadClientRectAsync;
+            //
+            // Idempotency guard: Element maps to the native HTMLElement global
+            // (ImportedType/ScriptName="HTMLElement") so AsyncReadDouble lives on
+            // a slot shared across every compiled .js bundle on the page. When
+            // multiple bundles each carry their own copy of Sunlight.Framework
+            // (demand-driven conversion, ADR 0022), the last-loaded bundle would
+            // otherwise clobber earlier bundles' hooks and strand already-queued
+            // reads in a pending list that never flushes. First writer wins; the
+            // canonical LayoutBatcher owns the rAF pipeline for the whole page.
+            if (Element.AsyncReadDouble == null)
+            {
+                Element.AsyncReadDouble = ReadDoubleAsync;
+            }
+            if (Element.AsyncReadClientRect == null)
+            {
+                Element.AsyncReadClientRect = ReadClientRectAsync;
+            }
         }
 
         /// <summary>

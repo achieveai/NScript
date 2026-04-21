@@ -1,143 +1,92 @@
 namespace TodoApp.Services
 {
     using System;
-    using Sunlight.Framework.Observables;
-    using TodoApp.ViewModels;
+    using System.Collections.Generic;
+    using Sunlight.Framework.Data.WebStore;
 
     /// <summary>
-    /// Typed data access service. Wraps IndexedDbService with C#-friendly methods
-    /// that build JSON strings manually to ensure clean storage (no framework metadata).
+    /// Typed data access service over <see cref="WebStoreClient"/>. Replaces the
+    /// previous manual-JSON IndexedDbService with a strongly-typed layer so
+    /// callers never touch raw JSON or JS interop.
     /// </summary>
     public class TodoDataService
     {
-        private IndexedDbService dbService;
-
-        public TodoDataService(IndexedDbService dbService)
-        {
-            this.dbService = dbService;
-        }
+        private WebStoreClient client;
 
         /// <summary>
-        /// Opens the IndexedDB database. Must be called before any read/write operations.
+        /// Opens the underlying database and caches the resulting client.
+        /// Must complete before any other operation on this service is called.
         /// </summary>
         public Promise<bool> Initialize()
         {
-            return this.dbService.Open();
+            return new Promise<bool>(delegate(Action<bool> resolve, Action<object> reject)
+            {
+                var factory = new WebStoreFactory();
+                factory.Create(TodoWebStoreSchema.Create()).Then<object>(
+                    delegate(WebStoreClient opened)
+                    {
+                        this.client = opened;
+                        resolve(true);
+                    },
+                    delegate(object error)
+                    {
+                        reject(error);
+                    });
+            });
         }
 
         /// <summary>
-        /// Persists a todo item to the 'todos' object store.
-        /// All fields are serialized as a plain JSON object with well-known keys.
+        /// Inserts-or-replaces a todo record. The record is stored as-is; no
+        /// serialization metadata is included.
         /// </summary>
-        public Promise<bool> SaveTodo(string id, string folderId, string title, bool isCompleted, bool isImportant, bool isMyDay, string dueDate, string notes, ObservableCollection<SubTaskViewModel> subTasks)
+        public Promise<string> SaveTodo(TodoEntity todo)
         {
-            string json = "{";
-            json = json + "\"Id\":\"" + id + "\"";
-            json = json + ",\"FolderId\":\"" + folderId + "\"";
-            json = json + ",\"Title\":\"" + EscapeJson(title) + "\"";
-            json = json + ",\"IsCompleted\":" + (isCompleted ? "true" : "false");
-            json = json + ",\"IsImportant\":" + (isImportant ? "true" : "false");
-            json = json + ",\"IsMyDay\":" + (isMyDay ? "true" : "false");
-            json = json + ",\"DueDate\":\"" + (dueDate != null ? EscapeJson(dueDate) : "") + "\"";
-            json = json + ",\"Notes\":\"" + (notes != null ? EscapeJson(notes) : "") + "\"";
-            json = json + ",\"SubTasks\":" + BuildSubTasksJson(subTasks);
-            json = json + "}";
-            return this.dbService.PutRaw("todos", json);
+            return this.TodosTable().UpSert(todo);
         }
 
         /// <summary>
-        /// Loads all todos from the 'todos' object store as a JSON array string.
+        /// Loads every todo record. Caller is expected to translate to view models.
         /// </summary>
-        public Promise<string> GetAllTodos()
+        public Promise<List<TodoEntity>> GetAllTodos()
         {
-            return this.dbService.GetAllRaw("todos");
+            return this.TodosTable().Query(Query.All);
         }
 
-        /// <summary>
-        /// Deletes a todo by ID from the 'todos' object store.
-        /// </summary>
+        /// <summary>Deletes a single todo by id. Resolves true on success.</summary>
         public Promise<bool> DeleteTodo(string id)
         {
-            return this.dbService.DeleteRaw("todos", id);
+            return this.TodosTable().Delete(id);
         }
 
         /// <summary>
-        /// Persists a user-created folder to the 'folders' object store.
-        /// System folders are not persisted — they are always recreated on startup.
+        /// Inserts-or-replaces a user-created folder. System folders are not
+        /// persisted — they are recreated on startup.
         /// </summary>
-        public Promise<bool> SaveFolder(string id, string name, string icon, int sortOrder)
+        public Promise<string> SaveFolder(FolderEntity folder)
         {
-            string json = "{";
-            json = json + "\"Id\":\"" + id + "\"";
-            json = json + ",\"Name\":\"" + EscapeJson(name) + "\"";
-            json = json + ",\"Icon\":\"" + EscapeJson(icon) + "\"";
-            json = json + ",\"SortOrder\":" + sortOrder;
-            json = json + "}";
-            return this.dbService.PutRaw("folders", json);
+            return this.FoldersTable().UpSert(folder);
         }
 
-        /// <summary>
-        /// Loads all user-created folders from the 'folders' object store as a JSON array string.
-        /// </summary>
-        public Promise<string> GetAllFolders()
+        /// <summary>Loads every user-created folder record.</summary>
+        public Promise<List<FolderEntity>> GetAllFolders()
         {
-            return this.dbService.GetAllRaw("folders");
+            return this.FoldersTable().Query(Query.All);
         }
 
-        /// <summary>
-        /// Deletes a folder by ID from the 'folders' object store.
-        /// </summary>
+        /// <summary>Deletes a single folder by id. Resolves true on success.</summary>
         public Promise<bool> DeleteFolder(string id)
         {
-            return this.dbService.DeleteRaw("folders", id);
+            return this.FoldersTable().Delete(id);
         }
 
-        /// <summary>
-        /// Escapes a string for safe embedding in a JSON value (RFC 8259).
-        /// </summary>
-        private static string EscapeJson(string input)
+        private WebStoreTable<string, TodoEntity> TodosTable()
         {
-            if (input == null)
-            {
-                return "";
-            }
-
-            string result = input;
-            result = result.Replace("\\", "\\\\");
-            result = result.Replace("\"", "\\\"");
-            result = result.Replace("\n", "\\n");
-            result = result.Replace("\r", "\\r");
-            result = result.Replace("\t", "\\t");
-            result = result.Replace("\b", "\\b");
-            result = result.Replace("\f", "\\f");
-            return result;
+            return this.client.Table<string, TodoEntity>(TodoWebStoreSchema.TodosTable);
         }
 
-        private static string BuildSubTasksJson(ObservableCollection<SubTaskViewModel> subTasks)
+        private WebStoreTable<string, FolderEntity> FoldersTable()
         {
-            if (subTasks == null || subTasks.Count == 0)
-            {
-                return "[]";
-            }
-
-            string json = "[";
-            for (int i = 0; i < subTasks.Count; i++)
-            {
-                if (i > 0)
-                {
-                    json = json + ",";
-                }
-
-                var subTask = subTasks[i];
-                json = json + "{";
-                json = json + "\"Id\":\"" + (subTask.Id != null ? EscapeJson(subTask.Id) : "") + "\"";
-                json = json + ",\"Title\":\"" + (subTask.Title != null ? EscapeJson(subTask.Title) : "") + "\"";
-                json = json + ",\"IsCompleted\":" + (subTask.IsCompleted ? "true" : "false");
-                json = json + "}";
-            }
-
-            json = json + "]";
-            return json;
+            return this.client.Table<string, FolderEntity>(TodoWebStoreSchema.FoldersTable);
         }
     }
 }

@@ -19,14 +19,17 @@ namespace TodoApp
         {
             TaskScheduler.Instance = new TaskScheduler(new WindowTimer(), 10, 10);
 
-            var dbService = new IndexedDbService();
-            var dataService = new TodoDataService(dbService);
+            var dataService = new TodoDataService();
 
-            dataService.Initialize().Then<bool>(delegate(bool ok)
-            {
-                BootUI(dataService);
-                return true;
-            });
+            dataService.Initialize().Then<object>(
+                delegate(bool ok)
+                {
+                    BootUI(dataService);
+                },
+                delegate(object error)
+                {
+                    Logger.Error("Boot failed: " + error);
+                });
         }
 
         /// <summary>
