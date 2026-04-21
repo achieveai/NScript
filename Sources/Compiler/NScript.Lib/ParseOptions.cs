@@ -260,18 +260,19 @@ namespace NScript.Lib
                         continue;
                     case "-sourcemaproot":
                         option = CurrentOption.None;
-                        if (options.sourceMapRoot == null)
-                        {
-                            if (++iArg < args.Length)
-                            {
-                                options.sourceMapRoot = args[iArg];
-                            }
-                        }
-                        else
+                        if (options.sourceMapRoot != null)
                         {
                             Logger.Instance.LogError("-sourceMapRoot specified at least twice");
                             return null;
                         }
+
+                        if (++iArg >= args.Length)
+                        {
+                            Logger.Instance.LogError("-sourceMapRoot requires a value");
+                            return null;
+                        }
+
+                        options.sourceMapRoot = args[iArg];
                         continue;
                     case "-log":
                     case "--log":

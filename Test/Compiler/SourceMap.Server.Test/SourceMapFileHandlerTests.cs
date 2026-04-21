@@ -6,6 +6,7 @@
 
 namespace OwaSourceMapper.Server.Test
 {
+    using System.Collections.Generic;
     using System.IO;
     using System.Net;
     using System.Text;
@@ -23,6 +24,7 @@ namespace OwaSourceMapper.Server.Test
     {
         private string workDir;
         private string mapsDir;
+        private string sourcesDir;
         private string sourceFilePath;
 
         [TestInitialize]
@@ -30,11 +32,11 @@ namespace OwaSourceMapper.Server.Test
         {
             this.workDir = Path.Combine(Path.GetTempPath(), "SourceMapServerTests_" + System.Guid.NewGuid().ToString("N"));
             this.mapsDir = Path.Combine(this.workDir, "maps");
-            string sourcesDir = Path.Combine(this.workDir, "src");
+            this.sourcesDir = Path.Combine(this.workDir, "src");
             Directory.CreateDirectory(this.mapsDir);
-            Directory.CreateDirectory(sourcesDir);
+            Directory.CreateDirectory(this.sourcesDir);
 
-            this.sourceFilePath = Path.Combine(sourcesDir, "Program.cs");
+            this.sourceFilePath = Path.Combine(this.sourcesDir, "Program.cs");
             File.WriteAllText(this.sourceFilePath, "// body of Program.cs\nclass Foo {}\n");
         }
 
@@ -52,7 +54,7 @@ namespace OwaSourceMapper.Server.Test
         {
             string escapedLong = this.sourceFilePath.Replace("\\", "\\\\");
             WriteMap("app", "C$/sources/Program.cs", escapedLong);
-            var options = new SourceMapFileHandlerOptions { MapsDirectory = this.mapsDir };
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
 
             HttpContext ctx = BuildContext();
             await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/sources/Program.cs", options);
@@ -68,7 +70,7 @@ namespace OwaSourceMapper.Server.Test
         {
             string escapedLong = this.sourceFilePath.Replace("\\", "\\\\");
             WriteMap("app", "C$/sources/Program.cs", escapedLong);
-            var options = new SourceMapFileHandlerOptions { MapsDirectory = this.mapsDir };
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
 
             HttpContext ctx = BuildContext();
             await SourceMapFileHandler.HandleAsync(ctx, "app", "NotListed.cs", options);
@@ -79,7 +81,7 @@ namespace OwaSourceMapper.Server.Test
         [TestMethod]
         public async Task HandleAsync_MapFileMissing_Returns404()
         {
-            var options = new SourceMapFileHandlerOptions { MapsDirectory = this.mapsDir };
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
 
             HttpContext ctx = BuildContext();
             await SourceMapFileHandler.HandleAsync(ctx, "nonexistent", "Program.cs", options);
@@ -90,9 +92,9 @@ namespace OwaSourceMapper.Server.Test
         [TestMethod]
         public async Task HandleAsync_LongPathDoesNotExistOnDisk_Returns404()
         {
-            string missingLong = Path.Combine(this.workDir, "src", "Gone.cs").Replace("\\", "\\\\");
+            string missingLong = Path.Combine(this.sourcesDir, "Gone.cs").Replace("\\", "\\\\");
             WriteMap("app", "C$/sources/Gone.cs", missingLong);
-            var options = new SourceMapFileHandlerOptions { MapsDirectory = this.mapsDir };
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
 
             HttpContext ctx = BuildContext();
             await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/sources/Gone.cs", options);
@@ -104,9 +106,12 @@ namespace OwaSourceMapper.Server.Test
         [DataRow("../../../../etc/passwd")]
         [DataRow("..")]
         [DataRow("foo/../bar")]
+        [DataRow("foo/bar")]
+        [DataRow("a b")]
+        [DataRow("a:b")]
         public async Task HandleAsync_MapNameWithTraversal_Returns400(string mapName)
         {
-            var options = new SourceMapFileHandlerOptions { MapsDirectory = this.mapsDir };
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
 
             HttpContext ctx = BuildContext();
             await SourceMapFileHandler.HandleAsync(ctx, mapName, "Program.cs", options);
@@ -121,7 +126,7 @@ namespace OwaSourceMapper.Server.Test
         [DataRow("app", null)]
         public async Task HandleAsync_EmptySegment_Returns400(string mapName, string sourceName)
         {
-            var options = new SourceMapFileHandlerOptions { MapsDirectory = this.mapsDir };
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
 
             HttpContext ctx = BuildContext();
             await SourceMapFileHandler.HandleAsync(ctx, mapName, sourceName, options);
@@ -134,11 +139,8 @@ namespace OwaSourceMapper.Server.Test
         {
             string escapedLong = this.sourceFilePath.Replace("\\", "\\\\");
             WriteMap("app", "C$/sources/Program.cs", escapedLong);
-            var options = new SourceMapFileHandlerOptions
-            {
-                MapsDirectory = this.mapsDir,
-                ServeFromSourcesLong = false,
-            };
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+            options.ServeFromSourcesLong = false;
 
             HttpContext ctx = BuildContext();
             await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/sources/Program.cs", options);
@@ -161,6 +163,97 @@ namespace OwaSourceMapper.Server.Test
             await SourceMapFileHandler.HandleAsync(ctx, "app", "Program.cs", options);
 
             Assert.AreEqual((int)HttpStatusCode.NotFound, ctx.Response.StatusCode);
+        }
+
+        [TestMethod]
+        public async Task HandleAsync_LongPathOutsideAllowedRoot_Returns404()
+        {
+            // Source sits in workDir/rogue, but allow-list only permits workDir/src. Even though
+            // the file exists on disk and the short name matches, containment must fail closed.
+            string rogueDir = Path.Combine(this.workDir, "rogue");
+            Directory.CreateDirectory(rogueDir);
+            string roguePath = Path.Combine(rogueDir, "Secret.cs");
+            File.WriteAllText(roguePath, "secret contents");
+
+            string escapedLong = roguePath.Replace("\\", "\\\\");
+            WriteMap("app", "C$/x/Secret.cs", escapedLong);
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/x/Secret.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "Allow-list containment must refuse files outside AllowedSourceRoots even when sourcesLong points at them");
+            string body = ReadBody(ctx);
+            Assert.IsFalse(body.Contains("secret contents"), "Body must not leak file content on containment failure");
+        }
+
+        [TestMethod]
+        public async Task HandleAsync_AllowedRootsUnsetFallsBackToMapsDir_Returns404ForOutsideFiles()
+        {
+            // No AllowedSourceRoots configured — the handler must fail closed by using MapsDirectory
+            // as the sole allowed root. The source file lives under workDir/src, NOT under MapsDir.
+            string escapedLong = this.sourceFilePath.Replace("\\", "\\\\");
+            WriteMap("app", "C$/sources/Program.cs", escapedLong);
+            var options = new SourceMapFileHandlerOptions
+            {
+                MapsDirectory = this.mapsDir,
+            };
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/sources/Program.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "When AllowedSourceRoots is unset the handler must default to maps-dir containment and refuse outside paths");
+        }
+
+        [TestMethod]
+        public async Task HandleAsync_MapFileExceedsSizeCap_Returns404()
+        {
+            string escapedLong = this.sourceFilePath.Replace("\\", "\\\\");
+            WriteMap("app", "C$/sources/Program.cs", escapedLong);
+
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+            options.MaxMapFileSizeBytes = 10; // much smaller than any real map
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/sources/Program.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "Maps larger than MaxMapFileSizeBytes must be rejected instead of being fully loaded");
+        }
+
+        [TestMethod]
+        public async Task HandleAsync_SourceFileExceedsSizeCap_Returns404()
+        {
+            string escapedLong = this.sourceFilePath.Replace("\\", "\\\\");
+            WriteMap("app", "C$/sources/Program.cs", escapedLong);
+
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+            options.MaxSourceFileSizeBytes = 5; // source file is ~35 bytes
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/sources/Program.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "Sources larger than MaxSourceFileSizeBytes must be refused instead of streamed");
+        }
+
+        private SourceMapFileHandlerOptions BuildOptions(string allowedRoot)
+        {
+            return new SourceMapFileHandlerOptions
+            {
+                MapsDirectory = this.mapsDir,
+                AllowedSourceRoots = new List<string> { allowedRoot },
+            };
         }
 
         private static HttpContext BuildContext()

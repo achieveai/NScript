@@ -9,7 +9,10 @@ namespace OwaSourceMapper.Server
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Text;
     using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Parsed view of the <c>sources</c> and <c>sourcesLong</c> arrays from an NScript-generated
@@ -59,6 +62,74 @@ namespace OwaSourceMapper.Server
                 return null;
             }
 
+            return TryParseContent(content);
+        }
+
+        /// <summary>
+        /// Async variant of <see cref="TryParse(string)"/> with an explicit byte-size cap. Files
+        /// larger than <paramref name="maxBytes"/> are rejected without being fully read — this is
+        /// the DoS guard for a request-scoped parse.
+        /// </summary>
+        /// <param name="mapFilePath"> Absolute or relative path to the <c>.map</c> file. </param>
+        /// <param name="maxBytes"> Upper bound on the file's byte length. Files exceeding this are refused. </param>
+        /// <param name="cancellationToken"> Cancellation token (e.g. <c>HttpContext.RequestAborted</c>). </param>
+        /// <returns> A <see cref="SourceMapSources"/> instance, or <c>null</c> on failure. </returns>
+        public static async Task<SourceMapSources> TryParseAsync(
+            string mapFilePath,
+            long maxBytes,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(mapFilePath))
+            {
+                return null;
+            }
+
+            FileInfo info;
+            try
+            {
+                info = new FileInfo(mapFilePath);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+            catch (PathTooLongException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+
+            if (!info.Exists || info.Length > maxBytes)
+            {
+                return null;
+            }
+
+            string content;
+            try
+            {
+                await using var stream = new FileStream(
+                    mapFilePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: 4096,
+                    options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+                using var reader = new StreamReader(stream, Encoding.UTF8);
+                content = await reader.ReadToEndAsync().ConfigureAwait(false);
+            }
+            catch (IOException)
+            {
+                return null;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
             return TryParseContent(content);
         }
 
