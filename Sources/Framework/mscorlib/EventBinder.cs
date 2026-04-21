@@ -26,8 +26,15 @@ namespace System
         /// Hook called before dispatching a DOM event. Set by the framework
         /// (e.g., CallContext.StartRoot) to create a new action context.
         /// Returns the previous context so OnEventDispatchEnd can restore it.
+        /// The event object is passed so subscribers can distinguish
+        /// user-gesture DOM events (click, input, focus, etc.) from async I/O
+        /// completion events that also flow through EventBinder
+        /// (e.g. IndexedDB <c>success</c>/<c>error</c>/<c>upgradeneeded</c>,
+        /// <c>IDBTransaction</c> <c>complete</c>, etc.). I/O completions must
+        /// not start a new action root — they run on behalf of whichever
+        /// action issued the underlying request.
         /// </summary>
-        public static Func<object> OnEventDispatch;
+        public static Func<object, object> OnEventDispatch;
 
         /// <summary>
         /// Hook called after a DOM event handler returns. Restores the
@@ -296,7 +303,7 @@ namespace System
             object prev = null;
             try
             {
-                if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
+                if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch(evt);
                 ((Action<object,object>)this.capturePhaseEvents[GetEventType(evt)])(this.target, evt);
             }
             finally
@@ -314,7 +321,7 @@ namespace System
                 object prev = null;
                 try
                 {
-                    if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch();
+                    if (EventBinder.OnEventDispatch != null) prev = EventBinder.OnEventDispatch(evt);
                     ((Action<object, object>)del)(this.target, evt);
                 }
                 finally
