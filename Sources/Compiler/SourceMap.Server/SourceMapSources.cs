@@ -9,6 +9,7 @@ namespace OwaSourceMapper.Server
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Security;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
@@ -118,7 +119,7 @@ namespace OwaSourceMapper.Server
                     bufferSize: 4096,
                     options: FileOptions.Asynchronous | FileOptions.SequentialScan);
                 using var reader = new StreamReader(stream, Encoding.UTF8);
-                content = await reader.ReadToEndAsync().ConfigureAwait(false);
+                content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (IOException)
             {
@@ -128,8 +129,19 @@ namespace OwaSourceMapper.Server
             {
                 return null;
             }
+            catch (SecurityException)
+            {
+                return null;
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
 
-            cancellationToken.ThrowIfCancellationRequested();
             return TryParseContent(content);
         }
 

@@ -212,6 +212,31 @@ namespace OwaSourceMapper.Server.Test
         }
 
         [TestMethod]
+        public async Task HandleAsync_LongPathInSiblingPrefixDirectory_Returns404()
+        {
+            // Classic string-prefix containment pitfall: allow-list is <work>/src, attacker aims
+            // at <work>/src-evil/secret.cs. Without the trailing-separator normalization the naive
+            // StartsWith("<work>/src") would return true and leak the file.
+            string siblingDir = Path.Combine(this.workDir, "src-evil");
+            Directory.CreateDirectory(siblingDir);
+            string rogue = Path.Combine(siblingDir, "Secret.cs");
+            File.WriteAllText(rogue, "sibling-evil");
+
+            string escapedLong = rogue.Replace("\\", "\\\\");
+            WriteMap("app", "C$/x/Secret.cs", escapedLong);
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "C$/x/Secret.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "Sibling directory whose name shares the allowed root as a prefix must not match the allow-list");
+            Assert.IsFalse(ReadBody(ctx).Contains("sibling-evil"));
+        }
+
+        [TestMethod]
         public async Task HandleAsync_MapFileExceedsSizeCap_Returns404()
         {
             string escapedLong = this.sourceFilePath.Replace("\\", "\\\\");
