@@ -360,4 +360,81 @@ namespace NScript.Utils.Test
             Assert.IsNull(options.RunId);
         }
     }
+
+    /// <summary>
+    /// Tests for the WI-16 <c>-sourceMapRoot</c> CLI flag. Kept in a dedicated fixture so
+    /// <see cref="Logger"/> and file-existence state don't bleed in from the log-flag suite.
+    /// </summary>
+    [TestClass]
+    public class ParseOptionsSourceMapRootTests
+    {
+        private string tempRefDll;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            Logger.Instance = new Logger();
+            this.tempRefDll = Path.GetTempFileName();
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if (!string.IsNullOrEmpty(this.tempRefDll) && File.Exists(this.tempRefDll))
+            {
+                try { File.Delete(this.tempRefDll); } catch { /* best effort */ }
+            }
+        }
+
+        private string[] BaseArgs => new[]
+        {
+            "-outJs", "out.js",
+            "-entryAssembly", "fake.dll",
+            "-references", this.tempRefDll,
+        };
+
+        private string[] ArgsWithSuffix(params string[] suffix)
+        {
+            var list = new System.Collections.Generic.List<string>(this.BaseArgs);
+            list.AddRange(suffix);
+            return list.ToArray();
+        }
+
+        [TestMethod]
+        public void ParseArgs_SourceMapRoot_ValidValue_IsCaptured()
+        {
+            var options = ParseOptions.ParseArgs(
+                this.ArgsWithSuffix("-sourceMapRoot", "/sourcemap/App/"));
+            Assert.IsNotNull(options, "ParseArgs should succeed with a valid -sourceMapRoot");
+            Assert.AreEqual("/sourcemap/App/", options.SourceMapRoot);
+        }
+
+        [TestMethod]
+        public void ParseArgs_SourceMapRoot_DuplicateFlag_ReturnsNull()
+        {
+            var options = ParseOptions.ParseArgs(
+                this.ArgsWithSuffix(
+                    "-sourceMapRoot", "/first/",
+                    "-sourceMapRoot", "/second/"));
+            Assert.IsNull(options, "Duplicate -sourceMapRoot flags must cause ParseArgs to return null");
+        }
+
+        [TestMethod]
+        public void ParseArgs_SourceMapRoot_AsLastArg_ReturnsNull()
+        {
+            // Missing trailing value — ParseArgs reports the error and returns null rather than
+            // silently dropping the flag (iter-1 fix).
+            var options = ParseOptions.ParseArgs(
+                this.ArgsWithSuffix("-sourceMapRoot"));
+            Assert.IsNull(options, "-sourceMapRoot with no trailing value must cause ParseArgs to return null");
+        }
+
+        [TestMethod]
+        public void ParseArgs_NoSourceMapRootFlag_DefaultIsNull()
+        {
+            var options = ParseOptions.ParseArgs(this.BaseArgs);
+            Assert.IsNotNull(options, "ParseArgs should succeed with base args");
+            Assert.IsNull(options.SourceMapRoot);
+        }
+    }
 }

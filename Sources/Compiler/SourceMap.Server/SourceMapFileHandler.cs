@@ -57,21 +57,44 @@ namespace OwaSourceMapper.Server
             string trimmed = pathPrefix.TrimEnd('/');
             string pattern = trimmed + "/{mapName}/{*sourceName}";
 
+            // Pre-resolve static configuration once at registration. MapsDirectory / AllowedSourceRoots
+            // are derived from startup options — recomputing them per request wastes syscalls
+            // (Path.GetFullPath, Directory.Exists) and GC allocations under concurrent DevTools load.
+            // Resolution is deferred (not thrown) so misconfiguration still surfaces as a 404 rather
+            // than crashing the host at startup; null/empty values are reported on first request.
+            string resolvedMapsDir = options.ResolveMapsDirectory();
+            IReadOnlyList<string> resolvedAllowedRoots = resolvedMapsDir != null
+                ? options.ResolveAllowedRoots(resolvedMapsDir)
+                : null;
+
             return endpoints.MapGet(
                 pattern,
                 (HttpContext ctx, string mapName, string sourceName) =>
-                    HandleAsync(ctx, mapName, sourceName, options));
+                    HandleAsync(ctx, mapName, sourceName, options, resolvedMapsDir, resolvedAllowedRoots));
         }
 
         /// <summary>
         /// Core request handler. Exposed internally so the test project can drive it without
-        /// standing up a full HTTP pipeline.
+        /// standing up a full HTTP pipeline. Tests may pass <c>null</c> for the pre-resolved
+        /// directory / allow-list to force per-request resolution (matches the behaviour of
+        /// registration-time misconfiguration).
         /// </summary>
-        internal static async Task HandleAsync(
+        internal static Task HandleAsync(
             HttpContext ctx,
             string mapName,
             string sourceName,
             SourceMapFileHandlerOptions options)
+        {
+            return HandleAsync(ctx, mapName, sourceName, options, preResolvedMapsDir: null, preResolvedAllowedRoots: null);
+        }
+
+        private static async Task HandleAsync(
+            HttpContext ctx,
+            string mapName,
+            string sourceName,
+            SourceMapFileHandlerOptions options,
+            string preResolvedMapsDir,
+            IReadOnlyList<string> preResolvedAllowedRoots)
         {
             if (string.IsNullOrEmpty(mapName) || string.IsNullOrEmpty(sourceName))
             {
@@ -88,7 +111,7 @@ namespace OwaSourceMapper.Server
                 return;
             }
 
-            string mapsDir = options.ResolveMapsDirectory();
+            string mapsDir = preResolvedMapsDir ?? options.ResolveMapsDirectory();
             if (mapsDir == null)
             {
                 ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -155,7 +178,7 @@ namespace OwaSourceMapper.Server
             // Allow-list check: the resolved path MUST live under one of the configured source
             // roots. Without this, a map that points at /etc/passwd via sourcesLong would be
             // served as-is — the primary defence against tampered or attacker-controlled maps.
-            var allowedRoots = options.ResolveAllowedRoots(mapsDir);
+            var allowedRoots = preResolvedAllowedRoots ?? options.ResolveAllowedRoots(mapsDir);
             if (!IsContainedInAny(resolvedLongPath, allowedRoots))
             {
                 ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;

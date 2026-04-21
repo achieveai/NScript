@@ -121,11 +121,12 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
-        /// WI-16: when an explicit non-legacy <c>sourceRoot</c> (e.g. an ASP.NET Core
-        /// handler path) is passed through <see cref="JSWriter.WriteWithMap(TextWriter, string, string)"/>,
-        /// the generated map must record that value and mark
-        /// <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/> false so the
-        /// bundled WebForms handler is not dropped alongside.
+        /// WI-16: when the caller opts out of the legacy sidecar via
+        /// <c>emitLegacyAshxHandler: false</c> (what <see cref="OwaSourceMapper.NScript.Converter.Builder"/>
+        /// does whenever a user-supplied <c>-sourceMapRoot</c> is configured), the generated
+        /// map records the source root and leaves
+        /// <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/> false so the WebForms
+        /// <c>.ashx</c> is not dropped alongside.
         /// </summary>
         [TestMethod]
         public void WriteWithMap_NonLegacySourceRoot_DisablesAshxSidecar()
@@ -134,19 +135,20 @@ namespace OwaSourceMapper.Test
             writer.WriteIdentifier("x");
 
             using var stringWriter = new StringWriter();
-            var map = writer.WriteWithMap(stringWriter, "out.js", "/sourcemap/out/");
+            var map = writer.WriteWithMap(stringWriter, "out.js", "/sourcemap/out/", emitLegacyAshxHandler: false);
 
             Assert.AreEqual("/sourcemap/out/", map.SourceRoot);
             Assert.IsFalse(
                 map.EmitLegacyAshxHandler,
-                "A non-legacy sourceRoot must opt out of the embedded .ashx sidecar");
+                "When the caller passes emitLegacyAshxHandler: false, the sidecar must be suppressed.");
         }
 
         /// <summary>
-        /// WI-16 backward compat: when the caller still passes the legacy
-        /// <c>SrcMapper.ashx?...</c> style sourceRoot (as the <see cref="OwaSourceMapper.NScript.Converter.Builder"/>
-        /// fallback does today), <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/>
-        /// must remain <c>true</c> so existing IIS deployments keep receiving the handler.
+        /// WI-16 backward compat: when the caller uses the legacy default
+        /// (<c>emitLegacyAshxHandler: true</c>, as <see cref="OwaSourceMapper.NScript.Converter.Builder"/>
+        /// still does when no <c>-sourceMapRoot</c> is supplied),
+        /// <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/> stays <c>true</c> so
+        /// existing IIS deployments keep receiving the handler.
         /// </summary>
         [TestMethod]
         public void WriteWithMap_LegacyAshxSourceRoot_KeepsSidecarEnabled()
@@ -158,11 +160,12 @@ namespace OwaSourceMapper.Test
             var map = writer.WriteWithMap(
                 stringWriter,
                 "out.js",
-                "SrcMapper.ashx?js=out.js&fname=");
+                "SrcMapper.ashx?js=out.js&fname=",
+                emitLegacyAshxHandler: true);
 
             Assert.IsTrue(
                 map.EmitLegacyAshxHandler,
-                "Legacy SrcMapper.ashx sourceRoot must continue to emit the sidecar");
+                "When the caller passes emitLegacyAshxHandler: true, the sidecar must be emitted");
         }
 
         /// <summary>

@@ -266,13 +266,16 @@ namespace NScript.Converter
                 // Use the explicit sourceRoot when provided (e.g. an ASP.NET Core handler path
                 // or an ADO/GitHub repo URL). Otherwise fall back to the legacy SrcMapper.ashx
                 // handler so existing IIS-based deployments continue to work unchanged.
-                string effectiveSourceRoot = string.IsNullOrEmpty(this.sourceMapRoot)
+                // The legacy path also keeps the sidecar .ashx drop enabled; any explicit override
+                // suppresses it.
+                bool isLegacySourceRoot = string.IsNullOrEmpty(this.sourceMapRoot);
+                string effectiveSourceRoot = isLegacySourceRoot
                     ? string.Format(
                         "SrcMapper.ashx?js={0}&fname=",
                         Path.GetFileName(this.jsScript))
                     : this.sourceMapRoot;
 
-                writer.Write(this.jsScript, effectiveSourceRoot);
+                writer.Write(this.jsScript, effectiveSourceRoot, emitLegacyAshxHandler: isLegacySourceRoot);
                 log.Information("JSWriter.End {JsScript}", this.jsScript);
             }
             catch(ConverterLocationException ex)
