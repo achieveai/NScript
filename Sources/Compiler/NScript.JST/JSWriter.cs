@@ -214,12 +214,14 @@ namespace NScript.JST
         {
             if (identifier is SimpleIdentifier)
             {
+                string emitted = identifier.GetName();
                 this.tokens.AddLast(
                     new LinkedListNode<TokenBase>(
                         new GenericStrToken(
                             this.GetTopLocation(),
-                            identifier.GetName(),
-                            TokenType.IdentifierToken)));
+                            emitted,
+                            TokenType.IdentifierToken,
+                            GetOriginalNameForMap(identifier, emitted))));
             }
             else
             {
@@ -236,6 +238,24 @@ namespace NScript.JST
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// Returns the original (pre-minification) name that should be recorded in the
+        /// source map's <c>names</c> array for this identifier, or null if no entry is
+        /// warranted. Only records a name when the identifier was actually renamed —
+        /// when the emitted text already equals the original, DevTools resolves it
+        /// directly from the token and a <c>names</c> entry would only bloat the map.
+        /// </summary>
+        private static string GetOriginalNameForMap(IIdentifier identifier, string emitted)
+        {
+            string original = identifier.OriginalSuggestedName;
+            if (string.IsNullOrWhiteSpace(original) || original == emitted)
+            {
+                return null;
+            }
+
+            return original;
         }
 
         /// <summary>
@@ -439,12 +459,20 @@ namespace NScript.JST
                     }
                     else
                     {
+                        // Forward the pre-minification name for identifier tokens so the
+                        // V3 "names" array is populated — browser DevTools uses it to show
+                        // original C# identifiers in place of renamed JS symbols.
+                        string originalName = token.Type == TokenType.IdentifierToken
+                            ? ((GenericStrToken)token).OriginalName
+                            : null;
+
                         sourceMapping.AddMapping(
                             curLine,
                             curCol,
                             lastLocation.StartLine - 1,
                             lastLocation.StartColumn - 1,
-                            lastLocation.FileName);
+                            lastLocation.FileName,
+                            originalName);
                     }
                 }
 
