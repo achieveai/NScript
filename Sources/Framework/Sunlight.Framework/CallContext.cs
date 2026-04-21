@@ -111,20 +111,29 @@ namespace Sunlight.Framework
         }
 
         /// <summary>
-        /// Clear the ambient context. Intended for application boot sequences
-        /// that run inside an async continuation (e.g. after awaiting
-        /// IndexedDB initialization): DOM events that fire during the init
-        /// window trigger <see cref="EventBinder.OnEventDispatch"/> →
-        /// <see cref="StartRoot"/>, and the depth=0 "keep context active for
-        /// async continuations" policy in <c>OnEventDispatchEnd</c> keeps
-        /// those root contexts alive past boot, polluting the first true
-        /// user-gesture context. Call this after the UI is activated to
-        /// restore the clean "no action in progress" invariant. Does NOT
-        /// disturb the WI-20 async-continuation preservation semantics for
-        /// user-gesture handlers.
+        /// Clear the ambient context and reset the event-dispatch depth to 0.
+        /// Intended for application boot sequences that run inside an async
+        /// continuation (e.g. after awaiting IndexedDB initialization): DOM
+        /// events that fire during the init window trigger
+        /// <see cref="EventBinder.OnEventDispatch"/> → <see cref="StartRoot"/>,
+        /// and the depth=0 "keep context active for async continuations" policy
+        /// in <c>OnEventDispatchEnd</c> keeps those root contexts alive past
+        /// boot, polluting the first true user-gesture context. Call this after
+        /// the UI is activated to restore the clean "no action in progress"
+        /// invariant. Does NOT disturb the WI-20 async-continuation preservation
+        /// semantics for user-gesture handlers.
         /// </summary>
+        /// <remarks>
+        /// Also zeroes <c>eventDispatchDepth</c>. If this is invoked mid-dispatch
+        /// (depth &gt; 0), the subsequent <c>OnEventDispatchEnd</c> would otherwise
+        /// overwrite the cleared <c>current</c> with a stale <c>prev</c> captured
+        /// at dispatch entry, silently undoing the cleanup. Resetting depth turns
+        /// the depth&gt;0 unwind guard into a no-op so the cleared state sticks
+        /// regardless of where the method is called from.
+        /// </remarks>
         public static void ClearAmbient()
         {
+            CallContext.eventDispatchDepth = 0;
             CallContext.current = null;
         }
 
