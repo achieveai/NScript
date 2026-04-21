@@ -121,6 +121,51 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// WI-16: when an explicit non-legacy <c>sourceRoot</c> (e.g. an ASP.NET Core
+        /// handler path) is passed through <see cref="JSWriter.WriteWithMap(TextWriter, string, string)"/>,
+        /// the generated map must record that value and mark
+        /// <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/> false so the
+        /// bundled WebForms handler is not dropped alongside.
+        /// </summary>
+        [TestMethod]
+        public void WriteWithMap_NonLegacySourceRoot_DisablesAshxSidecar()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            writer.WriteIdentifier("x");
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js", "/sourcemap/out/");
+
+            Assert.AreEqual("/sourcemap/out/", map.SourceRoot);
+            Assert.IsFalse(
+                map.EmitLegacyAshxHandler,
+                "A non-legacy sourceRoot must opt out of the embedded .ashx sidecar");
+        }
+
+        /// <summary>
+        /// WI-16 backward compat: when the caller still passes the legacy
+        /// <c>SrcMapper.ashx?...</c> style sourceRoot (as the <see cref="OwaSourceMapper.NScript.Converter.Builder"/>
+        /// fallback does today), <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/>
+        /// must remain <c>true</c> so existing IIS deployments keep receiving the handler.
+        /// </summary>
+        [TestMethod]
+        public void WriteWithMap_LegacyAshxSourceRoot_KeepsSidecarEnabled()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            writer.WriteIdentifier("x");
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(
+                stringWriter,
+                "out.js",
+                "SrcMapper.ashx?js=out.js&fname=");
+
+            Assert.IsTrue(
+                map.EmitLegacyAshxHandler,
+                "Legacy SrcMapper.ashx sourceRoot must continue to emit the sidecar");
+        }
+
+        /// <summary>
         /// Minimal decoded-map representation used by integration tests.
         /// Parses the V3 mappings string into absolute-coordinate mappings so tests can
         /// assert on logical positions without reasoning about VLQ deltas.

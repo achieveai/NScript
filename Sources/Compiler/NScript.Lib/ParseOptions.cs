@@ -72,6 +72,13 @@ namespace NScript.Lib
         private string runId;
 
         /// <summary>
+        /// Optional <c>sourceRoot</c> URL to embed in the generated source map
+        /// (e.g. an ASP.NET Core handler path, a repo URL, or a custom CDN base).
+        /// Null means fall back to the legacy <c>SrcMapper.ashx</c> handler.
+        /// </summary>
+        private string sourceMapRoot;
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
         /// </summary>
         private ParseOptions()
@@ -140,6 +147,12 @@ namespace NScript.Lib
         /// Gets the run id for cross-stage log correlation, or null when <c>--run-id</c> was not supplied.
         /// </summary>
         public string RunId => this.runId;
+
+        /// <summary>
+        /// Gets the configured <c>sourceRoot</c> for the generated source map, or null when
+        /// <c>-sourceMapRoot</c> was not supplied (legacy <c>SrcMapper.ashx</c> fallback applies).
+        /// </summary>
+        public string SourceMapRoot => this.sourceMapRoot;
 
         /// <summary>
         /// Parses the args.
@@ -244,6 +257,21 @@ namespace NScript.Lib
                         continue;
                     case "-optimize":
                         options.optimize = true;
+                        continue;
+                    case "-sourcemaproot":
+                        option = CurrentOption.None;
+                        if (options.sourceMapRoot == null)
+                        {
+                            if (++iArg < args.Length)
+                            {
+                                options.sourceMapRoot = args[iArg];
+                            }
+                        }
+                        else
+                        {
+                            Logger.Instance.LogError("-sourceMapRoot specified at least twice");
+                            return null;
+                        }
                         continue;
                     case "-log":
                     case "--log":
@@ -380,7 +408,7 @@ namespace NScript.Lib
         /// </summary>
         public static void PrintUsage()
         {
-            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-log <jsonl path>] [-runid <id>]");
+            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-sourceMapRoot <url>] [-log <jsonl path>] [-runid <id>]");
             Environment.Exit(1);
         }
 

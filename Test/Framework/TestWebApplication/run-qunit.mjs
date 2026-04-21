@@ -27,6 +27,71 @@ const MIME_TYPES = {
   '.png': 'image/png', '.jpg': 'image/jpeg',
 };
 
+// Directory that NScript-generated .map files sit in — required for the
+// /sourcemap/{mapName}/{shortSource} devtools route below.
+const GENERATED_SCRIPTS_DIR = path.join(__dirname, 'GeneratedScripts');
+
+// Serve original source files referenced by an NScript .map. Dev ergonomic
+// counterpart of the ASP.NET Core SourceMapFileHandler shipped in
+// Sources/Compiler/SourceMap.Server — lets browser DevTools load C#/XWML/Razor
+// sources alongside the generated JS when the map's sourceRoot points at
+// /sourcemap/{mapName}/. Returns 404 on any mismatch so nothing outside the
+// map's pre-recorded paths can be served.
+function serveSourceMapFile(req, res) {
+  const match = req.url.match(/^\/sourcemap\/([^/]+)\/(.+)$/);
+  if (!match) {
+    res.writeHead(404);
+    res.end('Not Found');
+    return true;
+  }
+
+  const mapName = decodeURIComponent(match[1]);
+  const shortName = decodeURIComponent(match[2]);
+
+  if (mapName.includes('..') || mapName.includes('/') || mapName.includes('\\')) {
+    res.writeHead(400);
+    res.end('Bad Request');
+    return true;
+  }
+
+  const mapPath = path.join(GENERATED_SCRIPTS_DIR, mapName + '.map');
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
+  } catch {
+    res.writeHead(404);
+    res.end('Map not found');
+    return true;
+  }
+
+  const sources = Array.isArray(parsed.sources) ? parsed.sources : null;
+  const sourcesLong = Array.isArray(parsed.sourcesLong) ? parsed.sourcesLong : null;
+  if (!sources) {
+    res.writeHead(404);
+    res.end('Map has no sources');
+    return true;
+  }
+
+  const idx = sources.indexOf(shortName);
+  if (idx < 0) {
+    res.writeHead(404);
+    res.end('Source not listed in map');
+    return true;
+  }
+
+  const longPath = (sourcesLong && idx < sourcesLong.length) ? sourcesLong[idx] : shortName;
+  fs.readFile(longPath, (err, data) => {
+    if (err) {
+      res.writeHead(404);
+      res.end('Source file missing on disk');
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end(data);
+  });
+  return true;
+}
+
 function renderQUnitPage(suite) {
   const scriptTags = suite.scripts
     .map(script => `  <script src="${script}" type="text/javascript"></script>`)
@@ -96,6 +161,11 @@ async function runSuite(page, port, suite) {
 // Simple static file server
 const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url, 'http://localhost');
+
+  if (requestUrl.pathname.startsWith('/sourcemap/')) {
+    serveSourceMapFile(req, res);
+    return;
+  }
 
   if (requestUrl.pathname === '/__qunit') {
     const suiteName = requestUrl.searchParams.get('name');

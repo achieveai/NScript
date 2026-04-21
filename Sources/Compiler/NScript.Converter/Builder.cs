@@ -56,6 +56,12 @@ namespace NScript.Converter
         private readonly (bool minify, bool uglify, bool optimize) scriptGenerateSettings;
 
         /// <summary>
+        /// Optional <c>sourceRoot</c> to write into the generated source map.
+        /// Empty/null means fall back to the legacy <c>SrcMapper.ashx?js=...&amp;fname=</c> handler path.
+        /// </summary>
+        private readonly string sourceMapRoot;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="jsScript">               The js script. </param>
@@ -64,13 +70,17 @@ namespace NScript.Converter
         /// <param name="plugins">                The plugins. </param>
         /// <param name="typeConverterPlugins">   The type converter plugins. </param>
         /// <param name="methodConverterPlugins"> The method converter plugins. </param>
+        /// <param name="sourceMapRoot">          Optional <c>sourceRoot</c> URL to embed in the
+        ///     generated source map. When null or empty, the compiler emits the legacy
+        ///     <c>SrcMapper.ashx</c> handler path and drops the handler sidecar alongside the map. </param>
         public Builder(
             string jsScript,
             int jsParts,
             string mainAssembly,
             string[] references,
             IConverterPlugin[] plugins,
-            (bool minify, bool uglify, bool optimize) scriptGenerateSettings)
+            (bool minify, bool uglify, bool optimize) scriptGenerateSettings,
+            string sourceMapRoot = null)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -83,6 +93,7 @@ namespace NScript.Converter
                 .ToArray<ITypeConverterPlugin>();
             this.jsParts = jsParts;
             this.scriptGenerateSettings = scriptGenerateSettings;
+            this.sourceMapRoot = sourceMapRoot;
         }
 
         /// <summary>
@@ -252,11 +263,16 @@ namespace NScript.Converter
                     }
                 }
 
-                writer.Write(
-                    this.jsScript,
-                    string.Format(
+                // Use the explicit sourceRoot when provided (e.g. an ASP.NET Core handler path
+                // or an ADO/GitHub repo URL). Otherwise fall back to the legacy SrcMapper.ashx
+                // handler so existing IIS-based deployments continue to work unchanged.
+                string effectiveSourceRoot = string.IsNullOrEmpty(this.sourceMapRoot)
+                    ? string.Format(
                         "SrcMapper.ashx?js={0}&fname=",
-                        Path.GetFileName(this.jsScript)));
+                        Path.GetFileName(this.jsScript))
+                    : this.sourceMapRoot;
+
+                writer.Write(this.jsScript, effectiveSourceRoot);
                 log.Information("JSWriter.End {JsScript}", this.jsScript);
             }
             catch(ConverterLocationException ex)

@@ -380,6 +380,20 @@ namespace NScript.JST
         }
 
         /// <summary>
+        /// Test seam overload that exercises the <paramref name="sourceRoot"/> → <see cref="OwaSourceMapper.SourceMap"/>
+        /// propagation path so callers can assert both the recorded <c>SourceRoot</c> and the
+        /// <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/> flag without writing to disk.
+        /// </summary>
+        /// <param name="writer">     The writer that receives the generated JavaScript. </param>
+        /// <param name="jsFileName"> Filename recorded in the source map's <c>file</c> field. </param>
+        /// <param name="sourceRoot"> Source-root override; pass null to use the legacy fallback. </param>
+        /// <returns> The populated <see cref="OwaSourceMapper.SourceMap"/>. </returns>
+        public OwaSourceMapper.SourceMap WriteWithMap(TextWriter writer, string jsFileName, string sourceRoot)
+        {
+            return this.Write(writer, jsFileName, null, outputMap: false, sourceRoot: sourceRoot);
+        }
+
+        /// <summary>
         /// Writes javascript to the given writer and optionally emits a source map file
         /// alongside the generated JavaScript.
         /// </summary>
@@ -411,6 +425,15 @@ namespace NScript.JST
             if (!string.IsNullOrEmpty(sourceRoot))
             {
                 sourceMapping.SourceRoot = sourceRoot;
+
+                // Callers that explicitly configure an alternative sourceRoot (ASP.NET Core
+                // handler path, repo URL, etc.) don't need the embedded legacy .ashx sidecar
+                // dropped alongside the map. The legacy Builder fallback path keeps the default
+                // true so existing IIS deployments continue to receive the handler.
+                if (!IsLegacyAshxSourceRoot(sourceRoot))
+                {
+                    sourceMapping.EmitLegacyAshxHandler = false;
+                }
             }
 
             sourceMapping.AddMapping(
@@ -566,6 +589,17 @@ namespace NScript.JST
             }
 
             return sourceMapping;
+        }
+
+        /// <summary>
+        /// Recognizes the Builder's legacy fallback <c>sourceRoot</c> value (the embedded
+        /// <c>SrcMapper.ashx</c> handler URL) so the sidecar drop stays enabled for it.
+        /// Any other value — repo URL, ASP.NET Core endpoint, etc. — suppresses the sidecar.
+        /// </summary>
+        private static bool IsLegacyAshxSourceRoot(string sourceRoot)
+        {
+            return sourceRoot != null
+                && sourceRoot.StartsWith("SrcMapper.ashx", System.StringComparison.Ordinal);
         }
 
         /// <summary>

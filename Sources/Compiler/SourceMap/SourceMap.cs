@@ -177,6 +177,15 @@ namespace OwaSourceMapper
         public string SourceRoot { get; set; }
 
         /// <summary>
+        /// When true, <see cref="Write(string)"/> drops the embedded legacy
+        /// <c>SrcMapper.ashx</c> handler alongside the generated map. Defaults to <c>true</c>
+        /// so existing IIS-based deployments keep working; callers that ship a modern
+        /// ASP.NET Core source handler (or a repo-URL <see cref="SourceRoot"/>) should set
+        /// this to <c>false</c>.
+        /// </summary>
+        public bool EmitLegacyAshxHandler { get; set; } = true;
+
+        /// <summary>
         /// Mapping comparison.
         /// </summary>
         /// <param name="lineCol1"> The first line col. </param>
@@ -355,9 +364,12 @@ namespace OwaSourceMapper
         }
 
         /// <summary>
-        /// Writes the given file.
+        /// Writes the <c>.map</c> file to <paramref name="dirctory"/>. When no explicit
+        /// <see cref="SourceRoot"/> has been configured, also drops the legacy
+        /// <c>SrcMapper.ashx</c> handler sidecar next to the map for backward compatibility
+        /// with deployments that still rely on it.
         /// </summary>
-        /// <param name="fileName"> The file name to write. </param>
+        /// <param name="dirctory"> The directory into which the map (and legacy handler) are written. </param>
         public void Write(string dirctory)
         {
             string fileName = Path.Combine(
@@ -365,7 +377,12 @@ namespace OwaSourceMapper
                 Path.GetFileNameWithoutExtension(this.File));
             using (StreamWriter mapWriter = new StreamWriter(fileName + ".map", false, System.Text.Encoding.ASCII))
                 mapWriter.Write(this.ToString());
-            
+
+            if (!this.EmitLegacyAshxHandler)
+            {
+                return;
+            }
+
             using (var stream = typeof(SourceMap)
                 .Assembly.GetManifestResourceStream("SourceMap.SrcMapper.ashx"))
             {

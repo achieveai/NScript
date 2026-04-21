@@ -41,6 +41,7 @@
 			<ScriptGenerateOption Include="-minify" Condition="'$(Minify)' == 'true'" />
 			<ScriptGenerateOption Include="-uglify" Condition="'$(Uglify)' == 'true'" />
 			<ScriptGenerateOption Include="-optimize" Condition="'$(JsOptimize)' == 'true'" />
+			<ScriptGenerateOption Include="-sourceMapRoot &quot;$(SourceMapRoot)&quot;" Condition="'$(SourceMapRoot)' != ''" />
 		</ItemGroup>
 
 		<MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />
