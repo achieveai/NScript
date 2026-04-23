@@ -43,7 +43,8 @@ namespace NScript.Lib
                     parseOptions.EntryAssembly,
                     parseOptions.ReferenceDlls.ToArray(),
                     plugins.ToArray(),
-                    (parseOptions.Minify, parseOptions.Uglify, parseOptions.Optimize));
+                    (parseOptions.Minify, parseOptions.Uglify, parseOptions.Optimize),
+                    parseOptions.SourceMapRoot);
 
                 var stopWatch = new System.Diagnostics.Stopwatch();
                 stopWatch.Start();

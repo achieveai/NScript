@@ -66,6 +66,79 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// The WI-16 sidecar flag defaults to <c>true</c> so existing deployments that
+        /// depend on the bundled <c>SrcMapper.ashx</c> handler are unaffected by the
+        /// new ASP.NET Core source handler.
+        /// </summary>
+        [TestMethod]
+        public void EmitLegacyAshxHandler_DefaultsToTrue_ForBackCompat()
+        {
+            var map = new SourceMap();
+
+            Assert.IsTrue(map.EmitLegacyAshxHandler);
+        }
+
+        /// <summary>
+        /// When <see cref="SourceMap.EmitLegacyAshxHandler"/> is <c>false</c>,
+        /// <see cref="SourceMap.Write(string)"/> must write the <c>.map</c> file but
+        /// NOT emit the legacy <c>.ashx</c> sidecar. This is the on-disk side of the
+        /// WI-16 handler replacement.
+        /// </summary>
+        [TestMethod]
+        public void Write_EmitLegacyAshxHandlerFalse_OmitsAshxSidecar()
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "SourceMapTests_" + System.Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                var map = new SourceMap
+                {
+                    File = "Out.js",
+                    SourceRoot = "/sourcemap/Out/",
+                    EmitLegacyAshxHandler = false,
+                };
+
+                map.Write(dir);
+
+                Assert.IsTrue(System.IO.File.Exists(Path.Combine(dir, "Out.map")), "Expected .map file to be written");
+                Assert.IsFalse(
+                    System.IO.File.Exists(Path.Combine(dir, "Out.ashx")),
+                    "Legacy .ashx handler must NOT be emitted when EmitLegacyAshxHandler is false");
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// When <see cref="SourceMap.EmitLegacyAshxHandler"/> remains <c>true</c> (the
+        /// default), the sidecar must still be written — guaranteeing backward
+        /// compatibility for deployments that still rely on the embedded WebForms handler.
+        /// </summary>
+        [TestMethod]
+        public void Write_EmitLegacyAshxHandlerTrue_EmitsAshxSidecar()
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "SourceMapTests_" + System.Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                var map = new SourceMap { File = "Out.js" };
+
+                map.Write(dir);
+
+                Assert.IsTrue(System.IO.File.Exists(Path.Combine(dir, "Out.map")));
+                Assert.IsTrue(
+                    System.IO.File.Exists(Path.Combine(dir, "Out.ashx")),
+                    "Legacy .ashx sidecar must still be emitted by default (backward compat)");
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
         /// Source file paths are normalized (backslashes → forward slashes, <c>:</c>
         /// escaped to <c>$</c>) and the full path appears in <c>sourcesLong</c>.
         /// </summary>

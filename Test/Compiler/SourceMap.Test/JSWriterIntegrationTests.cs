@@ -121,6 +121,54 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// WI-16: when the caller opts out of the legacy sidecar via
+        /// <c>emitLegacyAshxHandler: false</c> (what <see cref="OwaSourceMapper.NScript.Converter.Builder"/>
+        /// does whenever a user-supplied <c>-sourceMapRoot</c> is configured), the generated
+        /// map records the source root and leaves
+        /// <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/> false so the WebForms
+        /// <c>.ashx</c> is not dropped alongside.
+        /// </summary>
+        [TestMethod]
+        public void WriteWithMap_NonLegacySourceRoot_DisablesAshxSidecar()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            writer.WriteIdentifier("x");
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js", "/sourcemap/out/", emitLegacyAshxHandler: false);
+
+            Assert.AreEqual("/sourcemap/out/", map.SourceRoot);
+            Assert.IsFalse(
+                map.EmitLegacyAshxHandler,
+                "When the caller passes emitLegacyAshxHandler: false, the sidecar must be suppressed.");
+        }
+
+        /// <summary>
+        /// WI-16 backward compat: when the caller uses the legacy default
+        /// (<c>emitLegacyAshxHandler: true</c>, as <see cref="OwaSourceMapper.NScript.Converter.Builder"/>
+        /// still does when no <c>-sourceMapRoot</c> is supplied),
+        /// <see cref="OwaSourceMapper.SourceMap.EmitLegacyAshxHandler"/> stays <c>true</c> so
+        /// existing IIS deployments keep receiving the handler.
+        /// </summary>
+        [TestMethod]
+        public void WriteWithMap_LegacyAshxSourceRoot_KeepsSidecarEnabled()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: false);
+            writer.WriteIdentifier("x");
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(
+                stringWriter,
+                "out.js",
+                "SrcMapper.ashx?js=out.js&fname=",
+                emitLegacyAshxHandler: true);
+
+            Assert.IsTrue(
+                map.EmitLegacyAshxHandler,
+                "When the caller passes emitLegacyAshxHandler: true, the sidecar must be emitted");
+        }
+
+        /// <summary>
         /// Minimal decoded-map representation used by integration tests.
         /// Parses the V3 mappings string into absolute-coordinate mappings so tests can
         /// assert on logical positions without reasoning about VLQ deltas.

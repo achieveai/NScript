@@ -1,4 +1,22 @@
 ﻿<%@ WebHandler Language="C#" Class="NScript.SrcMapper" %>
+// -----------------------------------------------------------------------
+// DEPRECATED — see GitHub issue #16.
+//
+// This legacy ASP.NET WebForms IHttpHandler is bundled as an embedded resource
+// and emitted next to generated .map files by SourceMap.Write() for deployments
+// that host generated JS under classic ASP.NET / IIS. It still ships by default
+// (SourceMap.EmitLegacyAshxHandler = true) so existing deployments remain
+// unaffected.
+//
+// New deployments should use the ASP.NET Core handler shipped in the
+// SourceMap.Server assembly (Sources/Compiler/SourceMap.Server). Wire it via
+//     endpoints.MapSourceMapFiles(
+//         "/sourcemap",
+//         new SourceMapFileHandlerOptions { MapsDirectory = "<path-to-maps>" });
+// and pass -sourceMapRoot "/sourcemap/<MapName>/" to NScript (or set the
+// <SourceMapRoot> MSBuild property) so generated maps point at the new handler
+// and the legacy .ashx sidecar stops being emitted.
+// -----------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
 using System.IO;
