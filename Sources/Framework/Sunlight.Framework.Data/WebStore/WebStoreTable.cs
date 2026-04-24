@@ -572,14 +572,15 @@ namespace Sunlight.Framework.Data.WebStore
                 catch (Exception ex) { aborted = true; reject(ex); }
             };
 
-            var onError = HandleError(reject);
             request.OnError += (req, evt) =>
             {
                 evt.PreventDefault();
                 if (aborted)
                 { return; }
                 aborted = true;
-                onError(req, evt);
+                reject(new EventBasedException(
+                    req.Error.ExceptionMessage(),
+                    evt));
             };
         }
 
