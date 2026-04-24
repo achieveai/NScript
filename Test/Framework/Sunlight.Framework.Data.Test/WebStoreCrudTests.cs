@@ -1,6 +1,7 @@
 namespace Sunlight.Framework.Data.Test
 {
     using System;
+    using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using Sunlight.Framework.Data.WebStore;
     using SunlightUnit;
@@ -144,12 +145,13 @@ namespace Sunlight.Framework.Data.Test
         }
 
         /// <summary>
-        /// Query(Query.All) after three sequential UpSerts must return every
-        /// inserted record. Exercises the cursor scan path and validates that
+        /// <c>ForEach(Query.All, ...)</c> after three sequential UpSerts must
+        /// visit every inserted record. This is the streaming replacement for
+        /// the old <c>Query(Query.All)</c> full-table scan and validates that
         /// the secondary index declaration does not corrupt the primary scan.
         /// </summary>
         [Test]
-        public static void TestQueryAllReturnsEveryRecord(Assert assert)
+        public static void TestForEachAllVisitsEveryRecord(Assert assert)
         {
             var done = assert.Async(1);
             var factory = new WebStoreFactory();
@@ -165,13 +167,436 @@ namespace Sunlight.Framework.Data.Test
                     {
                         table.UpSert(NewEntity("c", "todo", 3)).Then<bool>(delegate(string k3)
                         {
-                            table.Query(Query.All).Then<bool>(delegate(System.Collections.Generic.List<CrudEntity> results)
+                            var visited = new List<string>();
+                            table.ForEach(Query.All, delegate(CrudEntity row)
                             {
-                                assert.Equal(results.Count, 3, "Query(All) returns every record");
+                                visited.Add(row.Id);
+                                return true;
+                            }).Then<bool>(delegate(int count)
+                            {
+                                assert.Equal(count, 3, "ForEach(All) visit count matches inserted count");
+                                assert.Equal(visited.Count, 3, "visitor received every record");
                                 client.Close();
                                 done();
                                 return true;
                             });
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>Query(Query.All)</c> on the materialising read path must be
+        /// rejected with a descriptive error so callers have to opt into either
+        /// streaming via <c>ForEach</c> or an explicit <c>QueryBuilder.Limit</c>.
+        /// </summary>
+        [Test]
+        public static void TestQueryAllMaterialisingThrows(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.Query(Query.All).Then<bool, object>(
+                        delegate(List<CrudEntity> results)
+                        {
+                            assert.IsTrue(false, "Query(Query.All) should reject, not resolve");
+                            client.Close();
+                            done();
+                            return true;
+                        },
+                        delegate(object err)
+                        {
+                            assert.IsTrue(err != null, "Query(Query.All) rejects with a descriptive error");
+                            var message = ((Exception)err).Message;
+                            assert.IsTrue(
+                                message != null && message.IndexOf("Query.All") >= 0,
+                                "rejection message names Query.All so callers can diagnose");
+                            assert.IsTrue(
+                                message.IndexOf("Limit") >= 0 || message.IndexOf("ForEach") >= 0,
+                                "rejection message points callers at Limit or ForEach as the fix");
+                            client.Close();
+                            done();
+                            return true;
+                        });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// A <c>ForEach</c> visitor that returns <c>false</c> after the second
+        /// record must stop iteration immediately — the cursor is abandoned and
+        /// the visit count reflects only the records actually seen.
+        /// </summary>
+        [Test]
+        public static void TestForEachStopsEarly(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "done", 2)).Then<bool>(delegate(string k2)
+                    {
+                        table.UpSert(NewEntity("c", "todo", 3)).Then<bool>(delegate(string k3)
+                        {
+                            int seen = 0;
+                            table.ForEach(Query.All, delegate(CrudEntity row)
+                            {
+                                seen = seen + 1;
+                                return seen < 2;
+                            }).Then<bool>(delegate(int count)
+                            {
+                                assert.Equal(count, 2, "visit count equals records seen before stop");
+                                assert.Equal(seen, 2, "visitor invoked exactly twice");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// With an explicit <c>QueryBuilder.Limit(15)</c> and 15 inserted
+        /// records, the scan must return all 15. Proves the limit path still
+        /// drains the cursor correctly after the silent <c>1 &lt;&lt; 20</c>
+        /// default was removed.
+        /// </summary>
+        [Test]
+        public static void TestLimitedQueryRespectsExplicitLimit(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                var seed = new CrudEntity[15];
+                for (int i = 0; i < 15; i = i + 1)
+                {
+                    seed[i] = NewEntity("r" + i, "todo", i);
+                }
+
+                table.UpSert(seed).Then<bool>(delegate(string[] keys)
+                {
+                    var query = new QueryBuilder(new string[0])
+                        .Limit(15)
+                        .Build();
+
+                    table.Query(query).Then<bool>(delegate(List<CrudEntity> results)
+                    {
+                        assert.Equal(results.Count, 15, "Limit(15) returns all 15 records");
+                        client.Close();
+                        done();
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// With 5 seeded records and <c>QueryBuilder.Limit(2)</c>, the scan must
+        /// stop after 2 records. This is the true regression test for the removal
+        /// of the silent <c>1 &lt;&lt; 20</c> default — the previous
+        /// <c>TestLimitedQueryRespectsExplicitLimit</c> passed both before and
+        /// after the fix because <c>Limit == recordCount</c> is a coincidence.
+        /// </summary>
+        [Test]
+        public static void TestLimitSmallerThanRecordCountTruncates(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                var seed = new CrudEntity[5];
+                for (int i = 0; i < 5; i = i + 1)
+                {
+                    seed[i] = NewEntity("s" + i, "todo", i);
+                }
+
+                table.UpSert(seed).Then<bool>(delegate(string[] keys)
+                {
+                    var query = new QueryBuilder(new string[0])
+                        .Limit(2)
+                        .Build();
+
+                    table.Query(query).Then<bool>(delegate(List<CrudEntity> results)
+                    {
+                        assert.Equal(results.Count, 2, "Limit(2) truncates a 5-record scan to 2");
+                        client.Close();
+                        done();
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>Query</c> with <c>Limit(0)</c> on a non-empty store must return an
+        /// empty list without visiting any record. Pins the pre-visit cap check
+        /// specifically — distinct from <c>Limit(N)</c> decrement which is
+        /// exercised by <c>TestLimitSmallerThanRecordCountTruncates</c>.
+        /// </summary>
+        [Test]
+        public static void TestLimitZeroVisitsNothing(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "todo", 2)).Then<bool>(delegate(string k2)
+                    {
+                        var query = new QueryBuilder(new string[0])
+                            .Limit(0)
+                            .Build();
+
+                        table.Query(query).Then<bool>(delegate(List<CrudEntity> results)
+                        {
+                            assert.Equal(results.Count, 0, "Limit(0) returns no records");
+                            client.Close();
+                            done();
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>ForEach</c> with a null visitor must reject through the Promise —
+        /// not throw synchronously. This pins the symmetric error surface
+        /// established alongside <c>Query(Query.All)</c>: both argument-
+        /// validation failures route through <c>reject</c> so callers using
+        /// <c>.Then(_, onRejected)</c> see a uniform API.
+        /// </summary>
+        [Test]
+        public static void TestForEachNullVisitRejects(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.ForEach(Query.All, null).Then<bool, object>(
+                    delegate(int count)
+                    {
+                        assert.IsTrue(false, "ForEach(_, null) should reject, not resolve");
+                        client.Close();
+                        done();
+                        return true;
+                    },
+                    delegate(object err)
+                    {
+                        assert.IsTrue(err != null, "ForEach(_, null) rejects with an error");
+                        var message = ((Exception)err).Message;
+                        assert.IsTrue(
+                            message != null && message.IndexOf("visit") >= 0,
+                            "rejection message names the bad argument");
+                        client.Close();
+                        done();
+                        return true;
+                    });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>ForEach(Query.All, ...)</c> on an empty store must resolve with a
+        /// visit count of <c>0</c> and never invoke the visitor. Pins the
+        /// null-cursor short-circuit in <c>ForEachInternal</c>.
+        /// </summary>
+        [Test]
+        public static void TestForEachEmptyTableVisitsNothing(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                int visits = 0;
+
+                table.ForEach(Query.All, delegate(CrudEntity row)
+                {
+                    visits = visits + 1;
+                    return true;
+                }).Then<bool>(delegate(int count)
+                {
+                    assert.Equal(count, 0, "empty table resolves with count 0");
+                    assert.Equal(visits, 0, "visitor was never invoked on empty table");
+                    client.Close();
+                    done();
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>ForEach</c> combined with <c>QueryBuilder.Limit(2)</c> on a
+        /// 5-record store must stop after 2 records — invoking the visitor
+        /// exactly twice. Pins the interaction between the streaming ForEach
+        /// path and the explicit Limit cap, which were introduced together but
+        /// previously only tested independently.
+        /// </summary>
+        [Test]
+        public static void TestForEachRespectsExplicitLimit(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                var seed = new CrudEntity[5];
+                for (int i = 0; i < 5; i = i + 1)
+                {
+                    seed[i] = NewEntity("f" + i, "todo", i);
+                }
+
+                table.UpSert(seed).Then<bool>(delegate(string[] keys)
+                {
+                    var query = new QueryBuilder(new string[0])
+                        .Limit(2)
+                        .Build();
+                    int visits = 0;
+
+                    table.ForEach(query, delegate(CrudEntity row)
+                    {
+                        visits = visits + 1;
+                        return true;
+                    }).Then<bool>(delegate(int count)
+                    {
+                        assert.Equal(count, 2, "ForEach + Limit(2) reports visit count of 2");
+                        assert.Equal(visits, 2, "visitor invoked exactly twice under Limit(2)");
+                        client.Close();
+                        done();
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>Query(Query.All, filter)</c> with a non-null filter must resolve
+        /// (not reject) and return only filter-matching rows. Pins the positive
+        /// side of the <c>filter == null</c> escape hatch in the Query.All
+        /// guard — without this a refactor that dropped the filter check would
+        /// silently break filtered scans.
+        /// </summary>
+        [Test]
+        public static void TestQueryAllWithFilterResolvesFiltered(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "done", 2)).Then<bool>(delegate(string k2)
+                    {
+                        table.UpSert(NewEntity("c", "todo", 3)).Then<bool>(delegate(string k3)
+                        {
+                            table.Query(Query.All, delegate(CrudEntity row)
+                            {
+                                return row.Category == "todo";
+                            }).Then<bool>(delegate(List<CrudEntity> results)
+                            {
+                                assert.Equal(results.Count, 2, "Query(All, filter) returns only filtered rows");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>QueryKeys(Query.All)</c> must resolve with every primary key —
+        /// the Query.All materialisation guard exists only for the value-read
+        /// path (which can blow up memory with large rows). A key-only scan
+        /// carries no such risk, so it bypasses the guard via the
+        /// <c>isKeyQuery</c> flag.
+        /// </summary>
+        [Test]
+        public static void TestQueryKeysAllResolves(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "done", 2)).Then<bool>(delegate(string k2)
+                    {
+                        table.QueryKeys(Query.All).Then<bool>(delegate(List<string> keys)
+                        {
+                            assert.Equal(keys.Count, 2, "QueryKeys(All) returns every key (no cap)");
+                            client.Close();
+                            done();
                             return true;
                         });
                         return true;

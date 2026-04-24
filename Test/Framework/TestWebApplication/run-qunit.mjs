@@ -19,6 +19,10 @@ const QUNIT_SUITES = [
     name: 'TodoApp.Test',
     scripts: ['/GeneratedScripts/TodoApp.Test.js'],
   },
+  {
+    name: 'Sunlight.Framework.Data.Test',
+    scripts: ['/GeneratedScripts/Sunlight.Framework.Data.Test.js'],
+  },
 ];
 
 const MIME_TYPES = {
