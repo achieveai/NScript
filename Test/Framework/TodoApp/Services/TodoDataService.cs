@@ -5,6 +5,17 @@ namespace TodoApp.Services
     using Sunlight.Framework.Data.WebStore;
 
     /// <summary>
+    /// Conservative per-table row caps for the todo app's expected dataset. All
+    /// <see cref="TodoDataService"/> read paths that would otherwise buffer
+    /// every row pass <see cref="MaxRecords"/> through <c>QueryBuilder.Limit</c>
+    /// so the materialised list size is visible at the call site.
+    /// </summary>
+    internal static class TodoLimits
+    {
+        public const int MaxRecords = 10000;
+    }
+
+    /// <summary>
     /// Typed data access service over <see cref="WebStoreClient"/>. Replaces the
     /// previous manual-JSON IndexedDbService with a strongly-typed layer so
     /// callers never touch raw JSON or JS interop.
@@ -45,11 +56,14 @@ namespace TodoApp.Services
         }
 
         /// <summary>
-        /// Loads every todo record. Caller is expected to translate to view models.
+        /// Loads every todo record up to <see cref="TodoLimits.MaxRecords"/>.
+        /// The explicit cap is expressed via <c>QueryBuilder.Limit</c> so the
+        /// result-size bound is visible at the call site rather than hidden
+        /// inside the cursor iterator.
         /// </summary>
         public Promise<List<TodoEntity>> GetAllTodos()
         {
-            return this.TodosTable().Query(Query.All);
+            return this.TodosTable().Query(AllWithLimit());
         }
 
         /// <summary>Deletes a single todo by id. Resolves true on success.</summary>
@@ -67,16 +81,26 @@ namespace TodoApp.Services
             return this.FoldersTable().UpSert(folder);
         }
 
-        /// <summary>Loads every user-created folder record.</summary>
+        /// <summary>
+        /// Loads every user-created folder record up to
+        /// <see cref="TodoLimits.MaxRecords"/>.
+        /// </summary>
         public Promise<List<FolderEntity>> GetAllFolders()
         {
-            return this.FoldersTable().Query(Query.All);
+            return this.FoldersTable().Query(AllWithLimit());
         }
 
         /// <summary>Deletes a single folder by id. Resolves true on success.</summary>
         public Promise<bool> DeleteFolder(string id)
         {
             return this.FoldersTable().Delete(id);
+        }
+
+        private static Query AllWithLimit()
+        {
+            return new QueryBuilder(new string[0])
+                .Limit(TodoLimits.MaxRecords)
+                .Build();
         }
 
         private WebStoreTable<string, TodoEntity> TodosTable()

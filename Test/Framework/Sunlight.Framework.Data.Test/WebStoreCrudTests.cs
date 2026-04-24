@@ -1,6 +1,7 @@
 namespace Sunlight.Framework.Data.Test
 {
     using System;
+    using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using Sunlight.Framework.Data.WebStore;
     using SunlightUnit;
@@ -144,12 +145,13 @@ namespace Sunlight.Framework.Data.Test
         }
 
         /// <summary>
-        /// Query(Query.All) after three sequential UpSerts must return every
-        /// inserted record. Exercises the cursor scan path and validates that
+        /// <c>ForEach(Query.All, ...)</c> after three sequential UpSerts must
+        /// visit every inserted record. This is the streaming replacement for
+        /// the old <c>Query(Query.All)</c> full-table scan and validates that
         /// the secondary index declaration does not corrupt the primary scan.
         /// </summary>
         [Test]
-        public static void TestQueryAllReturnsEveryRecord(Assert assert)
+        public static void TestForEachAllVisitsEveryRecord(Assert assert)
         {
             var done = assert.Async(1);
             var factory = new WebStoreFactory();
@@ -165,15 +167,146 @@ namespace Sunlight.Framework.Data.Test
                     {
                         table.UpSert(NewEntity("c", "todo", 3)).Then<bool>(delegate(string k3)
                         {
-                            table.Query(Query.All).Then<bool>(delegate(System.Collections.Generic.List<CrudEntity> results)
+                            var visited = new List<string>();
+                            table.ForEach(Query.All, delegate(CrudEntity row)
                             {
-                                assert.Equal(results.Count, 3, "Query(All) returns every record");
+                                visited.Add(row.Id);
+                                return true;
+                            }).Then<bool>(delegate(int count)
+                            {
+                                assert.Equal(count, 3, "ForEach(All) visit count matches inserted count");
+                                assert.Equal(visited.Count, 3, "visitor received every record");
                                 client.Close();
                                 done();
                                 return true;
                             });
                             return true;
                         });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>Query(Query.All)</c> on the materialising read path must be
+        /// rejected with a descriptive error so callers have to opt into either
+        /// streaming via <c>ForEach</c> or an explicit <c>QueryBuilder.Limit</c>.
+        /// </summary>
+        [Test]
+        public static void TestQueryAllMaterialisingThrows(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.Query(Query.All).Then<bool, object>(
+                        delegate(List<CrudEntity> results)
+                        {
+                            assert.IsTrue(false, "Query(Query.All) should reject, not resolve");
+                            client.Close();
+                            done();
+                            return true;
+                        },
+                        delegate(object err)
+                        {
+                            assert.IsTrue(err != null, "Query(Query.All) rejects with a descriptive error");
+                            client.Close();
+                            done();
+                            return true;
+                        });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// A <c>ForEach</c> visitor that returns <c>false</c> after the second
+        /// record must stop iteration immediately — the cursor is abandoned and
+        /// the visit count reflects only the records actually seen.
+        /// </summary>
+        [Test]
+        public static void TestForEachStopsEarly(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "done", 2)).Then<bool>(delegate(string k2)
+                    {
+                        table.UpSert(NewEntity("c", "todo", 3)).Then<bool>(delegate(string k3)
+                        {
+                            int seen = 0;
+                            table.ForEach(Query.All, delegate(CrudEntity row)
+                            {
+                                seen = seen + 1;
+                                return seen < 2;
+                            }).Then<bool>(delegate(int count)
+                            {
+                                assert.Equal(count, 2, "visit count equals records seen before stop");
+                                assert.Equal(seen, 2, "visitor invoked exactly twice");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// With an explicit <c>QueryBuilder.Limit(15)</c> and 15 inserted
+        /// records, the scan must return all 15. Proves the limit path still
+        /// drains the cursor correctly after the silent <c>1 &lt;&lt; 20</c>
+        /// default was removed.
+        /// </summary>
+        [Test]
+        public static void TestLimitedQueryRespectsExplicitLimit(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                var seed = new CrudEntity[15];
+                for (int i = 0; i < 15; i = i + 1)
+                {
+                    seed[i] = NewEntity("r" + i, "todo", i);
+                }
+
+                table.UpSert(seed).Then<bool>(delegate(string[] keys)
+                {
+                    var query = new QueryBuilder(new string[0])
+                        .Limit(15)
+                        .Build();
+
+                    table.Query(query).Then<bool>(delegate(List<CrudEntity> results)
+                    {
+                        assert.Equal(results.Count, 15, "Limit(15) returns all 15 records");
+                        client.Close();
+                        done();
                         return true;
                     });
                     return true;

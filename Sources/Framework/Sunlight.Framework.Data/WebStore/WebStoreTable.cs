@@ -5,6 +5,7 @@ namespace Sunlight.Framework.Data.WebStore
     using System.Runtime.CompilerServices;
     using System.Web.Html;
     using System.Web.Html.Data.IndexedDB;
+    using QueryDef = Sunlight.Framework.Data.WebStore.Query;
 
     internal enum CursorOrCountRequestMode
     {
@@ -173,6 +174,14 @@ namespace Sunlight.Framework.Data.WebStore
         /// <summary>
         /// Runs <paramref name="query"/> and returns all matching records
         /// (filtered by <paramref name="inclFilter"/> when supplied).
+        /// <para>
+        /// The unbounded <see cref="WebStore.Query.All"/> singleton is rejected on
+        /// this materialising path — it would buffer the entire table into a
+        /// <see cref="List{T}"/> with no row ceiling. Use
+        /// <see cref="ForEach(Query, Func{TValue, bool}, WebStoreTransaction)"/>
+        /// to stream the full table, or build a query with an explicit
+        /// <c>QueryBuilder.Limit(n)</c> to bound the result set.
+        /// </para>
         /// </summary>
         public Promise<List<TValue>> Query(
             Query query,
@@ -187,6 +196,30 @@ namespace Sunlight.Framework.Data.WebStore
                     resolve,
                     reject,
                     false));
+        }
+
+        /// <summary>
+        /// Streams every record matching <paramref name="query"/> through
+        /// <paramref name="visit"/> without materialising the result set. The
+        /// visitor returns <c>true</c> to continue, <c>false</c> to stop early.
+        /// Resolves with the number of records visited (including the one the
+        /// visitor returned <c>false</c> for, if any).
+        /// </summary>
+        public Promise<int> ForEach(
+            Query query,
+            Func<TValue, bool> visit,
+            WebStoreTransaction transaction = null)
+        {
+            if (visit == null)
+            { throw new Exception("visit can't be null"); }
+
+            return new Promise<int>((resolve, reject) =>
+                this.ForEachInternal(
+                    transaction,
+                    query,
+                    visit,
+                    resolve,
+                    reject));
         }
 
         /// <summary>Same as <see cref="Query"/> but returns primary keys only (key cursor).</summary>
@@ -475,7 +508,7 @@ namespace Sunlight.Framework.Data.WebStore
             { return; }
 
             var skip = query.Skip ?? 0;
-            var limit = query.Limit ?? 1 << 20;
+            int? remaining = query.Limit;
             bool firstLoop = skip > 0;
 
             request.OnSuccess += (req, evt) =>
@@ -499,10 +532,14 @@ namespace Sunlight.Framework.Data.WebStore
                     if (!onIterate(cursor))
                     { return; }
 
-                    if (--limit == 0)
+                    if (remaining.HasValue)
                     {
-                        _ = onIterate(null);
-                        return;
+                        remaining = remaining.Value - 1;
+                        if (remaining.Value == 0)
+                        {
+                            _ = onIterate(null);
+                            return;
+                        }
                     }
                 }
 
@@ -697,6 +734,43 @@ namespace Sunlight.Framework.Data.WebStore
                 reject);
         }
 
+        private void ForEachInternal(
+            WebStoreTransaction transaction,
+            Query query,
+            Func<TValue, bool> visit,
+            Action<int> resolve,
+            Action<object> reject)
+        {
+            transaction = this.TransactionOrDefault(
+                transaction,
+                TransactionKind.Read);
+
+            int count = 0;
+            this.CursorIterator(
+                transaction,
+                query,
+                null,
+                (cursor) =>
+                {
+                    if (cursor == null)
+                    {
+                        resolve(count);
+                        return true;
+                    }
+
+                    count = count + 1;
+                    if (!visit(cursor.Value))
+                    {
+                        resolve(count);
+                        return false;
+                    }
+
+                    return true;
+                },
+                reject,
+                false);
+        }
+
         private void QueryInternal<U>(
             WebStoreTransaction transaction,
             Query query,
@@ -705,6 +779,15 @@ namespace Sunlight.Framework.Data.WebStore
             Action<object> reject,
             bool isKeyQuery)
         {
+            if (Object.ReferenceEquals(query, QueryDef.All) && filter == null)
+            {
+                reject(new Exception(
+                    "Query(Query.All) is disallowed because it can materialise an "
+                    + "unbounded result set into memory. Use ForEach for streaming, "
+                    + "or set an explicit cap via QueryBuilder.Limit(n)."));
+                return;
+            }
+
             transaction = this.TransactionOrDefault(
                 transaction,
                 TransactionKind.Read);
