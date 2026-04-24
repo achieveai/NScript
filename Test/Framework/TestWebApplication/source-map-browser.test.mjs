@@ -79,12 +79,28 @@ function startServer(dllPath, workDir) {
     let resolved = false;
     let buffered = '';
 
+    const startupTimer = setTimeout(() => {
+      if (!resolved) {
+        proc.kill();
+        reject(new Error('TestHost did not print LISTENING within timeout'));
+      }
+    }, 30000);
+
+    const settle = (settler, value) => {
+      if (resolved) {
+        return;
+      }
+
+      resolved = true;
+      clearTimeout(startupTimer);
+      settler(value);
+    };
+
     proc.stdout.on('data', chunk => {
       buffered += chunk.toString();
       const match = buffered.match(/LISTENING (http:\/\/127\.0\.0\.1:\d+)/);
-      if (match && !resolved) {
-        resolved = true;
-        resolve({ proc, baseUrl: match[1] });
+      if (match) {
+        settle(resolve, { proc, baseUrl: match[1] });
       }
     });
 
@@ -94,19 +110,10 @@ function startServer(dllPath, workDir) {
     });
 
     proc.on('exit', code => {
-      if (!resolved) {
-        reject(new Error(`TestHost exited before listening (code=${code})`));
-      }
+      settle(reject, new Error(`TestHost exited before listening (code=${code})`));
     });
 
-    proc.on('error', reject);
-
-    setTimeout(() => {
-      if (!resolved) {
-        proc.kill();
-        reject(new Error('TestHost did not print LISTENING within timeout'));
-      }
-    }, 30000);
+    proc.on('error', err => settle(reject, err));
   });
 }
 

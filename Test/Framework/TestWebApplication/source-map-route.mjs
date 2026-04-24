@@ -10,9 +10,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Map names must not contain separators or relative segments; matches the
-// whitelist enforced by the C# handler's regex at SourceMapFileHandler.cs.
-const DISALLOWED_MAP_NAME_FRAGMENTS = ['..', '/', '\\'];
+// Mirror the C# SourceMapFileHandler whitelist (SourceMapFileHandler.cs):
+//   ^[A-Za-z0-9_-][A-Za-z0-9._-]*$
+// First char rejects leading dots (so ".hidden" fails closed), remaining
+// characters reject separators, colons, spaces, and any other URL-hostile
+// input that would otherwise reach the filesystem join below.
+const MAP_NAME_ALLOWED = /^[A-Za-z0-9_-][A-Za-z0-9._-]*$/;
 
 /**
  * Create a request handler bound to a specific generated-scripts directory.
@@ -39,7 +42,7 @@ export function createSourceMapRouteHandler(generatedScriptsDir) {
     const mapName = decodeURIComponent(match[1]);
     const shortName = decodeURIComponent(match[2]);
 
-    if (DISALLOWED_MAP_NAME_FRAGMENTS.some(fragment => mapName.includes(fragment))) {
+    if (!MAP_NAME_ALLOWED.test(mapName)) {
       res.writeHead(400);
       res.end('Bad Request');
       return true;

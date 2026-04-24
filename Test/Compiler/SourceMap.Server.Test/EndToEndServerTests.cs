@@ -162,10 +162,10 @@ namespace OwaSourceMapper.Server.Test
 
             var resp = await this.client.GetAsync(url);
 
-            Assert.AreNotEqual(
-                HttpStatusCode.OK,
-                resp.StatusCode,
-                "Dotted traversal must never resolve to a 200 response");
+            int status = (int)resp.StatusCode;
+            Assert.IsTrue(
+                status >= 400 && status < 500,
+                "Dotted traversal must fail closed with a 4xx, got " + status);
             string body = await resp.Content.ReadAsStringAsync();
             Assert.IsFalse(
                 body.Contains("namespace FixtureApp"),

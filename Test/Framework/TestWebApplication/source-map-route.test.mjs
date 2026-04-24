@@ -175,6 +175,30 @@ test('GET with empty sub-path under /sourcemap/ returns 404', async () => {
   }
 });
 
+test('GET with mapName containing colon/space/leading-dot returns 400', async () => {
+  // Mirrors the C# handler's whitelist coverage in
+  // EndToEndServerTests.GET_MapNameWithDisallowedChars_Returns400 so the JS
+  // shim fails closed for the same inputs the production handler does.
+  const { root, mapsDir } = makeTempWorkspace();
+  try {
+    const handler = createSourceMapRouteHandler(mapsDir);
+    const cases = ['a:b', 'a b', '.hidden'];
+    await withServer(handler, async base => {
+      for (const badName of cases) {
+        const resp = await fetchRawPath(
+          base,
+          '/sourcemap/' + encodeURIComponent(badName) + '/Program.cs');
+        assert.equal(
+          resp.status,
+          400,
+          `Tampered mapName '${badName}' must 400, got ${resp.status}`);
+      }
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('factory rejects missing generatedScriptsDir', () => {
   assert.throws(() => createSourceMapRouteHandler(''), /non-empty string/);
   assert.throws(() => createSourceMapRouteHandler(null), /non-empty string/);
