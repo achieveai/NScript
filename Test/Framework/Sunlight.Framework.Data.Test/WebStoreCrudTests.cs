@@ -365,6 +365,87 @@ namespace Sunlight.Framework.Data.Test
         }
 
         /// <summary>
+        /// <c>Query</c> with <c>Limit(0)</c> on a non-empty store must return an
+        /// empty list without visiting any record. Pins the pre-visit cap check
+        /// specifically — distinct from <c>Limit(N)</c> decrement which is
+        /// exercised by <c>TestLimitSmallerThanRecordCountTruncates</c>.
+        /// </summary>
+        [Test]
+        public static void TestLimitZeroVisitsNothing(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "todo", 2)).Then<bool>(delegate(string k2)
+                    {
+                        var query = new QueryBuilder(new string[0])
+                            .Limit(0)
+                            .Build();
+
+                        table.Query(query).Then<bool>(delegate(List<CrudEntity> results)
+                        {
+                            assert.Equal(results.Count, 0, "Limit(0) returns no records");
+                            client.Close();
+                            done();
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>ForEach</c> with a null visitor must reject through the Promise —
+        /// not throw synchronously. This pins the symmetric error surface
+        /// established alongside <c>Query(Query.All)</c>: both argument-
+        /// validation failures route through <c>reject</c> so callers using
+        /// <c>.Then(_, onRejected)</c> see a uniform API.
+        /// </summary>
+        [Test]
+        public static void TestForEachNullVisitRejects(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.ForEach(Query.All, null).Then<bool, object>(
+                    delegate(int count)
+                    {
+                        assert.IsTrue(false, "ForEach(_, null) should reject, not resolve");
+                        client.Close();
+                        done();
+                        return true;
+                    },
+                    delegate(object err)
+                    {
+                        assert.IsTrue(err != null, "ForEach(_, null) rejects with an error");
+                        var message = ((Exception)err).Message;
+                        assert.IsTrue(
+                            message != null && message.IndexOf("visit") >= 0,
+                            "rejection message names the bad argument");
+                        client.Close();
+                        done();
+                        return true;
+                    });
+                return true;
+            });
+        }
+
+        /// <summary>
         /// <c>ForEach(Query.All, ...)</c> on an empty store must resolve with a
         /// visit count of <c>0</c> and never invoke the visitor. Pins the
         /// null-cursor short-circuit in <c>ForEachInternal</c>.
