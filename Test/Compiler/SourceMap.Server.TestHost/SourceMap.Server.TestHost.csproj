@@ -28,5 +28,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <!-- Share the single FixtureMapEmitter source with the MSTest project so
+         the browser test and the WAF tests emit byte-identical map+js pairs.
+         The emitter is intentionally free of MSTest dependencies. -->
+    <Compile Include="..\SourceMap.Server.Test\FixtureMapEmitter.cs" Link="FixtureMapEmitter.cs" />
   </ItemGroup>
 </Project>

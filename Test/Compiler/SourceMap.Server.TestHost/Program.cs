@@ -15,6 +15,7 @@ namespace OwaSourceMapper.Server.TestHost
     using Microsoft.AspNetCore.Hosting.Server.Features;
     using Microsoft.Extensions.DependencyInjection;
     using OwaSourceMapper.Server;
+    using OwaSourceMapper.Server.Test;
 
     /// <summary>
     /// End-to-end test host for the Playwright browser suite. Two subcommands:
@@ -42,7 +43,7 @@ namespace OwaSourceMapper.Server.TestHost
     /// </summary>
     public static class Program
     {
-        private const string DefaultMapName = "app";
+        private const string DefaultMapName = FixtureMapEmitter.DefaultMapName;
         private const string PathPrefix = "/sourcemap";
 
         public static int Main(string[] args)
@@ -108,8 +109,15 @@ namespace OwaSourceMapper.Server.TestHost
                 fixtures.Add(dst);
             }
 
-            EmitMap(DefaultMapName, mapsDir, fixtures, sourceRoot: PathPrefix + "/" + DefaultMapName);
-            Console.WriteLine("EMITTED " + Path.Combine(mapsDir, DefaultMapName + ".map"));
+            // Share the single emitter with the MSTest WAF suite so browser
+            // and WAF tests exercise byte-identical fixtures.
+            var emitted = FixtureMapEmitter.Emit(
+                DefaultMapName,
+                mapsDir,
+                fixtures,
+                sourceRoot: PathPrefix + "/" + DefaultMapName,
+                emitLegacyAshxHandler: false);
+            Console.WriteLine("EMITTED " + emitted.MapPath);
             return 0;
         }
 
@@ -186,36 +194,5 @@ namespace OwaSourceMapper.Server.TestHost
             return 0;
         }
 
-        private static void EmitMap(
-            string mapName,
-            string outputDir,
-            IList<string> fixtureFiles,
-            string sourceRoot)
-        {
-            var map = new OwaSourceMapper.SourceMap
-            {
-                File = mapName + ".js",
-                EmitLegacyAshxHandler = false,
-                SourceRoot = sourceRoot,
-            };
-
-            for (int i = 0; i < fixtureFiles.Count; i++)
-            {
-                map.AddMapping(
-                    sLine: 0,
-                    sCol: i * 8,
-                    tLine: 0,
-                    tCol: 0,
-                    file: Path.GetFullPath(fixtureFiles[i]));
-            }
-
-            map.Write(outputDir);
-
-            string jsPath = Path.Combine(outputDir, mapName + ".js");
-            File.WriteAllText(jsPath,
-                "// SourceMap.Server.TestHost fixture\n"
-                + "(function fixtureEntry(){ return 1; })();\n"
-                + "//# sourceMappingURL=" + mapName + ".map\n");
-        }
     }
 }
