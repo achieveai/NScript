@@ -210,16 +210,20 @@ namespace Sunlight.Framework.Data.WebStore
             Func<TValue, bool> visit,
             WebStoreTransaction transaction = null)
         {
-            if (visit == null)
-            { throw new Exception("visit can't be null"); }
-
             return new Promise<int>((resolve, reject) =>
+            {
+                if (visit == null)
+                {
+                    reject(new Exception("visit can't be null"));
+                    return;
+                }
                 this.ForEachInternal(
                     transaction,
                     query,
                     visit,
                     resolve,
-                    reject));
+                    reject);
+            });
         }
 
         /// <summary>Same as <see cref="Query"/> but returns primary keys only (key cursor).</summary>
@@ -529,6 +533,12 @@ namespace Sunlight.Framework.Data.WebStore
 
                 if (filter == null || filter(cursor.Value))
                 {
+                    if (remaining.HasValue && remaining.Value <= 0)
+                    {
+                        _ = onIterate(null);
+                        return;
+                    }
+
                     if (!onIterate(cursor))
                     { return; }
 

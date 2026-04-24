@@ -219,6 +219,13 @@ namespace Sunlight.Framework.Data.Test
                         delegate(object err)
                         {
                             assert.IsTrue(err != null, "Query(Query.All) rejects with a descriptive error");
+                            var message = ((Exception)err).Message;
+                            assert.IsTrue(
+                                message != null && message.IndexOf("Query.All") >= 0,
+                                "rejection message names Query.All so callers can diagnose");
+                            assert.IsTrue(
+                                message.IndexOf("Limit") >= 0 || message.IndexOf("ForEach") >= 0,
+                                "rejection message points callers at Limit or ForEach as the fix");
                             client.Close();
                             done();
                             return true;
@@ -309,6 +316,81 @@ namespace Sunlight.Framework.Data.Test
                         done();
                         return true;
                     });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// With 5 seeded records and <c>QueryBuilder.Limit(2)</c>, the scan must
+        /// stop after 2 records. This is the true regression test for the removal
+        /// of the silent <c>1 &lt;&lt; 20</c> default — the previous
+        /// <c>TestLimitedQueryRespectsExplicitLimit</c> passed both before and
+        /// after the fix because <c>Limit == recordCount</c> is a coincidence.
+        /// </summary>
+        [Test]
+        public static void TestLimitSmallerThanRecordCountTruncates(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                var seed = new CrudEntity[5];
+                for (int i = 0; i < 5; i = i + 1)
+                {
+                    seed[i] = NewEntity("s" + i, "todo", i);
+                }
+
+                table.UpSert(seed).Then<bool>(delegate(string[] keys)
+                {
+                    var query = new QueryBuilder(new string[0])
+                        .Limit(2)
+                        .Build();
+
+                    table.Query(query).Then<bool>(delegate(List<CrudEntity> results)
+                    {
+                        assert.Equal(results.Count, 2, "Limit(2) truncates a 5-record scan to 2");
+                        client.Close();
+                        done();
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>ForEach(Query.All, ...)</c> on an empty store must resolve with a
+        /// visit count of <c>0</c> and never invoke the visitor. Pins the
+        /// null-cursor short-circuit in <c>ForEachInternal</c>.
+        /// </summary>
+        [Test]
+        public static void TestForEachEmptyTableVisitsNothing(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                int visits = 0;
+
+                table.ForEach(Query.All, delegate(CrudEntity row)
+                {
+                    visits = visits + 1;
+                    return true;
+                }).Then<bool>(delegate(int count)
+                {
+                    assert.Equal(count, 0, "empty table resolves with count 0");
+                    assert.Equal(visits, 0, "visitor was never invoked on empty table");
+                    client.Close();
+                    done();
                     return true;
                 });
                 return true;
