@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <!-- Kestrel-hosted end-to-end fixture runner for the Playwright browser
+         test at Test/Framework/TestWebApplication/source-map-browser.test.mjs.
+         Two subcommands: 'emit <workDir>' emits a fixture map and companion
+         .js for the browser; 'serve <workDir>' boots Kestrel on an ephemeral
+         port and prints the resulting URL on stdout. -->
+    <RootNamespace>OwaSourceMapper.Server.TestHost</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(CompilerSources)\SourceMap.Server\SourceMap.Server.csproj" />
+    <ProjectReference Include="$(CompilerSources)\SourceMap\SourceMap.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Fixtures live alongside the E2E test project; link them into the
+         TestHost output so a standalone `dotnet run` emit command has the
+         same bytes the C# WAF tests exercise. -->
+    <Content Include="..\SourceMap.Server.Test\Fixtures\**\*.*">
+      <Link>Fixtures\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <!-- Share the single FixtureMapEmitter source with the MSTest project so
+         the browser test and the WAF tests emit byte-identical map+js pairs.
+         The emitter is intentionally free of MSTest dependencies. -->
+    <Compile Include="..\SourceMap.Server.Test\FixtureMapEmitter.cs" Link="FixtureMapEmitter.cs" />
+  </ItemGroup>
+</Project>

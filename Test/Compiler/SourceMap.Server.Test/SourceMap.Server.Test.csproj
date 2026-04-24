@@ -5,17 +5,29 @@
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
+    <!-- WebApplicationFactory<TEntryPoint> finds Main via HostFactoryResolver
+         reflection on the entry-point type's assembly, so the entry-point
+         discovery symbol is suppressed to keep OutputType=Library viable
+         alongside TestStartup.Main. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(CompilerSources)\SourceMap.Server\SourceMap.Server.csproj" />
+    <ProjectReference Include="$(CompilerSources)\SourceMap\SourceMap.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Fixtures\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 </Project>
