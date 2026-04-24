@@ -1,0 +1,5 @@
+<!-- Fixture XWML template for SourceMap.Server E2E tests. Byte-exact contents
+     are compared by test assertions; do not reformat. -->
+<Root>
+  <Label Text="{Title}" />
+</Root>

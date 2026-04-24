@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
+import { createSourceMapRouteHandler } from './source-map-route.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const QUNIT_SUITES = [
