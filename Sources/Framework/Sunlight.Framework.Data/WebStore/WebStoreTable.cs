@@ -514,13 +514,18 @@ namespace Sunlight.Framework.Data.WebStore
             var skip = query.Skip ?? 0;
             int? remaining = query.Limit;
             bool firstLoop = skip > 0;
+            bool aborted = false;
 
             request.OnSuccess += (req, evt) =>
             {
+                if (aborted)
+                { return; }
+
                 var cursor = Type.AS<object, IDBCursor<TKey, TValue>>(req.Result);
                 if (cursor == null)
                 {
-                    _ = onIterate(null);
+                    try { _ = onIterate(null); }
+                    catch (Exception ex) { aborted = true; reject(ex); }
                     return;
                 }
 
@@ -531,15 +536,23 @@ namespace Sunlight.Framework.Data.WebStore
                     return;
                 }
 
-                if (filter == null || filter(cursor.Value))
+                bool accept;
+                try { accept = filter == null || filter(cursor.Value); }
+                catch (Exception ex) { aborted = true; reject(ex); return; }
+
+                if (accept)
                 {
                     if (remaining.HasValue && remaining.Value <= 0)
                     {
-                        _ = onIterate(null);
+                        try { _ = onIterate(null); }
+                        catch (Exception ex) { aborted = true; reject(ex); }
                         return;
                     }
 
-                    if (!onIterate(cursor))
+                    bool cont;
+                    try { cont = onIterate(cursor); }
+                    catch (Exception ex) { aborted = true; reject(ex); return; }
+                    if (!cont)
                     { return; }
 
                     if (remaining.HasValue)
@@ -547,7 +560,8 @@ namespace Sunlight.Framework.Data.WebStore
                         remaining = remaining.Value - 1;
                         if (remaining.Value == 0)
                         {
-                            _ = onIterate(null);
+                            try { _ = onIterate(null); }
+                            catch (Exception ex) { aborted = true; reject(ex); }
                             return;
                         }
                     }
@@ -556,7 +570,13 @@ namespace Sunlight.Framework.Data.WebStore
                 cursor.Continue();
             };
 
-            request.OnError += HandleError(reject);
+            var onError = HandleError(reject);
+            request.OnError += (req, evt) =>
+            {
+                if (aborted)
+                { return; }
+                onError(req, evt);
+            };
         }
 
         private IDBRequest GetCursor(
