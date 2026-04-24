@@ -479,6 +479,135 @@ namespace Sunlight.Framework.Data.Test
         }
 
         /// <summary>
+        /// <c>ForEach</c> combined with <c>QueryBuilder.Limit(2)</c> on a
+        /// 5-record store must stop after 2 records — invoking the visitor
+        /// exactly twice. Pins the interaction between the streaming ForEach
+        /// path and the explicit Limit cap, which were introduced together but
+        /// previously only tested independently.
+        /// </summary>
+        [Test]
+        public static void TestForEachRespectsExplicitLimit(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                var seed = new CrudEntity[5];
+                for (int i = 0; i < 5; i = i + 1)
+                {
+                    seed[i] = NewEntity("f" + i, "todo", i);
+                }
+
+                table.UpSert(seed).Then<bool>(delegate(string[] keys)
+                {
+                    var query = new QueryBuilder(new string[0])
+                        .Limit(2)
+                        .Build();
+                    int visits = 0;
+
+                    table.ForEach(query, delegate(CrudEntity row)
+                    {
+                        visits = visits + 1;
+                        return true;
+                    }).Then<bool>(delegate(int count)
+                    {
+                        assert.Equal(count, 2, "ForEach + Limit(2) reports visit count of 2");
+                        assert.Equal(visits, 2, "visitor invoked exactly twice under Limit(2)");
+                        client.Close();
+                        done();
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>Query(Query.All, filter)</c> with a non-null filter must resolve
+        /// (not reject) and return only filter-matching rows. Pins the positive
+        /// side of the <c>filter == null</c> escape hatch in the Query.All
+        /// guard — without this a refactor that dropped the filter check would
+        /// silently break filtered scans.
+        /// </summary>
+        [Test]
+        public static void TestQueryAllWithFilterResolvesFiltered(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "done", 2)).Then<bool>(delegate(string k2)
+                    {
+                        table.UpSert(NewEntity("c", "todo", 3)).Then<bool>(delegate(string k3)
+                        {
+                            table.Query(Query.All, delegate(CrudEntity row)
+                            {
+                                return row.Category == "todo";
+                            }).Then<bool>(delegate(List<CrudEntity> results)
+                            {
+                                assert.Equal(results.Count, 2, "Query(All, filter) returns only filtered rows");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>QueryKeys(Query.All)</c> must resolve with every primary key —
+        /// the Query.All materialisation guard exists only for the value-read
+        /// path (which can blow up memory with large rows). A key-only scan
+        /// carries no such risk, so it bypasses the guard via the
+        /// <c>isKeyQuery</c> flag.
+        /// </summary>
+        [Test]
+        public static void TestQueryKeysAllResolves(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "done", 2)).Then<bool>(delegate(string k2)
+                    {
+                        table.QueryKeys(Query.All).Then<bool>(delegate(List<string> keys)
+                        {
+                            assert.Equal(keys.Count, 2, "QueryKeys(All) returns every key (no cap)");
+                            client.Close();
+                            done();
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
         /// Defect #3 regression — with the missing [JsonType] on IDBIndexParameters,
         /// the <c>Unique</c> field name would not reach the native IDB call so
         /// uniqueness was never enforced. Declaring a UNIQUE single-column

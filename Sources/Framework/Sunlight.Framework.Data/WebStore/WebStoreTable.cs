@@ -789,7 +789,7 @@ namespace Sunlight.Framework.Data.WebStore
             Action<object> reject,
             bool isKeyQuery)
         {
-            if (Object.ReferenceEquals(query, QueryDef.All) && filter == null)
+            if (Object.ReferenceEquals(query, QueryDef.All) && filter == null && !isKeyQuery)
             {
                 reject(new Exception(
                     "Query(Query.All) is disallowed because it can materialise an "
