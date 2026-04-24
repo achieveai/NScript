@@ -531,7 +531,8 @@ namespace Sunlight.Framework.Data.WebStore
 
                 if (firstLoop)
                 {
-                    cursor.Advance(skip);
+                    try { cursor.Advance(skip); }
+                    catch (Exception ex) { aborted = true; reject(ex); return; }
                     firstLoop = false;
                     return;
                 }
@@ -567,14 +568,17 @@ namespace Sunlight.Framework.Data.WebStore
                     }
                 }
 
-                cursor.Continue();
+                try { cursor.Continue(); }
+                catch (Exception ex) { aborted = true; reject(ex); }
             };
 
             var onError = HandleError(reject);
             request.OnError += (req, evt) =>
             {
+                evt.PreventDefault();
                 if (aborted)
                 { return; }
+                aborted = true;
                 onError(req, evt);
             };
         }

@@ -679,8 +679,10 @@ namespace Sunlight.Framework.Data.Test
                 {
                     table.UpSert(NewEntity("b", "todo", 2)).Then<bool>(delegate(string k2)
                     {
+                        int visitCount = 0;
                         table.ForEach(Query.All, delegate(CrudEntity row)
                         {
+                            visitCount++;
                             throw new Exception("boom-visit");
                         }).Then<bool, object>(
                             delegate(int count)
@@ -692,6 +694,7 @@ namespace Sunlight.Framework.Data.Test
                             },
                             delegate(object err)
                             {
+                                assert.Equal(visitCount, 1, "visitor called exactly once before abort");
                                 assert.IsTrue(err != null, "rejection has an error");
                                 var message = ((Exception)err).Message;
                                 assert.IsTrue(
