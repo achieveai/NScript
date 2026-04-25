@@ -657,6 +657,249 @@ namespace Sunlight.Framework.Data.Test
             });
         }
 
+        /// <summary>
+        /// A <c>ForEach</c> visitor that throws must reject the returned
+        /// Promise with the original exception — not hang the caller. Before
+        /// WI-41, the throw escaped the IDB <c>OnSuccess</c> handler and the
+        /// promise was never settled. The centralised try/catch in
+        /// <c>CursorIterator</c> routes the thrown exception to <c>reject</c>.
+        /// </summary>
+        [Test]
+        public static void TestForEachVisitThrowsRejects(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "todo", 2)).Then<bool>(delegate(string k2)
+                    {
+                        int visitCount = 0;
+                        table.ForEach(Query.All, delegate(CrudEntity row)
+                        {
+                            visitCount++;
+                            throw new Exception("boom-visit");
+                        }).Then<bool, object>(
+                            delegate(int count)
+                            {
+                                assert.IsTrue(false, "throwing visitor should reject, not resolve");
+                                client.Close();
+                                done();
+                                return true;
+                            },
+                            delegate(object err)
+                            {
+                                assert.Equal(visitCount, 1, "visitor called exactly once before abort");
+                                assert.IsTrue(err != null, "rejection has an error");
+                                var message = ((Exception)err).Message;
+                                assert.IsTrue(
+                                    message != null && message.IndexOf("boom-visit") >= 0,
+                                    "original thrown exception propagates to reject");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// A <c>Query</c> filter that throws must reject the returned Promise
+        /// with the original exception. Exercises the <c>filter(cursor.Value)</c>
+        /// call edge in <c>CursorIterator</c>, distinct from the <c>onIterate</c>
+        /// edge covered by <c>TestForEachVisitThrowsRejects</c>.
+        /// </summary>
+        [Test]
+        public static void TestQueryFilterThrowsRejects(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "todo", 2)).Then<bool>(delegate(string k2)
+                    {
+                        table.Query(Query.All, delegate(CrudEntity row)
+                        {
+                            throw new Exception("boom-filter");
+                        }).Then<bool, object>(
+                            delegate(List<CrudEntity> results)
+                            {
+                                assert.IsTrue(false, "throwing filter should reject, not resolve");
+                                client.Close();
+                                done();
+                                return true;
+                            },
+                            delegate(object err)
+                            {
+                                assert.IsTrue(err != null, "rejection has an error");
+                                var message = ((Exception)err).Message;
+                                assert.IsTrue(
+                                    message != null && message.IndexOf("boom-filter") >= 0,
+                                    "original thrown exception propagates to reject");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// A <c>Delete(query, filter)</c> whose filter throws must reject and
+        /// must not remove any record — the cursor aborts before the batched
+        /// key list reaches the delete call. Confirms the aborted flag
+        /// prevents subsequent cursor events from scheduling a partial delete.
+        /// </summary>
+        [Test]
+        public static void TestDeleteFilterThrowsRejects(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "todo", 2)).Then<bool>(delegate(string k2)
+                    {
+                        var query = new QueryBuilder(new string[0])
+                            .Limit(10)
+                            .Build();
+
+                        table.Delete(query, delegate(CrudEntity row)
+                        {
+                            throw new Exception("boom-delete-filter");
+                        }).Then<bool, object>(
+                            delegate(int count)
+                            {
+                                assert.IsTrue(false, "throwing delete filter should reject, not resolve");
+                                client.Close();
+                                done();
+                                return true;
+                            },
+                            delegate(object err)
+                            {
+                                assert.IsTrue(err != null, "rejection has an error");
+                                var message = ((Exception)err).Message;
+                                assert.IsTrue(
+                                    message != null && message.IndexOf("boom-delete-filter") >= 0,
+                                    "original thrown exception propagates to reject");
+
+                                // Both records must survive — the cursor aborted before any batched delete ran.
+                                table.TryGet("a").Then<bool>(delegate(CrudEntity rowA)
+                                {
+                                    assert.IsTrue(rowA != null, "record 'a' survives an aborted delete scan");
+
+                                    table.TryGet("b").Then<bool>(delegate(CrudEntity rowB)
+                                    {
+                                        assert.IsTrue(rowB != null, "record 'b' survives an aborted delete scan");
+                                        client.Close();
+                                        done();
+                                        return true;
+                                    });
+                                    return true;
+                                });
+                                return true;
+                            });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// An <c>Update(query, updateFunc)</c> whose <c>updateFunc</c> throws
+        /// must reject and must not mutate any record. Exercises the
+        /// <c>updateFunc(cursor.Value)</c> call edge inside the
+        /// <c>QueryUpdateOrDeleteInternal</c> <c>onIterate</c> lambda, reaching
+        /// the <c>CursorIterator</c> guard transitively.
+        /// </summary>
+        [Test]
+        public static void TestUpdateFuncThrowsRejects(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+
+                table.UpSert(NewEntity("a", "todo", 1)).Then<bool>(delegate(string k1)
+                {
+                    table.UpSert(NewEntity("b", "todo", 2)).Then<bool>(delegate(string k2)
+                    {
+                        var query = new QueryBuilder(new string[0])
+                            .Limit(10)
+                            .Build();
+
+                        table.Update(query, delegate(CrudEntity row)
+                        {
+                            throw new Exception("boom-update");
+                        }).Then<bool, object>(
+                            delegate(int count)
+                            {
+                                assert.IsTrue(false, "throwing updateFunc should reject, not resolve");
+                                client.Close();
+                                done();
+                                return true;
+                            },
+                            delegate(object err)
+                            {
+                                assert.IsTrue(err != null, "rejection has an error");
+                                var message = ((Exception)err).Message;
+                                assert.IsTrue(
+                                    message != null && message.IndexOf("boom-update") >= 0,
+                                    "original thrown exception propagates to reject");
+
+                                // Records unchanged — the cursor aborted before the batched update ran.
+                                table.Get("a").Then<bool>(delegate(CrudEntity rowA)
+                                {
+                                    assert.Equal(rowA.Score, 1, "record 'a' score unchanged after aborted update");
+
+                                    table.Get("b").Then<bool>(delegate(CrudEntity rowB)
+                                    {
+                                        assert.Equal(rowB.Score, 2, "record 'b' score unchanged after aborted update");
+                                        client.Close();
+                                        done();
+                                        return true;
+                                    });
+                                    return true;
+                                });
+                                return true;
+                            });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
         private static CrudEntity NewEntity(string id, string category, int score)
         {
             var e = new CrudEntity();
