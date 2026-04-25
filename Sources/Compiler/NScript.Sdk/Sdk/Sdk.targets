@@ -88,18 +88,51 @@
 		<Warning Text="RepoLinkedSourceMaps requested but git metadata could not be captured (origin='$(_NScriptOriginUrlRedacted)' sha='$(SourceRepoCommitSha)'). Skipping repo-linked sourceRoot."
 		         Condition="'$(SourceRepoOriginUrl)' == '' or '$(SourceRepoCommitSha)' == ''" />
 
-		<!-- GitHub detection: matches https://github.com/{owner}/{repo}[.git] AND git@github.com:{owner}/{repo}[.git] -->
+		<!--
+		  GitHub HTTPS: https://[creds@]github.com/{owner}/{repo}[.git]
+		  GitHub SSH (modern):   git@github.com:{owner}/{repo}[.git]
+		  GitHub SSH (ssh://):   ssh://git@github.com/{owner}/{repo}[.git]
+		  Both SSH forms collapse onto a single regex by allowing `[/:]` after `github.com`
+		  and tolerating the optional `ssh://git@` / `git@` prefix anywhere before the host.
+		  Keep these patterns in sync with `RepoUrlBuilder.cs` (covered by RepoUrlBuilderTests).
+		-->
 		<PropertyGroup Condition="'$(SourceRepoOriginUrl)' != '' and '$(SourceRepoCommitSha)' != '' and ('$(SourceRepoProvider)' == 'auto' or '$(SourceRepoProvider)' == 'GitHub')">
-			<_NScriptGitHubOwner>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '(?i)github\.com[/:]([^/]+)/([^/]+?)(?:\.git)?/?$').Groups[1].Value)</_NScriptGitHubOwner>
-			<_NScriptGitHubRepo>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '(?i)github\.com[/:]([^/]+)/([^/]+?)(?:\.git)?/?$').Groups[2].Value)</_NScriptGitHubRepo>
+			<_NScriptGitHubHttpsPattern>(?i)^https?://(?:[^/@]+@)?github\.com/([^/]+)/([^/]+?)(?:\.git)?/?$</_NScriptGitHubHttpsPattern>
+			<_NScriptGitHubSshPattern>(?i)^(?:ssh://)?git@github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$</_NScriptGitHubSshPattern>
+
+			<_NScriptGitHubOwner>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubHttpsPattern)').Groups[1].Value)</_NScriptGitHubOwner>
+			<_NScriptGitHubRepo>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubHttpsPattern)').Groups[2].Value)</_NScriptGitHubRepo>
+
+			<_NScriptGitHubOwner Condition="'$(_NScriptGitHubOwner)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubSshPattern)').Groups[1].Value)</_NScriptGitHubOwner>
+			<_NScriptGitHubRepo Condition="'$(_NScriptGitHubRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubSshPattern)').Groups[2].Value)</_NScriptGitHubRepo>
+
 			<SourceMapRoot Condition="'$(_NScriptGitHubOwner)' != '' and '$(_NScriptGitHubRepo)' != ''">https://raw.githubusercontent.com/$(_NScriptGitHubOwner)/$(_NScriptGitHubRepo)/$(SourceRepoCommitSha)/</SourceMapRoot>
 		</PropertyGroup>
 
-		<!-- Azure DevOps modern: https://dev.azure.com/{org}/{project}/_git/{repo} -->
+		<!--
+		  Azure DevOps modern HTTPS: https://[creds@]dev.azure.com/{org}/{project}/_git/{repo}
+		  Azure DevOps modern SSH:   git@ssh.dev.azure.com:v3/{org}/{project}/{repo}
+		  Azure DevOps legacy HTTPS: https://[creds@]{org}.visualstudio.com/{project}/_git/{repo}
+		  All three flow into the same Items API URL shape (org / project / repo / sha / path=/).
+		  Keep these patterns in sync with `RepoUrlBuilder.cs` (covered by RepoUrlBuilderTests).
+		-->
 		<PropertyGroup Condition="'$(SourceMapRoot)' == '' and '$(SourceRepoOriginUrl)' != '' and '$(SourceRepoCommitSha)' != '' and ('$(SourceRepoProvider)' == 'auto' or '$(SourceRepoProvider)' == 'AzureDevOps')">
-			<_NScriptAdoOrg>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '(?i)dev\.azure\.com/([^/]+)/([^/]+)/_git/([^/]+?)(?:\.git)?/?$').Groups[1].Value)</_NScriptAdoOrg>
-			<_NScriptAdoProject>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '(?i)dev\.azure\.com/([^/]+)/([^/]+)/_git/([^/]+?)(?:\.git)?/?$').Groups[2].Value)</_NScriptAdoProject>
-			<_NScriptAdoRepo>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '(?i)dev\.azure\.com/([^/]+)/([^/]+)/_git/([^/]+?)(?:\.git)?/?$').Groups[3].Value)</_NScriptAdoRepo>
+			<_NScriptAdoModernHttpsPattern>(?i)^https?://(?:[^/@]+@)?dev\.azure\.com/([^/]+)/([^/]+)/_git/([^/]+?)(?:\.git)?/?$</_NScriptAdoModernHttpsPattern>
+			<_NScriptAdoModernSshPattern>(?i)^git@ssh\.dev\.azure\.com:v3/([^/]+)/([^/]+)/([^/]+?)(?:\.git)?/?$</_NScriptAdoModernSshPattern>
+			<_NScriptAdoLegacyHttpsPattern>(?i)^https?://(?:[^/@]+@)?([^/.]+)\.visualstudio\.com/([^/]+)/_git/([^/]+?)(?:\.git)?/?$</_NScriptAdoLegacyHttpsPattern>
+
+			<_NScriptAdoOrg>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernHttpsPattern)').Groups[1].Value)</_NScriptAdoOrg>
+			<_NScriptAdoProject>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernHttpsPattern)').Groups[2].Value)</_NScriptAdoProject>
+			<_NScriptAdoRepo>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernHttpsPattern)').Groups[3].Value)</_NScriptAdoRepo>
+
+			<_NScriptAdoOrg Condition="'$(_NScriptAdoOrg)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernSshPattern)').Groups[1].Value)</_NScriptAdoOrg>
+			<_NScriptAdoProject Condition="'$(_NScriptAdoProject)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernSshPattern)').Groups[2].Value)</_NScriptAdoProject>
+			<_NScriptAdoRepo Condition="'$(_NScriptAdoRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernSshPattern)').Groups[3].Value)</_NScriptAdoRepo>
+
+			<_NScriptAdoOrg Condition="'$(_NScriptAdoOrg)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoLegacyHttpsPattern)').Groups[1].Value)</_NScriptAdoOrg>
+			<_NScriptAdoProject Condition="'$(_NScriptAdoProject)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoLegacyHttpsPattern)').Groups[2].Value)</_NScriptAdoProject>
+			<_NScriptAdoRepo Condition="'$(_NScriptAdoRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoLegacyHttpsPattern)').Groups[3].Value)</_NScriptAdoRepo>
+
 			<SourceMapRoot Condition="'$(_NScriptAdoOrg)' != '' and '$(_NScriptAdoProject)' != '' and '$(_NScriptAdoRepo)' != ''">https://dev.azure.com/$(_NScriptAdoOrg)/$(_NScriptAdoProject)/_apis/git/repositories/$(_NScriptAdoRepo)/items?api-version=7.1&amp;versionDescriptor.version=$(SourceRepoCommitSha)&amp;versionDescriptor.versionType=commit&amp;path=/</SourceMapRoot>
 		</PropertyGroup>
 

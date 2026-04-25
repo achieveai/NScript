@@ -375,6 +375,209 @@ namespace OwaSourceMapper.Server.Test
                 "Short name absent from sources[] must produce 404 even with redirect enabled");
         }
 
+        // ---------------------------------------------------------------------------------
+        // TryBuildRepoRedirect — direct unit tests.
+        //
+        // The redirect helper is the security-critical branch (a tampered sourceRoot could
+        // send the browser to an attacker-controlled URL). The black-box HandleAsync tests
+        // above cover happy / sad paths, but the hostile-scheme rejection (javascript:,
+        // data:, file://) needs explicit assertions. Drive the helper directly so failures
+        // there can never be masked by an unrelated 404 path higher up in HandleAsync.
+        // ---------------------------------------------------------------------------------
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_OptedOut_ReturnsFalse()
+        {
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = false };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "Foo.cs", options, out string url);
+
+            Assert.IsFalse(result, "Default-disabled redirect must always return false");
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_ValidGitHubSourceRoot_BuildsHttpsUrl()
+        {
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Sources/Foo.cs\"],\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "Sources/Foo.cs", options, out string url);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual("https://raw.githubusercontent.com/o/r/sha/Sources/Foo.cs", url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_ValidAdoSourceRoot_BuildsItemsApiUrl()
+        {
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Sources/Foo.cs\"],"
+                + "\"sourceRoot\":\"https://dev.azure.com/org/proj/_apis/git/repositories/repo/items?api-version=7.1&versionDescriptor.version=sha&versionDescriptor.versionType=commit&path=/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "Sources/Foo.cs", options, out string url);
+
+            Assert.IsTrue(result);
+            StringAssert.EndsWith(url, "path=/Sources/Foo.cs");
+        }
+
+        [TestMethod]
+        [DataRow("javascript:alert(1)/")]
+        [DataRow("data:text/html,foo")]
+        [DataRow("file:///etc/passwd/")]
+        [DataRow("vbscript:msgbox(1)/")]
+        [DataRow("ftp://example.com/")]
+        [DataRow("/legacy/SrcMapper.ashx?file=")]
+        [DataRow("relative/path/")]
+        public void TryBuildRepoRedirect_HostileOrNonHttpsSourceRoot_ReturnsFalse(string hostileRoot)
+        {
+            string json = "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"" + hostileRoot + "\"}";
+            var sources = SourceMapSources.TryParseContent(json);
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "Foo.cs", options, out string url);
+
+            Assert.IsFalse(
+                result,
+                "Hostile / non-https sourceRoot must NOT produce a redirect: " + hostileRoot);
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_HttpSourceRoot_ReturnsFalse()
+        {
+            // Plain http:// is rejected — both GitHub raw and the ADO Items API are HTTPS-only,
+            // and we never want to silently downgrade DevTools to a cleartext fetch.
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"http://example.com/raw/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "Foo.cs", options, out string url);
+
+            Assert.IsFalse(result, "http:// sourceRoot must be refused — only https:// is acceptable");
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_NullSources_ReturnsFalse()
+        {
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(null, "Foo.cs", options, out string url);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        public void TryBuildRepoRedirect_NullOrEmptySourceName_ReturnsFalse(string sourceName)
+        {
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, sourceName, options, out string url);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_EmptySourceRoot_ReturnsFalse()
+        {
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "Foo.cs", options, out string url);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_SourceNameNotInSources_ReturnsFalse()
+        {
+            // Membership gate: even if sourceRoot is a valid https URL, redirecting an arbitrary
+            // dangling path lets an attacker turn the handler into an open redirect.
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "AttackerControlled.cs", options, out string url);
+
+            Assert.IsFalse(
+                result,
+                "Membership gate: short names absent from sources[] must never be redirected");
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_NullOptions_ReturnsFalse()
+        {
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\"}");
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "Foo.cs", null, out string url);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(url);
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_SourceNameContainsHash_EncodesFragmentBoundary()
+        {
+            // A `#` inside a file path would truncate the ADO `path=/` query at the fragment
+            // boundary (everything after `#` is fragment, not path). URI-encoding the path
+            // component prevents that — `#` becomes `%23` and the redirect lands intact.
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"foo#bar.cs\"],"
+                + "\"sourceRoot\":\"https://dev.azure.com/o/p/_apis/git/repositories/r/items?api-version=7.1&versionDescriptor.version=sha&versionDescriptor.versionType=commit&path=/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "foo#bar.cs", options, out string url);
+
+            Assert.IsTrue(result);
+            Assert.IsFalse(
+                url.Contains("#"),
+                "URL must not contain a literal '#' after encoding — found: " + url);
+            StringAssert.Contains(url, "foo%23bar.cs");
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_SourceNameContainsSpace_EncodesSpace()
+        {
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"my file.cs\"],\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "my file.cs", options, out string url);
+
+            Assert.IsTrue(result);
+            StringAssert.Contains(url, "my%20file.cs");
+        }
+
+        [TestMethod]
+        public void TryBuildRepoRedirect_SourceNamePreservesForwardSlashes()
+        {
+            // `/` is a path separator at both GitHub raw and the ADO Items API — encoding it
+            // to `%2F` would break the lookup. Only segment-internal characters get encoded.
+            var sources = SourceMapSources.TryParseContent(
+                "{\"sources\":[\"a/b/c.cs\"],\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\"}");
+            var options = new SourceMapFileHandlerOptions { RepoUrlRedirectOnMiss = true };
+
+            bool result = SourceMapFileHandler.TryBuildRepoRedirect(sources, "a/b/c.cs", options, out string url);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual("https://raw.githubusercontent.com/o/r/sha/a/b/c.cs", url);
+        }
+
         private SourceMapFileHandlerOptions BuildOptions(string allowedRoot)
         {
             return new SourceMapFileHandlerOptions

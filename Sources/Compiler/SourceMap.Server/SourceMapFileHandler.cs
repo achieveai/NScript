@@ -131,9 +131,13 @@ namespace OwaSourceMapper.Server
 
             // Parse the map up-front. Both the local-file branch and the repo-redirect fallback
             // need its sources/sourceRoot data, so a single parse keeps them aligned and avoids
-            // repeated disk I/O.
+            // repeated disk I/O. When both features are disabled, skip the parse entirely — the
+            // default-config request path will return 404 below without inspecting the map.
             SourceMapSources sources = null;
-            if (TryGetFileSize(mapPath, out long mapSize) && mapSize <= options.MaxMapFileSizeBytes)
+            bool needsParse = options.ServeFromSourcesLong || options.RepoUrlRedirectOnMiss;
+            if (needsParse
+                && TryGetFileSize(mapPath, out long mapSize)
+                && mapSize <= options.MaxMapFileSizeBytes)
             {
                 sources = await SourceMapSources.TryParseAsync(mapPath, options.MaxMapFileSizeBytes, ctx.RequestAborted);
             }
@@ -177,6 +181,11 @@ namespace OwaSourceMapper.Server
                 await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
+            catch (SecurityException)
+            {
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
+                return;
+            }
 
             // Allow-list check: the resolved path MUST live under one of the configured source
             // roots. Without this, a map that points at /etc/passwd via sourcesLong would be
@@ -204,6 +213,11 @@ namespace OwaSourceMapper.Server
                 return;
             }
             catch (NotSupportedException)
+            {
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
+                return;
+            }
+            catch (SecurityException)
             {
                 await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
@@ -343,19 +357,44 @@ namespace OwaSourceMapper.Server
                 return false;
             }
 
-            // Refuse to redirect to anything other than http(s) — the legacy `{file}.ashx` root,
-            // a relative path, or a hostile `javascript:`/`data:` URI would all be unsafe.
-            if (!root.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                && !root.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            // Refuse to redirect to anything other than https — both GitHub raw and the ADO
+            // Items API are HTTPS-only, and `http://`, the legacy `{file}.ashx` root, a
+            // relative path, or a hostile `javascript:`/`data:`/`file://` URI would all be
+            // unsafe destinations to send a browser to.
+            if (!root.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             // sourceRoot is documented as either being a directory prefix (trailing `/`) or
-            // the immediate parent. Append literally — the compiler is responsible for shaping
-            // a working URL ahead of time.
-            redirectUrl = root + sourceName;
+            // the immediate parent. URI-encode the path segments of `sourceName` so a `#`,
+            // `?`, or other reserved character in a file name can't truncate the ADO query
+            // string at the fragment / query boundary, and so spaces become `%20` instead
+            // of breaking the URL. Forward slashes are preserved because both GitHub raw
+            // and the ADO Items API treat them as path separators.
+            redirectUrl = root + EncodeSourcePath(sourceName);
             return true;
+        }
+
+        /// <summary>
+        /// URI-encodes the path component of a source name while preserving forward slashes
+        /// as path separators. Used when composing repo-URL redirects so reserved characters
+        /// (#, ?, &amp;, space, …) inside the source name don't truncate or corrupt the URL.
+        /// </summary>
+        private static string EncodeSourcePath(string sourceName)
+        {
+            if (string.IsNullOrEmpty(sourceName))
+            {
+                return sourceName;
+            }
+
+            string[] segments = sourceName.Split('/');
+            for (int i = 0; i < segments.Length; i++)
+            {
+                segments[i] = Uri.EscapeDataString(segments[i]);
+            }
+
+            return string.Join("/", segments);
         }
 
         private static bool TryGetFileSize(string path, out long size)
@@ -371,6 +410,18 @@ namespace OwaSourceMapper.Server
 
                 size = info.Length;
                 return true;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (PathTooLongException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
             }
             catch (IOException)
             {

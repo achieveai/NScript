@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+// Expose `internal` helpers (NormalizeRepoRoot, TryRebaseToRepoRoot, AbsolutizeForSources)
+// to the unit-test assembly so they can be exercised directly without going through the
+// full ToString() pipeline. The csproj has GenerateAssemblyInfo=false so the attribute is
+// declared in source rather than via an MSBuild <InternalsVisibleTo> item. WI-19 iter-1 M4.
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SourceMap.Test")]
+
 namespace OwaSourceMapper
 {
     public struct SourceMapping
@@ -284,13 +290,53 @@ namespace OwaSourceMapper
                 return null;
             }
 
-            if (!fullPath.StartsWith(normalizedRepoRoot, StringComparison.OrdinalIgnoreCase))
+            // Match the SourceMapFileHandler.IsContained pattern: filesystem case sensitivity
+            // is platform-dependent. Folding case unconditionally on Linux/macOS would cause a
+            // file under e.g. `/repo/Source/Foo.cs` to incorrectly match a `/repo/SOURCE/`
+            // alias and produce a corrupt rebase. On Windows the legacy ignore-case behaviour
+            // remains.
+            StringComparison cmp = OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+
+            if (!fullPath.StartsWith(normalizedRepoRoot, cmp))
             {
                 return null;
             }
 
             string relative = fullPath.Substring(normalizedRepoRoot.Length);
             return relative.Replace("\\", "/");
+        }
+
+        /// <summary>
+        /// Legacy fallback that produces the absolutized, drive-escaped, forward-slashed
+        /// form of <paramref name="rawFile"/> for emission into the <c>sources[]</c> array
+        /// when no repo-rebase applies. Wrapped in the same 4-exception set used elsewhere
+        /// (NormalizeRepoRoot, TryRebaseToRepoRoot) so that a malformed legacy path doesn't
+        /// take down map generation — we degrade to the unprocessed (forward-slashed) form.
+        /// </summary>
+        private static string AbsolutizeForSources(string rawFile)
+        {
+            try
+            {
+                return Path.GetFullPath(rawFile).Replace(":", "$").Replace("\\", "/");
+            }
+            catch (ArgumentException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
+            catch (PathTooLongException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
+            catch (NotSupportedException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
+            catch (System.Security.SecurityException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
         }
 
         public static int MappingComparison(Tuple<int, int> lineCol1, Tuple<int, int> lineCol2)
@@ -397,7 +443,7 @@ namespace OwaSourceMapper
                 for (int i = 0; i < this.files.Count; i++)
                 {
                     var fileName = TryRebaseToRepoRoot(this.files[i], normalizedRepoRoot)
-                        ?? Path.GetFullPath(this.files[i]).Replace(":", "$").Replace("\\", "/");
+                        ?? AbsolutizeForSources(this.files[i]);
                     if (fileMap.TryGetValue(fileName, out var tmp))
                     { fileMap[fileName] = tmp + 1; fileName = fileName + tmp + 1; }
                     else

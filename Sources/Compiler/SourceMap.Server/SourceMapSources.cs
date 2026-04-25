@@ -111,6 +111,10 @@ namespace OwaSourceMapper.Server
             {
                 return null;
             }
+            catch (SecurityException)
+            {
+                return null;
+            }
 
             if (!info.Exists || info.Length > maxBytes)
             {
