@@ -293,6 +293,104 @@ namespace OwaSourceMapper.Test
             Assert.IsFalse(json.Contains(".ashx"), "Without a File there is nothing to base a .ashx fallback on");
         }
 
+        /// <summary>
+        /// When <see cref="SourceMap.RepoRoot"/> is unset, source paths keep the legacy
+        /// absolutized form (drive letter escaped to <c>$</c>, backslashes flipped). This
+        /// guarantees existing consumers see no change unless they opt in.
+        /// </summary>
+        [TestMethod]
+        public void ToString_NoRepoRoot_UsesLegacyAbsolutizedSources()
+        {
+            var map = new SourceMap { File = "out.js" };
+            string fakeFile = Path.Combine(Path.GetTempPath(), "Sources", "Foo.cs");
+            map.AddMapping(0, 0, 0, 0, fakeFile);
+
+            string json = map.ToString();
+
+            Assert.IsFalse(
+                json.Contains("\"sources\": [\"Sources/Foo.cs\""),
+                "Without RepoRoot, sources[] must remain in the absolutized legacy form");
+        }
+
+        /// <summary>
+        /// When <see cref="SourceMap.RepoRoot"/> is set to an ancestor of the source file,
+        /// the <c>sources[]</c> entry is emitted as a forward-slash, repo-relative path so
+        /// the browser can combine it with a remote-repo <c>sourceRoot</c> URL.
+        /// </summary>
+        [TestMethod]
+        public void ToString_WithRepoRoot_EmitsRepoRelativeForwardSlashSource()
+        {
+            string repoRoot = Path.Combine(Path.GetTempPath(), "wi19-repo-" + System.Guid.NewGuid().ToString("N"));
+            string fakeFile = Path.Combine(repoRoot, "Sources", "Compiler", "Foo.cs");
+
+            var map = new SourceMap
+            {
+                File = "out.js",
+                RepoRoot = repoRoot,
+            };
+            map.AddMapping(0, 0, 0, 0, fakeFile);
+
+            string json = map.ToString();
+
+            StringAssert.Contains(json, "\"Sources/Compiler/Foo.cs\"");
+        }
+
+        /// <summary>
+        /// Files that live outside the configured <see cref="SourceMap.RepoRoot"/> stay in
+        /// the legacy absolutized form — the rebase only fires for files actually under the
+        /// repo. Mixing in-repo and out-of-repo sources in the same map is supported.
+        /// </summary>
+        [TestMethod]
+        public void ToString_FileOutsideRepoRoot_StaysAbsolutized()
+        {
+            string repoRoot = Path.Combine(Path.GetTempPath(), "wi19-inside-" + System.Guid.NewGuid().ToString("N"));
+            string outsideRoot = Path.Combine(Path.GetTempPath(), "wi19-outside-" + System.Guid.NewGuid().ToString("N"));
+            string outsideFile = Path.Combine(outsideRoot, "External", "Bar.cs");
+
+            var map = new SourceMap
+            {
+                File = "out.js",
+                RepoRoot = repoRoot,
+            };
+            map.AddMapping(0, 0, 0, 0, outsideFile);
+
+            string json = map.ToString();
+
+            // The file should NOT appear as a clean repo-relative path.
+            Assert.IsFalse(json.Contains("\"External/Bar.cs\""),
+                "File outside RepoRoot must NOT be emitted as a bare repo-relative path");
+
+            // sourcesLong must still preserve the original path.
+            StringAssert.Contains(json, "\"sourcesLong\":");
+        }
+
+        /// <summary>
+        /// Repo-rebase preserves the long form unchanged in <c>sourcesLong</c>; only the
+        /// browser-facing <c>sources[]</c> array is rebased. This keeps the local-disk
+        /// resolution path (used by the ASP.NET Core handler when a file IS available
+        /// locally) working.
+        /// </summary>
+        [TestMethod]
+        public void ToString_WithRepoRoot_PreservesSourcesLongForLocalResolution()
+        {
+            string repoRoot = Path.Combine(Path.GetTempPath(), "wi19-long-" + System.Guid.NewGuid().ToString("N"));
+            string fakeFile = Path.Combine(repoRoot, "Sources", "Foo.cs");
+
+            var map = new SourceMap
+            {
+                File = "out.js",
+                RepoRoot = repoRoot,
+            };
+            map.AddMapping(0, 0, 0, 0, fakeFile);
+
+            string json = map.ToString();
+
+            // sourcesLong must still contain the absolute, escaped form (with backslashes
+            // doubled as the AddMapping path requires).
+            StringAssert.Contains(json, "\"sourcesLong\":");
+            StringAssert.Contains(json, "Foo.cs");
+        }
+
         private static string ExtractMappingsField(string json)
         {
             const string marker = "\"mappings\": \"";

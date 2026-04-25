@@ -186,6 +186,14 @@ namespace OwaSourceMapper
         public bool EmitLegacyAshxHandler { get; set; } = true;
 
         /// <summary>
+        /// Optional absolute path to the repository root (output of <c>git rev-parse --show-toplevel</c>).
+        /// When set, <see cref="ToString"/> emits <c>sources[i]</c> as forward-slash, repo-relative
+        /// paths so they combine cleanly with a remote-repo <see cref="SourceRoot"/>. Files outside
+        /// the repo root remain in the legacy absolutized form.
+        /// </summary>
+        public string RepoRoot { get; set; }
+
+        /// <summary>
         /// Mapping comparison.
         /// </summary>
         /// <param name="lineCol1"> The first line col. </param>
@@ -193,6 +201,98 @@ namespace OwaSourceMapper
         /// <returns>
         /// .
         /// </returns>
+        /// <summary>
+        /// Normalizes <paramref name="repoRoot"/> to a full path with a trailing directory separator
+        /// for cheap startsWith comparisons. Returns null on null/empty input so callers can short-
+        /// circuit the rebase.
+        /// </summary>
+        internal static string NormalizeRepoRoot(string repoRoot)
+        {
+            if (string.IsNullOrWhiteSpace(repoRoot))
+            {
+                return null;
+            }
+
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(repoRoot);
+            }
+            catch (ArgumentException)
+            {
+                // GetFullPath rejects malformed input; treat as "no rebase".
+                return null;
+            }
+            catch (PathTooLongException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+            catch (System.Security.SecurityException)
+            {
+                return null;
+            }
+
+            if (!fullPath.EndsWith(Path.DirectorySeparatorChar.ToString())
+                && !fullPath.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+            {
+                fullPath += Path.DirectorySeparatorChar;
+            }
+
+            return fullPath;
+        }
+
+        /// <summary>
+        /// If <paramref name="rawFile"/> sits under <paramref name="normalizedRepoRoot"/>, returns
+        /// the forward-slash, repo-relative form; otherwise returns null so the caller falls back
+        /// to the legacy absolutized form.
+        /// </summary>
+        /// <param name="rawFile">              Source file path as the compiler stored it
+        ///     (may contain escaped backslashes from <see cref="AddMapping"/>). </param>
+        /// <param name="normalizedRepoRoot">   Normalized repo root with a trailing separator,
+        ///     or null to skip rebase. </param>
+        internal static string TryRebaseToRepoRoot(string rawFile, string normalizedRepoRoot)
+        {
+            if (normalizedRepoRoot == null || string.IsNullOrEmpty(rawFile))
+            {
+                return null;
+            }
+
+            string unescaped = rawFile.Replace("\\\\", "\\");
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(unescaped);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+            catch (PathTooLongException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+            catch (System.Security.SecurityException)
+            {
+                return null;
+            }
+
+            if (!fullPath.StartsWith(normalizedRepoRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            string relative = fullPath.Substring(normalizedRepoRoot.Length);
+            return relative.Replace("\\", "/");
+        }
+
         public static int MappingComparison(Tuple<int, int> lineCol1, Tuple<int, int> lineCol2)
         {
             if (lineCol1.Item1 != lineCol2.Item1)
@@ -292,10 +392,12 @@ namespace OwaSourceMapper
             if (this.files.Count > 0)
             {
                 Dictionary<string, int> fileMap = new Dictionary<string, int>(this.files.Count);
+                string normalizedRepoRoot = NormalizeRepoRoot(this.RepoRoot);
                 sb.Append("\t\"sources\": [");
                 for (int i = 0; i < this.files.Count; i++)
                 {
-                    var fileName = Path.GetFullPath(this.files[i]).Replace(":", "$").Replace("\\", "/");
+                    var fileName = TryRebaseToRepoRoot(this.files[i], normalizedRepoRoot)
+                        ?? Path.GetFullPath(this.files[i]).Replace(":", "$").Replace("\\", "/");
                     if (fileMap.TryGetValue(fileName, out var tmp))
                     { fileMap[fileName] = tmp + 1; fileName = fileName + tmp + 1; }
                     else

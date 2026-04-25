@@ -62,6 +62,13 @@ namespace NScript.Converter
         private readonly string sourceMapRoot;
 
         /// <summary>
+        /// Optional absolute path to the Git repo root. When set together with
+        /// <see cref="sourceMapRoot"/>, <c>sources[]</c> entries are rebased to repo-relative,
+        /// forward-slash paths so they combine correctly with a remote-repo sourceRoot URL.
+        /// </summary>
+        private readonly string repoRoot;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="jsScript">               The js script. </param>
@@ -73,6 +80,10 @@ namespace NScript.Converter
         /// <param name="sourceMapRoot">          Optional <c>sourceRoot</c> URL to embed in the
         ///     generated source map. When null or empty, the compiler emits the legacy
         ///     <c>SrcMapper.ashx</c> handler path and drops the handler sidecar alongside the map. </param>
+        /// <param name="repoRoot">                Optional absolute path to the Git repo root.
+        ///     When supplied alongside <paramref name="sourceMapRoot"/>, <c>sources[i]</c> entries
+        ///     are emitted as forward-slash, repo-relative paths so they combine with a remote
+        ///     repo URL. Files outside the repo root keep the legacy absolutized form. </param>
         public Builder(
             string jsScript,
             int jsParts,
@@ -80,7 +91,8 @@ namespace NScript.Converter
             string[] references,
             IConverterPlugin[] plugins,
             (bool minify, bool uglify, bool optimize) scriptGenerateSettings,
-            string sourceMapRoot = null)
+            string sourceMapRoot = null,
+            string repoRoot = null)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -94,6 +106,7 @@ namespace NScript.Converter
             this.jsParts = jsParts;
             this.scriptGenerateSettings = scriptGenerateSettings;
             this.sourceMapRoot = sourceMapRoot;
+            this.repoRoot = repoRoot;
         }
 
         /// <summary>
@@ -275,7 +288,7 @@ namespace NScript.Converter
                         Path.GetFileName(this.jsScript))
                     : this.sourceMapRoot;
 
-                writer.Write(this.jsScript, effectiveSourceRoot, emitLegacyAshxHandler: isLegacySourceRoot);
+                writer.Write(this.jsScript, effectiveSourceRoot, emitLegacyAshxHandler: isLegacySourceRoot, repoRoot: this.repoRoot);
                 log.Information("JSWriter.End {JsScript}", this.jsScript);
             }
             catch(ConverterLocationException ex)

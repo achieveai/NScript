@@ -60,6 +60,22 @@ namespace OwaSourceMapper.Server
         public long MaxSourceFileSizeBytes { get; set; } = 16L * 1024 * 1024;
 
         /// <summary>
+        /// When <c>true</c>, the handler issues a <c>302 Found</c> redirect to
+        /// <c>{sourceRoot}{sourceName}</c> instead of returning <c>404</c> when the requested
+        /// source file is unavailable locally. The redirect only fires when the parsed map's
+        /// <c>sourceRoot</c> begins with <c>http://</c> or <c>https://</c>, so a misconfigured
+        /// or legacy <c>SrcMapper.ashx</c> root never triggers an outbound redirect.
+        /// </summary>
+        /// <remarks>
+        /// SECURITY: a tampered <c>.map</c> could redirect the browser to an attacker-controlled
+        /// URL. Only enable this in deployments that trust the map artifacts they ship.
+        /// Authentication / private-repo proxying is intentionally NOT covered here — the redirect
+        /// hands the request off to the browser's HTTPS stack, relying on the user's existing
+        /// session cookies (if any).
+        /// </remarks>
+        public bool RepoUrlRedirectOnMiss { get; set; } = false;
+
+        /// <summary>
         /// Validates that <see cref="MapsDirectory"/> is set and exists. Returns the
         /// absolute, fully-qualified directory on success; <c>null</c> otherwise.
         /// </summary>

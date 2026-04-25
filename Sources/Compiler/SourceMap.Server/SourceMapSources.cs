@@ -23,10 +23,12 @@ namespace OwaSourceMapper.Server
     public sealed class SourceMapSources
     {
         private readonly Dictionary<string, string> shortToLong;
+        private readonly string sourceRoot;
 
-        private SourceMapSources(Dictionary<string, string> shortToLong)
+        private SourceMapSources(Dictionary<string, string> shortToLong, string sourceRoot)
         {
             this.shortToLong = shortToLong;
+            this.sourceRoot = sourceRoot;
         }
 
         /// <summary>
@@ -34,6 +36,13 @@ namespace OwaSourceMapper.Server
         /// (e.g. <c>"C$/Sources/.../MyFile.cs"</c>).
         /// </summary>
         public IReadOnlyCollection<string> ShortNames => this.shortToLong.Keys;
+
+        /// <summary>
+        /// Gets the <c>sourceRoot</c> string recorded in the map, or null when the field is
+        /// absent. The handler's repo-URL redirect branch uses this together with a
+        /// resolved short name to redirect DevTools at <c>{sourceRoot}{sources[i]}</c>.
+        /// </summary>
+        public string SourceRoot => this.sourceRoot;
 
         /// <summary>
         /// Parses the <c>sources</c>/<c>sourcesLong</c> arrays out of a source map file.
@@ -170,6 +179,13 @@ namespace OwaSourceMapper.Server
                     return null;
                 }
 
+                string parsedSourceRoot = null;
+                if (root.TryGetProperty("sourceRoot", out var srEl)
+                    && srEl.ValueKind == JsonValueKind.String)
+                {
+                    parsedSourceRoot = srEl.GetString();
+                }
+
                 // "sourcesLong" is optional (non-standard NScript extension). When absent, the
                 // short source names ARE the resolvable paths — e.g. when the map was generated
                 // with a repo-URL sourceRoot rather than local disk paths.
@@ -199,7 +215,7 @@ namespace OwaSourceMapper.Server
                     map[shortName] = longName;
                 }
 
-                return map.Count == 0 ? null : new SourceMapSources(map);
+                return map.Count == 0 ? null : new SourceMapSources(map, parsedSourceRoot);
             }
             catch (JsonException)
             {

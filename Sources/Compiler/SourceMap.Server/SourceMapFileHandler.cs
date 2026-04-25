@@ -9,6 +9,7 @@ namespace OwaSourceMapper.Server
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Net;
     using System.Security;
     using System.Text.RegularExpressions;
@@ -128,19 +129,21 @@ namespace OwaSourceMapper.Server
                 return;
             }
 
+            // Parse the map up-front. Both the local-file branch and the repo-redirect fallback
+            // need its sources/sourceRoot data, so a single parse keeps them aligned and avoids
+            // repeated disk I/O.
+            SourceMapSources sources = null;
+            if (TryGetFileSize(mapPath, out long mapSize) && mapSize <= options.MaxMapFileSizeBytes)
+            {
+                sources = await SourceMapSources.TryParseAsync(mapPath, options.MaxMapFileSizeBytes, ctx.RequestAborted);
+            }
+
             if (!options.ServeFromSourcesLong)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
 
-            if (!TryGetFileSize(mapPath, out long mapSize) || mapSize > options.MaxMapFileSizeBytes)
-            {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return;
-            }
-
-            var sources = await SourceMapSources.TryParseAsync(mapPath, options.MaxMapFileSizeBytes, ctx.RequestAborted);
             if (sources == null)
             {
                 ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -150,7 +153,7 @@ namespace OwaSourceMapper.Server
             string longPath = sources.ResolveLongPath(sourceName);
             if (longPath == null)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
 
@@ -161,17 +164,17 @@ namespace OwaSourceMapper.Server
             }
             catch (ArgumentException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
             catch (PathTooLongException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
             catch (NotSupportedException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
 
@@ -181,7 +184,7 @@ namespace OwaSourceMapper.Server
             var allowedRoots = preResolvedAllowedRoots ?? options.ResolveAllowedRoots(mapsDir);
             if (!IsContainedInAny(resolvedLongPath, allowedRoots))
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
 
@@ -192,23 +195,23 @@ namespace OwaSourceMapper.Server
             }
             catch (ArgumentException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
             catch (PathTooLongException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
             catch (NotSupportedException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
 
             if (!info.Exists)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
 
@@ -243,12 +246,12 @@ namespace OwaSourceMapper.Server
             }
             catch (FileNotFoundException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
             catch (DirectoryNotFoundException)
             {
-                ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await NotFoundOrRedirectAsync(ctx, sources, sourceName, options);
                 return;
             }
             catch (UnauthorizedAccessException)
@@ -276,6 +279,83 @@ namespace OwaSourceMapper.Server
             {
                 await stream.DisposeAsync();
             }
+        }
+
+        /// <summary>
+        /// When the caller has decided the local lookup must fail, optionally consult the
+        /// repo-URL redirect branch before returning <c>404</c>. The redirect only fires when
+        /// <paramref name="options"/>.<see cref="SourceMapFileHandlerOptions.RepoUrlRedirectOnMiss"/>
+        /// is true AND the parsed map's <c>sourceRoot</c> is an http(s) URL AND the requested
+        /// short name exists in the map's <c>sources</c> array.
+        /// </summary>
+        private static Task NotFoundOrRedirectAsync(
+            HttpContext ctx,
+            SourceMapSources sources,
+            string sourceName,
+            SourceMapFileHandlerOptions options)
+        {
+            if (TryBuildRepoRedirect(sources, sourceName, options, out string redirectUrl))
+            {
+                ctx.Response.StatusCode = (int)HttpStatusCode.Found;
+                ctx.Response.Headers["Location"] = redirectUrl;
+                return Task.CompletedTask;
+            }
+
+            ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Builds a redirect URL to the repo-hosted source when redirect is opted-in and the
+        /// parsed map carries an http(s) <c>sourceRoot</c>. Returns false (and leaves
+        /// <paramref name="redirectUrl"/> null) when the redirect should NOT fire — the caller
+        /// then falls through to a plain 404.
+        /// </summary>
+        internal static bool TryBuildRepoRedirect(
+            SourceMapSources sources,
+            string sourceName,
+            SourceMapFileHandlerOptions options,
+            out string redirectUrl)
+        {
+            redirectUrl = null;
+
+            if (options == null || !options.RepoUrlRedirectOnMiss)
+            {
+                return false;
+            }
+
+            if (sources == null || string.IsNullOrEmpty(sourceName))
+            {
+                return false;
+            }
+
+            // The short name MUST exist in the parsed map; without this check, a 302 would be
+            // emitted for any path the attacker dangles after the prefix. ContainsName is the
+            // contract: "the compiler emitted a `sources[]` entry exactly equal to this string".
+            if (!sources.ShortNames.Contains(sourceName))
+            {
+                return false;
+            }
+
+            string root = sources.SourceRoot;
+            if (string.IsNullOrEmpty(root))
+            {
+                return false;
+            }
+
+            // Refuse to redirect to anything other than http(s) — the legacy `{file}.ashx` root,
+            // a relative path, or a hostile `javascript:`/`data:` URI would all be unsafe.
+            if (!root.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                && !root.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // sourceRoot is documented as either being a directory prefix (trailing `/`) or
+            // the immediate parent. Append literally — the compiler is responsible for shaping
+            // a working URL ahead of time.
+            redirectUrl = root + sourceName;
+            return true;
         }
 
         private static bool TryGetFileSize(string path, out long size)

@@ -272,6 +272,109 @@ namespace OwaSourceMapper.Server.Test
                 "Sources larger than MaxSourceFileSizeBytes must be refused instead of streamed");
         }
 
+        [TestMethod]
+        public async Task HandleAsync_RedirectEnabled_HttpsSourceRoot_LocalFileMissing_Returns302()
+        {
+            // Map points at a non-existent file, but `sources[]` contains the short name and
+            // `sourceRoot` is an https URL → handler should 302 to {sourceRoot}{sourceName}.
+            string missingLong = Path.Combine(this.sourcesDir, "Gone.cs").Replace("\\", "\\\\");
+            WriteMapWithSourceRoot(
+                "app",
+                "Sources/Gone.cs",
+                missingLong,
+                "https://raw.githubusercontent.com/owner/repo/sha/");
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+            options.RepoUrlRedirectOnMiss = true;
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "Sources/Gone.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.Found,
+                ctx.Response.StatusCode,
+                "Opt-in redirect must turn local-miss into 302 when sourceRoot is an http(s) URL");
+            Assert.AreEqual(
+                "https://raw.githubusercontent.com/owner/repo/sha/Sources/Gone.cs",
+                ctx.Response.Headers["Location"].ToString());
+        }
+
+        [TestMethod]
+        public async Task HandleAsync_RedirectEnabled_RelativeSourceRoot_Returns404()
+        {
+            // sourceRoot is a relative path / legacy ashx — must NOT redirect; only http(s) URLs
+            // are accepted as redirect targets, otherwise a tampered map could send the browser
+            // anywhere (javascript:, data:, file://, …).
+            string missingLong = Path.Combine(this.sourcesDir, "Gone.cs").Replace("\\", "\\\\");
+            WriteMapWithSourceRoot(
+                "app",
+                "Sources/Gone.cs",
+                missingLong,
+                "/legacy/SrcMapper.ashx?map=app&file=");
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+            options.RepoUrlRedirectOnMiss = true;
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "Sources/Gone.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "Non-http(s) sourceRoot must fall through to 404 even when redirect is enabled");
+            Assert.IsFalse(
+                ctx.Response.Headers.ContainsKey("Location"),
+                "No Location header should be set when refusing to redirect");
+        }
+
+        [TestMethod]
+        public async Task HandleAsync_RedirectDisabled_HttpsSourceRoot_Returns404()
+        {
+            // Default behaviour preserved: even with an http(s) sourceRoot, the absence of the
+            // opt-in flag must keep the response a plain 404.
+            string missingLong = Path.Combine(this.sourcesDir, "Gone.cs").Replace("\\", "\\\\");
+            WriteMapWithSourceRoot(
+                "app",
+                "Sources/Gone.cs",
+                missingLong,
+                "https://raw.githubusercontent.com/owner/repo/sha/");
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+            // RepoUrlRedirectOnMiss left at its default (false)
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "Sources/Gone.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "RepoUrlRedirectOnMiss=false must preserve the legacy 404 behaviour");
+            Assert.IsFalse(
+                ctx.Response.Headers.ContainsKey("Location"),
+                "Default-disabled redirect must not emit a Location header");
+        }
+
+        [TestMethod]
+        public async Task HandleAsync_RedirectEnabled_ShortNameNotInMap_Returns404()
+        {
+            // Even with redirect enabled, a short name that doesn't appear in `sources[]` must
+            // NOT trigger a 302 — that would let an attacker dangle arbitrary paths after the
+            // prefix and cause the browser to be redirected to attacker-chosen URLs.
+            string missingLong = Path.Combine(this.sourcesDir, "Gone.cs").Replace("\\", "\\\\");
+            WriteMapWithSourceRoot(
+                "app",
+                "Sources/Gone.cs",
+                missingLong,
+                "https://raw.githubusercontent.com/owner/repo/sha/");
+            var options = BuildOptions(allowedRoot: this.sourcesDir);
+            options.RepoUrlRedirectOnMiss = true;
+
+            HttpContext ctx = BuildContext();
+            await SourceMapFileHandler.HandleAsync(ctx, "app", "NotInSources.cs", options);
+
+            Assert.AreEqual(
+                (int)HttpStatusCode.NotFound,
+                ctx.Response.StatusCode,
+                "Short name absent from sources[] must produce 404 even with redirect enabled");
+        }
+
         private SourceMapFileHandlerOptions BuildOptions(string allowedRoot)
         {
             return new SourceMapFileHandlerOptions
@@ -300,6 +403,23 @@ namespace OwaSourceMapper.Server.Test
             string json = "{"
                 + "\"version\":\"3\","
                 + "\"file\":\"" + mapName + ".js\","
+                + "\"sources\":[\"" + shortSource + "\"],"
+                + "\"sourcesLong\":[\"" + longSourceEscaped + "\"],"
+                + "\"mappings\":\"\""
+                + "}";
+            File.WriteAllText(Path.Combine(this.mapsDir, mapName + ".map"), json);
+        }
+
+        private void WriteMapWithSourceRoot(
+            string mapName,
+            string shortSource,
+            string longSourceEscaped,
+            string sourceRoot)
+        {
+            string json = "{"
+                + "\"version\":\"3\","
+                + "\"file\":\"" + mapName + ".js\","
+                + "\"sourceRoot\":\"" + sourceRoot + "\","
                 + "\"sources\":[\"" + shortSource + "\"],"
                 + "\"sourcesLong\":[\"" + longSourceEscaped + "\"],"
                 + "\"mappings\":\"\""
