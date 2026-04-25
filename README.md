@@ -144,6 +144,18 @@ The following C# features are not supported:
 
 For the latest feature support status, see [csharp8-todos.md](csharp8-todos.md).
 
+## Documentation
+
+Full documentation lives under [`docs/`](docs/README.md). Highlights:
+
+- [Getting started](docs/getting-started/README.md) — first NScript app
+- [Framework reference](docs/framework/sunlight-core.md) — observables, binders, IoC, scheduler
+- [Templates: Razor](docs/templates/razor.md) and [XWML](docs/templates/xwml.md)
+- [Interop attributes](docs/interop/attributes.md) — `[Script]`, `[ImportedType]`, `[JsonType]`, naming
+- [Compiler pipeline](docs/compiler/pipeline.md) and [plugins](docs/compiler/plugins.md)
+- [MSBuild SDK](docs/build/msbuild-sdk.md), [Testing](docs/testing/README.md), [Source maps](docs/debugging/source-maps.md)
+- [Architecture Decision Records](docs/adr/) — 25 accepted ADRs
+
 ## Packages
 
 The NScript project generates 10 NuGet packages:
