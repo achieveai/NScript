@@ -8,7 +8,7 @@ NScript compiles your C# project into a single JavaScript file. You write `.cs` 
 
 ## Prerequisites
 
-- **.NET 8.0 SDK 8.0.416** — pinned by `global.json` at the repo root. Other 8.0.x SDKs may work but are not the supported configuration.
+- **.NET SDK 10.0.100** — pinned by `global.json` at the repo root (`rollForward: latestMinor`). Newer 10.0.x SDKs are accepted; older majors are not the supported configuration.
 - **A web server to host the generated JS** — `npx serve`, IIS Express, `python -m http.server`, anything that serves static files.
 - **A modern browser** — Chrome / Edge / Firefox. NScript's runtime targets evergreen browsers; no IE11 support.
 
@@ -36,7 +36,7 @@ namespace HelloWorld
 }
 ```
 
-The `[EntryPoint]` attribute on the type containing the `static Main` method is how NScript identifies the application root. Without it, demand-driven dead-code elimination (see [ADR 0022](../adr/0022-demand-driven-conversion-and-dead-code-elimination.md)) will strip your program.
+The `[EntryPoint]` attribute on the `static Main` method is how NScript identifies the application root (the attribute targets methods — see `Sources/Framework/mscorlib/Runtime/CompilerServices/EntryPointAttribute.cs`). Without it, demand-driven dead-code elimination (see [ADR 0022](../adr/0022-demand-driven-conversion-and-dead-code-elimination.md)) will strip your program.
 
 ### Project file
 
