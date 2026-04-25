@@ -27,6 +27,7 @@ _ReSharper*/
 [Tt]est[Rr]esult*.xml
 [Bb]in/
 [Dd]ebug*/
+!docs/debugging/
 [Oo]bj/
 /NScriptToolSet/lib/Microsoft.CSharp.dll
 /NScriptToolSet/lib/Microsoft.CSharp.pdb
