@@ -118,6 +118,56 @@ namespace OwaSourceMapper.Server.Test
         }
 
         [TestMethod]
+        public void SourceRoot_PresentInJson_IsExposed()
+        {
+            string json = "{"
+                + "\"sources\":[\"Foo.cs\"],"
+                + "\"sourceRoot\":\"https://raw.githubusercontent.com/o/r/sha/\""
+                + "}";
+
+            var result = SourceMapSources.TryParseContent(json);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("https://raw.githubusercontent.com/o/r/sha/", result.SourceRoot);
+        }
+
+        [TestMethod]
+        public void SourceRoot_AbsentInJson_IsNull()
+        {
+            string json = "{\"sources\":[\"Foo.cs\"]}";
+
+            var result = SourceMapSources.TryParseContent(json);
+
+            Assert.IsNotNull(result);
+            Assert.IsNull(result.SourceRoot, "Missing sourceRoot field must surface as null, not empty string");
+        }
+
+        [TestMethod]
+        public void SourceRoot_EmptyStringInJson_IsEmpty()
+        {
+            string json = "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":\"\"}";
+
+            var result = SourceMapSources.TryParseContent(json);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(string.Empty, result.SourceRoot);
+        }
+
+        [TestMethod]
+        public void SourceRoot_NonStringValueInJson_IsIgnored()
+        {
+            // sourceRoot should only be honoured when it's a JSON string. Numbers, objects,
+            // arrays, etc. fall back to null so the redirect branch in SourceMapFileHandler
+            // refuses to fire on a malformed map rather than throwing.
+            string json = "{\"sources\":[\"Foo.cs\"],\"sourceRoot\":42}";
+
+            var result = SourceMapSources.TryParseContent(json);
+
+            Assert.IsNotNull(result);
+            Assert.IsNull(result.SourceRoot);
+        }
+
+        [TestMethod]
         public void ShortNames_ReturnsAllRecordedShortNames()
         {
             string json = "{\"sources\":[\"a\",\"b\",\"c\"]}";

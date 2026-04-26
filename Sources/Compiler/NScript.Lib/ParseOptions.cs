@@ -79,6 +79,14 @@ namespace NScript.Lib
         private string sourceMapRoot;
 
         /// <summary>
+        /// Optional absolute path to the Git repository root. When set together with
+        /// <see cref="SourceMapRoot"/>, the compiler emits <c>sources[i]</c> entries as
+        /// repo-relative forward-slash paths so they combine cleanly with a remote-repo
+        /// <c>sourceRoot</c> URL (raw.githubusercontent.com or dev.azure.com).
+        /// </summary>
+        private string repoRoot;
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
         /// </summary>
         private ParseOptions()
@@ -153,6 +161,12 @@ namespace NScript.Lib
         /// <c>-sourceMapRoot</c> was not supplied (legacy <c>SrcMapper.ashx</c> fallback applies).
         /// </summary>
         public string SourceMapRoot => this.sourceMapRoot;
+
+        /// <summary>
+        /// Gets the absolute repository root path supplied via <c>-repoRoot</c>, or null when
+        /// the flag was not supplied.
+        /// </summary>
+        public string RepoRoot => this.repoRoot;
 
         /// <summary>
         /// Parses the args.
@@ -273,6 +287,22 @@ namespace NScript.Lib
                         }
 
                         options.sourceMapRoot = args[iArg];
+                        continue;
+                    case "-reporoot":
+                        option = CurrentOption.None;
+                        if (options.repoRoot != null)
+                        {
+                            Logger.Instance.LogError("-repoRoot specified at least twice");
+                            return null;
+                        }
+
+                        if (++iArg >= args.Length)
+                        {
+                            Logger.Instance.LogError("-repoRoot requires a value");
+                            return null;
+                        }
+
+                        options.repoRoot = args[iArg];
                         continue;
                     case "-log":
                     case "--log":
@@ -401,6 +431,17 @@ namespace NScript.Lib
                     "Reference dlls not specified");
             }
 
+            // -repoRoot is meaningful only when paired with -sourceMapRoot: by itself it would
+            // rebase sources[] without changing the sourceRoot, producing maps whose paths point
+            // nowhere useful. Reject the partial configuration loudly rather than silently emitting
+            // a broken map.
+            if (!string.IsNullOrEmpty(options.repoRoot)
+                && string.IsNullOrEmpty(options.sourceMapRoot))
+            {
+                Logger.Instance.LogError(
+                    "-repoRoot requires -sourceMapRoot to also be specified");
+            }
+
             return Logger.Instance.HasErrors ? null : options;
         }
 
@@ -409,7 +450,7 @@ namespace NScript.Lib
         /// </summary>
         public static void PrintUsage()
         {
-            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-sourceMapRoot <url>] [-log <jsonl path>] [-runid <id>]");
+            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-sourceMapRoot <url>] [-repoRoot <absolute-path>] [-log <jsonl path>] [-runid <id>]");
             Environment.Exit(1);
         }
 

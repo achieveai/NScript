@@ -437,4 +437,96 @@ namespace NScript.Utils.Test
             Assert.IsNull(options.SourceMapRoot);
         }
     }
+
+    /// <summary>
+    /// Tests for the WI-19 <c>-repoRoot</c> CLI flag. <c>-repoRoot</c> is meaningful
+    /// only when paired with <c>-sourceMapRoot</c>; alone it would silently emit a
+    /// map whose <c>sources[]</c> entries point nowhere useful, so the parser
+    /// rejects the partial configuration.
+    /// </summary>
+    [TestClass]
+    public class ParseOptionsRepoRootTests
+    {
+        private string tempRefDll;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            Logger.Instance = new Logger();
+            this.tempRefDll = Path.GetTempFileName();
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if (!string.IsNullOrEmpty(this.tempRefDll) && File.Exists(this.tempRefDll))
+            {
+                try { File.Delete(this.tempRefDll); } catch { /* best effort */ }
+            }
+        }
+
+        private string[] BaseArgs => new[]
+        {
+            "-outJs", "out.js",
+            "-entryAssembly", "fake.dll",
+            "-references", this.tempRefDll,
+        };
+
+        private string[] ArgsWithSuffix(params string[] suffix)
+        {
+            var list = new System.Collections.Generic.List<string>(this.BaseArgs);
+            list.AddRange(suffix);
+            return list.ToArray();
+        }
+
+        [TestMethod]
+        public void ParseArgs_RepoRoot_PairedWithSourceMapRoot_IsCaptured()
+        {
+            var options = ParseOptions.ParseArgs(
+                this.ArgsWithSuffix(
+                    "-sourceMapRoot", "https://raw.githubusercontent.com/o/r/sha/",
+                    "-repoRoot", "C:/repos/NScript"));
+            Assert.IsNotNull(options, "ParseArgs should succeed when -repoRoot is paired with -sourceMapRoot");
+            Assert.AreEqual("C:/repos/NScript", options.RepoRoot);
+        }
+
+        [TestMethod]
+        public void ParseArgs_RepoRoot_WithoutSourceMapRoot_ReturnsNull()
+        {
+            // -repoRoot alone would rebase sources[] without changing the sourceRoot, producing
+            // maps whose paths point nowhere useful. ParseArgs must reject this loudly.
+            var options = ParseOptions.ParseArgs(
+                this.ArgsWithSuffix("-repoRoot", "C:/repos/NScript"));
+            Assert.IsNull(options, "-repoRoot without -sourceMapRoot must cause ParseArgs to return null");
+        }
+
+        [TestMethod]
+        public void ParseArgs_RepoRoot_DuplicateFlag_ReturnsNull()
+        {
+            var options = ParseOptions.ParseArgs(
+                this.ArgsWithSuffix(
+                    "-sourceMapRoot", "https://raw.githubusercontent.com/o/r/sha/",
+                    "-repoRoot", "C:/first",
+                    "-repoRoot", "C:/second"));
+            Assert.IsNull(options, "Duplicate -repoRoot flags must cause ParseArgs to return null");
+        }
+
+        [TestMethod]
+        public void ParseArgs_RepoRoot_AsLastArg_ReturnsNull()
+        {
+            var options = ParseOptions.ParseArgs(
+                this.ArgsWithSuffix(
+                    "-sourceMapRoot", "https://raw.githubusercontent.com/o/r/sha/",
+                    "-repoRoot"));
+            Assert.IsNull(options, "-repoRoot with no trailing value must cause ParseArgs to return null");
+        }
+
+        [TestMethod]
+        public void ParseArgs_NoRepoRootFlag_DefaultIsNull()
+        {
+            var options = ParseOptions.ParseArgs(this.BaseArgs);
+            Assert.IsNotNull(options, "ParseArgs should succeed with base args");
+            Assert.IsNull(options.RepoRoot);
+        }
+    }
 }

@@ -293,6 +293,240 @@ namespace OwaSourceMapper.Test
             Assert.IsFalse(json.Contains(".ashx"), "Without a File there is nothing to base a .ashx fallback on");
         }
 
+        /// <summary>
+        /// When <see cref="SourceMap.RepoRoot"/> is unset, source paths keep the legacy
+        /// absolutized form (drive letter escaped to <c>$</c>, backslashes flipped). This
+        /// guarantees existing consumers see no change unless they opt in.
+        /// </summary>
+        [TestMethod]
+        public void ToString_NoRepoRoot_UsesLegacyAbsolutizedSources()
+        {
+            var map = new SourceMap { File = "out.js" };
+            string fakeFile = Path.Combine(Path.GetTempPath(), "Sources", "Foo.cs");
+            map.AddMapping(0, 0, 0, 0, fakeFile);
+
+            string json = map.ToString();
+
+            Assert.IsFalse(
+                json.Contains("\"sources\": [\"Sources/Foo.cs\""),
+                "Without RepoRoot, sources[] must remain in the absolutized legacy form");
+        }
+
+        /// <summary>
+        /// When <see cref="SourceMap.RepoRoot"/> is set to an ancestor of the source file,
+        /// the <c>sources[]</c> entry is emitted as a forward-slash, repo-relative path so
+        /// the browser can combine it with a remote-repo <c>sourceRoot</c> URL.
+        /// </summary>
+        [TestMethod]
+        public void ToString_WithRepoRoot_EmitsRepoRelativeForwardSlashSource()
+        {
+            string repoRoot = Path.Combine(Path.GetTempPath(), "wi19-repo-" + System.Guid.NewGuid().ToString("N"));
+            string fakeFile = Path.Combine(repoRoot, "Sources", "Compiler", "Foo.cs");
+
+            var map = new SourceMap
+            {
+                File = "out.js",
+                RepoRoot = repoRoot,
+            };
+            map.AddMapping(0, 0, 0, 0, fakeFile);
+
+            string json = map.ToString();
+
+            StringAssert.Contains(json, "\"Sources/Compiler/Foo.cs\"");
+        }
+
+        /// <summary>
+        /// Files that live outside the configured <see cref="SourceMap.RepoRoot"/> stay in
+        /// the legacy absolutized form — the rebase only fires for files actually under the
+        /// repo. Mixing in-repo and out-of-repo sources in the same map is supported.
+        /// </summary>
+        [TestMethod]
+        public void ToString_FileOutsideRepoRoot_StaysAbsolutized()
+        {
+            string repoRoot = Path.Combine(Path.GetTempPath(), "wi19-inside-" + System.Guid.NewGuid().ToString("N"));
+            string outsideRoot = Path.Combine(Path.GetTempPath(), "wi19-outside-" + System.Guid.NewGuid().ToString("N"));
+            string outsideFile = Path.Combine(outsideRoot, "External", "Bar.cs");
+
+            var map = new SourceMap
+            {
+                File = "out.js",
+                RepoRoot = repoRoot,
+            };
+            map.AddMapping(0, 0, 0, 0, outsideFile);
+
+            string json = map.ToString();
+
+            // The file should NOT appear as a clean repo-relative path.
+            Assert.IsFalse(json.Contains("\"External/Bar.cs\""),
+                "File outside RepoRoot must NOT be emitted as a bare repo-relative path");
+
+            // sourcesLong must still preserve the original path.
+            StringAssert.Contains(json, "\"sourcesLong\":");
+        }
+
+        /// <summary>
+        /// Repo-rebase preserves the long form unchanged in <c>sourcesLong</c>; only the
+        /// browser-facing <c>sources[]</c> array is rebased. This keeps the local-disk
+        /// resolution path (used by the ASP.NET Core handler when a file IS available
+        /// locally) working.
+        /// </summary>
+        [TestMethod]
+        public void ToString_WithRepoRoot_PreservesSourcesLongForLocalResolution()
+        {
+            string repoRoot = Path.Combine(Path.GetTempPath(), "wi19-long-" + System.Guid.NewGuid().ToString("N"));
+            string fakeFile = Path.Combine(repoRoot, "Sources", "Foo.cs");
+
+            var map = new SourceMap
+            {
+                File = "out.js",
+                RepoRoot = repoRoot,
+            };
+            map.AddMapping(0, 0, 0, 0, fakeFile);
+
+            string json = map.ToString();
+
+            // sourcesLong must still contain the absolute, escaped form (with backslashes
+            // doubled as the AddMapping path requires).
+            StringAssert.Contains(json, "\"sourcesLong\":");
+            StringAssert.Contains(json, "Foo.cs");
+        }
+
+        // ---------------------------------------------------------------------------------
+        // NormalizeRepoRoot — direct unit tests.
+        //
+        // The helper is `internal` (visible to this test project via InternalsVisibleTo) so
+        // the rebase-to-repo behaviour can be exercised without going through the full
+        // ToString() pipeline. Most importantly: trailing-separator addition and the four-
+        // exception fallback path.
+        // ---------------------------------------------------------------------------------
+
+        [TestMethod]
+        public void NormalizeRepoRoot_NullOrWhitespace_ReturnsNull()
+        {
+            Assert.IsNull(SourceMap.NormalizeRepoRoot(null));
+            Assert.IsNull(SourceMap.NormalizeRepoRoot(string.Empty));
+            Assert.IsNull(SourceMap.NormalizeRepoRoot("   "));
+        }
+
+        [TestMethod]
+        public void NormalizeRepoRoot_ValidPath_AppendsTrailingSeparator()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "wi19-norm-" + System.Guid.NewGuid().ToString("N"));
+
+            string normalized = SourceMap.NormalizeRepoRoot(root);
+
+            Assert.IsNotNull(normalized);
+            Assert.IsTrue(
+                normalized.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    || normalized.EndsWith(Path.AltDirectorySeparatorChar.ToString()),
+                "Normalized repo root must end with a directory separator: " + normalized);
+        }
+
+        [TestMethod]
+        public void NormalizeRepoRoot_AlreadyHasTrailingSeparator_DoesNotDoubleIt()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "wi19-norm-" + System.Guid.NewGuid().ToString("N"))
+                + Path.DirectorySeparatorChar;
+
+            string normalized = SourceMap.NormalizeRepoRoot(root);
+
+            Assert.IsNotNull(normalized);
+            Assert.IsFalse(
+                normalized.EndsWith(string.Empty + Path.DirectorySeparatorChar + Path.DirectorySeparatorChar),
+                "Already-trailing-separator paths must not gain a second separator");
+        }
+
+        [TestMethod]
+        public void NormalizeRepoRoot_MalformedPath_ReturnsNull()
+        {
+            // Path.GetFullPath rejects strings containing characters that are illegal on the
+            // current platform. The four-exception block downgrades that to a null return so
+            // map generation degrades to the legacy absolutized form rather than throwing.
+            string malformed = "\0invalid\0";
+
+            string normalized = SourceMap.NormalizeRepoRoot(malformed);
+
+            Assert.IsNull(normalized, "Malformed paths must return null instead of throwing");
+        }
+
+        // ---------------------------------------------------------------------------------
+        // TryRebaseToRepoRoot — direct unit tests.
+        // ---------------------------------------------------------------------------------
+
+        [TestMethod]
+        public void TryRebaseToRepoRoot_FileInsideRoot_ReturnsForwardSlashRelative()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "wi19-rebase-" + System.Guid.NewGuid().ToString("N"));
+            string normalized = SourceMap.NormalizeRepoRoot(root);
+            string file = Path.Combine(root, "Sources", "Compiler", "Foo.cs");
+            // AddMapping escapes backslashes before storing — TryRebaseToRepoRoot consumes
+            // that exact form, so we replicate it here.
+            string escaped = file.Replace("\\", "\\\\");
+
+            string rebased = SourceMap.TryRebaseToRepoRoot(escaped, normalized);
+
+            Assert.IsNotNull(rebased, "File inside repo root must be rebased");
+            Assert.AreEqual("Sources/Compiler/Foo.cs", rebased);
+        }
+
+        [TestMethod]
+        public void TryRebaseToRepoRoot_FileOutsideRoot_ReturnsNull()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "wi19-inside-" + System.Guid.NewGuid().ToString("N"));
+            string normalized = SourceMap.NormalizeRepoRoot(root);
+            string outside = Path.Combine(Path.GetTempPath(), "wi19-outside-" + System.Guid.NewGuid().ToString("N"), "Bar.cs");
+            string escaped = outside.Replace("\\", "\\\\");
+
+            string rebased = SourceMap.TryRebaseToRepoRoot(escaped, normalized);
+
+            Assert.IsNull(rebased, "File outside repo root must NOT be rebased");
+        }
+
+        [TestMethod]
+        public void TryRebaseToRepoRoot_NullRepoRoot_ReturnsNull()
+        {
+            Assert.IsNull(SourceMap.TryRebaseToRepoRoot("C:\\\\repo\\\\Foo.cs", null));
+        }
+
+        [TestMethod]
+        public void TryRebaseToRepoRoot_EmptyRawFile_ReturnsNull()
+        {
+            string normalized = SourceMap.NormalizeRepoRoot(Path.GetTempPath());
+
+            Assert.IsNull(SourceMap.TryRebaseToRepoRoot(string.Empty, normalized));
+            Assert.IsNull(SourceMap.TryRebaseToRepoRoot(null, normalized));
+        }
+
+        [TestMethod]
+        public void TryRebaseToRepoRoot_MalformedPath_ReturnsNull()
+        {
+            // The four-exception fallback in TryRebaseToRepoRoot must absorb invalid paths
+            // and surface them as a null return rather than an unhandled throw.
+            string normalized = SourceMap.NormalizeRepoRoot(Path.GetTempPath());
+            string malformed = "\0invalid\0";
+
+            string rebased = SourceMap.TryRebaseToRepoRoot(malformed, normalized);
+
+            Assert.IsNull(rebased);
+        }
+
+        [TestMethod]
+        public void TryRebaseToRepoRoot_EscapeUnescapeRoundTrip_ProducesForwardSlashes()
+        {
+            // AddMapping stores paths with `\\` doubled; TryRebaseToRepoRoot must un-double
+            // them before calling Path.GetFullPath, then re-emit forward slashes.
+            string root = Path.Combine(Path.GetTempPath(), "wi19-roundtrip-" + System.Guid.NewGuid().ToString("N"));
+            string normalized = SourceMap.NormalizeRepoRoot(root);
+            string file = Path.Combine(root, "a", "b", "c.cs");
+            string escaped = file.Replace("\\", "\\\\");
+
+            string rebased = SourceMap.TryRebaseToRepoRoot(escaped, normalized);
+
+            Assert.IsNotNull(rebased);
+            Assert.IsFalse(rebased.Contains("\\"), "Rebased path must not contain backslashes: " + rebased);
+            Assert.AreEqual("a/b/c.cs", rebased);
+        }
+
         private static string ExtractMappingsField(string json)
         {
             const string marker = "\"mappings\": \"";

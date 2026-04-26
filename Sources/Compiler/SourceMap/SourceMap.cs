@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+// Expose `internal` helpers (NormalizeRepoRoot, TryRebaseToRepoRoot, AbsolutizeForSources)
+// to the unit-test assembly so they can be exercised directly without going through the
+// full ToString() pipeline. The csproj has GenerateAssemblyInfo=false so the attribute is
+// declared in source rather than via an MSBuild <InternalsVisibleTo> item. WI-19 iter-1 M4.
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SourceMap.Test")]
+
 namespace OwaSourceMapper
 {
     public struct SourceMapping
@@ -186,6 +192,14 @@ namespace OwaSourceMapper
         public bool EmitLegacyAshxHandler { get; set; } = true;
 
         /// <summary>
+        /// Optional absolute path to the repository root (output of <c>git rev-parse --show-toplevel</c>).
+        /// When set, <see cref="ToString"/> emits <c>sources[i]</c> as forward-slash, repo-relative
+        /// paths so they combine cleanly with a remote-repo <see cref="SourceRoot"/>. Files outside
+        /// the repo root remain in the legacy absolutized form.
+        /// </summary>
+        public string RepoRoot { get; set; }
+
+        /// <summary>
         /// Mapping comparison.
         /// </summary>
         /// <param name="lineCol1"> The first line col. </param>
@@ -193,6 +207,138 @@ namespace OwaSourceMapper
         /// <returns>
         /// .
         /// </returns>
+        /// <summary>
+        /// Normalizes <paramref name="repoRoot"/> to a full path with a trailing directory separator
+        /// for cheap startsWith comparisons. Returns null on null/empty input so callers can short-
+        /// circuit the rebase.
+        /// </summary>
+        internal static string NormalizeRepoRoot(string repoRoot)
+        {
+            if (string.IsNullOrWhiteSpace(repoRoot))
+            {
+                return null;
+            }
+
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(repoRoot);
+            }
+            catch (ArgumentException)
+            {
+                // GetFullPath rejects malformed input; treat as "no rebase".
+                return null;
+            }
+            catch (PathTooLongException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+            catch (System.Security.SecurityException)
+            {
+                return null;
+            }
+
+            if (!fullPath.EndsWith(Path.DirectorySeparatorChar.ToString())
+                && !fullPath.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+            {
+                fullPath += Path.DirectorySeparatorChar;
+            }
+
+            return fullPath;
+        }
+
+        /// <summary>
+        /// If <paramref name="rawFile"/> sits under <paramref name="normalizedRepoRoot"/>, returns
+        /// the forward-slash, repo-relative form; otherwise returns null so the caller falls back
+        /// to the legacy absolutized form.
+        /// </summary>
+        /// <param name="rawFile">              Source file path as the compiler stored it
+        ///     (may contain escaped backslashes from <see cref="AddMapping"/>). </param>
+        /// <param name="normalizedRepoRoot">   Normalized repo root with a trailing separator,
+        ///     or null to skip rebase. </param>
+        internal static string TryRebaseToRepoRoot(string rawFile, string normalizedRepoRoot)
+        {
+            if (normalizedRepoRoot == null || string.IsNullOrEmpty(rawFile))
+            {
+                return null;
+            }
+
+            string unescaped = rawFile.Replace("\\\\", "\\");
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(unescaped);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+            catch (PathTooLongException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+            catch (System.Security.SecurityException)
+            {
+                return null;
+            }
+
+            // Match the SourceMapFileHandler.IsContained pattern: filesystem case sensitivity
+            // is platform-dependent. Folding case unconditionally on Linux/macOS would cause a
+            // file under e.g. `/repo/Source/Foo.cs` to incorrectly match a `/repo/SOURCE/`
+            // alias and produce a corrupt rebase. On Windows the legacy ignore-case behaviour
+            // remains.
+            StringComparison cmp = OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+
+            if (!fullPath.StartsWith(normalizedRepoRoot, cmp))
+            {
+                return null;
+            }
+
+            string relative = fullPath.Substring(normalizedRepoRoot.Length);
+            return relative.Replace("\\", "/");
+        }
+
+        /// <summary>
+        /// Legacy fallback that produces the absolutized, drive-escaped, forward-slashed
+        /// form of <paramref name="rawFile"/> for emission into the <c>sources[]</c> array
+        /// when no repo-rebase applies. Wrapped in the same 4-exception set used elsewhere
+        /// (NormalizeRepoRoot, TryRebaseToRepoRoot) so that a malformed legacy path doesn't
+        /// take down map generation — we degrade to the unprocessed (forward-slashed) form.
+        /// </summary>
+        private static string AbsolutizeForSources(string rawFile)
+        {
+            try
+            {
+                return Path.GetFullPath(rawFile).Replace(":", "$").Replace("\\", "/");
+            }
+            catch (ArgumentException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
+            catch (PathTooLongException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
+            catch (NotSupportedException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
+            catch (System.Security.SecurityException)
+            {
+                return rawFile.Replace("\\\\", "/");
+            }
+        }
+
         public static int MappingComparison(Tuple<int, int> lineCol1, Tuple<int, int> lineCol2)
         {
             if (lineCol1.Item1 != lineCol2.Item1)
@@ -292,10 +438,12 @@ namespace OwaSourceMapper
             if (this.files.Count > 0)
             {
                 Dictionary<string, int> fileMap = new Dictionary<string, int>(this.files.Count);
+                string normalizedRepoRoot = NormalizeRepoRoot(this.RepoRoot);
                 sb.Append("\t\"sources\": [");
                 for (int i = 0; i < this.files.Count; i++)
                 {
-                    var fileName = Path.GetFullPath(this.files[i]).Replace(":", "$").Replace("\\", "/");
+                    var fileName = TryRebaseToRepoRoot(this.files[i], normalizedRepoRoot)
+                        ?? AbsolutizeForSources(this.files[i]);
                     if (fileMap.TryGetValue(fileName, out var tmp))
                     { fileMap[fileName] = tmp + 1; fileName = fileName + tmp + 1; }
                     else

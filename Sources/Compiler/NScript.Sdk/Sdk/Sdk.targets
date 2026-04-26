@@ -10,20 +10,145 @@
 		<Minify Condition="$(Minify) == ''">false</Minify>
 		<Uglify Condition="$(Uglify) == ''">false</Uglify>
 		<JsOptimize Condition="$(JsOptimize) == ''">false</JsOptimize>
+		<RepoLinkedSourceMaps Condition="'$(RepoLinkedSourceMaps)' == ''">false</RepoLinkedSourceMaps>
 	</PropertyGroup>
 
-	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" > 
+	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" >
 		<MsBuild
 			Condition="$(GenerateJs) == True"
 			Projects="$(MSBuildProjectFile)"
-			Targets="ScriptGenerate" /> 
+			Targets="ScriptGenerate" />
+	</Target>
+
+	<!--
+	  Captures the Git remote URL, commit SHA, and worktree root, then composes a raw-file
+	  base URL for either GitHub or Azure DevOps. Runs only when <RepoLinkedSourceMaps>true</RepoLinkedSourceMaps>
+	  is set on the project. Each git invocation tolerates failure (ContinueOnError) so a build
+	  outside a working tree (CI cache restore, source-only ZIP) emits a warning and skips the
+	  rest of the target rather than failing.
+
+	  Auto-detection prefers explicit overrides (<SourceRepoOriginUrl>, <SourceRepoCommitSha>,
+	  <NScriptRepoRoot>) so CI can feed values directly from $(GITHUB_SHA) /
+	  $(BUILD_SOURCEVERSION) without invoking git inside the build container.
+
+	  URL construction uses MSBuild property functions (Regex.Match) so we don't ship a
+	  separate task assembly; the same regex patterns are kept under unit test in
+	  RepoUrlBuilder.cs (Sources/Compiler/SourceMap).
+	  -->
+	<Target Name="ComputeNScriptRepoMetadata"
+	        Condition="'$(RepoLinkedSourceMaps)' == 'true' and '$(SourceMapRoot)' == ''"
+	        BeforeTargets="ScriptGenerate">
+
+		<Exec Command="git remote get-url origin"
+		      Condition="'$(SourceRepoOriginUrl)' == ''"
+		      ConsoleToMSBuild="true"
+		      EchoOff="true"
+		      IgnoreExitCode="true"
+		      ContinueOnError="WarnAndContinue">
+			<Output TaskParameter="ConsoleOutput" PropertyName="_NScriptGitRemoteUrlRaw" />
+			<Output TaskParameter="ExitCode" PropertyName="_NScriptGitRemoteExit" />
+		</Exec>
+
+		<Exec Command="git rev-parse HEAD"
+		      Condition="'$(SourceRepoCommitSha)' == ''"
+		      ConsoleToMSBuild="true"
+		      EchoOff="true"
+		      IgnoreExitCode="true"
+		      ContinueOnError="WarnAndContinue">
+			<Output TaskParameter="ConsoleOutput" PropertyName="_NScriptGitShaRaw" />
+			<Output TaskParameter="ExitCode" PropertyName="_NScriptGitShaExit" />
+		</Exec>
+
+		<Exec Command="git rev-parse --show-toplevel"
+		      Condition="'$(NScriptRepoRoot)' == ''"
+		      ConsoleToMSBuild="true"
+		      EchoOff="true"
+		      IgnoreExitCode="true"
+		      ContinueOnError="WarnAndContinue">
+			<Output TaskParameter="ConsoleOutput" PropertyName="_NScriptGitTopLevelRaw" />
+		</Exec>
+
+		<PropertyGroup>
+			<SourceRepoOriginUrl Condition="'$(SourceRepoOriginUrl)' == '' and '$(_NScriptGitRemoteUrlRaw)' != ''">$(_NScriptGitRemoteUrlRaw.Trim())</SourceRepoOriginUrl>
+			<SourceRepoCommitSha Condition="'$(SourceRepoCommitSha)' == '' and '$(_NScriptGitShaRaw)' != ''">$(_NScriptGitShaRaw.Trim())</SourceRepoCommitSha>
+			<NScriptRepoRoot Condition="'$(NScriptRepoRoot)' == '' and '$(_NScriptGitTopLevelRaw)' != ''">$(_NScriptGitTopLevelRaw.Trim())</NScriptRepoRoot>
+			<SourceRepoProvider Condition="'$(SourceRepoProvider)' == ''">auto</SourceRepoProvider>
+
+			<!--
+			  Some developers / CI systems bake credentials into the origin URL
+			  (https://token@github.com/..., https://user:pass@dev.azure.com/...).
+			  Strip everything between '://' and the first '@' before echoing the URL into
+			  build logs so a stray PAT or password doesn't end up in CI artifacts.
+			  The unredacted value is still used by the regex matchers above (which only
+			  read host/path groups).
+			-->
+			<_NScriptOriginUrlRedacted Condition="'$(SourceRepoOriginUrl)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(SourceRepoOriginUrl)', '://[^/@]+@', '://***@'))</_NScriptOriginUrlRedacted>
+		</PropertyGroup>
+
+		<Warning Text="RepoLinkedSourceMaps requested but git metadata could not be captured (origin='$(_NScriptOriginUrlRedacted)' sha='$(SourceRepoCommitSha)'). Skipping repo-linked sourceRoot."
+		         Condition="'$(SourceRepoOriginUrl)' == '' or '$(SourceRepoCommitSha)' == ''" />
+
+		<!--
+		  GitHub HTTPS: https://[creds@]github.com/{owner}/{repo}[.git]
+		  GitHub SSH (modern):   git@github.com:{owner}/{repo}[.git]
+		  GitHub SSH (ssh://):   ssh://git@github.com/{owner}/{repo}[.git]
+		  Both SSH forms collapse onto a single regex by allowing `[/:]` after `github.com`
+		  and tolerating the optional `ssh://git@` / `git@` prefix anywhere before the host.
+		  Keep these patterns in sync with `RepoUrlBuilder.cs` (covered by RepoUrlBuilderTests).
+		-->
+		<PropertyGroup Condition="'$(SourceRepoOriginUrl)' != '' and '$(SourceRepoCommitSha)' != '' and ('$(SourceRepoProvider)' == 'auto' or '$(SourceRepoProvider)' == 'GitHub')">
+			<_NScriptGitHubHttpsPattern>(?i)^https?://(?:[^/@]+@)?github\.com/([^/]+)/([^/]+?)(?:\.git)?/?$</_NScriptGitHubHttpsPattern>
+			<_NScriptGitHubSshPattern>(?i)^(?:ssh://)?git@github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$</_NScriptGitHubSshPattern>
+
+			<_NScriptGitHubOwner>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubHttpsPattern)').Groups[1].Value)</_NScriptGitHubOwner>
+			<_NScriptGitHubRepo>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubHttpsPattern)').Groups[2].Value)</_NScriptGitHubRepo>
+
+			<_NScriptGitHubOwner Condition="'$(_NScriptGitHubOwner)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubSshPattern)').Groups[1].Value)</_NScriptGitHubOwner>
+			<_NScriptGitHubRepo Condition="'$(_NScriptGitHubRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptGitHubSshPattern)').Groups[2].Value)</_NScriptGitHubRepo>
+
+			<SourceMapRoot Condition="'$(_NScriptGitHubOwner)' != '' and '$(_NScriptGitHubRepo)' != ''">https://raw.githubusercontent.com/$(_NScriptGitHubOwner)/$(_NScriptGitHubRepo)/$(SourceRepoCommitSha)/</SourceMapRoot>
+		</PropertyGroup>
+
+		<!--
+		  Azure DevOps modern HTTPS: https://[creds@]dev.azure.com/{org}/{project}/_git/{repo}
+		  Azure DevOps modern SSH:   git@ssh.dev.azure.com:v3/{org}/{project}/{repo}
+		  Azure DevOps legacy HTTPS: https://[creds@]{org}.visualstudio.com/{project}/_git/{repo}
+		  All three flow into the same Items API URL shape (org / project / repo / sha / path=/).
+		  Keep these patterns in sync with `RepoUrlBuilder.cs` (covered by RepoUrlBuilderTests).
+		-->
+		<PropertyGroup Condition="'$(SourceMapRoot)' == '' and '$(SourceRepoOriginUrl)' != '' and '$(SourceRepoCommitSha)' != '' and ('$(SourceRepoProvider)' == 'auto' or '$(SourceRepoProvider)' == 'AzureDevOps')">
+			<_NScriptAdoModernHttpsPattern>(?i)^https?://(?:[^/@]+@)?dev\.azure\.com/([^/]+)/([^/]+)/_git/([^/]+?)(?:\.git)?/?$</_NScriptAdoModernHttpsPattern>
+			<_NScriptAdoModernSshPattern>(?i)^git@ssh\.dev\.azure\.com:v3/([^/]+)/([^/]+)/([^/]+?)(?:\.git)?/?$</_NScriptAdoModernSshPattern>
+			<_NScriptAdoLegacyHttpsPattern>(?i)^https?://(?:[^/@]+@)?([^/.]+)\.visualstudio\.com/([^/]+)/_git/([^/]+?)(?:\.git)?/?$</_NScriptAdoLegacyHttpsPattern>
+
+			<_NScriptAdoOrg>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernHttpsPattern)').Groups[1].Value)</_NScriptAdoOrg>
+			<_NScriptAdoProject>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernHttpsPattern)').Groups[2].Value)</_NScriptAdoProject>
+			<_NScriptAdoRepo>$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernHttpsPattern)').Groups[3].Value)</_NScriptAdoRepo>
+
+			<_NScriptAdoOrg Condition="'$(_NScriptAdoOrg)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernSshPattern)').Groups[1].Value)</_NScriptAdoOrg>
+			<_NScriptAdoProject Condition="'$(_NScriptAdoProject)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernSshPattern)').Groups[2].Value)</_NScriptAdoProject>
+			<_NScriptAdoRepo Condition="'$(_NScriptAdoRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoModernSshPattern)').Groups[3].Value)</_NScriptAdoRepo>
+
+			<_NScriptAdoOrg Condition="'$(_NScriptAdoOrg)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoLegacyHttpsPattern)').Groups[1].Value)</_NScriptAdoOrg>
+			<_NScriptAdoProject Condition="'$(_NScriptAdoProject)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoLegacyHttpsPattern)').Groups[2].Value)</_NScriptAdoProject>
+			<_NScriptAdoRepo Condition="'$(_NScriptAdoRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(SourceRepoOriginUrl)', '$(_NScriptAdoLegacyHttpsPattern)').Groups[3].Value)</_NScriptAdoRepo>
+
+			<SourceMapRoot Condition="'$(_NScriptAdoOrg)' != '' and '$(_NScriptAdoProject)' != '' and '$(_NScriptAdoRepo)' != ''">https://dev.azure.com/$(_NScriptAdoOrg)/$(_NScriptAdoProject)/_apis/git/repositories/$(_NScriptAdoRepo)/items?api-version=7.1&amp;versionDescriptor.version=$(SourceRepoCommitSha)&amp;versionDescriptor.versionType=commit&amp;path=/</SourceMapRoot>
+		</PropertyGroup>
+
+		<Warning Text="RepoLinkedSourceMaps requested but origin URL '$(_NScriptOriginUrlRedacted)' did not match GitHub or Azure DevOps; emitting map without repo-linked sourceRoot."
+		         Condition="'$(SourceMapRoot)' == '' and '$(SourceRepoOriginUrl)' != '' and '$(SourceRepoCommitSha)' != ''" />
+
+		<Message Importance="high"
+		         Text="NScript repo-linked source maps: sourceRoot='$(SourceMapRoot)' repoRoot='$(NScriptRepoRoot)'"
+		         Condition="'$(SourceMapRoot)' != ''" />
 	</Target>
 
 	<Target
 		Name="ScriptGenerate"
 		Inputs="$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext);@(ReferencePath)"
 		Outputs="$(JsOutputPath)\$(AssemblyName).js"
-		DependsOnTargets="$(CoreCompile)"
+		DependsOnTargets="$(CoreCompile);ComputeNScriptRepoMetadata"
 		Condition="$(GenerateJs) == True">
 
 		<Message
@@ -42,6 +167,7 @@
 			<ScriptGenerateOption Include="-uglify" Condition="'$(Uglify)' == 'true'" />
 			<ScriptGenerateOption Include="-optimize" Condition="'$(JsOptimize)' == 'true'" />
 			<ScriptGenerateOption Include="-sourceMapRoot &quot;$(SourceMapRoot)&quot;" Condition="'$(SourceMapRoot)' != ''" />
+			<ScriptGenerateOption Include="-repoRoot &quot;$(NScriptRepoRoot)&quot;" Condition="'$(SourceMapRoot)' != '' and '$(NScriptRepoRoot)' != ''" />
 		</ItemGroup>
 
 		<MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />

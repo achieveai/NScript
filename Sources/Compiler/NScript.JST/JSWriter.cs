@@ -349,7 +349,7 @@ namespace NScript.JST
         /// <param name="emitLegacyAshxHandler"> When true, the emitted <c>.map</c> file also gets
         ///     the legacy <c>SrcMapper.ashx</c> sidecar dropped alongside it. Callers that configure
         ///     a non-legacy source root (ASP.NET Core endpoint, repo URL, etc.) should pass false. </param>
-        public void Write(string jsFileName, string sourceRoot, bool emitLegacyAshxHandler = true)
+        public void Write(string jsFileName, string sourceRoot, bool emitLegacyAshxHandler = true, string repoRoot = null)
         {
             using var streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8);
             this.Write(
@@ -358,7 +358,8 @@ namespace NScript.JST
                 Path.GetDirectoryName(jsFileName),
                 true,
                 sourceRoot,
-                emitLegacyAshxHandler);
+                emitLegacyAshxHandler,
+                repoRoot);
         }
 
         /// <summary>
@@ -367,7 +368,7 @@ namespace NScript.JST
         /// <param name="writer"> The TextWriter to write. </param>
         public void Write(TextWriter writer)
         {
-            this.Write(writer, null, null, false, null, emitLegacyAshxHandler: true);
+            this.Write(writer, null, null, false, null, emitLegacyAshxHandler: true, repoRoot: null);
         }
 
         /// <summary>
@@ -380,7 +381,7 @@ namespace NScript.JST
         /// <returns> The populated <see cref="OwaSourceMapper.SourceMap"/>. Never null. </returns>
         public OwaSourceMapper.SourceMap WriteWithMap(TextWriter writer, string jsFileName)
         {
-            return this.Write(writer, jsFileName, null, outputMap: false, sourceRoot: null, emitLegacyAshxHandler: true);
+            return this.Write(writer, jsFileName, null, outputMap: false, sourceRoot: null, emitLegacyAshxHandler: true, repoRoot: null);
         }
 
         /// <summary>
@@ -393,9 +394,9 @@ namespace NScript.JST
         /// <param name="sourceRoot"> Source-root override; pass null to use the legacy fallback. </param>
         /// <param name="emitLegacyAshxHandler"> Whether the sidecar <c>.ashx</c> should still drop. </param>
         /// <returns> The populated <see cref="OwaSourceMapper.SourceMap"/>. </returns>
-        public OwaSourceMapper.SourceMap WriteWithMap(TextWriter writer, string jsFileName, string sourceRoot, bool emitLegacyAshxHandler = true)
+        public OwaSourceMapper.SourceMap WriteWithMap(TextWriter writer, string jsFileName, string sourceRoot, bool emitLegacyAshxHandler = true, string repoRoot = null)
         {
-            return this.Write(writer, jsFileName, null, outputMap: false, sourceRoot: sourceRoot, emitLegacyAshxHandler: emitLegacyAshxHandler);
+            return this.Write(writer, jsFileName, null, outputMap: false, sourceRoot: sourceRoot, emitLegacyAshxHandler: emitLegacyAshxHandler, repoRoot: repoRoot);
         }
 
         /// <summary>
@@ -417,7 +418,7 @@ namespace NScript.JST
         ///     Callers that know they are using a non-legacy <paramref name="sourceRoot"/> should pass
         ///     false; the default of true preserves the legacy IIS deployment behaviour. </param>
         /// <returns> The populated <see cref="OwaSourceMapper.SourceMap"/>. Never null. </returns>
-        private OwaSourceMapper.SourceMap Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap, string sourceRoot, bool emitLegacyAshxHandler)
+        private OwaSourceMapper.SourceMap Write(TextWriter writer, string jsFileName, string outputDirectory, bool outputMap, string sourceRoot, bool emitLegacyAshxHandler, string repoRoot)
         {
             this.ArrangeSpaces();
 
@@ -437,6 +438,7 @@ namespace NScript.JST
             }
 
             sourceMapping.EmitLegacyAshxHandler = emitLegacyAshxHandler;
+            sourceMapping.RepoRoot = repoRoot;
 
             sourceMapping.AddMapping(
                 curLine,
