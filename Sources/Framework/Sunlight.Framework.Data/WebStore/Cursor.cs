@@ -78,8 +78,8 @@ namespace Sunlight.Framework.Data.WebStore
 
             Dictionary env;
             try { env = JSON.Parse(token); }
-            catch (Exception)
-            { throw new Exception("Cursor token is not valid JSON"); }
+            catch (Exception ex)
+            { throw new Exception("Cursor token is not valid JSON: " + ex.Message); }
 
             if (env == null)
             { throw new Exception("Cursor token decoded to null"); }

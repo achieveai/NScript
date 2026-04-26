@@ -1479,6 +1479,161 @@ namespace Sunlight.Framework.Data.Test
         }
 
         /// <summary>
+        /// <c>QueryBuilder.Skip</c> combined with a resume cursor must reject —
+        /// stacking Skip on top of a cursor would silently create gaps in the
+        /// paginated stream that callers cannot diagnose. Pins the rejection
+        /// guard in <c>QueryPageInternal</c> (Skip + cursor mutually exclusive).
+        /// </summary>
+        [Test]
+        public static void TestQueryPageRejectsSkipWithCursor(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                SeedRows(table, 5).Then<bool>(delegate(bool seeded)
+                {
+                    table.QueryPage(Query.All, 2).Then<bool>(delegate(Page<CrudEntity> page1)
+                    {
+                        var skipQuery = new QueryBuilder(new string[0]).Skip(1).Build();
+                        table.QueryPage(skipQuery, 5, page1.NextCursor).Then<bool, object>(
+                            delegate(Page<CrudEntity> p)
+                            {
+                                assert.IsTrue(false, "Skip + cursor should reject, not resolve");
+                                client.Close();
+                                done();
+                                return true;
+                            },
+                            delegate(object err)
+                            {
+                                var message = ((Exception)err).Message;
+                                assert.IsTrue(
+                                    message != null && message.IndexOf("Skip") >= 0,
+                                    "rejection message names Skip");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// <c>QueryBuilder.Limit</c> combined with a resume cursor must reject —
+        /// the cursor's pageSize is the only contract honored on resume; a
+        /// stacked Limit would cap reads below pageSize and produce premature
+        /// short pages indistinguishable from end-of-stream. Pins the
+        /// rejection guard in <c>QueryPageInternal</c>.
+        /// </summary>
+        [Test]
+        public static void TestQueryPageRejectsLimitWithCursor(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                SeedRows(table, 5).Then<bool>(delegate(bool seeded)
+                {
+                    table.QueryPage(Query.All, 2).Then<bool>(delegate(Page<CrudEntity> page1)
+                    {
+                        var limitQuery = new QueryBuilder(new string[0]).Limit(3).Build();
+                        table.QueryPage(limitQuery, 5, page1.NextCursor).Then<bool, object>(
+                            delegate(Page<CrudEntity> p)
+                            {
+                                assert.IsTrue(false, "Limit + cursor should reject, not resolve");
+                                client.Close();
+                                done();
+                                return true;
+                            },
+                            delegate(object err)
+                            {
+                                var message = ((Exception)err).Message;
+                                assert.IsTrue(
+                                    message != null && message.IndexOf("Limit") >= 0,
+                                    "rejection message names Limit");
+                                client.Close();
+                                done();
+                                return true;
+                            });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// Filter + resume must produce a contiguous, non-overlapping stream
+        /// of accepted rows. Seeds 10 alternating Category rows ("todo"/"done"),
+        /// fetches page 1 with <c>inclFilter=todo</c> + <c>pageSize=2</c>, then
+        /// resumes with the same filter. The combined pages must contain
+        /// exactly the expected "todo" rows, in order, with no overlap and no
+        /// gap — pinning the interaction between the filter (applied inside
+        /// <c>CursorIterator</c>) and the resume-skip predicate (applied
+        /// against <c>cursor.PrimaryKey</c>).
+        /// </summary>
+        [Test]
+        public static void TestQueryPageFilterResumeIsContiguous(Assert assert)
+        {
+            var done = assert.Async(1);
+            var factory = new WebStoreFactory();
+            var dbName = NewDbName();
+
+            factory.Create(BuildSchema(dbName)).Then<bool>(delegate(WebStoreClient client)
+            {
+                var table = client.Table<string, CrudEntity>(TableName);
+                var seed = new CrudEntity[10];
+                for (int i = 0; i < 10; i = i + 1)
+                { seed[i] = NewEntity("r" + i, (i % 2 == 0) ? "todo" : "done", i); }
+
+                table.UpSert(seed).Then<bool>(delegate(string[] keys)
+                {
+                    table.QueryPage(
+                        Query.All,
+                        2,
+                        null,
+                        delegate(CrudEntity row) { return row.Category == "todo"; }
+                    ).Then<bool>(delegate(Page<CrudEntity> page1)
+                    {
+                        assert.Equal(page1.Items.Count, 2, "page 1 returns 2 filtered rows");
+                        assert.Equal(page1.Items[0].Id, "r0", "page 1 starts at r0");
+                        assert.Equal(page1.Items[1].Id, "r2", "page 1 second row is r2");
+                        assert.IsTrue(page1.NextCursor != null, "non-final filtered page has a cursor");
+
+                        table.QueryPage(
+                            Query.All,
+                            2,
+                            page1.NextCursor,
+                            delegate(CrudEntity row) { return row.Category == "todo"; }
+                        ).Then<bool>(delegate(Page<CrudEntity> page2)
+                        {
+                            assert.Equal(page2.Items.Count, 2, "page 2 returns 2 filtered rows");
+                            assert.Equal(page2.Items[0].Id, "r4", "page 2 resumes at r4 (no overlap, no gap)");
+                            assert.Equal(page2.Items[1].Id, "r6", "page 2 second row is r6");
+                            client.Close();
+                            done();
+                            return true;
+                        });
+                        return true;
+                    });
+                    return true;
+                });
+                return true;
+            });
+        }
+
+        /// <summary>
         /// Key-only paged variant must return <c>Page&lt;TKey&gt;</c> matching
         /// the ordering of the value-paged scan. Pins the
         /// <c>QueryKeysPage</c> branch — the same code path with
