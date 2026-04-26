@@ -241,6 +241,74 @@ namespace Sunlight.Framework.Data.WebStore
                     true));
         }
 
+        /// <summary>
+        /// Materialise a single bounded page of records matching
+        /// <paramref name="query"/>. Pagination semantics:
+        /// <list type="bullet">
+        /// <item><description><paramref name="pageSize"/> must be &ge; 1 and counts
+        /// records that pass <paramref name="inclFilter"/> — "I want N rows", not
+        /// "N reads". The returned <see cref="Page{TValue}.Items"/> is capped at
+        /// <paramref name="pageSize"/>.</description></item>
+        /// <item><description><see cref="Page{TValue}.NextCursor"/> is <c>null</c>
+        /// when the iterator drained the scan range before the page filled — that
+        /// page is the final page. A non-<c>null</c> cursor signals at least one
+        /// additional record may exist.</description></item>
+        /// <item><description>Pass <paramref name="resumeFrom"/> as the previous
+        /// page's <see cref="Page{TValue}.NextCursor"/> to fetch the next page.
+        /// Cross-transaction <i>see-current-state</i> semantics: records inserted
+        /// strictly past the cursor become visible on the next page; records
+        /// inserted strictly before are silently missed (cursor moved past);
+        /// deleted records are skipped naturally as the cursor walks current
+        /// state.</description></item>
+        /// </list>
+        /// Rejects when <paramref name="pageSize"/> &le; 0, when
+        /// <paramref name="resumeFrom"/> is combined with <c>Query.Skip</c> or
+        /// <c>Query.Limit</c>, when the cursor was issued for a different table,
+        /// or when its direction doesn't match <paramref name="query"/>'s.
+        /// </summary>
+        public Promise<Page<TValue>> QueryPage(
+            Query query,
+            int pageSize,
+            Cursor resumeFrom = null,
+            Func<TValue, bool> inclFilter = null,
+            WebStoreTransaction transaction = null)
+        {
+            return new Promise<Page<TValue>>((resolve, reject) =>
+                this.QueryPageInternal<TValue>(
+                    transaction,
+                    query,
+                    pageSize,
+                    resumeFrom,
+                    inclFilter,
+                    resolve,
+                    reject,
+                    false));
+        }
+
+        /// <summary>
+        /// Key-only paged variant of <see cref="QueryPage"/> — returns primary
+        /// keys instead of values. Same pagination semantics; same validation
+        /// surface. No <c>inclFilter</c> overload because key cursors don't
+        /// materialise values.
+        /// </summary>
+        public Promise<Page<TKey>> QueryKeysPage(
+            Query query,
+            int pageSize,
+            Cursor resumeFrom = null,
+            WebStoreTransaction transaction = null)
+        {
+            return new Promise<Page<TKey>>((resolve, reject) =>
+                this.QueryPageInternal<TKey>(
+                    transaction,
+                    query,
+                    pageSize,
+                    resumeFrom,
+                    null,
+                    resolve,
+                    reject,
+                    true));
+        }
+
         /// <summary>Like <see cref="Get"/> but resolves with null when the record is missing instead of rejecting.</summary>
         public Promise<TValue> TryGet(
             TKey key,
@@ -848,6 +916,139 @@ namespace Sunlight.Framework.Data.WebStore
                 },
                 reject,
                 isKeyQuery);
+        }
+
+        private void QueryPageInternal<U>(
+            WebStoreTransaction transaction,
+            Query query,
+            int pageSize,
+            Cursor resumeFrom,
+            Func<TValue, bool> inclFilter,
+            Action<Page<U>> resolve,
+            Action<object> reject,
+            bool isKeyQuery)
+        {
+            if (pageSize <= 0)
+            {
+                reject(new Exception("pageSize must be >= 1"));
+                return;
+            }
+
+            if (resumeFrom != null && query.Skip != null)
+            {
+                reject(new Exception(
+                    "Skip and resume cursor are mutually exclusive"));
+                return;
+            }
+
+            if (resumeFrom != null && query.Limit != null)
+            {
+                reject(new Exception(
+                    "cursor pagination supersedes Query.Limit; use pageSize"));
+                return;
+            }
+
+            if (resumeFrom != null && resumeFrom.TableSig != _tableSchema.Name)
+            {
+                reject(new Exception(
+                    "cursor was issued for a different table (expected '"
+                    + _tableSchema.Name + "', got '" + resumeFrom.TableSig + "')"));
+                return;
+            }
+
+            if (resumeFrom != null && resumeFrom.Direction != query.Direction)
+            {
+                reject(new Exception(
+                    "cursor direction mismatch (expected '"
+                    + query.Direction + "', got '" + resumeFrom.Direction + "')"));
+                return;
+            }
+
+            transaction = this.TransactionOrDefault(
+                transaction,
+                TransactionKind.Read);
+
+            bool isIndex = !_tableSchema.CanUsePrimaryIndex(query);
+            bool resumed = resumeFrom == null;
+            bool descending = query.Direction == "prev";
+            List<U> items = new List<U>();
+            object lastIndexKey = null;
+            object lastPrimaryKey = null;
+            bool pageFull = false;
+
+            this.CursorIterator(
+                transaction,
+                query,
+                inclFilter,
+                (cursor) =>
+                {
+                    if (cursor == null)
+                    {
+                        if (!pageFull)
+                        { resolve(new Page<U>(items, null)); }
+                        return true;
+                    }
+
+                    object curIndexKey = isIndex
+                        ? Type.AS<IDBKeyRange, object>(cursor.KeyRange)
+                        : null;
+                    object curPrimaryKey = Type.AS<TKey, object>(cursor.PrimaryKey);
+
+                    if (!resumed)
+                    {
+                        int cmp = ComparePagePair(
+                            isIndex,
+                            curIndexKey,
+                            curPrimaryKey,
+                            resumeFrom.IndexKey,
+                            resumeFrom.PrimaryKey);
+                        bool past = descending ? cmp < 0 : cmp > 0;
+                        if (!past)
+                        { return true; }
+                        resumed = true;
+                    }
+
+                    if (isKeyQuery)
+                    { items.Add(Type.AS<TKey, U>(cursor.PrimaryKey)); }
+                    else
+                    { items.Add(Type.AS<TValue, U>(cursor.Value)); }
+
+                    lastIndexKey = curIndexKey;
+                    lastPrimaryKey = curPrimaryKey;
+
+                    if (items.Count >= pageSize)
+                    {
+                        pageFull = true;
+                        resolve(new Page<U>(
+                            items,
+                            new Cursor(
+                                lastIndexKey,
+                                lastPrimaryKey,
+                                query.Direction,
+                                _tableSchema.Name)));
+                        return false;
+                    }
+
+                    return true;
+                },
+                reject,
+                isKeyQuery);
+        }
+
+        private static int ComparePagePair(
+            bool isIndex,
+            object aIdx,
+            object aPk,
+            object bIdx,
+            object bPk)
+        {
+            if (isIndex && aIdx != null && bIdx != null)
+            {
+                int c = (int)IDBFactory.Instance.Cmp(aIdx, bIdx);
+                if (c != 0)
+                { return c; }
+            }
+            return (int)IDBFactory.Instance.Cmp(aPk, bPk);
         }
 
         private void QueryUpdateOrDeleteInternal(
