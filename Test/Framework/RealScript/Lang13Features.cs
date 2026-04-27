@@ -30,17 +30,18 @@ public class Lang13Features
         Console.WriteLine(ansiClear.Length.ToString());
     }
 
-    // C# 13 — method group natural type with overload pruning. C# 10
-    // introduced single-overload natural types (covered in Lang10Features);
-    // C# 13 extends overload resolution to **prune** candidates whose
-    // generic type-parameter constraints fail at this scope, leaving a
-    // single applicable candidate. Pre-C# 13 the same code reports an
-    // ambiguity error because the failing generic candidate is still in
-    // play during natural-type inference.
+    // C# 13 — method group overload pruning. C# 10 introduced single-
+    // overload natural types (covered in Lang10Features); C# 13 extends
+    // overload resolution to **prune** candidates whose generic
+    // type-parameter constraints fail at this scope, leaving a single
+    // applicable candidate. Pre-C# 13 the same code reports an ambiguity
+    // error because the failing generic candidate is still in play during
+    // method-group conversion (and equivalently during natural-type
+    // inference for `var`).
     //
     // Here `Take<T>(T)` requires `T : class`; for `int` the constraint
     // fails, so under C# 13 only the non-generic `Take(int)` survives
-    // pruning and the method-group binds cleanly to `Action<int>`.
+    // pruning and the method-group conversion to `Action<int>` succeeds.
     public static void MethodGroupOverloadPruning()
     {
         Action<int> act = Take;
