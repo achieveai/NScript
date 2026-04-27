@@ -533,6 +533,22 @@
                 .Select(_ =>
                     CSharpSyntaxTree.ParseText(
                         File.ReadAllText(_),
+                        // NOTE: We intentionally use CSharpParseOptions.Default
+                        // here. A previous attempt to pin
+                        // WithLanguageVersion(LanguageVersion.CSharp13) to
+                        // mirror <LangVersion>13</LangVersion> from the
+                        // Framework Directory.Build.props introduced a
+                        // regression in NScript.Converter.Test
+                        // (NewLanguageFeatures.InlineProp): the forked
+                        // Roslyn binary's LanguageVersion.Default does NOT
+                        // resolve to CSharp13 in the way MSBuild's "13"
+                        // does — most notably it currently enables the
+                        // C# 13-preview `field` keyword binding that
+                        // CSharp13-stable does not. Until the fork's
+                        // LanguageVersion mapping is audited (see
+                        // ADR 0004 for refresh policy), keep `Default`
+                        // and rely on the MSBuild-built RealScript.dll for
+                        // the canonical pinned-LangVersion compilation.
                         CSharpParseOptions.Default,
                         _,
                         System.Text.Encoding.UTF8))

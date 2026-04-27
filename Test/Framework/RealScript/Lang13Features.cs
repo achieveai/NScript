@@ -30,19 +30,27 @@ public class Lang13Features
         Console.WriteLine(ansiClear.Length.ToString());
     }
 
-    // C# 13 — method group natural type. Roslyn synthesizes the delegate
-    // type at bind time; the bound expression is identical to one written
-    // with an explicit delegate type.
-    public static void MethodGroupNaturalType()
+    // C# 13 — method group natural type with overload pruning. C# 10
+    // introduced single-overload natural types (covered in Lang10Features);
+    // C# 13 extends overload resolution to **prune** candidates whose
+    // generic type-parameter constraints fail at this scope, leaving a
+    // single applicable candidate. Pre-C# 13 the same code reports an
+    // ambiguity error because the failing generic candidate is still in
+    // play during natural-type inference.
+    //
+    // Here `Take<T>(T)` requires `T : class`; for `int` the constraint
+    // fails, so under C# 13 only the non-generic `Take(int)` survives
+    // pruning and the method-group binds cleanly to `Action<int>`.
+    public static void MethodGroupOverloadPruning()
     {
-        var f = ProduceInt;
-        Console.WriteLine(f().ToString());
-
-        var g = TakeInt;
-        g(42);
+        Action<int> act = Take;
+        act(7);
     }
 
-    private static int ProduceInt() => 99;
+    private static void Take<T>(T x) where T : class
+    {
+        Console.WriteLine("class:" + (x == null ? "null" : x.ToString()));
+    }
 
-    private static void TakeInt(int x) => Console.WriteLine(x.ToString());
+    private static void Take(int x) => Console.WriteLine("int:" + x.ToString());
 }

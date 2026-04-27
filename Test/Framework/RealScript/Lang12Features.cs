@@ -8,11 +8,12 @@ namespace RealScript;
 
 using System;
 
-// C# 12 — alias any type. The using-alias resolves to a constructed generic
-// (or array, tuple, pointer) at symbol-resolution time; bound tree sees the
-// underlying type.
-using IntList = System.Collections.Generic.List<int>;
-using Pair = System.ValueTuple<int, int>;
+// C# 12 — alias any type. The using-alias relaxation specifically permits
+// **tuple, array, and pointer** types in alias position (closed generic
+// aliases were already legal pre-C# 12 and are not exercised here). The
+// underlying type is what reaches the bound tree.
+using Pair = (int X, int Y);    // tuple-syntax alias — illegal pre-C# 12
+using Numbers = int[];          // array-syntax alias — illegal pre-C# 12
 
 /// <summary>
 /// Compile-only fixtures for transparent C# 12 syntactic features.
@@ -27,14 +28,13 @@ public class Lang12Features
 {
     public static void AliasAnyType()
     {
-        IntList list = new IntList();
-        list.Add(1);
-        list.Add(2);
+        // Tuple-syntax alias — exercises the C# 12 grammar relaxation.
+        Pair p = (3, 4);
+        Console.WriteLine(p.X);
+        Console.WriteLine(p.Y);
 
-        Pair p = new Pair(3, 4);
-        Console.WriteLine(p.Item1);
-        Console.WriteLine(p.Item2);
-
-        Console.WriteLine(list.Count);
+        // Array-syntax alias — exercises the C# 12 grammar relaxation.
+        Numbers ns = new int[] { 1, 2, 3 };
+        Console.WriteLine(ns.Length);
     }
 }

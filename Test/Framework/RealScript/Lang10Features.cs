@@ -68,4 +68,21 @@ public class Lang10Features
         bool isFive = o is (5);
         Console.WriteLine(isFive);
     }
+
+    // C# 10 — single-overload method group natural type. Roslyn synthesises
+    // the delegate type at bind time; the bound expression is identical to
+    // one written with an explicit delegate type. C# 13 extends this with
+    // overload-pruning (see Lang13Features.MethodGroupOverloadPruning).
+    public static void MethodGroupNaturalType()
+    {
+        var f = ProduceInt;
+        Console.WriteLine(f().ToString());
+
+        var g = TakeInt;
+        g(42);
+    }
+
+    private static int ProduceInt() => 99;
+
+    private static void TakeInt(int x) => Console.WriteLine(x.ToString());
 }
