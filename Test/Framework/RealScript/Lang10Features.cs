@@ -1,0 +1,71 @@
+//-----------------------------------------------------------------------
+// <copyright file="Lang10Features.cs" company="">
+//     Copyright (c) . All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+// C# 10 — file-scoped namespace. Purely syntactic: Roslyn produces the same
+// bound tree as a braced namespace, so the existing visitor pipeline is
+// unchanged.
+namespace RealScript;
+
+using System;
+
+/// <summary>
+/// Compile-only fixtures for transparent C# 10 syntactic features.
+/// See <c>Lang9Features.cs</c> for the contract describing "transparent".
+///
+/// NOTE: Constant interpolated strings (<c>const string s = $"a{X}b";</c>)
+/// look like a transparent fold but they currently surface a
+/// <c>BoundInterpolatedString</c> to the Stage-1 visitor, where
+/// <c>VisitInterpolatedString</c> throws <c>NotImplementedException</c>.
+/// That is a pre-existing C# 6 gap, not a C# 10 gap. Tracked separately.
+/// </summary>
+public class Lang10Features
+{
+    // C# 10 — assignment in deconstruction (mix of declaration and existing
+    // variables). Roslyn lowers this to a sequence of plain assignments.
+    public static void MixedDeconstructionAssignment()
+    {
+        int existing = 0;
+        (existing, int created) = (10, 20);
+        Console.WriteLine(existing);
+        Console.WriteLine(created);
+    }
+
+    // C# 10 — extended property pattern syntax `{ A.B: ... }`. Roslyn lowers
+    // this to an ordinary recursive pattern (which we do NOT yet support);
+    // tracked under Phase C — pattern family.
+
+    // C# 10 — natural type for lambdas inferred via `var`. The
+    // delegate-bound case is identical to C# 9 lambdas at the bound level;
+    // only the var-binding `var f = () => 0;` is new C# 10 territory and
+    // synthesizes a delegate type at bind time.
+    public static void NaturalLambdaType()
+    {
+        var produce = () => 42;
+        Console.WriteLine(produce());
+
+        var combine = (int a, int b) => a + b;
+        Console.WriteLine(combine(1, 2));
+    }
+
+    // C# 10 — lambda with an explicit return type (here `int`).
+    // Bound tree carries the explicit return-type symbol on the anonymous
+    // function shape; otherwise identical to a natural-typed lambda.
+    public static void LambdaExplicitReturnType()
+    {
+        var explicitReturn = int (int a) => a + 1;
+        Console.WriteLine(explicitReturn(41));
+    }
+
+    // C# 10 — `ParenthesizedPattern`. Allowed in C# 10 wherever a pattern is
+    // allowed; lowers to the inner pattern (transparent for already-supported
+    // patterns like constant/declaration).
+    public static void ParenthesizedConstantPattern()
+    {
+        object o = 5;
+        bool isFive = o is (5);
+        Console.WriteLine(isFive);
+    }
+}
