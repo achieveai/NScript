@@ -3,7 +3,7 @@
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
     <NoStdLib>True</NoStdLib>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>13</LangVersion>
     <CopyReferences>True</CopyReferences>
     <TemplateFile>Properties\Script.jst</TemplateFile>
     <AppDesignerFolder>Properties</AppDesignerFolder>

@@ -7,7 +7,16 @@
     <CscToolPath>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</CscToolPath>
     <CscToolExe>csc.exe</CscToolExe>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <LangVersion>8.0</LangVersion>
+    <!--
+      Pinned to C# 13 (NOT `latest`) so the meaning of source code is
+      reproducible: bumping the SDK must not silently re-bind keywords. The
+      classic example is C# 14's reinterpretation of the `field` identifier
+      inside property accessors as a synthesized backing field — under
+      `latest` that would silently shadow user-defined `field` members.
+      Issue #47 also defines the supportable surface as 9–13, so 13 matches
+      the contract.
+    -->
+    <LangVersion>13</LangVersion>
     <NoStdLib>true</NoStdLib>
     <NoWarn>0824; 0169; 0649; 0626; 0414; 0660; 0661, 0067</NoWarn>
     <OutputPath>$(NScriptToolsetDir)\lib\$(Configuration)</OutputPath>
