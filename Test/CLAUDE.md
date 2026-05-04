@@ -22,11 +22,19 @@ cd Test/Framework/TestWebApplication
 npx serve .
 
 # 3. Open http://localhost:3000/TestPage.htm in any browser
+#    (this is now an index page; pick a per-suite page from the list)
 ```
+
+> **Each test suite runs on its own page.** Co-loading multiple NScript bundles
+> on a single page corrupts `Function.prototype` runtime metadata because the
+> minifier picks per-IIFE letters that collide on the shared prototype (see
+> issue #51). `TestPage.htm` is now a link index; the actual suites are at
+> `Sunlight.Framework.TestPage.htm`, `Sunlight.Framework.UI.TestPage.htm`,
+> `DataTestPage.htm`, and `TodoApp.TestPage.htm`.
 
 ### How It Works
 
-C# test code using `[TestFixture]` / `[Test]` attributes from the `SunlightUnit` framework gets compiled to JavaScript by the NScript compiler. The `TestGenerator` plugin (`Sources/Compiler/NScript.Converter.Plugins/TestGenerator.cs`) scans for these attributes and emits `QUnit.module()` / `QUnit.test()` registration calls in the generated JS. The `TestPage.htm` page loads QUnit and the generated scripts, and QUnit runs everything automatically.
+C# test code using `[TestFixture]` / `[Test]` attributes from the `SunlightUnit` framework gets compiled to JavaScript by the NScript compiler. The `TestGenerator` plugin (`Sources/Compiler/NScript.Converter.Plugins/TestGenerator.cs`) scans for these attributes and emits `QUnit.module()` / `QUnit.test()` registration calls in the generated JS. Each suite-specific QUnit page (e.g. `Sunlight.Framework.TestPage.htm`) loads QUnit plus exactly one generated bundle, and QUnit runs everything automatically.
 
 ### Pipeline
 
@@ -37,7 +45,7 @@ C# [TestFixture]/[Test]  -->  dotnet build (Debug)  -->  nscript.exe + TestGener
                                                     GeneratedScripts/*.js
                                                               |
                                                               v
-                                                    TestPage.htm + QUnit 2.2.0
+                                                    Per-suite *.TestPage.htm + QUnit 2.2.0
                                                               |
                                                               v
                                                     Browser executes tests
@@ -58,16 +66,20 @@ The `SunlightUnit.Assert` class uses `[ScriptAlias]` attributes so C# assertion 
 1. Create a `[TestFixture]` class with `public static` `[Test]` methods that accept `Assert assert`
 2. Project `.csproj` must have `<GenerateJs>True</GenerateJs>`, `<JsOutputPath>../TestWebApplication/GeneratedScripts</JsOutputPath>`, and `<PluginConfig>PluginConfig.xml</PluginConfig>`
 3. `PluginConfig.xml` must register `NScript.Converter.Plugins.TestGenerator`
-4. Add a `<script>` tag for the generated JS in `TestPage.htm`
+4. Add a **new** `*.TestPage.htm` that loads ONLY your project's generated JS (mirror `Sunlight.Framework.TestPage.htm`); do not co-load it with another bundle, and link it from `TestPage.htm`
 5. Build Debug, serve, open in browser
 
 ### Automated Execution (Playwright)
 
-For CI or headless runs, use Playwright to launch a browser, navigate to `TestPage.htm`, and wait for `#qunit-banner` to gain class `qunit-pass` or `qunit-fail`. Extract per-test results from `#qunit-tests > li` elements. See `Test/docs/browser-testing.md` for a full script pattern.
+For CI or headless runs, use Playwright to launch a browser, navigate to each per-suite page (`Sunlight.Framework.TestPage.htm`, `Sunlight.Framework.UI.TestPage.htm`, `DataTestPage.htm`, `TodoApp.TestPage.htm`), and wait for `#qunit-banner` to gain class `qunit-pass` or `qunit-fail`. Extract per-test results from `#qunit-tests > li` elements. `run-qunit.mjs` and `run-tests.js` both already iterate the per-suite pages — see `Test/docs/browser-testing.md` for the full pattern.
 
 ### Key Locations
 
-- `Test/Framework/TestWebApplication/TestPage.htm` -- QUnit HTML runner
+- `Test/Framework/TestWebApplication/TestPage.htm` -- index page (links to per-suite pages; loads no bundles)
+- `Test/Framework/TestWebApplication/Sunlight.Framework.TestPage.htm` -- core framework suite
+- `Test/Framework/TestWebApplication/Sunlight.Framework.UI.TestPage.htm` -- UI framework suite
+- `Test/Framework/TestWebApplication/DataTestPage.htm` -- data-layer suite
+- `Test/Framework/TestWebApplication/TodoApp.TestPage.htm` -- TodoApp suite
 - `Test/Framework/TestWebApplication/GeneratedScripts/` -- Compiled JS output
 - `Test/Framework/TestWebApplication/Scripts/QUnit.2.2.0.js` -- QUnit framework
 - `Test/Framework/Sunlight.Framework.Test/` -- Core framework tests (container, events, observables, binders)

@@ -1,30 +1,38 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>Cs2JsC scripts</title>
+  <title>NScript Framework Tests — Index</title>
   <link href="Styles/QUnit.2.2.0.css" rel="stylesheet" type="text/css" />
-  <script src="Scripts/QUnit.2.2.0.js" type="text/javascript"></script>
-  <script src="GeneratedScripts/Sunlight.Framework.Test.js" type="text/javascript"></script>
-  <!--<script src="GeneratedScripts/System.Web.Html.Tests.js" type="text/javascript"></script>-->
-  <script src="GeneratedScripts/Sunlight.Framework.UI.Test.js" type="text/javascript"></script>
-  <script src="GeneratedScripts/TodoApp.Test.js" type="text/javascript"></script>
-
+  <!--
+    This page intentionally loads NO test bundles. Each NScript-compiled
+    bundle installs its own copy of Type runtime methods (IsInstanceOfType,
+    DefaultConstructor, etc.) onto Function.prototype, with per-bundle
+    minified field names (fullName_d vs fullName_i, baseInterfaces_h vs
+    baseInterfaces_V). If two bundles' minifier happens to pick the same
+    method suffix (e.g., `_l`), the last-loaded bundle clobbers earlier
+    installs with a body that reads the wrong field tokens — triggering
+    InvalidCast at runtime. Keeping each app-scale test suite on its own
+    page matches NScript's single-bundle-per-app design. Open one of the
+    suite-specific pages below; do NOT add `<script>` tags here.
+  -->
 </head>
 <body>
-  <a id="coverage" href="CodeCoverage.html?UnitTest4Coverage.html">Coverage Report</a>
-  <!-- QUnit markup
--->
-  <h1 id="qunit-header">
-    UnitTest</h1>
-  <h2 id="qunit-banner">
-  </h2>
-  <h2 id="qunit-userAgent">
-  </h2>
-  <ol id="qunit-tests">
-  </ol>
-  <br />
-  <textarea id="qunit-log" rows="10" cols="100"></textarea>
-  <!-- Include other markup needed by the test code and the application being tested
--->
+  <h1 id="qunit-header">NScript Framework Tests</h1>
+  <p>
+    Each suite runs on its own page so per-IIFE minified runtime metadata on
+    <code>Function.prototype</code> does not collide across bundles. Open the
+    page for the suite you want to run:
+  </p>
+  <ul>
+    <li><a href="Sunlight.Framework.TestPage.htm">Sunlight.Framework.Test</a> — core framework (IoC, observables, binders)</li>
+    <li><a href="Sunlight.Framework.UI.TestPage.htm">Sunlight.Framework.UI.Test</a> — UI templates, skins, list views</li>
+    <li><a href="DataTestPage.htm">Sunlight.Framework.Data.Test</a> — data layer (IndexedDB, WebStore)</li>
+    <li><a href="TodoApp.TestPage.htm">TodoApp.Test</a> — TodoApp end-to-end</li>
+  </ul>
+  <p>
+    For headless / CI execution use <code>node run-qunit.mjs</code> (Playwright,
+    one suite per browser page) or <code>node run-tests.js</code> (iterates the
+    suite pages above).
+  </p>
 </body>
 </html>
