@@ -69,6 +69,9 @@
     <Content Include="Styles\QUnit.2.2.0.css" />
     <Content Include="Global.asax" />
     <Content Include="TestPage.htm" />
+    <Content Include="Sunlight.Framework.TestPage.htm" />
+    <Content Include="Sunlight.Framework.UI.TestPage.htm" />
+    <Content Include="TodoApp.TestPage.htm" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

@@ -16,7 +16,7 @@ The `TestGenerator` plugin ([compiler/plugins.md](../compiler/plugins.md)) bridg
 | Category | Path | Stack | Runner | Target framework |
 |---|---|---|---|---|
 | Compiler | `Test/Compiler/*` | MSTest, .NET | `dotnet test` | `net6.0` |
-| Framework | `Test/Framework/*` | SunlightUnit + QUnit 2.2.0 | Browser via `TestPage.htm` (or Playwright for headless) | `netstandard2.1` (compiled to JS) |
+| Framework | `Test/Framework/*` | SunlightUnit + QUnit 2.2.0 | Browser via per-suite `*.TestPage.htm` pages, indexed from `TestPage.htm` (or Playwright for headless) | `netstandard2.1` (compiled to JS) |
 
 ## Reference — compiler test projects
 
@@ -42,8 +42,8 @@ flowchart LR
     B --> C["TestGenerator plugin<br/>scans for attributes"]
     C --> D["Emits QUnit.module() /<br/>QUnit.test() registrations"]
     D --> E["GeneratedScripts/*.js<br/>in TestWebApplication"]
-    E --> F["Browser opens<br/>TestPage.htm"]
-    F --> G["QUnit runs all tests"]
+    E --> F["Browser opens one<br/>*.TestPage.htm per suite"]
+    F --> G["QUnit runs the<br/>suite's tests"]
 ```
 
 ## Reference — `SunlightUnit.Assert` → QUnit mapping
@@ -85,8 +85,16 @@ cd Test/Framework/TestWebApplication
 npx serve .
 
 # 3. Open http://localhost:3000/TestPage.htm in any browser.
+#    TestPage.htm is now an index — pick one of the per-suite pages
+#    (Sunlight.Framework.TestPage.htm, Sunlight.Framework.UI.TestPage.htm,
+#    DataTestPage.htm, TodoApp.TestPage.htm). Each loads exactly one bundle.
 # QUnit runs automatically; status banner shows pass/fail.
 ```
+
+> **Why per-suite pages?** Each NScript-compiled bundle is its own IIFE
+> minified independently and writes runtime metadata to short letters on
+> `Function.prototype`. Co-loading two bundles silently corrupts that
+> metadata (issue #51). Always open ONE `*.TestPage.htm` per browser tab.
 
 ## Examples
 
@@ -134,7 +142,7 @@ And `PluginConfig.xml` registers the `TestGenerator`:
 </Plugins>
 ```
 
-Then add `<script src="GeneratedScripts/MyApp.Tests.js"></script>` to `TestPage.htm` and rebuild.
+Then add a new per-suite page `MyApp.Tests.TestPage.htm` (mirror `Sunlight.Framework.TestPage.htm` and load only `<script src="GeneratedScripts/MyApp.Tests.js"></script>`), register it in `TestWebApplication.csproj`, link it from the `TestPage.htm` index, add it to `SUITE_PAGES` in `run-tests.js` and `QUNIT_SUITES` in `run-qunit.mjs`, and rebuild. Do not paste a `<script>` tag into an existing per-suite page — co-loading bundles corrupts `Function.prototype` runtime metadata (issue #51).
 
 ### Writing a compiler test (snapshot regression)
 
@@ -155,7 +163,7 @@ The convention is one test per *snapshot pair*: `Inputs/GenericMethodWithConstra
 
 ### Headless framework test execution (CI)
 
-For CI runs you need Playwright to launch a real browser, navigate to `TestPage.htm`, and wait for QUnit's banner:
+For CI runs you need Playwright to launch a real browser, iterate the per-suite pages, and wait for QUnit's banner on each:
 
 ```javascript
 // Pseudocode — see Test/docs/browser-testing.md for full pattern
@@ -207,7 +215,8 @@ If a test uses `yield return`, `dynamic`, or other [unsupported features](../lan
 | QUnit reports `0 assertions, 0 tests run` | `TestGenerator` plugin not registered in `PluginConfig.xml`; or test method isn't `public static` |
 | Framework test passes locally, fails in CI | Browser version mismatch, or stale `GeneratedScripts/` checked in — rebuild before run |
 | Compiler test snapshot mismatch | Either a real regression or intentional output change — diff and update snapshot deliberately |
-| `TestPage.htm` 404s on a script | Generated file missing from `GeneratedScripts/` — check that the test project's `<JsOutputPath>` points there and `GenerateJs=True` |
+| `*.TestPage.htm` 404s on a script | Generated file missing from `GeneratedScripts/` — check that the test project's `<JsOutputPath>` points there and `GenerateJs=True` |
+| Wrong-looking `b.m is not a function` / `InvalidCast` in QUnit | Multiple bundles co-loaded on one page — issue #51. Open ONE `*.TestPage.htm` per tab; never combine `<script>` tags. |
 
 ## Cross-links
 
