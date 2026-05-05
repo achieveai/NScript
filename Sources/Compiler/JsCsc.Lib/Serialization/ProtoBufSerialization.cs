@@ -1102,10 +1102,15 @@ namespace JsCsc.Lib.Serialization
         public MethodCallExpression GetAwaiterMethodCallOpt { get; set; }
     }
 
+    // C# 9-13 pattern additions reserve tag block 223-235 for Pattern subtypes.
+    // Tags are append-only; never reuse retired tags (silent misdeserialisation).
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [ProtoInclude(220, typeof(ConstantPattern))]
     [ProtoInclude(221, typeof(DeclarationPattern))]
     [ProtoInclude(222, typeof(DiscardPattern))]
+    [ProtoInclude(223, typeof(RelationalPattern))]
+    [ProtoInclude(224, typeof(BinaryPattern))]
+    [ProtoInclude(225, typeof(NegatedPattern))]
     [Serializable]
     public class Pattern: AstBase
     {
@@ -1136,6 +1141,45 @@ namespace JsCsc.Lib.Serialization
 
         public int DeclaredType { get; set; }
     }
+
+    /// <summary>
+    /// C# 9 relational pattern: <c>x is &lt; 5</c>, <c>&gt;= 0</c>, etc.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class RelationalPattern : Pattern
+    {
+        /// <summary>NScript <see cref="CLR.AST.BinaryOperator"/> code (cast to int).</summary>
+        public int Operator { get; set; }
+
+        public ExpressionSer ConstantExpression { get; set; }
+    }
+
+    /// <summary>
+    /// C# 9 logical pattern combinator: <c>and</c>, <c>or</c>.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class BinaryPattern : Pattern
+    {
+        /// <summary>True for <c>or</c>, false for <c>and</c>.</summary>
+        public bool Disjunction { get; set; }
+
+        public Pattern Left { get; set; }
+
+        public Pattern Right { get; set; }
+    }
+
+    /// <summary>
+    /// C# 9 logical pattern combinator: <c>not</c>.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class NegatedPattern : Pattern
+    {
+        public Pattern Inner { get; set; }
+    }
+
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]

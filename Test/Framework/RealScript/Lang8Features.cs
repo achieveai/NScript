@@ -35,6 +35,40 @@ namespace RealScript
             var t = x is 900;
         }
 
+        public static void IsRelationalPattern()
+        {
+            var x = 5;
+            var t = x is > 5;
+        }
+
+        public static void IsBinaryAndPattern()
+        {
+            var x = 50;
+            var t = x is > 0 and < 100;
+        }
+
+        public static void IsBinaryOrPattern()
+        {
+            var x = 50;
+            var t = x is < 0 or > 100;
+        }
+
+        public static void IsNegatedPattern()
+        {
+            var x = 42;
+            var t = x is not 42;
+        }
+
+        public static void SwitchRelationalArm()
+        {
+            var x = -5;
+            var sign = x switch
+            {
+                < 0 => -1,
+                _ => 1
+            };
+        }
+
         public static void IsDeclarationPattern()
         {
             BaseClass b = new SubClass();

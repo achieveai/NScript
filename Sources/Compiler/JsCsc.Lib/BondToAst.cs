@@ -547,6 +547,27 @@ namespace JsCsc.Lib
                 Serialization.DiscardPattern discardLabel =>
                     new DiscardPattern(_clrContext, LocFromJObject(discardLabel)),
 
+                Serialization.RelationalPattern relLabel =>
+                    new RelationalPattern(
+                        _clrContext,
+                        LocFromJObject(relLabel),
+                        (NScript.CLR.AST.BinaryOperator)relLabel.Operator,
+                        ParseExpression(relLabel.ConstantExpression)),
+
+                Serialization.BinaryPattern binLabel =>
+                    new BinaryPattern(
+                        _clrContext,
+                        LocFromJObject(binLabel),
+                        binLabel.Disjunction,
+                        (Pattern)ParsePattern(binLabel.Left),
+                        (Pattern)ParsePattern(binLabel.Right)),
+
+                Serialization.NegatedPattern negLabel =>
+                    new NegatedPattern(
+                        _clrContext,
+                        LocFromJObject(negLabel),
+                        (Pattern)ParsePattern(negLabel.Inner)),
+
                 _ => throw new NotImplementedException($"{label.GetType().Name} in switch expressions is not supported")
             };
 
@@ -2039,6 +2060,18 @@ namespace JsCsc.Lib
                 },
                 {
                     typeof(Serialization.DiscardPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.RelationalPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.BinaryPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.NegatedPattern),
                     (a) => ParsePattern((Serialization.Pattern)a)
                 },
                 {

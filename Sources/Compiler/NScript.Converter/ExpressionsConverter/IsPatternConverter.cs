@@ -1,7 +1,6 @@
-﻿using NScript.CLR;
 using NScript.CLR.AST;
 using NScript.Converter.TypeSystemConverter;
-using System;
+using System.Collections.Generic;
 
 namespace NScript.Converter.ExpressionsConverter
 {
@@ -11,77 +10,46 @@ namespace NScript.Converter.ExpressionsConverter
         {
             var lhs = ExpressionConverterBase.Convert(converter, isPattern.Lhs);
 
-            if (isPattern.Pattern is ConstantPattern constantPattern)
-            {
-                var constantExpression = ExpressionConverterBase.Convert(
-                    converter,
-                    constantPattern.ConstantExpression);
+            // Binary (and/or) patterns reference the scrutinee in both branches.
+            // Reusing a JST node with side effects would emit it twice and re-evaluate.
+            // Mirror SwitchExpressionConverter: hoist non-trivial scrutinees to a temp.
+            var lhsNeedsHoisting =
+                ContainsBinaryPattern(isPattern.Pattern)
+                && !(isPattern.Lhs is VariableReference || isPattern.Lhs is LiteralExpression);
 
-                return new JST.BinaryExpression(
-                    lhs.Location,
-                    converter.Scope,
-                    JST.BinaryOperator.Equals,
+            if (!lhsNeedsHoisting)
+            {
+                return PatternMatcher.LowerToCondition(
+                    converter,
+                    isPattern.Pattern,
                     lhs,
-                    constantExpression);
-            }
-            else if (isPattern.Pattern is DeclarationPattern declarationPattern)
-            {
-                // (x is Type2 y) ---- ((y = Type.AsType(Type2, typeof x)) != null)
-
-                var variableAccess = ExpressionConverterBase.Convert(
-                    converter,
-                    declarationPattern.VariableOpt);
-
-                // Early return when types match
-                if (declarationPattern.VariableOpt.ResultType.IsSame(isPattern.Lhs.ResultType))
-                {
-                    // ((x = Something()) || true)
-                    return new JST.BinaryExpression(
-                        null,
-                        converter.Scope,
-                        JST.BinaryOperator.LogicalOr,
-                        new JST.BinaryExpression(
-                            null,
-                            converter.Scope,
-                            JST.BinaryOperator.Assignment,
-                            variableAccess,
-                            lhs),
-                        new JST.BooleanLiteralExpression(converter.Scope, true));
-                }
-
-                var ty = declarationPattern.TypeReference;
-
-                // Generate call to Type.AsType
-
-                var methodReference = converter.KnownReferences.AsTypeMethod;
-
-                var typeRefExpr = JST.IdentifierExpression.Create(
-                    null,
-                    converter.Scope,
-                    converter.Resolve(ty));
-
-                var asTypeCall = MethodCallExpressionConverter.CreateMethodCallExpression(
-                    new MethodCallContext(typeRefExpr, methodReference, false),
-                    new JST.Expression[] { lhs },
-                    converter,
-                    converter.RuntimeManager);
-
-                var assignment = new JST.BinaryExpression(
-                    isPattern.Location,
-                    converter.Scope,
-                    JST.BinaryOperator.Assignment,
-                    variableAccess,
-                    asTypeCall);
-
-                return new JST.BinaryExpression(
-                    isPattern.Location,
-                    converter.Scope,
-                    JST.BinaryOperator.NotEquals,
-                    assignment,
-                    new JST.NullLiteralExpression(converter.Scope));
+                    isPattern.Lhs.ResultType);
             }
 
-            throw new NotImplementedException($"Unsupported IsPattern variant: {isPattern.Pattern.GetType().Name}");
+            var tmpIdent = JST.IdentifierExpression.Create(
+                null,
+                converter.Scope,
+                new List<JST.IIdentifier> { converter.GetTempVariable() });
+            var assign = new JST.BinaryExpression(
+                null,
+                converter.Scope,
+                JST.BinaryOperator.Assignment,
+                tmpIdent,
+                lhs);
+            var condition = PatternMatcher.LowerToCondition(
+                converter,
+                isPattern.Pattern,
+                tmpIdent,
+                isPattern.Lhs.ResultType);
+
+            return new JST.ExpressionsList(null, converter.Scope, assign, condition);
         }
+
+        private static bool ContainsBinaryPattern(Pattern pattern) => pattern switch
+        {
+            BinaryPattern _ => true,
+            NegatedPattern n => ContainsBinaryPattern(n.Inner),
+            _ => false,
+        };
     }
 }

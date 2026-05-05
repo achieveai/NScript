@@ -44,20 +44,14 @@ namespace NScript.Converter.ExpressionsConverter
                 .Select(tupl =>
                 {
                     var (label, expr) = tupl;
-                    var jsCond = (label) switch
-                    {
-                        ConstantPattern constCaseLabel => MakeConditionalExpression(
-                            constCaseLabel,
-                            methodConverter,
-                            switchVarExpression),
-
-                        DeclarationPattern dcl => MakeConditionalExpression(
-                            dcl,
-                            methodConverter,
-                            switchVarExpression),
-
-                        DiscardPattern discardCaseLabel => new JST.BooleanLiteralExpression(methodConverter.Scope, true)
-                    };
+                    // All pattern shapes share lowering through PatternMatcher (ADR 0026).
+                    // The arm's `when` clause is attached to DeclarationPattern.WhenExpressionOpt
+                    // by the BondToAst serializer and threaded in automatically.
+                    var jsCond = PatternMatcher.LowerToCondition(
+                        methodConverter,
+                        label,
+                        switchVarExpression,
+                        expression.SwitchValue.ResultType);
 
                     var jsExpr = ExpressionConverterBase.Convert(methodConverter, expr);
 
@@ -84,58 +78,5 @@ namespace NScript.Converter.ExpressionsConverter
                 : new JST.ExpressionsList(null, methodConverter.Scope, switchVarInitialization, rv);
         }
 
-        public static JST.Expression MakeConditionalExpression(
-            ConstantPattern discardCaseLabel,
-            IMethodScopeConverter methodConverter,
-            JST.Expression switchVar)
-        {
-            return new JST.BinaryExpression(
-                discardCaseLabel.Location,
-                methodConverter.Scope,
-                JST.BinaryOperator.StrictEquals,
-                switchVar,
-                ExpressionConverterBase.Convert(methodConverter, discardCaseLabel.ConstantExpression));
-        }
-
-        public static JST.Expression MakeConditionalExpression(
-            DeclarationPattern dcl,
-            IMethodScopeConverter converter,
-            JST.Expression reusableSwitchValue )
-        {
-                var variableOpt = dcl.VariableOpt != null
-                    ? (JST.IdentifierExpression)ExpressionConverterBase.Convert(converter, dcl.VariableOpt)
-                    : null;
-                var ty = dcl.TypeReference.Resolve();
-                var methodReference = converter.KnownReferences.AsTypeMethod;
-                var typeRefExpr = JST.IdentifierExpression.Create(null, converter.Scope,
-                    converter.Resolve(ty));
-                // JS: Type__AsType(Type, ident)
-                var asType = MethodCallExpressionConverter.CreateMethodCallExpression(
-                    new MethodCallContext(typeRefExpr, methodReference, false),
-                    new JST.Expression[] { reusableSwitchValue },
-                    converter,
-                    converter.RuntimeManager
-                );
-
-                var binding = variableOpt != null
-                    ? new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.Assignment, variableOpt, asType)
-                    : asType;
-
-                 // JS: Type__AsType(Type, ident) != null
-                var typeCheckExpr = new JST.BinaryExpression(
-                    null,
-                    converter.Scope,
-                    JST.BinaryOperator.NotEquals,
-                    binding,
-                    new JST.NullLiteralExpression(converter.Scope));
-
-                var whenExprOpt = dcl.WhenExpressionOpt != null
-                    ? ExpressionConverterBase.Convert(converter, dcl.WhenExpressionOpt)
-                    : null;
-
-                return whenExprOpt != null
-                    ? new JST.BinaryExpression(null, converter.Scope, JST.BinaryOperator.LogicalAnd, typeCheckExpr, whenExprOpt)
-                    : typeCheckExpr;
-        }
     }
 }

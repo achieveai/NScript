@@ -951,6 +951,31 @@
                 Pattern = Visit(node.Pattern, arg) as Pattern
             };
 
+        public override AstBase VisitRelationalPattern(BoundRelationalPattern node, SerializationContext arg)
+            => new RelationalPattern
+            {
+                Operator = (int)GetNScriptOperator(node.Relation),
+                ConstantExpression = GetConstLiteral(node.ConstantValue) as ExpressionSer,
+                Location = node.Syntax.GetSerLoc()
+            };
+
+        public override AstBase VisitBinaryPattern(BoundBinaryPattern node, SerializationContext arg)
+            => new BinaryPattern
+            {
+                Disjunction = node.Disjunction,
+                Left = (Pattern)Visit(node.Left, arg),
+                Right = (Pattern)Visit(node.Right, arg),
+                Location = node.Syntax.GetSerLoc()
+            };
+
+        public override AstBase VisitNegatedPattern(BoundNegatedPattern node, SerializationContext arg)
+            => new NegatedPattern
+            {
+                Inner = (Pattern)Visit(node.Negated, arg),
+                Location = node.Syntax.GetSerLoc()
+            };
+
+
         public override AstBase VisitLabel(BoundLabel node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitLabeledStatement(BoundLabeledStatement node, SerializationContext arg) => throw new NotImplementedException();
@@ -1391,6 +1416,10 @@
             {
                 Pattern pattern = switchArm.Pattern switch
                 {
+                    // BoundRelationalPattern is a subclass of BoundConstantPattern; it must match first.
+                    // Delegate to VisitRelationalPattern to avoid duplicating its Location wiring.
+                    BoundRelationalPattern relPattern => (Pattern)Visit(relPattern, arg),
+
                     BoundConstantPattern constPattern =>
                         new ConstantPattern
                         {
@@ -1400,8 +1429,8 @@
                     BoundDeclarationPattern declarationPattern =>
                         new DeclarationPattern
                         {
-                            LocalVariableOpt = ((BoundLocal?)declarationPattern.VariableAccess) != null
-                                ? ((LocalVariableRefExpression)VisitLocal((BoundLocal?)declarationPattern.VariableAccess, arg)).LocalVariable
+                            LocalVariableOpt = declarationPattern.VariableAccess is BoundLocal local
+                                ? ((LocalVariableRefExpression)VisitLocal(local, arg)).LocalVariable
                                 : null,
 
                             DeclaredType = arg.SymbolSerializer.GetTypeSpecId(declarationPattern.DeclaredType.Type),
@@ -1413,8 +1442,22 @@
 
                     BoundDiscardPattern _ => new DiscardPattern { },
 
-                    _ => throw new NotImplementedException($"{switchArm.Pattern.Kind} pattern not supported")
+                    // C# 9-11 patterns dispatch through their per-pattern visitors.
+                    // Switch arms attach their `when` clause via WhenExpressionOpt on the dispatched
+                    // pattern by wrapping in a BinaryPattern (and-style) below.
+                    _ => (Pattern)Visit(switchArm.Pattern, arg)
                 };
+
+                if (switchArm.WhenClause != null
+                    && pattern is not DeclarationPattern
+                    && pattern is not ConstantPattern)
+                {
+                    // We only support 'when' on declaration/constant patterns today.
+                    // For the new pattern shapes, surface a clear error early.
+                    throw new NotImplementedException(
+                        "'when' clauses are only supported on declaration and constant patterns. "
+                        + "Track via docs/language/csharp9-13-status.md.");
+                }
 
                 var expr = Visit(switchArm.Value, arg) as ExpressionSer;
 
