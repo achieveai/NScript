@@ -1,4 +1,4 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using NScript.Utils;
 
 namespace NScript.CLR.AST
@@ -50,5 +50,57 @@ namespace NScript.CLR.AST
         public DiscardPattern(ClrContext ctx, Location location)
             : base(ctx, location)
         { }
+    }
+
+    /// <summary>
+    /// C# 9 relational pattern: <c>x is &lt; 5</c>, <c>&gt;= 0</c>.
+    /// </summary>
+    public class RelationalPattern : Pattern
+    {
+        public RelationalPattern(ClrContext ctx, Location location, BinaryOperator op, Expression constantExpression)
+            : base(ctx, location)
+        {
+            Operator = op;
+            ConstantExpression = constantExpression;
+        }
+
+        public BinaryOperator Operator { get; }
+
+        public Expression ConstantExpression { get; }
+    }
+
+    /// <summary>
+    /// C# 9 logical pattern combinator: <c>and</c> / <c>or</c>.
+    /// </summary>
+    public class BinaryPattern : Pattern
+    {
+        public BinaryPattern(ClrContext ctx, Location location, bool disjunction, Pattern left, Pattern right)
+            : base(ctx, location)
+        {
+            Disjunction = disjunction;
+            Left = left;
+            Right = right;
+        }
+
+        /// <summary>True for <c>or</c>, false for <c>and</c>.</summary>
+        public bool Disjunction { get; }
+
+        public Pattern Left { get; }
+
+        public Pattern Right { get; }
+    }
+
+    /// <summary>
+    /// C# 9 logical pattern combinator: <c>not</c>.
+    /// </summary>
+    public class NegatedPattern : Pattern
+    {
+        public NegatedPattern(ClrContext ctx, Location location, Pattern inner)
+            : base(ctx, location)
+        {
+            Inner = inner;
+        }
+
+        public Pattern Inner { get; }
     }
 }

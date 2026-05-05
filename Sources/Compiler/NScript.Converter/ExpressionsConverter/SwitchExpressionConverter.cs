@@ -46,6 +46,7 @@ namespace NScript.Converter.ExpressionsConverter
                     var (label, expr) = tupl;
                     var jsCond = (label) switch
                     {
+                        // Pre-existing fast paths preserved for stability.
                         ConstantPattern constCaseLabel => MakeConditionalExpression(
                             constCaseLabel,
                             methodConverter,
@@ -56,7 +57,16 @@ namespace NScript.Converter.ExpressionsConverter
                             methodConverter,
                             switchVarExpression),
 
-                        DiscardPattern discardCaseLabel => new JST.BooleanLiteralExpression(methodConverter.Scope, true)
+                        DiscardPattern _ => new JST.BooleanLiteralExpression(methodConverter.Scope, true),
+
+                        // C# 9-13 patterns: relational, binary (and/or), negated.
+                        // List/recursive/slice are not yet supported and surface a clear
+                        // NotImplementedException via PatternMatcher.
+                        _ => PatternMatcher.LowerToCondition(
+                            methodConverter,
+                            label,
+                            switchVarExpression,
+                            expression.SwitchValue.ResultType)
                     };
 
                     var jsExpr = ExpressionConverterBase.Convert(methodConverter, expr);
