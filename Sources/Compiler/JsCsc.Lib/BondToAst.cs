@@ -1180,6 +1180,17 @@ namespace JsCsc.Lib
 
         private Node ParseWithExpression(Serialization.WithExpressionSer jObject)
         {
+            // Record class `with` carries a synthesised `<Clone>$` method; record struct
+            // `with` does not (Roslyn lowers it through a value copy at the IL level).
+            // The struct path is not yet wired through NScript's struct codegen — surface
+            // a clear diagnostic instead of letting `DeserializeMethod(0)` NRE downstream.
+            if (jObject.CloneMethod == 0)
+            {
+                throw new NotImplementedException(
+                    "`with` on a record struct is not yet supported by NScript. " +
+                    "See docs/language/csharp9-13-status.md (`record struct` row).");
+            }
+
             var location = LocFromJObject(jObject);
             var receiver = ParseExpression(jObject.Receiver);
             var setters = BuildInitializerSetters(jObject.Initializers);
