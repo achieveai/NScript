@@ -1417,12 +1417,8 @@
                 Pattern pattern = switchArm.Pattern switch
                 {
                     // BoundRelationalPattern is a subclass of BoundConstantPattern; it must match first.
-                    BoundRelationalPattern relPattern =>
-                        new RelationalPattern
-                        {
-                            Operator = (int)GetNScriptOperator(relPattern.Relation),
-                            ConstantExpression = GetConstLiteral(relPattern.ConstantValue) as ExpressionSer
-                        },
+                    // Delegate to VisitRelationalPattern to avoid duplicating its Location wiring.
+                    BoundRelationalPattern relPattern => (Pattern)Visit(relPattern, arg),
 
                     BoundConstantPattern constPattern =>
                         new ConstantPattern
@@ -1433,8 +1429,8 @@
                     BoundDeclarationPattern declarationPattern =>
                         new DeclarationPattern
                         {
-                            LocalVariableOpt = ((BoundLocal?)declarationPattern.VariableAccess) != null
-                                ? ((LocalVariableRefExpression)VisitLocal((BoundLocal?)declarationPattern.VariableAccess, arg)).LocalVariable
+                            LocalVariableOpt = declarationPattern.VariableAccess is BoundLocal local
+                                ? ((LocalVariableRefExpression)VisitLocal(local, arg)).LocalVariable
                                 : null,
 
                             DeclaredType = arg.SymbolSerializer.GetTypeSpecId(declarationPattern.DeclaredType.Type),

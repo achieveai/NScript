@@ -29,15 +29,21 @@ namespace NScript.Converter.ExpressionsConverter
             JST.Expression scrutinee,
             Mono.Cecil.TypeReference scrutineeStaticType = null)
         {
+            if (pattern is null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
             switch (pattern)
             {
                 case ConstantPattern constantPattern:
-                    // `==` matches the long-standing IsPatternConverter snapshot. SwitchExpressionConverter
-                    // keeps its own MakeConditionalExpression fast path that uses StrictEquals for switch arms.
+                    // ADR 0026 Decision Driver #1: `is` and `switch` lowering must be observably identical.
+                    // Both use StrictEquals (`===`) — JS `==` would coerce types in ways C# pattern matching
+                    // does not.
                     return new JST.BinaryExpression(
                         scrutinee.Location,
                         converter.Scope,
-                        JST.BinaryOperator.Equals,
+                        JST.BinaryOperator.StrictEquals,
                         scrutinee,
                         ExpressionConverterBase.Convert(converter, constantPattern.ConstantExpression));
 
@@ -68,7 +74,12 @@ namespace NScript.Converter.ExpressionsConverter
                         LowerToCondition(converter, binPattern.Right, scrutinee, scrutineeStaticType));
 
                 case DeclarationPattern declarationPattern:
-                    return LowerDeclarationPattern(converter, declarationPattern, scrutinee, scrutineeStaticType);
+                    return LowerDeclarationPattern(
+                        converter,
+                        declarationPattern,
+                        scrutinee,
+                        scrutineeStaticType,
+                        whenExpression: declarationPattern.WhenExpressionOpt);
 
                 default:
                     throw new NotImplementedException(
@@ -77,23 +88,31 @@ namespace NScript.Converter.ExpressionsConverter
             }
         }
 
-        private static JST.Expression LowerDeclarationPattern(
+        /// <summary>
+        /// Shared declaration-pattern lowering used by both <c>is</c> and <c>switch</c>.
+        /// The optional <paramref name="whenExpression"/> is appended via logical-AND when the
+        /// type check succeeds, matching switch-arm semantics. <c>is</c> patterns pass <c>null</c>
+        /// (their `when` clauses are surfaced via <see cref="DeclarationPattern.WhenExpressionOpt"/>
+        /// and dispatched through <see cref="LowerToCondition"/>).
+        /// </summary>
+        public static JST.Expression LowerDeclarationPattern(
             IMethodScopeConverter converter,
             DeclarationPattern declarationPattern,
             JST.Expression scrutinee,
-            Mono.Cecil.TypeReference scrutineeStaticType)
+            Mono.Cecil.TypeReference scrutineeStaticType,
+            CLR.AST.Expression whenExpression = null)
         {
-            // (x is Type2 y) → ((y = Type.AsType(Type2, x)) != null)
             JST.Expression variableAccess = declarationPattern.VariableOpt != null
                 ? ExpressionConverterBase.Convert(converter, declarationPattern.VariableOpt)
                 : null;
 
+            JST.Expression typeCheck;
             if (declarationPattern.VariableOpt != null
                 && scrutineeStaticType != null
                 && declarationPattern.VariableOpt.ResultType.IsSame(scrutineeStaticType))
             {
-                // Same static type: just bind and return true.
-                return new JST.BinaryExpression(
+                // Same static type: just bind and return true. Equivalent to ((y = x) || true).
+                typeCheck = new JST.BinaryExpression(
                     null,
                     converter.Scope,
                     JST.BinaryOperator.LogicalOr,
@@ -105,31 +124,49 @@ namespace NScript.Converter.ExpressionsConverter
                         scrutinee),
                     new JST.BooleanLiteralExpression(converter.Scope, true));
             }
+            else
+            {
+                // (x is Type2 y) → ((y = Type.AsType(Type2, x)) != null)
+                // Match SwitchExpressionConverter: resolve to TypeDefinition for stable identifiers
+                // across generic/forwarded references.
+                var ty = declarationPattern.TypeReference.Resolve();
+                var methodReference = converter.KnownReferences.AsTypeMethod;
+                var typeRefExpr = JST.IdentifierExpression.Create(null, converter.Scope, converter.Resolve(ty));
+                var asTypeCall = MethodCallExpressionConverter.CreateMethodCallExpression(
+                    new MethodCallContext(typeRefExpr, methodReference, false),
+                    new JST.Expression[] { scrutinee },
+                    converter,
+                    converter.RuntimeManager);
 
-            var ty = declarationPattern.TypeReference;
-            var methodReference = converter.KnownReferences.AsTypeMethod;
-            var typeRefExpr = JST.IdentifierExpression.Create(null, converter.Scope, converter.Resolve(ty));
-            var asTypeCall = MethodCallExpressionConverter.CreateMethodCallExpression(
-                new MethodCallContext(typeRefExpr, methodReference, false),
-                new JST.Expression[] { scrutinee },
-                converter,
-                converter.RuntimeManager);
+                JST.Expression rhs = variableAccess != null
+                    ? new JST.BinaryExpression(
+                        declarationPattern.Location,
+                        converter.Scope,
+                        JST.BinaryOperator.Assignment,
+                        variableAccess,
+                        asTypeCall)
+                    : asTypeCall;
 
-            JST.Expression rhs = variableAccess != null
-                ? new JST.BinaryExpression(
+                typeCheck = new JST.BinaryExpression(
                     declarationPattern.Location,
                     converter.Scope,
-                    JST.BinaryOperator.Assignment,
-                    variableAccess,
-                    asTypeCall)
-                : asTypeCall;
+                    JST.BinaryOperator.NotEquals,
+                    rhs,
+                    new JST.NullLiteralExpression(converter.Scope));
+            }
 
+            if (whenExpression == null)
+            {
+                return typeCheck;
+            }
+
+            var whenExpr = ExpressionConverterBase.Convert(converter, whenExpression);
             return new JST.BinaryExpression(
-                declarationPattern.Location,
+                null,
                 converter.Scope,
-                JST.BinaryOperator.NotEquals,
-                rhs,
-                new JST.NullLiteralExpression(converter.Scope));
+                JST.BinaryOperator.LogicalAnd,
+                typeCheck,
+                whenExpr);
         }
 
         private static JST.BinaryOperator ToJsOperator(CLR.AST.BinaryOperator op)

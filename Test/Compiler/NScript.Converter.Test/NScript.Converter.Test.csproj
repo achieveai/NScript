@@ -73,6 +73,11 @@
     <None Remove="MethodConverterTests\InlineInitializations\VarArgs.static.js" />
     <None Remove="MethodConverterTests\InlineInitializations\VarArgs2.static.js" />
     <None Remove="MethodConverterTests\Lang8Features\IsConstantPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\IsRelationalPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\IsBinaryAndPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\IsBinaryOrPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\IsNegatedPattern.js" />
+    <None Remove="MethodConverterTests\Lang8Features\SwitchRelationalArm.js" />
     <None Remove="MethodConverterTests\Lang8Features\IsDeclarationPattern.js" />
     <None Remove="MethodConverterTests\Lang8Features\IsVarPattern.js" />
     <None Remove="MethodConverterTests\Lang8Features\SwitchConstantExpression.js" />
@@ -177,6 +182,11 @@
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs.static.js" />
     <EmbeddedResource Include="MethodConverterTests\InlineInitializations\VarArgs2.static.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsConstantPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsRelationalPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsBinaryAndPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsBinaryOrPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsNegatedPattern.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang8Features\SwitchRelationalArm.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsDeclarationPattern.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\IsVarPattern.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\SwitchConstantExpression.js" />
