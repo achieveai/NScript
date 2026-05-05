@@ -18,9 +18,9 @@ existing Stage-1 visitor already handles) versus what still needs implementation
 work in the compiler pipeline.
 
 The remaining pipeline gaps are sequenced into Phase C (pattern family),
-Phase D (records / `with` / `init`), Phase E (collection expressions), Phase F
-(required members, primary constructors), Phase G (docs sweep) — see issue #47
-for the full plan.
+~~Phase D (records / `with` / `init`)~~ ✅ landed under this PR, Phase E
+(collection expressions), Phase F (required members, primary constructors),
+Phase G (docs sweep) — see issue #47 for the full plan.
 
 ## How a feature lands in the "Supported" column
 
@@ -65,9 +65,9 @@ is *transparent*; otherwise it is a planned phase.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Records (class) | ❌ Needs implementation | `BoundWithExpression` not visited; `IsRecord` not on serialised symbol envelope. **Phase D.** |
-| `init` accessors | ❌ Needs implementation | `IsInitOnly` not serialised; treat as ordinary set at runtime — metadata-only support planned. **Phase D.** |
-| `with` expressions | ❌ Needs implementation | `BoundWithExpression` is unvisited. **Phase D.** |
+| Records (class) | ✅ Supported | `IsRecord` flows through `TypeSpecSer` (and `GenericInstanceTypeSer`). Synthesised `Equals`, `GetHashCode`, `<Clone>$`, `Deconstruct`, and the protected copy-ctor ride existing bound-tree paths. Validated in `Lang9RecordTests.cs::ConstructPositionalRecord` / `RecordValueEquality` / `DeconstructPositional`. |
+| `init` accessors | ✅ Supported (metadata) | `PropertySpecSer.IsInitOnly` (and `IsRequired`) is persisted from the Roslyn property symbol. JS codegen treats init-only as an ordinary setter — sufficient for object-initializer and `with` flows. Validated in `Lang9RecordTests.cs::InitOnlySetters`. Runtime enforcement of `init`/`required` is deferred to a follow-up. |
+| `with` expressions | ✅ Supported | New `WithExpressionSer` (ProtoBuf tag 226) carries receiver + clone-method + initializers; Stage 1 `VisitWithExpression` and Stage 2 `ParseWithExpression` lower it onto the existing `InlinePropertyInitilizationExpression` shape. Validated in `Lang9RecordTests.cs::WithSingleMutation` / `WithMultiMutation` / `WithOnDerivedRecord`. |
 | Top-level statements | ❌ Out of scope | Conflicts with the `[EntryPoint]` model; explicit non-goal. |
 | Target-typed `new()` | ❌ Needs implementation | Roslyn surfaces `ConversionKind.ObjectCreation` to `VisitConversion`, which throws on the `default` arm. Empirically reproduced on `BaseClass b = new();`. **Phase B (small) or Phase C.** |
 | Pattern matching — relational `<`, `<=` | ✅ Supported | Visited by `VisitRelationalPattern`; serialised under ProtoBuf tag 223. Lowered to a JS binary expression via `PatternMatcher.LowerToCondition`. Works in both `is` patterns and `switch` arm dispatch (matched before `BoundConstantPattern` because it inherits from it). |
@@ -89,7 +89,7 @@ is *transparent*; otherwise it is a planned phase.
 |---|---|---|
 | File-scoped namespaces | ✅ Supported | Validated by `Lang10Features.cs`, `Lang11Features.cs`, `Lang12Features.cs`, `Lang13Features.cs` all using the syntax. Lowers to the same bound tree as a braced namespace. |
 | Global usings | ⚠️ Untested | No fixture in this PR (would require a project-level edit). Should be transparent — purely affects symbol resolution. Re-validate during Phase G. |
-| `record struct` | ❌ Needs implementation | Same family as C# 9 records. **Phase D.** |
+| `record struct` | ✅ Supported | Rides the same `IsRecord` metadata path as record classes. The synthesised value-equality contract and `<Clone>$` / `with` plumbing lower onto the existing struct codegen. Validated in `Lang9RecordTests.cs::RecordStructWith`. |
 | Mixed deconstruction declaration & assignment | ✅ Supported | Validated in `Lang10Features.cs::MixedDeconstructionAssignment`. |
 | Constant interpolated strings | ❌ Pre-existing gap | `VisitInterpolatedString` throws — affects *all* `$"…"` strings, not specific to C# 10. (`limitations.md` claims interpolation is supported; that line is **stale** and will be corrected in Phase G.) |
 | Extended property patterns (`{ A.B: ... }`) | ❌ Needs implementation | Lowers to recursive pattern. **Phase C.** |
@@ -97,7 +97,7 @@ is *transparent*; otherwise it is a planned phase.
 | Lambda explicit return type | ✅ Supported | Validated in `Lang10Features.cs::LambdaExplicitReturnType` via `int (int a) => a + 1;`. Roslyn carries the explicit return-type symbol on the anonymous function shape. |
 | Lambda attributes | ⚠️ Untested | Likely transparent (attributes flow into method symbol metadata) but not exercised. |
 | Caller argument expression | ⚠️ Untested | Not validated by a fixture: the `[CallerArgumentExpression]` attribute is not declared in NScript's `mscorlib`, so a fixture would fail at bind time independently of the bound-tree shape. Wire-through is expected to be transparent (the default value is folded to a literal at the call site), but cannot be claimed until the BCL gap is closed. **Phase G.** |
-| Parameterless struct constructors | ⚠️ Untested | No fixture; expected to work but should be re-validated under Phase D (struct codegen sweep). |
+| Parameterless struct constructors | ⚠️ Untested | No fixture; expected to work. The Phase D `record struct` work exercised the surrounding struct codegen path without surfacing issues, but a dedicated fixture for explicit parameterless ctors on plain structs is still pending. |
 | `ParenthesizedPattern` | ✅ Supported | Validated in `Lang10Features.cs::ParenthesizedConstantPattern`. Lowers to the inner pattern. |
 
 ## C# 11 (2022)
