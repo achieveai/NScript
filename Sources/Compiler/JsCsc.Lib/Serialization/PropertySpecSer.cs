@@ -16,5 +16,9 @@ namespace JsCsc.Lib.Serialization
         public int? Setter { get; set; }
 
         public int? Getter { get; set; }
+
+        public bool IsInitOnly { get; set; }
+
+        public bool IsRequired { get; set; }
     }
 }
