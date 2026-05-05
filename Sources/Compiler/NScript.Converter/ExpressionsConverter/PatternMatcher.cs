@@ -32,10 +32,12 @@ namespace NScript.Converter.ExpressionsConverter
             switch (pattern)
             {
                 case ConstantPattern constantPattern:
+                    // `==` matches the long-standing IsPatternConverter snapshot. SwitchExpressionConverter
+                    // keeps its own MakeConditionalExpression fast path that uses StrictEquals for switch arms.
                     return new JST.BinaryExpression(
                         scrutinee.Location,
                         converter.Scope,
-                        JST.BinaryOperator.StrictEquals,
+                        JST.BinaryOperator.Equals,
                         scrutinee,
                         ExpressionConverterBase.Convert(converter, constantPattern.ConstantExpression));
 
