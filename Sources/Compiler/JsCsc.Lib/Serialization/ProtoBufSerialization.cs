@@ -118,6 +118,9 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(217, typeof(LocalMethodExpression))]
     [ProtoInclude(140, typeof(ThrowExpression))]
     [ProtoInclude(218, typeof(TupleLiteral))]
+    // C# 9 record additions reserve tag block 226-235 for record/with subtypes.
+    // Tags are append-only; never reuse retired tags (silent misdeserialisation).
+    [ProtoInclude(226, typeof(WithExpressionSer))]
     [Serializable]
     public abstract class ExpressionSer
         : AstBase
@@ -384,6 +387,25 @@ namespace JsCsc.Lib.Serialization
         : NewExpression
     {
         public List<MethodCallExpression> ItemInitializers { get; set; }
+    }
+
+    /// <summary>
+    /// C# 9 <c>with</c> expression: <c>receiver with { Prop = value, ... }</c>.
+    /// The receiver is cloned via the synthesised <c>&lt;Clone&gt;$</c> method
+    /// and the initializers run against the clone.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class WithExpressionSer
+        : ExpressionSer
+    {
+        public ExpressionSer Receiver { get; set; }
+
+        public int CloneMethod { get; set; }
+
+        public int Type { get; set; }
+
+        public List<ObjectInitilaizer> Initializers { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
