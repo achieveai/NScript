@@ -1642,7 +1642,8 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId((TypeSymbol)node.SourceType.ExpressionSymbol)
             };
 
-        public override AstBase VisitTypeOrInstanceInitializers(BoundTypeOrInstanceInitializers node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitTypeOrInstanceInitializers(BoundTypeOrInstanceInitializers node, SerializationContext arg)
+            => VisitStatementList(node, arg);
 
         public override AstBase VisitTypeOrValueExpression(BoundTypeOrValueExpression node, SerializationContext arg) => throw new NotImplementedException();
 
