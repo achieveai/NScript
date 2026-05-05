@@ -2063,6 +2063,18 @@ namespace JsCsc.Lib
                     (a) => ParsePattern((Serialization.Pattern)a)
                 },
                 {
+                    typeof(Serialization.RelationalPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.BinaryPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
+                    typeof(Serialization.NegatedPattern),
+                    (a) => ParsePattern((Serialization.Pattern)a)
+                },
+                {
                     typeof(Serialization.SwitchExpression),
                     (a) => ParseSwitchExpression((Serialization.SwitchExpression)a)
                 },
