@@ -74,3 +74,5 @@ Avoid ADRs for routine refactors or localized implementation details that do not
 | [0022](0022-demand-driven-conversion-and-dead-code-elimination.md) | Demand-Driven Conversion and Dead Code Elimination | Accepted |
 | [0023](0023-devirtualize-non-virtual-methods-and-inline-trivial-accessors.md) | Devirtualize Non-Virtual Methods and Inline Trivial Accessors | Accepted |
 | [0024](0024-deduplicate-structurally-identical-functions-after-minification.md) | Deduplicate Structurally Identical Functions After Minification | Accepted |
+| [0025](0025-opt-in-structured-jsonl-logging.md) | Opt-In Structured JSONL Logging | Accepted |
+| [0026](0026-lower-csharp-patterns-via-shared-patternmatcher.md) | Lower C# Patterns via a Shared `PatternMatcher` | Accepted |

@@ -53,7 +53,10 @@ Every new C# language feature must thread through three seams:
    for the C# 9–13 work.
 3. **Stage 2 converter** —
    `Sources/Compiler/NScript.Converter/ExpressionsConverter/IsPatternConverter.cs`
-   (and friends). Throws on any pattern shape it does not recognise.
+   and `SwitchExpressionConverter.cs` both delegate pattern lowering to the
+   shared `PatternMatcher.LowerToCondition`. Pattern shapes that are not yet
+   supported surface a clear `NotImplementedException` pointing back at this
+   document.
 
 If a feature lowers entirely into nodes already handled by all three seams it
 is *transparent*; otherwise it is a planned phase.
@@ -67,8 +70,8 @@ is *transparent*; otherwise it is a planned phase.
 | `with` expressions | ❌ Needs implementation | `BoundWithExpression` is unvisited. **Phase D.** |
 | Top-level statements | ❌ Out of scope | Conflicts with the `[EntryPoint]` model; explicit non-goal. |
 | Target-typed `new()` | ❌ Needs implementation | Roslyn surfaces `ConversionKind.ObjectCreation` to `VisitConversion`, which throws on the `default` arm. Empirically reproduced on `BaseClass b = new();`. **Phase B (small) or Phase C.** |
-| Pattern matching — relational `<`, `<=` | ❌ Needs implementation | `BoundRelationalPattern` unvisited. **Phase C.** |
-| Pattern matching — logical `and`/`or`/`not` | ❌ Needs implementation | `BoundBinaryPattern`, `BoundNegatedPattern` unvisited. **Phase C.** |
+| Pattern matching — relational `<`, `<=` | ✅ Supported | Visited by `VisitRelationalPattern`; serialised under ProtoBuf tag 223. Lowered to a JS binary expression via `PatternMatcher.LowerToCondition`. Works in both `is` patterns and `switch` arm dispatch (matched before `BoundConstantPattern` because it inherits from it). |
+| Pattern matching — logical `and`/`or`/`not` | ✅ Supported | `BoundBinaryPattern` (tag 224) lowers to `&&` / `\|\|`; `BoundNegatedPattern` (tag 225) lowers to `!`. Implemented recursively over `PatternMatcher`. `when` clauses on these new shapes raise a clear `NotImplementedException` rather than silently dropping the guard. |
 | Pattern matching — type pattern (without var) | ⚠️ Partial | Declaration patterns work today; bare type patterns route through the same path. Re-validate during Phase C. |
 | Discard parameters in lambdas | ✅ Supported | Validated in `Lang9Features.cs::LambdaDiscardParameters`. Roslyn binds `(_, _)` as ordinary lambda parameters. |
 | Static anonymous functions / lambdas | ✅ Supported | Validated in `Lang9Features.cs::StaticLambdas`. The `static` keyword forbids captures but emits an ordinary lambda bound node. |
