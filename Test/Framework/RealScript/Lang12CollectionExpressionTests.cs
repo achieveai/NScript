@@ -79,9 +79,28 @@ namespace RealScript
         }
 
         // IList<T> target — ICollection-shape interface still lowers to T[].
+        // Fully qualified because RealScript declares its own IList<T> in
+        // GenericCollections.cs, which would otherwise shadow the BCL type
+        // for unqualified lookups in the RealScript namespace.
         public static void IListInterface()
         {
-            IList<int> xs = [7, 8];
+            System.Collections.Generic.IList<int> xs = [7, 8];
+            Console.WriteLine(xs.Count);
+        }
+
+        // IReadOnlyCollection<T> target — separate SpecialType arm in
+        // IsSupportedCollectionInterface; covered explicitly so a regression
+        // dropping that case fails this fixture.
+        public static void ReadOnlyCollectionInterface()
+        {
+            IReadOnlyCollection<int> xs = [1, 2, 3];
+            Console.WriteLine(xs.Count);
+        }
+
+        // ICollection<T> target — separate SpecialType arm; covered explicitly.
+        public static void CollectionInterface()
+        {
+            ICollection<int> xs = [10, 20];
             Console.WriteLine(xs.Count);
         }
 

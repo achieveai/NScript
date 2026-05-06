@@ -494,8 +494,12 @@
                 Location = location,
                 ElementType = arg.SymbolSerializer.GetTypeSpecId(elementType),
                 Elements = node.Elements
-                    .Cast<BoundExpression>()
-                    .Select(_ => (ExpressionSer)Visit(_, arg))
+                    .Select(e => e as BoundExpression
+                        ?? throw new NotSupportedException(
+                            $"Unsupported collection-expression element kind '{e.Kind}'. "
+                            + "Phase E only supports simple expressions; spread elements (..) "
+                            + "and dictionary key-value pairs are tracked under WI #47 Phase F."))
+                    .Select(expr => (ExpressionSer)Visit(expr, arg))
                     .ToList()
             };
         }
