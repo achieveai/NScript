@@ -492,7 +492,6 @@
             return new CollectionExpressionSer
             {
                 Location = location,
-                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type),
                 ElementType = arg.SymbolSerializer.GetTypeSpecId(elementType),
                 Elements = node.Elements
                     .Cast<BoundExpression>()

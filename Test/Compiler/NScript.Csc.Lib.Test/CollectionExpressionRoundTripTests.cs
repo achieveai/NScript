@@ -13,7 +13,6 @@ namespace NScript.Csc.Lib.Test
         {
             var original = new CollectionExpressionSer
             {
-                Type = 11,
                 ElementType = 2,
                 Elements = new List<ExpressionSer>
                 {
@@ -27,7 +26,6 @@ namespace NScript.Csc.Lib.Test
 
             Assert.IsInstanceOfType(clone, typeof(CollectionExpressionSer));
             var typed = (CollectionExpressionSer)clone;
-            Assert.AreEqual(11, typed.Type);
             Assert.AreEqual(2, typed.ElementType);
             Assert.AreEqual(3, typed.Elements.Count);
             Assert.AreEqual(1, ((IntLiteralExpression)typed.Elements[0]).Value);
@@ -40,7 +38,6 @@ namespace NScript.Csc.Lib.Test
         {
             var original = new CollectionExpressionSer
             {
-                Type = 11,
                 ElementType = 2,
                 Elements = new List<ExpressionSer>()
             };
