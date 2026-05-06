@@ -7,19 +7,18 @@
 namespace RealScript
 {
     using System;
-    using System.Collections.Generic;
 
     /// <summary>
-    /// Compile-only fixtures for C# 12 collection expressions targeting the
-    /// JS-relevant subset: <c>T[]</c> and the array-implementing interfaces
-    /// (<c>IEnumerable&lt;T&gt;</c>, <c>IReadOnlyList&lt;T&gt;</c>,
-    /// <c>IReadOnlyCollection&lt;T&gt;</c>, <c>ICollection&lt;T&gt;</c>,
-    /// <c>IList&lt;T&gt;</c>). All of these lower to a JS array via
-    /// <c>InlineArrayInitialization</c> in NScript.
+    /// Compile-only fixtures for C# 12 collection expressions targeting <c>T[]</c>.
+    /// Array targets lower to a JS array through <c>InlineArrayInitialization</c>.
     ///
     /// Out of scope for this slice (tracked under WI #47 Phase F):
-    /// - <c>List&lt;T&gt;</c> targets (require Add-method synthesis).
-    /// - <c>[CollectionBuilder]</c>-attributed types.
+    /// - Interface targets (<c>IEnumerable&lt;T&gt;</c>, <c>IList&lt;T&gt;</c>,
+    ///   <c>IReadOnlyList&lt;T&gt;</c>, <c>ICollection&lt;T&gt;</c>,
+    ///   <c>IReadOnlyCollection&lt;T&gt;</c>) — these depend on Roslyn finding
+    ///   <c>System.Collections.Generic.List&lt;T&gt;..ctor()</c> as a well-known
+    ///   member, which NScript's <c>mscorlib</c> facade does not currently satisfy.
+    /// - <c>List&lt;T&gt;</c> targets and <c>[CollectionBuilder]</c>-attributed types.
     /// - Spread elements (<c>..source</c>).
     /// - <c>Span&lt;T&gt;</c> / <c>ReadOnlySpan&lt;T&gt;</c> (non-goal — see
     ///   <c>docs/language/limitations.md</c>).
@@ -55,53 +54,6 @@ namespace RealScript
             string[] names = ["Ada", "Grace", "Margaret"];
             Console.WriteLine(names[0]);
             Console.WriteLine(names.Length);
-        }
-
-        // Target-typed into IEnumerable<T>. Roslyn classifies this as the
-        // "array-interface" collection-expression kind; NScript emits a T[].
-        public static void EnumerableInterface()
-        {
-            IEnumerable<int> xs = [10, 20, 30];
-            int sum = 0;
-            foreach (var x in xs)
-            {
-                sum += x;
-            }
-            Console.WriteLine(sum);
-        }
-
-        // IReadOnlyList<T> target.
-        public static void ReadOnlyListInterface()
-        {
-            IReadOnlyList<int> xs = [4, 5, 6];
-            Console.WriteLine(xs.Count);
-            Console.WriteLine(xs[1]);
-        }
-
-        // IList<T> target — ICollection-shape interface still lowers to T[].
-        // Fully qualified because RealScript declares its own IList<T> in
-        // GenericCollections.cs, which would otherwise shadow the BCL type
-        // for unqualified lookups in the RealScript namespace.
-        public static void IListInterface()
-        {
-            System.Collections.Generic.IList<int> xs = [7, 8];
-            Console.WriteLine(xs.Count);
-        }
-
-        // IReadOnlyCollection<T> target — separate SpecialType arm in
-        // IsSupportedCollectionInterface; covered explicitly so a regression
-        // dropping that case fails this fixture.
-        public static void ReadOnlyCollectionInterface()
-        {
-            IReadOnlyCollection<int> xs = [1, 2, 3];
-            Console.WriteLine(xs.Count);
-        }
-
-        // ICollection<T> target — separate SpecialType arm; covered explicitly.
-        public static void CollectionInterface()
-        {
-            ICollection<int> xs = [10, 20];
-            Console.WriteLine(xs.Count);
         }
 
         // Computed elements: collection expressions accept any expression in

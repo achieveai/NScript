@@ -477,16 +477,20 @@
             {
                 elementType = arrayType.ElementType;
             }
-            else if (node.Type is NamedTypeSymbol named && IsSupportedCollectionInterface(named))
-            {
-                elementType = named.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics[0].Type;
-            }
             else
             {
+                // Phase E intentionally restricts collection-expression support to
+                // array targets. Interface targets (IEnumerable<T>/IList<T>/etc.)
+                // require Roslyn to find System.Collections.Generic.List<T>..ctor()
+                // as a well-known member during binding, which NScript's mscorlib
+                // facade does not currently satisfy. List<T> targets, interface
+                // targets, [CollectionBuilder] types and spread elements are all
+                // deferred to WI #47 Phase F. Span<T> / ReadOnlySpan<T> are Non-Goals.
                 throw new NotSupportedException(
                     $"Collection expressions targeting '{node.Type}' are not yet supported. " +
-                    "Phase E supports T[], IEnumerable<T>, IReadOnlyList<T>, IReadOnlyCollection<T>, ICollection<T>, IList<T>. " +
-                    "List<T>, [CollectionBuilder] types and Span<T> remain Non-Goals or are deferred to Phase F.");
+                    "Phase E supports T[] only. List<T>, IEnumerable<T>/IList<T>/IReadOnlyList<T>/" +
+                    "ICollection<T>/IReadOnlyCollection<T>, [CollectionBuilder] types and spread " +
+                    "elements are deferred to Phase F. Span<T>/ReadOnlySpan<T> remain Non-Goals.");
             }
 
             return new CollectionExpressionSer
@@ -2193,19 +2197,5 @@
             return false;
         }
 
-        private static bool IsSupportedCollectionInterface(NamedTypeSymbol type)
-        {
-            switch (type.OriginalDefinition.SpecialType)
-            {
-                case SpecialType.System_Collections_Generic_IEnumerable_T:
-                case SpecialType.System_Collections_Generic_ICollection_T:
-                case SpecialType.System_Collections_Generic_IList_T:
-                case SpecialType.System_Collections_Generic_IReadOnlyCollection_T:
-                case SpecialType.System_Collections_Generic_IReadOnlyList_T:
-                    return true;
-                default:
-                    return false;
-            }
-        }
     }
 }
