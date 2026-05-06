@@ -121,8 +121,8 @@ is *transparent*; otherwise it is a planned phase.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Collection expressions (`[1, 2, 3]`) | ❌ Needs implementation | `BoundCollectionExpression` unvisited. **Phase E.** |
-| Spread `..` element | ❌ Needs implementation | Subsumed by collection expressions. **Phase E.** |
+| Collection expressions (`[1, 2, 3]`) | ⚠️ Partial | Phase E supports `T[]`, `IEnumerable<T>`, `IReadOnlyList<T>`, `IReadOnlyCollection<T>`, `ICollection<T>`, `IList<T>` targets — `BoundCollectionExpression` lowers to `InlineArrayInitialization`. Validated in `Lang12CollectionExpressionTests.cs`. `List<T>`, `[CollectionBuilder]` types and `Span<T>` are deferred to **Phase F** / Non-Goals. |
+| Spread `..` element | ❌ Deferred | Stage 1 surfaces a clear `NotSupportedException` when a `BoundCollectionExpressionSpreadElement` is encountered. **Phase F.** |
 | Primary constructors on classes | ❌ Needs implementation | Parameter-capture surfaces `BoundPrimaryConstructorParameterAccess` for unused-but-referenced parameters. **Phase F.** |
 | `using` alias for any type | ✅ Supported | Validated in `Lang12Features.cs::AliasAnyType` using **tuple-syntax** (`using Pair = (int X, int Y);`) and **array-syntax** (`using Numbers = int[];`) aliases — the C# 12 grammar additions. Aliases are resolved at symbol resolution; bound tree sees the underlying type. Closed generic aliases (legal since C# 1.0) are not exercised here. |
 | Default lambda parameter values | ⚠️ Untested | May surface a new lambda metadata shape. Conservative — re-validate before claiming support. |
@@ -137,7 +137,7 @@ is *transparent*; otherwise it is a planned phase.
 |---|---|---|
 | Escape sequence `\e` | ✅ Supported | Validated in `Lang13Features.cs::EscapeSequenceEsc`. Lex-time fold to `0x1B`. |
 | Method group natural type | ✅ Supported | C# 10's single-overload natural type validated in `Lang10Features.cs::MethodGroupNaturalType`. C# 13's overload-pruning extension (constraint-failing generic candidates pruned during natural-type inference) validated in `Lang13Features.cs::MethodGroupOverloadPruning`. Both compile transparently — Roslyn finalises the delegate symbol at bind time. |
-| `params` collections | ❌ Needs implementation | When the parameter type is `IEnumerable<T>` / `Span<T>`, Roslyn lowers via the collection-expression pipeline. **Phase E** for `T[]`-equivalent shapes; `Span<T>` shapes are out of scope. |
+| `params` collections | ⚠️ Partial | When a `params` parameter is `IEnumerable<T>` / `IReadOnlyList<T>` / `IReadOnlyCollection<T>` / `ICollection<T>` / `IList<T>`, Roslyn synthesises a `BoundCollectionExpression` at the call site that this Phase now lowers to a `T[]`. `params Span<T>` and `params ReadOnlySpan<T>` remain out of scope. |
 | `System.Threading.Lock` | ❌ Out of scope | Issue #47 Non-Goals — depends on the new BCL primitive that does not exist in NScript's `mscorlib`. |
 | `field` keyword in property accessors (preview) | ❌ Out of scope | Reserved by C# 14 to mean "synthesised backing field"; pinning `<LangVersion>13</LangVersion>` deliberately avoids the rebinding. |
 | Implicit index access on initializers | ⚠️ Untested | Indices/ranges are listed as a partial item in `csharp8-todos.md`; revisit during Phase G. |

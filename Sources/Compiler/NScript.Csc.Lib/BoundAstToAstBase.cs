@@ -459,6 +459,48 @@
 
         public override AstBase VisitCollectionInitializerExpression(BoundCollectionInitializerExpression node, SerializationContext arg) => throw new NotImplementedException();
 
+        public override AstBase VisitCollectionExpression(BoundCollectionExpression node, SerializationContext arg)
+        {
+            var location = node.Syntax.Location.GetSerLoc();
+
+            foreach (var element in node.Elements)
+            {
+                if (element is BoundCollectionExpressionSpreadElement)
+                {
+                    throw new NotSupportedException(
+                        "Spread elements (..) inside collection expressions are not yet supported by NScript. Track via WI #47 Phase F.");
+                }
+            }
+
+            TypeSymbol elementType;
+            if (node.Type is ArrayTypeSymbol arrayType)
+            {
+                elementType = arrayType.ElementType;
+            }
+            else if (node.Type is NamedTypeSymbol named && IsSupportedCollectionInterface(named))
+            {
+                elementType = named.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics[0].Type;
+            }
+            else
+            {
+                throw new NotSupportedException(
+                    $"Collection expressions targeting '{node.Type}' are not yet supported. " +
+                    "Phase E supports T[], IEnumerable<T>, IReadOnlyList<T>, IReadOnlyCollection<T>, ICollection<T>, IList<T>. " +
+                    "List<T>, [CollectionBuilder] types and Span<T> remain Non-Goals or are deferred to Phase F.");
+            }
+
+            return new CollectionExpressionSer
+            {
+                Location = location,
+                Type = arg.SymbolSerializer.GetTypeSpecId(node.Type),
+                ElementType = arg.SymbolSerializer.GetTypeSpecId(elementType),
+                Elements = node.Elements
+                    .Cast<BoundExpression>()
+                    .Select(_ => (ExpressionSer)Visit(_, arg))
+                    .ToList()
+            };
+        }
+
         public override AstBase VisitComplexConditionalReceiver(BoundComplexConditionalReceiver node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitCompoundAssignmentOperator(BoundCompoundAssignmentOperator node, SerializationContext arg)
@@ -2145,6 +2187,21 @@
             }
 
             return false;
+        }
+
+        private static bool IsSupportedCollectionInterface(NamedTypeSymbol type)
+        {
+            switch (type.OriginalDefinition.SpecialType)
+            {
+                case SpecialType.System_Collections_Generic_IEnumerable_T:
+                case SpecialType.System_Collections_Generic_ICollection_T:
+                case SpecialType.System_Collections_Generic_IList_T:
+                case SpecialType.System_Collections_Generic_IReadOnlyCollection_T:
+                case SpecialType.System_Collections_Generic_IReadOnlyList_T:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

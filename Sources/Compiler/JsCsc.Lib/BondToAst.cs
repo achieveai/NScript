@@ -1211,6 +1211,26 @@ namespace JsCsc.Lib
                 setters);
         }
 
+        private Node ParseCollectionExpression(Serialization.CollectionExpressionSer jObject)
+        {
+            // Phase E supports collection expressions targeting array shapes (T[],
+            // IEnumerable<T>, IReadOnlyList<T>, IReadOnlyCollection<T>, ICollection<T>,
+            // IList<T>) — Stage 1 already rejects unsupported targets and spread
+            // elements, so by the time we deserialise here we just emit the same
+            // InlineArrayInitialization an explicit `new T[] { ... }` would.
+            var location = LocFromJObject(jObject);
+            var elementType = DeserializeType(jObject.ElementType);
+            IList<Expression> initializerExpressions = jObject.Elements != null
+                ? ParseExpressions(jObject.Elements)
+                : System.Array.Empty<Expression>();
+
+            return new InlineArrayInitialization(
+                _clrContext,
+                location,
+                elementType,
+                initializerExpressions);
+        }
+
         private List<Tuple<MemberReferenceExpression, Expression[]>> BuildInitializerSetters(
             List<Serialization.ObjectInitilaizer> initializers)
         {
@@ -2210,6 +2230,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.WithExpressionSer),
                     (a) => ParseWithExpression((Serialization.WithExpressionSer)a)
+                },
+                {
+                    typeof(Serialization.CollectionExpressionSer),
+                    (a) => ParseCollectionExpression((Serialization.CollectionExpressionSer)a)
                 },
                 {
                     typeof(Serialization.NewCollectionInitializerExpression),
