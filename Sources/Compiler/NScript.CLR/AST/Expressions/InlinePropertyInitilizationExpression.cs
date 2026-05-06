@@ -79,7 +79,7 @@ namespace NScript.CLR.AST
         /// <param name="processor">The processor.</param>
         public override void ProcessThroughPipeline(IAstProcessor processor)
         {
-            this.Constructor = (NewObjectExpression)processor.Process(this.Constructor);
+            this.Constructor = (Expression)processor.Process(this.Constructor);
 
             for (int setterIndex = 0; setterIndex < this.setters.Count; setterIndex++)
             {

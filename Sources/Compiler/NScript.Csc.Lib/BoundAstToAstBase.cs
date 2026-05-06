@@ -1642,7 +1642,8 @@
                 Type = arg.SymbolSerializer.GetTypeSpecId((TypeSymbol)node.SourceType.ExpressionSymbol)
             };
 
-        public override AstBase VisitTypeOrInstanceInitializers(BoundTypeOrInstanceInitializers node, SerializationContext arg) => throw new NotImplementedException();
+        public override AstBase VisitTypeOrInstanceInitializers(BoundTypeOrInstanceInitializers node, SerializationContext arg)
+            => VisitStatementList(node, arg);
 
         public override AstBase VisitTypeOrValueExpression(BoundTypeOrValueExpression node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1711,6 +1712,64 @@
         /*
         public override AstBase VisitWildcardPattern(BoundWildcardPattern node, SerializationContext arg) => throw new NotImplementedException();
         */
+
+        public override AstBase VisitWithExpression(BoundWithExpression node, SerializationContext arg)
+        {
+            var location = node.Syntax.GetSerLoc();
+            var receiver = (ExpressionSer)Visit(node.Receiver, arg);
+            var cloneMethod = node.CloneMethod != null
+                ? arg.SymbolSerializer.GetMethodSpecId(node.CloneMethod)
+                : 0;
+            var type = arg.SymbolSerializer.GetTypeSpecId(node.Type);
+
+            var initializers = node.InitializerExpression
+                .Initializers
+                .Select(_ =>
+                {
+                    if (_.Kind != BoundKind.AssignmentOperator)
+                    { return null; }
+
+                    var assignOp = (BoundAssignmentOperator)_;
+                    var initializerMember = (BoundObjectInitializerMember)assignOp.Left;
+                    var rv = new ObjectInitilaizer
+                    {
+                        Location = _.Syntax.Location.GetSerLoc(),
+                        Value = (ExpressionSer)Visit(assignOp.Right, arg)
+                    };
+
+                    if (initializerMember.MemberSymbol.Kind == SymbolKind.Field)
+                    {
+                        rv.Field = arg.SymbolSerializer.GetFieldSpecId(
+                            (FieldSymbol)initializerMember.MemberSymbol);
+                    }
+                    else
+                    {
+                        var propertySymbol = (PropertySymbol)initializerMember.MemberSymbol;
+                        rv.Property = arg.SymbolSerializer.GetPropertySpecId(propertySymbol);
+                        rv.Setter = arg.SymbolSerializer.GetMethodSpecId(propertySymbol.SetMethod);
+                        rv.Getter = propertySymbol.GetMethod != null
+                            ? arg.SymbolSerializer.GetMethodSpecId(propertySymbol.GetMethod)
+                            : 0;
+
+                        rv.PropertyArgs = ToArgs(
+                            propertySymbol.GetMethod,
+                            initializerMember.Arguments,
+                            arg);
+                    }
+
+                    return rv;
+                })
+                .ToList();
+
+            return new WithExpressionSer
+            {
+                Location = location,
+                Receiver = receiver,
+                CloneMethod = cloneMethod,
+                Type = type,
+                Initializers = initializers
+            };
+        }
 
         public override AstBase VisitYieldBreakStatement(BoundYieldBreakStatement node, SerializationContext arg)
             => new YieldBreakStatement { Location = node.Syntax.GetSerLoc() };

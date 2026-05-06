@@ -18,5 +18,7 @@ namespace JsCsc.Lib.Serialization
         public TypeSpecSer MemberType { get; set; }
 
         public string Name { get; set; }
+
+        public bool IsRequired { get; set; }
     }
 }

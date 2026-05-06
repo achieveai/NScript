@@ -263,6 +263,7 @@ namespace NScript.Csc.Lib
                     Module = moduleSpec,
                     Arity = namedTypeSymbol.Arity,
                     NestedParent = nestedParent,
+                    IsRecord = namedTypeSymbol.IsRecord || namedTypeSymbol.IsRecordStruct,
                     TypeParams =
                     namedTypeSymbol.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics != null
                         ?  namedTypeSymbol
@@ -282,7 +283,8 @@ namespace NScript.Csc.Lib
                 Namespace = @namespace,
                 Module = moduleSpec,
                 Arity = namedTypeSymbol.Arity,
-                NestedParent = nestedParent
+                NestedParent = nestedParent,
+                IsRecord = namedTypeSymbol.IsRecord || namedTypeSymbol.IsRecordStruct
             };
         }
 
@@ -345,7 +347,8 @@ namespace NScript.Csc.Lib
             {
                 Name = field.MetadataName,
                 DeclaringType = this.GetTypeSpecSer(field.ContainingType),
-                MemberType = this.GetTypeSpecSer(field.OriginalDefinition.Type)
+                MemberType = this.GetTypeSpecSer(field.OriginalDefinition.Type),
+                IsRequired = field.IsRequired,
             };
 
         private PropertySpecSer Serialize(PropertySymbol property)
@@ -357,6 +360,8 @@ namespace NScript.Csc.Lib
                 Getter = property.GetMethod != null
                     ? (int?)this.GetMethodSpecId(property.GetMethod)
                     : null,
+                IsInitOnly = property.SetMethod != null && property.SetMethod.IsInitOnly,
+                IsRequired = property.IsRequired,
             };
 
         private EventSpecSer Serialize(EventSymbol evt)

@@ -1158,74 +1158,8 @@ namespace JsCsc.Lib
 
         private Node ParseNewInitializer(Serialization.NewInitializerExpression jObject)
         {
-            var initializerArray = jObject.Initializers;
-
             var args = ParseArguments(jObject.Arguments);
-
-            var setters =
-                new List<Tuple<MemberReferenceExpression, Expression[]>>();
-
-            if (initializerArray != null)
-            {
-                for (var iInit = 0; iInit < initializerArray.Count; iInit++)
-                {
-                    var initObj = initializerArray[iInit];
-                    MemberReferenceExpression memberReferenceExpression = null;
-
-                    if (initObj.Setter != null)
-                    {
-                        PropertyReference propertyReference = new InternalPropertyReference(
-                            null,
-                            DeserializeMethod(initObj.Setter.Value));
-
-                        memberReferenceExpression = new PropertyReferenceExpression(
-                            _clrContext,
-                            LocFromJObject(initObj),
-                            propertyReference,
-                            null);
-
-                        var setterArgs = initObj.PropertyArgs != null
-                            ? initObj.PropertyArgs
-                                .Select(arg => ParseExpression(arg.Value))
-                                .Concat(new Expression[] { ParseExpression(initObj.Value) })
-                                .ToArray()
-                            : new Expression[] { ParseExpression(initObj.Value) };
-
-                        setters.Add(
-                            Tuple.Create(
-                                memberReferenceExpression,
-                                setterArgs));
-                    }
-                    else if (initObj.Field != null)
-                    {
-                        memberReferenceExpression = new FieldReferenceExpression(
-                            _clrContext,
-                            LocFromJObject(initObj),
-                            DeserializeField(initObj.Field.Value),
-                            null);
-
-                        setters.Add(
-                            Tuple.Create(
-                                memberReferenceExpression,
-                                new Expression[] { ParseExpression(initObj.Value) }));
-                    }
-                    else
-                    {
-                        memberReferenceExpression = new MethodReferenceExpression(
-                            _clrContext,
-                            LocFromJObject(initObj),
-                            DeserializeMethod(initObj.MethodCall.Method),
-                            null);
-
-                        var arguments = ParseArguments(initObj.MethodCall.Arguments);
-
-                        setters.Add(
-                            Tuple.Create(
-                                memberReferenceExpression,
-                                arguments));
-                    }
-                }
-            }
+            var setters = BuildInitializerSetters(jObject.Initializers);
 
             return new InlinePropertyInitilizationExpression(
                 _clrContext,
@@ -1241,7 +1175,102 @@ namespace JsCsc.Lib
                         DeserializeMethod(jObject.Method),
                         jObject.ArgumentOrderOpt,
                         args),
-                setters); ;
+                setters);
+        }
+
+        private Node ParseWithExpression(Serialization.WithExpressionSer jObject)
+        {
+            // Record class `with` carries a synthesised `<Clone>$` method; record struct
+            // `with` does not (Roslyn lowers it through a value copy at the IL level).
+            // The struct path is not yet wired through NScript's struct codegen — surface
+            // a clear diagnostic instead of letting `DeserializeMethod(0)` NRE downstream.
+            if (jObject.CloneMethod == 0)
+            {
+                throw new NotImplementedException(
+                    "`with` on a record struct is not yet supported by NScript. " +
+                    "See docs/language/csharp9-13-status.md (`record struct` row).");
+            }
+
+            var location = LocFromJObject(jObject);
+            var receiver = ParseExpression(jObject.Receiver);
+            var setters = BuildInitializerSetters(jObject.Initializers);
+
+            // `receiver with { ... }` lowers to `receiver.<Clone>$()` followed by the
+            // initializer assignments — the clone-method call substitutes for the
+            // `new` expression in InlinePropertyInitilizationExpression.
+            var cloneMethodRef = DeserializeMethod(jObject.CloneMethod);
+            var clonedConstructor = new MethodCallExpression(
+                _clrContext,
+                location,
+                GetMethodReferenceExpression(receiver, cloneMethodRef, location));
+
+            return new InlinePropertyInitilizationExpression(
+                _clrContext,
+                location,
+                clonedConstructor,
+                setters);
+        }
+
+        private List<Tuple<MemberReferenceExpression, Expression[]>> BuildInitializerSetters(
+            List<Serialization.ObjectInitilaizer> initializers)
+        {
+            var setters = new List<Tuple<MemberReferenceExpression, Expression[]>>();
+            if (initializers == null)
+            { return setters; }
+
+            foreach (var initObj in initializers)
+            {
+                MemberReferenceExpression memberReferenceExpression;
+
+                if (initObj.Setter != null)
+                {
+                    PropertyReference propertyReference = new InternalPropertyReference(
+                        null,
+                        DeserializeMethod(initObj.Setter.Value));
+
+                    memberReferenceExpression = new PropertyReferenceExpression(
+                        _clrContext,
+                        LocFromJObject(initObj),
+                        propertyReference,
+                        null);
+
+                    var setterArgs = initObj.PropertyArgs != null
+                        ? initObj.PropertyArgs
+                            .Select(arg => ParseExpression(arg.Value))
+                            .Concat(new Expression[] { ParseExpression(initObj.Value) })
+                            .ToArray()
+                        : new Expression[] { ParseExpression(initObj.Value) };
+
+                    setters.Add(Tuple.Create(memberReferenceExpression, setterArgs));
+                }
+                else if (initObj.Field != null)
+                {
+                    memberReferenceExpression = new FieldReferenceExpression(
+                        _clrContext,
+                        LocFromJObject(initObj),
+                        DeserializeField(initObj.Field.Value),
+                        null);
+
+                    setters.Add(
+                        Tuple.Create(
+                            memberReferenceExpression,
+                            new Expression[] { ParseExpression(initObj.Value) }));
+                }
+                else
+                {
+                    memberReferenceExpression = new MethodReferenceExpression(
+                        _clrContext,
+                        LocFromJObject(initObj),
+                        DeserializeMethod(initObj.MethodCall.Method),
+                        null);
+
+                    var arguments = ParseArguments(initObj.MethodCall.Arguments);
+
+                    setters.Add(Tuple.Create(memberReferenceExpression, arguments));
+                }
+            }
+
+            return setters;
         }
 
         private Node ParseLocalMethodExpr(Serialization.LocalMethodExpression jObject)
@@ -2177,6 +2206,10 @@ namespace JsCsc.Lib
                 {
                     typeof(Serialization.NewInitializerExpression),
                     (a) => ParseNewInitializer((Serialization.NewInitializerExpression)a)
+                },
+                {
+                    typeof(Serialization.WithExpressionSer),
+                    (a) => ParseWithExpression((Serialization.WithExpressionSer)a)
                 },
                 {
                     typeof(Serialization.NewCollectionInitializerExpression),

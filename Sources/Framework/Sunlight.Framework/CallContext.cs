@@ -8,6 +8,7 @@ namespace Sunlight.Framework
 {
     using System;
     using System.Runtime.CompilerServices;
+    using System.Text;
 
     /// <summary>
     /// Ambient context that flows across async boundaries.

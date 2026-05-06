@@ -6,7 +6,7 @@
 
 NScript supports the C# 8 surface area for non-ref, non-reflective code targeting `netstandard2.1`. The translatable subset includes classes, interfaces, generics, LINQ, lambdas, async/await (compiled through state machines into Promises), pattern matching basics, indices/ranges, and null-coalescing. The hard exclusions are anything that requires the .NET runtime: `dynamic`, reflection, P/Invoke, `unsafe` / pointers, and iterator methods (`yield return` / `yield break`). Some C# 8 features are partially implemented or open work — see [csharp8-todos.md](../../csharp8-todos.md) at the repo root.
 
-> **C# 9–13 status:** Framework and test-framework projects are now built with `<LangVersion>13</LangVersion>`. The transparent C# 9–13 syntactic features that ride the existing pipeline are listed in [`csharp9-13-status.md`](./csharp9-13-status.md); semantic features (records, `with`, `init`, non-trivial patterns, collection expressions, `required`, primary constructors on classes) are sequenced into follow-up phases of issue #47.
+> **C# 9–13 status:** Framework and test-framework projects are now built with `<LangVersion>13</LangVersion>`. The transparent C# 9–13 syntactic features that ride the existing pipeline are listed in [`csharp9-13-status.md`](./csharp9-13-status.md); records (class and struct), `with` expressions, and `init` accessors landed in Phase D of issue #47. The remaining semantic features (non-trivial patterns, collection expressions, `required` runtime enforcement, primary constructors on classes) are sequenced into follow-up phases.
 
 ## Reference — feature support matrix
 

@@ -3,6 +3,12 @@ Type__typeMapping = null;
 function Type__GetType(typeName) {
   return Type__CastType(Function, Type__typeMapping[typeName]);
 }
+function Type__op_Equality(left, right) {
+  return left === right;
+}
+function Type__op_Inequality(left, right) {
+  return left !== right;
+}
 function Type__GetInterfaces(this_) {
   return this_.interfaces;
 }

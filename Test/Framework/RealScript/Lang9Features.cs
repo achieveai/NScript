@@ -25,7 +25,7 @@ namespace RealScript
     /// - Covariant return types: require the
     ///   <c>RuntimeFeature.CovariantReturnsOfClasses</c> metadata flag, absent on
     ///   our <c>netstandard2.1</c> target.
-    /// - Records, <c>with</c>, <c>init</c>: tracked under Phase D.
+    /// - Records, <c>with</c>, <c>init</c>: covered by <c>Lang9RecordTests</c>.
     /// - Pattern-matching enhancements: tracked under Phase C.
     /// </summary>
     public class Lang9Features

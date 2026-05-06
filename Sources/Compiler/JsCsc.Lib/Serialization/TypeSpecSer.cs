@@ -26,5 +26,7 @@ namespace JsCsc.Lib.Serialization
         public string Namespace { get; set; }
 
         public int Arity { get; set; }
+
+        public bool IsRecord { get; set; }
     }
 }

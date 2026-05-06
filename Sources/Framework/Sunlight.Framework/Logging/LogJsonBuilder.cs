@@ -9,6 +9,7 @@ namespace Sunlight.Framework
     using System;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
+    using System.Text;
 
     /// <summary>
     /// Builds the JSON envelope for <see cref="LogEvent"/>s in pure C# so that

@@ -1,4 +1,4 @@
-﻿namespace System
+﻿namespace System.Text
 {
     using System.Runtime.CompilerServices;
     public sealed class StringBuilder
@@ -37,6 +37,12 @@
         public StringBuilder Append(string s)
         {
             this.internalArray.Push(s);
+            return this;
+        }
+
+        public StringBuilder Append(object o)
+        {
+            this.Append(o == null ? string.Empty : o.ToString());
             return this;
         }
 

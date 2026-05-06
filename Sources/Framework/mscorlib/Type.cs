@@ -102,6 +102,14 @@
             return (Type)Type.typeMapping[typeName];
         }
 
+        [IntrinsicOperator]
+        [Script("return left === right;")]
+        public static extern bool operator ==(Type left, Type right);
+
+        [IntrinsicOperator]
+        [Script("return left !== right;")]
+        public static extern bool operator !=(Type left, Type right);
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static extern Type GetTypeFromHandle(RuntimeTypeHandle typeHandle);
 
