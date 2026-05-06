@@ -1175,7 +1175,7 @@ namespace JsCsc.Lib
                         DeserializeMethod(jObject.Method),
                         jObject.ArgumentOrderOpt,
                         args),
-                setters); ;
+                setters);
         }
 
         private Node ParseWithExpression(Serialization.WithExpressionSer jObject)
