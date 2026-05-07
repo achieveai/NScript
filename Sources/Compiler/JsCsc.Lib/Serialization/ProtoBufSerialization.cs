@@ -18,6 +18,7 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(169, typeof(SwitchSectionSer))]
     [ProtoInclude(114, typeof(ObjectInitilaizer))]
     [ProtoInclude(179, typeof(MethodBody))]
+    [ProtoInclude(228, typeof(CollectionExpressionElementSer))]
     [Serializable]
     public class AstBase
     {
@@ -118,11 +119,14 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(217, typeof(LocalMethodExpression))]
     [ProtoInclude(140, typeof(ThrowExpression))]
     [ProtoInclude(218, typeof(TupleLiteral))]
-    // Tag block 226-235 reserved for C# 9-13 expression additions.
+    // Tag block 226-235 reserved for C# 9-13 expression additions on
+    // ExpressionSer. The sibling tag block on AstBase houses the
+    // CollectionExpressionElementSer hierarchy (228/229/230) — see the
+    // [ProtoInclude(228, ...)] line on AstBase above.
     // Tags are append-only; never reuse retired tags (silent misdeserialisation).
     // 226 — WithExpressionSer (C# 9 `with` expressions)
     // 227 — CollectionExpressionSer (C# 12 collection expressions)
-    // Next free: 228.
+    // Next free on ExpressionSer: 231.
     [ProtoInclude(226, typeof(WithExpressionSer))]
     [ProtoInclude(227, typeof(CollectionExpressionSer))]
     [Serializable]
@@ -413,11 +417,13 @@ namespace JsCsc.Lib.Serialization
     }
 
     /// <summary>
-    /// C# 12 collection expression target-typed to an array shape (T[],
-    /// IEnumerable&lt;T&gt;, IReadOnlyList&lt;T&gt;, IReadOnlyCollection&lt;T&gt;,
-    /// ICollection&lt;T&gt;, IList&lt;T&gt;). Lowered at Stage 2 into
-    /// InlineArrayInitialization. List&lt;T&gt;, span, collection-builder
-    /// and spread-element shapes are not yet supported.
+    /// C# 12 collection expression target-typed to an array shape (T[]).
+    /// Each element is either a literal (LiteralElementSer) or a spread
+    /// (SpreadElementSer) per Phase F1. Literal-only inputs lower to
+    /// InlineArrayInitialization; spread-bearing inputs lower to a
+    /// concat chain via ArrayWithSpreadsInitialization.
+    /// List&lt;T&gt;, IEnumerable&lt;T&gt; / interface targets, [CollectionBuilder]
+    /// shapes and Span&lt;T&gt; / ReadOnlySpan&lt;T&gt; remain Phase-F4 / Non-Goals.
     /// </summary>
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [Serializable]
@@ -426,7 +432,48 @@ namespace JsCsc.Lib.Serialization
     {
         public int ElementType { get; set; }
 
-        public List<ExpressionSer> Elements { get; set; }
+        public List<CollectionExpressionElementSer> Elements { get; set; }
+    }
+
+    /// <summary>
+    /// Discriminator for individual elements of a C# 12 collection expression.
+    /// Subtypes:
+    ///   229 — LiteralElementSer (regular expression element, e.g. <c>1</c>)
+    ///   230 — SpreadElementSer  (spread element, e.g. <c>..src</c>)
+    /// Tag 228 is reserved on AstBase for this abstract base.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [ProtoInclude(229, typeof(LiteralElementSer))]
+    [ProtoInclude(230, typeof(SpreadElementSer))]
+    [Serializable]
+    public abstract class CollectionExpressionElementSer
+        : AstBase
+    {
+    }
+
+    /// <summary>
+    /// A regular (non-spread) element inside a collection expression.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class LiteralElementSer
+        : CollectionExpressionElementSer
+    {
+        public ExpressionSer Operand { get; set; }
+    }
+
+    /// <summary>
+    /// A spread (<c>..source</c>) element inside a collection expression.
+    /// Phase F1 supports spread sources whose static type is an array
+    /// (<c>T[]</c>); other source kinds are rejected at Stage 1 and tracked
+    /// for Phase F4.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class SpreadElementSer
+        : CollectionExpressionElementSer
+    {
+        public ExpressionSer Operand { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

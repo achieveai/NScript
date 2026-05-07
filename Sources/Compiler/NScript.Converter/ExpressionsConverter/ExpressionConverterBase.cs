@@ -228,6 +228,12 @@ namespace NScript.Converter.ExpressionsConverter
                     },
 
                     {
+                        typeof(ArrayWithSpreadsInitialization),
+                        ExpressionConverterBase.SimplifyConverter<ArrayWithSpreadsInitialization>(
+                            ArrayWithSpreadsConverter.Convert)
+                    },
+
+                    {
                         typeof(InlineCollectionInitializationExpression),
                         ExpressionConverterBase.SimplifyConverter<InlineCollectionInitializationExpression>(
                             InlineCollectionInitializerConverter.Convert)

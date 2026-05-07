@@ -1213,22 +1213,67 @@ namespace JsCsc.Lib
 
         private Node ParseCollectionExpression(Serialization.CollectionExpressionSer jObject)
         {
-            // Phase E supports collection expressions targeting array shapes (T[],
-            // IEnumerable<T>, IReadOnlyList<T>, IReadOnlyCollection<T>, ICollection<T>,
-            // IList<T>) — Stage 1 already rejects unsupported targets and spread
-            // elements, so by the time we deserialise here we just emit the same
-            // InlineArrayInitialization an explicit `new T[] { ... }` would.
+            // Phase E/F1 support collection expressions targeting T[] only.
+            // - Literal-only inputs lower to InlineArrayInitialization, identical
+            //   to the JS an explicit `new T[] { ... }` would emit.
+            // - Spread-bearing inputs lower to ArrayWithSpreadsInitialization,
+            //   which the converter renders as a JS Array.prototype.concat chain.
             var location = LocFromJObject(jObject);
             var elementType = DeserializeType(jObject.ElementType);
-            IList<Expression> initializerExpressions = jObject.Elements != null
-                ? ParseExpressions(jObject.Elements)
-                : System.Array.Empty<Expression>();
+            var elements = jObject.Elements ?? new List<Serialization.CollectionExpressionElementSer>();
 
-            return new InlineArrayInitialization(
+            bool hasSpread = false;
+            foreach (var e in elements)
+            {
+                if (e is Serialization.SpreadElementSer)
+                {
+                    hasSpread = true;
+                    break;
+                }
+            }
+
+            if (!hasSpread)
+            {
+                IList<Expression> initializerExpressions = elements
+                    .Select(e => ParseExpression(((Serialization.LiteralElementSer)e).Operand))
+                    .ToList();
+
+                return new InlineArrayInitialization(
+                    _clrContext,
+                    location,
+                    elementType,
+                    initializerExpressions);
+            }
+
+            var items = new List<ArrayInitializationItem>(elements.Count);
+            foreach (var element in elements)
+            {
+                switch (element)
+                {
+                    case Serialization.LiteralElementSer literal:
+                        items.Add(new ArrayInitializationItem(
+                            isSpread: false,
+                            operand: ParseExpression(literal.Operand)));
+                        break;
+
+                    case Serialization.SpreadElementSer spread:
+                        items.Add(new ArrayInitializationItem(
+                            isSpread: true,
+                            operand: ParseExpression(spread.Operand)));
+                        break;
+
+                    default:
+                        throw new InvalidOperationException(
+                            $"Unexpected collection-expression element kind '{element?.GetType().Name ?? "null"}' " +
+                            "during Stage 2 deserialisation. Stage 1 should have rejected it.");
+                }
+            }
+
+            return new ArrayWithSpreadsInitialization(
                 _clrContext,
                 location,
                 elementType,
-                initializerExpressions);
+                items);
         }
 
         private List<Tuple<MemberReferenceExpression, Expression[]>> BuildInitializerSetters(
