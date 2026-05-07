@@ -118,9 +118,13 @@ namespace JsCsc.Lib.Serialization
     [ProtoInclude(217, typeof(LocalMethodExpression))]
     [ProtoInclude(140, typeof(ThrowExpression))]
     [ProtoInclude(218, typeof(TupleLiteral))]
-    // C# 9 record additions reserve tag block 226-235 for record/with subtypes.
+    // Tag block 226-235 reserved for C# 9-13 expression additions.
     // Tags are append-only; never reuse retired tags (silent misdeserialisation).
+    // 226 — WithExpressionSer (C# 9 `with` expressions)
+    // 227 — CollectionExpressionSer (C# 12 collection expressions)
+    // Next free: 228.
     [ProtoInclude(226, typeof(WithExpressionSer))]
+    [ProtoInclude(227, typeof(CollectionExpressionSer))]
     [Serializable]
     public abstract class ExpressionSer
         : AstBase
@@ -406,6 +410,23 @@ namespace JsCsc.Lib.Serialization
         public int Type { get; set; }
 
         public List<ObjectInitilaizer> Initializers { get; set; }
+    }
+
+    /// <summary>
+    /// C# 12 collection expression target-typed to an array shape (T[],
+    /// IEnumerable&lt;T&gt;, IReadOnlyList&lt;T&gt;, IReadOnlyCollection&lt;T&gt;,
+    /// ICollection&lt;T&gt;, IList&lt;T&gt;). Lowered at Stage 2 into
+    /// InlineArrayInitialization. List&lt;T&gt;, span, collection-builder
+    /// and spread-element shapes are not yet supported.
+    /// </summary>
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [Serializable]
+    public class CollectionExpressionSer
+        : ExpressionSer
+    {
+        public int ElementType { get; set; }
+
+        public List<ExpressionSer> Elements { get; set; }
     }
 
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]

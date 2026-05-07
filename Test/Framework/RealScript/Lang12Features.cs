@@ -19,10 +19,12 @@ using Numbers = int[];          // array-syntax alias — illegal pre-C# 12
 /// Compile-only fixtures for transparent C# 12 syntactic features.
 /// See <c>Lang9Features.cs</c> for the contract describing "transparent".
 ///
-/// NOTE: Collection expressions (<c>[1, 2, 3]</c>) and primary constructors
-/// on classes are tracked under later phases (E and F). Default lambda
-/// parameter values are NOT exercised here because they introduce new bound
-/// node shape that has not been audited yet.
+/// NOTE: Collection expressions (<c>[1, 2, 3]</c>) live in their own fixture
+/// (<c>Lang12CollectionExpressionTests.cs</c>) because they introduce a new
+/// bound node shape (<c>BoundCollectionExpression</c>). Primary constructors
+/// on non-record classes remain Phase F. Default lambda parameter values are
+/// not exercised here because they introduce new bound node shape that has
+/// not been audited yet.
 /// </summary>
 public class Lang12Features
 {

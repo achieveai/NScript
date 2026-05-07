@@ -459,6 +459,55 @@
 
         public override AstBase VisitCollectionInitializerExpression(BoundCollectionInitializerExpression node, SerializationContext arg) => throw new NotImplementedException();
 
+        public override AstBase VisitCollectionExpression(BoundCollectionExpression node, SerializationContext arg)
+        {
+            var location = node.Syntax.Location.GetSerLoc();
+
+            foreach (var element in node.Elements)
+            {
+                if (element is BoundCollectionExpressionSpreadElement)
+                {
+                    throw new NotSupportedException(
+                        "Spread elements (..) inside collection expressions are not yet supported by NScript. Track via WI #47 Phase F.");
+                }
+            }
+
+            TypeSymbol elementType;
+            if (node.Type is ArrayTypeSymbol arrayType)
+            {
+                elementType = arrayType.ElementType;
+            }
+            else
+            {
+                // Phase E intentionally restricts collection-expression support to
+                // array targets. Interface targets (IEnumerable<T>/IList<T>/etc.)
+                // require Roslyn to find System.Collections.Generic.List<T>..ctor()
+                // as a well-known member during binding, which NScript's mscorlib
+                // facade does not currently satisfy. List<T> targets, interface
+                // targets, [CollectionBuilder] types and spread elements are all
+                // deferred to WI #47 Phase F. Span<T> / ReadOnlySpan<T> are Non-Goals.
+                throw new NotSupportedException(
+                    $"Collection expressions targeting '{node.Type}' are not yet supported. " +
+                    "Phase E supports T[] only. List<T>, IEnumerable<T>/IList<T>/IReadOnlyList<T>/" +
+                    "ICollection<T>/IReadOnlyCollection<T>, [CollectionBuilder] types and spread " +
+                    "elements are deferred to Phase F. Span<T>/ReadOnlySpan<T> remain Non-Goals.");
+            }
+
+            return new CollectionExpressionSer
+            {
+                Location = location,
+                ElementType = arg.SymbolSerializer.GetTypeSpecId(elementType),
+                Elements = node.Elements
+                    .Select(e => e as BoundExpression
+                        ?? throw new NotSupportedException(
+                            $"Unsupported collection-expression element kind '{e.Kind}'. "
+                            + "Phase E only supports simple expressions; spread elements (..) "
+                            + "and dictionary key-value pairs are tracked under WI #47 Phase F."))
+                    .Select(expr => (ExpressionSer)Visit(expr, arg))
+                    .ToList()
+            };
+        }
+
         public override AstBase VisitComplexConditionalReceiver(BoundComplexConditionalReceiver node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitCompoundAssignmentOperator(BoundCompoundAssignmentOperator node, SerializationContext arg)
@@ -628,6 +677,7 @@
                 case ConversionKind.ImplicitThrow:
                 case ConversionKind.Deconstruction:
                 case ConversionKind.SwitchExpression:
+                case ConversionKind.CollectionExpression:
                     return Visit(node.Operand, arg);
 
                 case ConversionKind.ImplicitTupleLiteral:
@@ -2146,5 +2196,6 @@
 
             return false;
         }
+
     }
 }
