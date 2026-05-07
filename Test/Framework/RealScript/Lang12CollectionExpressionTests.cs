@@ -10,16 +10,30 @@ namespace RealScript
 
     /// <summary>
     /// Compile-only fixtures for C# 12 collection expressions targeting <c>T[]</c>.
-    /// Array targets lower to a JS array through <c>InlineArrayInitialization</c>.
+    /// Array targets lower to a JS array through <c>InlineArrayInitialization</c>
+    /// for literal-only inputs (Phase E) and <c>ArrayWithSpreadsInitialization</c>
+    /// for inputs that contain one or more spread elements (Phase F1).
     ///
-    /// Out of scope for this slice (tracked under WI #47 Phase F):
+    /// Phase F1 ships the wire-format and converter infrastructure for spread
+    /// elements in <c>T[]</c> targets. Framework E2E fixtures that exercise the
+    /// spread shape at the source level (<c>[..src]</c>, <c>[a, ..src, b]</c>) are
+    /// deferred to a follow-up because Roslyn's collection-expression lowering
+    /// requires <c>System.Collections.Generic.List&lt;T&gt;..ctor()</c> to be
+    /// resolvable as a well-known member, which NScript's <c>mscorlib</c> facade
+    /// does not currently satisfy. The serialization round-trip tests in
+    /// <c>NScript.Csc.Lib.Test/CollectionExpressionRoundTripTests.cs</c> cover both
+    /// <c>LiteralElementSer</c> (tag 229) and <c>SpreadElementSer</c> (tag 230)
+    /// dispatch paths through the abstract <c>CollectionExpressionElementSer</c>
+    /// base.
+    ///
+    /// Out of scope for this slice (tracked under WI #47 Phase F4):
     /// - Interface targets (<c>IEnumerable&lt;T&gt;</c>, <c>IList&lt;T&gt;</c>,
     ///   <c>IReadOnlyList&lt;T&gt;</c>, <c>ICollection&lt;T&gt;</c>,
-    ///   <c>IReadOnlyCollection&lt;T&gt;</c>) — these depend on Roslyn finding
-    ///   <c>System.Collections.Generic.List&lt;T&gt;..ctor()</c> as a well-known
-    ///   member, which NScript's <c>mscorlib</c> facade does not currently satisfy.
+    ///   <c>IReadOnlyCollection&lt;T&gt;</c>).
     /// - <c>List&lt;T&gt;</c> targets and <c>[CollectionBuilder]</c>-attributed types.
-    /// - Spread elements (<c>..source</c>).
+    /// - Spread sources whose static type is not <c>T[]</c> (<c>List&lt;T&gt;</c>,
+    ///   <c>IEnumerable&lt;T&gt;</c>) — Phase F1 only accepts array-typed spread
+    ///   sources because JS <c>Array.prototype.concat</c> flattens them natively.
     /// - <c>Span&lt;T&gt;</c> / <c>ReadOnlySpan&lt;T&gt;</c> (non-goal — see
     ///   <c>docs/language/limitations.md</c>).
     /// </summary>

@@ -463,15 +463,6 @@
         {
             var location = node.Syntax.Location.GetSerLoc();
 
-            foreach (var element in node.Elements)
-            {
-                if (element is BoundCollectionExpressionSpreadElement)
-                {
-                    throw new NotSupportedException(
-                        "Spread elements (..) inside collection expressions are not yet supported by NScript. Track via WI #47 Phase F.");
-                }
-            }
-
             TypeSymbol elementType;
             if (node.Type is ArrayTypeSymbol arrayType)
             {
@@ -479,32 +470,69 @@
             }
             else
             {
-                // Phase E intentionally restricts collection-expression support to
-                // array targets. Interface targets (IEnumerable<T>/IList<T>/etc.)
+                // Phase E/F1 restrict collection-expression support to array
+                // targets. Interface targets (IEnumerable<T>/IList<T>/etc.)
                 // require Roslyn to find System.Collections.Generic.List<T>..ctor()
                 // as a well-known member during binding, which NScript's mscorlib
-                // facade does not currently satisfy. List<T> targets, interface
-                // targets, [CollectionBuilder] types and spread elements are all
-                // deferred to WI #47 Phase F. Span<T> / ReadOnlySpan<T> are Non-Goals.
+                // facade does not currently satisfy. List<T>, interface targets
+                // and [CollectionBuilder] types are deferred to WI #47 Phase F4.
+                // Span<T> / ReadOnlySpan<T> remain Non-Goals.
                 throw new NotSupportedException(
                     $"Collection expressions targeting '{node.Type}' are not yet supported. " +
-                    "Phase E supports T[] only. List<T>, IEnumerable<T>/IList<T>/IReadOnlyList<T>/" +
-                    "ICollection<T>/IReadOnlyCollection<T>, [CollectionBuilder] types and spread " +
-                    "elements are deferred to Phase F. Span<T>/ReadOnlySpan<T> remain Non-Goals.");
+                    "Phase F1 supports T[] only. List<T>, IEnumerable<T>/IList<T>/IReadOnlyList<T>/" +
+                    "ICollection<T>/IReadOnlyCollection<T> and [CollectionBuilder] types are " +
+                    "deferred to Phase F4. Span<T>/ReadOnlySpan<T> remain Non-Goals.");
+            }
+
+            var elements = new List<CollectionExpressionElementSer>(node.Elements.Length);
+            foreach (var element in node.Elements)
+            {
+                CollectionExpressionElementSer serElement;
+                if (element is BoundCollectionExpressionSpreadElement spread)
+                {
+                    // Phase F1 supports spread sources whose static type is
+                    // an array (T[]) — JS Array.prototype.concat flattens them
+                    // natively. Non-array iterable sources (List<T>,
+                    // IEnumerable<T>) require iterator-based emission and are
+                    // tracked for Phase F4 alongside interface-target work.
+                    if (!(spread.Expression.Type is ArrayTypeSymbol))
+                    {
+                        throw new NotSupportedException(
+                            $"Spread element source type '{spread.Expression.Type}' is not yet " +
+                            "supported. Phase F1 supports spread sources of array type (T[]) only; " +
+                            "List<T> and IEnumerable<T> spread sources are tracked for Phase F4.");
+                    }
+
+                    serElement = new SpreadElementSer
+                    {
+                        Location = element.Syntax.Location.GetSerLoc(),
+                        Operand = (ExpressionSer)Visit(spread.Expression, arg),
+                    };
+                }
+                else if (element is BoundExpression expr)
+                {
+                    serElement = new LiteralElementSer
+                    {
+                        Location = element.Syntax.Location.GetSerLoc(),
+                        Operand = (ExpressionSer)Visit(expr, arg),
+                    };
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        $"Unsupported collection-expression element kind '{element.Kind}'. "
+                        + "Phase F1 supports literal expressions and array-typed spread sources; "
+                        + "dictionary key-value pairs and other shapes are tracked for Phase F4+.");
+                }
+
+                elements.Add(serElement);
             }
 
             return new CollectionExpressionSer
             {
                 Location = location,
                 ElementType = arg.SymbolSerializer.GetTypeSpecId(elementType),
-                Elements = node.Elements
-                    .Select(e => e as BoundExpression
-                        ?? throw new NotSupportedException(
-                            $"Unsupported collection-expression element kind '{e.Kind}'. "
-                            + "Phase E only supports simple expressions; spread elements (..) "
-                            + "and dictionary key-value pairs are tracked under WI #47 Phase F."))
-                    .Select(expr => (ExpressionSer)Visit(expr, arg))
-                    .ToList()
+                Elements = elements,
             };
         }
 

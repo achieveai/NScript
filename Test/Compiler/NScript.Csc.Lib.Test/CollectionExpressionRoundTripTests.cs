@@ -2,6 +2,7 @@ namespace NScript.Csc.Lib.Test
 {
     using System.Collections.Generic;
     using System.IO;
+    using JsCsc.Lib;
     using JsCsc.Lib.Serialization;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,11 +15,11 @@ namespace NScript.Csc.Lib.Test
             var original = new CollectionExpressionSer
             {
                 ElementType = 2,
-                Elements = new List<ExpressionSer>
+                Elements = new List<CollectionExpressionElementSer>
                 {
-                    new IntLiteralExpression { Value = 1 },
-                    new IntLiteralExpression { Value = 2 },
-                    new IntLiteralExpression { Value = 3 },
+                    new LiteralElementSer { Operand = new IntLiteralExpression { Value = 1 } },
+                    new LiteralElementSer { Operand = new IntLiteralExpression { Value = 2 } },
+                    new LiteralElementSer { Operand = new IntLiteralExpression { Value = 3 } },
                 }
             };
 
@@ -28,9 +29,10 @@ namespace NScript.Csc.Lib.Test
             var typed = (CollectionExpressionSer)clone;
             Assert.AreEqual(2, typed.ElementType);
             Assert.AreEqual(3, typed.Elements.Count);
-            Assert.AreEqual(1, ((IntLiteralExpression)typed.Elements[0]).Value);
-            Assert.AreEqual(2, ((IntLiteralExpression)typed.Elements[1]).Value);
-            Assert.AreEqual(3, ((IntLiteralExpression)typed.Elements[2]).Value);
+            Assert.IsInstanceOfType(typed.Elements[0], typeof(LiteralElementSer));
+            Assert.AreEqual(1, ((IntLiteralExpression)((LiteralElementSer)typed.Elements[0]).Operand).Value);
+            Assert.AreEqual(2, ((IntLiteralExpression)((LiteralElementSer)typed.Elements[1]).Operand).Value);
+            Assert.AreEqual(3, ((IntLiteralExpression)((LiteralElementSer)typed.Elements[2]).Operand).Value);
         }
 
         [TestMethod]
@@ -39,7 +41,7 @@ namespace NScript.Csc.Lib.Test
             var original = new CollectionExpressionSer
             {
                 ElementType = 2,
-                Elements = new List<ExpressionSer>()
+                Elements = new List<CollectionExpressionElementSer>()
             };
 
             var clone = RoundTripAsExpression(original);
@@ -47,6 +49,101 @@ namespace NScript.Csc.Lib.Test
             var typed = (CollectionExpressionSer)clone;
             Assert.IsNotNull(typed.Elements);
             Assert.AreEqual(0, typed.Elements.Count);
+        }
+
+        // Phase F1: spread elements (..source) target-typed to T[].
+        // Exercises both subtype tags (229 LiteralElementSer, 230 SpreadElementSer)
+        // and verifies the discriminator dispatch via the abstract base.
+        [TestMethod]
+        public void CollectionExpressionSer_MixedLiteralAndSpread_RoundTrips()
+        {
+            var original = new CollectionExpressionSer
+            {
+                ElementType = 2,
+                Elements = new List<CollectionExpressionElementSer>
+                {
+                    new LiteralElementSer { Operand = new IntLiteralExpression { Value = 7 } },
+                    new SpreadElementSer { Operand = new IntLiteralExpression { Value = 11 } },
+                    new LiteralElementSer { Operand = new IntLiteralExpression { Value = 13 } },
+                }
+            };
+
+            var clone = RoundTripAsExpression(original);
+
+            var typed = (CollectionExpressionSer)clone;
+            Assert.AreEqual(3, typed.Elements.Count);
+
+            Assert.IsInstanceOfType(typed.Elements[0], typeof(LiteralElementSer));
+            Assert.AreEqual(7, ((IntLiteralExpression)((LiteralElementSer)typed.Elements[0]).Operand).Value);
+
+            Assert.IsInstanceOfType(typed.Elements[1], typeof(SpreadElementSer));
+            Assert.AreEqual(11, ((IntLiteralExpression)((SpreadElementSer)typed.Elements[1]).Operand).Value);
+
+            Assert.IsInstanceOfType(typed.Elements[2], typeof(LiteralElementSer));
+            Assert.AreEqual(13, ((IntLiteralExpression)((LiteralElementSer)typed.Elements[2]).Operand).Value);
+        }
+
+        // Interpretation tests for BondToAst.ParseCollectionExpression dispatch:
+        // verifies the discriminator that selects InlineArrayInitialization (literal-
+        // only path) vs ArrayWithSpreadsInitialization (spread-bearing path) without
+        // requiring a Roslyn-built assembly + ClrContext.
+
+        [TestMethod]
+        public void ContainsSpreadElement_NullElements_ReturnsFalse()
+        {
+            Assert.IsFalse(BondToAst.ContainsSpreadElement(null));
+        }
+
+        [TestMethod]
+        public void ContainsSpreadElement_EmptyElements_ReturnsFalse()
+        {
+            var elements = new List<CollectionExpressionElementSer>();
+            Assert.IsFalse(BondToAst.ContainsSpreadElement(elements));
+        }
+
+        [TestMethod]
+        public void ContainsSpreadElement_AllLiterals_ReturnsFalse()
+        {
+            var elements = new List<CollectionExpressionElementSer>
+            {
+                new LiteralElementSer { Operand = new IntLiteralExpression { Value = 1 } },
+                new LiteralElementSer { Operand = new IntLiteralExpression { Value = 2 } },
+            };
+            Assert.IsFalse(BondToAst.ContainsSpreadElement(elements));
+        }
+
+        [TestMethod]
+        public void ContainsSpreadElement_SingleSpread_ReturnsTrue()
+        {
+            var elements = new List<CollectionExpressionElementSer>
+            {
+                new SpreadElementSer { Operand = new IntLiteralExpression { Value = 1 } },
+            };
+            Assert.IsTrue(BondToAst.ContainsSpreadElement(elements));
+        }
+
+        [TestMethod]
+        public void ContainsSpreadElement_MixedLiteralAndSpread_ReturnsTrue()
+        {
+            var elements = new List<CollectionExpressionElementSer>
+            {
+                new LiteralElementSer { Operand = new IntLiteralExpression { Value = 1 } },
+                new SpreadElementSer { Operand = new IntLiteralExpression { Value = 2 } },
+                new LiteralElementSer { Operand = new IntLiteralExpression { Value = 3 } },
+            };
+            Assert.IsTrue(BondToAst.ContainsSpreadElement(elements));
+        }
+
+        [TestMethod]
+        public void ContainsSpreadElement_TrailingSpread_ReturnsTrue()
+        {
+            var elements = new List<CollectionExpressionElementSer>
+            {
+                new LiteralElementSer { Operand = new IntLiteralExpression { Value = 1 } },
+                new LiteralElementSer { Operand = new IntLiteralExpression { Value = 2 } },
+                new SpreadElementSer { Operand = new IntLiteralExpression { Value = 3 } },
+            };
+            Assert.IsTrue(BondToAst.ContainsSpreadElement(elements));
         }
 
         // Round-trip through the abstract base so we exercise the [ProtoInclude(227)]
