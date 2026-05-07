@@ -100,7 +100,12 @@ namespace NScript.Converter.ExpressionsConverter
                 new JST.Expression[] { flatNativeArray });
         }
 
-        private static JST.Expression BuildConcatCall(
+        // Public so the fresh-array invariant ([].concat(...) wrapper) can be
+        // structurally asserted from a unit test without standing up a Roslyn
+        // compilation. The lone-spread case especially must not collapse to the
+        // bare spread source — that would alias and break collection-expression
+        // semantics.
+        public static JST.Expression BuildConcatCall(
             Utils.Location location,
             JST.IdentifierScope scope,
             IList<JST.Expression> concatArgs)

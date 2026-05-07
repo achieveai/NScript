@@ -1211,6 +1211,25 @@ namespace JsCsc.Lib
                 setters);
         }
 
+        // Discriminator dispatch for ParseCollectionExpression: returns true if any
+        // element is a spread (lowered via ArrayWithSpreadsInitialization), false if
+        // every element is a literal (lowered via InlineArrayInitialization).
+        // Exposed as public static so the dispatch decision can be unit-tested
+        // directly without standing up a ClrContext + TypeInfoSer.
+        public static bool ContainsSpreadElement(
+            IEnumerable<Serialization.CollectionExpressionElementSer> elements)
+        {
+            if (elements == null)
+            { return false; }
+
+            foreach (var e in elements)
+            {
+                if (e is Serialization.SpreadElementSer)
+                { return true; }
+            }
+            return false;
+        }
+
         private Node ParseCollectionExpression(Serialization.CollectionExpressionSer jObject)
         {
             // Phase E/F1 support collection expressions targeting T[] only.
@@ -1222,20 +1241,22 @@ namespace JsCsc.Lib
             var elementType = DeserializeType(jObject.ElementType);
             var elements = jObject.Elements ?? new List<Serialization.CollectionExpressionElementSer>();
 
-            bool hasSpread = false;
-            foreach (var e in elements)
-            {
-                if (e is Serialization.SpreadElementSer)
-                {
-                    hasSpread = true;
-                    break;
-                }
-            }
+            bool hasSpread = ContainsSpreadElement(elements);
 
             if (!hasSpread)
             {
                 IList<Expression> initializerExpressions = elements
-                    .Select(e => ParseExpression(((Serialization.LiteralElementSer)e).Operand))
+                    .Select(e =>
+                    {
+                        if (e is Serialization.LiteralElementSer literal)
+                        {
+                            return ParseExpression(literal.Operand);
+                        }
+                        throw new InvalidOperationException(
+                            $"Unexpected collection-expression element kind '{e?.GetType().Name ?? "null"}' " +
+                            "in literal-only branch during Stage 2 deserialisation. " +
+                            "hasSpread=false implies every element must be LiteralElementSer; Stage 1 violated this contract.");
+                    })
                     .ToList();
 
                 return new InlineArrayInitialization(
