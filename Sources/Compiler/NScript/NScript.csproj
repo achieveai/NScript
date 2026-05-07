@@ -9,4 +9,22 @@
     <ProjectReference Include="../NScript.Lib/NScript.Lib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="nscript">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="MakeUnixShimExecutable" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('Windows')) != 'True'">
+    <ItemGroup>
+      <NScriptUnixShim Include="#!/usr/bin/env bash" />
+      <NScriptUnixShim Include="set -euo pipefail" />
+      <NScriptUnixShim Include="SCRIPT_PATH=&quot;$0&quot;" />
+      <NScriptUnixShim Include="SCRIPT_DIR=`dirname &quot;$SCRIPT_PATH&quot;`" />
+      <NScriptUnixShim Include="exec dotnet &quot;$SCRIPT_DIR/NScript.dll&quot; &quot;$@&quot;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(TargetDir)nscript" Lines="@(NScriptUnixShim)" Overwrite="true" />
+    <Exec Command="chmod +x &quot;$(TargetDir)nscript&quot;" Condition="Exists('$(TargetDir)nscript')" />
+  </Target>
+
 </Project>

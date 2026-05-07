@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec dotnet Cs2Jsc cs2jsc "$@"

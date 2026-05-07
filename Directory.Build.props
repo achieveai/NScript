@@ -8,6 +8,15 @@
     <SolutionDir>$(NScriptRoot)</SolutionDir>
     <TestOutputDir>$(NScriptRoot)/Test/TestBin</TestOutputDir>
     <CompilerNetFramework>net8.0</CompilerNetFramework>
+    <NScriptIsWindows>$([MSBuild]::IsOSPlatform('Windows'))</NScriptIsWindows>
+    <NScriptCompilerToolName Condition="'$(NScriptCompilerToolName)' == '' and '$(NScriptIsWindows)' == 'True'">csc.exe</NScriptCompilerToolName>
+    <NScriptCompilerToolName Condition="'$(NScriptCompilerToolName)' == '' and '$(NScriptIsWindows)' != 'True'">csc</NScriptCompilerToolName>
+    <NScriptEmitterToolFileName Condition="'$(NScriptEmitterToolFileName)' == '' and '$(NScriptIsWindows)' == 'True'">nscript.exe</NScriptEmitterToolFileName>
+    <NScriptEmitterToolFileName Condition="'$(NScriptEmitterToolFileName)' == '' and '$(NScriptIsWindows)' != 'True'">nscript</NScriptEmitterToolFileName>
+    <NScriptToolsetBinDir Condition="'$(NScriptToolsetBinDir)' == '' and '$(NScriptIsWindows)' == 'True'">$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</NScriptToolsetBinDir>
+    <NScriptToolsetBinDir Condition="'$(NScriptToolsetBinDir)' == '' and '$(NScriptIsWindows)' != 'True'">$(NScriptToolsetDir)/bin/$(Configuration)/$(CompilerNetFramework)/</NScriptToolsetBinDir>
+    <NScriptToolsetDebugBinDir Condition="'$(NScriptToolsetDebugBinDir)' == '' and '$(NScriptIsWindows)' == 'True'">$(NScriptToolsetDir)\bin\Debug\$(CompilerNetFramework)\</NScriptToolsetDebugBinDir>
+    <NScriptToolsetDebugBinDir Condition="'$(NScriptToolsetDebugBinDir)' == '' and '$(NScriptIsWindows)' != 'True'">$(NScriptToolsetDir)/bin/Debug/$(CompilerNetFramework)/</NScriptToolsetDebugBinDir>
   </PropertyGroup>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>

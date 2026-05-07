@@ -4,8 +4,8 @@
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <CscToolPath>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</CscToolPath>
-    <CscToolExe>csc.exe</CscToolExe>
+    <CscToolPath>$(NScriptToolsetBinDir)</CscToolPath>
+    <CscToolExe>$(NScriptCompilerToolName)</CscToolExe>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <!--
       Pinned to C# 13 (NOT `latest`) so the meaning of source code is
@@ -30,4 +30,13 @@
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
+
+  <Target Name="EnsureNScriptToolsetBuilt"
+          BeforeTargets="CoreCompile"
+          Condition="!Exists('$(CscToolPath)$(CscToolExe)') or !Exists('$(NScriptToolsetBinDir)$(NScriptEmitterToolFileName)')">
+    <Message Importance="high" Text="Bootstrapping NScript toolset into $(NScriptToolsetBinDir)." />
+    <MSBuild Projects="$(CompilerSources)/JsCsc/JsCsc.csproj;$(CompilerSources)/NScript/NScript.csproj"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);CompilerNetFramework=$(CompilerNetFramework)" />
+  </Target>
 </Project>

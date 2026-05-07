@@ -2,12 +2,19 @@
     <Import
         Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <PropertyGroup>
-        <CscToolPath>
-            $(MSBuildThisFileDirectory)../../NScriptToolSet/bin/Debug/$(CompilerNetFramework)/</CscToolPath>
-        <CscToolExe>csc.exe</CscToolExe>
-        <NScriptExe>
-            $(MSBuildThisFileDirectory)../../NScriptToolSet/bin/Debug/$(CompilerNetFramework)/nscript.exe</NScriptExe>
+        <CscToolPath>$(NScriptToolsetDebugBinDir)</CscToolPath>
+        <CscToolExe>$(NScriptCompilerToolName)</CscToolExe>
+        <NScriptExe>$(NScriptToolsetDebugBinDir)$(NScriptEmitterToolFileName)</NScriptExe>
         <!-- Match Sources/Framework/Directory.Build.props — see comment there. -->
         <LangVersion>13</LangVersion>
     </PropertyGroup>
+
+    <Target Name="EnsureNScriptDebugToolsetBuilt"
+            BeforeTargets="CoreCompile"
+            Condition="!Exists('$(CscToolPath)$(CscToolExe)') or !Exists('$(NScriptExe)')">
+        <Message Importance="high" Text="Bootstrapping NScript Debug toolset into $(NScriptToolsetDebugBinDir)." />
+        <MSBuild Projects="$(CompilerSources)/JsCsc/JsCsc.csproj;$(CompilerSources)/NScript/NScript.csproj"
+                 Targets="Build"
+                 Properties="Configuration=Debug;CompilerNetFramework=$(CompilerNetFramework)" />
+    </Target>
 </Project>

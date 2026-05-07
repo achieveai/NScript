@@ -14,4 +14,22 @@
   <ItemGroup>
     <ProjectReference Include="..\NScript.Csc.Lib\NScript.Csc.Lib.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="csc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="MakeUnixShimExecutable" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('Windows')) != 'True'">
+    <ItemGroup>
+      <JsCscUnixShim Include="#!/usr/bin/env bash" />
+      <JsCscUnixShim Include="set -euo pipefail" />
+      <JsCscUnixShim Include="SCRIPT_PATH=&quot;$0&quot;" />
+      <JsCscUnixShim Include="SCRIPT_DIR=`dirname &quot;$SCRIPT_PATH&quot;`" />
+      <JsCscUnixShim Include="exec dotnet &quot;$SCRIPT_DIR/csc.dll&quot; &quot;$@&quot;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(TargetDir)csc" Lines="@(JsCscUnixShim)" Overwrite="true" />
+    <Exec Command="chmod +x &quot;$(TargetDir)csc&quot;" Condition="Exists('$(TargetDir)csc')" />
+  </Target>
 </Project>

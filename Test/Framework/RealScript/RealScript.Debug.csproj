@@ -14,8 +14,8 @@
     <NoWarn>0028, 1591, 0414, 0219, 0824, 0626, 0169, 0168</NoWarn>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <CscToolPath>$(NScriptToolsetDir)\bin\$(Configuration)\$(CompilerNetFramework)\</CscToolPath>
-    <CscToolExe>csc.exe</CscToolExe>
+    <CscToolPath>$(NScriptToolsetBinDir)</CscToolPath>
+    <CscToolExe>$(NScriptCompilerToolName)</CscToolExe>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>DEBUG</DefineConstants>

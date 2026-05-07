@@ -2,8 +2,10 @@
 	<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 	<PropertyGroup>
-		<CscToolExe Condition=" '$(CscToolExe)' == '' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
-		<NScriptExe Condition=" '$(NScriptExe)' == '' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
+		<CscToolExe Condition=" '$(CscToolExe)' == '' and '$([MSBuild]::IsOSPlatform(`Windows`))' == 'True' ">$(MSBuildThisFileDirectory)csc.cmd</CscToolExe>
+		<CscToolExe Condition=" '$(CscToolExe)' == '' and '$([MSBuild]::IsOSPlatform(`Windows`))' != 'True' ">$(MSBuildThisFileDirectory)csc</CscToolExe>
+		<NScriptExe Condition=" '$(NScriptExe)' == '' and '$([MSBuild]::IsOSPlatform(`Windows`))' == 'True' ">$(MSBuildThisFileDirectory)nscript.cmd</NScriptExe>
+		<NScriptExe Condition=" '$(NScriptExe)' == '' and '$([MSBuild]::IsOSPlatform(`Windows`))' != 'True' ">$(MSBuildThisFileDirectory)nscript</NScriptExe>
 		<Minify Condition="$(Minify) == '' and $(Configuration) == 'Release'">true</Minify>
 		<Uglify Condition="$(Uglify) == '' and $(Configuration) == 'Release'">true</Uglify>
 		<JsOptimize Condition="$(JsOptimize) == '' and $(Configuration) == 'Release'">true</JsOptimize>

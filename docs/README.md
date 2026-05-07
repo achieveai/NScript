@@ -25,6 +25,7 @@ If you are **contributing to the NScript toolchain itself**, start with:
 2. [Compiler plugins](compiler/plugins.md) — writing an `IConverterPlugin`
 3. [Build & MSBuild SDK](build/msbuild-sdk.md) — `Mcqdb.NScript.Sdk`, `Directory.Build.props`, package generation
 4. [Testing](testing/README.md) — compiler unit tests vs framework behavioral tests; SunlightUnit
+5. [Docker workbench](build/docker-workbench.md) — Linux development container for build/test/LLM workflows
 
 ## Status — DoD coverage for #42
 

@@ -33,6 +33,12 @@ namespace XwmlParser.Test
         static TypeResolver resolver;
         static RuntimeScopeManager runtimeScopeManager;
 
+#if DEBUG
+        const string TestConfiguration = "Debug";
+#else
+        const string TestConfiguration = "Release";
+#endif
+
         public static void Initialize()
         {
             if (context == null)
@@ -42,12 +48,13 @@ namespace XwmlParser.Test
                     System.IO.Path.Combine(testAssemblyDir, @"..\..\..\.."));
 
                 // Framework DLLs compiled by NScript custom compiler
-                var libPath = System.IO.Path.Combine(repoRoot, @"NScriptToolSet\lib\Debug");
+                var libPath = System.IO.Path.Combine(repoRoot, @"NScriptToolSet\lib", TestConfiguration);
 
                 // Test framework DLLs (output includes TFM subfolder)
                 var testLibPath = System.IO.Path.Combine(
                     repoRoot,
-                    @"Test\Framework\Sunlight.Framework.UI.Test\bin\Debug");
+                    @"Test\Framework\Sunlight.Framework.UI.Test\bin",
+                    TestConfiguration);
 
                 // Find the TFM subfolder (net8.0, net6.0, etc.)
                 if (System.IO.Directory.Exists(testLibPath))

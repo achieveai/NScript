@@ -1,9 +1,14 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
-    <NScriptBinPath Condition="'$(NScriptBinPath)' == ''">$(MSBuildThisFileDirectory)bin\</NScriptBinPath>
+    <NScriptIsWindows>$([MSBuild]::IsOSPlatform('Windows'))</NScriptIsWindows>
+    <NScriptBinPath Condition="'$(NScriptBinPath)' == '' and '$(NScriptIsWindows)' == 'True'">$(MSBuildThisFileDirectory)bin\</NScriptBinPath>
+    <NScriptBinPath Condition="'$(NScriptBinPath)' == '' and '$(NScriptIsWindows)' != 'True'">$(MSBuildThisFileDirectory)bin/</NScriptBinPath>
     <CscToolPath>$(NScriptBinPath)</CscToolPath>
-	<NScriptExe>$(NScriptBinPath)NScript.exe</NScriptExe>
+    <CscToolExe Condition="'$(CscToolExe)' == '' and '$(NScriptIsWindows)' == 'True'">csc.exe</CscToolExe>
+    <CscToolExe Condition="'$(CscToolExe)' == '' and '$(NScriptIsWindows)' != 'True'">csc</CscToolExe>
+	<NScriptExe Condition="'$(NScriptExe)' == '' and '$(NScriptIsWindows)' == 'True'">$(NScriptBinPath)NScript.exe</NScriptExe>
+	<NScriptExe Condition="'$(NScriptExe)' == '' and '$(NScriptIsWindows)' != 'True'">$(NScriptBinPath)nscript</NScriptExe>
   </PropertyGroup>
   <ItemGroup>
 	  <AdditionalLibPaths Include="$(MSBuildThisFileDirectory)lib"/>

@@ -12,8 +12,8 @@ NScript ships an MSBuild SDK (`NScript.Sdk`, packaged as `Mcqdb.NScript.Sdk`) th
 |---|---|
 | `Sources/Compiler/NScript.Sdk/Sdk/Sdk.props` | Imported early; sets defaults (`OutputType=Library`, `TargetFramework=netstandard2.1`, `NoStandardLib=true`, `JsOutputPath=./`) |
 | `Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets` | Imported late; defines `AfterCompile` → `ScriptGenerate` target chain |
-| `Sources/Compiler/NScript.Sdk/Sdk/csc.cmd` | Wrapper that invokes `JsCsc.exe` with the right toolset path |
-| `Sources/Compiler/NScript.Sdk/Sdk/nscript.cmd` | Wrapper that invokes `cs2jsc.exe` |
+| `Sources/Compiler/NScript.Sdk/Sdk/csc.cmd` / `csc` | OS-specific wrapper that invokes the Stage 1 compiler entry point |
+| `Sources/Compiler/NScript.Sdk/Sdk/nscript.cmd` / `nscript` | OS-specific wrapper that invokes the Stage 2 JS emitter |
 
 ## Reference — MSBuild properties
 
@@ -24,8 +24,8 @@ NScript ships an MSBuild SDK (`NScript.Sdk`, packaged as `Mcqdb.NScript.Sdk`) th
 | `<NoStandardLib>` | `true` | Don't reference the .NET BCL — NScript uses its own `mscorlib` clone |
 | `<TargetFramework>` | `netstandard2.1` | The custom CSC targets `netstandard2.1` even though NScript output is JS |
 | `<CscToolPath>` | (set by SDK) | Path to NScript's compiler binaries |
-| `<CscToolExe>` | `csc.cmd` (or `csc.exe`) | The compiler entry point |
-| `<NScriptExe>` | `nscript.cmd` | The JS emitter entry point |
+| `<CscToolExe>` | `csc.cmd` on Windows, `csc` on non-Windows | The compiler entry point |
+| `<NScriptExe>` | `nscript.cmd` on Windows, `nscript` on non-Windows | The JS emitter entry point |
 | `<Minify>` | `true` in Release, else `false` | Short-name identifier substitution |
 | `<Uglify>` | `true` in Release, else `false` | Drop comments, whitespace, optional braces |
 | `<JsOptimize>` | `true` in Release, else `false` | Devirtualisation, accessor inlining, function dedup ([ADRs 0023, 0024](../adr/0023-devirtualize-non-virtual-methods-and-inline-trivial-accessors.md)) |
@@ -149,9 +149,9 @@ NScript's `mscorlib` clone targets `netstandard2.1`. Don't change this in a proj
 
 `Sdk.targets` includes `<MakeDir>` for `$(JsOutputPath)` but only inside `ScriptGenerate`. Some app `.csproj` files add their own `EnsureJsOutputDirectory` target with `BeforeTargets="ScriptGenerate"` for portability — see TodoApp.csproj.
 
-### Wrapper `csc.cmd` / `nscript.cmd` are Windows-shaped
+### Wrapper `csc` / `nscript` are OS-conditional
 
-The SDK ships `.cmd` wrappers. On non-Windows hosts you'd need shell equivalents — the project doesn't currently target Linux/macOS. (Tracked separately; not in scope for the docs.)
+The SDK now ships both Windows `.cmd` wrappers and non-Windows shell wrappers. In-tree framework and test builds likewise choose `csc.exe` / `nscript.exe` on Windows and `csc` / `nscript` shims on non-Windows so the custom compiler pipeline can run inside the Linux workbench.
 
 ### Incremental builds depend on input/output timestamps
 

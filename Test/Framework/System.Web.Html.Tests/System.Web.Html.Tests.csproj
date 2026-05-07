@@ -22,8 +22,4 @@
     <ProjectReference Include="..\..\..\Sources\Framework\SunlightUnit\SunlightUnit.csproj" />
   </ItemGroup>
   <Import Project="$(NScriptToolSetPath)\NScript.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)$(OutDir)*.js" "$(projectDir)..\TestWebApplication\GeneratedScripts"
-copy "$(ProjectDir)$(OutDir)*.map" "$(projectDir)..\TestWebApplication\GeneratedScripts"</PostBuildEvent>
-  </PropertyGroup>
 </Project>
