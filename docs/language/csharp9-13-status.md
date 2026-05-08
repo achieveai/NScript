@@ -18,9 +18,12 @@ existing Stage-1 visitor already handles) versus what still needs implementation
 work in the compiler pipeline.
 
 The remaining pipeline gaps are sequenced into Phase C (pattern family),
-~~Phase D (records / `with` / `init`)~~ ✅ landed under this PR, Phase E
-(collection expressions), Phase F (required members, primary constructors),
-Phase G (docs sweep) — see issue #47 for the full plan.
+~~Phase D (records / `with` / `init`)~~ ✅ landed, Phase E (collection
+expressions) — partial; spread-into-array landed under Phase F1,
+~~Phase F3 (required members metadata)~~ ✅ landed under this PR,
+Phase F2 (primary constructors on classes), Phase F4 (interface / `List<T>`
+collection-expression targets), Phase G (docs sweep) — see issue #47 for
+the full plan.
 
 ## How a feature lands in the "Supported" column
 
@@ -107,7 +110,7 @@ is *transparent*; otherwise it is a planned phase.
 | Raw string literals (`"""…"""`) | ✅ Supported | Validated in `Lang11Features.cs::RawStrings`. Roslyn folds to ordinary `string` constants at parse time. |
 | `nameof(parameter)` in attributes referencing enclosing method parameters | ✅ Supported | Validated in `Lang11Features.cs::NameOfParameterInAttribute` via `[Obsolete("..." + nameof(value))]` on a method whose parameter is `value`. Roslyn resolves the parameter symbol at attribute-bind time and folds to a constant string. |
 | File-local types (`file class`) | ✅ Supported | Validated in `Lang11Features.cs::UseFileLocalHelper` + `FileLocalHelper`. Bound tree sees an ordinary class with a mangled metadata name. |
-| Required members (`required`) | ❌ Needs implementation | `IsRequired` not serialised. NScript will follow the NRT precedent — metadata only, no runtime enforcement. **Phase F.** |
+| Required members (`required`) | ✅ Supported (metadata) | `IsRequired` is persisted on `PropertySpecSer` / `FieldSpecSer` (shipped under the records slice). The BCL attribute facades — `System.Runtime.CompilerServices.RequiredMemberAttribute`, `System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute`, `System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute` — live in NScript's `mscorlib` so Roslyn binds the C# 11 syntax. Validated in `Lang11Features.cs::Lang11RequiredTests` (init-only properties, fields, derived members, `[SetsRequiredMembers]`). NScript follows the NRT / `init` precedent here: `required` is **compile-time strict, runtime permissive** — Roslyn enforces it at every consumer call site (CS9035 if a required member is missing from an initializer), but no runtime check is emitted. |
 | Generic attributes | ⚠️ Untested | Symbol-side metadata path not audited; likely needs `SymbolSerializer` work. **Phase F.** |
 | Auto-default of struct fields | ✅ Supported | Validated in `Lang11Features.cs::StructAutoDefault`. The auto-default prologue is part of Roslyn's lowering — bound tree shape unchanged. |
 | List patterns (`[1, 2, ..]`) | ❌ Needs implementation | `BoundListPattern`, `BoundSlicePattern` unvisited. **Phase C.** |

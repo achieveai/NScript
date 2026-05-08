@@ -11,6 +11,12 @@ using System;
 /// <summary>
 /// Compile-only fixtures for transparent C# 11 syntactic features.
 /// See <c>Lang9Features.cs</c> for the contract describing "transparent".
+///
+/// The <c>required</c> members feature lives in <c>Lang11RequiredTests.cs</c>
+/// (separate file, not in the explicit Roslyn-driven build list) so its
+/// synthesised <c>init</c> / <c>required</c> method-reference shapes do
+/// not flow through the in-test <c>BondToAst</c> deserializer — matching
+/// the precedent set by <c>Lang9RecordTests.cs</c>.
 /// </summary>
 public class Lang11Features
 {
