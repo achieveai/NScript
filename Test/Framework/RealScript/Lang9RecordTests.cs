@@ -18,7 +18,9 @@ namespace RealScript
     /// Out-of-scope for this slice (tracked separately):
     /// - Required-member runtime enforcement (<c>required</c> metadata is
     ///   persisted but no runtime check is emitted).
-    /// - Primary constructors on non-record classes/structs (C# 12).
+    /// - Primary constructors on non-record classes (validated separately in
+    ///   <c>Lang12Features.cs::Lang12PrimaryCtorTests</c>) and on non-record
+    ///   structs (currently out of scope — see issue #47 Phase F).
     /// - Collection expressions and list/recursive patterns (C# 12+).
     /// </summary>
     public class Lang9RecordTests

@@ -20,10 +20,10 @@ work in the compiler pipeline.
 The remaining pipeline gaps are sequenced into Phase C (pattern family),
 ~~Phase D (records / `with` / `init`)~~ ✅ landed, Phase E (collection
 expressions) — partial; spread-into-array landed under Phase F1,
-~~Phase F3 (required members metadata)~~ ✅ landed under this PR,
-Phase F2 (primary constructors on classes), Phase F4 (interface / `List<T>`
-collection-expression targets), Phase G (docs sweep) — see issue #47 for
-the full plan.
+~~Phase F3 (required members metadata)~~ ✅ landed,
+~~Phase F2 (primary constructors on classes)~~ ✅ landed,
+Phase F4 (interface / `List<T>` collection-expression targets),
+Phase G (docs sweep) — see issue #47 for the full plan.
 
 ## How a feature lands in the "Supported" column
 
@@ -126,7 +126,7 @@ is *transparent*; otherwise it is a planned phase.
 |---|---|---|
 | Collection expressions (`[1, 2, 3]`) | ⚠️ Partial | Phase E supports `T[]` targets with literal-only inputs (emitted as `InlineArrayInitialization`). Phase F1 lands the wire-format and Stage-2 converter for spread elements (`ArrayWithSpreadsInitialization`, emitted as a JS `[].concat(...)` chain wrapped through the `ArrayG<T>` factory) — including the discriminated `CollectionExpressionElementSer` hierarchy on the proto wire (tags 228 / 229 / 230) and unit-tested round-trip via `CollectionExpressionRoundTripTests`. Source-level fixtures for `[..src]` are deferred until Roslyn can resolve `System.Collections.Generic.List<T>..ctor()` as a well-known member during collection-expression binding (a constraint that applies to *any* spread element regardless of target type). Interface targets, `List<T>` targets, `[CollectionBuilder]` types, and end-to-end framework spread fixtures are sequenced into **Phase F4** alongside the `mscorlib` well-known-member work. `Span<T>` / `ReadOnlySpan<T>` remain Non-Goals. |
 | Spread `..` element | ⚠️ Infrastructure-only | Phase F1 ships the wire-format (`SpreadElementSer` proto tag 230) and Stage-2 converter (`ArrayWithSpreadsConverter` lowers to `[].concat(...)` through `ArrayG<T>`), unit-tested via `CollectionExpressionRoundTripTests`. Source-level fixtures (`[..src]`, `[a, ..src, b]`) are deferred to **Phase F4** because Roslyn's collection-expression lowering requires `List<T>..ctor()` as a well-known member regardless of target type, and NScript's `mscorlib` facade does not yet satisfy that shape. `List<T>` and `IEnumerable<T>` spread sources additionally require iterator-based emission and ride the same Phase F4 slot. |
-| Primary constructors on classes | ❌ Needs implementation | Parameter-capture surfaces `BoundPrimaryConstructorParameterAccess` for unused-but-referenced parameters. **Phase F.** |
+| Primary constructors on classes | ✅ Supported | Validated in `Lang12Features.cs::Lang12PrimaryCtorTests` via `PrimaryCtorOnClass` (captured parameter referenced from method bodies and properties), `PrimaryCtorWithBaseCall` (`class D(int x) : B(x)` base-call argument forwarding), and `PrimaryCtorMultipleParams` (multiple captures with disjoint reference sites — field initializers, property bodies, and base-call argument lists). Roslyn synthesises private backing fields for captured parameters and lowers references at bind time, so the bound tree resolves to existing `BoundFieldAccess` / `BoundParameter` shapes already covered by Stage 1 — no `BoundPrimaryConstructorParameterAccess` visitor required. Records (`record class Foo(int X)`) continue to flow through their own `BoundFieldAccess`-against-synthesised-property path validated in `Lang9RecordTests.cs`. |
 | `using` alias for any type | ✅ Supported | Validated in `Lang12Features.cs::AliasAnyType` using **tuple-syntax** (`using Pair = (int X, int Y);`) and **array-syntax** (`using Numbers = int[];`) aliases — the C# 12 grammar additions. Aliases are resolved at symbol resolution; bound tree sees the underlying type. Closed generic aliases (legal since C# 1.0) are not exercised here. |
 | Default lambda parameter values | ⚠️ Untested | May surface a new lambda metadata shape. Conservative — re-validate before claiming support. |
 | Inline arrays | ❌ Out of scope | Issue #47 Non-Goals. |
