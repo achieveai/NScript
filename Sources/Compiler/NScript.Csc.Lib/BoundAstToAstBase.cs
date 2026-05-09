@@ -745,7 +745,7 @@
                     var addRange = ResolveAddRangeOverload(listType, spread.Expression.Type);
                     if (addRange == null)
                     {
-                        throw new NotSupportedException(
+                        throw new InvalidOperationException(
                             $"No 'AddRange' overload on '{listType}' accepts spread source type "
                             + $"'{spread.Expression.Type}'. Required to lower a non-array spread "
                             + "source into a List<T> target.");
