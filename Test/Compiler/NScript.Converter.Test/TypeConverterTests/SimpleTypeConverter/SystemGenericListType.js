@@ -21,16 +21,22 @@ function List(T, _callStatiConstructor) {
     this_.__ctor();
     return this_;
   };
-  List$1_$T$_.__ctor = function System_Collections_Generic_List$1_factorya(nativeArray) {
+  List$1_$T$_.__ctora = function System_Collections_Generic_List$1_factorya(capacity) {
     var this_;
     this_ = new List$1_$T$_();
-    this_.__ctora(nativeArray);
+    this_.__ctora(capacity);
     return this_;
   };
-  List$1_$T$_.__ctora = function System_Collections_Generic_List$1_factoryb(array) {
+  List$1_$T$_.__ctor = function System_Collections_Generic_List$1_factoryb(nativeArray) {
     var this_;
     this_ = new List$1_$T$_();
-    this_.__ctorb(array);
+    this_.__ctorb(nativeArray);
+    return this_;
+  };
+  List$1_$T$_.__ctorb = function System_Collections_Generic_List$1_factoryc(array) {
+    var this_;
+    this_ = new List$1_$T$_();
+    this_.__ctorc(array);
     return this_;
   };
   ptyp_ = List$1_$T$_.prototype;
@@ -38,10 +44,13 @@ function List(T, _callStatiConstructor) {
   ptyp_.__ctor = function List$1____ctor() {
     this.nativeArray = new Array(0);
   };
-  ptyp_.__ctora = function List$1____ctora(nativeArray) {
+  ptyp_.__ctora = function List$1____ctora(capacity) {
+    this.nativeArray = new Array(0);
+  };
+  ptyp_.__ctorb = function List$1____ctorb(nativeArray) {
     this.nativeArray = nativeArray;
   };
-  ptyp_.__ctorb = function List$1____ctorb(array) {
+  ptyp_.__ctorc = function List$1____ctorc(array) {
     var arrayNativeArray, i; {
       arrayNativeArray = NativeArray$1__GetNativeArray(array);
       if (true)

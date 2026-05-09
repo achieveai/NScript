@@ -28,6 +28,18 @@ namespace System.Collections.Generic
         }
 
         /// <summary>
+        /// Capacity-preallocating constructor. Added so Roslyn's
+        /// `WellKnownMember.System_Collections_Generic_List_T__ctorInt32`
+        /// resolves when the binder lowers a collection expression with a
+        /// known element count to <c>new List&lt;T&gt;(N)</c>. Underlying
+        /// JS storage is a native array, so capacity is informational.
+        /// </summary>
+        public List(int capacity)
+        {
+            this.nativeArray = new NativeArray<T>(0);
+        }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="nativeArray"> Array of natives. </param>

@@ -9,32 +9,57 @@ namespace RealScript
     using System;
 
     /// <summary>
-    /// Compile-only fixtures for C# 12 collection expressions targeting <c>T[]</c>.
-    /// Array targets lower to a JS array through <c>InlineArrayInitialization</c>
-    /// for literal-only inputs (Phase E) and <c>ArrayWithSpreadsInitialization</c>
-    /// for inputs that contain one or more spread elements (Phase F1).
+    /// Compile-only fixtures for C# 12 collection expressions.
     ///
-    /// Phase F1 ships the wire-format and converter infrastructure for spread
-    /// elements in <c>T[]</c> targets. Framework E2E fixtures that exercise the
-    /// spread shape at the source level (<c>[..src]</c>, <c>[a, ..src, b]</c>) are
-    /// deferred to a follow-up because Roslyn's collection-expression lowering
-    /// requires <c>System.Collections.Generic.List&lt;T&gt;..ctor()</c> to be
-    /// resolvable as a well-known member, which NScript's <c>mscorlib</c> facade
-    /// does not currently satisfy. The serialization round-trip tests in
-    /// <c>NScript.Csc.Lib.Test/CollectionExpressionRoundTripTests.cs</c> cover both
-    /// <c>LiteralElementSer</c> (tag 229) and <c>SpreadElementSer</c> (tag 230)
-    /// dispatch paths through the abstract <c>CollectionExpressionElementSer</c>
-    /// base.
+    /// This class is intentionally excluded from the explicit Roslyn-driven
+    /// build list in <c>Test/Compiler/NScript.Csc.Lib.Test/TestResources.cs</c>
+    /// (mirrors the <c>Lang11RequiredTests.cs</c> precedent): the
+    /// <c>NewCollectionInitializerExpression</c> /
+    /// <c>CollectionExpressionSer</c> / <c>CollectionExpressionElementSer</c>
+    /// shapes synthesised by Roslyn for collection expressions are not
+    /// currently round-trippable through the in-test <c>BondToAst</c>
+    /// deserializer. The MSBuild Framework build still globs this file via
+    /// <c>Sources/Framework/Directory.Build.props</c>, so the fixtures are
+    /// exercised end-to-end by the framework prebuild and downstream
+    /// integration tests.
     ///
-    /// Out of scope for this slice (tracked under WI #47 Phase F4):
-    /// - Interface targets (<c>IEnumerable&lt;T&gt;</c>, <c>IList&lt;T&gt;</c>,
-    ///   <c>IReadOnlyList&lt;T&gt;</c>, <c>ICollection&lt;T&gt;</c>,
-    ///   <c>IReadOnlyCollection&lt;T&gt;</c>).
-    /// - <c>List&lt;T&gt;</c> targets and <c>[CollectionBuilder]</c>-attributed types.
-    /// - Spread sources whose static type is not <c>T[]</c> (<c>List&lt;T&gt;</c>,
-    ///   <c>IEnumerable&lt;T&gt;</c>) — Phase F1 only accepts array-typed spread
-    ///   sources because JS <c>Array.prototype.concat</c> flattens them natively.
-    /// - <c>Span&lt;T&gt;</c> / <c>ReadOnlySpan&lt;T&gt;</c> (non-goal — see
+    /// Phase E (literal-only <c>T[]</c>) and Phase F1 (<c>T[]</c> with spreads
+    /// from another <c>T[]</c>) shipped the wire format and converter
+    /// infrastructure. Phase F4 extends coverage to <c>List&lt;T&gt;</c>
+    /// targets — both literal-only and with spread sources whose static type
+    /// is <c>List&lt;T&gt;</c> or <c>T[]</c>. A new Stage-1 lowering branch in
+    /// <c>VisitCollectionExpression</c> emits
+    /// <c>NewCollectionInitializerExpression</c> (<c>new List&lt;T&gt;()</c>
+    /// plus a sequence of <c>Add</c>/<c>AddRange</c> calls) which feeds the
+    /// existing <c>InlineCollectionInitializationExpression</c> JST bridge,
+    /// so no new ProtoBuf tag is required. Phase F4 also enables
+    /// <c>List&lt;T&gt;</c> spread sources into <c>T[]</c> targets via a
+    /// synthesised <c>ToArray()</c> bridge so the F1 array-source converter
+    /// handles both shapes uniformly.
+    ///
+    /// The <c>LiteralElementSer</c> (tag 229) and <c>SpreadElementSer</c>
+    /// (tag 230) dispatch paths under the abstract
+    /// <c>CollectionExpressionElementSer</c> base were introduced in PR #59
+    /// (Phase F1). They are exercised end-to-end by the fixtures in this
+    /// file via the MSBuild Framework build; no separate Csc.Lib unit-test
+    /// file targets the round-trip directly.
+    ///
+    /// Out of scope for this slice (deferred to Phase F5):
+    /// - The five BCL interface targets — <c>IEnumerable&lt;T&gt;</c>,
+    ///   <c>IList&lt;T&gt;</c>, <c>IReadOnlyList&lt;T&gt;</c>,
+    ///   <c>ICollection&lt;T&gt;</c>, <c>IReadOnlyCollection&lt;T&gt;</c>.
+    ///   Roslyn's binder requires a long tail of well-known-member
+    ///   signatures on these interfaces (<c>RemoveAt</c>, <c>Count</c>,
+    ///   <c>IsSynchronized</c>, <c>SyncRoot</c>, etc.) before it will produce
+    ///   a <c>BoundCollectionExpression</c>; supplying those facade members
+    ///   ripples through every implementer (List, Dictionary, ArrayG,
+    ///   ReadOnlyCollection, NumberDictionary, StringDictionary, ExpandoObject)
+    ///   and is large enough to track separately.
+    /// - <c>[CollectionBuilder]</c>-attributed user types.
+    /// - <c>IEnumerable&lt;T&gt;</c> spread sources into a <c>T[]</c> target
+    ///   (needs an iterator-based emit path; non-trivial without a
+    ///   <c>System.Linq.Enumerable.ToArray</c> helper in NScript's mscorlib facade).
+    /// - <c>Span&lt;T&gt;</c> / <c>ReadOnlySpan&lt;T&gt;</c> (Non-Goal — see
     ///   <c>docs/language/limitations.md</c>).
     /// </summary>
     public class Lang12CollectionExpressionTests
@@ -87,6 +112,71 @@ namespace RealScript
             int[][] grid = [[1, 2], [3, 4]];
             Console.WriteLine(grid.Length);
             Console.WriteLine(grid[1][0]);
+        }
+
+        // -----------------------------------------------------------------
+        // Phase F4 — List<T> direct targets and array+List spread bridges.
+        // BCL interface targets are deferred to Phase F5 (see class summary).
+        // -----------------------------------------------------------------
+
+        // Empty collection expression target-typed to List<T>.
+        public static void EmptyList()
+        {
+            System.Collections.Generic.List<int> xs = [];
+            Console.WriteLine(xs.Count);
+        }
+
+        // Literal-only List<T> target.
+        public static void ListTarget()
+        {
+            System.Collections.Generic.List<int> xs = [1, 2, 3];
+            Console.WriteLine(xs.Count);
+            Console.WriteLine(xs[2]);
+        }
+
+        // List<T> target with a spread source whose static type is List<T>.
+        // Lowers to `new List<int>(); AddRange(src);`.
+        public static void ListTargetWithSpreadFromList()
+        {
+            System.Collections.Generic.List<int> src = [10, 20, 30];
+            System.Collections.Generic.List<int> dst = [..src];
+            Console.WriteLine(dst.Count);
+            Console.WriteLine(dst[1]);
+        }
+
+        // List<T> target with a spread source whose static type is T[].
+        // Lowers to `new List<int>(); AddRange(arr);` — exact-match overload
+        // resolution picks `AddRange(T[])` over `AddRange(IEnumerable<T>)`.
+        public static void ListTargetWithSpreadFromArray()
+        {
+            int[] src = [4, 5, 6];
+            System.Collections.Generic.List<int> dst = [..src, 7];
+            Console.WriteLine(dst.Count);
+            Console.WriteLine(dst[3]);
+        }
+
+        // T[] target with a List<T> spread source — F4 normalises this through
+        // a synthesised `List<T>.ToArray()` so the F1 array-source converter
+        // handles both shapes uniformly.
+        public static void ArrayTargetWithSpreadFromList()
+        {
+            System.Collections.Generic.List<int> src = [1, 2, 3];
+            int[] dst = [0, ..src, 99];
+            Console.WriteLine(dst.Length);
+            Console.WriteLine(dst[4]);
+        }
+
+        // List<T> target with interleaved literal-spread-literal — exercises
+        // Add(literal) → AddRange(src) → Add(literal) ordering correctness on
+        // the List<T> initialiser path (distinct from the array path which
+        // uses Array.concat with bunched literal segments).
+        public static void ListTargetMixedLiteralsAndSpread()
+        {
+            System.Collections.Generic.List<int> src = [10, 20];
+            System.Collections.Generic.List<int> dst = [1, ..src, 99];
+            Console.WriteLine(dst.Count);
+            Console.WriteLine(dst[0]);
+            Console.WriteLine(dst[3]);
         }
     }
 }
