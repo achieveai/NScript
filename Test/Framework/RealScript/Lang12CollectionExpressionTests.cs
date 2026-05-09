@@ -56,12 +56,17 @@ namespace RealScript
     /// synthesises <c>new List&lt;T&gt;(); AddRange(src); ToArray()</c> so
     /// the F1 array-source converter handles the result uniformly.
     ///
-    /// Out of scope for this slice (deferred to Phase F6):
-    /// - <c>[CollectionBuilder]</c>-attributed user types.
-    /// - Index/range residuals on element-position sub-spreads
-    ///   (<c>[..src[1..3]]</c>).
-    /// - <c>Span&lt;T&gt;</c> / <c>ReadOnlySpan&lt;T&gt;</c> (Non-Goal — see
-    ///   <c>docs/language/limitations.md</c>).
+    /// Phase F6 closes the index/range residual on element-position
+    /// sub-spreads (<c>[..src[1..3]]</c>) by adding Stage-1 lowering for
+    /// <c>BoundFromEndIndexExpression</c>, <c>BoundRangeExpression</c>, and
+    /// <c>BoundImplicitIndexerAccess</c>. The sub-spread's range slice is
+    /// rewritten to <c>RuntimeHelpers.GetSubArray&lt;T&gt;</c> before the
+    /// outer collection-expression converter consumes it, so the existing
+    /// F1 array-source spread path handles the result with no new wire
+    /// format. <c>[CollectionBuilder]</c> is reclassified as a Non-Goal
+    /// alongside <c>Span&lt;T&gt;</c> / <c>ReadOnlySpan&lt;T&gt;</c> — both
+    /// depend on Span semantics that are out of scope for NScript (see
+    /// <c>docs/language/limitations.md</c>).
     /// </summary>
     public class Lang12CollectionExpressionTests
     {
@@ -274,6 +279,38 @@ namespace RealScript
         {
             System.Collections.Generic.List<int> backing = [1, 2, 3];
             return backing;
+        }
+
+        // -----------------------------------------------------------------
+        // Phase F6 — index/range residuals on element-position sub-spreads.
+        // The sub-spread's range slice lowers to RuntimeHelpers.GetSubArray
+        // before the outer collection-expression converter sees the
+        // spread element, so this is a composition test of F1 (array
+        // spread source) over F6 (range-indexer lowering).
+        // -----------------------------------------------------------------
+
+        // Array-target collection expression with a single sub-spread whose
+        // source is itself a Range slice over an array.
+        public static void ArrayTargetWithIndexRangeSubSpread()
+        {
+            int[] src = new int[] { 1, 2, 3, 4, 5 };
+            int[] xs = [..src[1..3]];
+            Console.WriteLine(xs.Length);
+            Console.WriteLine(xs[0]);
+            Console.WriteLine(xs[1]);
+        }
+
+        // Array-target collection expression mixing literal elements with
+        // multiple Range-slice sub-spreads (open-ended on both sides) — the
+        // F1 array-spread converter must run after the F6 range lowering
+        // for each sub-spread independently.
+        public static void ArrayTargetWithMixedIndexRangeSubSpread()
+        {
+            int[] src = new int[] { 1, 2, 3, 4, 5 };
+            int[] xs = [0, ..src[1..3], ..src[..2], 99];
+            Console.WriteLine(xs.Length);
+            Console.WriteLine(xs[0]);
+            Console.WriteLine(xs[xs.Length - 1]);
         }
     }
 }
