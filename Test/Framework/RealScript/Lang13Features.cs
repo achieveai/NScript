@@ -54,4 +54,27 @@ public class Lang13Features
     }
 
     private static void Take(int x) => Console.WriteLine("int:" + x.ToString());
+
+    // C# 13 — params collections with a `List<T>` parameter. Roslyn synthesises
+    // a List<T>-shaped collection expression at the call site, which routes
+    // through the same Phase F4 lowering that handles explicit
+    // `List<T> xs = [...]` target-typing. (Interface params shapes such as
+    // `params IEnumerable<int>` are deferred to Phase F5 along with their
+    // collection-expression interface targets.)
+    public static void ParamsCollections()
+    {
+        Sum(1, 2, 3);
+        Sum(10, 20);
+    }
+
+    private static void Sum(params System.Collections.Generic.List<int> xs)
+    {
+        int total = 0;
+        foreach (int v in xs)
+        {
+            total += v;
+        }
+
+        Console.WriteLine(total);
+    }
 }
