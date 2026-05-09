@@ -11,6 +11,18 @@ namespace RealScript
     /// <summary>
     /// Compile-only fixtures for C# 12 collection expressions.
     ///
+    /// This class is intentionally excluded from the explicit Roslyn-driven
+    /// build list in <c>Test/Compiler/NScript.Csc.Lib.Test/TestResources.cs</c>
+    /// (mirrors the <c>Lang11RequiredTests.cs</c> precedent): the
+    /// <c>NewCollectionInitializerExpression</c> /
+    /// <c>CollectionExpressionSer</c> / <c>CollectionExpressionElementSer</c>
+    /// shapes synthesised by Roslyn for collection expressions are not
+    /// currently round-trippable through the in-test <c>BondToAst</c>
+    /// deserializer. The MSBuild Framework build still globs this file via
+    /// <c>Sources/Framework/Directory.Build.props</c>, so the fixtures are
+    /// exercised end-to-end by the framework prebuild and downstream
+    /// integration tests.
+    ///
     /// Phase E (literal-only <c>T[]</c>) and Phase F1 (<c>T[]</c> with spreads
     /// from another <c>T[]</c>) shipped the wire format and converter
     /// infrastructure. Phase F4 extends coverage to <c>List&lt;T&gt;</c>
@@ -25,11 +37,12 @@ namespace RealScript
     /// synthesised <c>ToArray()</c> bridge so the F1 array-source converter
     /// handles both shapes uniformly.
     ///
-    /// The serialization round-trip tests in
-    /// <c>NScript.Csc.Lib.Test/CollectionExpressionRoundTripTests.cs</c> cover both
-    /// <c>LiteralElementSer</c> (tag 229) and <c>SpreadElementSer</c> (tag 230)
-    /// dispatch paths through the abstract <c>CollectionExpressionElementSer</c>
-    /// base.
+    /// The <c>LiteralElementSer</c> (tag 229) and <c>SpreadElementSer</c>
+    /// (tag 230) dispatch paths under the abstract
+    /// <c>CollectionExpressionElementSer</c> base were introduced in PR #59
+    /// (Phase F1). They are exercised end-to-end by the fixtures in this
+    /// file via the MSBuild Framework build; no separate Csc.Lib unit-test
+    /// file targets the round-trip directly.
     ///
     /// Out of scope for this slice (deferred to Phase F5):
     /// - The five BCL interface targets — <c>IEnumerable&lt;T&gt;</c>,
@@ -151,6 +164,19 @@ namespace RealScript
             int[] dst = [0, ..src, 99];
             Console.WriteLine(dst.Length);
             Console.WriteLine(dst[4]);
+        }
+
+        // List<T> target with interleaved literal-spread-literal — exercises
+        // Add(literal) → AddRange(src) → Add(literal) ordering correctness on
+        // the List<T> initialiser path (distinct from the array path which
+        // uses Array.concat with bunched literal segments).
+        public static void ListTargetMixedLiteralsAndSpread()
+        {
+            System.Collections.Generic.List<int> src = [10, 20];
+            System.Collections.Generic.List<int> dst = [1, ..src, 99];
+            Console.WriteLine(dst.Count);
+            Console.WriteLine(dst[0]);
+            Console.WriteLine(dst[3]);
         }
     }
 }

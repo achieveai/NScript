@@ -513,7 +513,7 @@
                     serElement = new SpreadElementSer
                     {
                         Location = element.Syntax.Location.GetSerLoc(),
-                        Operand = BuildArrayTargetSpreadOperand(spread, elementType, arg),
+                        Operand = BuildArrayTargetSpreadOperand(spread, arg),
                     };
                 }
                 else if (element is BoundExpression expr)
@@ -552,7 +552,6 @@
         // deferred to Phase F5.
         private ExpressionSer BuildArrayTargetSpreadOperand(
             BoundCollectionExpressionSpreadElement spread,
-            TypeSymbol arrayElementType,
             SerializationContext arg)
         {
             var sourceType = spread.Expression.Type;
@@ -766,7 +765,8 @@
             return ns != null
                 && ns.Name == "Generic"
                 && ns.ContainingNamespace?.Name == "Collections"
-                && ns.ContainingNamespace?.ContainingNamespace?.Name == "System";
+                && ns.ContainingNamespace?.ContainingNamespace?.Name == "System"
+                && ns.ContainingNamespace?.ContainingNamespace?.ContainingNamespace?.IsGlobalNamespace == true;
         }
 
         public override AstBase VisitComplexConditionalReceiver(BoundComplexConditionalReceiver node, SerializationContext arg) => throw new NotImplementedException();
