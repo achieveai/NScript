@@ -31,7 +31,8 @@ namespace System
             int offset = this._value;
             if (offset < 0)
             {
-                offset = length + (~offset);
+                // _value stores `~value` for from-end. ~_value + length + 1 == length - value.
+                offset += length + 1;
             }
 
             return offset;

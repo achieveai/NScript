@@ -1454,7 +1454,12 @@
         public override AstBase VisitFromEndIndexExpression(BoundFromEndIndexExpression node, SerializationContext arg)
         {
             var location = node.Syntax.Location.GetSerLoc();
-            var indexType = (NamedTypeSymbol)node.Type;
+            if (!(node.Type is NamedTypeSymbol indexType))
+            {
+                throw new InvalidOperationException(
+                    $"Expected NamedTypeSymbol for '^x' expression at {node.Syntax.Location}, "
+                    + $"but was '{node.Type?.GetType().Name ?? "null"}'.");
+            }
             var ctor = node.MethodOpt
                 ?? indexType
                     .GetMembers(WellKnownMemberNames.InstanceConstructorName)
@@ -1486,13 +1491,23 @@
         public override AstBase VisitRangeExpression(BoundRangeExpression node, SerializationContext arg)
         {
             var location = node.Syntax.Location.GetSerLoc();
-            var rangeType = (NamedTypeSymbol)node.Type;
+            if (!(node.Type is NamedTypeSymbol rangeType))
+            {
+                throw new InvalidOperationException(
+                    $"Expected NamedTypeSymbol for range expression at {node.Syntax.Location}, "
+                    + $"but was '{node.Type?.GetType().Name ?? "null"}'.");
+            }
 
-            var ctor = node.MethodOpt
-                ?? rangeType
-                    .GetMembers(WellKnownMemberNames.InstanceConstructorName)
-                    .OfType<MethodSymbol>()
-                    .FirstOrDefault(m => m.ParameterCount == 2);
+            // Always lower to `new Range(Index, Index)` — ignore node.MethodOpt
+            // because Roslyn may bind it to a 0/1-parameter factory (Range.All,
+            // Range.StartAt, Range.EndAt) for open-ended forms, while we want
+            // a uniform 2-parameter ctor emission with synthesised boundaries.
+            var ctor = rangeType
+                .GetMembers(WellKnownMemberNames.InstanceConstructorName)
+                .OfType<MethodSymbol>()
+                .FirstOrDefault(m => m.ParameterCount == 2
+                    && IsSystemIndex(m.Parameters[0].Type as NamedTypeSymbol)
+                    && IsSystemIndex(m.Parameters[1].Type as NamedTypeSymbol));
 
             if (ctor is null)
             {
@@ -1501,7 +1516,11 @@
                     + "Add the constructor to the mscorlib facade.");
             }
 
-            var indexType = (NamedTypeSymbol)ctor.Parameters[0].Type;
+            if (!(ctor.Parameters[0].Type is NamedTypeSymbol indexType))
+            {
+                throw new InvalidOperationException(
+                    "System.Range..ctor first parameter type must be a NamedTypeSymbol (System.Index).");
+            }
 
             var leftExpr = node.LeftOperandOpt != null
                 ? (ExpressionSer)Visit(node.LeftOperandOpt, arg)
@@ -1736,20 +1755,13 @@
 
             if (receiverType is ArrayTypeSymbol arrayType)
             {
-                var arrayBase = arrayType.BaseTypeNoUseSiteDiagnostics;
-                prop = arrayBase?
-                    .GetMembers("Length")
-                    .OfType<PropertySymbol>()
-                    .FirstOrDefault(p => !p.IsStatic && p.ParameterCount == 0);
+                prop = FindInstanceProperty(arrayType.BaseTypeNoUseSiteDiagnostics, "Length");
             }
             else if (receiverType is NamedTypeSymbol named)
             {
                 if (named.SpecialType == SpecialType.System_String)
                 {
-                    prop = named
-                        .GetMembers("Length")
-                        .OfType<PropertySymbol>()
-                        .FirstOrDefault(p => !p.IsStatic && p.ParameterCount == 0);
+                    prop = FindInstanceProperty(named, "Length");
                 }
                 else
                 {
@@ -1777,10 +1789,7 @@
 
         private static PropertySymbol ResolveCountProperty(NamedTypeSymbol type)
         {
-            var direct = type
-                .GetMembers("Count")
-                .OfType<PropertySymbol>()
-                .FirstOrDefault(p => !p.IsStatic && p.ParameterCount == 0);
+            var direct = FindInstanceProperty(type, "Count");
             if (direct != null)
             {
                 return direct;
@@ -1788,10 +1797,7 @@
 
             foreach (var iface in type.AllInterfacesNoUseSiteDiagnostics)
             {
-                var fromIface = iface
-                    .GetMembers("Count")
-                    .OfType<PropertySymbol>()
-                    .FirstOrDefault(p => !p.IsStatic && p.ParameterCount == 0);
+                var fromIface = FindInstanceProperty(iface, "Count");
                 if (fromIface != null)
                 {
                     return fromIface;
@@ -1800,6 +1806,12 @@
 
             return null;
         }
+
+        private static PropertySymbol FindInstanceProperty(TypeSymbol type, string name)
+            => type?
+                .GetMembers(name)
+                .OfType<PropertySymbol>()
+                .FirstOrDefault(p => !p.IsStatic && p.ParameterCount == 0);
 
         // True iff `type` is `System.Index`, anchored to the global namespace.
         private static bool IsSystemIndex(NamedTypeSymbol type)
