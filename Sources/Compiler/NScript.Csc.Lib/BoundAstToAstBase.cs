@@ -541,9 +541,8 @@
                 {
                     throw new NotSupportedException(
                         $"Unsupported collection-expression element kind '{element.Kind}'. "
-                        + "Phase F4 supports literal expressions and spread sources whose static "
-                        + "type is T[] or List<T>; IEnumerable<T> spread sources into a T[] target "
-                        + "are tracked for Phase F5.");
+                        + "Supported shapes are literal expressions and spread sources whose static "
+                        + "type is T[], List<T>, or one of the list-shaped BCL interfaces.");
                 }
 
                 elements.Add(serElement);
@@ -654,17 +653,9 @@
             JsCsc.Lib.Serialization.LocationSer location,
             SerializationContext arg)
         {
-            var ctor = listType
-                .GetMembers(WellKnownMemberNames.InstanceConstructorName)
-                .OfType<MethodSymbol>()
-                .FirstOrDefault(m => m.ParameterCount == 0);
-
-            if (ctor == null)
-            {
-                throw new InvalidOperationException(
-                    $"Could not find parameterless constructor on '{listType}'. "
-                    + "Required to bridge an IEnumerable<T> spread source into a T[] target.");
-            }
+            var ctor = ResolveParameterlessCtor(
+                listType,
+                "bridge an IEnumerable<T> spread source into a T[] target");
 
             var addRange = ResolveAddRangeOverload(listType, enumerableSourceType);
             if (addRange == null)
@@ -699,14 +690,16 @@
             return BuildToArrayCall(listType, listExpression, location, arg);
         }
 
-        // Lowers a C# 12 collection expression whose target is List<T> (or one of
-        // the BCL interfaces IEnumerable<T>/IList<T>/IReadOnlyList<T>/
-        // ICollection<T>/IReadOnlyCollection<T> — Roslyn synthesises the bound
-        // tree's static type as List<T> for those, per the language spec) into a
+        // Lowers a C# 12 collection expression whose target is List<T> into a
         // NewCollectionInitializerExpression: `new List<T>()` plus a sequence of
         // `Add(elem)` / `AddRange(spread)` calls. This reuses the existing
         // collection-initializer Stage-2 path (InlineCollectionInitializationExpression),
         // so no new ProtoBuf tag or Stage-2 converter is needed.
+        // Also reused by the F5 BCL-interface dispatch
+        // (TryConstructListFromListShapedInterface): when the bound node's
+        // static type is IEnumerable<T>/IList<T>/IReadOnlyList<T>/
+        // ICollection<T>/IReadOnlyCollection<T>, NScript constructs the
+        // sibling List<T> in the same namespace and re-enters here.
         private AstBase VisitListCollectionExpression(
             BoundCollectionExpression node,
             NamedTypeSymbol listType,
@@ -714,17 +707,9 @@
         {
             var location = node.Syntax.Location.GetSerLoc();
 
-            var ctor = listType
-                .GetMembers(WellKnownMemberNames.InstanceConstructorName)
-                .OfType<MethodSymbol>()
-                .FirstOrDefault(m => m.ParameterCount == 0);
-
-            if (ctor == null)
-            {
-                throw new InvalidOperationException(
-                    $"Could not find parameterless constructor on '{listType}'. "
-                    + "Required to lower a List<T>-target collection expression.");
-            }
+            var ctor = ResolveParameterlessCtor(
+                listType,
+                "lower a List<T>-target collection expression");
 
             // For List<T> collection-expression targets Roslyn does NOT
             // pre-resolve each literal element into a
@@ -812,6 +797,28 @@
                 Arguments = new List<MethodCallArg>(),
                 ItemInitializers = itemInitializers,
             };
+        }
+
+        // Resolve the parameterless `.ctor()` on `listType`. Throws with a
+        // contextual message that names the caller's lowering so failures point
+        // at the right collection-expression dispatch path.
+        private static MethodSymbol ResolveParameterlessCtor(
+            NamedTypeSymbol listType,
+            string callerContext)
+        {
+            var ctor = listType
+                .GetMembers(WellKnownMemberNames.InstanceConstructorName)
+                .OfType<MethodSymbol>()
+                .FirstOrDefault(m => m.ParameterCount == 0);
+
+            if (ctor == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not find parameterless constructor on '{listType}'. "
+                    + $"Required to {callerContext}.");
+            }
+
+            return ctor;
         }
 
         // Resolve `List<T>.Add(T)`. The constructed `listType` already has T
