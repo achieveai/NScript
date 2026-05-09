@@ -146,6 +146,16 @@
             return this.GetEnumerator();
         }
 
+        bool ICollection.IsSynchronized
+        {
+            get { return false; }
+        }
+
+        object ICollection.SyncRoot
+        {
+            get { return this; }
+        }
+
         [Script(@"
             return ({}).constructor.keys(this.@{[mscorlib]System.Dynamic.ExpandoObject::innerDict});
             ")]

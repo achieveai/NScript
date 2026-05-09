@@ -38,5 +38,20 @@ namespace System.Collections.Generic
         ///   <paramref name="index" /> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1" />.</exception>
         /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList`1" /> is read-only.</exception>
         void Insert(int index, T item);
+
+        /// <summary>Removes the <see cref="T:System.Collections.Generic.IList`1" /> item at the specified index.</summary>
+        /// <param name="index">The zero-based index of the item to remove.</param>
+        /// <remarks>
+        /// Roslyn's collection-expression binder requires
+        /// <c>System.Collections.Generic.IList`1.RemoveAt</c> as a well-known
+        /// member when target-typing to <c>IList&lt;T&gt;</c> (or any list-
+        /// shaped interface that derives from it). The non-generic
+        /// <c>System.Collections.IList.RemoveAt</c> is not enough — the
+        /// binder anchors on the generic interface specifically. Phase F5
+        /// of WI-47 added this declaration so collection expressions can
+        /// bind cleanly when target-typed to one of the five list-shaped
+        /// BCL interfaces.
+        /// </remarks>
+        new void RemoveAt(int index);
     }
 }

@@ -178,7 +178,7 @@ namespace System.Collections.ObjectModel
             }
         }
 
-        public void Add(object value)
+        public int Add(object value)
         {
             throw new NotImplementedException();
         }
@@ -222,6 +222,16 @@ namespace System.Collections.ObjectModel
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.list.GetEnumerator();
+        }
+
+        bool ICollection.IsSynchronized
+        {
+            get { return false; }
+        }
+
+        object ICollection.SyncRoot
+        {
+            get { return this; }
         }
 
 

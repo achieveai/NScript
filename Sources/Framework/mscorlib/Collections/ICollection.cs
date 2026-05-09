@@ -21,6 +21,30 @@ namespace System.Collections
         int Count { get; }
 
         // Summary:
+        //     Gets a value indicating whether access to the System.Collections.ICollection
+        //     is synchronized (thread safe).
+        //
+        // Remarks:
+        //     Roslyn's collection-expression binder requires
+        //     System.Collections.ICollection.IsSynchronized as a well-known
+        //     member when target-typing to any list-shaped interface. Phase F5
+        //     of WI-47 added this declaration so collection expressions can
+        //     bind cleanly when target-typed to one of the five list-shaped
+        //     BCL interfaces. The transpiler emits single-threaded JavaScript;
+        //     all implementers return false.
+        bool IsSynchronized { get; }
+
+        // Summary:
+        //     Gets an object that can be used to synchronize access to the
+        //     System.Collections.ICollection.
+        //
+        // Remarks:
+        //     Companion well-known member to IsSynchronized — Roslyn's binder
+        //     resolves both together. Phase F5 of WI-47 added this declaration.
+        //     The JS runtime is single-threaded; implementers return `this`.
+        object SyncRoot { get; }
+
+        // Summary:
         //     Copies the elements of the System.Collections.ICollection to an System.Array,
         //     starting at a particular System.Array index.
         //

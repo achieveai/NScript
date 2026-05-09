@@ -60,6 +60,11 @@ namespace System
             get { return false; }
         }
 
+        int ICollection<T>.Count
+        {
+            get { return this.innerArray.Length; }
+        }
+
         internal NativeArray<T> InnerArray
         {
             get { return this.innerArray; }
@@ -122,6 +127,11 @@ namespace System
         }
 
         void IList<T>.Insert(int index, T item)
+        {
+            throw new Exception("Not Implemented.");
+        }
+
+        void IList<T>.RemoveAt(int index)
         {
             throw new Exception("Not Implemented.");
         }

@@ -58,13 +58,23 @@ public class Lang13Features
     // C# 13 — params collections with a `List<T>` parameter. Roslyn synthesises
     // a List<T>-shaped collection expression at the call site, which routes
     // through the same Phase F4 lowering that handles explicit
-    // `List<T> xs = [...]` target-typing. (Interface params shapes such as
-    // `params IEnumerable<int>` are deferred to Phase F5 along with their
-    // collection-expression interface targets.)
+    // `List<T> xs = [...]` target-typing.
+    //
+    // Phase F5 extends coverage to the five list-shaped BCL interfaces
+    // (IEnumerable<T>, IList<T>, ICollection<T>, IReadOnlyList<T>,
+    // IReadOnlyCollection<T>) as `params` shapes — Roslyn target-types the
+    // synthesised call-site collection expression to the interface, which
+    // the F5 dispatch arm collapses to `new List<int>()` + Add chain.
     public static void ParamsCollections()
     {
         Sum(1, 2, 3);
         Sum(10, 20);
+
+        SumEnumerable(1, 2, 3, 4);
+        CountIList(10, 20, 30);
+        CountICollection(7, 8);
+        CountIReadOnlyList(11, 12, 13, 14);
+        CountIReadOnlyCollection(100, 200);
     }
 
     private static void Sum(params System.Collections.Generic.List<int> xs)
@@ -76,5 +86,37 @@ public class Lang13Features
         }
 
         Console.WriteLine(total);
+    }
+
+    private static void SumEnumerable(params System.Collections.Generic.IEnumerable<int> xs)
+    {
+        int total = 0;
+        foreach (int v in xs)
+        {
+            total += v;
+        }
+
+        Console.WriteLine(total);
+    }
+
+    private static void CountIList(params System.Collections.Generic.IList<int> xs)
+    {
+        Console.WriteLine(xs.Count);
+    }
+
+    private static void CountICollection(params System.Collections.Generic.ICollection<int> xs)
+    {
+        Console.WriteLine(xs.Count);
+    }
+
+    private static void CountIReadOnlyList(params System.Collections.Generic.IReadOnlyList<int> xs)
+    {
+        Console.WriteLine(xs.Count);
+    }
+
+    private static void CountIReadOnlyCollection(
+        params System.Collections.Generic.IReadOnlyCollection<int> xs)
+    {
+        Console.WriteLine(xs.Count);
     }
 }

@@ -44,21 +44,22 @@ namespace RealScript
     /// file via the MSBuild Framework build; no separate Csc.Lib unit-test
     /// file targets the round-trip directly.
     ///
-    /// Out of scope for this slice (deferred to Phase F5):
-    /// - The five BCL interface targets — <c>IEnumerable&lt;T&gt;</c>,
-    ///   <c>IList&lt;T&gt;</c>, <c>IReadOnlyList&lt;T&gt;</c>,
-    ///   <c>ICollection&lt;T&gt;</c>, <c>IReadOnlyCollection&lt;T&gt;</c>.
-    ///   Roslyn's binder requires a long tail of well-known-member
-    ///   signatures on these interfaces (<c>RemoveAt</c>, <c>Count</c>,
-    ///   <c>IsSynchronized</c>, <c>SyncRoot</c>, etc.) before it will produce
-    ///   a <c>BoundCollectionExpression</c>; supplying those facade members
-    ///   ripples through every implementer (List, Dictionary, ArrayG,
-    ///   ReadOnlyCollection, NumberDictionary, StringDictionary, ExpandoObject)
-    ///   and is large enough to track separately.
+    /// Phase F5 extends coverage to the five list-shaped BCL interface
+    /// targets (<c>IEnumerable&lt;T&gt;</c>, <c>IList&lt;T&gt;</c>,
+    /// <c>ICollection&lt;T&gt;</c>, <c>IReadOnlyList&lt;T&gt;</c>,
+    /// <c>IReadOnlyCollection&lt;T&gt;</c>) and to <c>IEnumerable&lt;T&gt;</c>
+    /// spread sources for both <c>T[]</c> and <c>List&lt;T&gt;</c> targets.
+    /// All five interfaces collapse to the same Phase F4 lowering — the
+    /// element type is recovered from the interface's single type argument
+    /// and a constructed <c>List&lt;T&gt;</c> is materialised. The
+    /// <c>IEnumerable&lt;T&gt;</c> spread bridge for <c>T[]</c> targets
+    /// synthesises <c>new List&lt;T&gt;(); AddRange(src); ToArray()</c> so
+    /// the F1 array-source converter handles the result uniformly.
+    ///
+    /// Out of scope for this slice (deferred to Phase F6):
     /// - <c>[CollectionBuilder]</c>-attributed user types.
-    /// - <c>IEnumerable&lt;T&gt;</c> spread sources into a <c>T[]</c> target
-    ///   (needs an iterator-based emit path; non-trivial without a
-    ///   <c>System.Linq.Enumerable.ToArray</c> helper in NScript's mscorlib facade).
+    /// - Index/range residuals on element-position sub-spreads
+    ///   (<c>[..src[1..3]]</c>).
     /// - <c>Span&lt;T&gt;</c> / <c>ReadOnlySpan&lt;T&gt;</c> (Non-Goal — see
     ///   <c>docs/language/limitations.md</c>).
     /// </summary>
@@ -177,6 +178,102 @@ namespace RealScript
             Console.WriteLine(dst.Count);
             Console.WriteLine(dst[0]);
             Console.WriteLine(dst[3]);
+        }
+
+        // -----------------------------------------------------------------
+        // Phase F5 — list-shaped BCL interface targets and IEnumerable<T>
+        // spread sources. All five interfaces collapse to the same Phase F4
+        // List<T> lowering; the JS runtime carries no "interface type", so
+        // the static-type information is preserved at the C# call site only.
+        // -----------------------------------------------------------------
+
+        // IEnumerable<T> target — collapses to `new List<int>()` + Add chain.
+        public static void IEnumerableTarget()
+        {
+            System.Collections.Generic.IEnumerable<int> xs = [1, 2, 3];
+            int sum = 0;
+            foreach (int v in xs)
+            {
+                sum += v;
+            }
+
+            Console.WriteLine(sum);
+        }
+
+        // IList<T> target — same lowering as List<T> directly.
+        public static void IListTarget()
+        {
+            System.Collections.Generic.IList<int> xs = [1, 2, 3];
+            Console.WriteLine(xs.Count);
+            Console.WriteLine(xs[2]);
+        }
+
+        // ICollection<T> target — exercises Count via the ICollection<T>
+        // interface dispatch.
+        public static void ICollectionTarget()
+        {
+            System.Collections.Generic.ICollection<int> xs = [10, 20, 30];
+            Console.WriteLine(xs.Count);
+        }
+
+        // IReadOnlyList<T> target — exercises indexer dispatch through
+        // the read-only interface.
+        public static void IReadOnlyListTarget()
+        {
+            System.Collections.Generic.IReadOnlyList<int> xs = [7, 8, 9];
+            Console.WriteLine(xs.Count);
+            Console.WriteLine(xs[1]);
+        }
+
+        // IReadOnlyCollection<T> target — exercises Count via the
+        // read-only collection interface.
+        public static void IReadOnlyCollectionTarget()
+        {
+            System.Collections.Generic.IReadOnlyCollection<int> xs = [4, 5, 6];
+            Console.WriteLine(xs.Count);
+        }
+
+        // Interface target with mixed literal + array spread — exercises
+        // the same Add(literal) → AddRange(spread) ordering as the
+        // direct-List target path.
+        public static void IListTargetWithSpread()
+        {
+            int[] src = [10, 20];
+            System.Collections.Generic.IList<int> dst = [1, ..src, 99];
+            Console.WriteLine(dst.Count);
+            Console.WriteLine(dst[3]);
+        }
+
+        // IEnumerable<T> spread source into a T[] target — bridged via
+        // `new List<int>(); AddRange(src); ToArray()` so the F1
+        // array-source converter handles the result uniformly.
+        public static void SpreadFromEnumerableIntoArray()
+        {
+            System.Collections.Generic.IEnumerable<int> src = ProduceEnumerable();
+            int[] dst = [0, ..src, 99];
+            Console.WriteLine(dst.Length);
+            Console.WriteLine(dst[1]);
+            Console.WriteLine(dst[dst.Length - 1]);
+        }
+
+        // IEnumerable<T> spread source into a List<T> target — exercises
+        // the AddRange(IEnumerable<T>) overload resolution path.
+        public static void SpreadFromEnumerableIntoList()
+        {
+            System.Collections.Generic.IEnumerable<int> src = ProduceEnumerable();
+            System.Collections.Generic.List<int> dst = [..src, 42];
+            Console.WriteLine(dst.Count);
+            Console.WriteLine(dst[dst.Count - 1]);
+        }
+
+        // Helper that returns an IEnumerable<int> backed by a List<int>.
+        // Inlined into the spread-source fixtures so the static type at the
+        // spread element is `IEnumerable<int>` (not `List<int>` / `int[]`),
+        // forcing the Phase F5 dispatch arm.
+        private static System.Collections.Generic.IEnumerable<int> ProduceEnumerable()
+        {
+            System.Collections.Generic.List<int> backing = [1, 2, 3];
+            return backing;
         }
     }
 }

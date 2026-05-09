@@ -62,7 +62,7 @@
             set;
         }
 
-        extern void IList.Add(object value);
+        extern int IList.Add(object value);
 
         extern void IList.Clear();
 
@@ -73,6 +73,12 @@
         extern void IList.RemoveAt(int index);
 
         extern int ICollection.Count
+        { get; }
+
+        extern bool ICollection.IsSynchronized
+        { get; }
+
+        extern object ICollection.SyncRoot
         { get; }
 
         public extern void CopyTo(Array array, int index);
@@ -148,7 +154,7 @@
             }
         }
 
-        void IList.Add(object value)
+        int IList.Add(object value)
         {
             throw new NotSupportedException();
         }
@@ -176,6 +182,16 @@
         int ICollection.Count
         {
             get { return this.Length; }
+        }
+
+        bool ICollection.IsSynchronized
+        {
+            get { return false; }
+        }
+
+        object ICollection.SyncRoot
+        {
+            get { return this; }
         }
     }
 }
