@@ -47,6 +47,12 @@ ptyp_.system__Collections__IList__RemoveAt = function ArrayImpl__System__Collect
 ptyp_.system__Collections__ICollection__get_Count = function ArrayImpl__System__Collections__ICollection__get_Count() {
   return this.gl();
 };
+ptyp_.system__Collections__ICollection__get_IsSynchronized = function ArrayImpl__System__Collections__ICollection__get_IsSynchronized() {
+  return false;
+};
+ptyp_.system__Collections__ICollection__get_SyncRoot = function ArrayImpl__System__Collections__ICollection__get_SyncRoot() {
+  return this;
+};
 ptyp_.V_GetEnumerator_d = ptyp_.system__Collections__IEnumerable__GetEnumerator;
 ptyp_.V_get_IsFixedSize_e = ptyp_.system__Collections__IList__get_IsFixedSize;
 ptyp_.V_get_IsReadOnly_e = ptyp_.system__Collections__IList__get_IsReadOnly;
@@ -58,6 +64,8 @@ ptyp_.V_Insert_e = ptyp_.system__Collections__IList__Insert;
 ptyp_.V_Remove_e = ptyp_.system__Collections__IList__Remove;
 ptyp_.V_RemoveAt_e = ptyp_.system__Collections__IList__RemoveAt;
 ptyp_.V_get_Count_f = ptyp_.system__Collections__ICollection__get_Count;
+ptyp_.V_get_IsSynchronized_f = ptyp_.system__Collections__ICollection__get_IsSynchronized;
+ptyp_.V_get_SyncRoot_f = ptyp_.system__Collections__ICollection__get_SyncRoot;
 ptyp_.V_Contains_e = function(arg0) {
   return this.cons(arg0);
 };
@@ -181,6 +189,9 @@ function ArrayG(T, _callStatiConstructor) {
   ptyp_.system__Collections__Generic__ICollection_$T$___get_IsReadOnly = function ArrayG$1__System__Collections__Generic__ICollection_$T$___get_IsReadOnly() {
     return false;
   };
+  ptyp_.system__Collections__Generic__ICollection_$T$___get_Count = function ArrayG$1__System__Collections__Generic__ICollection_$T$___get_Count() {
+    return this.innerArray.length;
+  };
   ptyp_.get_innerArray = function ArrayG$1__get_InnerArray() {
     return this.innerArray;
   };
@@ -218,6 +229,9 @@ function ArrayG(T, _callStatiConstructor) {
   ptyp_.system__Collections__Generic__IList_$T$___Insert = function ArrayG$1__System__Collections__Generic__IList_$T$___Insert(index, item) {
     throw new Error("Not Implemented.");
   };
+  ptyp_.system__Collections__Generic__IList_$T$___RemoveAt = function ArrayG$1__System__Collections__Generic__IList_$T$___RemoveAt(index) {
+    throw new Error("Not Implemented.");
+  };
   ptyp_.system__Collections__Generic__ICollection_$T$___Add = function ArrayG$1__System__Collections__Generic__ICollection_$T$___Add(item) {
     throw new Error("Not Implemented.");
   };
@@ -252,7 +266,9 @@ function ArrayG(T, _callStatiConstructor) {
     return Enumerator_$T$_.__ctor(this);
   };
   ptyp_["V_get_IsReadOnly_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___get_IsReadOnly;
+  ptyp_["V_get_Count_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___get_Count;
   ptyp_["V_Insert_" + IList$1_$T$_.typeId] = ptyp_.system__Collections__Generic__IList_$T$___Insert;
+  ptyp_["V_RemoveAt_" + IList$1_$T$_.typeId] = ptyp_.system__Collections__Generic__IList_$T$___RemoveAt;
   ptyp_["V_Add_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___Add;
   ptyp_["V_Clear_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___Clear;
   ptyp_["V_Remove_" + ICollection$1_$T$_.typeId] = ptyp_.system__Collections__Generic__ICollection_$T$___Remove;

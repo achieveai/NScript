@@ -196,6 +196,7 @@ function List(T, _callStatiConstructor) {
   };
   ptyp_.system__Collections__IList__Add = function List$1__System__Collections__IList__Add(value) {
     this.add(Type__UnBoxTypeInstance(T, value));
+    return this.nativeArray.length - 1;
   };
   ptyp_.addRange = function List$1__AddRange(items) {
     this.nativeArray = NativeArray$1__Concata(this.nativeArray, NativeArray$1__GetNativeArray(items));
@@ -229,6 +230,12 @@ function List(T, _callStatiConstructor) {
     length = nativeArray.length;
     for (i = 0; i < length; i++)
       array.sv(i + index, Type__BoxTypeInstance(T, nativeArray[i]));
+  };
+  ptyp_.system__Collections__ICollection__get_IsSynchronized = function List$1__System__Collections__ICollection__get_IsSynchronized() {
+    return false;
+  };
+  ptyp_.system__Collections__ICollection__get_SyncRoot = function List$1__System__Collections__ICollection__get_SyncRoot() {
+    return this;
   };
   ptyp_.toArray = function List$1__ToArray() {
     return ArrayG$1_$T$_.__ctor(this.nativeArray.slice(0, this.nativeArray.length));
@@ -271,6 +278,8 @@ function List(T, _callStatiConstructor) {
   ptyp_.V_get_IsReadOnly_e = ptyp_.system__Collections__IList__get_IsReadOnly;
   ptyp_.V_Add_e = ptyp_.system__Collections__IList__Add;
   ptyp_.V_CopyTo_g = ptyp_.system__Collections__ICollection__CopyTo;
+  ptyp_.V_get_IsSynchronized_g = ptyp_.system__Collections__ICollection__get_IsSynchronized;
+  ptyp_.V_get_SyncRoot_g = ptyp_.system__Collections__ICollection__get_SyncRoot;
   ptyp_.V_Remove_e = ptyp_.system__Collections__IList__Remove;
   ptyp_.V_GetEnumerator_c = ptyp_.system__Collections__IEnumerable__GetEnumerator;
   ptyp_.V_get_IsFixedSize_e = ptyp_.system__Collections__IList__get_IsFixedSize;
@@ -281,9 +290,11 @@ function List(T, _callStatiConstructor) {
   ptyp_["V_set_Item_" + IList$1_$T$_.typeId] = ptyp_.set_item;
   ptyp_["V_IndexOf_" + IList$1_$T$_.typeId] = ptyp_.indexOf;
   ptyp_["V_Insert_" + IList$1_$T$_.typeId] = ptyp_.insert;
+  ptyp_["V_RemoveAt_" + IList$1_$T$_.typeId] = ptyp_.removeAt;
   ptyp_.V_Clear_e = ptyp_.clear;
   ptyp_.V_RemoveAt_e = ptyp_.removeAt;
   ptyp_.V_get_Count_g = ptyp_.get_count;
+  ptyp_["V_get_Count_" + ICollection$1_$T$_.typeId] = ptyp_.get_count;
   ptyp_["V_Add_" + ICollection$1_$T$_.typeId] = ptyp_.add;
   ptyp_["V_Clear_" + ICollection$1_$T$_.typeId] = ptyp_.clear;
   ptyp_["V_Contains_" + ICollection$1_$T$_.typeId] = ptyp_.contains;

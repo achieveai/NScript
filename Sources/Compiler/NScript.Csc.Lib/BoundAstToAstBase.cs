@@ -461,39 +461,52 @@
 
         public override AstBase VisitCollectionExpression(BoundCollectionExpression node, SerializationContext arg)
         {
-            // Phase F1 — array (T[]) target: spread sources must also be T[].
+            // Phase F1 — array (T[]) target: spread sources include T[] and List<T>.
             // Phase F4 — List<T> target: literal-only and with spread sources
             // whose static type is List<T> or T[]. Lowers to
             // `new List<T>()` + Add/AddRange calls via the existing
             // NewCollectionInitializerExpression pipeline.
+            // Phase F5 — list-shaped BCL interface targets
+            // (IEnumerable<T> / IList<T> / ICollection<T> /
+            // IReadOnlyList<T> / IReadOnlyCollection<T>) collapse to the
+            // same `new List<T>()` + Add/AddRange lowering used by F4: every
+            // one of these interfaces is implemented by List<T>, and the JS
+            // runtime has no notion of an "interface type", so the static
+            // type information is preserved at the C# call site only.
+            // Phase F5 also adds IEnumerable<T> spread sources for both
+            // T[] and List<T> targets via the existing AddRange(IEnumerable<T>)
+            // overload (List<T> target) or a synthesised
+            // `new List<T>(); AddRange(src); ToArray()` bridge (T[] target).
             //
-            // Deferred to Phase F5:
-            //   - The five list-shaped BCL interface targets
-            //     (IEnumerable<T> / IList<T> / IReadOnlyList<T> /
-            //     ICollection<T> / IReadOnlyCollection<T>). Roslyn's binder
-            //     errors at CS0656 for a long tail of well-known members on
-            //     these interfaces and their implementers; the facade work
-            //     is large enough to track as a separate slice.
+            // Deferred to Phase F6:
             //   - [CollectionBuilder]-attributed user types.
-            //   - IEnumerable<T> spread sources into a T[] target.
+            //   - Index/range residuals on element-position sub-spreads.
             // Span<T> / ReadOnlySpan<T> remain Non-Goals.
             if (node.Type is ArrayTypeSymbol arrayType)
             {
                 return VisitArrayCollectionExpression(node, arrayType, arg);
             }
 
-            if (node.Type is NamedTypeSymbol namedType
-                && IsSystemCollectionsGenericList(namedType))
+            if (node.Type is NamedTypeSymbol namedType)
             {
-                return VisitListCollectionExpression(node, namedType, arg);
+                if (IsSystemCollectionsGenericList(namedType))
+                {
+                    return VisitListCollectionExpression(node, namedType, arg);
+                }
+
+                var listFromInterface = TryConstructListFromListShapedInterface(namedType);
+                if (listFromInterface is object)
+                {
+                    return VisitListCollectionExpression(node, listFromInterface, arg);
+                }
             }
 
             throw new NotSupportedException(
                 $"Collection expressions targeting '{node.Type}' are not yet supported. " +
-                "Phase F4 supports T[] and List<T> targets. " +
-                "BCL interface targets (IEnumerable<T>, IList<T>, IReadOnlyList<T>, " +
-                "ICollection<T>, IReadOnlyCollection<T>) and [CollectionBuilder] types " +
-                "are deferred to Phase F5. Span<T>/ReadOnlySpan<T> remain Non-Goals.");
+                "Phase F4 supports T[] and List<T> targets; Phase F5 supports the five " +
+                "list-shaped BCL interface targets (IEnumerable<T>, IList<T>, " +
+                "ICollection<T>, IReadOnlyList<T>, IReadOnlyCollection<T>). " +
+                "[CollectionBuilder] types and Span<T>/ReadOnlySpan<T> remain unsupported.");
         }
 
         private AstBase VisitArrayCollectionExpression(
@@ -528,9 +541,8 @@
                 {
                     throw new NotSupportedException(
                         $"Unsupported collection-expression element kind '{element.Kind}'. "
-                        + "Phase F4 supports literal expressions and spread sources whose static "
-                        + "type is T[] or List<T>; IEnumerable<T> spread sources into a T[] target "
-                        + "are tracked for Phase F5.");
+                        + "Supported shapes are literal expressions and spread sources whose static "
+                        + "type is T[], List<T>, or one of the list-shaped BCL interfaces.");
                 }
 
                 elements.Add(serElement);
@@ -548,8 +560,9 @@
         // collection expression. Array sources pass through unchanged; List<T>
         // sources are normalised by routing through `List<T>.ToArray()` so the
         // existing F1 array-source converter (`ArrayWithSpreadsConverter`) handles
-        // both shapes uniformly. IEnumerable<T> sources into a T[] target are
-        // deferred to Phase F5.
+        // both shapes uniformly. IEnumerable<T> sources are bridged through a
+        // synthesised `new List<T>(); AddRange(src); ToArray()` chain so they
+        // collapse onto the same array-source converter.
         private ExpressionSer BuildArrayTargetSpreadOperand(
             BoundCollectionExpressionSpreadElement spread,
             SerializationContext arg)
@@ -566,43 +579,127 @@
             if (sourceType is NamedTypeSymbol namedSource
                 && IsSystemCollectionsGenericList(namedSource))
             {
-                var toArray = namedSource
-                    .GetMembers("ToArray")
-                    .OfType<MethodSymbol>()
-                    .FirstOrDefault(m => m.ParameterCount == 0
-                        && m.MethodKind == MethodKind.Ordinary);
+                return BuildToArrayCall(namedSource, visitedExpression, spreadLocation, arg);
+            }
 
-                if (toArray == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Could not find parameterless 'ToArray' method on '{namedSource}'. "
-                        + "Required to lower a List<T> spread source into a T[] target collection expression.");
-                }
-
-                return new MethodCallExpression
-                {
-                    Location = spreadLocation,
-                    Method = arg.SymbolSerializer.GetMethodSpecId(toArray),
-                    Instance = visitedExpression,
-                    Arguments = new List<MethodCallArg>(),
-                };
+            // Phase F5 — IEnumerable<T> spread source. Synthesise
+            // `new List<T>(); AddRange(src); ToArray()` so the existing
+            // F1 array-source converter handles the result uniformly.
+            // The element type is recovered from the IEnumerable<T> the
+            // bound expression carries (or the IEnumerable<T> any other
+            // list-shaped BCL interface is constructed over).
+            if (sourceType is NamedTypeSymbol enumerableSource
+                && TryGetListShapedInterfaceElementType(enumerableSource) is TypeSymbol elementType
+                && TryFindSiblingListType(enumerableSource) is NamedTypeSymbol siblingList)
+            {
+                var listOfT = siblingList.Construct(elementType);
+                return BuildEnumerableToArrayBridge(
+                    listOfT,
+                    enumerableSource,
+                    visitedExpression,
+                    spreadLocation,
+                    arg);
             }
 
             throw new NotSupportedException(
                 $"Spread element source type '{sourceType}' is not yet supported "
-                + "inside a T[] target collection expression. Phase F4 supports "
-                + "T[] and List<T> spread sources; IEnumerable<T> spread sources into "
-                + "a T[] target are tracked for Phase F5.");
+                + "inside a T[] target collection expression. Phase F5 supports "
+                + "T[], List<T>, and the list-shaped BCL interfaces "
+                + "(IEnumerable<T>, IList<T>, ICollection<T>, IReadOnlyList<T>, "
+                + "IReadOnlyCollection<T>) as spread sources.");
         }
 
-        // Lowers a C# 12 collection expression whose target is List<T> (or one of
-        // the BCL interfaces IEnumerable<T>/IList<T>/IReadOnlyList<T>/
-        // ICollection<T>/IReadOnlyCollection<T> — Roslyn synthesises the bound
-        // tree's static type as List<T> for those, per the language spec) into a
+        // Emits a `<source>.ToArray()` MethodCallExpression for a constructed
+        // List<T> source. Centralised so the same shape is reused by the
+        // direct-List path and the IEnumerable bridge below.
+        private static MethodCallExpression BuildToArrayCall(
+            NamedTypeSymbol listType,
+            ExpressionSer instance,
+            JsCsc.Lib.Serialization.LocationSer location,
+            SerializationContext arg)
+        {
+            var toArray = listType
+                .GetMembers("ToArray")
+                .OfType<MethodSymbol>()
+                .FirstOrDefault(m => m.ParameterCount == 0
+                    && m.MethodKind == MethodKind.Ordinary);
+
+            if (toArray == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not find parameterless 'ToArray' method on '{listType}'. "
+                    + "Required to lower a List<T> spread source into a T[] target collection expression.");
+            }
+
+            return new MethodCallExpression
+            {
+                Location = location,
+                Method = arg.SymbolSerializer.GetMethodSpecId(toArray),
+                Instance = instance,
+                Arguments = new List<MethodCallArg>(),
+            };
+        }
+
+        // Bridges an IEnumerable<T>-shaped spread source into a T[] target by
+        // synthesising `new List<T>() { AddRange(src) }.ToArray()`. The
+        // intermediate List<T> is built via NewCollectionInitializerExpression
+        // (the same shape used by VisitListCollectionExpression) so no new
+        // ProtoBuf tag or Stage-2 converter is needed; ToArray() collapses the
+        // result onto the existing F1 array-source converter path.
+        private static ExpressionSer BuildEnumerableToArrayBridge(
+            NamedTypeSymbol listType,
+            NamedTypeSymbol enumerableSourceType,
+            ExpressionSer source,
+            JsCsc.Lib.Serialization.LocationSer location,
+            SerializationContext arg)
+        {
+            var ctor = ResolveParameterlessCtor(
+                listType,
+                "bridge an IEnumerable<T> spread source into a T[] target");
+
+            var addRange = ResolveAddRangeOverload(listType, enumerableSourceType);
+            if (addRange == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not find an 'AddRange' overload on '{listType}' accepting "
+                    + $"'{enumerableSourceType}'. Required to bridge an IEnumerable<T> "
+                    + "spread source into a T[] target collection expression.");
+            }
+
+            var listExpression = new NewCollectionInitializerExpression
+            {
+                Location = location,
+                Type = arg.SymbolSerializer.GetTypeSpecId(listType),
+                Method = arg.SymbolSerializer.GetMethodSpecId(ctor),
+                Arguments = new List<MethodCallArg>(),
+                ItemInitializers = new List<MethodCallExpression>
+                {
+                    new MethodCallExpression
+                    {
+                        Location = location,
+                        Method = arg.SymbolSerializer.GetMethodSpecId(addRange),
+                        Instance = null,
+                        Arguments = new List<MethodCallArg>
+                        {
+                            new MethodCallArg { Value = source },
+                        },
+                    },
+                },
+            };
+
+            return BuildToArrayCall(listType, listExpression, location, arg);
+        }
+
+        // Lowers a C# 12 collection expression whose target is List<T> into a
         // NewCollectionInitializerExpression: `new List<T>()` plus a sequence of
         // `Add(elem)` / `AddRange(spread)` calls. This reuses the existing
         // collection-initializer Stage-2 path (InlineCollectionInitializationExpression),
         // so no new ProtoBuf tag or Stage-2 converter is needed.
+        // Also reused by the F5 BCL-interface dispatch
+        // (TryConstructListFromListShapedInterface): when the bound node's
+        // static type is IEnumerable<T>/IList<T>/IReadOnlyList<T>/
+        // ICollection<T>/IReadOnlyCollection<T>, NScript constructs the
+        // sibling List<T> in the same namespace and re-enters here.
         private AstBase VisitListCollectionExpression(
             BoundCollectionExpression node,
             NamedTypeSymbol listType,
@@ -610,17 +707,9 @@
         {
             var location = node.Syntax.Location.GetSerLoc();
 
-            var ctor = listType
-                .GetMembers(WellKnownMemberNames.InstanceConstructorName)
-                .OfType<MethodSymbol>()
-                .FirstOrDefault(m => m.ParameterCount == 0);
-
-            if (ctor == null)
-            {
-                throw new InvalidOperationException(
-                    $"Could not find parameterless constructor on '{listType}'. "
-                    + "Required to lower a List<T>-target collection expression.");
-            }
+            var ctor = ResolveParameterlessCtor(
+                listType,
+                "lower a List<T>-target collection expression");
 
             // For List<T> collection-expression targets Roslyn does NOT
             // pre-resolve each literal element into a
@@ -656,7 +745,7 @@
                     var addRange = ResolveAddRangeOverload(listType, spread.Expression.Type);
                     if (addRange == null)
                     {
-                        throw new NotSupportedException(
+                        throw new InvalidOperationException(
                             $"No 'AddRange' overload on '{listType}' accepts spread source type "
                             + $"'{spread.Expression.Type}'. Required to lower a non-array spread "
                             + "source into a List<T> target.");
@@ -710,6 +799,28 @@
             };
         }
 
+        // Resolve the parameterless `.ctor()` on `listType`. Throws with a
+        // contextual message that names the caller's lowering so failures point
+        // at the right collection-expression dispatch path.
+        private static MethodSymbol ResolveParameterlessCtor(
+            NamedTypeSymbol listType,
+            string callerContext)
+        {
+            var ctor = listType
+                .GetMembers(WellKnownMemberNames.InstanceConstructorName)
+                .OfType<MethodSymbol>()
+                .FirstOrDefault(m => m.ParameterCount == 0);
+
+            if (ctor == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not find parameterless constructor on '{listType}'. "
+                    + $"Required to {callerContext}.");
+            }
+
+            return ctor;
+        }
+
         // Resolve `List<T>.Add(T)`. The constructed `listType` already has T
         // substituted in member signatures.
         private static MethodSymbol ResolveAddMethod(NamedTypeSymbol listType)
@@ -753,12 +864,28 @@
 
         // True iff `type` is the constructed `System.Collections.Generic.List<T>`.
         private static bool IsSystemCollectionsGenericList(NamedTypeSymbol type)
+            => IsSystemCollectionsGenericArity1(type, "List`1");
+
+        // True iff `type` is one of the five list-shaped BCL interfaces in
+        // System.Collections.Generic over a single type parameter.
+        private static bool IsListShapedSystemCollectionsGenericInterface(NamedTypeSymbol type)
+            => IsSystemCollectionsGenericArity1(type, "IEnumerable`1")
+                || IsSystemCollectionsGenericArity1(type, "IList`1")
+                || IsSystemCollectionsGenericArity1(type, "ICollection`1")
+                || IsSystemCollectionsGenericArity1(type, "IReadOnlyList`1")
+                || IsSystemCollectionsGenericArity1(type, "IReadOnlyCollection`1");
+
+        // Anchors a name match against the global namespace
+        // System.Collections.Generic. Naked metadata-name matching false-
+        // positives on user types named e.g. `List<T>` in nested namespaces
+        // (per the WI-47 learning recorded after the F4 review).
+        private static bool IsSystemCollectionsGenericArity1(NamedTypeSymbol type, string metadataName)
         {
-            if (type.Arity != 1)
+            if (type is null || type.Arity != 1)
             { return false; }
 
             var def = type.OriginalDefinition;
-            if (def?.MetadataName != "List`1")
+            if (def?.MetadataName != metadataName)
             { return false; }
 
             var ns = def.ContainingNamespace;
@@ -767,6 +894,55 @@
                 && ns.ContainingNamespace?.Name == "Collections"
                 && ns.ContainingNamespace?.ContainingNamespace?.Name == "System"
                 && ns.ContainingNamespace?.ContainingNamespace?.ContainingNamespace?.IsGlobalNamespace == true;
+        }
+
+        // For a target type that is one of the list-shaped BCL interfaces,
+        // returns a constructed `System.Collections.Generic.List<T>` over the
+        // same element type so the F4 list-target lowering can take over.
+        // Returns null when `type` is not one of the five interfaces or when
+        // a sibling `List<T>` cannot be located in the same containing
+        // namespace (e.g. the test compilation references a stripped
+        // mscorlib facade that does not declare `List<T>`).
+        private static NamedTypeSymbol TryConstructListFromListShapedInterface(NamedTypeSymbol type)
+        {
+            if (!IsListShapedSystemCollectionsGenericInterface(type))
+            { return null; }
+
+            var elementType = type.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics.FirstOrDefault().Type;
+            if (elementType is null)
+            { return null; }
+
+            var sibling = TryFindSiblingListType(type);
+            if (sibling is null)
+            { return null; }
+
+            return sibling.Construct(elementType);
+        }
+
+        // Recovers the element type T from a list-shaped BCL interface
+        // (IEnumerable<T>/IList<T>/etc.). Returns null for any other type.
+        private static TypeSymbol TryGetListShapedInterfaceElementType(NamedTypeSymbol type)
+        {
+            if (!IsListShapedSystemCollectionsGenericInterface(type))
+            { return null; }
+
+            return type.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics.FirstOrDefault().Type;
+        }
+
+        // Looks up the unconstructed `List`1` definition in the same
+        // System.Collections.Generic namespace that contains `sibling`.
+        // Centralised so the interface-target dispatch and the IEnumerable
+        // spread bridge share lookup semantics.
+        private static NamedTypeSymbol TryFindSiblingListType(NamedTypeSymbol sibling)
+        {
+            var ns = sibling?.OriginalDefinition?.ContainingNamespace;
+            if (ns == null)
+            { return null; }
+
+            return ns
+                .GetTypeMembers("List", 1)
+                .OfType<NamedTypeSymbol>()
+                .FirstOrDefault();
         }
 
         public override AstBase VisitComplexConditionalReceiver(BoundComplexConditionalReceiver node, SerializationContext arg) => throw new NotImplementedException();

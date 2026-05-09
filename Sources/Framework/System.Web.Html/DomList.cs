@@ -141,7 +141,7 @@ namespace System.Web.Html
             }
         }
 
-        void Collections.IList.Add(object value)
+        int Collections.IList.Add(object value)
         {
             throw new NotImplementedException();
         }
@@ -174,6 +174,16 @@ namespace System.Web.Html
         void Collections.ICollection.CopyTo(Array array, int index)
         {
             throw new NotImplementedException();
+        }
+
+        bool Collections.ICollection.IsSynchronized
+        {
+            get { return false; }
+        }
+
+        object Collections.ICollection.SyncRoot
+        {
+            get { return this; }
         }
 
         bool ICollection<T>.IsReadOnly

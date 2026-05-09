@@ -281,9 +281,10 @@ namespace System.Collections.Generic
             this.nativeArray.Push(item);
         }
 
-        void System.Collections.IList.Add(object value)
+        int System.Collections.IList.Add(object value)
         {
             this.Add((T)value);
+            return this.nativeArray.Length - 1;
         }
 
         /// <summary>
@@ -361,6 +362,16 @@ namespace System.Collections.Generic
             {
                 array.SetValue(i + index, nativeArray[i]);
             }
+        }
+
+        bool ICollection.IsSynchronized
+        {
+            get { return false; }
+        }
+
+        object ICollection.SyncRoot
+        {
+            get { return this; }
         }
 
         /// <summary>

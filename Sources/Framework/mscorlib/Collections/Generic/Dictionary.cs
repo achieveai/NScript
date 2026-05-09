@@ -124,5 +124,14 @@ namespace System.Collections.Generic
 
         #endregion IEnumerable Members
 
+        bool ICollection.IsSynchronized
+        {
+            get { return false; }
+        }
+
+        object ICollection.SyncRoot
+        {
+            get { return this; }
+        }
     }
 }

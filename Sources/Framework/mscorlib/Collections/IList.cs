@@ -62,7 +62,16 @@ namespace System.Collections
         //   System.NotSupportedException:
         //     The System.Collections.IList is read-only.-or- The System.Collections.IList
         //     has a fixed size.
-        void Add(object value);
+        //
+        // Remarks:
+        //     Roslyn's collection-expression binder requires
+        //     System.Collections.IList.Add as a well-known member with the
+        //     real-BCL signature `int Add(object)` — returning the position
+        //     of the inserted item — when target-typing to any list-shaped
+        //     interface that derives from non-generic IList. Phase F5 of
+        //     WI-47 changed the return type from `void` to `int` so the
+        //     binder's signature match succeeds.
+        int Add(object value);
 
         //
         // Summary:
