@@ -20,7 +20,7 @@ work in the compiler pipeline.
 Phase status (all under issue #47):
 
 - ~~Phase B (lift the LangVersion pin)~~ ✅ landed.
-- ~~Phase C (relational / logical / negated / extended-property pattern family)~~ ✅ landed (PR #56).
+- ~~Phase C (relational / logical / negated pattern family)~~ ✅ landed (PR #56). Extended-property patterns (`{ A.B: ... }`) remain deferred — see C# 10 table below.
 - ~~Phase D (records / `with` / `init`)~~ ✅ landed.
 - ~~Phase E (collection expressions — `T[]` literal-only)~~ ✅ landed.
 - ~~Phase F1 (collection-expression spread sources for `T[]`)~~ ✅ merged (PR #59).
