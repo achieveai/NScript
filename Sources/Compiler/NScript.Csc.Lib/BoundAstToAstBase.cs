@@ -477,11 +477,17 @@
             // T[] and List<T> targets via the existing AddRange(IEnumerable<T>)
             // overload (List<T> target) or a synthesised
             // `new List<T>(); AddRange(src); ToArray()` bridge (T[] target).
+            // Phase F6 — index/range sub-spreads (`[..src[1..3]]`) ride
+            // transparently on top of the C# 8 indices/ranges back-fill: the
+            // sub-spread source is rewritten by the VisitImplicitIndexerAccess
+            // visitor into a `RuntimeHelpers.GetSubArray<T>(...)` call which
+            // then flows through the existing F1 array-source converter.
             //
-            // Deferred to Phase F6:
-            //   - [CollectionBuilder]-attributed user types.
-            //   - Index/range residuals on element-position sub-spreads.
-            // Span<T> / ReadOnlySpan<T> remain Non-Goals.
+            // Non-Goals (out of scope, will not be supported):
+            //   - [CollectionBuilder]-attributed user types — depend on
+            //     Span<T>/ReadOnlySpan<T>, which are Non-Goals for NScript
+            //     (see docs/language/limitations.md).
+            //   - Span<T> / ReadOnlySpan<T> targets and `params Span<T>`.
             if (node.Type is ArrayTypeSymbol arrayType)
             {
                 return VisitArrayCollectionExpression(node, arrayType, arg);
@@ -506,7 +512,8 @@
                 "Phase F4 supports T[] and List<T> targets; Phase F5 supports the five " +
                 "list-shaped BCL interface targets (IEnumerable<T>, IList<T>, " +
                 "ICollection<T>, IReadOnlyList<T>, IReadOnlyCollection<T>). " +
-                "[CollectionBuilder] types and Span<T>/ReadOnlySpan<T> remain unsupported.");
+                "[CollectionBuilder] types and Span<T>/ReadOnlySpan<T> are Non-Goals; " +
+                "see docs/language/limitations.md.");
         }
 
         private AstBase VisitArrayCollectionExpression(
@@ -1418,6 +1425,413 @@
                     node.Arguments,
                     arg)
             };
+
+        // -----------------------------------------------------------------
+        // C# 8 indices and ranges (Phase F6 back-fill).
+        //
+        // Roslyn binds `^x`, `x..y`, and `arr[index-or-range]` to dedicated
+        // bound shapes (BoundFromEndIndexExpression / BoundRangeExpression /
+        // BoundImplicitIndexerAccess) that have no overrides on the base
+        // BoundAstToNotImplemented class — so they fell through to the
+        // default `throw new NotImplementedException()` until this phase.
+        //
+        // The lowering shape is:
+        //   - `^x`              → `new System.Index(x, fromEnd: true)`
+        //   - `x..y`            → `new System.Range(x, y)`
+        //   - `x..` / `..y` etc → `new System.Range(left ?? Index.Start,
+        //                                            right ?? Index.End)`
+        //   - `arr[index]`      → `arr[index.GetOffset(arr.Length)]`
+        //   - `arr[range]`      → `RuntimeHelpers.GetSubArray<T>(arr, range)`
+        //   - `list[index]`     → `list[index.GetOffset(list.Count)]`
+        //   - `string[index]`   → `string[index.GetOffset(string.Length)]`
+        //
+        // Range-based slicing on List<T> / string is intentionally deferred
+        // to a separate follow-up: List<T> has no Slice(int, int) member on
+        // the NScript facade, and string Substring lowering needs more
+        // wiring. Throw with an actionable message rather than emit broken JS.
+        // -----------------------------------------------------------------
+
+        public override AstBase VisitFromEndIndexExpression(BoundFromEndIndexExpression node, SerializationContext arg)
+        {
+            var location = node.Syntax.Location.GetSerLoc();
+            if (!(node.Type is NamedTypeSymbol indexType))
+            {
+                throw new InvalidOperationException(
+                    $"Expected NamedTypeSymbol for '^x' expression at {node.Syntax.Location}, "
+                    + $"but was '{node.Type?.GetType().Name ?? "null"}'.");
+            }
+            var ctor = node.MethodOpt
+                ?? indexType
+                    .GetMembers(WellKnownMemberNames.InstanceConstructorName)
+                    .OfType<MethodSymbol>()
+                    .FirstOrDefault(m => m.ParameterCount == 2
+                        && m.Parameters[0].Type.SpecialType == SpecialType.System_Int32
+                        && m.Parameters[1].Type.SpecialType == SpecialType.System_Boolean);
+
+            if (ctor is null)
+            {
+                throw new InvalidOperationException(
+                    "System.Index..ctor(int, bool) is required to lower 'from-end' index expressions ('^x'). "
+                    + "Add the constructor to the mscorlib facade.");
+            }
+
+            return new NewExpression
+            {
+                Location = location,
+                Type = arg.SymbolSerializer.GetTypeSpecId(indexType),
+                Method = arg.SymbolSerializer.GetMethodSpecId(ctor),
+                Arguments = new List<MethodCallArg>
+                {
+                    new MethodCallArg { Value = (ExpressionSer)Visit(node.Operand, arg) },
+                    new MethodCallArg { Value = new BoolLiteralExpression { Value = true } },
+                },
+            };
+        }
+
+        public override AstBase VisitRangeExpression(BoundRangeExpression node, SerializationContext arg)
+        {
+            var location = node.Syntax.Location.GetSerLoc();
+            if (!(node.Type is NamedTypeSymbol rangeType))
+            {
+                throw new InvalidOperationException(
+                    $"Expected NamedTypeSymbol for range expression at {node.Syntax.Location}, "
+                    + $"but was '{node.Type?.GetType().Name ?? "null"}'.");
+            }
+
+            // Always lower to `new Range(Index, Index)` — ignore node.MethodOpt
+            // because Roslyn may bind it to a 0/1-parameter factory (Range.All,
+            // Range.StartAt, Range.EndAt) for open-ended forms, while we want
+            // a uniform 2-parameter ctor emission with synthesised boundaries.
+            var ctor = rangeType
+                .GetMembers(WellKnownMemberNames.InstanceConstructorName)
+                .OfType<MethodSymbol>()
+                .FirstOrDefault(m => m.ParameterCount == 2
+                    && IsSystemIndex(m.Parameters[0].Type as NamedTypeSymbol)
+                    && IsSystemIndex(m.Parameters[1].Type as NamedTypeSymbol));
+
+            if (ctor is null)
+            {
+                throw new InvalidOperationException(
+                    "System.Range..ctor(System.Index, System.Index) is required to lower range expressions ('..'). "
+                    + "Add the constructor to the mscorlib facade.");
+            }
+
+            if (!(ctor.Parameters[0].Type is NamedTypeSymbol indexType))
+            {
+                throw new InvalidOperationException(
+                    "System.Range..ctor first parameter type must be a NamedTypeSymbol (System.Index).");
+            }
+
+            var leftExpr = node.LeftOperandOpt != null
+                ? (ExpressionSer)Visit(node.LeftOperandOpt, arg)
+                : ResolveIndexBoundary(indexType, "Start", arg, location);
+            var rightExpr = node.RightOperandOpt != null
+                ? (ExpressionSer)Visit(node.RightOperandOpt, arg)
+                : ResolveIndexBoundary(indexType, "End", arg, location);
+
+            return new NewExpression
+            {
+                Location = location,
+                Type = arg.SymbolSerializer.GetTypeSpecId(rangeType),
+                Method = arg.SymbolSerializer.GetMethodSpecId(ctor),
+                Arguments = new List<MethodCallArg>
+                {
+                    new MethodCallArg { Value = leftExpr },
+                    new MethodCallArg { Value = rightExpr },
+                },
+            };
+        }
+
+        public override AstBase VisitImplicitIndexerAccess(BoundImplicitIndexerAccess node, SerializationContext arg)
+        {
+            var location = node.Syntax.Location.GetSerLoc();
+            var argType = node.Argument.Type as NamedTypeSymbol;
+
+            if (argType is null)
+            {
+                throw new NotSupportedException(
+                    "BoundImplicitIndexerAccess argument has no NamedTypeSymbol type; "
+                    + "only System.Index and System.Range arguments are supported.");
+            }
+
+            if (IsSystemIndex(argType))
+            {
+                return LowerImplicitIndexAccess(node, argType, location, arg);
+            }
+
+            if (IsSystemRange(argType))
+            {
+                return LowerImplicitRangeAccess(node, location, arg);
+            }
+
+            throw new NotSupportedException(
+                $"BoundImplicitIndexerAccess argument type '{argType}' is unsupported. "
+                + "Only System.Index and System.Range arguments are recognised.");
+        }
+
+        private AstBase LowerImplicitIndexAccess(
+            BoundImplicitIndexerAccess node,
+            NamedTypeSymbol indexType,
+            LocationSer location,
+            SerializationContext arg)
+        {
+            var receiverType = node.Receiver.Type;
+            var receiverExpr = (ExpressionSer)Visit(node.Receiver, arg);
+            var indexExpr = (ExpressionSer)Visit(node.Argument, arg);
+
+            var lengthOrCountExpr = BuildLengthOrCountAccess(receiverType, receiverExpr, location, arg);
+            var getOffset = ResolveGetOffset(indexType);
+
+            var offsetCall = new MethodCallExpression
+            {
+                Location = location,
+                Method = arg.SymbolSerializer.GetMethodSpecId(getOffset),
+                Instance = indexExpr,
+                Arguments = new List<MethodCallArg>
+                {
+                    new MethodCallArg { Value = lengthOrCountExpr },
+                },
+            };
+
+            if (receiverType is ArrayTypeSymbol)
+            {
+                return new ElementAccessExpression
+                {
+                    Location = location,
+                    Left = receiverExpr,
+                    Arguments = new List<MethodCallArg>
+                    {
+                        new MethodCallArg { Value = offsetCall },
+                    },
+                };
+            }
+
+            var indexerProp = ResolveIntIndexer(receiverType);
+            if (indexerProp is null)
+            {
+                throw new NotSupportedException(
+                    $"Index-based indexer access on '{receiverType}' requires an 'int' indexer "
+                    + "on the receiver type. Only T[], List<T>, IList<T>, IReadOnlyList<T>, "
+                    + "and string are supported in this slice.");
+            }
+
+            return new IndexExpression
+            {
+                Property = arg.SymbolSerializer.GetPropertySpecId(indexerProp),
+                Instance = receiverExpr,
+                Arguments = new List<MethodCallArg>
+                {
+                    new MethodCallArg { Value = offsetCall },
+                },
+            };
+        }
+
+        private AstBase LowerImplicitRangeAccess(
+            BoundImplicitIndexerAccess node,
+            LocationSer location,
+            SerializationContext arg)
+        {
+            if (!(node.Receiver.Type is ArrayTypeSymbol arrayType))
+            {
+                throw new NotSupportedException(
+                    $"Range-based indexer access on '{node.Receiver.Type}' is not supported. "
+                    + "Only T[] receivers are supported in Phase F6; List<T> / string range "
+                    + "slicing is deferred to a follow-up. Use 'src.ToArray()[range]' or "
+                    + "'string.Substring(start, length)' as a workaround.");
+            }
+
+            var receiverExpr = (ExpressionSer)Visit(node.Receiver, arg);
+            var rangeExpr = (ExpressionSer)Visit(node.Argument, arg);
+
+            var corlib = arrayType.ElementType.ContainingAssembly
+                ?? arrayType.ContainingAssembly;
+            var runtimeHelpers = corlib?.GetTypeByMetadataName(
+                "System.Runtime.CompilerServices.RuntimeHelpers");
+            if (runtimeHelpers is null)
+            {
+                throw new InvalidOperationException(
+                    "System.Runtime.CompilerServices.RuntimeHelpers is required to lower "
+                    + "range-based indexer access on arrays. Add the type to the mscorlib facade.");
+            }
+
+            var getSubArrayDef = runtimeHelpers
+                .GetMembers("GetSubArray")
+                .OfType<MethodSymbol>()
+                .FirstOrDefault(m => m.IsStatic
+                    && m.IsGenericMethod
+                    && m.Arity == 1
+                    && m.ParameterCount == 2);
+            if (getSubArrayDef is null)
+            {
+                throw new InvalidOperationException(
+                    "System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray<T>(T[], Range) "
+                    + "is required to lower range-based indexer access on arrays. Add the method "
+                    + "to the mscorlib facade.");
+            }
+
+            var getSubArray = getSubArrayDef.Construct(arrayType.ElementType);
+
+            return new MethodCallExpression
+            {
+                Location = location,
+                Method = arg.SymbolSerializer.GetMethodSpecId(getSubArray),
+                Instance = null,
+                Arguments = new List<MethodCallArg>
+                {
+                    new MethodCallArg { Value = receiverExpr },
+                    new MethodCallArg { Value = rangeExpr },
+                },
+            };
+        }
+
+        private static ExpressionSer ResolveIndexBoundary(
+            NamedTypeSymbol indexType,
+            string propertyName,
+            SerializationContext arg,
+            LocationSer location)
+        {
+            var prop = indexType
+                .GetMembers(propertyName)
+                .OfType<PropertySymbol>()
+                .FirstOrDefault(p => p.IsStatic && p.GetMethod != null);
+            if (prop is null)
+            {
+                throw new InvalidOperationException(
+                    $"System.Index.{propertyName} static property is required to lower "
+                    + "open-ended range expressions ('x..' / '..y' / '..'). Add the property "
+                    + "to the mscorlib facade.");
+            }
+
+            return new PropertyExpression
+            {
+                Property = arg.SymbolSerializer.GetPropertySpecId(prop),
+                Instance = null,
+                IsNotVirtual = false,
+                Location = location,
+            };
+        }
+
+        private static MethodSymbol ResolveGetOffset(NamedTypeSymbol indexType)
+        {
+            var method = indexType
+                .GetMembers("GetOffset")
+                .OfType<MethodSymbol>()
+                .FirstOrDefault(m => !m.IsStatic
+                    && m.ParameterCount == 1
+                    && m.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
+            if (method is null)
+            {
+                throw new InvalidOperationException(
+                    "System.Index.GetOffset(int) is required to lower index-based indexer "
+                    + "access. Add the method to the mscorlib facade.");
+            }
+
+            return method;
+        }
+
+        private static PropertySymbol ResolveIntIndexer(TypeSymbol receiverType)
+        {
+            if (!(receiverType is NamedTypeSymbol named))
+            {
+                return null;
+            }
+
+            return named
+                .GetMembers(WellKnownMemberNames.Indexer)
+                .OfType<PropertySymbol>()
+                .FirstOrDefault(p => !p.IsStatic
+                    && p.IsIndexer
+                    && p.ParameterCount == 1
+                    && p.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
+        }
+
+        private static ExpressionSer BuildLengthOrCountAccess(
+            TypeSymbol receiverType,
+            ExpressionSer receiverExpr,
+            LocationSer location,
+            SerializationContext arg)
+        {
+            PropertySymbol prop = null;
+
+            if (receiverType is ArrayTypeSymbol arrayType)
+            {
+                prop = FindInstanceProperty(arrayType.BaseTypeNoUseSiteDiagnostics, "Length");
+            }
+            else if (receiverType is NamedTypeSymbol named)
+            {
+                if (named.SpecialType == SpecialType.System_String)
+                {
+                    prop = FindInstanceProperty(named, "Length");
+                }
+                else
+                {
+                    prop = ResolveCountProperty(named);
+                }
+            }
+
+            if (prop is null)
+            {
+                throw new NotSupportedException(
+                    $"Could not resolve a Length or Count property on receiver type "
+                    + $"'{receiverType}'. Required to lower implicit indexer access with an "
+                    + "Index or Range argument. Only T[], List<T>, IList<T>, IReadOnlyList<T>, "
+                    + "and string are supported in this slice.");
+            }
+
+            return new PropertyExpression
+            {
+                Property = arg.SymbolSerializer.GetPropertySpecId(prop),
+                Instance = !prop.IsStatic ? receiverExpr : null,
+                IsNotVirtual = false,
+                Location = location,
+            };
+        }
+
+        private static PropertySymbol ResolveCountProperty(NamedTypeSymbol type)
+        {
+            var direct = FindInstanceProperty(type, "Count");
+            if (direct != null)
+            {
+                return direct;
+            }
+
+            foreach (var iface in type.AllInterfacesNoUseSiteDiagnostics)
+            {
+                var fromIface = FindInstanceProperty(iface, "Count");
+                if (fromIface != null)
+                {
+                    return fromIface;
+                }
+            }
+
+            return null;
+        }
+
+        private static PropertySymbol FindInstanceProperty(TypeSymbol type, string name)
+            => type?
+                .GetMembers(name)
+                .OfType<PropertySymbol>()
+                .FirstOrDefault(p => !p.IsStatic && p.ParameterCount == 0);
+
+        // True iff `type` is `System.Index`, anchored to the global namespace.
+        private static bool IsSystemIndex(NamedTypeSymbol type)
+            => IsSystemNamespaceType(type, "Index");
+
+        // True iff `type` is `System.Range`, anchored to the global namespace.
+        private static bool IsSystemRange(NamedTypeSymbol type)
+            => IsSystemNamespaceType(type, "Range");
+
+        private static bool IsSystemNamespaceType(NamedTypeSymbol type, string metadataName)
+        {
+            if (type is null || type.MetadataName != metadataName)
+            {
+                return false;
+            }
+
+            var ns = type.ContainingNamespace;
+            return ns?.Name == "System"
+                && ns.ContainingNamespace?.IsGlobalNamespace == true;
+        }
 
         public override AstBase VisitInstrumentationPayloadRoot(BoundInstrumentationPayloadRoot node, SerializationContext arg) => throw new NotImplementedException();
 

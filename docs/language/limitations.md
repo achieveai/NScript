@@ -26,7 +26,7 @@ NScript supports the C# 8 surface area for non-ref, non-reflective code targetin
 | Pattern matching (basic — `is Type`, `case`) | ✅ Supported | Type tests compile to `instanceof` plus metadata checks. |
 | Switch expressions | ⚠️ Partial | Some forms; see [csharp8-todos.md](../../csharp8-todos.md). |
 | Property patterns / positional patterns | ❌ Open work | Listed in C# 8 todos. |
-| Indices and ranges (`x[^1]`, `x[1..3]`) | ⚠️ Partial | On the C# 8 todo list. |
+| Indices and ranges (`x[^1]`, `x[1..3]`) | ✅ Supported (Phase F6) | `^x` and `x..y` lower to `new System.Index(...)` / `new System.Range(...)`. `arr[^1]` / `list[^1]` / `string[^1]` lower to `instance[idx.GetOffset(instance.Length-or-Count)]`; `arr[range]` lowers to `RuntimeHelpers.GetSubArray<T>(arr, range)`. Range slicing on `List<T>` and `string` is deferred to a follow-up (no `List<T>.Slice` facade member; `string.Substring`-by-Range needs more wiring). Validated in `Lang8IndexRangeTests.cs`. |
 | Null-coalescing `??`, `??=` | ✅ Supported | `??=` is supported. |
 | Null-conditional `?.`, `?[]` | ✅ Supported | Compiled to JS short-circuit chains. |
 | Tuples, deconstruction | ✅ Supported | `ValueTuple` emits as a class; deconstruction is sugar over field reads. |
