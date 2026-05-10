@@ -4,9 +4,9 @@
 
 ## TL;DR
 
-NScript supports the C# 8 surface area for non-ref, non-reflective code targeting `netstandard2.1`. The translatable subset includes classes, interfaces, generics, LINQ, lambdas, async/await (compiled through state machines into Promises), pattern matching basics, indices/ranges, and null-coalescing. The hard exclusions are anything that requires the .NET runtime: `dynamic`, reflection, P/Invoke, `unsafe` / pointers, and iterator methods (`yield return` / `yield break`). Some C# 8 features are partially implemented or open work — see [csharp8-todos.md](../../csharp8-todos.md) at the repo root.
+NScript supports the **C# 8–13 surface area** for non-ref, non-reflective code targeting `netstandard2.1`. Framework and test-framework projects compile under `<LangVersion>13</LangVersion>`. The translatable subset includes classes, interfaces, generics, LINQ, lambdas, async/await (compiled through state machines into Promises), pattern matching (constant / declaration / discard / relational / logical / negated / extended-property), records and `record struct`, `with` expressions, `init` and `required` members, C# 12 collection expressions (`T[]` / `List<T>` / list-shaped BCL interface targets; `T[]` / `List<T>` / `IEnumerable<T>` spread sources), C# 12 primary constructors on plain classes, indices and ranges (`x[^1]`, `x[1..3]`), and null-coalescing. The hard exclusions are anything that requires the .NET runtime: `dynamic`, reflection, P/Invoke, `unsafe` / pointers, and iterator methods (`yield return` / `yield break`). The full per-feature breakdown lives in [`csharp9-13-status.md`](./csharp9-13-status.md); residual C# 8 bugs and open items are tracked in [csharp8-todos.md](../../csharp8-todos.md).
 
-> **C# 9–13 status:** Framework and test-framework projects are now built with `<LangVersion>13</LangVersion>`. The transparent C# 9–13 syntactic features that ride the existing pipeline are listed in [`csharp9-13-status.md`](./csharp9-13-status.md); records (class and struct), `with` expressions, and `init` accessors landed in Phase D of issue #47. Phase E added C# 12 collection expressions for `T[]` targets (literal-only inputs); Phase F1 extends the wire format and Stage-2 converter to handle spread elements (`..source`) whose source is `T[]` — emitting a JS `Array.prototype.concat` chain wrapped through `ArrayG<T>`. The serialization round-trip is unit-tested end-to-end (both `LiteralElementSer` and `SpreadElementSer` discriminator tags), but framework E2E fixtures that spell `[..src]` at the source level are deferred: Roslyn's collection-expression lowering requires `System.Collections.Generic.List<T>..ctor()` to be resolvable as a well-known member regardless of target type, and NScript's `mscorlib` facade does not currently satisfy the well-known-member shape. Phase F3 lit up C# 11 `required` members at the *metadata* level — the `IsRequired` flag is persisted on `PropertySpecSer` / `FieldSpecSer` (shipped with the records slice) and the BCL attribute facades (`RequiredMemberAttribute`, `CompilerFeatureRequiredAttribute`, `SetsRequiredMembersAttribute`) now live in NScript's `mscorlib`, so consumer code can spell `required` and Roslyn enforces "must be set in an initializer" (CS9035) at every call site. Following the NRT / `init` precedent, no runtime check is emitted — `required` is compile-time strict, runtime permissive. Phase F2 lit up C# 12 primary constructors on plain (non-record) classes — Roslyn synthesises private backing fields for captured parameters and rewrites references at bind time, so the bound tree resolves to existing `BoundFieldAccess` / `BoundParameter` shapes already covered by Stage 1; primary ctors on classes are therefore a transparent C# 12 feature for the NScript pipeline (records continue to flow through their own synthesised-property path). Interface targets (`IEnumerable<T>`, `IList<T>`, `IReadOnlyList<T>`, `ICollection<T>`, `IReadOnlyCollection<T>`), `List<T>` targets, `[CollectionBuilder]`-attributed types, and spread sources whose static type is not `T[]` (e.g. `List<T>`, `IEnumerable<T>`) are sequenced into follow-up phases — the most immediate dependency is teaching the `mscorlib` facade to expose `List<T>..ctor()` as a well-known member.
+> **C# 9–13 caveats:** A handful of corners are **compile-time strict, runtime permissive** — Roslyn enforces them at every call site but no runtime check is emitted: `init` accessors, nullable reference types, and `required` members. `record class` value-equality (`r1 == r2` / `r1.Equals(r2)`) currently surfaces a runtime NRE because NScript's `mscorlib` returns `null` from `EqualityComparer<T>.Default`; reference-equality and `Deconstruct` are unaffected and the gap is tracked as a follow-up to issue #47. `record struct with` raises an actionable `NotImplementedException` from Stage 1 because struct codegen does not preserve value-copy semantics. `[CollectionBuilder]`-attributed user types and `Span<T>` / `ReadOnlySpan<T>` collection-expression targets are explicit non-goals — they depend on `Span<T>`, which has no JS runtime semantics.
 
 ## Reference — feature support matrix
 
@@ -24,8 +24,8 @@ NScript supports the C# 8 surface area for non-ref, non-reflective code targetin
 | `Task<T>`, `Promise<T>` | ✅ Supported | `Task` is `[ImportedType]` aliased to JS `Promise`. |
 | `IObservable<T>` (Rx) | ⚠️ Partial | `Sunlight.Framework.Observables` provides the reactive contract used by templates; it's *not* a port of System.Reactive. |
 | Pattern matching (basic — `is Type`, `case`) | ✅ Supported | Type tests compile to `instanceof` plus metadata checks. |
-| Switch expressions | ⚠️ Partial | Some forms; see [csharp8-todos.md](../../csharp8-todos.md). |
-| Property patterns / positional patterns | ❌ Open work | Listed in C# 8 todos. |
+| Switch expressions | ✅ Supported | Constant / declaration / discard / relational / logical / negated / extended-property arms all lower through the shared `PatternMatcher`. List patterns (`[1, 2, ..]`) and positional patterns are still open — see [`csharp9-13-status.md`](./csharp9-13-status.md). |
+| Property / positional / list patterns | ❌ Open work | Property and positional patterns are tracked under Phase C in [`csharp9-13-status.md`](./csharp9-13-status.md); the C# 11 list pattern (`[1, 2, ..]`) shares that work item. Extended property patterns (`{ A.B: ... }`) ride the same path. |
 | Indices and ranges (`x[^1]`, `x[1..3]`) | ✅ Supported (Phase F6) | `^x` and `x..y` lower to `new System.Index(...)` / `new System.Range(...)`. `arr[^1]` / `list[^1]` / `string[^1]` lower to `instance[idx.GetOffset(instance.Length-or-Count)]`; `arr[range]` lowers to `RuntimeHelpers.GetSubArray<T>(arr, range)`. Range slicing on `List<T>` and `string` is deferred to a follow-up (no `List<T>.Slice` facade member; `string.Substring`-by-Range needs more wiring). Validated in `Lang8IndexRangeTests.cs`. |
 | Null-coalescing `??`, `??=` | ✅ Supported | `??=` is supported. |
 | Null-conditional `?.`, `?[]` | ✅ Supported | Compiled to JS short-circuit chains. |
@@ -42,11 +42,12 @@ NScript supports the C# 8 surface area for non-ref, non-reflective code targetin
 | P/Invoke, `[DllImport]` | ❌ Not supported | No interop boundary — use `[Script]` for native JS instead. |
 | `lock` / monitors | ⚠️ No-op | JS is single-threaded; `lock` compiles but provides no synchronisation. |
 | `try` / `catch` / `finally` | ✅ Supported | Compiled to JS `try`/`catch`/`finally`. |
-| `throw` expressions | ⚠️ Bug | Listed as open issue in [csharp8-todos.md](../../csharp8-todos.md). Use `throw` *statements* until fixed. |
+| `throw` expressions | ⚠️ Bug | Pre-existing C# 8 codegen bug; tracked under "Fix throw expressions code generation" in [csharp8-todos.md](../../csharp8-todos.md). Use `throw` *statements* until fixed. |
 | `params T[]` | ✅ Supported | Variadic JS calls. |
 | Operator overloading | ✅ Supported | Operators emit as static methods. |
 | Extension methods | ✅ Supported | Static methods invoked with instance syntax. |
-| `string` interpolation `$"…"` | ✅ Supported | Including verbatim `@$"…"`. |
+| `string` interpolation `$"…"` (non-constant context) | ✅ Supported | Including verbatim `@$"…"`. Roslyn lowers each interpolation hole to `string.Concat` / `string.Format` calls before the bound tree reaches Stage 1. |
+| `string` interpolation in a `const` context | ⚠️ Bug | `const string s = $"hello {Name}";` reaches Stage 1 as an unlowered `BoundInterpolatedString` and `VisitInterpolatedString` throws. Pre-existing C# 6 gap; expand to ordinary `string` constant concatenation until fixed. |
 | Numeric `decimal` | ⚠️ Maps to `number` | No 128-bit decimal in JS; loss of precision past 2^53. |
 | Numeric `long` / `ulong` | ⚠️ Maps to `number` | Loss of precision past 2^53. Use `BigInt` via `[Script]` for large integers. |
 | `DateTime`, `TimeSpan` | ⚠️ Limited | Maps to JS `Date`; only the subset shipped in `mscorlib` is available. See [framework/core.md](../framework/core.md). |
@@ -156,10 +157,12 @@ NScript's `Task` is an `[ImportedType]` over JS `Promise`. `await task` and `awa
 | `Activator.CreateInstance with parameters not supported` | Only parameterless `Activator.CreateInstance<T>()` is supported |
 | Wrong arithmetic on large integers | `long` precision loss past 2^53 |
 | `Cannot find type 'IAsyncEnumerable'` | Async streams not yet supported |
+| `NotImplementedException` from `VisitInterpolatedString` | Interpolated string in a `const` context — rewrite as ordinary `string` concatenation |
 
 ## Cross-links
 
-- [csharp8-todos.md](../../csharp8-todos.md) — open C# 8 work items
+- [`csharp9-13-status.md`](./csharp9-13-status.md) — full per-feature C# 9–13 support matrix with empirical evidence
+- [csharp8-todos.md](../../csharp8-todos.md) — open C# 8 work items and residual bugs
 - [Getting started](../getting-started/README.md) — day-1 pitfalls
 - [Framework Core](../framework/core.md) — BCL surface details
 - [Interop attributes](../interop/attributes.md) — opt-outs and emission control

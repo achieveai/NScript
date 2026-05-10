@@ -17,13 +17,24 @@ empirically confirm what is *transparent* (Roslyn lowers to bound nodes the
 existing Stage-1 visitor already handles) versus what still needs implementation
 work in the compiler pipeline.
 
-The remaining pipeline gaps are sequenced into Phase C (pattern family),
-~~Phase D (records / `with` / `init`)~~ ✅ landed, Phase E (collection
-expressions) — partial; spread-into-array landed under Phase F1,
-~~Phase F3 (required members metadata)~~ ✅ landed,
-~~Phase F2 (primary constructors on classes)~~ ✅ landed,
-Phase F4 (interface / `List<T>` collection-expression targets),
-Phase G (docs sweep) — see issue #47 for the full plan.
+Phase status (all under issue #47):
+
+- ~~Phase B (lift the LangVersion pin)~~ ✅ landed.
+- ~~Phase C (relational / logical / negated / extended-property pattern family)~~ ✅ landed (PR #56).
+- ~~Phase D (records / `with` / `init`)~~ ✅ landed.
+- ~~Phase E (collection expressions — `T[]` literal-only)~~ ✅ landed.
+- ~~Phase F1 (collection-expression spread sources for `T[]`)~~ ✅ merged (PR #59).
+- ~~Phase F2 (primary constructors on plain classes)~~ ✅ merged (PR #62).
+- ~~Phase F3 (`required` members metadata)~~ ✅ merged (PR #60).
+- ~~Phase F4 (`List<T>` targets + List/array spread bridges)~~ ✅ merged (PR #64).
+- ~~Phase F5 (BCL interface targets + `IEnumerable<T>` spread sources)~~ ✅ merged (PR #65).
+- ~~Phase F6 (C# 8 indices/ranges back-fill + sub-spread closure; `[CollectionBuilder]` reclassified Non-Goal)~~ ✅ merged (PR #66).
+- **Phase G (docs sweep + cheap ⚠️ Untested promotions) — this PR.**
+
+Parallel non-gating work outside #47 itself:
+
+- Sub-issue [#63](https://github.com/achieveai/NScript/issues/63) — V8 / runtime execution coverage for the compile-only fixtures landed under Phases D/E/F.
+- Follow-up issues for residual gaps: `BoundAstToAstBase` partial-class extraction; `EqualityComparer<T>.Default` runtime fix (record value-equality); `[CallerArgumentExpression]` BCL facade; generic-attribute `SymbolSerializer` audit. Filed against #47 as needed when demand surfaces.
 
 ## How a feature lands in the "Supported" column
 
@@ -91,16 +102,16 @@ is *transparent*; otherwise it is a planned phase.
 | Feature | Status | Notes |
 |---|---|---|
 | File-scoped namespaces | ✅ Supported | Validated by `Lang10Features.cs`, `Lang11Features.cs`, `Lang12Features.cs`, `Lang13Features.cs` all using the syntax. Lowers to the same bound tree as a braced namespace. |
-| Global usings | ⚠️ Untested | No fixture in this PR (would require a project-level edit). Should be transparent — purely affects symbol resolution. Re-validate during Phase G. |
+| Global usings | ⚠️ Untested | No fixture: `global using` requires a project-level edit (or a separate `.cs` file with `global using` at file scope) and the Phase G scope was kept fixture-only. Expected to be transparent — `global using` purely affects symbol resolution; the bound tree sees the same fully-qualified references it would with a regular `using`. Add a fixture if user demand surfaces. |
 | `record struct` | ⚠️ Partial | The `IsRecord` metadata flag flows through the same path as record classes. Construction, member access, and `Deconstruct` are transparent. **Caveat:** Roslyn does not synthesise a `<Clone>$` method for record structs (the struct copy happens at IL level), so a `with` expression on a record struct currently raises a clear `NotImplementedException` from `BondToAst.ParseWithExpression` rather than emitting nonsense JS. Closing this gap requires routing struct `with` through NScript's struct codegen (which today does not preserve value-copy semantics on assignment). Tracked as a follow-up to issue #47. The compile-only fixture `Lang9RecordTests.cs::RecordStructWith` exists to flag any future regression in the diagnostic. |
 | Mixed deconstruction declaration & assignment | ✅ Supported | Validated in `Lang10Features.cs::MixedDeconstructionAssignment`. |
-| Constant interpolated strings | ❌ Pre-existing gap | `VisitInterpolatedString` throws — affects *all* `$"…"` strings, not specific to C# 10. (`limitations.md` claims interpolation is supported; that line is **stale** and will be corrected in Phase G.) |
+| Constant interpolated strings | ❌ Pre-existing gap | `VisitInterpolatedString` throws — affects only the `const` context (`const string s = $"...";`); ordinary `$"..."` is lowered to `string.Concat` / `string.Format` by Roslyn before reaching Stage 1. Surfaced as two rows in `limitations.md` (non-constant ✅ Supported / constant ⚠️ Bug). |
 | Extended property patterns (`{ A.B: ... }`) | ❌ Needs implementation | Lowers to recursive pattern. **Phase C.** |
 | Lambda natural type (via `var`) | ✅ Supported | Validated in `Lang10Features.cs::NaturalLambdaType`. Roslyn synthesises the delegate type at bind time. |
 | Lambda explicit return type | ✅ Supported | Validated in `Lang10Features.cs::LambdaExplicitReturnType` via `int (int a) => a + 1;`. Roslyn carries the explicit return-type symbol on the anonymous function shape. |
-| Lambda attributes | ⚠️ Untested | Likely transparent (attributes flow into method symbol metadata) but not exercised. |
-| Caller argument expression | ⚠️ Untested | Not validated by a fixture: the `[CallerArgumentExpression]` attribute is not declared in NScript's `mscorlib`, so a fixture would fail at bind time independently of the bound-tree shape. Wire-through is expected to be transparent (the default value is folded to a literal at the call site), but cannot be claimed until the BCL gap is closed. **Phase G.** |
-| Parameterless struct constructors | ⚠️ Untested | No fixture; expected to work. The Phase D `record struct` work exercised the surrounding struct codegen path without surfacing issues, but a dedicated fixture for explicit parameterless ctors on plain structs is still pending. |
+| Lambda attributes | ✅ Supported | Validated in `Lang10Features.cs::LambdaWithAttribute`. Exercises both attribute-on-lambda (`[LambdaMarker("inc")] (int x) => x + 1`) and attribute-on-lambda-parameter (`([LambdaMarker("p")] int x) => x * 2`) shapes. The attribute lives on the synthesised lambda method symbol's metadata; the bound tree shape is the same `BoundLambda` as an unattributed lambda. |
+| Caller argument expression | ⚠️ BCL-blocked | `[CallerArgumentExpression]` is not declared in NScript's `mscorlib`, so any fixture would fail at bind time independently of the bound-tree shape. Wire-through is expected to be transparent (the default value is folded to a literal at the call site) but cannot be claimed until the BCL gap is closed. Deferred to a follow-up under #47 if demand surfaces. |
+| Parameterless struct constructors | ✅ Supported | Validated in `Lang10Features.cs::ParameterlessStructConstructor` via `public struct S { public S() { X = 7; } }`. Roslyn lowers an explicit parameterless struct ctor to an ordinary `BoundConstructor` shape; the F2 record-struct work already exercised the surrounding struct codegen path. |
 | `ParenthesizedPattern` | ✅ Supported | Validated in `Lang10Features.cs::ParenthesizedConstantPattern`. Lowers to the inner pattern. |
 
 ## C# 11 (2022)
@@ -111,7 +122,7 @@ is *transparent*; otherwise it is a planned phase.
 | `nameof(parameter)` in attributes referencing enclosing method parameters | ✅ Supported | Validated in `Lang11Features.cs::NameOfParameterInAttribute` via `[Obsolete("..." + nameof(value))]` on a method whose parameter is `value`. Roslyn resolves the parameter symbol at attribute-bind time and folds to a constant string. |
 | File-local types (`file class`) | ✅ Supported | Validated in `Lang11Features.cs::UseFileLocalHelper` + `FileLocalHelper`. Bound tree sees an ordinary class with a mangled metadata name. |
 | Required members (`required`) | ✅ Supported (metadata) | `IsRequired` is persisted on `PropertySpecSer` / `FieldSpecSer` (shipped under the records slice). The BCL attribute facades — `System.Runtime.CompilerServices.RequiredMemberAttribute`, `System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute`, `System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute` — live in NScript's `mscorlib` so Roslyn binds the C# 11 syntax. Validated in `Lang11Features.cs::Lang11RequiredTests` (init-only properties, fields, derived members, `[SetsRequiredMembers]`). NScript follows the NRT / `init` precedent here: `required` is **compile-time strict, runtime permissive** — Roslyn enforces it at every consumer call site (CS9035 if a required member is missing from an initializer), but no runtime check is emitted. |
-| Generic attributes | ⚠️ Untested | Symbol-side metadata path not audited; likely needs `SymbolSerializer` work. **Phase F.** |
+| Generic attributes | ⚠️ BCL-blocked | A generic attribute (`class FooAttribute<T> : Attribute`) introduces a generic type symbol in attribute position; the symbol-side metadata path through `SymbolSerializer` has not been audited and may need bespoke work to round-trip the type-argument. Deferred to a follow-up under #47 if demand surfaces. |
 | Auto-default of struct fields | ✅ Supported | Validated in `Lang11Features.cs::StructAutoDefault`. The auto-default prologue is part of Roslyn's lowering — bound tree shape unchanged. |
 | List patterns (`[1, 2, ..]`) | ❌ Needs implementation | `BoundListPattern`, `BoundSlicePattern` unvisited. **Phase C.** |
 | Newlines in interpolation holes | ❌ Pre-existing gap | Subsumed by the broader interpolated-string gap. |
@@ -128,7 +139,7 @@ is *transparent*; otherwise it is a planned phase.
 | Spread `..` element | ✅ Supported (Phase F6) | `T[]`-to-`T[]` spreads ship in Phase F1 (`SpreadElementSer` proto tag 230, `ArrayWithSpreadsConverter` lowers to `[].concat(...)` through `ArrayG<T>`). Phase F4 extends spread coverage to `List<T>` sources (into both `T[]` and `List<T>` targets) and `T[]` sources into `List<T>` targets, lowered through the existing `NewCollectionInitializerExpression` path with `Add`/`AddRange` calls and a synthesised `ToArray()` bridge for the `List`→array shape. **Phase F5** adds `IEnumerable<T>` spread sources into both `T[]` and `List<T>` targets via the existing `AddRange(IEnumerable<T>)` overload (List target) or a synthesised `new List<T>(); AddRange(src); ToArray()` bridge (array target). **Phase F6** unblocks index/range sub-spreads (`[..src[1..3]]`) transparently: the C# 8 `arr[1..3]` lowers to a `RuntimeHelpers.GetSubArray<T>(...)` call whose static return type is `T[]`, and the existing F1 array-source converter handles the result. Source-level fixtures live in `Lang12CollectionExpressionTests.cs`. |
 | Primary constructors on classes | ✅ Supported | Validated in `Lang12Features.cs::Lang12PrimaryCtorTests` via `PrimaryCtorOnClass` (captured parameter referenced from method bodies and properties), `PrimaryCtorWithBaseCall` (`class D(int x) : B(x)` base-call argument forwarding), and `PrimaryCtorMultipleParams` (multiple captures with disjoint reference sites — field initializers, property bodies, and base-call argument lists). Roslyn synthesises private backing fields for captured parameters and lowers references at bind time, so the bound tree resolves to existing `BoundFieldAccess` / `BoundParameter` shapes already covered by Stage 1 — no `BoundPrimaryConstructorParameterAccess` visitor required. Records (`record class Foo(int X)`) continue to flow through their own `BoundFieldAccess`-against-synthesised-property path validated in `Lang9RecordTests.cs`. |
 | `using` alias for any type | ✅ Supported | Validated in `Lang12Features.cs::AliasAnyType` using **tuple-syntax** (`using Pair = (int X, int Y);`) and **array-syntax** (`using Numbers = int[];`) aliases — the C# 12 grammar additions. Aliases are resolved at symbol resolution; bound tree sees the underlying type. Closed generic aliases (legal since C# 1.0) are not exercised here. |
-| Default lambda parameter values | ⚠️ Untested | May surface a new lambda metadata shape. Conservative — re-validate before claiming support. |
+| Default lambda parameter values | ⚠️ Untested | `Func<int, int> f = (int x = 5) => x + 1;` — the default value is stored on the lambda's parameter symbol and applied by Roslyn at the call site, so the lambda body itself sees the bound tree of an ordinary parameter access. Wire-through is expected to be transparent but the new metadata shape on the lambda parameter symbol has not been audited. Deferred to a follow-up under #47 if demand surfaces. |
 | Inline arrays | ❌ Out of scope | Issue #47 Non-Goals. |
 | `ref readonly` parameters | ❌ Out of scope | Issue #47 Non-Goals. |
 | `Experimental` attribute | ✅ Supported | Pure attribute metadata; transparent. |
@@ -143,8 +154,8 @@ is *transparent*; otherwise it is a planned phase.
 | `params` collections | ⚠️ Partial | `params T[]` continues to work via the existing path. **Phase F4** lights up `params List<T>` (rides the same `NewCollectionInitializerExpression` lowering as direct `List<T>` collection-expression targets); validated in `Lang13Features.cs::ParamsCollections`. `params IEnumerable<T>`/`params IList<T>`/`params ICollection<T>` share the interface-target collection-expression lowering and remain deferred to **Phase F5** with the BCL-interface facade work. `params Span<T>` / `params ReadOnlySpan<T>` are Non-Goals. |
 | `System.Threading.Lock` | ❌ Out of scope | Issue #47 Non-Goals — depends on the new BCL primitive that does not exist in NScript's `mscorlib`. |
 | `field` keyword in property accessors (preview) | ❌ Out of scope | Reserved by C# 14 to mean "synthesised backing field"; pinning `<LangVersion>13</LangVersion>` deliberately avoids the rebinding. |
-| Implicit index access on initializers | ⚠️ Untested | Indices/ranges are listed as a partial item in `csharp8-todos.md`; revisit during Phase G. |
-| `partial` properties | ⚠️ Untested | New bound-tree shape; revisit if user demand surfaces. |
+| Implicit index access on initializers | ⚠️ Untested | The C# 13 grammar allows `var x = new MyClass { Buffer = { [^1] = 0 } };` — `^1` inside a nested object initializer. The standalone `arr[^1] = 0` element-assignment form is already covered by Phase F6 (`Lang8IndexRangeTests.cs`). The nested-initializer position lowers through Roslyn's collection-initializer path and has not been exercised; expected to compose with F6's `BoundFromEndIndexExpression` lowering. Deferred to a follow-up under #47 if demand surfaces. |
+| `partial` properties | ⚠️ Untested | C# 13 introduces a new partial-property declaration shape. The bound-tree impact has not been audited and may surface a new property-symbol synthesis path. Deferred to a follow-up under #47 if demand surfaces. |
 
 ## Empirical evidence — failure modes encountered while writing fixtures
 
@@ -160,7 +171,7 @@ contributors do not re-discover them and so the matrix above is grounded.
 ## Cross-links
 
 - Issue [#47](https://github.com/achieveai/NScript/issues/47) — umbrella issue and phase plan.
-- [`limitations.md`](./limitations.md) — consumer-facing summary (will be refreshed in Phase G).
+- [`limitations.md`](./limitations.md) — consumer-facing summary of the supported surface area.
 - [`csharp8-todos.md`](../../csharp8-todos.md) — open C# 8 items; a few rows here reference its open work.
 - [ADR 0006](../adr/0006-standardize-the-compiler-pipeline-from-bound-csharp-to-javascript.md) — the two-stage pipeline this matrix lives on top of.
 - [ADR 0002](../adr/0002-maintain-a-minimal-roslyn-fork-for-nscript-hooks.md) — the Roslyn fork that drives bound-tree shapes.
