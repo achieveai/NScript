@@ -1,3 +1,5 @@
+> **C# 9–13 status** lives in [`docs/language/csharp9-13-status.md`](docs/language/csharp9-13-status.md). This file tracks residual C# 8 items only.
+
 - ~~Readonly members~~ (Free)
 - Default interface methods
 - Pattern matching enhancements:
@@ -10,7 +12,7 @@
 - ~~Disposable ref structs~~ (Irrelevant to JS target)
 - Nullable reference types
 - Asynchronous streams
-- Indices and ranges
+- ~~Indices and ranges~~ (Phase F6 — see [`Lang8IndexRangeTests.cs`](Test/Framework/RealScript/Lang8IndexRangeTests.cs))
 - ~~Null-coalescing assignment~~
 - ~~Unmanaged constructed types~~ (Irrelevant to JS target)
 - ~~Stackalloc in nested expressions~~ (Irrelevant to JS target)

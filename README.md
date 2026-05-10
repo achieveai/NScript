@@ -11,7 +11,7 @@ NScript is a compiler and framework that enables developers to:
 - **Use data binding**: OneTime, OneWay, and TwoWay binding modes for UI synchronization
 - **Create templated views**: Combine C# logic with HTML templates
 - **Access the DOM**: Use strongly-typed C# APIs instead of JavaScript APIs
-- **Leverage C# features**: Use generics, LINQ, async/await, null-coalescing operators, and more (C# 8 features supported)
+- **Leverage C# features**: Use generics, LINQ, async/await, null-coalescing operators, and more (C# 8–13 surface area; see [`docs/language/csharp9-13-status.md`](docs/language/csharp9-13-status.md))
 
 ## Getting Started
 
@@ -128,9 +128,12 @@ MyApp/
 - Lambda expressions
 - async/await
 - Null-coalescing operators
-- Pattern matching
-- Indices and ranges
-- C# 8 features
+- Pattern matching (constant / declaration / discard / relational / logical / negated / extended-property)
+- Indices and ranges (`x[^1]`, `x[1..3]`)
+- Records, `record struct`, `with` expressions, `init` and `required` members
+- Primary constructors on plain classes (C# 12)
+- Collection expressions (`T[]` / `List<T>` / list-shaped BCL interface targets; spread sources)
+- C# 8–13 surface area (see [`docs/language/csharp9-13-status.md`](docs/language/csharp9-13-status.md) for the full per-feature matrix)
 
 ## Limitations
 
@@ -142,7 +145,7 @@ The following C# features are not supported:
 - P/Invoke
 - Some advanced C# features are still being implemented
 
-For the latest feature support status, see [csharp8-todos.md](csharp8-todos.md).
+For the latest feature support status, see [`docs/language/csharp9-13-status.md`](docs/language/csharp9-13-status.md) (C# 9–13 per-feature matrix) and [csharp8-todos.md](csharp8-todos.md) (residual C# 8 bugs and gaps).
 
 ## Documentation
 

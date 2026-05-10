@@ -85,4 +85,56 @@ public class Lang10Features
     private static int ProduceInt() => 99;
 
     private static void TakeInt(int x) => Console.WriteLine(x.ToString());
+
+    // C# 10 — explicit parameterless constructor on a `struct`. Roslyn lowers
+    // an explicit parameterless struct ctor to an ordinary
+    // `BoundConstructor` shape; the surrounding struct codegen path was
+    // exercised under the Phase F2 record-struct work without surfacing new
+    // bound-tree gaps. The construction site is an ordinary
+    // `BoundObjectCreationExpression`.
+    public struct ExplicitDefaultStruct
+    {
+        public int X;
+        public int Y;
+
+        public ExplicitDefaultStruct()
+        {
+            X = 7;
+            Y = 11;
+        }
+    }
+
+    public static void ParameterlessStructConstructor()
+    {
+        var s = new ExplicitDefaultStruct();
+        Console.WriteLine(s.X);
+        Console.WriteLine(s.Y);
+    }
+
+    // C# 10 — attributes on lambdas and lambda parameters. The attribute is
+    // stored on the synthesised lambda method symbol's metadata; the bound
+    // tree shape is the same `BoundLambda` as an unattributed lambda. Use a
+    // local attribute (not `[Obsolete]`) so the lambda invocation does not
+    // raise an obsolete-method warning at the call site.
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter, Inherited = false)]
+    public sealed class LambdaMarkerAttribute : Attribute
+    {
+        public LambdaMarkerAttribute(string label)
+        {
+            Label = label;
+        }
+
+        public string Label { get; }
+    }
+
+    public static void LambdaWithAttribute()
+    {
+        // Attribute on the lambda itself.
+        Func<int, int> increment = [LambdaMarker("inc")] (int x) => x + 1;
+        Console.WriteLine(increment(41));
+
+        // Attribute on a lambda parameter.
+        Func<int, int> doubler = ([LambdaMarker("p")] int x) => x * 2;
+        Console.WriteLine(doubler(21));
+    }
 }
