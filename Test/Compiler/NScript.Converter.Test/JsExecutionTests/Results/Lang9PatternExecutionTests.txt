@@ -1,0 +1,17 @@
+rel:y
+rel:n
+le:y
+le:n
+ge:y
+ge:n
+and:y
+and:n
+or:y
+or:n
+not:n
+not:y
+-1
+0
+1
+type:y
+type:n

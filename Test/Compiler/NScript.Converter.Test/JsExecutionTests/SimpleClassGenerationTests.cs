@@ -57,6 +57,8 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true, false)]
         [DataRow(TestType.Debug, "TestAsyncAwait", "Main", false, true, true)]
         [DataRow(TestType.Debug, "Lang8FeatureExecutionTests", "Main", false, true, false)]
+        [DataRow(TestType.Debug, "Lang9PatternExecutionTests", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "Lang13ExecutionTests", "Main", false, false, false)]
         public void TestMcs(
             TestType testType,
             string className,
