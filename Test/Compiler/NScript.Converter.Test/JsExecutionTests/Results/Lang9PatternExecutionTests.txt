@@ -1,5 +1,9 @@
 rel:y
 rel:n
+le:y
+le:n
+ge:y
+ge:n
 and:y
 and:n
 or:y

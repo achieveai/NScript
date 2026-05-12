@@ -23,6 +23,7 @@ namespace RealScript
         public static void Main()
         {
             TestRelationalPattern();
+            TestRelationalLeGePattern();
             TestBinaryAndPattern();
             TestBinaryOrPattern();
             TestNegatedPattern();
@@ -35,6 +36,19 @@ namespace RealScript
             int x = 10;
             Console.WriteLine(x is > 5 ? "rel:y" : "rel:n");
             Console.WriteLine(x is > 50 ? "rel:y" : "rel:n");
+        }
+
+        // Each relational operator (`<`, `<=`, `>`, `>=`) lowers to a distinct
+        // JS binary expression in `PatternMatcher.LowerToCondition`; the
+        // boundary cases below would catch an off-by-one swap between
+        // inclusive and exclusive forms.
+        private static void TestRelationalLeGePattern()
+        {
+            int x = 10;
+            Console.WriteLine(x is <= 10 ? "le:y" : "le:n");
+            Console.WriteLine(x is <= 9 ? "le:y" : "le:n");
+            Console.WriteLine(x is >= 10 ? "ge:y" : "ge:n");
+            Console.WriteLine(x is >= 11 ? "ge:y" : "ge:n");
         }
 
         private static void TestBinaryAndPattern()
