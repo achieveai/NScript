@@ -462,16 +462,16 @@ namespace JsCsc.Lib
             if (matchCount == 1)
             { return single; }
 
+            // matchCount is always 0 or >1 here — the ==1 case returned above.
             throw new InvalidOperationException(
                 string.Format(
-                    "Failed to resolve method '{0}' on declaring type '{1}' ({2} relaxed match{3}). " +
+                    "Failed to resolve method '{0}' on declaring type '{1}' ({2} relaxed matches). " +
                     "This usually indicates a Roslyn-synthesised method-reference shape the BondToAst " +
                     "deserializer does not yet round-trip (e.g. an unfamiliar modreq/modopt or a new " +
                     "synthesised member). Add the missing shape to MethodSpecSer / SymbolSerializer.",
                     name,
                     declaringTypeDef.FullName,
-                    matchCount,
-                    matchCount == 1 ? string.Empty : "es"));
+                    matchCount));
         }
 
         /// <summary>
