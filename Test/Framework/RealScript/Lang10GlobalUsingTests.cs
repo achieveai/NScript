@@ -10,11 +10,15 @@ namespace RealScript
     /// Compile-only fixture for the C# 10 <c>global using</c> directive.
     ///
     /// `global using System.Text;` lives in `GlobalUsings.cs` at file scope.
-    /// This fixture deliberately omits the local `using System.Text;` and
-    /// `using System;` to prove the project-wide directive flowed through
-    /// Roslyn's symbol resolution: <c>StringBuilder</c> binds against
-    /// <c>System.Text.StringBuilder</c> via the global directive, and
-    /// <c>System.Console.WriteLine</c> is fully qualified.
+    /// This fixture deliberately omits the local `using System.Text;` to
+    /// prove the project-wide directive flowed through Roslyn's symbol
+    /// resolution: <c>StringBuilder</c> binds against
+    /// <c>System.Text.StringBuilder</c> via the global directive.
+    ///
+    /// `Console.WriteLine` resolves to the in-scope <c>RealScript.Console</c>
+    /// facade (defined in <c>MathAlgorithms.cs</c>) — NScript's mscorlib
+    /// has no <c>System.Console</c> type, so a fully-qualified reference
+    /// would bind to an error symbol.
     ///
     /// The bound tree carries fully-qualified type references after symbol
     /// resolution, so no new Stage 1 shape reaches `BoundAstToAstBase` —
@@ -39,10 +43,10 @@ namespace RealScript
             StringBuilder sb = new StringBuilder();
             sb.Append("hello, world");
 
-            // `System.Console` is fully qualified — no `using System;`
-            // either, to keep this fixture's coverage focused on the
-            // global directive's wire-through.
-            System.Console.WriteLine(sb.ToString());
+            // `Console` binds to the in-scope `RealScript.Console` facade
+            // (MathAlgorithms.cs); NScript's mscorlib does not declare
+            // `System.Console`.
+            Console.WriteLine(sb.ToString());
         }
     }
 }
