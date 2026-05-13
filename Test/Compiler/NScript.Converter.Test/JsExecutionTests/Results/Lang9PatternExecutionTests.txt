@@ -13,5 +13,9 @@ not:y
 -1
 0
 1
+s:hello
+i:42
+b:t
+null
 type:y
 type:n
