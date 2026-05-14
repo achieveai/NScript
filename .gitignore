@@ -82,3 +82,8 @@ launchsettings.json
 **/logs/*.jsonl
 **/screenshots/*.png
 .playwright-mcp/
+
+# Per-developer agent / MCP server configs (often carry live API tokens
+# for GitHub Copilot CLI, etc.) — kept local, never committed.
+.codex/
+.mcp.json
