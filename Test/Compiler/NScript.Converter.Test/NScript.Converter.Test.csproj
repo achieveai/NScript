@@ -511,12 +511,12 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.9.0" />
     <PackageReference Include="JavaScriptEngineSwitcher.Core" Version="3.3.0" />
-    <PackageReference Include="Microsoft.ClearScript" Version="7.1.4" />
-    <PackageReference Include="Microsoft.ClearScript.Core" Version="7.1.4" />
-    <PackageReference Include="Microsoft.ClearScript.V8" Version="7.1.4" />
-    <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.1.4" />
-    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" Version="7.1.4" />
-    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x86" Version="7.1.4" />
+    <PackageReference Include="Microsoft.ClearScript" Version="7.5.1" />
+    <PackageReference Include="Microsoft.ClearScript.Core" Version="7.5.1" />
+    <PackageReference Include="Microsoft.ClearScript.V8" Version="7.5.1" />
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.5.1" />
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" Version="7.5.1" />
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x86" Version="7.5.1" />
     <PackageReference Include="protobuf-net" Version="3.2.56" />
     <PackageReference Include="System.Buffers" Version="4.6.1" />
     <PackageReference Include="System.Collections.Immutable" Version="10.0.1" />

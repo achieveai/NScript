@@ -10,7 +10,7 @@ Nullable equals null
 Nullable casts to null object
 Recast nullable has no value
 Nullable fails casting to underlying value
-Exception Message: Cannot read property 'toString' of null
+Exception Message: Cannot read properties of null (reading 'toString')
 Value or default is 0
 Testing lifting with non-null args
 Nullable has value 3
@@ -24,7 +24,7 @@ Nullable equals null
 Nullable casts to null object
 Recast nullable has no value
 Nullable fails casting to underlying value
-Exception Message: Cannot read property 'toString' of null
+Exception Message: Cannot read properties of null (reading 'toString')
 Value or default is 0
 Testing Null Coalescing operator
 i = 0
