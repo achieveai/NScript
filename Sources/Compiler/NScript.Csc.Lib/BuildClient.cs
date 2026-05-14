@@ -12,7 +12,6 @@ namespace NScript.Csc.Lib
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime;
     using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -224,58 +223,31 @@ namespace NScript.Csc.Lib
 
         protected abstract string GetSessionKey(BuildPaths buildPaths);
 
-        protected static IEnumerable<string> GetCommandLineArgs(IEnumerable<string> args)
-        {
-            if (UseNativeArguments())
-            {
-                return GetCommandLineWindows(args);
-            }
-
-            return args;
-        }
-
-        private static bool UseNativeArguments()
-        {
-            if (!IsRunningOnWindows)
-            {
-                return false;
-            }
-
-            if (Type.GetType("Mono.Runtime") != null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         /// <summary>
-        /// When running on Windows we can't take the command line which was provided to the 
-        /// Main method of the application.  That will go through normal windows command line 
-        /// parsing which eliminates artifacts like quotes.  This has the effect of normalizing
-        /// the below command line options, which are semantically different, into the same
-        /// value:
+        /// Returns the compiler arguments to forward to Roslyn.
         ///
-        ///     /reference:a,b
-        ///     /reference:"a,b"
+        /// Historically this re-parsed Windows' native command line via
+        /// <c>GetCommandLine()</c> + <c>Skip(1)</c> to preserve quoting of forms
+        /// like <c>/reference:"a,b"</c> from interactive shells (.NET's runtime
+        /// arg parser strips outer quotes). That trick assumed argv[0] was the
+        /// compiler itself (self-contained <c>csc.exe</c> apphost).
         ///
-        /// To get the correct semantics here on Windows we parse the original command line 
-        /// provided to the process. 
+        /// Under the consolidated <c>Cs2Jsc</c> dotnet-tool hosting model, the
+        /// native command line is <c>dotnet.exe Cs2Jsc.dll csc /noconfig @rsp</c>
+        /// — <c>Skip(1)</c> leaves <c>Cs2Jsc.dll</c> and the <c>csc</c>
+        /// subcommand selector in the argv that gets handed to Roslyn, which
+        /// then treats both as positional source files and fails with CS2015
+        /// / CS2001 on every build.
+        ///
+        /// Since callers (<see cref="CscCompiler.Main"/> via
+        /// <c>Cs2Jsc/Program.Main</c>) already produce a clean argv with the
+        /// selector stripped, and the MSBuild invocation path threads the
+        /// real arguments through a response file (whose quoting is preserved
+        /// by Roslyn's own response-file parser), we just trust the caller.
+        /// The lost behavior — preserving <c>/reference:"a,b"</c> from a
+        /// hand-typed terminal invocation — was already broken under dotnet
+        /// hosting and is vanishingly rare under MSBuild-driven builds.
         /// </summary>
-        private static IEnumerable<string> GetCommandLineWindows(IEnumerable<string> args)
-        {
-            IntPtr ptr = NativeMethods.GetCommandLine();
-            if (ptr == IntPtr.Zero)
-            {
-                return args;
-            }
-
-            // This memory is owned by the operating system hence we shouldn't (and can't)
-            // free the memory.  
-            var commandLine = Marshal.PtrToStringUni(ptr);
-
-            // The first argument will be the executable name hence we skip it. 
-            return CommandLineParser.SplitCommandLineIntoArguments(commandLine, removeHashComments: false).Skip(1);
-        }
+        protected static IEnumerable<string> GetCommandLineArgs(IEnumerable<string> args) => args;
     }
 }
