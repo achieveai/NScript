@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Sunlight.TestAdapter</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- NuGet packaging.
+         Adapter DLL ships in build/<tfm>/ — that path is auto-added to
+         VSTestTestAdapterPath by Microsoft.NET.Test.Sdk, so the adapter is
+         discovered without consumer configuration. lib/ would NOT trigger
+         adapter discovery via NuGet — that path is for ordinary compile/runtime
+         references. Mirrors xunit.runner.visualstudio's layout. -->
+    <PackageId>Mcqdb.NScript.SunlightTestAdapter</PackageId>
+    <PackageVersion>$(NScriptPackageVersion)</PackageVersion>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
+    <GeneratePackageOnBuild>$(GenerateNScriptPackages)</GeneratePackageOnBuild>
+    <Description>VSTest adapter for NScript / SunlightUnit. Discovers [TestFixture]/[Test] methods in a compiled .NET assembly and executes the matching NScript-compiled JavaScript suite under a headless Chromium driven by Microsoft.Playwright. Wired so that `dotnet test` runs your QUnit-style browser tests without a separate Node runner.</Description>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- NU5100: assemblies outside lib/ — expected for a test adapter.
+         NU5128: no lib/ folder for target framework — satisfied by lib/net8.0/_._ placeholder. -->
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <!-- Inject our adapter DLL into the package at pack time. -->
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_PackAdapterAssembly</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.6.0" PrivateAssets="all" />
+    <!-- Microsoft.Playwright flows transitively so consumers get its driver
+         (.playwright/) copied to their bin/ — the .targets in this package
+         then runs `playwright install chromium` once per consumer. -->
+    <PackageReference Include="Microsoft.Playwright" Version="1.49.0" />
+    <!-- SunlightUnit is referenced from the user's *test project* directly
+         (they author the [TestFixture]/[Test] attributes). The adapter only
+         reads attribute metadata via MetadataLoadContext, so we don't need
+         to ship the SunlightUnit assembly transitively. -->
+    <PackageReference Include="Mcqdb.NScript.SunlightUnit" Version="$(NScriptPackageVersion)" PrivateAssets="all" />
+    <!-- Used for metadata-only inspection of the test DLL. The test DLL is
+         NScript-compiled (custom mscorlib facade); Assembly.LoadFile + GetTypes
+         fails to resolve those references at runtime. MetadataLoadContext reads
+         the metadata directly without needing the references to be loadable. -->
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\qunit.js" />
+    <EmbeddedResource Include="Resources\qunit.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <!-- NuGet auto-imports build\<PackageId>.targets in the consumer project. -->
+    <None Include="build\Mcqdb.NScript.SunlightTestAdapter.targets" Pack="true" PackagePath="build\" />
+    <!-- Empty placeholder so NuGet sees a lib/net8.0/ folder (satisfies NU5128
+         without shipping the adapter DLL in lib/ where VSTest won't find it). -->
+    <None Include="_._" Pack="true" PackagePath="lib\net8.0\" Condition="Exists('_._')" />
+  </ItemGroup>
+
+  <Target Name="_PackAdapterAssembly">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(OutputPath)Sunlight.TestAdapter.dll" PackagePath="build\net8.0\" />
+      <TfmSpecificPackageFile Include="$(OutputPath)Sunlight.TestAdapter.pdb" PackagePath="build\net8.0\" Condition="Exists('$(OutputPath)Sunlight.TestAdapter.pdb')" />
+    </ItemGroup>
+  </Target>
+
+</Project>

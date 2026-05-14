@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    `dotnet test` wrapper for the NScript-compiled Sunlight.Framework.UI.Test
+    suite. See ../Sunlight.Framework.Test.Runner/Sunlight.Framework.Test.Runner.csproj
+    for the full rationale — this is the same pattern.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <RootNamespace>Sunlight.Framework.UI.Test.Runner</RootNamespace>
+    <AssemblyName>Sunlight.Framework.UI.Test.Runner</AssemblyName>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)sunlight.runsettings</RunSettingsFilePath>
+
+    <!-- Clear NScript compiler overrides from Test/Framework/Directory.build.props -->
+    <CscToolPath></CscToolPath>
+    <CscToolExe></CscToolExe>
+    <NScriptExe></NScriptExe>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sources\Compiler\SunlightTestAdapter\SunlightTestAdapter.csproj" />
+    <ProjectReference Include="..\Sunlight.Framework.UI.Test\Sunlight.Framework.UI.Test.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="CopyFrameworkTestDll" AfterTargets="Build">
+    <ItemGroup>
+      <_FrameworkTestDll Include="..\Sunlight.Framework.UI.Test\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_FrameworkTestDll)"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true"
+      Condition="'@(_FrameworkTestDll)' != ''" />
+    <Warning
+      Text="Sunlight.Framework.UI.Test bin DLLs not found under ..\Sunlight.Framework.UI.Test\bin\$(Configuration)\$(TargetFramework)\. Build Sunlight.Framework.UI.Test in $(Configuration) first."
+      Condition="'@(_FrameworkTestDll)' == ''" />
+  </Target>
+
+</Project>

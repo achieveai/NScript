@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    `dotnet test` wrapper for the NScript-compiled TodoApp.Test suite.
+    See ../Sunlight.Framework.Test.Runner/Sunlight.Framework.Test.Runner.csproj
+    for the full rationale — this is the same pattern.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <RootNamespace>TodoApp.Test.Runner</RootNamespace>
+    <AssemblyName>TodoApp.Test.Runner</AssemblyName>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)sunlight.runsettings</RunSettingsFilePath>
+
+    <!-- Clear NScript compiler overrides from Test/Framework/Directory.build.props -->
+    <CscToolPath></CscToolPath>
+    <CscToolExe></CscToolExe>
+    <NScriptExe></NScriptExe>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sources\Compiler\SunlightTestAdapter\SunlightTestAdapter.csproj" />
+    <ProjectReference Include="..\TodoApp.Test\TodoApp.Test.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="CopyFrameworkTestDll" AfterTargets="Build">
+    <ItemGroup>
+      <_FrameworkTestDll Include="..\TodoApp.Test\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_FrameworkTestDll)"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true"
+      Condition="'@(_FrameworkTestDll)' != ''" />
+    <Warning
+      Text="TodoApp.Test bin DLLs not found under ..\TodoApp.Test\bin\$(Configuration)\$(TargetFramework)\. Build TodoApp.Test in $(Configuration) first."
+      Condition="'@(_FrameworkTestDll)' == ''" />
+  </Target>
+
+</Project>

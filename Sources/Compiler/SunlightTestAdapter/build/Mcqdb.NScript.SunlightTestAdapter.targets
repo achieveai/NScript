@@ -1,0 +1,53 @@
+<Project>
+
+  <!--
+    Auto-imported into the consumer project by NuGet (convention:
+    build/<PackageId>.targets). Two responsibilities:
+
+      1. Copy the adapter DLL from the package's build/<tfm>/ folder into the
+         consumer's bin/ so the VSTest test host can probe it for adapters.
+         NuGet does NOT auto-copy build/<tfm>/ contents to bin/ — only lib/
+         flows automatically, and we deliberately keep lib/ empty (a test
+         adapter belongs in build/, not lib/). xunit.runner.visualstudio uses
+         the same pattern.
+
+      2. Run `playwright install chromium` once per consumer Configuration/TFM
+         so `dotnet test` works out of the box. Microsoft.Playwright (our
+         transitive dep) ships the launcher `playwright.ps1` and the
+         `.playwright/` driver into the consumer's bin/ during build.
+  -->
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)net8.0\Sunlight.TestAdapter.dll"
+          Condition="Exists('$(MSBuildThisFileDirectory)net8.0\Sunlight.TestAdapter.dll')"
+          Visible="false"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
+    Playwright Chromium install. Skipped when:
+      - playwright.ps1 isn't present (Playwright deps not yet copied, e.g.
+        clean build before restore completes)
+      - sentinel file exists (already installed for this Configuration/TFM)
+      - NSTestSkipPlaywrightInstall=true (consumer opt-out; useful in CI
+        environments that provision Chromium externally)
+  -->
+  <Target Name="_NScriptInstallPlaywrightChromium"
+          AfterTargets="Build"
+          Condition="'$(NSTestSkipPlaywrightInstall)' != 'true' AND !Exists('$(OutputPath).nscript-playwright-installed')">
+    <PropertyGroup>
+      <_PlaywrightLauncher>$(OutputPath)playwright.ps1</_PlaywrightLauncher>
+    </PropertyGroup>
+    <Message Importance="high"
+             Text="SunlightTestAdapter: installing Playwright Chromium (one-time per $(Configuration)/$(TargetFramework))..."
+             Condition="Exists('$(_PlaywrightLauncher)')" />
+    <Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(_PlaywrightLauncher)&quot; install chromium"
+          Condition="Exists('$(_PlaywrightLauncher)')"
+          ContinueOnError="WarnAndContinue"
+          IgnoreExitCode="true" />
+    <Touch Files="$(OutputPath).nscript-playwright-installed"
+           AlwaysCreate="true"
+           Condition="Exists('$(_PlaywrightLauncher)')" />
+  </Target>
+
+</Project>

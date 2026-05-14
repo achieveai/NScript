@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Thin wrapper that turns Sunlight.Framework.Test into something `dotnet test`
+    can drive. The NScript framework test project itself is netstandard2.1 and
+    compiled by the NScript CSC — it cannot reference Microsoft.NET.Test.Sdk.
+
+    This project:
+      * Targets net8.0 and pulls in Microsoft.NET.Test.Sdk, which copies the
+        testhost (and all its private deps) into bin/. That fixes the
+        testhost.deps.json resolution failure that blocks running the NScript
+        DLL directly via `dotnet vstest`.
+      * References SunlightTestAdapter via ProjectReference so the adapter
+        DLL flows into bin/ where the testhost finds it.
+      * Depends on Sunlight.Framework.Test for build ordering, then copies its
+        DLL into bin/ as content. The runsettings TestSourceAssembly element
+        tells the adapter to discover tests from that DLL rather than this
+        wrapper's empty assembly.
+
+    Run with:  dotnet test Test/Framework/Sunlight.Framework.Test.Runner
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <RootNamespace>Sunlight.Framework.Test.Runner</RootNamespace>
+    <AssemblyName>Sunlight.Framework.Test.Runner</AssemblyName>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)sunlight.runsettings</RunSettingsFilePath>
+
+    <!--
+      Test/Framework/Directory.build.props sets these to point at the NScript compiler
+      because the rest of Test/Framework/** is NScript-compiled. This wrapper is a
+      standard .NET 8 project; clear them so MSBuild uses the regular Roslyn CSC.
+    -->
+    <CscToolPath></CscToolPath>
+    <CscToolExe></CscToolExe>
+    <NScriptExe></NScriptExe>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sources\Compiler\SunlightTestAdapter\SunlightTestAdapter.csproj" />
+    <ProjectReference Include="..\Sunlight.Framework.Test\Sunlight.Framework.Test.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!--
+    Copy the NScript-compiled framework test DLL AND its NScript framework
+    sibling DLLs (SunlightUnit, Sunlight.Framework, mscorlib facade, etc.)
+    into our bin/ after build. The adapter uses MetadataLoadContext +
+    PathAssemblyResolver to inspect the test DLL; the resolver probes the
+    test DLL's sibling directory at runtime, so the NScript-side references
+    have to live next to the copied test DLL or attribute type resolution
+    fails with "Could not find assembly 'SunlightUnit'".
+
+    Path-based because the source project's OutputPath is its own bin folder
+    and it doesn't flow through ProjectReference assembly-copy with
+    ReferenceOutputAssembly=false.
+  -->
+  <Target Name="CopyFrameworkTestDll" AfterTargets="Build">
+    <ItemGroup>
+      <_FrameworkTestDll Include="..\Sunlight.Framework.Test\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_FrameworkTestDll)"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true"
+      Condition="'@(_FrameworkTestDll)' != ''" />
+    <Warning
+      Text="Sunlight.Framework.Test bin DLLs not found under ..\Sunlight.Framework.Test\bin\$(Configuration)\$(TargetFramework)\. Build Sunlight.Framework.Test in $(Configuration) first."
+      Condition="'@(_FrameworkTestDll)' == ''" />
+  </Target>
+
+</Project>
