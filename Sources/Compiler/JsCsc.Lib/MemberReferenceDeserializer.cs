@@ -241,6 +241,8 @@ namespace JsCsc.Lib
                 returningType = genericInstanceType;
             }
 
+            returningType = this.ApplyInitOnlyModifier(returningType, methodSpec.IsInitOnly);
+
             MethodReference rv = new MethodReference(
                 name,
                 returningType,
@@ -290,10 +292,11 @@ namespace JsCsc.Lib
 
                 // Now let's fix both the generic parameters and argument types so that
                 // generic parameters have property owners.
-                MethodDefinition tmpMethodDefinition = rvDef.Resolve();
+                MethodDefinition tmpMethodDefinition = this.ResolveOrThrow(rvDef, name, declaringType);
                 this._activeContext = this.GetTypeNameMaps(tmpMethodDefinition);
 
                 returningType = this.DeserializeType(methodSpec.ReturnType);
+                returningType = this.ApplyInitOnlyModifier(returningType, methodSpec.IsInitOnly);
                 rv = new MethodReference(name, returningType, declaringType);
 
                 for (int iArity = 0; iArity < arity; iArity++)
@@ -326,7 +329,7 @@ namespace JsCsc.Lib
                 this._activeContext = this._methodContextTypeParams;
             }
 
-            MethodDefinition methodDefinition = rv.Resolve();
+            MethodDefinition methodDefinition = this.ResolveOrThrow(rv, name, declaringType);
             rv.HasThis = methodDefinition.HasThis;
             rv.ExplicitThis = methodDefinition.ExplicitThis;
 
@@ -341,6 +344,168 @@ namespace JsCsc.Lib
             }
 
             return rv;
+        }
+
+        /// <summary>
+        /// Wraps <paramref name="returningType"/> in a
+        /// <see cref="RequiredModifierType"/> against
+        /// <c>System.Runtime.CompilerServices.IsExternalInit</c> when
+        /// <paramref name="isInitOnly"/> is true and the marker type is loaded.
+        ///
+        /// Roslyn writes that modreq on the return type of every C# 9
+        /// <c>init</c> accessor; without it Cecil's <c>MetadataResolver</c>
+        /// fails to match a freshly constructed <see cref="MethodReference"/>
+        /// to its <see cref="MethodDefinition"/>, which used to surface as an
+        /// NRE on <c>rv.Resolve().HasThis</c> in
+        /// <see cref="DeserializeMethod(Serialization.MethodSpecSer)"/>.
+        ///
+        /// When the marker type cannot be resolved the modreq is skipped and
+        /// the relaxed-signature fallback in <see cref="ResolveOrThrow"/> picks
+        /// up the slack — preferring "no modreq" over a hard failure keeps the
+        /// path backward-compatible with environments where Roslyn synthesised
+        /// IsExternalInit into a module the deserializer hasn't seen.
+        /// </summary>
+        private TypeReference ApplyInitOnlyModifier(TypeReference returningType, bool isInitOnly)
+        {
+            if (!isInitOnly)
+            { return returningType; }
+
+            var isExternalInit = this._context.KnownReferences.IsExternalInit;
+            if (isExternalInit == null)
+            { return returningType; }
+
+            return new RequiredModifierType(isExternalInit, returningType);
+        }
+
+        /// <summary>
+        /// Resolves <paramref name="methodReference"/> to a
+        /// <see cref="MethodDefinition"/>, falling back to a relaxed signature
+        /// match when Cecil's strict <c>MetadataResolver</c> returns null.
+        ///
+        /// Strict resolution compares return type and parameter types via
+        /// <c>AreSame</c>, which is sensitive to <see cref="RequiredModifierType"/>
+        /// and <see cref="OptionalModifierType"/> wrappers (and a few other
+        /// signature-shape details). Roslyn-synthesised members for new C#
+        /// features periodically introduce modreqs the serializer has not yet
+        /// learned to round-trip — historically this produced a silent NRE
+        /// at the next <c>methodDefinition.HasThis</c> read.
+        ///
+        /// The fallback walks the declaring type's methods and matches by
+        /// name + arity + parameter count + element-type FullName (stripping
+        /// modreq/modopt/byref/pointer wrappers from both sides). If exactly
+        /// one candidate matches the relaxed signature, it wins. Zero matches
+        /// or more than one match throws <see cref="InvalidOperationException"/>
+        /// with the method and declaring-type names embedded so the failure is
+        /// loud and traceable rather than silent.
+        /// </summary>
+        private MethodDefinition ResolveOrThrow(
+            MethodReference methodReference,
+            string name,
+            TypeReference declaringType)
+        {
+            var methodDefinition = methodReference.Resolve();
+            if (methodDefinition != null)
+            { return methodDefinition; }
+
+            return this.ResolveWithRelaxedSignature(methodReference, name, declaringType);
+        }
+
+        private MethodDefinition ResolveWithRelaxedSignature(
+            MethodReference methodReference,
+            string name,
+            TypeReference declaringType)
+        {
+            TypeDefinition declaringTypeDef = declaringType != null ? declaringType.Resolve() : null;
+            if (declaringTypeDef == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Failed to resolve method '{0}' — declaring type '{1}' could not be resolved.",
+                        name,
+                        declaringType != null ? declaringType.FullName : "<null>"));
+            }
+
+            int arity = methodReference.GenericParameters.Count;
+            int paramCount = methodReference.Parameters.Count;
+
+            MethodDefinition single = null;
+            int matchCount = 0;
+
+            foreach (var candidate in declaringTypeDef.Methods)
+            {
+                if (candidate.Name != name)
+                { continue; }
+                if (candidate.GenericParameters.Count != arity)
+                { continue; }
+                if (candidate.Parameters.Count != paramCount)
+                { continue; }
+                if (!RelaxedTypeMatches(candidate.ReturnType, methodReference.ReturnType))
+                { continue; }
+
+                bool paramsMatch = true;
+                for (int i = 0; i < paramCount; i++)
+                {
+                    if (!RelaxedTypeMatches(candidate.Parameters[i].ParameterType, methodReference.Parameters[i].ParameterType))
+                    {
+                        paramsMatch = false;
+                        break;
+                    }
+                }
+
+                if (!paramsMatch)
+                { continue; }
+
+                matchCount++;
+                single = candidate;
+            }
+
+            if (matchCount == 1)
+            { return single; }
+
+            // matchCount is always 0 or >1 here — the ==1 case returned above.
+            throw new InvalidOperationException(
+                string.Format(
+                    "Failed to resolve method '{0}' on declaring type '{1}' ({2} relaxed matches). " +
+                    "This usually indicates a Roslyn-synthesised method-reference shape the BondToAst " +
+                    "deserializer does not yet round-trip (e.g. an unfamiliar modreq/modopt or a new " +
+                    "synthesised member). Add the missing shape to MethodSpecSer / SymbolSerializer.",
+                    name,
+                    declaringTypeDef.FullName,
+                    matchCount));
+        }
+
+        /// <summary>
+        /// Element-type FullName equality after stripping
+        /// modreq/modopt/byref/pointer wrappers from both sides. Used by the
+        /// relaxed-signature fallback in
+        /// <see cref="ResolveWithRelaxedSignature"/>. Exposed as
+        /// <c>public static</c> so unit tests can pin the comparison shape
+        /// independently of the resolver state machine.
+        /// </summary>
+        public static bool RelaxedTypeMatches(TypeReference a, TypeReference b)
+        {
+            return StripSignatureWrappers(a).FullName == StripSignatureWrappers(b).FullName;
+        }
+
+        /// <summary>
+        /// Walks through every <see cref="RequiredModifierType"/>,
+        /// <see cref="OptionalModifierType"/>, <see cref="ByReferenceType"/>,
+        /// and <see cref="PointerType"/> wrapper around
+        /// <paramref name="type"/> and returns the inner element type. Plain
+        /// types and array/generic-instance shapes pass through unchanged
+        /// (they carry semantic identity that should participate in matching).
+        /// </summary>
+        public static TypeReference StripSignatureWrappers(TypeReference type)
+        {
+            while (type is RequiredModifierType
+                || type is OptionalModifierType
+                || type is ByReferenceType
+                || type is PointerType)
+            {
+                type = ((TypeSpecification)type).ElementType;
+            }
+
+            return type;
         }
 
         /// <summary>
