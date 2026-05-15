@@ -170,6 +170,11 @@ namespace NScript.Converter
         private TypeReference entryPointAttribute;
 
         /// <summary>
+        /// The module initializer attribute.
+        /// </summary>
+        private TypeReference moduleInitializerAttribute;
+
+        /// <summary>
         /// The event binder.
         /// </summary>
         private TypeReference eventBinder;
@@ -1240,6 +1245,24 @@ namespace NScript.Converter
                 }
 
                 return this.entryPointAttribute;
+            }
+        }
+
+        /// <summary>
+        /// Gets the module initializer attribute.
+        /// </summary>
+        public TypeReference ModuleInitializerAttribute
+        {
+            get
+            {
+                if (this.moduleInitializerAttribute == null)
+                {
+                    this.moduleInitializerAttribute = this.GetTypeReference(
+                        ClrKnownReferences.CompilerServicesStr,
+                        "ModuleInitializerAttribute");
+                }
+
+                return this.moduleInitializerAttribute;
             }
         }
 

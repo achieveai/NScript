@@ -1122,6 +1122,7 @@
                 case ConversionKind.Deconstruction:
                 case ConversionKind.SwitchExpression:
                 case ConversionKind.CollectionExpression:
+                case ConversionKind.ObjectCreation:
                     return Visit(node.Operand, arg);
 
                 case ConversionKind.ImplicitTupleLiteral:

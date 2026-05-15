@@ -142,6 +142,7 @@ namespace NScript.Converter
             ConverterContext converterContext;
             List<MethodDefinition> methodDefinitionsToEmit;
             MethodDefinition entryPoint;
+            List<MethodDefinition> moduleInitializers;
 
             try
             {
@@ -155,6 +156,7 @@ namespace NScript.Converter
 
                 methodDefinitionsToEmit = new List<MethodDefinition>();
                 entryPoint = this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly));
+                moduleInitializers = this.GetModuleInitializers(converterContext, Path.GetFileName(mainAssembly));
             }
             catch(System.Exception ex)
             {
@@ -175,6 +177,11 @@ namespace NScript.Converter
                 if (entryPoint != null)
                 {
                     methodDefinitionsToEmit.Add(entryPoint);
+                }
+
+                foreach (var initializer in moduleInitializers)
+                {
+                    methodDefinitionsToEmit.Add(initializer);
                 }
 
                 // Let's go through first pass and collect all the method references
@@ -215,6 +222,16 @@ namespace NScript.Converter
                         if (pluginJsStatements != null)
                         { statements.AddRange(pluginJsStatements); }
                     }
+                }
+
+                // Per the CLR spec, module initializers run before any user code
+                // in the module — emit their invocations directly before the
+                // entry-point call.
+                foreach (var initializer in moduleInitializers)
+                {
+                    statements.Add(
+                        JST.ExpressionStatement.CreateMethodCallExpression(
+                            new JST.IdentifierExpression(runtimeManager.ResolveFunctionName(initializer), runtimeManager.Scope)));
                 }
 
                 if (entryPoint != null)
@@ -433,6 +450,52 @@ namespace NScript.Converter
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Collects every static, parameterless, void method in the main assembly that
+        /// carries <c>[ModuleInitializer]</c>. Returns them in stable declaration order
+        /// (type metadata-token order, then method declaration order) — close-enough
+        /// proxy for CLR's "metadata token order" guarantee in a single-bundle world.
+        /// </summary>
+        private List<MethodDefinition> GetModuleInitializers(ConverterContext context, string mainAssembly)
+        {
+            var result = new List<MethodDefinition>();
+
+            ModuleDefinition module;
+            if (!context.ClrContext.TryGetModuleDefinition(mainAssembly, out module))
+            {
+                return result;
+            }
+
+            foreach (var item in module.Types)
+            {
+                if (item.IsInterface
+                    || item.HasGenericParameters)
+                {
+                    continue;
+                }
+
+                foreach (var method in item.Methods)
+                {
+                    if (method.HasGenericParameters
+                        || method.HasAssociatedMember()
+                        || !method.IsStatic)
+                    {
+                        continue;
+                    }
+
+                    if (method.ReturnType.FullName == context.ClrKnownReferences.Void.FullName
+                        && !method.HasParameters
+                        && method.Parameters.Count == 0
+                        && method.CustomAttributes.SelectAttribute(context.KnownReferences.ModuleInitializerAttribute) != null)
+                    {
+                        result.Add(method);
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
