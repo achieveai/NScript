@@ -137,4 +137,25 @@ public class Lang10Features
         Func<int, int> doubler = ([LambdaMarker("p")] int x) => x * 2;
         Console.WriteLine(doubler(21));
     }
+
+    // C# 10 — [CallerArgumentExpression]. Roslyn folds the captured argument
+    // expression to a literal `string` default at every call site at bind
+    // time, so the bound tree at the callee is identical to an ordinary
+    // optional `string` parameter and the callee body is identical to one
+    // that receives a literal. The wire-through is transparent for Stage 1 /
+    // Stage 2 — no new bound-tree shape reaches `BoundAstToAstBase`. This
+    // fixture pins both the facade resolution and the call-site fold.
+    public static string DescribeArgument(
+        int value,
+        [System.Runtime.CompilerServices.CallerArgumentExpression("value")] string expression = "")
+    {
+        return expression + "=" + value.ToString();
+    }
+
+    public static void CallerArgumentExpression()
+    {
+        int x = 41;
+        // Roslyn folds the second argument to the literal `"x + 1"` here.
+        Console.WriteLine(DescribeArgument(x + 1));
+    }
 }
