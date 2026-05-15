@@ -28,6 +28,7 @@ namespace RealScript
             TestBinaryOrPattern();
             TestNegatedPattern();
             TestSwitchRelationalArm();
+            TestSwitchDeclarationArm();
             TestTypeTestPattern();
         }
 
@@ -95,6 +96,31 @@ namespace RealScript
             < 0 => -1,
             0 => 0,
             _ => 1
+        };
+
+        // Declaration patterns inside switch-expression arms exercise scope
+        // resolution for the pattern-bound local (`s`/`d`/`b`): the local's
+        // syntactic `ScopeDesignator` is the arm syntax, which is NOT itself
+        // pushed as a block scope. The Stage-1 `GetLocalVariable` walks up to
+        // the nearest enclosing block so the local is hoisted to the enclosing
+        // method body — its natural JS binding site for the inline
+        // `(local = AsType(T, scrutinee)) != null` test emitted by
+        // `PatternMatcher.LowerDeclarationPattern`.
+        private static void TestSwitchDeclarationArm()
+        {
+            Console.WriteLine(Describe("hello"));
+            Console.WriteLine(Describe(42));
+            Console.WriteLine(Describe(true));
+            Console.WriteLine(Describe(null));
+        }
+
+        private static string Describe(object o) => o switch
+        {
+            string s => "s:" + s,
+            int i => "i:" + i.ToString(),
+            bool b => "b:" + (b ? "t" : "f"),
+            null => "null",
+            _ => "?"
         };
 
         private static void TestTypeTestPattern()
