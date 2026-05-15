@@ -31,27 +31,31 @@ namespace RealScript
         // `ConversionKind.ObjectCreation` to `VisitConversion`. The Stage 1
         // pass-through arm forwards to the inner `BoundObjectCreationExpression`
         // so the ordinary constructor pipeline emits the constructed instance.
+        // NOTE: NScript boxes `int` through `System.Object` for `string + object`
+        // concat (`String.Concat(object, object)` → `obj.ToString()`), which prints
+        // `[object Object]` for primitive ints under the V8 harness. Mirror the
+        // safe pattern from `Lang13Features.Take` and call `ToString()` explicitly.
         private static void TestTargetTypedNewParameterless()
         {
             Holder h = new();
-            Console.WriteLine("ttn:par:" + h.Value);
+            Console.WriteLine("ttn:par:" + h.Value.ToString());
         }
 
         private static void TestTargetTypedNewWithInitializer()
         {
             Holder h = new() { Value = 11 };
-            Console.WriteLine("ttn:init:" + h.Value);
+            Console.WriteLine("ttn:init:" + h.Value.ToString());
         }
 
         private static void TestTargetTypedNewWithArgs()
         {
             Holder h = new(42);
-            Console.WriteLine("ttn:args:" + h.Value);
+            Console.WriteLine("ttn:args:" + h.Value.ToString());
         }
 
         private static void TestTargetTypedNewAsReturn()
         {
-            Console.WriteLine("ttn:ret:" + Make().Value);
+            Console.WriteLine("ttn:ret:" + Make().Value.ToString());
         }
 
         private static Holder Make() => new(7);
@@ -63,7 +67,7 @@ namespace RealScript
         // initializers append to the same buffer in declared order.
         private static void TestModuleInitializerRanBeforeMain()
         {
-            Console.WriteLine("mi:ran:" + ModuleInitTrackerA.Marker);
+            Console.WriteLine("mi:ran:" + ModuleInitTrackerA.Marker.ToString());
         }
 
         private static void TestModuleInitializerOrderingAcrossTypes()
