@@ -10,6 +10,7 @@ namespace NScript.Converter.Test.JsExecutionTests
     using System.Collections.Generic;
     using System.Text;
     // using NScript.CLR.Test;
+    using NScript.CLR;
     using NScript.Csc.Lib.Test;
     using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
@@ -50,8 +51,29 @@ namespace NScript.Converter.Test.JsExecutionTests
                 isDebug,
                 isMcs);
 
+            // The full Builder pipeline scans the entry-point module for
+            // [ModuleInitializer] methods and emits their invocations before
+            // the entry point. Mirror that here so execution-style tests that
+            // depend on initializer side effects (Lang9FeatureExecutionTests)
+            // observe the same pre-Main ordering.
+            List<MethodDefinition> moduleInitializers = CollectModuleInitializers(
+                runtimeScopeManager.Context,
+                methodDefinition.Module);
+
+            List<MethodDefinition> methodsToConvert = new List<MethodDefinition> { methodDefinition };
+            methodsToConvert.AddRange(moduleInitializers);
+
             List<JST.Statement> statements =
-                runtimeScopeManager.Convert(new MethodDefinition[] { methodDefinition });
+                runtimeScopeManager.Convert(methodsToConvert);
+
+            foreach (var initializer in moduleInitializers)
+            {
+                statements.Add(
+                    JST.ExpressionStatement.CreateMethodCallExpression(
+                        new JST.IdentifierExpression(
+                            runtimeScopeManager.ResolveFunctionName(initializer),
+                            runtimeScopeManager.Scope)));
+            }
 
             MethodCallContext callContext = new MethodCallContext(
                 methodDefinition,
@@ -80,6 +102,46 @@ namespace NScript.Converter.Test.JsExecutionTests
             }
 
             return ConverterTestHelpers.GetScriptString(statements);
+        }
+
+        private static List<MethodDefinition> CollectModuleInitializers(
+            ConverterContext context,
+            ModuleDefinition module)
+        {
+            var result = new List<MethodDefinition>();
+
+            if (module == null)
+            {
+                return result;
+            }
+
+            foreach (var type in module.Types)
+            {
+                if (type.IsInterface || type.HasGenericParameters)
+                {
+                    continue;
+                }
+
+                foreach (var method in type.Methods)
+                {
+                    if (method.HasGenericParameters
+                        || method.HasAssociatedMember()
+                        || !method.IsStatic
+                        || method.HasParameters
+                        || method.Parameters.Count != 0
+                        || method.ReturnType.FullName != context.ClrKnownReferences.Void.FullName)
+                    {
+                        continue;
+                    }
+
+                    if (method.CustomAttributes.SelectAttribute(context.KnownReferences.ModuleInitializerAttribute) != null)
+                    {
+                        result.Add(method);
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

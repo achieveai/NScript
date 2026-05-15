@@ -463,7 +463,10 @@ namespace NScript.Converter
             var result = new List<MethodDefinition>();
 
             ModuleDefinition module;
-            context.ClrContext.TryGetModuleDefinition(mainAssembly, out module);
+            if (!context.ClrContext.TryGetModuleDefinition(mainAssembly, out module))
+            {
+                return result;
+            }
 
             foreach (var item in module.Types)
             {
