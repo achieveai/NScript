@@ -195,6 +195,7 @@ Runtime\CompilerServices\IsVolatile.cs
 Runtime\CompilerServices\KeepInstanceUsage.cs
 Runtime\CompilerServices\MakeStaticUsage.cs
 Runtime\CompilerServices\MixinAttribute.cs
+Runtime\CompilerServices\ModuleInitializerAttribute.cs
 Runtime\CompilerServices\NamedValuesAttribute.cs
 Runtime\CompilerServices\NonScriptableAttribute.cs
 Runtime\CompilerServices\NumericValuesAttribute.cs

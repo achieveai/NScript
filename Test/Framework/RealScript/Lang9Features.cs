@@ -19,17 +19,53 @@ namespace RealScript
     /// to "Needs implementation".
     ///
     /// NOTE — features deliberately NOT exercised here:
-    /// - Target-typed <c>new()</c>: surfaces <c>ConversionKind.ObjectCreation</c>
-    ///   in <c>VisitConversion</c> (currently throws NotImplementedException);
-    ///   tracked under Phase B/C.
     /// - Covariant return types: require the
     ///   <c>RuntimeFeature.CovariantReturnsOfClasses</c> metadata flag, absent on
     ///   our <c>netstandard2.1</c> target.
     /// - Records, <c>with</c>, <c>init</c>: covered by <c>Lang9RecordTests</c>.
-    /// - Pattern-matching enhancements: tracked under Phase C.
+    /// - Pattern-matching enhancements: covered by <c>Lang9PatternExecutionTests</c>.
     /// </summary>
     public class Lang9Features
     {
+        // C# 9 — target-typed `new()`. Roslyn surfaces this as
+        // `ConversionKind.ObjectCreation` wrapping a `BoundObjectCreationExpression`
+        // whose declared type was inferred from the conversion target. The Stage 1
+        // `VisitConversion` pass-through arm lets the inner object-creation node
+        // ride the existing constructor path unchanged.
+        public static void TargetTypedNewParameterless()
+        {
+            TargetHolder h = new();
+            Console.WriteLine(h.Value);
+        }
+
+        public static void TargetTypedNewWithInitializer()
+        {
+            TargetHolder h = new() { Value = 5 };
+            Console.WriteLine(h.Value);
+        }
+
+        public static void TargetTypedNewWithArgs()
+        {
+            TargetHolder h = new(42);
+            Console.WriteLine(h.Value);
+        }
+
+        public static void TargetTypedNewAsReturn()
+        {
+            Console.WriteLine(MakeHolder().Value);
+        }
+
+        private static TargetHolder MakeHolder() => new(7);
+
+        public class TargetHolder
+        {
+            public int Value { get; set; }
+
+            public TargetHolder() { Value = 0; }
+
+            public TargetHolder(int v) { Value = v; }
+        }
+
         // C# 9 — discard parameters in lambdas. Lowers to an ordinary lambda whose
         // parameter names are `_` (no captures, no special bound node).
         public static void LambdaDiscardParameters()

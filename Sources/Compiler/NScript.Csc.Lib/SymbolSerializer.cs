@@ -338,7 +338,8 @@ namespace NScript.Csc.Lib
                 IsStatic = method.IsStatic,
                 Arity = method.Arity,
                 Parameters = parameters,
-                TypeArgs = typeArgs
+                TypeArgs = typeArgs,
+                IsInitOnly = method.IsInitOnly,
             };
         }
 

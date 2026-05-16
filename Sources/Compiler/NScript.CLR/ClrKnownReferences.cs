@@ -177,6 +177,8 @@ namespace NScript.CLR
         private TypeReference runtimeTypeHandle;
 
         private TypeReference nullableType;
+        private TypeReference isExternalInitReference;
+        private bool isExternalInitReferenceSearched;
 
         private MethodReference initializeArrayReference;
         private MethodReference arrayLengthGetter;
@@ -949,6 +951,52 @@ namespace NScript.CLR
                 }
 
                 throw new InvalidProgramException("Object.IsNullOrUndefined could not be resolved");
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="TypeReference"/> for
+        /// <c>System.Runtime.CompilerServices.IsExternalInit</c> — the marker
+        /// type Roslyn writes as a <c>modreq</c> on the return type of every
+        /// C# 9 <c>init</c> accessor.
+        ///
+        /// The type is looked up by scanning every loaded module's types for
+        /// a matching <c>FullName</c>. Roslyn synthesises <c>IsExternalInit</c>
+        /// into the consuming assembly when it is not found in any referenced
+        /// metadata (e.g. when the NScript mscorlib facade does not include
+        /// the file), so the type can live in <c>mscorlib</c> or in the
+        /// fixture assembly itself — both are acceptable.
+        ///
+        /// Returns <c>null</c> when no loaded module declares the type. The
+        /// deserializer treats that as "no modreq wrap available, fall back to
+        /// the relaxed signature matcher" rather than failing the build, so
+        /// the lookup is best-effort.
+        /// </summary>
+        public TypeReference IsExternalInit
+        {
+            get
+            {
+                if (this.isExternalInitReference != null || this.isExternalInitReferenceSearched)
+                {
+                    return this.isExternalInitReference;
+                }
+
+                this.isExternalInitReferenceSearched = true;
+
+                const string fullName = "System.Runtime.CompilerServices.IsExternalInit";
+
+                foreach (var module in this.clrContext.Modules)
+                {
+                    foreach (var type in module.Types)
+                    {
+                        if (type.FullName == fullName)
+                        {
+                            return this.isExternalInitReference = type;
+                        }
+                    }
+                }
+
+                return null;
             }
         }
 

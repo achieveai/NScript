@@ -1122,6 +1122,7 @@
                 case ConversionKind.Deconstruction:
                 case ConversionKind.SwitchExpression:
                 case ConversionKind.CollectionExpression:
+                case ConversionKind.ObjectCreation:
                     return Visit(node.Operand, arg);
 
                 case ConversionKind.ImplicitTupleLiteral:
@@ -1955,6 +1956,7 @@
 
         private LocalVariableSer GetLocalVariable(LocalSymbol localSymbol, SerializationContext arg)
         {
+            // First pass: direct designator match (the common case).
             var id = -1;
             foreach (var node in scopeBlockStack)
             {
@@ -1962,6 +1964,30 @@
                 {
                     id = node.id;
                     break;
+                }
+            }
+
+            // Fallback: a local whose ScopeDesignator is not itself on the scope stack
+            // (e.g. a declaration-pattern variable inside a switch-expression arm — the
+            // arm syntax is the designator but switch expressions don't push their arms
+            // as block scopes). Walk the designator's syntax ancestors until one matches
+            // an active scope; this hoists the local to the nearest enclosing block,
+            // which is the natural JS binding site for inline-test assignments emitted
+            // by `PatternMatcher.LowerDeclarationPattern`.
+            if (id == -1)
+            {
+                var ancestor = localSymbol.ScopeDesignatorOpt?.Parent;
+                while (ancestor != null && id == -1)
+                {
+                    foreach (var node in scopeBlockStack)
+                    {
+                        if (node.nodeBlock.Syntax == ancestor)
+                        {
+                            id = node.id;
+                            break;
+                        }
+                    }
+                    ancestor = ancestor.Parent;
                 }
             }
 
