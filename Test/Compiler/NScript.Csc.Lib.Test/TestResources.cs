@@ -183,6 +183,7 @@
                         @"Runtime\CompilerServices\AsyncMethodBuilderAttribute.cs",
                         @"Runtime\CompilerServices\AsyncVoidMethodBuilder.cs",
                         @"Runtime\CompilerServices\AttachedPropertyAttribute.cs",
+                        @"Runtime\CompilerServices\CallerArgumentExpressionAttribute.cs",
                         @"Runtime\CompilerServices\CompilerGeneratedAttribute.cs",
                         @"Runtime\CompilerServices\EntryPointAttribute.cs",
                         @"Runtime\CompilerServices\ExtensionAttribute.cs",
