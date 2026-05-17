@@ -115,6 +115,17 @@ namespace Sunlight.Framework.Test
 
         }
 
+        [Test]
+        public static void TestStaticReadonlyObservableCollectionOfUserType(Assert assert)
+        {
+            // Regression test for issue #83: static readonly ObservableCollection<UserType>
+            // triggered a crash because _tri_b() for ObservableCollection<UserType> was called
+            // after the cctor that constructs it.
+            var collection = StaticCollectionHolder.EmptyItems;
+            assert.NotEqual(null, collection, "static readonly ObservableCollection<StaticCollectionItem> should be initialized");
+            assert.Equal(0, collection.Count, "static collection should be empty");
+        }
+
         public static void CheckGetAsserts(Assert assert, ObservableCollection<int> observableCollection, int index, int count) {
             try
             {
@@ -128,7 +139,7 @@ namespace Sunlight.Framework.Test
             catch (Exception)
             {
                 assert.IsTrue(
-                    index < 0 
+                    index < 0
                     || index > observableCollection.Count - 1
                     || count <= 0
                     || count > observableCollection.Count
@@ -137,5 +148,16 @@ namespace Sunlight.Framework.Test
                     "Improper value of parameters for index : " + index + " ,count : " + count);
             }
         }
+    }
+
+    public class StaticCollectionItem
+    {
+        public int Value { get; set; }
+    }
+
+    public class StaticCollectionHolder
+    {
+        internal static readonly ObservableCollection<StaticCollectionItem> EmptyItems =
+            new ObservableCollection<StaticCollectionItem>();
     }
 }
