@@ -1610,13 +1610,50 @@ namespace NScript.Converter.TypeSystemConverter
                 && !this.Context.IsExtended(this.typeDefinition)
                 && !this.Context.IsPsudoType(this.typeDefinition))
             {
-                return new NewObjectExpression(
+                var baseTypeExpr = IdentifierExpression.Create(
+                    null,
+                    this.Scope,
+                    this.Resolve(this.typeDefinition.BaseType));
+
+                if (this.Context.IsExtended(this.typeDefinition.BaseType))
+                {
+                    // Extended base types (e.g. System.Exception → native Error) must not be
+                    // invoked with `new` during prototype setup — the native constructor may
+                    // throw before the prototype chain is established.  Use Object.create
+                    // to create a proper prototype delegate without calling the constructor.
+                    var basePrototypeExpr = new IndexExpression(
                         null,
                         this.Scope,
-                        IdentifierExpression.Create(
-                            null,
-                            this.Scope,
-                            this.Resolve(this.typeDefinition.BaseType)));
+                        baseTypeExpr,
+                        new IdentifierExpression(
+                            this.Resolve(this.cnvtKnownRefs.PrototypeField),
+                            this.Scope));
+
+                    var objectExpr = IdentifierExpression.Create(
+                        null,
+                        this.Scope,
+                        this.Resolve(this.clrKnownRefs.Object));
+
+                    var createId = SimpleIdentifier.CreateScopeIdentifier(
+                        this.Scope, "create", enforceSuggestion: true);
+
+                    var objectCreateExpr = new IndexExpression(
+                        null,
+                        this.Scope,
+                        objectExpr,
+                        new IdentifierExpression(createId, this.Scope));
+
+                    return new MethodCallExpression(
+                        null,
+                        this.Scope,
+                        objectCreateExpr,
+                        basePrototypeExpr);
+                }
+
+                return new NewObjectExpression(
+                    null,
+                    this.Scope,
+                    baseTypeExpr);
             }
 
             return null;

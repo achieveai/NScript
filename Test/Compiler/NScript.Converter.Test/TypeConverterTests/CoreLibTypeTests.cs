@@ -61,11 +61,14 @@ namespace NScript.Converter.Test.TypeConverterTests
                  "System.ArrayImpl",
                  "System.NativeArray`1",
                  "System.ArrayG`1"})]
+        [DataRow("ExceptionType.js",
+             TestType.Debug,
+             new[] { "System.NotImplementedException" })]
         public void TestMcs(string resourceName, TestType testType, string[] classNames)
         {
             TypeConverterHelper.RunTest(
                 CoreLibTypeTests.TestFilesNSStr + resourceName,
-                TestType.All,
+                testType,
                 true,
                 false,
                 classNames);
