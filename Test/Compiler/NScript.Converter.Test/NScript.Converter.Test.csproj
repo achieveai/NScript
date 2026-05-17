@@ -398,6 +398,7 @@
     <EmbeddedResource Include="TypeConverterTests\CoreLibTests\StringType.js" />
     <EmbeddedResource Include="TypeConverterTests\CoreLibTests\TypeType.js" />
     <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ObjectType.js" />
+    <EmbeddedResource Include="TypeConverterTests\CoreLibTests\ExceptionType.js" />
     <EmbeddedResource Include="TypeConverterTests\SimpleTypeConverter\StructClassType.js" />
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\Simple0ArgScript.js" />
     <EmbeddedResource Include="MethodConverterTests\ScriptImports\Simple1ArgScript.js" />
