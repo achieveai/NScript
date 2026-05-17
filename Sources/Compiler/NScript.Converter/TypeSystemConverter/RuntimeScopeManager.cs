@@ -518,20 +518,39 @@ namespace NScript.Converter.TypeSystemConverter
                                 Scope)));
                 }
 
-                // here we need to initialize all the static constructor for
-                // all these classes.
+                // Pass 1: call _tri_b() on all generic types before any concrete cctor runs.
+                // A concrete cctor may call new ObservableCollection<T>() which requires T's
+                // _tri_b() to have already set the closure variable for List<T>.
                 foreach (var typeReference in typesInitializedInOrder)
                 {
                     if (!typesDefinitionsUsed.ContainsKey(typeReference.Resolve()))
                     { continue; }
 
-                    var staticConstructor =
-                        typesDefinitionsUsed[typeReference.Resolve()]
-                            .InitializeTypeStatement(typeReference);
+                    var converter = typesDefinitionsUsed[typeReference.Resolve()];
+                    if (!converter.HasTypeRefInit)
+                    { continue; }
 
-                    if (staticConstructor != null)
+                    var triB = converter.InitializeTypeStatement(typeReference);
+                    if (triB != null)
                     {
-                        returnValue.Add(staticConstructor);
+                        returnValue.Add(triB);
+                    }
+                }
+
+                // Pass 2: run static constructors for concrete (non-generic) types.
+                foreach (var typeReference in typesInitializedInOrder)
+                {
+                    if (!typesDefinitionsUsed.ContainsKey(typeReference.Resolve()))
+                    { continue; }
+
+                    var converter = typesDefinitionsUsed[typeReference.Resolve()];
+                    if (converter.HasTypeRefInit)
+                    { continue; }
+
+                    var cctorCall = converter.InitializeTypeStatement(typeReference);
+                    if (cctorCall != null)
+                    {
+                        returnValue.Add(cctorCall);
                     }
                 }
 

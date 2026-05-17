@@ -136,6 +136,12 @@ namespace NScript.Converter.TypeSystemConverter
         private bool hasTypeRefInit = false;
 
         /// <summary>
+        /// Gets a value indicating whether this type has a type-ref init function (_tri_b).
+        /// Used to order _tri_b() calls before concrete cctors at module init time.
+        /// </summary>
+        public bool HasTypeRefInit => this.hasTypeRefInit;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TypeConverter"/> class.
         /// </summary>
         /// <param name="scopeManager">The scope manager.</param>
