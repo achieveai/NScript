@@ -6,6 +6,11 @@
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <RootNamespace>OwaSourceMapper.Server</RootNamespace>
+    <PackageId>Mcqdb.NScript.SourceMap.Server</PackageId>
+    <PackageVersion>$(NScriptPackageVersion)</PackageVersion>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
+    <GeneratePackageOnBuild>$(GenerateNScriptPackages)</GeneratePackageOnBuild>
+    <Description>ASP.NET Core middleware for serving NScript-generated source map files. Registers a MapSourceMapFiles endpoint that resolves original C# source files for browser DevTools stack-frame navigation.</Description>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
