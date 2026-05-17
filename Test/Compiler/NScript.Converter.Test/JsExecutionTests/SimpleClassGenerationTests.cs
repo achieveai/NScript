@@ -60,6 +60,7 @@ namespace NScript.Converter.Test.JsExecutionTests
         [DataRow(TestType.Debug, "Lang9PatternExecutionTests", "Main", false, false, false)]
         [DataRow(TestType.Debug, "Lang9FeatureExecutionTests", "Main", false, false, false)]
         [DataRow(TestType.Debug, "Lang13ExecutionTests", "Main", false, false, false)]
+        [DataRow(TestType.Debug, "ExtendedBaseExceptionExecutionTests", "Main", false, false, false)]
         public void TestMcs(
             TestType testType,
             string className,

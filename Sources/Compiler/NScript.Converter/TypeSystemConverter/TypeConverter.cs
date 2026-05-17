@@ -1610,6 +1610,35 @@ namespace NScript.Converter.TypeSystemConverter
                 && !this.Context.IsExtended(this.typeDefinition)
                 && !this.Context.IsPsudoType(this.typeDefinition))
             {
+                // When the base type is a native (Extended) facade — e.g. System.Exception
+                // mapping to native `Error` — invoking `new BaseType()` purely to obtain a
+                // prototype seed runs the native constructor at module init and can throw
+                // before the prototype chain is wired up. Use `Object.create(BaseType.prototype)`
+                // to thread the prototype chain without invoking the native constructor.
+                if (this.Context.IsExtended(this.TypeDefinition.BaseType))
+                {
+                    return new MethodCallExpression(
+                        null,
+                        this.Scope,
+                        new ScriptLiteralExpression(
+                            null,
+                            this.Scope,
+                            "Object.create"),
+                        new List<Expression>
+                        {
+                            new IndexExpression(
+                                null,
+                                this.Scope,
+                                IdentifierExpression.Create(
+                                    null,
+                                    this.Scope,
+                                    this.Resolve(this.typeDefinition.BaseType)),
+                                new IdentifierExpression(
+                                    this.Resolve(this.cnvtKnownRefs.PrototypeField),
+                                    this.Scope))
+                        });
+                }
+
                 return new NewObjectExpression(
                         null,
                         this.Scope,
