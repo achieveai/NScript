@@ -530,7 +530,11 @@ namespace NScript.Converter.TypeSystemConverter
                     if (!converter.HasTypeRefInit)
                     { continue; }
 
-                    returnValue.Add(converter.InitializeTypeStatement(typeReference));
+                    var triB = converter.InitializeTypeStatement(typeReference);
+                    if (triB != null)
+                    {
+                        returnValue.Add(triB);
+                    }
                 }
 
                 // Pass 2: run static constructors for concrete (non-generic) types.
