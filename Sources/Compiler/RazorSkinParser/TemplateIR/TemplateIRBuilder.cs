@@ -105,8 +105,13 @@ namespace NScript.RazorSkin.TemplateIR
         public static SkinTemplateNode Build(
             string templateName,
             PreprocessorResult preprocessed,
-            RazorParseResult parsed)
+            RazorParseResult parsed,
+            string sourceFile = null)
         {
+            // Use the full source path for Location.FileName so source-map entries resolve
+            // to the .skin.cshtml file on disk rather than the short template name.
+            string locationFileName = sourceFile ?? templateName;
+
             var root = new SkinTemplateNode
             {
                 TemplateName = templateName,
@@ -148,12 +153,12 @@ namespace NScript.RazorSkin.TemplateIR
             // Anchor the root SkinTemplateNode at the first attributable span in the
             // method body so the final source map has a non-null fallback Location for
             // template-level JST (skin factory / getter).
-            root.Location = TryGetLocation(methodNode, templateName)
-                ?? FindFirstAttributableLocation(methodNode, templateName)
-                ?? new Location(templateName, 1, 0);
+            root.Location = TryGetLocation(methodNode, locationFileName)
+                ?? FindFirstAttributableLocation(methodNode, locationFileName)
+                ?? new Location(locationFileName, 1, 0);
 
             // Walk the flat sequence of children in the method body
-            WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName, templateName);
+            WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName, locationFileName);
 
             // Count IR nodes by type
             var htmlCount = CountNodes<HtmlNode>(root.Children);
