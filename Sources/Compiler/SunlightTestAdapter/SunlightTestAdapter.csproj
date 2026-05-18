@@ -42,7 +42,7 @@
          (they author the [TestFixture]/[Test] attributes). The adapter only
          reads attribute metadata via MetadataLoadContext, so we don't need
          to ship the SunlightUnit assembly transitively. -->
-    <PackageReference Include="Mcqdb.NScript.SunlightUnit" Version="$(NScriptPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="Mcqdb.NScript.SunlightUnit" Version="[1.0.0,)" PrivateAssets="all" />
     <!-- Used for metadata-only inspection of the test DLL. The test DLL is
          NScript-compiled (custom mscorlib facade); Assembly.LoadFile + GetTypes
          fails to resolve those references at runtime. MetadataLoadContext reads
