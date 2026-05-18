@@ -191,7 +191,7 @@ namespace Sunlight.Framework.Observables
 
                             var ir = RazorSkinCompiler.CompileToIR(
                                 templateName, templateSource,
-                                additionalSources);
+                                additionalSources, fileName);
                             // Store under both short name and full resource name
                             // so [Skin("full.resource.name.skin.cshtml")] matches
                             _compiledIRs[templateName] = ir;

@@ -23,7 +23,8 @@ namespace NScript.RazorSkin
         public static SkinTemplateNode CompileToIR(
             string templateName,
             string templateSource,
-            string[] additionalCSharpSources = null)
+            string[] additionalCSharpSources = null,
+            string sourceFile = null)
         {
             var log = Logger;
             var totalSw = Stopwatch.StartNew();
@@ -44,7 +45,7 @@ namespace NScript.RazorSkin
             // Phase 3: Build IR
             phaseSw.Restart();
             log.Debug("Phase {Phase} started for template {TemplateName}", "BuildIR", templateName);
-            var ir = TemplateIRBuilder.Build(templateName, preprocessed, parsed);
+            var ir = TemplateIRBuilder.Build(templateName, preprocessed, parsed, sourceFile);
             log.Debug("Phase {Phase} completed in {ElapsedMs}ms for template {TemplateName}", "BuildIR", phaseSw.ElapsedMilliseconds, templateName);
 
             // Phase 4: Roslyn analysis (refine classifications)

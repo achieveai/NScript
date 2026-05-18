@@ -187,11 +187,108 @@ namespace RazorSkinParser.Test
             field.FieldType.Should().Be(typeof(Location));
         }
 
-        private static SkinTemplateNode BuildIR(string template)
+        // -----------------------------------------------------------------------
+        // sourceFile parameter regression tests (Phase 3c fix)
+        //
+        // Before this fix every Location.FileName in Razor-template IR contained
+        // the short template name (e.g. "TestSkin") instead of the absolute path
+        // to the .skin.cshtml file. This caused SourceMap.Server to return 404
+        // because sourcesLong[] held the short name rather than a disk path.
+        // The tests below guard all node types against a regression.
+        // -----------------------------------------------------------------------
+
+        private const string AbsoluteSourceFile = @"B:\project\Views\TestSkin.skin.cshtml";
+
+        [TestMethod]
+        public void SourceFile_Root_UsesAbsolutePath()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div>Hello</div>", AbsoluteSourceFile);
+
+            ir.Location.Should().NotBeNull();
+            ir.Location.FileName.Should().Be(AbsoluteSourceFile,
+                "sourceFile must override templateName as Location.FileName so " +
+                "sourcesLong[] in the source map resolves to the .skin.cshtml on disk");
+        }
+
+        [TestMethod]
+        public void SourceFile_HtmlNode_UsesAbsolutePath()
+        {
+            var ir = BuildIR("@model TestVM\n\n<div>Hello</div>", AbsoluteSourceFile);
+
+            var html = ir.Children.OfType<HtmlNode>().First();
+            html.Location.Should().NotBeNull();
+            html.Location.FileName.Should().Be(AbsoluteSourceFile,
+                "WalkMethodBody must propagate locationFileName (not templateName) into HtmlNode");
+        }
+
+        [TestMethod]
+        public void SourceFile_ExpressionBindingNode_UsesAbsolutePath()
+        {
+            var ir = BuildIR("@model TestVM\n\n<span>@Model.Name</span>", AbsoluteSourceFile);
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>().First();
+            binding.Location.Should().NotBeNull();
+            binding.Location.FileName.Should().Be(AbsoluteSourceFile,
+                "CreateExpressionBinding must propagate locationFileName into ExpressionBindingNode");
+        }
+
+        [TestMethod]
+        public void SourceFile_EventNode_UsesAbsolutePath()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n\n<button onclick=\"@Model.HandleClick\">Click</button>",
+                AbsoluteSourceFile);
+
+            var evt = ir.Children.OfType<EventNode>().FirstOrDefault();
+            evt.Should().NotBeNull();
+            evt.Location.Should().NotBeNull();
+            evt.Location.FileName.Should().Be(AbsoluteSourceFile,
+                "CreateEventNode must propagate locationFileName into EventNode");
+        }
+
+        [TestMethod]
+        public void SourceFile_ConditionalNode_UsesAbsolutePath()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n\n@if (Model.IsActive)\n{\n    <div>Active</div>\n}",
+                AbsoluteSourceFile);
+
+            var cond = ir.Children.OfType<ConditionalNode>().First();
+            cond.Location.Should().NotBeNull();
+            cond.Location.FileName.Should().Be(AbsoluteSourceFile,
+                "ParseIfBlock must propagate locationFileName into ConditionalNode");
+        }
+
+        [TestMethod]
+        public void SourceFile_LoopNode_UsesAbsolutePath()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n\n@foreach (var item in Model.Items)\n{\n    <li>@item.Name</li>\n}",
+                AbsoluteSourceFile);
+
+            var loop = ir.Children.OfType<LoopNode>().First();
+            loop.Location.Should().NotBeNull();
+            loop.Location.FileName.Should().Be(AbsoluteSourceFile,
+                "ParseForeachBlock must propagate locationFileName into LoopNode");
+        }
+
+        [TestMethod]
+        public void SourceFile_Null_FallsBackToTemplateName()
+        {
+            // When sourceFile is omitted the short template name must remain the
+            // fallback — this is the path used by tests and any caller without a
+            // disk path available.
+            var ir = BuildIR("@model TestVM\n\n<div>Hello</div>");
+
+            ir.Location.FileName.Should().Be(TestTemplateName,
+                "omitting sourceFile must fall back to templateName, not null");
+        }
+
+        private static SkinTemplateNode BuildIR(string template, string sourceFile = null)
         {
             var preprocessed = RazorSkinPreprocessor.Process(template);
             var parsed = RazorParserPhase.Parse(TestTemplateName, preprocessed.CleanedTemplate);
-            return TemplateIRBuilder.Build(TestTemplateName, preprocessed, parsed);
+            return TemplateIRBuilder.Build(TestTemplateName, preprocessed, parsed, sourceFile);
         }
     }
 }
