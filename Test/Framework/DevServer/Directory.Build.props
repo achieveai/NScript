@@ -1,0 +1,4 @@
+<Project>
+  <!-- Stop NScript Framework Directory.Build.props inheritance — DevServer uses the standard .NET SDK -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
+</Project>

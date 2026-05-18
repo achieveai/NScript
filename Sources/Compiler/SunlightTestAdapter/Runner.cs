@@ -2,6 +2,7 @@ namespace SunlightTestAdapter;
 
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
@@ -12,13 +13,52 @@ public class TestRunner
     private const string QunitJsPath = "/qunit.js";
     private const string QunitCssPath = "/qunit.css";
     private const string IndexPath = "/index.html";
+    private const string SourceMapPrefix = "/sourcemap/";
 
     private readonly string _jsFilePath;
+    private Dictionary<string, string>? _sourceLongMap;
 
     public TestRunner(string jsFilePath)
     {
         _jsFilePath = jsFilePath;
     }
+
+    // Builds sources[i] -> sourcesLong[i] lookup from the companion .map file.
+    private Dictionary<string, string> GetSourceLongMap()
+    {
+        if (_sourceLongMap != null) return _sourceLongMap;
+        var mapPath = Path.ChangeExtension(_jsFilePath, ".map");
+        if (!File.Exists(mapPath)) return _sourceLongMap = new();
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(mapPath));
+            var root = doc.RootElement;
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (root.TryGetProperty("sources", out var srcProp) &&
+                root.TryGetProperty("sourcesLong", out var longProp))
+            {
+                var sources = srcProp.EnumerateArray().ToArray();
+                var longs = longProp.EnumerateArray().ToArray();
+                for (int i = 0; i < Math.Min(sources.Length, longs.Length); i++)
+                {
+                    var shortName = sources[i].GetString();
+                    var longPath = longs[i].GetString();
+                    if (shortName != null && longPath != null)
+                        map[shortName] = longPath;
+                }
+            }
+            return _sourceLongMap = map;
+        }
+        catch { return _sourceLongMap = new(); }
+    }
+
+    // Rewrites sourceRoot in the map JSON so DevTools fetches sources from our
+    // synthetic host instead of the baked-in SrcMapper.ashx / localhost URL.
+    private static string PatchSourceRoot(string mapJson) =>
+        Regex.Replace(
+            mapJson,
+            @"""sourceRoot""\s*:\s*""[^""]*""",
+            $@"""sourceRoot"":""{SyntheticHost}{SourceMapPrefix}""");
 
     public async Task<RootObject[]> RunTests(IMessageLogger logger)
     {
@@ -139,6 +179,47 @@ public class TestRunner
                 Status = 200,
                 ContentType = "application/javascript; charset=utf-8",
                 BodyBytes = bytes,
+            });
+        });
+
+        // Serve the companion .map file for the test bundle. Rewrite sourceRoot to
+        // point at our synthetic host so DevTools requests source files from us
+        // rather than the baked-in SrcMapper.ashx URL.
+        await page.RouteAsync(SyntheticHost + "/**/*.map", async route =>
+        {
+            var mapPath = Path.ChangeExtension(_jsFilePath, ".map");
+            if (!File.Exists(mapPath))
+            {
+                await route.FulfillAsync(new RouteFulfillOptions { Status = 404 });
+                return;
+            }
+            var mapJson = await File.ReadAllTextAsync(mapPath);
+            await route.FulfillAsync(new RouteFulfillOptions
+            {
+                Status = 200,
+                ContentType = "application/json; charset=utf-8",
+                Body = PatchSourceRoot(mapJson),
+            });
+        });
+
+        // Serve individual source files via the sourcesLong[] lookup table.
+        // DevTools requests https://nscript.test/sourcemap/{sources[i]} after
+        // reading the patched sourceRoot from the .map file above.
+        await page.RouteAsync(SyntheticHost + "/sourcemap/**", async route =>
+        {
+            var sourceName = Uri.UnescapeDataString(
+                route.Request.Url[(SyntheticHost + SourceMapPrefix).Length..]);
+            var sourceMap = GetSourceLongMap();
+            if (!sourceMap.TryGetValue(sourceName, out var filePath) || !File.Exists(filePath))
+            {
+                await route.FulfillAsync(new RouteFulfillOptions { Status = 404 });
+                return;
+            }
+            await route.FulfillAsync(new RouteFulfillOptions
+            {
+                Status = 200,
+                ContentType = "text/plain; charset=utf-8",
+                BodyBytes = await File.ReadAllBytesAsync(filePath),
             });
         });
     }
