@@ -146,11 +146,89 @@
 		         Condition="'$(SourceMapRoot)' != ''" />
 	</Target>
 
+	<!--
+	  Resolves the secondary/dependency repo's raw-file base URL for multi-repo source map
+	  support. Runs only when RepoLinkedSourceMaps=true, the primary SourceMapRoot is already
+	  resolved, AND NScriptSecondaryRepoRoot is provided. Tolerates missing git metadata the
+	  same way ComputeNScriptRepoMetadata does — emits a warning and skips rather than failing.
+	-->
+	<Target Name="ComputeNScriptSecondaryRepoMetadata"
+	        Condition="'$(RepoLinkedSourceMaps)' == 'true'
+	                   and '$(SourceMapRoot)' != ''
+	                   and '$(NScriptSecondaryRepoRoot)' != ''
+	                   and '$(NScriptSecondarySourceMapRoot)' == ''"
+	        BeforeTargets="ScriptGenerate"
+	        DependsOnTargets="ComputeNScriptRepoMetadata">
+
+		<Exec Command="git -C &quot;$(NScriptSecondaryRepoRoot)&quot; remote get-url origin"
+		      Condition="'$(NScriptSecondarySourceRepoOriginUrl)' == ''"
+		      ConsoleToMSBuild="true"
+		      EchoOff="true"
+		      IgnoreExitCode="true"
+		      ContinueOnError="WarnAndContinue">
+			<Output TaskParameter="ConsoleOutput" PropertyName="_NScriptSecGitRemoteRaw" />
+			<Output TaskParameter="ExitCode"      PropertyName="_NScriptSecGitRemoteExit" />
+		</Exec>
+
+		<Exec Command="git -C &quot;$(NScriptSecondaryRepoRoot)&quot; rev-parse HEAD"
+		      Condition="'$(NScriptSecondaryCommitSha)' == ''"
+		      ConsoleToMSBuild="true"
+		      EchoOff="true"
+		      IgnoreExitCode="true"
+		      ContinueOnError="WarnAndContinue">
+			<Output TaskParameter="ConsoleOutput" PropertyName="_NScriptSecGitShaRaw" />
+		</Exec>
+
+		<PropertyGroup>
+			<NScriptSecondarySourceRepoOriginUrl Condition="'$(NScriptSecondarySourceRepoOriginUrl)' == '' and '$(_NScriptSecGitRemoteRaw)' != ''">$(_NScriptSecGitRemoteRaw.Trim())</NScriptSecondarySourceRepoOriginUrl>
+			<NScriptSecondaryCommitSha Condition="'$(NScriptSecondaryCommitSha)' == '' and '$(_NScriptSecGitShaRaw)' != ''">$(_NScriptSecGitShaRaw.Trim())</NScriptSecondaryCommitSha>
+			<_NScriptSecOriginUrlRedacted Condition="'$(NScriptSecondarySourceRepoOriginUrl)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(NScriptSecondarySourceRepoOriginUrl)', '://[^/@]+@', '://***@'))</_NScriptSecOriginUrlRedacted>
+		</PropertyGroup>
+
+		<Warning Text="NScriptSecondaryRepoRoot set but secondary repo git metadata could not be captured (origin='$(_NScriptSecOriginUrlRedacted)' sha='$(NScriptSecondaryCommitSha)'). Set NScriptSecondarySourceMapRoot manually."
+		         Condition="('$(NScriptSecondarySourceRepoOriginUrl)' == '' or '$(NScriptSecondaryCommitSha)' == '')" />
+
+		<!-- GitHub HTTPS / SSH — same patterns as ComputeNScriptRepoMetadata -->
+		<PropertyGroup Condition="'$(NScriptSecondarySourceRepoOriginUrl)' != '' and '$(NScriptSecondaryCommitSha)' != '' and ('$(NScriptSecondaryRepoProvider)' == '' or '$(NScriptSecondaryRepoProvider)' == 'auto' or '$(NScriptSecondaryRepoProvider)' == 'GitHub')">
+			<_NScriptSecGitHubHttpsPattern>^https?://(?:[^/@]+@)?github\.com/(?&lt;owner&gt;[^/]+)/(?&lt;repo&gt;[^/]+?)(?:\.git)?/?$</_NScriptSecGitHubHttpsPattern>
+			<_NScriptSecGitHubSshPattern>^(?:ssh://)?git@github\.com[:/](?&lt;owner&gt;[^/]+)/(?&lt;repo&gt;[^/]+?)(?:\.git)?/?$</_NScriptSecGitHubSshPattern>
+			<_NScriptSecGitHubOwner>$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecGitHubHttpsPattern)').Groups[1].Value)</_NScriptSecGitHubOwner>
+			<_NScriptSecGitHubRepo>$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecGitHubHttpsPattern)').Groups[2].Value)</_NScriptSecGitHubRepo>
+			<_NScriptSecGitHubOwner Condition="'$(_NScriptSecGitHubOwner)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecGitHubSshPattern)').Groups[1].Value)</_NScriptSecGitHubOwner>
+			<_NScriptSecGitHubRepo Condition="'$(_NScriptSecGitHubRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecGitHubSshPattern)').Groups[2].Value)</_NScriptSecGitHubRepo>
+			<NScriptSecondarySourceMapRoot Condition="'$(_NScriptSecGitHubOwner)' != '' and '$(_NScriptSecGitHubRepo)' != ''">https://raw.githubusercontent.com/$(_NScriptSecGitHubOwner)/$(_NScriptSecGitHubRepo)/$(NScriptSecondaryCommitSha)/</NScriptSecondarySourceMapRoot>
+		</PropertyGroup>
+
+		<!-- Azure DevOps — same patterns as ComputeNScriptRepoMetadata -->
+		<PropertyGroup Condition="'$(NScriptSecondarySourceMapRoot)' == '' and '$(NScriptSecondarySourceRepoOriginUrl)' != '' and '$(NScriptSecondaryCommitSha)' != '' and ('$(NScriptSecondaryRepoProvider)' == '' or '$(NScriptSecondaryRepoProvider)' == 'auto' or '$(NScriptSecondaryRepoProvider)' == 'AzureDevOps')">
+			<_NScriptSecAdoModernHttpsPattern>^https?://(?:[^/@]+@)?dev\.azure\.com/(?&lt;org&gt;[^/]+)/(?&lt;project&gt;[^/]+)/_git/(?&lt;repo&gt;[^/]+?)(?:\.git)?/?$</_NScriptSecAdoModernHttpsPattern>
+			<_NScriptSecAdoModernSshPattern>^git@ssh\.dev\.azure\.com:v3/(?&lt;org&gt;[^/]+)/(?&lt;project&gt;[^/]+)/(?&lt;repo&gt;[^/]+?)(?:\.git)?/?$</_NScriptSecAdoModernSshPattern>
+			<_NScriptSecAdoLegacyHttpsPattern>^https?://(?:[^/@]+@)?(?&lt;org&gt;[^/.]+)\.visualstudio\.com/(?&lt;project&gt;[^/]+)/_git/(?&lt;repo&gt;[^/]+?)(?:\.git)?/?$</_NScriptSecAdoLegacyHttpsPattern>
+			<_NScriptSecAdoOrg>$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoModernHttpsPattern)').Groups[1].Value)</_NScriptSecAdoOrg>
+			<_NScriptSecAdoProject>$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoModernHttpsPattern)').Groups[2].Value)</_NScriptSecAdoProject>
+			<_NScriptSecAdoRepo>$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoModernHttpsPattern)').Groups[3].Value)</_NScriptSecAdoRepo>
+			<_NScriptSecAdoOrg Condition="'$(_NScriptSecAdoOrg)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoModernSshPattern)').Groups[1].Value)</_NScriptSecAdoOrg>
+			<_NScriptSecAdoProject Condition="'$(_NScriptSecAdoProject)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoModernSshPattern)').Groups[2].Value)</_NScriptSecAdoProject>
+			<_NScriptSecAdoRepo Condition="'$(_NScriptSecAdoRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoModernSshPattern)').Groups[3].Value)</_NScriptSecAdoRepo>
+			<_NScriptSecAdoOrg Condition="'$(_NScriptSecAdoOrg)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoLegacyHttpsPattern)').Groups[1].Value)</_NScriptSecAdoOrg>
+			<_NScriptSecAdoProject Condition="'$(_NScriptSecAdoProject)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoLegacyHttpsPattern)').Groups[2].Value)</_NScriptSecAdoProject>
+			<_NScriptSecAdoRepo Condition="'$(_NScriptSecAdoRepo)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(NScriptSecondarySourceRepoOriginUrl)', '$(_NScriptSecAdoLegacyHttpsPattern)').Groups[3].Value)</_NScriptSecAdoRepo>
+			<NScriptSecondarySourceMapRoot Condition="'$(_NScriptSecAdoOrg)' != '' and '$(_NScriptSecAdoProject)' != '' and '$(_NScriptSecAdoRepo)' != ''">https://dev.azure.com/$(_NScriptSecAdoOrg)/$(_NScriptSecAdoProject)/_apis/git/repositories/$(_NScriptSecAdoRepo)/items?api-version=7.1&amp;versionDescriptor.version=$(NScriptSecondaryCommitSha)&amp;versionDescriptor.versionType=commit&amp;path=/</NScriptSecondarySourceMapRoot>
+		</PropertyGroup>
+
+		<Warning Text="NScriptSecondaryRepoRoot set but origin URL '$(_NScriptSecOriginUrlRedacted)' did not match GitHub or Azure DevOps. Set NScriptSecondarySourceMapRoot manually for other providers."
+		         Condition="'$(NScriptSecondarySourceMapRoot)' == '' and '$(NScriptSecondarySourceRepoOriginUrl)' != '' and '$(NScriptSecondaryCommitSha)' != ''" />
+
+		<Message Importance="high"
+		         Text="NScript secondary repo source maps: sourceRoot='$(NScriptSecondarySourceMapRoot)' repoRoot='$(NScriptSecondaryRepoRoot)'"
+		         Condition="'$(NScriptSecondarySourceMapRoot)' != ''" />
+	</Target>
+
 	<Target
 		Name="ScriptGenerate"
 		Inputs="$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext);@(ReferencePath)"
 		Outputs="$(JsOutputPath)\$(AssemblyName).js"
-		DependsOnTargets="$(CoreCompile);ComputeNScriptRepoMetadata"
+		DependsOnTargets="$(CoreCompile);ComputeNScriptRepoMetadata;ComputeNScriptSecondaryRepoMetadata"
 		Condition="$(GenerateJs) == True">
 
 		<Message
@@ -170,6 +248,10 @@
 			<ScriptGenerateOption Include="-optimize" Condition="'$(JsOptimize)' == 'true'" />
 			<ScriptGenerateOption Include="-sourceMapRoot &quot;$(SourceMapRoot)&quot;" Condition="'$(SourceMapRoot)' != ''" />
 			<ScriptGenerateOption Include="-repoRoot &quot;$(NScriptRepoRoot)&quot;" Condition="'$(SourceMapRoot)' != '' and '$(NScriptRepoRoot)' != ''" />
+			<ScriptGenerateOption Include="-secondarySourceRoot &quot;$(NScriptSecondarySourceMapRoot)&quot;"
+				Condition="'$(NScriptSecondarySourceMapRoot)' != ''" />
+			<ScriptGenerateOption Include="-secondaryRepoRoot &quot;$(NScriptSecondaryRepoRoot)&quot;"
+				Condition="'$(NScriptSecondarySourceMapRoot)' != '' and '$(NScriptSecondaryRepoRoot)' != ''" />
 		</ItemGroup>
 
 		<MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />

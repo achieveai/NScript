@@ -87,6 +87,21 @@ namespace NScript.Lib
         private string repoRoot;
 
         /// <summary>
+        /// Optional raw-file base URL for a SECOND repository (e.g. a deployed framework or
+        /// shared library) whose sources should resolve from a different remote than the
+        /// primary app's <c>sourceRoot</c>. Must be an <c>https://</c> URL. Per V3 spec, any
+        /// absolute URL in <c>sources[]</c> bypasses <c>sourceRoot</c> prepending — that is
+        /// the mechanism the secondary-repo emit exploits.
+        /// </summary>
+        private string secondarySourceRoot;
+
+        /// <summary>
+        /// Optional absolute path to the secondary repository's worktree. Source files under
+        /// this path are emitted as absolute URLs prefixed with <see cref="SecondarySourceRoot"/>.
+        /// </summary>
+        private string secondaryRepoRoot;
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="ParseOptions"/> class from being created.
         /// </summary>
         private ParseOptions()
@@ -167,6 +182,18 @@ namespace NScript.Lib
         /// the flag was not supplied.
         /// </summary>
         public string RepoRoot => this.repoRoot;
+
+        /// <summary>
+        /// Gets the secondary raw-file base URL supplied via <c>-secondarySourceRoot</c>, or
+        /// null when the flag was not supplied.
+        /// </summary>
+        public string SecondarySourceRoot => this.secondarySourceRoot;
+
+        /// <summary>
+        /// Gets the absolute path to the secondary repository's worktree supplied via
+        /// <c>-secondaryRepoRoot</c>, or null when the flag was not supplied.
+        /// </summary>
+        public string SecondaryRepoRoot => this.secondaryRepoRoot;
 
         /// <summary>
         /// Parses the args.
@@ -303,6 +330,38 @@ namespace NScript.Lib
                         }
 
                         options.repoRoot = args[iArg];
+                        continue;
+                    case "-secondarysourceroot":
+                        option = CurrentOption.None;
+                        if (options.secondarySourceRoot != null)
+                        {
+                            Logger.Instance.LogError("-secondarySourceRoot specified at least twice");
+                            return null;
+                        }
+
+                        if (++iArg >= args.Length)
+                        {
+                            Logger.Instance.LogError("-secondarySourceRoot requires a value");
+                            return null;
+                        }
+
+                        options.secondarySourceRoot = args[iArg];
+                        continue;
+                    case "-secondaryreporoot":
+                        option = CurrentOption.None;
+                        if (options.secondaryRepoRoot != null)
+                        {
+                            Logger.Instance.LogError("-secondaryRepoRoot specified at least twice");
+                            return null;
+                        }
+
+                        if (++iArg >= args.Length)
+                        {
+                            Logger.Instance.LogError("-secondaryRepoRoot requires a value");
+                            return null;
+                        }
+
+                        options.secondaryRepoRoot = args[iArg];
                         continue;
                     case "-log":
                     case "--log":
@@ -442,6 +501,37 @@ namespace NScript.Lib
                     "-repoRoot requires -sourceMapRoot to also be specified");
             }
 
+            // -secondaryRepoRoot requires -secondarySourceRoot — without the remote URL the
+            // secondary rebase has nothing to absolutize against and would silently fall back
+            // to the legacy form; that's almost certainly not what the user meant.
+            if (!string.IsNullOrEmpty(options.secondaryRepoRoot)
+                && string.IsNullOrEmpty(options.secondarySourceRoot))
+            {
+                Logger.Instance.LogError(
+                    "-secondaryRepoRoot requires -secondarySourceRoot to also be specified");
+            }
+
+            // -secondarySourceRoot only makes sense alongside the primary -sourceMapRoot: the
+            // secondary URL exists to side-step the primary sourceRoot for files in a second
+            // repo, so a primary sourceRoot is a prerequisite.
+            if (!string.IsNullOrEmpty(options.secondarySourceRoot)
+                && string.IsNullOrEmpty(options.sourceMapRoot))
+            {
+                Logger.Instance.LogError(
+                    "-secondarySourceRoot requires -sourceMapRoot to also be specified");
+            }
+
+            // -secondarySourceRoot must be an https:// URL — the whole point is to embed an
+            // absolute URL in sources[] so DevTools fetches it directly. Any other scheme
+            // (file://, http://, repo-relative path) would either fail to load in the browser
+            // or defeat the bypass-sourceRoot mechanism.
+            if (!string.IsNullOrEmpty(options.secondarySourceRoot)
+                && !options.secondarySourceRoot.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.Instance.LogError(
+                    "-secondarySourceRoot must be an https:// URL");
+            }
+
             return Logger.Instance.HasErrors ? null : options;
         }
 
@@ -450,7 +540,7 @@ namespace NScript.Lib
         /// </summary>
         public static void PrintUsage()
         {
-            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-sourceMapRoot <url>] [-repoRoot <absolute-path>] [-log <jsonl path>] [-runid <id>]");
+            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-sourceMapRoot <url>] [-repoRoot <absolute-path>] [-secondarySourceRoot <url>] [-secondaryRepoRoot <absolute-path>] [-log <jsonl path>] [-runid <id>]");
             Environment.Exit(1);
         }
 

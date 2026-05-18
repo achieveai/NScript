@@ -200,6 +200,27 @@ namespace OwaSourceMapper
         public string RepoRoot { get; set; }
 
         /// <summary>
+        /// Optional absolute path to a secondary repository root (e.g. a deployed dependency
+        /// such as the NScript framework or a shared library). When set alongside
+        /// <see cref="SecondarySourceRoot"/>, files under this root are emitted into
+        /// <c>sources[i]</c> as absolute <c>https://</c> URLs (prefixed by
+        /// <see cref="SecondarySourceRoot"/>). Per the V3 source map spec DevTools uses such
+        /// absolute entries directly without prepending <see cref="SourceRoot"/>, so secondary-
+        /// repo sources resolve against the dependency's remote raw-file base while primary
+        /// sources keep using the app's <see cref="SourceRoot"/>.
+        /// </summary>
+        public string SecondaryRepoRoot { get; set; }
+
+        /// <summary>
+        /// Optional raw-file base URL for files under <see cref="SecondaryRepoRoot"/> (for
+        /// example <c>https://raw.githubusercontent.com/owner/repo/sha/</c>). Required for the
+        /// secondary-repo rebase to fire; if null or empty the secondary rebase is skipped and
+        /// the legacy absolutized form is used (matching the no-opt-in behaviour). Must be an
+        /// <c>https://</c> URL.
+        /// </summary>
+        public string SecondarySourceRoot { get; set; }
+
+        /// <summary>
         /// Mapping comparison.
         /// </summary>
         /// <param name="lineCol1"> The first line col. </param>
@@ -306,6 +327,50 @@ namespace OwaSourceMapper
 
             string relative = fullPath.Substring(normalizedRepoRoot.Length);
             return relative.Replace("\\", "/");
+        }
+
+        /// <summary>
+        /// Resolves the <c>sources[i]</c> entry for <paramref name="rawFile"/> using the
+        /// configured repo roots. Decision order:
+        /// <list type="number">
+        ///   <item><description>Primary repo: emit forward-slash, repo-relative path so DevTools
+        ///         combines it with <see cref="SourceRoot"/>.</description></item>
+        ///   <item><description>Secondary repo (only when <paramref name="secondarySourceRoot"/>
+        ///         is supplied): emit an absolute <c>https://</c> URL composed of the secondary
+        ///         source root plus the rebased path. Per V3 spec DevTools uses absolute URLs
+        ///         in <c>sources[]</c> directly, bypassing the <see cref="SourceRoot"/>
+        ///         prepend — this is the mechanism that lets a single map reference two
+        ///         repositories.</description></item>
+        ///   <item><description>Neither: fall back to the legacy absolutized form so existing
+        ///         consumers see no change.</description></item>
+        /// </list>
+        /// </summary>
+        /// <param name="rawFile">                   Source file path as stored by <see cref="AddMapping"/>
+        ///     (with backslashes escaped). </param>
+        /// <param name="normalizedPrimaryRoot">     Normalized primary repo root, or null. </param>
+        /// <param name="normalizedSecondaryRoot">   Normalized secondary repo root, or null. </param>
+        /// <param name="secondarySourceRoot">       Raw-file base URL for the secondary repo; null
+        ///     or empty disables the secondary rebase even if <paramref name="normalizedSecondaryRoot"/>
+        ///     is set, since without a URL we have nothing to absolutize against. </param>
+        private string GetSourceEntry(string rawFile,
+            string normalizedPrimaryRoot,
+            string normalizedSecondaryRoot,
+            string secondarySourceRoot)
+        {
+            // Primary repo → relative path (DevTools prepends app sourceRoot)
+            string rebased = TryRebaseToRepoRoot(rawFile, normalizedPrimaryRoot);
+            if (rebased != null) return rebased;
+
+            // Secondary repo → absolute URL (DevTools uses it directly, bypasses sourceRoot prepend)
+            if (normalizedSecondaryRoot != null && !string.IsNullOrEmpty(secondarySourceRoot))
+            {
+                rebased = TryRebaseToRepoRoot(rawFile, normalizedSecondaryRoot);
+                if (rebased != null)
+                    return secondarySourceRoot.TrimEnd('/') + "/" + rebased;
+            }
+
+            // Legacy fallback
+            return AbsolutizeForSources(rawFile);
         }
 
         /// <summary>
@@ -439,11 +504,15 @@ namespace OwaSourceMapper
             {
                 Dictionary<string, int> fileMap = new Dictionary<string, int>(this.files.Count);
                 string normalizedRepoRoot = NormalizeRepoRoot(this.RepoRoot);
+                string normalizedSecondaryRoot = NormalizeRepoRoot(this.SecondaryRepoRoot);
                 sb.Append("\t\"sources\": [");
                 for (int i = 0; i < this.files.Count; i++)
                 {
-                    var fileName = TryRebaseToRepoRoot(this.files[i], normalizedRepoRoot)
-                        ?? AbsolutizeForSources(this.files[i]);
+                    var fileName = GetSourceEntry(
+                        this.files[i],
+                        normalizedRepoRoot,
+                        normalizedSecondaryRoot,
+                        this.SecondarySourceRoot);
                     if (fileMap.TryGetValue(fileName, out var tmp))
                     { fileMap[fileName] = tmp + 1; fileName = fileName + tmp + 1; }
                     else

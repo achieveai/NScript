@@ -69,6 +69,22 @@ namespace NScript.Converter
         private readonly string repoRoot;
 
         /// <summary>
+        /// Optional raw-file base URL for a second repository (e.g. a deployed framework or
+        /// shared library) whose sources should resolve from a different remote than
+        /// <see cref="sourceMapRoot"/>. Files under <see cref="secondaryRepoRoot"/> are
+        /// emitted into <c>sources[]</c> as absolute <c>https://</c> URLs prefixed by this
+        /// value — V3 spec says DevTools uses such absolute entries directly, bypassing the
+        /// primary <see cref="sourceMapRoot"/>.
+        /// </summary>
+        private readonly string secondarySourceRoot;
+
+        /// <summary>
+        /// Optional absolute path to the secondary repository's worktree. Paired with
+        /// <see cref="secondarySourceRoot"/> to enable the multi-repo source map emission.
+        /// </summary>
+        private readonly string secondaryRepoRoot;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="jsScript">               The js script. </param>
@@ -84,6 +100,12 @@ namespace NScript.Converter
         ///     When supplied alongside <paramref name="sourceMapRoot"/>, <c>sources[i]</c> entries
         ///     are emitted as forward-slash, repo-relative paths so they combine with a remote
         ///     repo URL. Files outside the repo root keep the legacy absolutized form. </param>
+        /// <param name="secondarySourceRoot">     Optional raw-file base URL for a second
+        ///     repository. Sources living under <paramref name="secondaryRepoRoot"/> are emitted
+        ///     as absolute <c>https://</c> URLs prefixed by this value so DevTools bypasses the
+        ///     primary <paramref name="sourceMapRoot"/> for them. </param>
+        /// <param name="secondaryRepoRoot">       Optional absolute path to the worktree of a
+        ///     second repository whose files should be served from the secondary remote. </param>
         public Builder(
             string jsScript,
             int jsParts,
@@ -92,7 +114,9 @@ namespace NScript.Converter
             IConverterPlugin[] plugins,
             (bool minify, bool uglify, bool optimize) scriptGenerateSettings,
             string sourceMapRoot = null,
-            string repoRoot = null)
+            string repoRoot = null,
+            string secondarySourceRoot = null,
+            string secondaryRepoRoot = null)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -107,6 +131,8 @@ namespace NScript.Converter
             this.scriptGenerateSettings = scriptGenerateSettings;
             this.sourceMapRoot = sourceMapRoot;
             this.repoRoot = repoRoot;
+            this.secondarySourceRoot = secondarySourceRoot;
+            this.secondaryRepoRoot = secondaryRepoRoot;
         }
 
         /// <summary>
@@ -305,7 +331,13 @@ namespace NScript.Converter
                         Path.GetFileName(this.jsScript))
                     : this.sourceMapRoot;
 
-                writer.Write(this.jsScript, effectiveSourceRoot, emitLegacyAshxHandler: isLegacySourceRoot, repoRoot: this.repoRoot);
+                writer.Write(
+                    this.jsScript,
+                    effectiveSourceRoot,
+                    emitLegacyAshxHandler: isLegacySourceRoot,
+                    repoRoot: this.repoRoot,
+                    secondaryRepoRoot: this.secondaryRepoRoot,
+                    secondarySourceRoot: this.secondarySourceRoot);
                 log.Information("JSWriter.End {JsScript}", this.jsScript);
             }
             catch(ConverterLocationException ex)

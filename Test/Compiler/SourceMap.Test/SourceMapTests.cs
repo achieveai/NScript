@@ -365,6 +365,61 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// Multi-repo support: when a file lives under <see cref="SourceMap.SecondaryRepoRoot"/>
+        /// and <see cref="SourceMap.SecondarySourceRoot"/> is configured, the corresponding
+        /// <c>sources[i]</c> entry must be emitted as a fully absolute <c>https://</c> URL
+        /// (secondary URL + repo-relative path). Per the V3 spec DevTools uses such absolute
+        /// entries directly and does NOT prepend <see cref="SourceMap.SourceRoot"/> — that is
+        /// the mechanism that lets one map reference two repositories.
+        /// </summary>
+        [TestMethod]
+        public void ToString_SecondaryRepoFile_EmitsAbsoluteUrl()
+        {
+            var map = new SourceMap { File = "app.js", SourceRoot = "/sourcemap/app/", RepoRoot = @"C:\app\", SecondaryRepoRoot = @"C:\lib\", SecondarySourceRoot = "https://raw.githubusercontent.com/org/lib/abc123/" };
+            map.AddMapping(1, 0, 1, 0, @"C:\lib\src\Foo.cs");
+            string json = map.ToString();
+            StringAssert.Contains(json, "\"https://raw.githubusercontent.com/org/lib/abc123/src/Foo.cs\"");
+        }
+
+        /// <summary>
+        /// Mixed-bundle integration: a single map containing files from BOTH repos must emit
+        /// the primary file as a repo-relative path (DevTools combines it with the app's
+        /// <see cref="SourceMap.SourceRoot"/>) and the secondary file as an absolute URL
+        /// (DevTools uses it verbatim). Crucially, the secondary file must NOT appear in its
+        /// would-be repo-relative form, since that would resolve against the wrong remote.
+        /// </summary>
+        [TestMethod]
+        public void ToString_MixedBundle_PrimaryRelativeSecondaryAbsolute()
+        {
+            var map = new SourceMap { File = "app.js", SourceRoot = "https://raw.githubusercontent.com/org/app/sha1/", RepoRoot = @"C:\app\", SecondaryRepoRoot = @"C:\lib\", SecondarySourceRoot = "https://raw.githubusercontent.com/org/lib/sha2/" };
+            map.AddMapping(1, 0, 1, 0, @"C:\app\src\App.cs");
+            map.AddMapping(2, 0, 2, 0, @"C:\lib\src\Lib.cs");
+            string json = map.ToString();
+            // App source → relative path
+            StringAssert.Contains(json, "\"src/App.cs\"");
+            // Library source → absolute URL
+            StringAssert.Contains(json, "\"https://raw.githubusercontent.com/org/lib/sha2/src/Lib.cs\"");
+            // Library source must NOT appear as relative
+            Assert.IsFalse(json.Contains("\"src/Lib.cs\""));
+        }
+
+        /// <summary>
+        /// Safety regression: <see cref="SourceMap.SecondaryRepoRoot"/> on its own (without a
+        /// <see cref="SourceMap.SecondarySourceRoot"/>) must NOT trigger the absolute-URL
+        /// rebase. Without a remote URL there is nothing to prefix, so we fall back to the
+        /// legacy absolutized form — same behaviour as a fully-unconfigured map.
+        /// </summary>
+        [TestMethod]
+        public void ToString_SecondaryRepoRoot_WithoutSecondarySourceRoot_FallsBackToLegacy()
+        {
+            var map = new SourceMap { File = "app.js", SourceRoot = "/sourcemap/app/", RepoRoot = @"C:\app\", SecondaryRepoRoot = @"C:\lib\" /* SecondarySourceRoot intentionally null */ };
+            map.AddMapping(1, 0, 1, 0, @"C:\lib\src\Foo.cs");
+            string json = map.ToString();
+            // Should fall back to AbsolutizeForSources, NOT an absolute https:// URL
+            Assert.IsFalse(json.Contains("https://"));
+        }
+
+        /// <summary>
         /// Repo-rebase preserves the long form unchanged in <c>sourcesLong</c>; only the
         /// browser-facing <c>sources[]</c> array is rebased. This keeps the local-disk
         /// resolution path (used by the ASP.NET Core handler when a file IS available
