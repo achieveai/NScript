@@ -73,6 +73,28 @@
             var rv = new Dictionary<IMethodSymbol, MethodBody>();
             compilation.OnBoundExpressionGenerated = (methodSymbol, boundBody, initializers) =>
             {
+                // WI-93: Skip method bodies that already carry binding errors.
+                // Roslyn still invokes this callback on error-bearing trees, but
+                // walking them surfaces ErrorTypeSymbol / similar shapes that the
+                // serializer can't model. Throwing here short-circuits
+                // Compilation.Emit before it can return its CS-coded diagnostics
+                // — the process crashes instead of producing a clean error.
+                // Returning early lets Roslyn's normal diagnostic flow run.
+                // HasErrors is set only for error-severity nodes (not warnings),
+                // and Emit will still return result.Success == false so the
+                // caller sees the failure.
+                if ((boundBody != null && boundBody.HasErrors) ||
+                    (initializers != null && initializers.HasErrors))
+                {
+                    if (CompilerLog.IsEnabled)
+                    {
+                        CompilerLog.ForComponent("Csc.Serialization").Debug(
+                            "BoundBodySkippedHasErrors {Method}",
+                            methodSymbol?.ToDisplayString());
+                    }
+                    return;
+                }
+
                 var serializer = new BoundAstToAstBase();
                 var methodBody =
                     serializer.GetMethodBody(
