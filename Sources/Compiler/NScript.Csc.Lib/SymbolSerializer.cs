@@ -235,7 +235,23 @@ namespace NScript.Csc.Lib
             }
 
             if (type.Kind != SymbolKind.NamedType)
-            { throw new NotSupportedException(); }
+            {
+                // WI-93: Surface enough context that the next regression in this
+                // arm is identifiable without an instrumentation cycle. Common
+                // ways to reach here include ErrorTypeSymbol (binding error),
+                // FunctionPointerType, and future C# surface (e.g. ref-struct
+                // shapes Roslyn introduces later). The primary HasErrors gate in
+                // SerializationHelper.InjectIntoCompilation suppresses the
+                // ErrorType case; this throw remains a backstop for genuinely
+                // unsupported shapes.
+                throw new NotSupportedException(
+                    string.Format(
+                        "NScript.Csc.Lib.SymbolSerializer.Serialize: unsupported TypeSymbol Kind='{0}', RuntimeType='{1}', FQN='{2}', ContainingType='{3}'.",
+                        type.Kind,
+                        type.GetType().FullName,
+                        type.ToDisplayString(),
+                        type.ContainingType?.ToDisplayString() ?? "<null>"));
+            }
 
             NamedTypeSymbol namedTypeSymbol = (NamedTypeSymbol)type;
 
