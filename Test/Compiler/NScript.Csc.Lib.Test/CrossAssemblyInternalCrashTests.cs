@@ -110,6 +110,90 @@ namespace Consumer
         }
 
         [TestMethod]
+        public void Crash_Regression_FieldInitializerWithBindingError_DoesNotThrow()
+        {
+            // Exercises the `initializers.HasErrors` half of the gate in
+            // SerializationHelper.InjectIntoCompilation. Roslyn dispatches
+            // field initializers through OnBoundExpressionGenerated with
+            // boundBody == null and initializers carrying the binding error,
+            // so this is a structurally different callback invocation from
+            // the method-body path above.
+            const string consumerWithFieldInit = @"
+namespace Consumer
+{
+    public sealed class Widget
+    {
+        private string _name = Producer.Thing.Hello();
+        public string GetName() { return _name; }
+    }
+}";
+            var producer = CompileToBytes(ProducerSourceNoIvt, "Producer");
+            var producerRef = MetadataReference.CreateFromImage(producer);
+            var tree = CSharpSyntaxTree.ParseText(consumerWithFieldInit, path: "consumer.cs");
+            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            var compilation = CSharpCompilation.Create(
+                "Consumer",
+                syntaxTrees: new[] { tree },
+                references: new[] { mscorlib, producerRef },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var outcome = InvokePipeline(compilation);
+
+            Assert.IsNull(
+                outcome.ThrownException,
+                "Field-initializer binding errors must not crash the serializer. WI-93 regression (initializers branch). Thrown: "
+                    + outcome.ThrownException);
+            Assert.IsFalse(outcome.Success, "Emit must report failure when the field initializer fails to bind.");
+            Assert.IsTrue(
+                outcome.Diagnostics.Any(d =>
+                    d.Severity == DiagnosticSeverity.Error
+                    && (d.Id == "CS0117" || d.Id == "CS0122" || d.Id == "CS0103" || d.Id == "CS0246")),
+                "Expected a Roslyn binding-error diagnostic on the field initializer. Actual: "
+                    + string.Join(", ", outcome.Diagnostics.Select(d => d.Id + ":" + d.GetMessage())));
+        }
+
+        [TestMethod]
+        public void Mixed_HealthyAndErroredMethods_CapturesHealthyOnly()
+        {
+            // The HasErrors gate is per-callback (per method body / per
+            // initializer), not per-compilation. A compilation that mixes
+            // one broken method with one clean method must:
+            //  - not throw,
+            //  - surface the Roslyn diagnostic for the broken method,
+            //  - still capture the healthy method's bound body.
+            const string mixedSource = @"
+namespace Mixed
+{
+    public static class A
+    {
+        public static int Healthy(int x) { return x + 1; }
+        public static string Broken() { return Producer.Thing.Hello(); }
+    }
+}";
+            var producer = CompileToBytes(ProducerSourceNoIvt, "Producer");
+            var producerRef = MetadataReference.CreateFromImage(producer);
+            var tree = CSharpSyntaxTree.ParseText(mixedSource, path: "mixed.cs");
+            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            var compilation = CSharpCompilation.Create(
+                "Mixed",
+                syntaxTrees: new[] { tree },
+                references: new[] { mscorlib, producerRef },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var outcome = InvokePipeline(compilation);
+
+            Assert.IsNull(
+                outcome.ThrownException,
+                "Mixed compilation must not throw — the gate is per-callback. Thrown: "
+                    + outcome.ThrownException);
+            Assert.IsFalse(outcome.Success, "Compilation with an unresolved internal call must report failure.");
+            Assert.IsTrue(
+                outcome.MethodCount >= 1,
+                "Healthy method body must still be captured even when a sibling method has binding errors. Captured: "
+                    + outcome.MethodCount);
+        }
+
+        [TestMethod]
         public void Healthy_NoBindingErrors_AllMethodBodiesCaptured()
         {
             // Pin that the HasErrors skip only drops error-bearing bodies.
@@ -187,10 +271,12 @@ namespace Clean
             {
                 var (resources, rv) = SerializationHelper.InjectIntoCompilation(compilation);
                 using var output = new MemoryStream();
-                using var pdb = new MemoryStream();
+                // Skip pdbStream: CSharpSyntaxTree.ParseText defaults to no
+                // encoding, and PDB emission then fails with CS8055 regardless
+                // of HasErrors. The serializer gate is exercised by `Emit`
+                // walking bound bodies — the PDB is incidental.
                 var result = compilation.Emit(
                     output,
-                    pdbStream: pdb,
                     manifestResources: resources);
                 return new PipelineOutcome
                 {
