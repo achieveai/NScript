@@ -31,7 +31,7 @@
       The rest of the toolset stays at 1.1.0 — version bumps and bugs were
       isolated to the compiler tool.
     -->
-    <PackageVersion>1.1.3</PackageVersion>
+    <PackageVersion>1.1.6</PackageVersion>
     <GeneratePackageOnBuild>$(GenerateNScriptPackages)</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
