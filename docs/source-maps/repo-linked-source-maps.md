@@ -72,6 +72,83 @@ The trailing `path=/` lets the appended `sources[i]` substitute as the path
 
 ---
 
+## Zero-Config NuGet Consumer Scenario
+
+When you consume NScript via NuGet (rather than via a local repo checkout), the
+framework NuGet packages — `Mcqdb.NScript.Sunlight.Framework`,
+`…Sunlight.Framework.UI`, `…Sunlight.Framework.Data`, etc. — carry the originating
+Git remote URL + commit SHA + build-machine worktree root inside the package.
+Setting `<RepoLinkedSourceMaps>true</RepoLinkedSourceMaps>` is enough to get
+**framework source files** to resolve to the right
+`https://raw.githubusercontent.com/achieveai/NScript/{sha}/Sources/Framework/…`
+URLs at build time — no `NScriptSecondaryRepoRoot` / `NScriptSecondarySourceMapRoot`
+needed.
+
+```xml
+<PropertyGroup>
+  <GenerateJs>true</GenerateJs>
+  <RepoLinkedSourceMaps>true</RepoLinkedSourceMaps>
+</PropertyGroup>
+```
+
+This works because each framework NuGet ships:
+
+1. A `buildTransitive/<PackageId>.props` file that MSBuild auto-imports when the
+   package is referenced. The .props appends an entry to the shared
+   `@(NScriptPackagesWithRepoMetadata)` item group, recording the package's
+   origin URL, commit SHA, and build-machine repo root.
+2. A `$$NScriptPackageRepo$$` resource embedded in the framework DLL (text key=value
+   payload, parseable via `NScript.CLR.PackageRepoMetadata.TryReadFromAssembly`).
+   This is the carrier of last resort for MSBuild-less tooling.
+
+On the consumer side, `Sdk.targets` runs a small target,
+`ComputeNScriptPackageMetadataFromReferences`, that picks the first entry from
+`@(NScriptPackagesWithRepoMetadata)` and feeds the existing secondary-repo
+metadata pipeline. The result is identical to manually setting
+`NScriptSecondaryRepoRoot` / `NScriptSecondarySourceRepoOriginUrl` /
+`NScriptSecondaryCommitSha` to the right values.
+
+### Inspecting the auto-resolved metadata
+
+The build emits a high-importance log line listing the detected packages and
+the chosen values:
+
+```
+NScript package metadata: auto-resolved from package(s) 'Mcqdb.NScript.Sunlight.Framework;Mcqdb.NScript.Sunlight.Framework.UI;...' — origin='https://github.com/achieveai/NScript.git' sha='b0a4cc6e...' root='B:\sources\NScript'
+```
+
+For deeper debugging, the per-package `buildTransitive` .props also sets diagnostic
+properties named `NScriptPackageOriginUrl_<id>` / `NScriptPackageCommitSha_<id>` /
+`NScriptPackageRepoRoot_<id>` (where `<id>` is the package ID with `.` replaced
+by `_`). You can query any of these via
+`dotnet msbuild -getProperty:NScriptPackageOriginUrl_Mcqdb_NScript_Sunlight_Framework`.
+
+### Manual override still wins
+
+If you set `<NScriptSecondaryRepoRoot>…</NScriptSecondaryRepoRoot>` yourself, the
+auto-resolve target detects that the property is already populated and skips
+entirely — the manual value flows through to the existing
+`ComputeNScriptSecondaryRepoMetadata` regex builder exactly as before. This
+gives you a clean escape hatch for two cases:
+
+- You have a local NScript checkout (e.g. for `dotnet pack`-on-save dev loops)
+  and want source maps to point at uncommitted changes on disk rather than the
+  package's frozen SHA.
+- The package was packed outside a git checkout and shipped without metadata
+  (see below).
+
+### Packages without metadata
+
+If a framework NuGet was built outside a git checkout (corrupted source-only
+ZIP, very old NScript version, etc.), it ships without the
+`buildTransitive` .props and without the embedded DLL resource. The consumer
+build then sees an empty `@(NScriptPackagesWithRepoMetadata)`, the auto-resolve
+target is a no-op, and the build falls back to the legacy local-path source map
+behavior (with the same warning emitted as the no-git-checkout case described
+above). The build never fails because of missing metadata.
+
+---
+
 ## CI Overrides
 
 The MSBuild target prefers explicit values over `git` invocations, so CI can
@@ -186,8 +263,22 @@ follows the redirect using its existing session cookies for the Git provider.
 | `NScriptRepoRoot` | (from `git rev-parse --show-toplevel`) | Override the detected worktree root used to rebase `sources[]`. |
 | `SourceRepoProvider` | `auto` | Force `GitHub` / `AzureDevOps` when auto-detection misfires. |
 | `SourceMapRoot` | (computed) | When already set, the metadata-capture target is skipped entirely — bring-your-own URL workflow. |
+| `NScriptSecondaryRepoRoot` | (auto-detected from `@(NScriptPackagesWithRepoMetadata)`) | Build-machine worktree root of a secondary dependency repo whose source files should resolve to a different `https://` URL. Manual setting wins over auto-detection. |
+| `NScriptSecondarySourceMapRoot` | (computed) | Raw-file base URL for the secondary repo. Auto-derived from origin URL + SHA via the same regex builder used for the primary repo. |
+| `NScriptSecondaryCommitSha` | (auto-detected) | Override the detected secondary commit SHA. |
+| `NScriptSecondarySourceRepoOriginUrl` | (auto-detected) | Override the detected secondary origin URL. |
+| `NScriptSecondaryRepoProvider` | `auto` | Force `GitHub` / `AzureDevOps` when secondary auto-detection misfires. |
 
-The compiler-side flags accepted by the converter are `-sourceMapRoot <url>` and
-`-repoRoot <absolute-path>`. The two are paired: `-repoRoot` is rejected when
+The compiler-side flags accepted by the converter are `-sourceMapRoot <url>`,
+`-repoRoot <absolute-path>`, `-secondarySourceRoot <url>`, and
+`-secondaryRepoRoot <absolute-path>`. The primary pair (`-sourceMapRoot` +
+`-repoRoot`) is required for any repo-linked source map; the secondary pair is
+optional and enables multi-repo emission. `-repoRoot` is rejected when
 `-sourceMapRoot` is absent, since rebasing `sources[]` only makes sense when
 combined with a non-local URL.
+
+`@(NScriptPackagesWithRepoMetadata)` is the item group that the auto-resolve
+target enumerates. Each entry has `OriginUrl`, `CommitSha`, and `RepoRoot`
+metadata and is `Include`'d by its source package's `PackageId`. Inspect with
+`<Message Text="@(NScriptPackagesWithRepoMetadata->'%(Identity): %(OriginUrl) @ %(CommitSha) under %(RepoRoot)')"/>`
+in your project for debugging.
