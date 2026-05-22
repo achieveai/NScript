@@ -211,6 +211,24 @@ namespace NScript.Csc.Lib
                 { PointedAtType = GetTypeSpecSer(((PointerTypeSymbol)type).PointedAtType) };
             }
 
+            if (type.Kind == SymbolKind.ErrorType)
+            {
+                // WI-94: An ErrorTypeSymbol reaches here when a method signature
+                // (param/return type) cannot be resolved (e.g. CS0246 unknown
+                // type). The body-level HasErrors gate in
+                // SerializationHelper.InjectIntoCompilation does not catch this
+                // because the owning method's body may bind cleanly. Returning
+                // a placeholder lets Roslyn finish emit; Emit() then reports
+                // Success=false with the underlying diagnostics, instead of
+                // crashing with NotSupportedException deep inside our hook.
+                return new TypeSpecSer
+                {
+                    Name = "<error>",
+                    Namespace = null,
+                    Module = null
+                };
+            }
+
             if (type.ContainingModule == null)
             {
                 return new TypeSpecSer
@@ -236,14 +254,14 @@ namespace NScript.Csc.Lib
 
             if (type.Kind != SymbolKind.NamedType)
             {
-                // WI-93: Surface enough context that the next regression in this
-                // arm is identifiable without an instrumentation cycle. Common
-                // ways to reach here include ErrorTypeSymbol (binding error),
-                // FunctionPointerType, and future C# surface (e.g. ref-struct
-                // shapes Roslyn introduces later). The primary HasErrors gate in
-                // SerializationHelper.InjectIntoCompilation suppresses the
-                // ErrorType case; this throw remains a backstop for genuinely
-                // unsupported shapes.
+                // WI-93/WI-94: Surface enough context that the next regression
+                // in this arm is identifiable without an instrumentation cycle.
+                // ErrorTypeSymbol is handled by the dedicated arm above; the
+                // body-level HasErrors path is filtered in
+                // SerializationHelper.InjectIntoCompilation. This throw remains
+                // a backstop for genuinely unsupported shapes such as
+                // FunctionPointerType or future C# surface (e.g. new ref-struct
+                // shapes Roslyn may introduce).
                 throw new NotSupportedException(
                     string.Format(
                         "NScript.Csc.Lib.SymbolSerializer.Serialize: unsupported TypeSymbol Kind='{0}', RuntimeType='{1}', FQN='{2}', ContainingType='{3}'.",
