@@ -1,6 +1,16 @@
 <Project>
   <Import
     Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
+
+  <!--
+    Embed NScript repo metadata (origin URL, commit SHA, worktree root) into each
+    framework NuGet so consuming apps can produce repo-linked source maps for
+    framework code with zero `NScriptSecondary*` configuration. See the targets
+    file's header comment and `docs/source-maps/repo-linked-source-maps.md` for
+    the consumer-side flow. (Work item #97.)
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)NScript.PackageMetadata.targets" />
+
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

@@ -1,0 +1,231 @@
+<Project>
+  <!--
+    Captures the NScript repo's git metadata (origin URL, commit SHA, worktree root)
+    at framework pack time and embeds it into every framework NuGet via TWO carriers:
+
+      1. `buildTransitive/$(PackageId).props` (auto-imported by the consumer's MSBuild
+         when the package is referenced). Sets per-package properties
+         NScriptPackageOriginUrl_<SafeId> / NScriptPackageCommitSha_<SafeId> /
+         NScriptPackageRepoRoot_<SafeId>, AND appends an entry to the shared
+         @(NScriptPackagesWithRepoMetadata) item group that the SDK consumer-side
+         target enumerates.
+
+      2. `$$NScriptPackageRepo$$` resource embedded in the framework DLL — mirrors
+         the existing $$BstInfo$$ / $$ResInfo$$ pattern. Contains the same three
+         values in a simple key=value text format so MSBuild-less tooling
+         (e.g. a future standalone cs2jsc invocation) can recover the metadata
+         directly from the assembly via Mono.Cecil.
+
+    Both carriers are populated by the same MSBuild target so they cannot disagree.
+    If git metadata cannot be captured (e.g. building outside a checkout), the
+    target emits a warning, skips both writes, and the build continues without
+    failure — the consumer build will fall back to the legacy local-path behavior
+    for framework source map entries.
+
+    Property derivation order:
+
+      All file-path and SafeId properties are computed INSIDE the target body
+      rather than at project load. Top-level PropertyGroups in this file get
+      evaluated when Directory.Build.props imports it — at that point the
+      framework csproj hasn't been read yet, so $(PackageId) and the SDK's
+      $(IntermediateOutputPath) are both empty. Evaluating inside the target
+      defers until both are populated.
+
+    The target is wired into the build by importing this file from
+    Sources/Framework/Directory.Build.props so all 11 framework projects pick it
+    up with zero per-project changes.
+
+    Companion: Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets's
+    ComputeNScriptPackageMetadataFromReferences target consumes
+    @(NScriptPackagesWithRepoMetadata) on the consumer side.
+  -->
+
+  <!--
+    BeforeTargets sequencing — critical for the EmbeddedResource flow:
+      * `_GenerateCompileInputs` (in Microsoft.Common.CurrentVersion.targets) is
+        what populates @(_CoreCompileResourceInputs) from @(EmbeddedResource),
+        and Csc's `Resources=` parameter reads that list. We must add our
+        EmbeddedResource items BEFORE that target runs, otherwise the dynamic
+        addition is invisible to csc and the resource never lands in the DLL.
+      * `CoreCompile` is the obvious target the resource needs to reach.
+      * `GenerateNuspec` runs after build; without ordering before it, the
+        `<None Pack="true">` item would not be discovered in time for Pack.
+  -->
+  <Target Name="CaptureNScriptPackageRepoMetadata"
+          BeforeTargets="_GenerateCompileInputs;CoreCompile;GenerateNuspec"
+          Condition="'$(_NScriptPackageMetadataCaptured)' != 'true' and '$(PackageId)' != ''">
+
+    <!--
+      In-target property derivation — evaluated NOW (target invocation time) so the
+      framework csproj's PackageId and the SDK's IntermediateOutputPath are both set.
+      PackageId contains '.' (e.g. Mcqdb.NScript.Sunlight.Framework) which is illegal
+      in MSBuild property identifiers, so the SafeId form replaces '.' with '_' for
+      use as the per-id property suffix in the generated buildTransitive props.
+    -->
+    <PropertyGroup>
+      <_NScriptPackageMetadataDir>$(IntermediateOutputPath)</_NScriptPackageMetadataDir>
+      <_NScriptPackageRepoBinFile>$(_NScriptPackageMetadataDir)$(PackageId).repo.bin</_NScriptPackageRepoBinFile>
+      <_NScriptPackageBuildTransitivePropsFile>$(_NScriptPackageMetadataDir)$(PackageId).repo.buildTransitive.props</_NScriptPackageBuildTransitivePropsFile>
+      <_NScriptPkgIdSafe>$(PackageId.Replace('.', '_'))</_NScriptPkgIdSafe>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_NScriptPackageMetadataDir)" />
+
+    <!--
+      All three git calls run from $(NScriptRoot) (the worktree top, set by the
+      repo's root Directory.Build.props). Each tolerates failure so a build
+      outside a working tree (CI cache restore, source-only ZIP) emits a warning
+      and produces a metadata-less package rather than failing.
+
+      Mirrors the redaction logic from Sdk.targets's ComputeNScriptRepoMetadata —
+      strip credentials from the origin URL before persisting OR echoing. The
+      redacted value is the one written into the .repo.bin payload and the
+      buildTransitive .props carrier (see below), so a stray PAT or password in
+      a developer-machine origin URL cannot leak into a published NuGet artifact.
+    -->
+    <Exec Command="git remote get-url origin"
+          WorkingDirectory="$(NScriptRoot)"
+          ConsoleToMSBuild="true"
+          EchoOff="true"
+          IgnoreExitCode="true"
+          ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_NScriptPkgOriginRaw" />
+    </Exec>
+
+    <Exec Command="git rev-parse HEAD"
+          WorkingDirectory="$(NScriptRoot)"
+          ConsoleToMSBuild="true"
+          EchoOff="true"
+          IgnoreExitCode="true"
+          ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_NScriptPkgShaRaw" />
+    </Exec>
+
+    <Exec Command="git rev-parse --show-toplevel"
+          WorkingDirectory="$(NScriptRoot)"
+          ConsoleToMSBuild="true"
+          EchoOff="true"
+          IgnoreExitCode="true"
+          ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_NScriptPkgRootRaw" />
+    </Exec>
+
+    <!--
+      `_NScriptPkgOriginRedacted` is load-bearing — it is the value embedded into
+      BOTH the .repo.bin payload and the buildTransitive .props carrier below.
+      Credentials in a `https://user:token@host/...` origin URL would otherwise
+      ship inside the published NuGet, so the regex strip MUST happen before we
+      write either artifact. For URLs without embedded credentials the regex is
+      a no-op, so this is a safe drop-in. The raw `_NScriptPkgOrigin` is still
+      kept for the availability check (avoids re-evaluating regex output as a
+      precondition) and for the regex input itself — never echoed or persisted.
+    -->
+    <PropertyGroup>
+      <_NScriptPkgOrigin Condition="'$(_NScriptPkgOriginRaw)' != ''">$(_NScriptPkgOriginRaw.Trim())</_NScriptPkgOrigin>
+      <_NScriptPkgSha Condition="'$(_NScriptPkgShaRaw)' != ''">$(_NScriptPkgShaRaw.Trim())</_NScriptPkgSha>
+      <_NScriptPkgRoot Condition="'$(_NScriptPkgRootRaw)' != ''">$(_NScriptPkgRootRaw.Trim())</_NScriptPkgRoot>
+      <_NScriptPkgOriginRedacted Condition="'$(_NScriptPkgOrigin)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(_NScriptPkgOrigin)', '://[^/@]+@', '://***@'))</_NScriptPkgOriginRedacted>
+      <_NScriptPkgMetadataAvailable>false</_NScriptPkgMetadataAvailable>
+      <_NScriptPkgMetadataAvailable Condition="'$(_NScriptPkgOrigin)' != '' and '$(_NScriptPkgSha)' != '' and '$(_NScriptPkgRoot)' != ''">true</_NScriptPkgMetadataAvailable>
+    </PropertyGroup>
+
+    <Warning Text="$(PackageId): NScript package repo metadata could not be captured (origin='$(_NScriptPkgOriginRedacted)' sha='$(_NScriptPkgSha)' root='$(_NScriptPkgRoot)'). Consumer builds will not auto-resolve framework source-map URLs from this package."
+             Condition="'$(_NScriptPkgMetadataAvailable)' != 'true'" />
+
+    <!--
+      .repo.bin payload — simple key=value text, one pair per line. Keep this
+      format stable: PackageRepoMetadata.cs (NScript.CLR) parses it, and a
+      schema change here means a schema change there. New keys can be appended;
+      unknown keys are tolerated by the parser.
+    -->
+    <ItemGroup Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'">
+      <_NScriptPkgBinLines Include="originUrl=$(_NScriptPkgOriginRedacted)" />
+      <_NScriptPkgBinLines Include="commitSha=$(_NScriptPkgSha)" />
+      <_NScriptPkgBinLines Include="repoRoot=$(_NScriptPkgRoot)" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(_NScriptPackageRepoBinFile)"
+                      Lines="@(_NScriptPkgBinLines)"
+                      Overwrite="true"
+                      Encoding="utf-8"
+                      Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'" />
+
+    <!--
+      buildTransitive props payload. Built line-by-line via an ItemGroup so each
+      line is written cleanly with platform-correct line endings. Sets per-id
+      properties (useful for diagnostic inspection: `dotnet msbuild
+      -getProperty:NScriptPackageOriginUrl_Mcqdb_NScript_Sunlight_Framework`)
+      AND appends to @(NScriptPackagesWithRepoMetadata) for the consumer-side
+      enumeration target.
+
+      MSBuild Include attribute values normalize leading/trailing whitespace, so
+      pretty-print indentation is intentionally omitted — the resulting .props
+      is still valid XML, just without visual nesting.
+
+      The angle-bracket / less-than escapes (`&lt;` / `&gt;`) are XML escapes for
+      this outer file; once MSBuild writes them out via WriteLinesToFile they
+      become literal `&lt;` / `&gt;` characters in the generated .props.
+    -->
+    <ItemGroup Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'">
+      <_NScriptPkgPropsLines Include="&lt;Project&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;PropertyGroup&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;NScriptPackageOriginUrl_$(_NScriptPkgIdSafe)&gt;$(_NScriptPkgOriginRedacted)&lt;/NScriptPackageOriginUrl_$(_NScriptPkgIdSafe)&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;NScriptPackageCommitSha_$(_NScriptPkgIdSafe)&gt;$(_NScriptPkgSha)&lt;/NScriptPackageCommitSha_$(_NScriptPkgIdSafe)&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;NScriptPackageRepoRoot_$(_NScriptPkgIdSafe)&gt;$(_NScriptPkgRoot)&lt;/NScriptPackageRepoRoot_$(_NScriptPkgIdSafe)&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;/PropertyGroup&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;ItemGroup&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;NScriptPackagesWithRepoMetadata Include=&quot;$(PackageId)&quot;&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;OriginUrl&gt;$(_NScriptPkgOriginRedacted)&lt;/OriginUrl&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;CommitSha&gt;$(_NScriptPkgSha)&lt;/CommitSha&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;RepoRoot&gt;$(_NScriptPkgRoot)&lt;/RepoRoot&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;/NScriptPackagesWithRepoMetadata&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;/ItemGroup&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;/Project&gt;" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(_NScriptPackageBuildTransitivePropsFile)"
+                      Lines="@(_NScriptPkgPropsLines)"
+                      Overwrite="true"
+                      Encoding="utf-8"
+                      Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'" />
+
+    <!--
+      Add the embedded resource and Pack item dynamically inside the target so
+      the conditional-on-Exists check sees the freshly written file. Standard
+      csc honors EmbeddedResource items regardless of NScript's csc fork, so
+      the resource ends up inside the DLL through the normal compile pipeline.
+
+      LogicalName uses `$$` directly — MSBuild's property expansion needs
+      `$(name)`; bare `$$` passes through verbatim into csc, matching the
+      $$BstInfo$$ / $$ResInfo$$ naming convention.
+
+      Type=Non-Resx and WithCulture=false are normally set by SplitResourcesByCulture
+      (a PrepareResourceNames dependency) — but that target has already run by the
+      time we add items here, so SetExplicit metadata to satisfy the
+      `_GenerateCompileInputs` condition
+      `'%(EmbeddedResource.WithCulture)' == 'false' and '%(EmbeddedResource.Type)' == 'Non-Resx'`
+      that filters @(EmbeddedResource) into @(_CoreCompileResourceInputs).
+      Without these tags, the item is silently filtered out and never reaches csc.
+    -->
+    <ItemGroup Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'">
+      <EmbeddedResource Include="$(_NScriptPackageRepoBinFile)"
+                        LogicalName="$$NScriptPackageRepo$$"
+                        Visible="false">
+        <Type>Non-Resx</Type>
+        <WithCulture>false</WithCulture>
+      </EmbeddedResource>
+      <None Include="$(_NScriptPackageBuildTransitivePropsFile)"
+            Pack="true"
+            PackagePath="buildTransitive/$(PackageId).props"
+            Visible="false" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_NScriptPackageMetadataCaptured>true</_NScriptPackageMetadataCaptured>
+    </PropertyGroup>
+
+    <Message Text="$(PackageId): captured repo metadata origin='$(_NScriptPkgOriginRedacted)' sha='$(_NScriptPkgSha)' root='$(_NScriptPkgRoot)'"
+             Importance="normal"
+             Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'" />
+  </Target>
+</Project>

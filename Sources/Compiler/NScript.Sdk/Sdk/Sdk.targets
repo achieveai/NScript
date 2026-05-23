@@ -147,6 +147,68 @@
 	</Target>
 
 	<!--
+	  Zero-config consumer flow for framework source maps: when a referenced NScript framework
+	  NuGet ships a `buildTransitive/<PackageId>.props` carrying repo metadata (see
+	  `Sources/Framework/NScript.PackageMetadata.targets` on the framework side and work
+	  item #97), MSBuild auto-imports the .props and appends to
+	  @(NScriptPackagesWithRepoMetadata). This target reads the first such entry and
+	  feeds NScriptSecondaryRepoRoot / NScriptSecondaryCommitSha /
+	  NScriptSecondarySourceRepoOriginUrl, which the existing
+	  `ComputeNScriptSecondaryRepoMetadata` target (below) then turns into the secondary
+	  raw-file URL via the same regex builder used for the primary repo.
+
+	  Runs only when:
+	    * RepoLinkedSourceMaps=true        — opt-in master switch.
+	    * NScriptSecondaryRepoRoot is empty — manual override (consumer set
+	      NScriptSecondaryRepoRoot themselves) skips this target entirely.
+
+	  If no framework package shipped metadata (e.g. consumer references an older NScript
+	  build, or the package was packed outside a git checkout) the item group is empty and
+	  the target is a no-op — graceful fallback to legacy local-path source map behavior.
+
+	  All framework packages built together share identical metadata (same NScript SHA),
+	  so picking the first entry is safe; the auditing Message lists every detected entry
+	  so a consumer can spot mismatches if multiple NScript versions ever appear.
+	-->
+	<Target Name="ComputeNScriptPackageMetadataFromReferences"
+	        Condition="'$(RepoLinkedSourceMaps)' == 'true'
+	                   and '$(NScriptSecondaryRepoRoot)' == ''
+	                   and '@(NScriptPackagesWithRepoMetadata)' != ''"
+	        BeforeTargets="ComputeNScriptSecondaryRepoMetadata">
+
+		<PropertyGroup>
+			<!--
+			  ItemGroup metadata access via MSBuild item batching: the
+			  `%(NScriptPackagesWithRepoMetadata.OriginUrl)` form would batch the target;
+			  we want one shot, first-wins, so capture via the item identity flattening
+			  helper `@(...->'%(...)', ';')` and split on the leading entry below.
+			-->
+			<_NScriptPkgRefOriginUrls>@(NScriptPackagesWithRepoMetadata->'%(OriginUrl)', '|')</_NScriptPkgRefOriginUrls>
+			<_NScriptPkgRefCommitShas>@(NScriptPackagesWithRepoMetadata->'%(CommitSha)', '|')</_NScriptPkgRefCommitShas>
+			<_NScriptPkgRefRepoRoots>@(NScriptPackagesWithRepoMetadata->'%(RepoRoot)', '|')</_NScriptPkgRefRepoRoots>
+
+			<!-- First-entry split: take substring up to the first '|' separator. -->
+			<_NScriptPkgRefFirstOriginUrl Condition="$(_NScriptPkgRefOriginUrls.Contains('|'))">$(_NScriptPkgRefOriginUrls.Substring(0, $(_NScriptPkgRefOriginUrls.IndexOf('|'))))</_NScriptPkgRefFirstOriginUrl>
+			<_NScriptPkgRefFirstOriginUrl Condition="!$(_NScriptPkgRefOriginUrls.Contains('|'))">$(_NScriptPkgRefOriginUrls)</_NScriptPkgRefFirstOriginUrl>
+			<_NScriptPkgRefFirstCommitSha Condition="$(_NScriptPkgRefCommitShas.Contains('|'))">$(_NScriptPkgRefCommitShas.Substring(0, $(_NScriptPkgRefCommitShas.IndexOf('|'))))</_NScriptPkgRefFirstCommitSha>
+			<_NScriptPkgRefFirstCommitSha Condition="!$(_NScriptPkgRefCommitShas.Contains('|'))">$(_NScriptPkgRefCommitShas)</_NScriptPkgRefFirstCommitSha>
+			<_NScriptPkgRefFirstRepoRoot Condition="$(_NScriptPkgRefRepoRoots.Contains('|'))">$(_NScriptPkgRefRepoRoots.Substring(0, $(_NScriptPkgRefRepoRoots.IndexOf('|'))))</_NScriptPkgRefFirstRepoRoot>
+			<_NScriptPkgRefFirstRepoRoot Condition="!$(_NScriptPkgRefRepoRoots.Contains('|'))">$(_NScriptPkgRefRepoRoots)</_NScriptPkgRefFirstRepoRoot>
+
+			<!-- Feed the existing secondary-metadata pipeline. -->
+			<NScriptSecondaryRepoRoot Condition="'$(_NScriptPkgRefFirstRepoRoot)' != ''">$(_NScriptPkgRefFirstRepoRoot)</NScriptSecondaryRepoRoot>
+			<NScriptSecondaryCommitSha Condition="'$(NScriptSecondaryCommitSha)' == '' and '$(_NScriptPkgRefFirstCommitSha)' != ''">$(_NScriptPkgRefFirstCommitSha)</NScriptSecondaryCommitSha>
+			<NScriptSecondarySourceRepoOriginUrl Condition="'$(NScriptSecondarySourceRepoOriginUrl)' == '' and '$(_NScriptPkgRefFirstOriginUrl)' != ''">$(_NScriptPkgRefFirstOriginUrl)</NScriptSecondarySourceRepoOriginUrl>
+
+			<_NScriptPkgRefFirstOriginRedacted Condition="'$(_NScriptPkgRefFirstOriginUrl)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(_NScriptPkgRefFirstOriginUrl)', '://[^/@]+@', '://***@'))</_NScriptPkgRefFirstOriginRedacted>
+		</PropertyGroup>
+
+		<Message Importance="high"
+		         Text="NScript package metadata: auto-resolved from package(s) '@(NScriptPackagesWithRepoMetadata)' — origin='$(_NScriptPkgRefFirstOriginRedacted)' sha='$(_NScriptPkgRefFirstCommitSha)' root='$(_NScriptPkgRefFirstRepoRoot)'"
+		         Condition="'$(NScriptSecondaryRepoRoot)' != ''" />
+	</Target>
+
+	<!--
 	  Resolves the secondary/dependency repo's raw-file base URL for multi-repo source map
 	  support. Runs only when RepoLinkedSourceMaps=true, the primary SourceMapRoot is already
 	  resolved, AND NScriptSecondaryRepoRoot is provided. Tolerates missing git metadata the
