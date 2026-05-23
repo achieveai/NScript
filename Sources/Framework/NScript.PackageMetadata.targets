@@ -78,8 +78,10 @@
       and produces a metadata-less package rather than failing.
 
       Mirrors the redaction logic from Sdk.targets's ComputeNScriptRepoMetadata —
-      strip credentials from the origin URL before echoing into build logs so a
-      stray PAT or password doesn't end up in CI artifacts.
+      strip credentials from the origin URL before persisting OR echoing. The
+      redacted value is the one written into the .repo.bin payload and the
+      buildTransitive .props carrier (see below), so a stray PAT or password in
+      a developer-machine origin URL cannot leak into a published NuGet artifact.
     -->
     <Exec Command="git remote get-url origin"
           WorkingDirectory="$(NScriptRoot)"
@@ -108,6 +110,16 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="_NScriptPkgRootRaw" />
     </Exec>
 
+    <!--
+      `_NScriptPkgOriginRedacted` is load-bearing — it is the value embedded into
+      BOTH the .repo.bin payload and the buildTransitive .props carrier below.
+      Credentials in a `https://user:token@host/...` origin URL would otherwise
+      ship inside the published NuGet, so the regex strip MUST happen before we
+      write either artifact. For URLs without embedded credentials the regex is
+      a no-op, so this is a safe drop-in. The raw `_NScriptPkgOrigin` is still
+      kept for the availability check (avoids re-evaluating regex output as a
+      precondition) and for the regex input itself — never echoed or persisted.
+    -->
     <PropertyGroup>
       <_NScriptPkgOrigin Condition="'$(_NScriptPkgOriginRaw)' != ''">$(_NScriptPkgOriginRaw.Trim())</_NScriptPkgOrigin>
       <_NScriptPkgSha Condition="'$(_NScriptPkgShaRaw)' != ''">$(_NScriptPkgShaRaw.Trim())</_NScriptPkgSha>
@@ -127,7 +139,7 @@
       unknown keys are tolerated by the parser.
     -->
     <ItemGroup Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'">
-      <_NScriptPkgBinLines Include="originUrl=$(_NScriptPkgOrigin)" />
+      <_NScriptPkgBinLines Include="originUrl=$(_NScriptPkgOriginRedacted)" />
       <_NScriptPkgBinLines Include="commitSha=$(_NScriptPkgSha)" />
       <_NScriptPkgBinLines Include="repoRoot=$(_NScriptPkgRoot)" />
     </ItemGroup>
@@ -157,13 +169,13 @@
     <ItemGroup Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'">
       <_NScriptPkgPropsLines Include="&lt;Project&gt;" />
       <_NScriptPkgPropsLines Include="&lt;PropertyGroup&gt;" />
-      <_NScriptPkgPropsLines Include="&lt;NScriptPackageOriginUrl_$(_NScriptPkgIdSafe)&gt;$(_NScriptPkgOrigin)&lt;/NScriptPackageOriginUrl_$(_NScriptPkgIdSafe)&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;NScriptPackageOriginUrl_$(_NScriptPkgIdSafe)&gt;$(_NScriptPkgOriginRedacted)&lt;/NScriptPackageOriginUrl_$(_NScriptPkgIdSafe)&gt;" />
       <_NScriptPkgPropsLines Include="&lt;NScriptPackageCommitSha_$(_NScriptPkgIdSafe)&gt;$(_NScriptPkgSha)&lt;/NScriptPackageCommitSha_$(_NScriptPkgIdSafe)&gt;" />
       <_NScriptPkgPropsLines Include="&lt;NScriptPackageRepoRoot_$(_NScriptPkgIdSafe)&gt;$(_NScriptPkgRoot)&lt;/NScriptPackageRepoRoot_$(_NScriptPkgIdSafe)&gt;" />
       <_NScriptPkgPropsLines Include="&lt;/PropertyGroup&gt;" />
       <_NScriptPkgPropsLines Include="&lt;ItemGroup&gt;" />
       <_NScriptPkgPropsLines Include="&lt;NScriptPackagesWithRepoMetadata Include=&quot;$(PackageId)&quot;&gt;" />
-      <_NScriptPkgPropsLines Include="&lt;OriginUrl&gt;$(_NScriptPkgOrigin)&lt;/OriginUrl&gt;" />
+      <_NScriptPkgPropsLines Include="&lt;OriginUrl&gt;$(_NScriptPkgOriginRedacted)&lt;/OriginUrl&gt;" />
       <_NScriptPkgPropsLines Include="&lt;CommitSha&gt;$(_NScriptPkgSha)&lt;/CommitSha&gt;" />
       <_NScriptPkgPropsLines Include="&lt;RepoRoot&gt;$(_NScriptPkgRoot)&lt;/RepoRoot&gt;" />
       <_NScriptPkgPropsLines Include="&lt;/NScriptPackagesWithRepoMetadata&gt;" />

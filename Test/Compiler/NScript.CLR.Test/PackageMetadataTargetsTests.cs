@@ -131,6 +131,68 @@ namespace NScript.CLR.Test
         }
 
         [TestMethod]
+        public void FrameworkTargets_EmbedsRedactedOriginUrlNotRaw()
+        {
+            // PR #98 review feedback (credential leak — MEDIUM): the redaction
+            // regex (`://[^/@]+@` -> `://***@`) must be applied to the value
+            // written into BOTH carriers (`.repo.bin` Lines and the
+            // buildTransitive `.props` body), not just the build log message.
+            // A stray PAT or password in a developer's `git remote get-url origin`
+            // would otherwise ship inside the published NuGet.
+            //
+            // This test asserts the structural invariant by inspecting every
+            // `_NScriptPkgBinLines` and `_NScriptPkgPropsLines` item declaration:
+            //   - Each Include value must NOT contain a raw `$(_NScriptPkgOrigin)`
+            //     reference (which would emit credentials verbatim).
+            //   - At least one bin line and one props line MUST reference
+            //     `$(_NScriptPkgOriginRedacted)` so we don't regress to "never
+            //     emits origin at all".
+            //
+            // The raw `_NScriptPkgOrigin` property is allowed to exist elsewhere
+            // (it is the input to the redaction regex and gates the
+            // _NScriptPkgMetadataAvailable check) — only the persisted Include
+            // values are constrained.
+            var doc = LoadFrameworkPackageMetadataTargets();
+
+            var binIncludes = doc.Descendants("_NScriptPkgBinLines")
+                .Select(e => (string)e.Attribute("Include") ?? string.Empty)
+                .ToList();
+            var propsIncludes = doc.Descendants("_NScriptPkgPropsLines")
+                .Select(e => (string)e.Attribute("Include") ?? string.Empty)
+                .ToList();
+
+            Assert.IsTrue(binIncludes.Count > 0,
+                "Expected at least one _NScriptPkgBinLines Include in the targets file");
+            Assert.IsTrue(propsIncludes.Count > 0,
+                "Expected at least one _NScriptPkgPropsLines Include in the targets file");
+
+            foreach (var include in binIncludes)
+            {
+                Assert.IsFalse(
+                    System.Text.RegularExpressions.Regex.IsMatch(include, @"\$\(_NScriptPkgOrigin\)"),
+                    $"_NScriptPkgBinLines Include leaks raw origin URL into .repo.bin: '{include}'. " +
+                    "Use $(_NScriptPkgOriginRedacted) instead — see PR #98 review.");
+            }
+
+            foreach (var include in propsIncludes)
+            {
+                Assert.IsFalse(
+                    System.Text.RegularExpressions.Regex.IsMatch(include, @"\$\(_NScriptPkgOrigin\)"),
+                    $"_NScriptPkgPropsLines Include leaks raw origin URL into buildTransitive props: '{include}'. " +
+                    "Use $(_NScriptPkgOriginRedacted) instead — see PR #98 review.");
+            }
+
+            Assert.IsTrue(
+                binIncludes.Any(i => i.Contains("$(_NScriptPkgOriginRedacted)")),
+                "Expected at least one _NScriptPkgBinLines Include to embed $(_NScriptPkgOriginRedacted) — " +
+                "the .repo.bin payload must carry the origin URL (redacted).");
+            Assert.IsTrue(
+                propsIncludes.Any(i => i.Contains("$(_NScriptPkgOriginRedacted)")),
+                "Expected at least one _NScriptPkgPropsLines Include to embed $(_NScriptPkgOriginRedacted) — " +
+                "the buildTransitive .props must carry the origin URL (redacted).");
+        }
+
+        [TestMethod]
         public void SdkTargets_DefineAutoResolveTargetBeforeSecondaryRepoMetadata()
         {
             // ComputeNScriptPackageMetadataFromReferences sets NScriptSecondaryRepoRoot

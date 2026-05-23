@@ -261,6 +261,29 @@ namespace NScript.CLR.Test
         }
 
         [TestMethod]
+        public void TryParse_RedactedOriginUrl_PreservedAsIs()
+        {
+            // After PR #98 review feedback, the pack-time target redacts the origin URL
+            // via the same `://[^/@]+@` -> `://***@` regex used for log output, BEFORE
+            // embedding into the .bin and buildTransitive .props. The parser must
+            // accept the redacted form unchanged (i.e. not try to "un-redact" or
+            // reject it) — `***` is a perfectly valid URL component as far as the
+            // text format is concerned, and the parser stays format-agnostic about
+            // the URL contents.
+            string text =
+                "originUrl=https://***@github.com/achieveai/NScript.git\n" +
+                "commitSha=sha\n" +
+                "repoRoot=/r\n";
+
+            var meta = PackageRepoMetadata.TryParse(text);
+
+            Assert.IsNotNull(meta);
+            Assert.AreEqual("https://***@github.com/achieveai/NScript.git", meta.OriginUrl);
+            Assert.AreEqual("sha", meta.CommitSha);
+            Assert.AreEqual("/r", meta.RepoRoot);
+        }
+
+        [TestMethod]
         public void TryReadFromAssembly_NonexistentPath_ReturnsNull()
         {
             // Defensive: a stale references list pointing to a missing DLL should

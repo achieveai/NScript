@@ -52,11 +52,23 @@ namespace NScript.CLR
 
         /// <summary>
         /// Git remote URL captured at pack time (output of
-        /// <c>git remote get-url origin</c>). May contain credentials in the
-        /// <c>https://user:token@host/...</c> form on machines where developers have
-        /// configured them locally; callers that surface this value into logs MUST
-        /// apply the <c>://creds@</c> redaction used elsewhere in the SDK.
+        /// <c>git remote get-url origin</c>), with embedded credentials stripped
+        /// to the <c>https://***@host/...</c> form before being persisted into the
+        /// <c>$$NScriptPackageRepo$$</c> resource. The redaction happens at pack
+        /// time inside <c>NScript.PackageMetadata.targets</c> (see the
+        /// <c>_NScriptPkgOriginRedacted</c> property and the
+        /// <c>://[^/@]+@</c> regex), so the value read here is safe to log and
+        /// safe to ship to other tooling without further filtering.
         /// </summary>
+        /// <remarks>
+        /// Defensive note for future producers: any new path that emits this
+        /// value into a published NuGet artifact (resource, props file, etc.)
+        /// MUST keep this pre-redaction invariant. Do not introduce a raw-URL
+        /// emit branch — a stray PAT or password in a developer-machine origin
+        /// URL would otherwise ship inside the package. The structural test
+        /// <c>FrameworkTargets_EmbedsRedactedOriginUrlNotRaw</c> in
+        /// <c>PackageMetadataTargetsTests</c> guards the MSBuild side of this.
+        /// </remarks>
         public string OriginUrl { get; }
 
         /// <summary>
