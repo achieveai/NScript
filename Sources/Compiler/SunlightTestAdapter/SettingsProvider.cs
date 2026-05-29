@@ -18,6 +18,7 @@ public class SettingsProvider : ISettingsProvider
         {
             JsFilePath = ReadFirstText(xml, Constants.JsFilePathStr),
             TestSourceAssembly = ReadFirstText(xml, Constants.TestSourceAssemblyStr),
+            LogEndpoint = ReadFirstText(xml, Constants.LogEndpointStr),
         };
     }
 
