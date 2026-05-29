@@ -91,6 +91,21 @@
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)Sunlight.TestAdapter.dll" PackagePath="build\net8.0\" />
       <TfmSpecificPackageFile Include="$(OutputPath)Sunlight.TestAdapter.pdb" PackagePath="build\net8.0\" Condition="Exists('$(OutputPath)Sunlight.TestAdapter.pdb')" />
+      <!--
+        Bundle the ingest-host runtime deps alongside the adapter so a
+        consumer that sets <LogEndpoint> in their runsettings gets all
+        of Sunlight.Logging.Server + Serilog wired in transparently.
+        Without this, the adapter would resolve Sunlight.Logging.Server
+        from its own bin/ but the Serilog packages would be missing
+        (we marked them PrivateAssets="all" to keep them out of the
+        package dependency list — the trade-off is that we ship them
+        ourselves here, the same pattern xunit.runner.visualstudio uses).
+        Glob the Serilog DLLs so a future Serilog version bump doesn't
+        require touching this list.
+      -->
+      <TfmSpecificPackageFile Include="$(OutputPath)Sunlight.Logging.Server.dll" PackagePath="build\net8.0\" />
+      <TfmSpecificPackageFile Include="$(OutputPath)Sunlight.Logging.Server.pdb" PackagePath="build\net8.0\" Condition="Exists('$(OutputPath)Sunlight.Logging.Server.pdb')" />
+      <TfmSpecificPackageFile Include="$(OutputPath)Serilog*.dll" PackagePath="build\net8.0\" />
     </ItemGroup>
   </Target>
 
