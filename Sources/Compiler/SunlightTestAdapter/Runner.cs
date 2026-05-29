@@ -2,6 +2,7 @@ namespace SunlightTestAdapter;
 
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
@@ -14,10 +15,37 @@ public class TestRunner
     private const string IndexPath = "/index.html";
 
     private readonly string _jsFilePath;
+    private readonly string? _kestrelBaseUrl;
+    private readonly ILogger _logger;
 
+    /// <summary>
+    /// Backwards-compatible constructor: when no <c>kestrelBaseUrl</c>
+    /// is given, the runner stays on today's Playwright-route static
+    /// serving path. Used when <c>Settings.LogEndpoint</c> is unset.
+    /// </summary>
     public TestRunner(string jsFilePath)
+        : this(jsFilePath, kestrelBaseUrl: null, logger: NullLogger.Instance)
+    {
+    }
+
+    /// <summary>
+    /// When <paramref name="kestrelBaseUrl"/> is non-null the runner
+    /// navigates the browser to <c>{kestrelBaseUrl}/index.html</c>
+    /// directly and skips the Playwright route interception — the
+    /// Kestrel host serves the bundle + ingest endpoints on a single
+    /// same-origin port.
+    /// </summary>
+    /// <param name="logger">
+    /// MEL logger the runner emits dogfood lifecycle events to
+    /// (browser launch, run start/end, per-test start/end, browser
+    /// close). When the caller didn't configure a real factory
+    /// <see cref="NullLogger.Instance"/> is the no-op default.
+    /// </param>
+    public TestRunner(string jsFilePath, string? kestrelBaseUrl, ILogger logger)
     {
         _jsFilePath = jsFilePath;
+        _kestrelBaseUrl = kestrelBaseUrl;
+        _logger = logger ?? NullLogger.Instance;
     }
 
     public async Task<RootObject[]> RunTests(IMessageLogger logger)
@@ -27,15 +55,30 @@ public class TestRunner
 
         try
         {
+            _logger.LogInformation("Sunlight test run starting; bundle={JsFilePath}", _jsFilePath);
             playwright = await Playwright.CreateAsync();
             browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
                 Headless = true,
                 Args = new[] { "--disable-gpu" },
             });
+            _logger.LogDebug("Browser launched; version={BrowserVersion}", browser.Version);
 
             var page = await browser.NewPageAsync();
-            await WireRoutes(page);
+
+            // Same-origin Kestrel path (D8) vs Playwright-route legacy path.
+            // The legacy path is kept verbatim for runs with LogEndpoint
+            // unset so existing consumers see zero behavioral change.
+            string navigationUrl;
+            if (_kestrelBaseUrl != null)
+            {
+                navigationUrl = _kestrelBaseUrl + IndexPath;
+            }
+            else
+            {
+                await WireRoutes(page);
+                navigationUrl = SyntheticHost + IndexPath;
+            }
 
             page.Console += (_, msg) => logger.SendMessage(
                 msg.Type == "error" ? TestMessageLevel.Error : TestMessageLevel.Informational,
@@ -45,7 +88,7 @@ public class TestRunner
                 $"[browser:pageerror] {err}");
 
             var response = await page.GotoAsync(
-                SyntheticHost + IndexPath,
+                navigationUrl,
                 new PageGotoOptions { WaitUntil = WaitUntilState.Load });
 
             if (response == null || !response.Ok)
@@ -66,20 +109,31 @@ public class TestRunner
 
             if (string.IsNullOrWhiteSpace(jsonString))
             {
+                _logger.LogWarning("Run completed with empty result JSON");
                 return Array.Empty<RootObject>();
             }
 
-            return JsonSerializer.Deserialize<RootObject[]>(jsonString) ?? Array.Empty<RootObject>();
+            var results = JsonSerializer.Deserialize<RootObject[]>(jsonString) ?? Array.Empty<RootObject>();
+            int passed = results.Count(r => r.Status == "passed");
+            int failed = results.Length - passed;
+            _logger.LogInformation(
+                "Sunlight test run completed; passed={Passed} failed={Failed} total={Total}",
+                passed,
+                failed,
+                results.Length);
+            return results;
         }
         catch (Exception e)
         {
             logger.SendMessage(TestMessageLevel.Error, e.ToString());
+            _logger.LogError(e, "Sunlight test run threw");
             return Array.Empty<RootObject>();
         }
         finally
         {
             if (browser != null)
             {
+                _logger.LogDebug("Closing browser");
                 await browser.CloseAsync();
             }
             playwright?.Dispose();
@@ -217,4 +271,25 @@ public class TestRunner
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
+}
+
+/// <summary>
+/// Trivial no-op logger used as the default when no
+/// <see cref="ILoggerFactory"/> is configured (i.e. the legacy
+/// LogEndpoint-unset code path). Keeps <see cref="TestRunner"/> from
+/// having to null-check every emit.
+/// </summary>
+internal sealed class NullLogger : ILogger
+{
+    public static readonly NullLogger Instance = new();
+
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+    public bool IsEnabled(LogLevel logLevel) => false;
+    public void Log<TState>(
+        LogLevel logLevel,
+        EventId eventId,
+        TState state,
+        Exception? exception,
+        Func<TState, Exception?, string> formatter)
+    { }
 }
