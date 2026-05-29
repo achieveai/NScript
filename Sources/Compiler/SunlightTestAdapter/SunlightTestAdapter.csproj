@@ -33,6 +33,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Server-side ingest controller + WS handler. Referenced as a project
+         so its DLL flows into the adapter's bin/ and the pack step ships it
+         alongside the adapter for consumer NuGet installs. -->
+    <ProjectReference Include="..\..\Runtime\Sunlight.Logging.Server\Sunlight.Logging.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Serilog wiring for IngestHost. PrivateAssets="all" keeps these out of
+         the package's dependency list — we ship the DLLs directly via the
+         build/net8.0/ folder (see _PackAdapterAssembly). Versions match
+         NScript.Utils/CompilerLog.cs which is the existing in-repo Serilog
+         configuration. -->
+    <PackageReference Include="Serilog" Version="3.1.1" PrivateAssets="all" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" PrivateAssets="all" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.6.0" PrivateAssets="all" />
     <!-- Microsoft.Playwright flows transitively so consumers get its driver
          (.playwright/) copied to their bin/ — the .targets in this package
