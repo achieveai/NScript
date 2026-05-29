@@ -1,0 +1,19 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <!--
+      Sources/Runtime/ houses .NET runtime libraries consumed by NScript-host
+      processes (e.g. SunlightTestAdapter). Unlike Sources/Framework/ — which
+      is browser runtime compiled to JS via the custom NScript csc — this
+      folder builds with the stock .NET SDK and targets a normal CLR runtime.
+      Kept conceptually separate from Sources/Compiler/ which holds
+      build-time toolchain code.
+    -->
+    <OutputPath>$(NScriptToolsetDir)/bin/$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>None</DebugType>
+    <DebugSymbols>False</DebugSymbols>
+  </PropertyGroup>
+</Project>
