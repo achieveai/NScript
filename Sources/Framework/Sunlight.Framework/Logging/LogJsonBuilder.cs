@@ -62,7 +62,13 @@ namespace Sunlight.Framework
         /// </summary>
         private static void AppendEvent(StringBuilder sb, LogEvent evt)
         {
-            sb.Append("{\"ts\":");
+            // "id" is emitted first so the server-side WebSocket ACK path can
+            // streaming-parse just the id from the front of each event without
+            // building the full object. See Sunlight.Logging.Server's
+            // WebSocketLogProtocol for the consumer side.
+            sb.Append("{\"id\":");
+            sb.Append(LogJsonBuilder.JsonEscape(evt.Id));
+            sb.Append(",\"ts\":");
             sb.Append(LogJsonBuilder.JsonEscape(evt.TimestampIso));
             sb.Append(",\"level\":");
             sb.Append(LogJsonBuilder.JsonEscape(LogJsonBuilder.LevelToString(evt.Level)));
