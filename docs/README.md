@@ -51,7 +51,7 @@ If you are **contributing to the NScript toolchain itself**, start with:
 ## Other documentation in this repo
 
 - [Architecture Decision Records](adr/) — 25 accepted ADRs covering Roslyn fork, pipeline shape, runtime type model, template system, optimization passes
-- [Structured client logging](framework-logging.md) — `Logger`, `ILogSink`, JSON schema, server-side ingestion (Serilog / NLog)
+- [Structured client logging](framework-logging.md) — `Logger`, `ILogSink`, JSON schema, HTTP + WebSocket transports, and server-side ingestion via `Mcqdb.NScript.Sunlight.Logging.Server` (Serilog / NLog)
 - [Plans](plans/) — feature plans and execution notes
 
 ## Authoring conventions

@@ -39,12 +39,14 @@ NScript is a compiler and framework that enables developers to:
 
 ### Building NuGet Packages
 
-To generate NuGet packages with version 1.0.4:
+To generate NuGet packages (the version comes from `<NScriptPackageVersion>`
+in `Directory.Build.props`):
 
 1. **Enable package generation** in `Directory.Build.props`:
 
    ```xml
    <GenerateNScriptPackages>true</GenerateNScriptPackages>
+   <NScriptPackageVersion>1.1.8</NScriptPackageVersion>
    ```
 
 2. **Build the solution**:
@@ -226,7 +228,77 @@ dotnet test NScript_Full.sln -c Release
 # (See "Building NuGet Packages" section above)
 ```
 
-## Structured Logging (opt-in)
+## Client-Side Structured Logging
+
+NScript applications log through the `Sunlight.Framework.Logger` static class.
+It started as a console-only emitter and is now a sink-based pipeline that
+keeps the legacy API while adding category loggers, structured property bags,
+call-context correlation, and pluggable transports. The full schema, sink
+reference, and server wiring live in
+[`docs/framework-logging.md`](docs/framework-logging.md) — the overview below
+is just the shape.
+
+### Emit
+
+```csharp
+using Sunlight.Framework;
+
+// Uncategorized (legacy API, unchanged)
+Logger.Info("user clicked Save");
+
+// Category logger — cache it once; same string returns the same instance
+private static readonly NamedLogger log = Logger.ForCategory("TodoApp.ListView");
+log.Info("item added", new string[] { "itemId", id });   // flat key/value array
+```
+
+Properties are a flat `string[]` (`[k1, v1, k2, v2, …]`) on purpose — C#
+objects would surface with minified field names in the generated JS.
+`Logger.Trace` / `Logger.Debug` are `[Conditional("DEBUG")]`, so Release builds
+strip those calls (and their arguments) entirely.
+
+### Transport (sinks)
+
+| Sink | Use |
+|------|-----|
+| `ConsoleSink` | Default. Installed lazily on first log unless you configure sinks first. |
+| `HttpLogSink` | Batches events and POSTs them (with `sendBeacon` on page-hide). |
+| `WebSocketLogSink` | Streams events over a WebSocket with per-event ACK + retry. |
+| `FailoverLogSink` | WebSocket primary, HTTP fallback; drains pending on disconnect. |
+
+One-line wiring reads the endpoint globals the host page injects and picks the
+right sink automatically:
+
+```csharp
+Logger.ClearSinks();   // drop the lazy ConsoleSink default
+Logger.AddSink(LogSinkFactory.CreateFromBootstrap(new WindowTimer()));
+```
+
+### Server-side ingestion
+
+`Mcqdb.NScript.Sunlight.Logging.Server` (ASP.NET Core, `net8.0`) ingests the
+browser events and forwards them into `Microsoft.Extensions.Logging` on
+category `Sunlight.Browser.*`:
+
+```csharp
+builder.Services.AddSunlightLogIngestion();   // service + controller
+
+var app = builder.Build();
+app.UseWebSockets();
+app.MapSunlightLogIngestion();                 // /_log + /_log/ws
+```
+
+It de-dups by per-event id (idempotent under client retransmits) and ACKs the
+ids it accepted so the client can stop retrying them.
+
+### Capturing logs in tests
+
+`Mcqdb.NScript.SunlightTestAdapter` can persist these events to a JSONL file
+during a `dotnet test` run — set `<LogEndpoint>` in your `.runsettings` and the
+adapter hosts the ingestion endpoints in-process and writes one JSON line per
+event. See the
+[adapter README](Sources/Compiler/SunlightTestAdapter/README.md#structured-log-capture).
+
+## Compiler Structured Logging (opt-in)
 
 Both compiler stages support opt-in structured JSONL logging. When you pass
 `--log <path>` to either `csc` (Stage 1) or `cs2jsc` (Stage 2), every stage of
@@ -319,5 +391,5 @@ For issues, questions, or feedback:
 
 ---
 
-**Version**: 1.0.4
-**Last Updated**: November 2025
+**Version**: 1.1.8
+**Last Updated**: May 2026

@@ -56,9 +56,52 @@ a `.runsettings` file:
     <!-- Path to the NScript-emitted JS bundle. Relative paths resolve against
          the test DLL directory first, then the current working directory. -->
     <JsFilePath>../../../../path/to/GeneratedScripts/YourSuite.Test.js</JsFilePath>
+    <!-- Optional. When set, captures structured client logs as JSONL.
+         See "Structured log capture" below. Omit for unchanged behavior. -->
+    <LogEndpoint>./logs/browser-tests.jsonl</LogEndpoint>
   </NSTest>
 </RunSettings>
 ```
+
+| Setting | Required | Purpose |
+|---------|----------|---------|
+| `TestSourceAssembly` | yes | Filename of the NScript-compiled test DLL, resolved relative to the wrapper's `bin/`. |
+| `JsFilePath` | yes | Path to the NScript-emitted JS bundle (relative to the test DLL dir, then CWD). |
+| `LogEndpoint` | no | When set, the adapter writes structured client + adapter logs to this JSONL file. When unset, behavior is byte-identical to today. |
+
+## Structured log capture
+
+By default the adapter serves the test bundle via Playwright route
+interception and forwards browser `console` output to VSTest's logger as
+`[browser:log] <text>` — handy for live triage, but not persisted in a
+machine-readable shape.
+
+Set `<LogEndpoint>` to capture structured logs instead. When it is present,
+the executor boots a single in-process Kestrel host on a loopback port that
+serves the test-bundle static assets **and** hosts the
+`Sunlight.Logging.Server` ingestion endpoints (`/_log`, `/_log/ws`) at the
+same origin. Browser-side `Sunlight.Framework.Logger` events
+(`Sunlight.Browser.*`) and adapter lifecycle events (`SunlightTestAdapter.*`)
+both flow through one Serilog `CompactJsonFormatter` file sink, so they land
+in the configured file — one JSON object per line — ready for `jq`, DuckDB,
+or a log shipper.
+
+The browser bundle opts in by clearing the default sink and wiring the
+factory at startup:
+
+```csharp
+Logger.ClearSinks();
+Logger.AddSink(LogSinkFactory.CreateFromBootstrap(new WindowTimer()));
+```
+
+`CreateFromBootstrap` reads the `window.__nscriptLogEndpoint` /
+`window.__nscriptLogWsEndpoint` globals the host page injects and returns the
+matching sink (WebSocket-primary with HTTP failover when both are present).
+When `LogEndpoint` is unset, none of this is wired and the legacy
+`[browser:log]` forwarding stays in effect.
+
+See [`docs/framework-logging.md`](../../../docs/framework-logging.md) for the
+full event schema, sink reference, and server-side ingestion API.
 
 ## Run
 
