@@ -117,6 +117,12 @@ namespace Sunlight.Logging.Server.Hosting
                         cancellationToken: ct).ConfigureAwait(false);
                 }
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // Clean shutdown: the request was aborted or the host is stopping.
+                // Swallow so the endpoint pipeline doesn't log a noisy unhandled
+                // exception for the normal close path.
+            }
             finally
             {
                 ArrayPool<byte>.Shared.Return(rented);

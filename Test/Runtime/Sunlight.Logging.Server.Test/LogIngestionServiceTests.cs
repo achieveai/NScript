@@ -139,8 +139,15 @@ namespace Sunlight.Logging.Server.Test
 
             var acked = await this._svc.IngestAsync(env, CancellationToken.None);
 
-            Assert.AreEqual(1, acked.Count, "Only the first ack is returned");
+            // Both ids are acked: acking the duplicate is what stops the client
+            // from retransmitting. Acking the same id twice is harmless on the
+            // client (it just removes the id from its in-flight map).
+            Assert.AreEqual(2, acked.Count, "Both ids are acked so the client stops retransmitting");
             Assert.AreEqual("dup-1", acked[0]);
+            Assert.AreEqual("dup-1", acked[1]);
+
+            // The duplicate's emit is still skipped by dedup (skip-emit behaviour
+            // is unchanged); the test name's SECOND EMIT stays accurate.
             Assert.AreEqual(1, this._provider.Logs.Count, "Second emit was skipped by dedup");
         }
 

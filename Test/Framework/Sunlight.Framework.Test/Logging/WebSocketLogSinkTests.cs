@@ -240,5 +240,35 @@ namespace Sunlight.Framework.Test.Logging
             sink.Handle(MakeEvent("post-detach", "m"));
             assert.Equal(1, payloads.Count, "Post-detach Handle is a no-op (only the final detach flush shipped)");
         }
+
+        [Test]
+        public static void TestSendFailureLeavesEventInFlightAndBumpsCounter(Assert assert)
+        {
+            var timer = new ManualWindowTimer();
+            var clock = new FakeClock();
+
+            // sendPayload throws to simulate a flaky transport. The sink must
+            // swallow it (Flush is fire-and-forget), keep the event in-flight
+            // for retransmission, and surface the failure via SendFailureCount.
+            var sink = new WebSocketLogSink(
+                () => true,
+                payload => { throw new Exception("transport down"); },
+                batchSize: 1,
+                flushIntervalMs: 5000,
+                maxQueueSize: 100,
+                ackTimeoutMs: 1000,
+                maxRetry: 3,
+                timer: timer,
+                nowMsOverride: clock.Read);
+
+            sink.Handle(MakeEvent("send-fail-1", "m"));
+
+            // The event is still tracked (recorded in inFlight before the throw)
+            // so the next tick can retransmit it — delivery behaviour unchanged.
+            assert.Equal(1, sink.InFlightCount, "Event stays in-flight despite the send failure");
+
+            // The throw is surfaced via the diagnostic counter.
+            assert.Equal(1, sink.SendFailureCount, "Send failure bumped the diagnostic counter");
+        }
     }
 }

@@ -57,6 +57,7 @@ namespace Sunlight.Framework
         private List<LogEvent> queue;
         private StringDictionary<InFlightEntry> inFlight;
         private int droppedCount;
+        private int sendFailureCount;
         private int timerHandle;
         private bool flushing;
         private bool detached;
@@ -130,6 +131,7 @@ namespace Sunlight.Framework
             this.queue = new List<LogEvent>();
             this.inFlight = new StringDictionary<InFlightEntry>();
             this.droppedCount = 0;
+            this.sendFailureCount = 0;
             this.timerHandle = -1;
             this.flushing = false;
             this.detached = false;
@@ -195,7 +197,13 @@ namespace Sunlight.Framework
                 }
                 this.sendPayload(payload);
             }
-            catch { /* fire-and-forget transport */ }
+            catch
+            {
+                // Fire-and-forget transport: the events are already tracked in
+                // inFlight and will be retransmitted on the next timer tick.
+                // Bump the diagnostic counter so a flaky transport is visible.
+                this.sendFailureCount++;
+            }
             finally
             {
                 this.flushing = false;
@@ -343,7 +351,13 @@ namespace Sunlight.Framework
                     entry.SentAtMs = now;
                     entry.RetryCount++;
                 }
-                catch { /* fire-and-forget per-retry */ }
+                catch
+                {
+                    // Fire-and-forget per-retry: the event stays in-flight and
+                    // the next tick retries until maxRetry. Bump the diagnostic
+                    // counter so a flaky transport is visible.
+                    this.sendFailureCount++;
+                }
             }
         }
 
@@ -363,6 +377,14 @@ namespace Sunlight.Framework
         /// Test-visible accessor — count of events dropped this session.
         /// </summary>
         internal int DroppedCount { get { return this.droppedCount; } }
+
+        /// <summary>
+        /// Test-visible accessor — count of transport send failures observed
+        /// when <c>sendPayload</c> threw. Purely diagnostic: the affected
+        /// event stays in-flight and is retransmitted, so this never changes
+        /// delivery behaviour.
+        /// </summary>
+        internal int SendFailureCount { get { return this.sendFailureCount; } }
 
         /// <summary>
         /// Wall-clock millisecond counter. Defers to <c>Date.now()</c>

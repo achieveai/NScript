@@ -3,6 +3,7 @@ namespace SunlightTestAdapter;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
@@ -271,25 +272,4 @@ public class TestRunner
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
-}
-
-/// <summary>
-/// Trivial no-op logger used as the default when no
-/// <see cref="ILoggerFactory"/> is configured (i.e. the legacy
-/// LogEndpoint-unset code path). Keeps <see cref="TestRunner"/> from
-/// having to null-check every emit.
-/// </summary>
-internal sealed class NullLogger : ILogger
-{
-    public static readonly NullLogger Instance = new();
-
-    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-    public bool IsEnabled(LogLevel logLevel) => false;
-    public void Log<TState>(
-        LogLevel logLevel,
-        EventId eventId,
-        TState state,
-        Exception? exception,
-        Func<TState, Exception?, string> formatter)
-    { }
 }

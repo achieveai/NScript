@@ -143,18 +143,25 @@ namespace Sunlight.Logging.Server.Services
 
         /// <summary>
         /// Map one event to a single <see cref="ILogger.Log"/> call.
-        /// Returns true if the event was actually emitted, false if it was
-        /// skipped by the dedup LRU. Per-event exceptions bubble up to the
-        /// per-event try/catch in <see cref="IngestAsync"/>.
+        /// Returns true when the event should be acked. A duplicate (dedup LRU
+        /// hit) is acked WITHOUT re-emitting — it was already emitted on first
+        /// receipt, and acking again is how the client stops retransmitting.
+        /// Per-event exceptions bubble up to the per-event try/catch in
+        /// <see cref="IngestAsync"/>.
         /// </summary>
         private bool TryIngestOne(LogEventDto evt)
         {
             if (!string.IsNullOrEmpty(evt.Id) && this.IsDuplicate(evt.Id!))
             {
-                // Idempotent retry: do NOT ack the duplicate. Returning
-                // false means the id stays out of the ack list, which is
-                // what the client expects (the original ack already shipped).
-                return false;
+                // Idempotent retry: the event was already emitted on first
+                // receipt, so we skip re-emitting here. We DO ack the
+                // duplicate (return true before the emit) because the client
+                // only retransmits when it never saw the original ack — not
+                // acking would leave it retransmitting until maxRetry drops
+                // the event. Acking the duplicate is idempotent on the client
+                // (it just removes the id from its in-flight map) and stops
+                // the retransmit loop.
+                return true;
             }
 
             var category = "Sunlight.Browser." + (string.IsNullOrEmpty(evt.Cat) ? "default" : evt.Cat);
