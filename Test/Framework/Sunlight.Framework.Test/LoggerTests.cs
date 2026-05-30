@@ -452,6 +452,7 @@ namespace Sunlight.Framework.Test
         public static void TestLogJsonBuilderEventBasicShape(Assert assert)
         {
             var evt = new LogEvent(
+                "testid01testid01",
                 "2026-04-17T00:00:00.000Z",
                 LogLevel.Info,
                 string.Empty,
@@ -472,13 +473,13 @@ namespace Sunlight.Framework.Test
         public static void TestLogJsonBuilderLevelToString(Assert assert)
         {
             var trace = LogJsonBuilder.BuildEvent(
-                new LogEvent("ts", LogLevel.Trace, string.Empty, "m", null, null));
+                new LogEvent("testid01testid01", "ts", LogLevel.Trace, string.Empty, "m", null, null));
             var debug = LogJsonBuilder.BuildEvent(
-                new LogEvent("ts", LogLevel.Debug, string.Empty, "m", null, null));
+                new LogEvent("testid01testid01", "ts", LogLevel.Debug, string.Empty, "m", null, null));
             var warn = LogJsonBuilder.BuildEvent(
-                new LogEvent("ts", LogLevel.Warn, string.Empty, "m", null, null));
+                new LogEvent("testid01testid01", "ts", LogLevel.Warn, string.Empty, "m", null, null));
             var error = LogJsonBuilder.BuildEvent(
-                new LogEvent("ts", LogLevel.Error, string.Empty, "m", null, null));
+                new LogEvent("testid01testid01", "ts", LogLevel.Error, string.Empty, "m", null, null));
 
             assert.IsTrue(trace.IndexOf("\"level\":\"TRACE\"") >= 0, "Trace → TRACE");
             assert.IsTrue(debug.IndexOf("\"level\":\"DEBUG\"") >= 0, "Debug → DEBUG");
@@ -490,6 +491,7 @@ namespace Sunlight.Framework.Test
         public static void TestLogJsonBuilderPropertiesFlattening(Assert assert)
         {
             var evt = new LogEvent(
+                "testid01testid01",
                 "ts",
                 LogLevel.Info,
                 "c1",
@@ -511,6 +513,7 @@ namespace Sunlight.Framework.Test
             // An odd-length properties array is a caller bug; trailing key is
             // dropped silently rather than emitting a malformed key:value pair.
             var evt = new LogEvent(
+                "testid01testid01",
                 "ts",
                 LogLevel.Info,
                 string.Empty,
@@ -528,8 +531,8 @@ namespace Sunlight.Framework.Test
         public static void TestLogJsonBuilderEnvelopeIncludesDropped(Assert assert)
         {
             var events = new List<LogEvent>();
-            events.Add(new LogEvent("ts", LogLevel.Info, string.Empty, "a", null, null));
-            events.Add(new LogEvent("ts", LogLevel.Info, string.Empty, "b", null, null));
+            events.Add(new LogEvent("testid01testid01", "ts", LogLevel.Info, string.Empty, "a", null, null));
+            events.Add(new LogEvent("testid01testid02", "ts", LogLevel.Info, string.Empty, "b", null, null));
 
             string json = LogJsonBuilder.BuildEnvelope(events, 7);
 
@@ -547,6 +550,7 @@ namespace Sunlight.Framework.Test
             // that would produce an unintentional string-literal key. The
             // pair is silently skipped instead.
             var evt = new LogEvent(
+                "testid01testid01",
                 "ts",
                 LogLevel.Info,
                 string.Empty,
@@ -627,6 +631,7 @@ namespace Sunlight.Framework.Test
         {
             var ctx = CallContext.StartRoot();
             var evt = new LogEvent(
+                "testid01testid01",
                 "ts",
                 LogLevel.Info,
                 string.Empty,

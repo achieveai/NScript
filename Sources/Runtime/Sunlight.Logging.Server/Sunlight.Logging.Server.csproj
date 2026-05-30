@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sunlight.Logging.Server</RootNamespace>
+    <PackageId>Mcqdb.NScript.Sunlight.Logging.Server</PackageId>
+    <PackageVersion>$(NScriptPackageVersion)</PackageVersion>
+    <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
+    <GeneratePackageOnBuild>$(GenerateNScriptPackages)</GeneratePackageOnBuild>
+    <Description>ASP.NET Core ingestion controller and WebSocket protocol helper that bridge browser-side Sunlight structured logs into Microsoft.Extensions.Logging on the server. Companion to the Sunlight.Framework client-side WebSocketLogSink / HttpLogSink / FailoverLogSink.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

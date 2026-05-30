@@ -250,6 +250,7 @@ namespace Sunlight.Framework
                 }
 
                 var evt = new LogEvent(
+                    Logger.GenerateEventId(),
                     Logger.GetIsoTimestamp(),
                     level,
                     category,
@@ -285,5 +286,27 @@ namespace Sunlight.Framework
 
         [Script("return new Date().toISOString();")]
         private static extern string GetIsoTimestamp();
+
+        /// <summary>
+        /// Generate a per-emit runtime-unique 64-bit hex identifier for a
+        /// <see cref="LogEvent"/>. Used by the WebSocket ACK path to target
+        /// individual in-flight events and by the server-side ingestion
+        /// service to de-dup retransmits.
+        /// </summary>
+        /// <remarks>
+        /// Mirrors <see cref="CallContext"/>'s hex-segment style so consumers
+        /// parsing logs can rely on a single id-shape across <c>traceId</c>,
+        /// <c>spanId</c>, and event <c>id</c>. NOT source-stable — same call
+        /// site emitting twice produces two distinct ids by design.
+        /// </remarks>
+        private static string GenerateEventId()
+        {
+            return Logger.GenerateHexSegment() + Logger.GenerateHexSegment();
+        }
+
+        private static string GenerateHexSegment()
+        {
+            return Math.Random().ToString(16).Substring(2, 8);
+        }
     }
 }

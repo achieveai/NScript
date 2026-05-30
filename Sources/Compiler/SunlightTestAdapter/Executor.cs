@@ -1,6 +1,8 @@
 namespace SunlightTestAdapter;
 
 using System.Xml;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -105,32 +107,84 @@ public class Executor : ITestExecutor
             return;
         }
 
-        var tr = new TestRunner(jsPath);
-        var testResults = await tr.RunTests(frameworkHandle);
-
-        foreach (var test in tests)
+        // Per v2 D12: only boot Kestrel when LogEndpoint is configured.
+        // When unset, the runner stays on today's Playwright-route
+        // static-serving path with a NullLogger — zero behavioral
+        // change for existing consumers.
+        IngestHost? host = null;
+        try
         {
-            var className = ExtractClassName(test.FullyQualifiedName);
-            var result = testResults.FirstOrDefault(r =>
-                r.Name == test.DisplayName &&
-                (string.IsNullOrEmpty(className) || r.SuiteName == className));
-
-            // Fall back to display-name-only match if SuiteName matching missed
-            // (e.g. emitter doesn't fully populate suiteName for top-level tests).
-            result ??= testResults.FirstOrDefault(r => r.Name == test.DisplayName);
-
-            frameworkHandle.RecordResult(new TestResult(test)
+            string? baseUrl = null;
+            ILogger runnerLogger = NullLogger.Instance;
+            ILogger executorLogger = NullLogger.Instance;
+            if (!string.IsNullOrEmpty(settings?.LogEndpoint))
             {
-                DisplayName = test.DisplayName,
-                Outcome = result == null
+                host = await IngestHost.CreateAsync(settings, jsPath, frameworkHandle);
+                baseUrl = host.HttpBaseUrl;
+                runnerLogger = host.LoggerFactory.CreateLogger("SunlightTestAdapter.TestRunner");
+                executorLogger = host.LoggerFactory.CreateLogger("SunlightTestAdapter.Executor");
+            }
+
+            executorLogger.LogInformation(
+                "Sunlight test run start; source={Source} bundle={JsPath} testCount={TestCount}",
+                source,
+                jsPath,
+                tests.Count);
+
+            var tr = new TestRunner(jsPath, baseUrl, runnerLogger);
+            var testResults = await tr.RunTests(frameworkHandle);
+
+            int passed = 0;
+            int failed = 0;
+            foreach (var test in tests)
+            {
+                var className = ExtractClassName(test.FullyQualifiedName);
+                var result = testResults.FirstOrDefault(r =>
+                    r.Name == test.DisplayName &&
+                    (string.IsNullOrEmpty(className) || r.SuiteName == className));
+
+                // Fall back to display-name-only match if SuiteName matching missed
+                // (e.g. emitter doesn't fully populate suiteName for top-level tests).
+                result ??= testResults.FirstOrDefault(r => r.Name == test.DisplayName);
+
+                var outcome = result == null
                     ? TestOutcome.NotFound
                     : result.Status == "passed"
                         ? TestOutcome.Passed
-                        : TestOutcome.Failed,
-                ErrorMessage = result != null && result.Status != "passed"
-                    ? FormatFailures(result)
-                    : null,
-            });
+                        : TestOutcome.Failed;
+
+                executorLogger.LogDebug(
+                    "Test result; name={TestName} outcome={Outcome} runtimeMs={RuntimeMs}",
+                    test.DisplayName,
+                    outcome,
+                    result?.Runtime ?? 0);
+
+                if (outcome == TestOutcome.Passed) passed++;
+                else if (outcome == TestOutcome.Failed) failed++;
+
+                frameworkHandle.RecordResult(new TestResult(test)
+                {
+                    DisplayName = test.DisplayName,
+                    Outcome = outcome,
+                    ErrorMessage = result != null && result.Status != "passed"
+                        ? FormatFailures(result)
+                        : null,
+                });
+            }
+
+            executorLogger.LogInformation(
+                "Sunlight test run end; source={Source} passed={Passed} failed={Failed} total={Total}",
+                source,
+                passed,
+                failed,
+                tests.Count);
+        }
+        finally
+        {
+            if (host != null)
+            {
+                await host.DisposeAsync();
+            }
         }
     }
 
