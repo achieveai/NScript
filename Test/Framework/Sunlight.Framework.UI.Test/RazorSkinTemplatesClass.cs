@@ -10,6 +10,120 @@ namespace Sunlight.Framework.UI.Test
     /// </summary>
     public class RazorSkinTemplatesClass
     {
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlLiterals.skin.cshtml")]
+        public static Skin RazorSubControlLiterals
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlTopLevel.skin.cshtml")]
+        public static Skin RazorSubControlTopLevel
+        {
+            get { return null; }
+        }
+
+        [Skin("RazorSubControlTopLevel")]
+        public static Skin RazorSubControlTopLevelShort
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlDataContext.skin.cshtml")]
+        public static Skin RazorSubControlDataContext
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlDefaultContext.skin.cshtml")]
+        public static Skin RazorSubControlDefaultContext
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlLifecycle.skin.cshtml")]
+        public static Skin RazorSubControlLifecycle
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlForeach.skin.cshtml")]
+        public static Skin RazorSubControlForeach
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlForeachDefaultContext.skin.cshtml")]
+        public static Skin RazorSubControlForeachDefaultContext
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlConditional.skin.cshtml")]
+        public static Skin RazorSubControlConditional
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlDelegate.skin.cshtml")]
+        public static Skin RazorSubControlDelegate
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlDelegateForeach.skin.cshtml")]
+        public static Skin RazorSubControlDelegateForeach
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlItemDelegate.skin.cshtml")]
+        public static Skin RazorSubControlItemDelegate
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlDomEvent.skin.cshtml")]
+        public static Skin RazorSubControlDomEvent
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorProbeAlternate.skin.cshtml")]
+        public static Skin RazorProbeAlternate
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlComposition.skin.cshtml")]
+        public static Skin RazorSubControlComposition
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlPart.skin.cshtml")]
+        public static Skin RazorSubControlPart
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlTwoWay.skin.cshtml")]
+        public static Skin RazorSubControlTwoWay
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlDeactivation.skin.cshtml")]
+        public static Skin RazorSubControlDeactivation
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlIfInForeach.skin.cshtml")]
+        public static Skin RazorSubControlIfInForeach
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSimpleText.skin.cshtml")]
         public static Skin RazorSimpleText
         {

@@ -64,7 +64,7 @@ flowchart LR
 
 ```bash
 # All compiler tests (standard .NET test runner)
-dotnet test NScript_Full.sln -c Release
+dotnet test NScript_Full.sln -c Release -m:1
 
 # Single project
 dotnet test Test/Compiler/CssParser.Test/CssParser.Test.csproj
@@ -95,6 +95,26 @@ npx serve .
 > minified independently and writes runtime metadata to short letters on
 > `Function.prototype`. Co-loading two bundles silently corrupts that
 > metadata (issue #51). Always open ONE `*.TestPage.htm` per browser tab.
+
+### Razor sub-control changes
+
+Run the parser tests, then rebuild the Debug toolset before generating browser tests:
+
+```bash
+dotnet test Test/Compiler/RazorSkinParser.Test/RazorSkinParser.Test.csproj -c Release
+dotnet build NScript_Full.sln -c Debug
+dotnet build Test/Framework/Sunlight.Framework.UI.Test/Sunlight.Framework.UI.Test.csproj -c Debug
+node --check Test/Framework/TestWebApplication/GeneratedScripts/Sunlight.Framework.UI.Test.js
+cd Test/Framework/TestWebApplication
+node run-qunit.mjs
+node e2e-todo-tests.js
+```
+
+The UI suite includes Razor child creation, reactive and two-way properties, `DataContext`, lifecycle, events, collection items, conditional branches, Skin composition, named parts, and a three-library cross-assembly fixture. `TodoApp.Test.Controls.AppShellRenderTests` renders the TodoApp skin and checks list controls, the compact skin, conditional detail, two-way title editing, named parts, and `Control.*` bindings with null `DataContext`. The QUnit runner also checks the Framework, TodoApp, and Data suites. The TodoApp E2E runner checks the app's browser flows. A passing parser test or C# build alone does not exercise the generated JavaScript.
+
+For a change to `Control.*` emission, also build `NScript_Full.sln -c Release` and rerun `node run-qunit.mjs`. The Release output is minified, so this catches unresolved getter and field names.
+
+Use `-m:1` for solution-wide .NET tests because several test projects copy files into a shared output folder. The Release browser adapter can still return a nonzero process status while reporting zero failed assertions when expected scheduler-error tests log browser errors. Use the Debug QUnit runner above as the passing browser gate and inspect the Release test counts separately.
 
 ## Examples
 

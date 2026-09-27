@@ -61,6 +61,21 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Per-CollectionManager: collection change listener reference.</summary>
         public NativeArray CollectionListeners;
 
+        /// <summary>Controls owned by this graph, in descriptor order.</summary>
+        public NativeArray<UIElement> SubControlInstances;
+
+        /// <summary>Reverse property listeners for two-way sub-control bindings.</summary>
+        public NativeArray<NativeArray> SubControlPropertyListeners;
+
+        /// <summary>Last values written to each child, so unrelated flushes leave child state alone.</summary>
+        public NativeArray<NativeArray> SubControlAppliedValues;
+
+        /// <summary>Whether each child has received its initial property values.</summary>
+        public NativeArray<bool> SubControlBindingsInitialized;
+
+        /// <summary>Whether child controls should be active during a graph flush.</summary>
+        public bool SubControlsActive;
+
         /// <summary>
         /// Creates a new GraphState for the given descriptor.
         /// </summary>
@@ -78,6 +93,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             this.ListenerCount = 0;
             this.SubscriptionsActive = false;
             this.FlushScheduled = false;
+            if (!object.IsNullOrUndefined(descriptor.SubControls))
+            {
+                this.SubControlInstances = new NativeArray<UIElement>(descriptor.SubControls.Length);
+                this.SubControlPropertyListeners = new NativeArray<NativeArray>(descriptor.SubControls.Length);
+                this.SubControlAppliedValues = new NativeArray<NativeArray>(descriptor.SubControls.Length);
+                this.SubControlBindingsInitialized = new NativeArray<bool>(descriptor.SubControls.Length);
+            }
 
             // Only allocate sparse arrays when the descriptor has nodes of the relevant type.
             bool hasGates = false;

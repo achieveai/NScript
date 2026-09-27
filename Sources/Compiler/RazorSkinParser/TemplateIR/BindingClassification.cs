@@ -6,7 +6,8 @@ namespace NScript.RazorSkin.TemplateIR
     {
         OneTime,   // No observable dependencies — evaluate once
         OneWay,    // Has observable dependencies — live updates
-        Event      // Event handler (method ref or lambda)
+        Event,     // Event handler (method ref or lambda)
+        TwoWay     // Source and target both report property changes
     }
 
     public enum BindingSourceKind

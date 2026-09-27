@@ -1,0 +1,11 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="subcontrol-conditional">
+@if (Model.ShowDetails)
+{
+    <div class="branch-row">
+    <RazorProbeControl Text="@Model.Title" Click="@Model.IncrementClick" />
+    <span class="branch-count">@Model.Count</span>
+    </div>
+}
+</div>

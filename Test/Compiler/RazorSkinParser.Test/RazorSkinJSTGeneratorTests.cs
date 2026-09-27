@@ -5,6 +5,9 @@ using NScript.RazorSkin.CodeGen;
 using NScript.RazorSkin.TemplateIR;
 using System.Collections.Generic;
 using System.Linq;
+using System;
+using Mono.Cecil;
+using NScript.Utils;
 using static RazorSkinParser.Test.TopologyTestHelpers;
 
 namespace RazorSkinParser.Test
@@ -16,8 +19,8 @@ namespace RazorSkinParser.Test
     /// identifiers which are too heavy for unit tests. The static helper methods
     /// FindNthEmptySpanPath and FindNthInteractiveElementPath are private.
     ///
-    /// These tests validate the generator's behavior indirectly through the graph topology
-    /// data structures that feed into Generate(), ensuring the input contract is met.
+    /// Most tests validate the graph topology that feeds Generate(). Sub-control
+    /// diagnostic tests exercise the generator's type and property validation directly.
     ///
     /// TODO: If FindNthEmptySpanPath and FindNthInteractiveElementPath are made internal
     /// (with InternalsVisibleTo for the test assembly), add direct tests for:
@@ -28,6 +31,70 @@ namespace RazorSkinParser.Test
     [TestClass]
     public class RazorSkinJSTGeneratorTests
     {
+        [TestMethod]
+        public void UnknownSubControlReportsTemplateLocation()
+        {
+            var sub = new SubControlNode
+            {
+                TypeName = "MissingControl",
+                Location = new Location("Parent.skin.cshtml", 7, 4)
+            };
+
+            Action validate = () => RazorSkinJSTGenerator.ValidateSubControlTagInfo(
+                sub, null, (type, name) => null);
+
+            var error = validate.Should().Throw<RazorSubControlDiagnosticException>().Which;
+            error.Message.Should().Contain("Unknown sub-control type 'MissingControl'");
+            error.Location.FileName.Should().Be("Parent.skin.cshtml");
+            error.Location.StartLine.Should().Be(7);
+        }
+
+        [TestMethod]
+        public void NonUiElementSubControlReportsError()
+        {
+            var sub = new SubControlNode { TypeName = "NotControl" };
+            var type = new TypeDefinition("Tests", "NotControl", TypeAttributes.Public);
+
+            Action validate = () => RazorSkinJSTGenerator.ValidateSubControlTagInfo(
+                sub, type, (current, name) => null);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*must inherit from UIElement*");
+        }
+
+        [TestMethod]
+        public void MissingAndReadOnlySubControlPropertiesReportErrors()
+        {
+            var module = ModuleDefinition.CreateModule("SubControlValidation", new ModuleParameters { Kind = ModuleKind.Dll });
+            var uiElement = new TypeDefinition("Sunlight.Framework.UI", "UIElement", TypeAttributes.Public);
+            var type = new TypeDefinition("Tests", "ProbeControl", TypeAttributes.Public, uiElement);
+            module.Types.Add(uiElement);
+            module.Types.Add(type);
+            var getter = new MethodDefinition("get_ReadOnly",
+                MethodAttributes.Public | MethodAttributes.SpecialName, module.TypeSystem.String);
+            type.Methods.Add(getter);
+            type.Properties.Add(new PropertyDefinition("ReadOnly", PropertyAttributes.None, module.TypeSystem.String)
+            {
+                GetMethod = getter
+            });
+
+            foreach (var propertyName in new[] { "Missing", "ReadOnly" })
+            {
+                var sub = new SubControlNode { TypeName = "ProbeControl" };
+                sub.PropertyBindings.Add(new SubControlPropertyBinding
+                {
+                    PropertyName = propertyName,
+                    Classification = new BindingClassification { CSharpExpression = "Model.Title" }
+                });
+
+                Action validate = () => RazorSkinJSTGenerator.ValidateSubControlTagInfo(
+                    sub, type, (current, name) => current.Properties.FirstOrDefault(p => p.Name == name));
+
+                validate.Should().Throw<RazorSubControlDiagnosticException>()
+                    .WithMessage($"*has no writable property '{propertyName}'*");
+            }
+        }
+
         // --- Graph topology validation tests ---
         // These test the data structures that feed into RazorSkinJSTGenerator.Generate()
 
@@ -56,7 +123,9 @@ namespace RazorSkinParser.Test
         [TestMethod]
         public void EventTopology_ProducesValidInputForGenerator()
         {
-            var template = MakeTemplate(MakeEvent("click", "Model.OnSubmit"));
+            var evt = MakeEvent("click", "Model.OnSubmit");
+            evt.Location = new Location("Handler.skin.cshtml", 6, 3);
+            var template = MakeTemplate(evt);
 
             var topology = GraphTopologyBuilder.Build(template);
 
@@ -64,6 +133,7 @@ namespace RazorSkinParser.Test
             topology.Events[0].EventName.Should().Be("click");
             topology.Events[0].HandlerExpression.Should().Be("Model.OnSubmit");
             topology.Events[0].NodeIdx.Should().BeGreaterThan(0);
+            topology.Events[0].Location.Should().BeSameAs(evt.Location);
         }
 
         [TestMethod]

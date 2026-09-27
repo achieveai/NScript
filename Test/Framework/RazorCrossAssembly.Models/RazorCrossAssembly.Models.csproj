@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.props" />
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <RootNamespace>RazorCrossAssembly.Models</RootNamespace>
+    <AssemblyName>RazorCrossAssembly.Models</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../Sources/Framework/mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/Sunlight.Framework/Sunlight.Framework.csproj" />
+  </ItemGroup>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />
+</Project>

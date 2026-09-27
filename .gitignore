@@ -78,6 +78,7 @@ Test/Framework/TestWebApplication/GeneratedScripts/*
 launchsettings.json
 /tmp/
 /scratchpad/
+**/[Ss]cratch[Pp]ad/
 **/node_modules/
 **/logs/*.jsonl
 **/screenshots/*.png
@@ -87,3 +88,9 @@ launchsettings.json
 # for GitHub Copilot CLI, etc.) — kept local, never committed.
 .codex/
 .mcp.json
+
+# Local secrets (e.g. NUGET_API_KEY for `dotnet nuget push`).
+.env
+.env.*
+
+.claude/scheduled_tasks.lock

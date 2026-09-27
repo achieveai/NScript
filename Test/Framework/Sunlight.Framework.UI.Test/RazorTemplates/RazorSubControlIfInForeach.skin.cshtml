@@ -1,0 +1,11 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="subcontrol-if-in-foreach">
+@foreach (var item in Model.Items)
+{
+    @if (item.IsComplete)
+    {
+        <RazorProbeControl Text="@item.Name" />
+    }
+}
+</div>

@@ -46,7 +46,7 @@ in `Directory.Build.props`):
 
    ```xml
    <GenerateNScriptPackages>true</GenerateNScriptPackages>
-   <NScriptPackageVersion>1.1.8</NScriptPackageVersion>
+   <NScriptPackageVersion>1.1.9-local.3</NScriptPackageVersion>
    ```
 
 2. **Build the solution**:
@@ -54,6 +54,11 @@ in `Directory.Build.props`):
    ```bash
    dotnet build NScript_Full.sln -c Release
    ```
+
+Keep the SDK and framework package versions equal. Framework assemblies embed
+compiler AST data that is not version tolerant. The Cs2Jsc tool can advance on
+its own for a tool-only fix, after compatibility testing; pin all packages to
+one version when compiler or AST behavior changes.
 
 3. **Publish to NuGet** (from NScriptToolSet directory):
 

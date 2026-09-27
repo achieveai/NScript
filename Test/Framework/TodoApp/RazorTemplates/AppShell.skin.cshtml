@@ -1,4 +1,5 @@
 @model TodoApp.ViewModels.AppViewModel
+@using TodoApp.Controls
 @styles "TodoApp.RazorTemplates.AppShell.css"
 
 <div data-test="1">
@@ -25,7 +26,7 @@
         <div class="todo-list">
             @foreach (var todo in Model.CurrentTodos)
             {
-                <TodoItemControl />
+                <TodoItemControl ShowStar="true" OnSelected="@(() => Model.OnSelectTodo(todo))" ondragstart="@Model.OnDragStart(todo)" />
             }
         </div>
         <div class="@Model.CompletedSectionClass">
@@ -36,7 +37,7 @@
             <div class="completed-list">
                 @foreach (var todo in Model.CompletedCurrentTodos)
                 {
-                    <TodoItemControl />
+                    <TodoItemControl Skin="@TodoItemControl.CompactSkin" ShowStar="false" OnSelected="@(() => Model.OnSelectTodo(todo))" ondragstart="@Model.OnDragStart(todo)" />
                 }
             </div>
         </div>
@@ -50,7 +51,10 @@
             <div class="btn-close-detail" onclick="@Model.ToggleRightPane">&#10005;</div>
         </div>
         <div class="task-detail">
-            <input type="text" class="detail-title-input" value="@Model.DetailTitle" onchange="@Model.OnDetailTitleChange" />
+            @if (Model.ShowDetail)
+            {
+                <TaskDetailControl id="taskDetail" DataContext="@Model.SelectedTodo" />
+            }
             <div class="detail-section folder-assignment">
                 @foreach (var tag in Model.DetailFolderTags)
                 {

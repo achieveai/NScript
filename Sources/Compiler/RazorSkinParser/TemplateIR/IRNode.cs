@@ -110,6 +110,7 @@ namespace NScript.RazorSkin.TemplateIR
     public class SubControlNode : IRNode
     {
         public string TypeName { get; set; }               // "ListView", "SearchBox"
+        public int RuntimeMarkerIdx { get; set; } = -1;    // Assigned by topology builder
         public string ResolvedTypeName { get; set; }       // Fully qualified type name
         public string ElementId { get; set; }              // Part ID from id= attribute
         public string TagName { get; set; } = "div";       // Custom HTML tag from [TagName] attribute
@@ -122,5 +123,7 @@ namespace NScript.RazorSkin.TemplateIR
     {
         public string PropertyName { get; set; }           // "ObservableList", "Query"
         public BindingClassification Classification { get; set; }
+        public bool IsLiteral { get; set; }                 // Value has no Razor @ expression
+        public bool IsDelegate { get; set; }                // Resolved target property is a delegate
     }
 }

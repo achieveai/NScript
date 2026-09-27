@@ -5,6 +5,7 @@ namespace TodoApp.ViewModels
     using System.Web.Html;
     using Sunlight.Framework;
     using Sunlight.Framework.Observables;
+    using Sunlight.Framework.UI.Attributes;
     using TodoApp.Services;
 
     /// <summary>
@@ -86,6 +87,7 @@ namespace TodoApp.ViewModels
                 {
                     this.isRightPaneCollapsed = value;
                     base.FirePropertyChanged("IsRightPaneCollapsed");
+                    this.ShowDetail = this.selectedTodo != null && !value;
                 }
             }
         }
@@ -151,10 +153,14 @@ namespace TodoApp.ViewModels
                 {
                     this.selectedTodo = value;
                     base.FirePropertyChanged("SelectedTodo");
+                    this.ShowDetail = value != null && !this.isRightPaneCollapsed;
                     this.UpdateDetailProperties();
                 }
             }
         }
+
+        [AutoFire]
+        public bool ShowDetail { get; set; }
 
         /// <summary>
         /// Title of the selected todo, displayed in the detail pane.

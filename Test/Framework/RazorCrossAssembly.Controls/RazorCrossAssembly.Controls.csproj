@@ -1,0 +1,17 @@
+<Project>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.props" />
+  <PropertyGroup>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <RootNamespace>RazorCrossAssembly.Controls</RootNamespace>
+    <AssemblyName>RazorCrossAssembly.Controls</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="RazorTemplates/CrossAssemblyLabel.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates/SharedName.skin.cshtml" />
+    <ProjectReference Include="../../../Sources/Framework/mscorlib/NScript.MsCorlib.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/System.Web.Html/System.Web.Html.csproj" />
+    <ProjectReference Include="../../../Sources/Framework/Sunlight.Framework.UI/Sunlight.Framework.UI.csproj" />
+    <ProjectReference Include="../RazorCrossAssembly.Models/RazorCrossAssembly.Models.csproj" />
+  </ItemGroup>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />
+</Project>

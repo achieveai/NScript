@@ -8,22 +8,36 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         private GraphDescriptor descriptor;
         private GraphState state;
 
-        public GraphBindingStrategy(GraphDescriptor descriptor, NativeArray elemRefs, int depth)
+        public GraphBindingStrategy(GraphDescriptor descriptor, NativeArray elemRefs, int depth,
+            System.Web.Html.Element rootElement)
         {
             this.descriptor = descriptor;
             this.state = new GraphState(descriptor, elemRefs, depth);
+            GraphEngine.CreateSubControls(descriptor, this.state, rootElement, null);
         }
 
         public void PushInitialValues(object dataContext, object templateParent, NativeArray elementsOfInterest)
         {
             this.state.Sources[GraphSourceSlot.DataContext] = dataContext;
             this.state.Sources[GraphSourceSlot.TemplateParent] = templateParent;
-            GraphEngine.PushInitialValues(this.descriptor, this.state);
 
-            // Wire subscriptions immediately so property changes propagate synchronously.
-            // This is called again from SkinInstance.QueuedActivation, but WireSubscriptions
-            // is idempotent (returns early if already active).
-            WireSubscriptions(dataContext, templateParent);
+            // Capture changes raised by a child setter or Activate() while the
+            // initial graph is still being populated, then reconcile them below.
+            this.state.Flushing = true;
+            try
+            {
+                WireSubscriptions(dataContext, templateParent);
+                GraphEngine.SetDefaultSubControlDataContext(this.descriptor, this.state, dataContext);
+                GraphEngine.PushInitialValues(this.descriptor, this.state);
+                GraphEngine.ApplySubControlBindings(this.descriptor, this.state);
+                GraphEngine.ActivateSubControls(this.descriptor, this.state);
+            }
+            finally
+            {
+                this.state.Flushing = false;
+            }
+
+            GraphEngine.Flush(this.descriptor, this.state);
         }
 
         public void WireSubscriptions(object dataContext, object templateParent)
@@ -66,14 +80,18 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         public void OnDataContextChanged(object newDataContext)
         {
-            this.state.Sources[GraphSourceSlot.DataContext] = newDataContext;
-
-            if (this.state.SubscriptionsActive)
+            bool wasSubscribed = this.state.SubscriptionsActive;
+            if (wasSubscribed)
             {
                 UnsubscribeAll();
                 this.state.SubscriptionsActive = false;
-                WireSubscriptions(newDataContext, this.state.Sources[GraphSourceSlot.TemplateParent]);
             }
+
+            this.state.Sources[GraphSourceSlot.DataContext] = newDataContext;
+            GraphEngine.SetDefaultSubControlDataContext(this.descriptor, this.state, newDataContext);
+
+            if (wasSubscribed)
+                WireSubscriptions(newDataContext, this.state.Sources[GraphSourceSlot.TemplateParent]);
 
             // Mark source node dirty and flush synchronously
             this.state.Dirty[0] = true;
@@ -82,17 +100,25 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         public void OnTemplateParentChanged(object newTemplateParent)
         {
-            this.state.Sources[GraphSourceSlot.TemplateParent] = newTemplateParent;
-
-            if (this.state.SubscriptionsActive)
+            bool wasSubscribed = this.state.SubscriptionsActive;
+            if (wasSubscribed)
             {
                 UnsubscribeAll();
                 this.state.SubscriptionsActive = false;
-                WireSubscriptions(this.state.Sources[GraphSourceSlot.DataContext], newTemplateParent);
             }
+
+            this.state.Sources[GraphSourceSlot.TemplateParent] = newTemplateParent;
+
+            if (wasSubscribed)
+                WireSubscriptions(this.state.Sources[GraphSourceSlot.DataContext], newTemplateParent);
 
             // Mark source node dirty and flush synchronously
             this.state.Dirty[0] = true;
+            NativeArray<int> getterSources = this.descriptor.GetterSourceSlots;
+            if (!object.IsNullOrUndefined(getterSources))
+                for (int i = 0; i < getterSources.Length; i++)
+                    if (getterSources[i] == GraphSourceSlot.TemplateParent)
+                        this.state.Dirty[i] = true;
             GraphEngine.Flush(this.descriptor, this.state);
         }
 
@@ -100,6 +126,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             UnsubscribeAll();
             this.state.SubscriptionsActive = false;
+            GraphEngine.DeactivateSubControls(this.descriptor, this.state);
         }
 
         public void Dispose()
@@ -110,6 +137,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // Clean up event listeners and collection listeners.
             GraphEngine.CleanupEventListeners(this.descriptor, this.state);
             GraphEngine.CleanupCollectionListeners(this.descriptor, this.state);
+            GraphEngine.DisposeSubControls(this.descriptor, this.state);
 
             int n = this.descriptor.NodeCount;
             for (int i = 0; i < n; i++)

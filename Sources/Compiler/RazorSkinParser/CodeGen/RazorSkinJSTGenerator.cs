@@ -11,6 +11,17 @@ using Serilog;
 
 namespace NScript.RazorSkin.CodeGen
 {
+    internal sealed class RazorSubControlDiagnosticException : InvalidOperationException
+    {
+        internal RazorSubControlDiagnosticException(Location location, string message)
+            : base(message)
+        {
+            Location = location;
+        }
+
+        internal Location Location { get; }
+    }
+
     /// <summary>
     /// Generates proper JST (JavaScript Syntax Tree) nodes for Razor skin templates,
     /// mirroring the pattern used by XwmlParser's SkinCodeGenerator. This ensures that
@@ -156,6 +167,11 @@ namespace NScript.RazorSkin.CodeGen
             // Must happen before CollectHtmlWithPathsPublic which reads SubControlNode.TagName
             ResolveSubControlAttributes(_ir.Children);
 
+            // Marker indices are assigned by the topology builder and used by the
+            // HTML collector for stable sub-control host lookup.
+            var topology = GraphTopologyBuilder.Build(_ir);
+            _topology = topology;
+
             // Collect bindings, events, and HTML content
             var bindings = RazorSkinCodeGenerator.CollectBindingsPublic(_ir.Children);
             var events = RazorSkinCodeGenerator.CollectEventsPublic(_ir.Children);
@@ -169,10 +185,6 @@ namespace NScript.RazorSkin.CodeGen
             {
                 htmlContent = ReplaceCssClassNamesInHtml(htmlContent);
             }
-
-            // Build graph topology from IR
-            var topology = GraphTopologyBuilder.Build(_ir);
-            _topology = topology;
 
             // Build known function names from @functions blocks
             var knownFunctionNames = new HashSet<string>();
@@ -315,7 +327,9 @@ namespace NScript.RazorSkin.CodeGen
                 topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames,
                 _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers,
                 cssManager: _cssManager,
-                fallbackLocation: GetTemplateLocation());
+                usingNamespaces: _ir.UsingNamespaces,
+                fallbackLocation: GetTemplateLocation(),
+                controlTypeName: _ir.ControlTypeName);
             var graphDescriptorExpr = graphEmitter.Emit();
 
             initStatements.Add(
@@ -473,6 +487,7 @@ namespace NScript.RazorSkin.CodeGen
             foreach (var evt in topology.Events)
             {
                 if (gatedElemIndices.Contains(evt.ElemIdx)) continue;
+                if (topology.SubControls.Any(sc => sc.ElemIdx == evt.ElemIdx)) continue;
 
                 stmts.Add(
                     ExpressionStatement.CreateAssignmentExpression(
@@ -484,10 +499,19 @@ namespace NScript.RazorSkin.CodeGen
                         BuildEventElementRef(htmlContent, evt)));
             }
 
-            // Part ID mapping — not yet implemented for Razor templates (always null).
-            // XWML uses a custom expression for this; Razor will add support when
-            // id-based part access is needed.
-            var partIdExpr = new NullLiteralExpression(_factoryScope);
+            var partIds = new InlineObjectInitializer(null, _factoryScope);
+            ValidateUniqueSubControlIds(topology.SubControls);
+            var seenPartIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var subControl in topology.SubControls)
+            {
+                if (string.IsNullOrEmpty(subControl.ElementId)) continue;
+                seenPartIds.Add(subControl.ElementId);
+                partIds.AddInitializer(subControl.ElementId,
+                    new NumberLiteralExpression(_factoryScope, subControl.ElemIdx));
+            }
+            Expression partIdExpr = seenPartIds.Count > 0
+                ? (Expression)partIds
+                : new NullLiteralExpression(_factoryScope);
 
             // return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], partMap, liveBinderCount, 0)
             IIdentifier skinInstanceFactoryId = GetResolvedIdentifier(
@@ -1075,14 +1099,25 @@ namespace NScript.RazorSkin.CodeGen
         {
             if (_clrContext == null || _knownTypes == null) return;
 
-            var typeDef = FindSubControlType(sub.TypeName);
-            if (typeDef == null)
+            TypeDefinition typeDef;
+            try { typeDef = FindSubControlType(sub.TypeName); }
+            catch (InvalidOperationException ex)
             {
-                Log.Debug("ResolveSubControlTagInfo: Cannot find type for {TypeName}", sub.TypeName);
-                return;
+                throw new RazorSubControlDiagnosticException(sub.Location, ex.Message);
             }
-
-            sub.ResolvedTypeName = typeDef.FullName;
+            foreach (var binding in sub.PropertyBindings.Where(binding => binding.IsLiteral))
+            {
+                var property = typeDef != null ? FindProperty(typeDef, binding.PropertyName) : null;
+                var targetEnum = property != null
+                    ? _clrContext.GetTypes().FirstOrDefault(type =>
+                        type.FullName == property.PropertyType.FullName && type.IsEnum)
+                    : null;
+                if (targetEnum != null)
+                    ValidateEnumLiteral(binding.Classification.CSharpExpression,
+                        targetEnum, _clrContext.GetTypes(), _ir.UsingNamespaces, sub.Location);
+            }
+            ValidateSubControlTagInfo(sub, typeDef, FindProperty,
+                FindTypeDefinition(_ir.ModelTypeName));
 
             // Read [TagName("xxx")] attribute
             if (_knownTypes.TagNameAttribute != null)
@@ -1119,44 +1154,158 @@ namespace NScript.RazorSkin.CodeGen
             }
         }
 
+        internal static void ValidateSubControlTagInfo(
+            SubControlNode sub, TypeDefinition typeDef,
+            Func<TypeDefinition, string, PropertyDefinition> findProperty,
+            TypeDefinition modelType = null)
+        {
+            if (typeDef == null)
+                throw new RazorSubControlDiagnosticException(
+                    sub.Location, $"Unknown sub-control type '{sub.TypeName}'.");
+
+            var baseType = typeDef;
+            while (baseType != null && baseType.FullName != "Sunlight.Framework.UI.UIElement")
+                baseType = baseType.BaseType?.Resolve();
+            if (baseType == null)
+                throw new RazorSubControlDiagnosticException(
+                    sub.Location, $"Sub-control {typeDef.FullName} must inherit from UIElement.");
+
+            sub.ResolvedTypeName = typeDef.FullName;
+            foreach (var binding in sub.PropertyBindings)
+            {
+                var property = findProperty(typeDef, binding.PropertyName);
+                if (property == null || property.SetMethod == null)
+                    throw new RazorSubControlDiagnosticException(
+                        sub.Location, $"Sub-control {typeDef.FullName} has no writable property '{binding.PropertyName}'.");
+
+                var typeName = property.PropertyType.FullName;
+                if (typeName.StartsWith("System.Func"))
+                    throw new RazorSubControlDiagnosticException(sub.Location,
+                        $"Sub-control {typeDef.FullName}.{binding.PropertyName} uses Func; Razor sub-control bindings cannot return a value from a Func handler.");
+                binding.IsDelegate = typeName.StartsWith("System.Action");
+
+                // Razor attributes without @ are text only when the target is a string.
+                if (binding.IsLiteral && typeName != "System.String")
+                    binding.IsLiteral = false;
+
+                if (!binding.IsLiteral && property.CustomAttributes.Any(attr =>
+                    attr.AttributeType.Name == "DefaultDataBindingAttribute"
+                    && attr.Properties.Any(named => named.Name == "Mode"
+                        && Convert.ToInt32(named.Argument.Value) == 2)))
+                {
+                    var source = binding.Classification.CSharpExpression;
+                    var match = System.Text.RegularExpressions.Regex.Match(source ?? string.Empty,
+                        @"^Model\.([A-Za-z_][A-Za-z0-9_]*)$");
+                    if (property.GetMethod != null && match.Success
+                        && modelType != null
+                        && findProperty(modelType, match.Groups[1].Value)?.SetMethod != null)
+                        binding.Classification.Mode = BindingMode.TwoWay;
+                }
+            }
+
+            if (FindElementConstructor(typeDef) == null)
+                throw new RazorSubControlDiagnosticException(sub.Location,
+                    $"Sub-control {typeDef.FullName} requires a public (System.Web.Html.Element) constructor.");
+        }
+
+        internal static MethodDefinition FindElementConstructor(TypeDefinition typeDef)
+        {
+            return typeDef.Methods.FirstOrDefault(method => method.IsConstructor && !method.IsStatic
+                && method.IsPublic && method.Parameters.Count == 1
+                && method.Parameters[0].ParameterType.FullName == "System.Web.Html.Element");
+        }
+
+        internal static void ValidateEnumLiteral(string expression, TypeDefinition targetEnum,
+            IEnumerable<TypeDefinition> types, IEnumerable<string> usingNamespaces, Location location)
+        {
+            var member = System.Text.RegularExpressions.Regex.Match(expression ?? string.Empty,
+                @"^(?<type>[A-Za-z_][A-Za-z0-9_.]*)\.(?<member>[A-Za-z_][A-Za-z0-9_]*)$");
+            if (!member.Success)
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Enum value '{expression}' must name a member of {targetEnum.FullName}.");
+
+            TypeDefinition sourceEnum;
+            try
+            {
+                sourceEnum = ResolveSubControlType(types, member.Groups["type"].Value,
+                    usingNamespaces);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new RazorSubControlDiagnosticException(location, ex.Message);
+            }
+            if (sourceEnum == null || !sourceEnum.IsEnum)
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Unknown enum type '{member.Groups["type"].Value}' in '{expression}'.");
+            if (sourceEnum.FullName != targetEnum.FullName
+                || sourceEnum.Module?.Mvid != targetEnum.Module?.Mvid)
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Enum value '{expression}' is not a member of {targetEnum.FullName}.");
+            if (!sourceEnum.Fields.Any(field => field.Name == member.Groups["member"].Value
+                && field.IsLiteral && field.HasConstant))
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Enum {sourceEnum.FullName} has no member '{member.Groups["member"].Value}'.");
+        }
+
+        private static void ValidateUniqueSubControlIds(IEnumerable<SubControlTopology> subControls)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var subControl in subControls)
+            {
+                if (string.IsNullOrEmpty(subControl.ElementId)) continue;
+                if (!seen.Add(subControl.ElementId))
+                    throw new RazorSubControlDiagnosticException(subControl.Location,
+                        "Duplicate Razor sub-control id '" + subControl.ElementId + "'.");
+            }
+        }
+
         /// <summary>
         /// Finds a SubControlNode's TypeDefinition by trying the type name directly,
         /// then trying each using namespace as a prefix.
         /// </summary>
         private TypeDefinition FindSubControlType(string typeName)
         {
-            if (string.IsNullOrEmpty(typeName)) return null;
-
-            var typeDef = FindTypeDefinitionByName(typeName);
-            if (typeDef != null) return typeDef;
-
-            if (_ir.UsingNamespaces != null)
-            {
-                foreach (var ns in _ir.UsingNamespaces)
-                {
-                    typeDef = FindTypeDefinitionByName(ns + "." + typeName);
-                    if (typeDef != null) return typeDef;
-                }
-            }
-
-            return null;
+            return ResolveSubControlType(_clrContext.GetTypes(), typeName, _ir.UsingNamespaces);
         }
 
-        /// <summary>
-        /// Finds a TypeDefinition by full name across all loaded assemblies.
-        /// </summary>
-        private TypeDefinition FindTypeDefinitionByName(string fullName)
+        internal static TypeDefinition ResolveSubControlType(
+            IEnumerable<TypeDefinition> types, string typeName, IEnumerable<string> usingNamespaces)
         {
-            try
+            if (string.IsNullOrEmpty(typeName)) return null;
+            var allTypes = types.ToList();
+            var exactMatches = allTypes.Where(type => type.FullName == typeName)
+                .GroupBy(type => type.Module?.Mvid).Select(group => group.First()).ToList();
+            if (exactMatches.Count > 1)
+                throw new InvalidOperationException("Ambiguous sub-control '" + typeName + "': "
+                    + string.Join(", ", exactMatches.Select(type => type.FullName
+                        + " (" + type.Module?.Name + ")")));
+            if (exactMatches.Count == 1) return exactMatches[0];
+
+            var importedMatches = new List<TypeDefinition>();
+            if (usingNamespaces != null)
             {
-                foreach (var type in _clrContext.GetTypeDefinitions())
+                foreach (var ns in usingNamespaces)
                 {
-                    if (type.FullName == fullName)
-                        return type;
+                    foreach (var imported in allTypes.Where(type => type.FullName == ns + "." + typeName))
+                        if (!importedMatches.Any(type => type.FullName == imported.FullName
+                            && type.Module?.Mvid == imported.Module?.Mvid))
+                            importedMatches.Add(imported);
                 }
             }
-            catch { }
+            if (importedMatches.Count > 1)
+                throw new InvalidOperationException("Ambiguous sub-control '" + typeName + "': "
+                    + string.Join(", ", importedMatches.Select(type => type.FullName
+                        + " (" + type.Module?.Name + ")")));
+            if (importedMatches.Count == 1) return importedMatches[0];
 
+            var matches = allTypes.Where(type => type.Name == typeName)
+                .GroupBy(type => type.FullName + "|" + type.Module?.Mvid)
+                .Select(group => group.First()).ToList();
+            if (matches.Count > 1)
+                throw new InvalidOperationException("Ambiguous sub-control '" + typeName + "': "
+                    + string.Join(", ", matches.Select(type => type.FullName
+                        + " (" + type.Module?.Name + ")")));
+            if (matches.Count == 1) return matches[0];
             return null;
         }
     }

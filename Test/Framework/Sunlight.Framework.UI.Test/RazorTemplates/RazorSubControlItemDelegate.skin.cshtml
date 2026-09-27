@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="subcontrol-item-delegate">
+@foreach (var item in Model.Items)
+{
+    <RazorProbeControl Click="@item.Select" />
+}
+</div>

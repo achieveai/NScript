@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NScript.RazorSkin.TemplateIR;
+using NScript.Utils;
 
 namespace NScript.RazorSkin.CodeGen
 {
@@ -43,6 +44,7 @@ namespace NScript.RazorSkin.CodeGen
     {
         public int NodeIdx { get; set; }
         public int ElemIdx { get; set; }
+        public Location Location { get; set; }
         public string EventName { get; set; }
         public string HandlerExpression { get; set; }
     }
@@ -79,6 +81,8 @@ namespace NScript.RazorSkin.CodeGen
     public class SubControlTopology
     {
         public int ElemIdx { get; set; }
+        public string ElementId { get; set; }
+        public Location Location { get; set; }
         public string ControlTypeName { get; set; }
         public string ResolvedTypeName { get; set; }
         public List<SubControlPropertyTopology> PropertyBindings { get; set; } = new List<SubControlPropertyTopology>();
@@ -89,6 +93,7 @@ namespace NScript.RazorSkin.CodeGen
         public int NodeIdx { get; set; }
         public string TargetPropertyName { get; set; }
         public string GetterExpression { get; set; }
+        public string TwoWaySourceProperty { get; set; }
     }
 
     public class GraphTopology
@@ -96,6 +101,7 @@ namespace NScript.RazorSkin.CodeGen
         public int NodeCount { get; set; }
         public int[] NodeTypes { get; set; }
         public string[] GetterExpressions { get; set; }
+        public int[] GetterSourceSlots { get; set; }
         public List<int>[] Consumers { get; set; }
         public int[] GateIndices { get; set; }
         public object[] DefaultValues { get; set; }
@@ -198,10 +204,20 @@ namespace NScript.RazorSkin.CodeGen
 
             if (deps.Count == 0)
             {
-                // No dependencies — create a property node from the expression directly
-                int propIdx = ctx.GetOrCreatePropertyNode(
-                    binding.Classification.CSharpExpression, 0);
+                var expression = binding.Classification.CSharpExpression;
+                int propIdx;
+                if (IsComplexExpression(expression))
+                {
+                    propIdx = ctx.AddNode(GraphNodeTypeConstants.Computed, expression, null);
+                    ctx.AddEdge(0, propIdx);
+                }
+                else
+                {
+                    propIdx = ctx.GetOrCreatePropertyNode(expression, 0);
+                }
                 if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+                if (TryGetControlProperty(expression, out var controlProperty))
+                    ctx.AddSubscription(controlProperty, propIdx, 1);
 
                 int domIdx = ctx.AddDomTarget(binding, propIdx, gateIndex);
                 return;
@@ -215,7 +231,7 @@ namespace NScript.RazorSkin.CodeGen
                 if (isChained)
                 {
                     // Chained path: Property node for root + Computed node for full expression
-                    int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                    int propIdx = ctx.GetOrCreatePropertyNode(GetGetterPropertyName(dep), 0);
                     if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
 
                     if (isOneWay)
@@ -243,7 +259,7 @@ namespace NScript.RazorSkin.CodeGen
                     bool isComplexExpression = IsComplexExpression(
                         binding.Classification.CSharpExpression);
 
-                    int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                    int propIdx = ctx.GetOrCreatePropertyNode(GetGetterPropertyName(dep), 0);
                     if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
 
                     if (isOneWay)
@@ -276,7 +292,7 @@ namespace NScript.RazorSkin.CodeGen
                 var propIndices = new List<int>();
                 foreach (var dep in deps)
                 {
-                    int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                    int propIdx = ctx.GetOrCreatePropertyNode(GetGetterPropertyName(dep), 0);
                     if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
                     propIndices.Add(propIdx);
 
@@ -321,9 +337,37 @@ namespace NScript.RazorSkin.CodeGen
             {
                 NodeIdx = evtIdx,
                 ElemIdx = ctx.NextElemIdx(),
+                Location = evt.Location,
                 EventName = evt.DomEventName,
                 HandlerExpression = evt.HandlerExpression
             });
+        }
+
+        private static string GetGetterPropertyName(ObservableDependency dependency)
+        {
+            return dependency.SourceKind == BindingSourceKind.TemplateParent
+                ? "Control." + dependency.PropertyName
+                : dependency.PropertyName;
+        }
+
+        private static bool TryGetControlProperty(string expression, out string propertyName)
+        {
+            propertyName = null;
+            if (string.IsNullOrEmpty(expression))
+                return false;
+            var candidate = expression.TrimStart();
+            if (candidate.StartsWith("!")) candidate = candidate.Substring(1).TrimStart();
+            if (!candidate.StartsWith("Control."))
+                return false;
+            candidate = candidate.Substring("Control.".Length);
+            if (candidate.Length == 0 || !char.IsLetter(candidate[0]))
+                return false;
+            int length = 1;
+            while (length < candidate.Length
+                && (char.IsLetterOrDigit(candidate[length]) || candidate[length] == '_'))
+                length++;
+            propertyName = candidate.Substring(0, length);
+            return true;
         }
 
         private static void ProcessConditional(ConditionalNode cond, BuildContext ctx, int gateIndex)
@@ -336,6 +380,7 @@ namespace NScript.RazorSkin.CodeGen
             {
                 var condExpr = cond.Condition.CSharpExpression ?? "";
                 var propName = deps[0].PropertyName;
+                var getterPropertyName = GetGetterPropertyName(deps[0]);
 
                 // Classify the condition expression to determine how to feed the gate:
                 // - "!Model.X" → negated property (gate checks !field)
@@ -355,7 +400,7 @@ namespace NScript.RazorSkin.CodeGen
                 {
                     // Simple negation — create a dedicated Property node with negated getter.
                     // Use "!" prefix convention: the emitter will build "return !dc.field;"
-                    int propIdx = ctx.GetOrCreatePropertyNode(propName, 0);
+                    int propIdx = ctx.GetOrCreatePropertyNode(getterPropertyName, 0);
                     if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
                     if (cond.Condition.Mode == BindingMode.OneWay)
                     {
@@ -365,13 +410,13 @@ namespace NScript.RazorSkin.CodeGen
 
                     // Create a new non-shared Property node with "!" + propName as getter
                     conditionSourceIdx = ctx.AddNode(GraphNodeTypeConstants.Property,
-                        "!" + propName, null);
+                        "!" + getterPropertyName, null);
                     if (gateIndex != -1) ctx.SetGateIndex(conditionSourceIdx, gateIndex);
                     ctx.AddEdge(propIdx, conditionSourceIdx);
                 }
                 else
                 {
-                    conditionSourceIdx = ctx.GetOrCreatePropertyNode(propName, 0);
+                    conditionSourceIdx = ctx.GetOrCreatePropertyNode(getterPropertyName, 0);
                     if (gateIndex != -1) ctx.SetGateIndex(conditionSourceIdx, gateIndex);
                     if (cond.Condition.Mode == BindingMode.OneWay)
                     {
@@ -382,8 +427,20 @@ namespace NScript.RazorSkin.CodeGen
             }
             else
             {
-                // Use source directly for 0-dep conditions
-                conditionSourceIdx = 0;
+                var conditionExpression = cond.Condition.CSharpExpression?.Trim();
+                if (TryGetControlProperty(conditionExpression, out var controlProperty)
+                    && (conditionExpression == "Control." + controlProperty
+                        || conditionExpression == "!Control." + controlProperty))
+                {
+                    conditionSourceIdx = ctx.GetOrCreatePropertyNode(
+                        "Control." + controlProperty, 0);
+                    ctx.AddSubscription(controlProperty, conditionSourceIdx, 1);
+                }
+                else
+                {
+                    // Use source directly for 0-dep conditions
+                    conditionSourceIdx = 0;
+                }
             }
 
             // Create Gate node.
@@ -489,10 +546,13 @@ namespace NScript.RazorSkin.CodeGen
         private static void ProcessSubControl(SubControlNode sub, BuildContext ctx, int gateIndex)
         {
             int elemIdx = ctx.NextElemIdx();
+            sub.RuntimeMarkerIdx = elemIdx;
 
             var subTopo = new SubControlTopology
             {
                 ElemIdx = elemIdx,
+                ElementId = sub.ElementId,
+                Location = sub.Location,
                 ControlTypeName = sub.TypeName,
                 ResolvedTypeName = sub.ResolvedTypeName
             };
@@ -500,26 +560,56 @@ namespace NScript.RazorSkin.CodeGen
             foreach (var propBinding in sub.PropertyBindings)
             {
                 var deps = propBinding.Classification.Dependencies;
-                var isOneWay = propBinding.Classification.Mode == BindingMode.OneWay;
+                var isOneWay = propBinding.Classification.Mode == BindingMode.OneWay
+                    || propBinding.Classification.Mode == BindingMode.TwoWay;
+                var expression = propBinding.IsLiteral
+                    ? "\"" + propBinding.Classification.CSharpExpression.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\""
+                    : propBinding.Classification.CSharpExpression;
+                var twoWaySourceProperty = propBinding.Classification.Mode == BindingMode.TwoWay
+                    && expression.StartsWith("Model.") ? expression.Substring(6) : null;
+
+                if (propBinding.IsDelegate && !propBinding.IsLiteral)
+                {
+                    int delegateIdx = ctx.AddNode(GraphNodeTypeConstants.EventBinding, expression, null);
+                    if (gateIndex != -1) ctx.SetGateIndex(delegateIdx, gateIndex);
+                    ctx.AddEdge(0, delegateIdx);
+                    subTopo.PropertyBindings.Add(new SubControlPropertyTopology
+                    {
+                        NodeIdx = delegateIdx,
+                        TargetPropertyName = propBinding.PropertyName,
+                        GetterExpression = expression,
+                        TwoWaySourceProperty = twoWaySourceProperty
+                    });
+                    continue;
+                }
 
                 if (deps.Count == 0)
                 {
-                    // No dependencies — create a property node from the expression
-                    int propIdx = ctx.GetOrCreatePropertyNode(
-                        propBinding.Classification.CSharpExpression, 0);
-                    if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
+                    int valueIdx;
+                    if (!propBinding.IsLiteral && expression.StartsWith("Model.")
+                        && !IsComplexExpression(expression))
+                    {
+                        valueIdx = ctx.GetOrCreatePropertyNode(expression, 0);
+                    }
+                    else
+                    {
+                        valueIdx = ctx.AddNode(GraphNodeTypeConstants.Computed, expression, null);
+                        ctx.AddEdge(0, valueIdx);
+                    }
+                    if (gateIndex != -1) ctx.SetGateIndex(valueIdx, gateIndex);
 
                     subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {
-                        NodeIdx = propIdx,
+                        NodeIdx = valueIdx,
                         TargetPropertyName = propBinding.PropertyName,
-                        GetterExpression = propBinding.Classification.CSharpExpression
+                        GetterExpression = expression,
+                        TwoWaySourceProperty = twoWaySourceProperty
                     });
                 }
                 else if (deps.Count == 1)
                 {
                     var dep = deps[0];
-                    int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                    int propIdx = ctx.GetOrCreatePropertyNode(GetGetterPropertyName(dep), 0);
                     if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
 
                     if (isOneWay)
@@ -528,11 +618,21 @@ namespace NScript.RazorSkin.CodeGen
                             dep.SourceKind == BindingSourceKind.TemplateParent ? 1 : 0);
                     }
 
+                    int valueIdx = propIdx;
+                    if (IsComplexExpression(expression))
+                    {
+                        valueIdx = ctx.AddNode(GraphNodeTypeConstants.Computed, expression, null);
+                        if (gateIndex != -1) ctx.SetGateIndex(valueIdx, gateIndex);
+                        ctx.AddEdge(0, valueIdx);
+                        ctx.AddEdge(propIdx, valueIdx);
+                    }
+
                     subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {
-                        NodeIdx = propIdx,
+                        NodeIdx = valueIdx,
                         TargetPropertyName = propBinding.PropertyName,
-                        GetterExpression = propBinding.Classification.CSharpExpression
+                        GetterExpression = expression,
+                        TwoWaySourceProperty = twoWaySourceProperty
                     });
                 }
                 else
@@ -541,7 +641,7 @@ namespace NScript.RazorSkin.CodeGen
                     var propIndices = new List<int>();
                     foreach (var dep in deps)
                     {
-                        int propIdx = ctx.GetOrCreatePropertyNode(dep.PropertyName, 0);
+                        int propIdx = ctx.GetOrCreatePropertyNode(GetGetterPropertyName(dep), 0);
                         if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
                         propIndices.Add(propIdx);
 
@@ -553,7 +653,7 @@ namespace NScript.RazorSkin.CodeGen
                     }
 
                     int computedIdx = ctx.AddNode(GraphNodeTypeConstants.Computed,
-                        propBinding.Classification.CSharpExpression, null);
+                        expression, null);
                     if (gateIndex != -1) ctx.SetGateIndex(computedIdx, gateIndex);
 
                     ctx.AddEdge(0, computedIdx);
@@ -564,9 +664,25 @@ namespace NScript.RazorSkin.CodeGen
                     {
                         NodeIdx = computedIdx,
                         TargetPropertyName = propBinding.PropertyName,
-                        GetterExpression = propBinding.Classification.CSharpExpression
+                        GetterExpression = expression,
+                        TwoWaySourceProperty = twoWaySourceProperty
                     });
                 }
+            }
+
+            foreach (var evt in sub.EventBindings)
+            {
+                int evtIdx = ctx.AddNode(GraphNodeTypeConstants.EventBinding,
+                    evt.HandlerExpression, null);
+                if (gateIndex != -1) ctx.SetGateIndex(evtIdx, gateIndex);
+                ctx.AddEdge(0, evtIdx);
+                ctx.Topology.Events.Add(new EventTopology
+                {
+                    NodeIdx = evtIdx,
+                    ElemIdx = elemIdx,
+                    EventName = evt.DomEventName,
+                    HandlerExpression = evt.HandlerExpression
+                });
             }
 
             ctx.Topology.SubControls.Add(subTopo);
@@ -667,7 +783,8 @@ namespace NScript.RazorSkin.CodeGen
             public void AddSubscription(string propertyName, int nodeIdx, int sourceSlot, string[] pathSegments = null)
             {
                 // For chains, deduplicate by full chain key; for simple, by property name
-                var dedupeKey = pathSegments != null ? string.Join(".", pathSegments) : propertyName;
+                var dedupeKey = nodeIdx + ":" + (pathSegments != null
+                    ? string.Join(".", pathSegments) : propertyName);
                 if (_subscribedProperties.Contains(dedupeKey))
                     return;
 
@@ -714,6 +831,9 @@ namespace NScript.RazorSkin.CodeGen
                 Topology.NodeCount = n;
                 Topology.NodeTypes = _nodeTypes.ToArray();
                 Topology.GetterExpressions = _getterExpressions.ToArray();
+                Topology.GetterSourceSlots = _getterExpressions.Select(expression =>
+                    expression != null && (expression.StartsWith("Control.")
+                        || expression.StartsWith("!Control.")) ? 1 : 0).ToArray();
                 Topology.Consumers = _consumers.ToArray();
                 Topology.GateIndices = _gateIndices.ToArray();
                 Topology.DefaultValues = _defaultValues.ToArray();

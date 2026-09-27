@@ -151,7 +151,7 @@ namespace Sunlight.Framework.UI.Helpers
             this.templateParentUpdated = true;
 
             this.isGraphMode = true;
-            this.bindingStrategy = new GraphBindingStrategy(graphDescriptor, elementsOfIntrests, 0);
+            this.bindingStrategy = new GraphBindingStrategy(graphDescriptor, elementsOfIntrests, 0, rootElement);
             this.hasDataContextBinding = new NativeArray<bool>(elementsOfIntrests.Length);
 
             if (partIdMapping != null)

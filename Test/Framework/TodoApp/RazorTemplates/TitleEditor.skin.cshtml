@@ -1,0 +1,5 @@
+@model TodoApp.ViewModels.TodoItemViewModel
+@control TodoApp.Controls.TitleEditor
+@styles "TodoApp.RazorTemplates.AppShell.css"
+
+<input type="text" class="detail-title-input" data-editor-state="@(Control.Value ? "filled" : "empty")" value="@Control.Value" onchange="@Control.Commit" />

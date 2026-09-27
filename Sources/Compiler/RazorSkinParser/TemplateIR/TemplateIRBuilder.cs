@@ -63,12 +63,12 @@ namespace NScript.RazorSkin.TemplateIR
 
         // Regex to match opening PascalCase tags: <ListView ...> or <ListView ... />
         private static readonly Regex PascalCaseTagRegex = new Regex(
-            @"<([A-Z][A-Za-z0-9]+)(\s[^>]*)?\s*/?>",
+            @"<([A-Z][A-Za-z0-9]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)(?=[\s/>])((?:[^>""']|""[^""]*""|'[^']*')*?)\s*/?>",
             RegexOptions.Compiled);
 
         // Regex to match closing PascalCase tags: </ListView>
         private static readonly Regex PascalCaseClosingTagRegex = new Regex(
-            @"</([A-Z][A-Za-z0-9]+)\s*>",
+            @"</([A-Z][A-Za-z0-9]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*>",
             RegexOptions.Compiled);
 
         // Regex to extract id attribute from an attribute string
@@ -100,7 +100,8 @@ namespace NScript.RazorSkin.TemplateIR
         internal static bool IsPascalCaseTag(string tagName)
         {
             if (string.IsNullOrEmpty(tagName)) return false;
-            return char.IsUpper(tagName[0]) && tagName.Length > 1 && tagName.All(c => char.IsLetterOrDigit(c));
+            return char.IsUpper(tagName[0]) && tagName.Length > 1
+                && tagName.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '_');
         }
         public static SkinTemplateNode Build(
             string templateName,
@@ -548,11 +549,17 @@ namespace NScript.RazorSkin.TemplateIR
                     var content = GetTokenContent(htmlNode);
                     if (!string.IsNullOrWhiteSpace(content))
                     {
-                        targetBranch.Add(new HtmlNode
-                        {
-                            HtmlContent = content.Trim(),
-                            Location = TryGetLocation(htmlNode, templateName)
-                        });
+                        var branchParent = new SkinTemplateNode();
+                        var htmlLocation = TryGetLocation(htmlNode, templateName);
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), branchParent,
+                            templateName, htmlLocation);
+                        if (!string.IsNullOrWhiteSpace(processed))
+                            targetBranch.Add(new HtmlNode
+                            {
+                                HtmlContent = processed,
+                                Location = htmlLocation
+                            });
+                        targetBranch.AddRange(branchParent.Children);
                         lastHtmlContent = content;
                     }
                 }
@@ -1210,17 +1217,22 @@ namespace NScript.RazorSkin.TemplateIR
         {
             if (string.IsNullOrEmpty(html)) return html;
 
+            html = PascalCaseClosingTagRegex.Replace(html, match =>
+                IsPascalCaseTag(match.Groups[1].Value) ? "" : match.Value);
             var matches = PascalCaseTagRegex.Matches(html);
 
             // Sub-controls have no Razor intermediate node available, but they live inside
             // the host html content. Prefer the host htmlNode's Location; fall back to the
             // parent's Location only when the caller lacks an htmlNode in scope.
             var parentLocation = hostLocation ?? parent?.Location;
+            var offset = 0;
 
             foreach (Match match in matches)
             {
                 var tagName = match.Groups[1].Value;
                 if (!IsPascalCaseTag(tagName)) continue;
+
+                AppendSubControlHtml(html.Substring(offset, match.Index - offset), parent, parentLocation);
 
                 var attrsStr = match.Groups[2].Success ? match.Groups[2].Value : "";
                 var subControl = new SubControlNode
@@ -1241,13 +1253,15 @@ namespace NScript.RazorSkin.TemplateIR
                 {
                     var attrName = attrMatch.Groups[1].Value;
                     var attrValue = attrMatch.Groups[2].Success ? attrMatch.Groups[2].Value : attrMatch.Groups[3].Value;
+                    if (attrValue.StartsWith(RazorSkinPreprocessor.EscapedSubControlAt, StringComparison.Ordinal))
+                        attrValue = "@" + attrValue.Substring(RazorSkinPreprocessor.EscapedSubControlAt.Length);
 
                     if (attrName == "id") continue; // Already handled
 
                     if (EventAttributes.Contains(attrName.ToLower()) && attrValue.TrimStart().StartsWith("@"))
                     {
                         // Event binding on sub-control
-                        var evtExpr = attrValue.TrimStart('@');
+                        var evtExpr = UnwrapSubControlExpression(attrValue);
                         var domEvtName = attrName.ToLower().StartsWith("on")
                             ? attrName.Substring(2).ToLower()
                             : attrName.ToLower();
@@ -1259,41 +1273,47 @@ namespace NScript.RazorSkin.TemplateIR
                             Location = parentLocation
                         });
                     }
-                    else if (!attrName.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+                    else if (!EventAttributes.Contains(attrName))
                     {
                         // Property binding
                         var classification = new BindingClassification
                         {
-                            CSharpExpression = attrValue.TrimStart('@'),
+                            CSharpExpression = UnwrapSubControlExpression(attrValue),
                             Mode = BindingMode.OneTime,
                             SourceKind = ClassifySource(attrValue)
                         };
                         subControl.PropertyBindings.Add(new SubControlPropertyBinding
                         {
                             PropertyName = attrName,
-                            Classification = classification
+                            Classification = classification,
+                            IsLiteral = !attrValue.StartsWith("@", StringComparison.Ordinal)
                         });
                     }
                 }
 
                 parent.Children.Add(subControl);
+                offset = match.Index + match.Length;
             }
 
-            // Remove PascalCase tags from HTML (they become sub-controls)
-            // Also remove their closing tags
-            var result = PascalCaseTagRegex.Replace(html, match =>
-            {
-                var tagName = match.Groups[1].Value;
-                return IsPascalCaseTag(tagName) ? "" : match.Value;
-            });
-            // Remove closing PascalCase tags
-            result = PascalCaseClosingTagRegex.Replace(result, match =>
-            {
-                var tagName = match.Groups[1].Value;
-                return IsPascalCaseTag(tagName) ? "" : match.Value;
-            });
+            AppendSubControlHtml(html.Substring(offset), parent, parentLocation);
+            return "";
+        }
 
-            return result;
+        private static void AppendSubControlHtml(string html, IRNode parent, Location location)
+        {
+            if (!string.IsNullOrWhiteSpace(html))
+                parent.Children.Add(new HtmlNode { HtmlContent = html, Location = location });
+        }
+
+        private static string UnwrapSubControlExpression(string value)
+        {
+            if (!value.StartsWith("@", StringComparison.Ordinal))
+                return value;
+            var expression = value.Substring(1);
+            if (expression.StartsWith("(", StringComparison.Ordinal) &&
+                expression.EndsWith(")", StringComparison.Ordinal))
+                return expression.Substring(1, expression.Length - 2);
+            return expression;
         }
 
         // --- Helper methods ---

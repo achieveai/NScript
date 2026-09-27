@@ -1,0 +1,7 @@
+@model TodoApp.ViewModels.TodoItemViewModel
+@using TodoApp.Controls
+@styles "TodoApp.RazorTemplates.AppShell.css"
+
+<div data-task-detail="true">
+    <TitleEditor id="titleEditor" Value="@Model.Title" OnCommitted="@Model.SaveTitle" />
+</div>

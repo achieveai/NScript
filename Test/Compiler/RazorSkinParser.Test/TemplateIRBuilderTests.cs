@@ -64,13 +64,107 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void FullyQualifiedSubControlTagKeepsItsTypeName()
+        {
+            var ir = BuildIR("@model TestVM\n\n<Controls.Shared.ListView id=\"myList\" />");
+
+            ir.Children.OfType<SubControlNode>().Should().ContainSingle()
+                .Which.TypeName.Should().Be("Controls.Shared.ListView");
+        }
+
+        [TestMethod]
         public void SubControlPropertyBindingsExtracted()
         {
             var ir = BuildIR("@model TestVM\n\n<div><SearchBox Query=\"Model.Query\" /></div>");
 
             var sub = ir.Children.OfType<SubControlNode>().FirstOrDefault();
             sub.Should().NotBeNull();
-            sub.PropertyBindings.Should().Contain(p => p.PropertyName == "Query");
+            sub.PropertyBindings.Should().Contain(p => p.PropertyName == "Query" && p.IsLiteral && p.Classification.CSharpExpression == "Model.Query");
+        }
+
+        [TestMethod]
+        public void SubControlDynamicAttributesRemainOnTheControl()
+        {
+            var ir = BuildIR("@model TestVM\n<div class=\"parent\"><SearchBox Query=\"@Model.Query\" ItemSkin=\"@Some.Type.StaticSkin\" Placeholder=\"literal\" /></div>");
+
+            var sub = ir.Children.OfType<SubControlNode>().Single();
+            sub.PropertyBindings.Should().Contain(p => p.PropertyName == "Query" && !p.IsLiteral && p.Classification.CSharpExpression == "Model.Query");
+            sub.PropertyBindings.Should().Contain(p => p.PropertyName == "ItemSkin" && !p.IsLiteral && p.Classification.CSharpExpression == "Some.Type.StaticSkin");
+            sub.PropertyBindings.Should().Contain(p => p.PropertyName == "Placeholder" && p.IsLiteral && p.Classification.CSharpExpression == "literal");
+            ir.Children.OfType<ExpressionBindingNode>().Should().BeEmpty();
+            NScript.RazorSkin.CodeGen.GraphTopologyBuilder.Build(ir);
+            NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children)
+                .Should().Contain("<div class=\"parent\">").And.Contain("</div>");
+        }
+
+        [TestMethod]
+        public void OnPrefixedControlPropertyIsNotDiscardedAsDomEvent()
+        {
+            var ir = BuildIR("@model TestVM\n<TodoItemControl OnSelected=\"@Model.Select\" onclick=\"@Model.Click\" />");
+
+            var sub = ir.Children.OfType<SubControlNode>().Single();
+            sub.PropertyBindings.Should().ContainSingle()
+                .Which.PropertyName.Should().Be("OnSelected");
+            sub.EventBindings.Should().ContainSingle()
+                .Which.DomEventName.Should().Be("click");
+        }
+
+        [TestMethod]
+        public void SubControlExplicitExpressionIsOneBinding()
+        {
+            var ir = BuildIR("@model TestVM\n<SearchBox Query=\"@(Model.First + Model.Last)\" />");
+
+            var sub = ir.Children.OfType<SubControlNode>().Single();
+            sub.PropertyBindings.Should().ContainSingle()
+                .Which.Classification.CSharpExpression.Should().Be("Model.First + Model.Last");
+            sub.PropertyBindings.Single().IsLiteral.Should().BeFalse();
+            ir.Children.OfType<ExpressionBindingNode>().Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void SubControlExpressionCanContainComparison()
+        {
+            var ir = BuildIR("@model TestVM\n<SearchBox Visible=\"@(Model.Count > 0)\" />");
+
+            ir.Children.OfType<SubControlNode>().Single().PropertyBindings
+                .Should().ContainSingle().Which.Classification.CSharpExpression
+                .Should().Be("Model.Count > 0");
+        }
+
+        [TestMethod]
+        public void ForeachSubControlKeepsItemBinding()
+        {
+            var ir = BuildIR("@model TestVM\n@foreach (var item in Model.Items) { <MenuItem Label=\"@item.Name\" /> }");
+
+            var loop = ir.Children.OfType<LoopNode>().Single();
+            loop.ItemTemplate.OfType<SubControlNode>().Single().PropertyBindings
+                .Should().ContainSingle().Which.Classification.CSharpExpression
+                .Should().Be("item.Name");
+        }
+
+        [TestMethod]
+        public void ConditionalSubControlIsExtracted()
+        {
+            var ir = BuildIR("@model TestVM\n@if (Model.Show) { <SearchBox Query=\"@Model.Query\" /> }");
+
+            var conditional = ir.Children.OfType<ConditionalNode>().Single();
+            conditional.TrueBranch.OfType<SubControlNode>().Single().PropertyBindings
+                .Should().ContainSingle().Which.Classification.CSharpExpression
+                .Should().Be("Model.Query");
+        }
+
+        [TestMethod]
+        public void SubControlKeepsItsPositionAmongParentMarkup()
+        {
+            var ir = BuildIR("@model TestVM\n<div>before <SearchBox /> after</div>");
+
+            ir.Children.Select(node => node is SubControlNode ? "control" :
+                    node is HtmlNode html ? html.HtmlContent : "other")
+                .Should().Equal("<div>before ", "control", " after</div>");
+            NScript.RazorSkin.CodeGen.GraphTopologyBuilder.Build(ir);
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.IndexOf("before ").Should().BeLessThan(html.IndexOf("data-ns-subctl"));
+            html.IndexOf("data-ns-subctl").Should().BeLessThan(html.IndexOf(" after"));
         }
 
         // --- Content-validating assertions ---

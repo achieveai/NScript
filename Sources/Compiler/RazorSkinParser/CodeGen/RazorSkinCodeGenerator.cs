@@ -94,7 +94,6 @@ namespace NScript.RazorSkin.CodeGen
         private static void CollectItemTemplateHtmlRecursive(
             List<IRNode> nodes, StringBuilder sb, ref int pendingEvtMarkers, ref int pendingBindMarkers)
         {
-            int subControlIdx = 0;
             foreach (var node in nodes)
             {
                 if (node is HtmlNode html)
@@ -147,6 +146,7 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else if (node is SubControlNode sub1)
                 {
+                    ValidateSubControlMarker(sub1);
                     var tag = sub1.TagName ?? "div";
                     sb.Append("<");
                     sb.Append(tag);
@@ -161,7 +161,7 @@ namespace NScript.RazorSkin.CodeGen
                             sb.Append("\"");
                         }
                     }
-                    sb.Append($" data-ns-subctl=\"{subControlIdx++}\"></{tag}>");
+                    sb.Append($" data-ns-subctl=\"{sub1.RuntimeMarkerIdx}\"></{tag}>");
                 }
                 else
                 {
@@ -246,6 +246,7 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else if (node is SubControlNode sub2)
                 {
+                    ValidateSubControlMarker(sub2);
                     var tag = sub2.TagName ?? "div";
                     sb.Append("<");
                     sb.Append(tag);
@@ -260,7 +261,7 @@ namespace NScript.RazorSkin.CodeGen
                             sb.Append("\"");
                         }
                     }
-                    sb.Append(" data-ns-subctl></");
+                    sb.Append($" data-ns-subctl=\"{sub2.RuntimeMarkerIdx}\"></");
                     sb.Append(tag);
                     sb.Append(">");
                 }
@@ -270,6 +271,13 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
             return sb.ToString();
+        }
+
+        private static void ValidateSubControlMarker(SubControlNode sub)
+        {
+            if (sub.RuntimeMarkerIdx < 0)
+                throw new InvalidOperationException(
+                    $"Sub-control {sub.TypeName} has no assigned marker index.");
         }
 
         /// <summary>

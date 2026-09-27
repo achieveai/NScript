@@ -38,7 +38,7 @@ namespace RazorSkinParser.Test
         {
             var nodes = new List<IRNode>
             {
-                new SubControlNode { TypeName = "TodoItem", TagName = "todo" }
+                new SubControlNode { TypeName = "TodoItem", TagName = "todo", RuntimeMarkerIdx = 7 }
             };
 
             var events = RazorSkinCodeGenerator.CollectEventsPublic(nodes);
@@ -46,7 +46,7 @@ namespace RazorSkinParser.Test
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
             html.Should().Contain("<todo");
-            html.Should().Contain("data-ns-subctl");
+            html.Should().Contain("data-ns-subctl=\"7\"");
             html.Should().Contain("</todo>");
             html.Should().NotContain("<span>");
         }
@@ -61,6 +61,7 @@ namespace RazorSkinParser.Test
             {
                 TypeName = "MyList",
                 TagName = "ul",
+                RuntimeMarkerIdx = 7,
                 DomAttributes = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("role", "list"),
@@ -87,7 +88,7 @@ namespace RazorSkinParser.Test
         {
             var nodes = new List<IRNode>
             {
-                new SubControlNode { TypeName = "SomeControl" }
+                new SubControlNode { TypeName = "SomeControl", RuntimeMarkerIdx = 7 }
             };
 
             var events = RazorSkinCodeGenerator.CollectEventsPublic(nodes);
@@ -95,7 +96,7 @@ namespace RazorSkinParser.Test
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
             html.Should().Contain("<div");
-            html.Should().Contain("data-ns-subctl");
+            html.Should().Contain("data-ns-subctl=\"7\"");
             html.Should().Contain("</div>");
         }
 
@@ -107,6 +108,7 @@ namespace RazorSkinParser.Test
         {
             var sub = new SubControlNode { TypeName = "MyControl" };
             sub.TagName = null;
+            sub.RuntimeMarkerIdx = 7;
 
             var nodes = new List<IRNode> { sub };
             var events = RazorSkinCodeGenerator.CollectEventsPublic(nodes);
@@ -114,7 +116,7 @@ namespace RazorSkinParser.Test
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
             html.Should().Contain("<div");
-            html.Should().Contain("data-ns-subctl");
+            html.Should().Contain("data-ns-subctl=\"7\"");
             html.Should().Contain("</div>");
         }
 
@@ -124,7 +126,7 @@ namespace RazorSkinParser.Test
         [TestMethod]
         public void SubControlNode_WithChildren_EmitsContainerAndContent()
         {
-            var sub = new SubControlNode { TypeName = "Card", TagName = "section" };
+            var sub = new SubControlNode { TypeName = "Card", TagName = "section", RuntimeMarkerIdx = 7 };
             sub.Children.Add(new HtmlNode { HtmlContent = "<p>Hello</p>" });
 
             var nodes = new List<IRNode> { sub };
@@ -135,7 +137,7 @@ namespace RazorSkinParser.Test
             // Sub-control is a marker element — its children are rendered by the control itself,
             // not inlined into the parent template HTML
             html.Should().Contain("<section");
-            html.Should().Contain("data-ns-subctl");
+            html.Should().Contain("data-ns-subctl=\"7\"");
             html.Should().Contain("</section>");
         }
 
@@ -145,7 +147,7 @@ namespace RazorSkinParser.Test
         [TestMethod]
         public void SubControlNode_ListViewTag_EmitsUl()
         {
-            var sub = new SubControlNode { TypeName = "ListView", TagName = "ul" };
+            var sub = new SubControlNode { TypeName = "ListView", TagName = "ul", RuntimeMarkerIdx = 7 };
 
             var nodes = new List<IRNode> { sub };
             var events = RazorSkinCodeGenerator.CollectEventsPublic(nodes);
@@ -153,7 +155,7 @@ namespace RazorSkinParser.Test
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
             html.Should().Contain("<ul");
-            html.Should().Contain("data-ns-subctl");
+            html.Should().Contain("data-ns-subctl=\"7\"");
             html.Should().Contain("</ul>");
         }
 
@@ -167,6 +169,7 @@ namespace RazorSkinParser.Test
             {
                 TypeName = "MyControl",
                 TagName = "div",
+                RuntimeMarkerIdx = 7,
                 DomAttributes = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("data-info", "a&b<c>d")
@@ -179,6 +182,16 @@ namespace RazorSkinParser.Test
             var html = RazorSkinCodeGenerator.CollectHtmlWithPathsPublic(nodes, events, paths);
 
             html.Should().Contain("data-info=\"a&amp;b&lt;c&gt;d\"");
+        }
+
+        [TestMethod]
+        public void SubControlNode_WithoutTopologyMarker_IsRejected()
+        {
+            var nodes = new List<IRNode> { new SubControlNode { TypeName = "MissingMarker" } };
+            System.Action collect = () => RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(nodes);
+
+            collect.Should().Throw<System.InvalidOperationException>()
+                .WithMessage("*MissingMarker*marker*");
         }
     }
 }
