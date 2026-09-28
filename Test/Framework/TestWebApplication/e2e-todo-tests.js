@@ -232,8 +232,15 @@ function sel(classMap, selector) {
     const app = await page.$('#app');
     assert(app, 'app container should exist');
 
+    const generatedStyles = await page.$$eval('style', styles =>
+      styles.filter(style => style.textContent.includes('font-family:inherit')).length);
+    assert(generatedStyles === 1,
+      'AppShell.css should be installed exactly once, got ' + generatedStyles);
+
     const leftPane = await page.$('[class*="pane-left"]');
     assert(leftPane, 'Left pane should exist');
+    const leftWidth = await page.$eval(s('.pane-left'), el => getComputedStyle(el).width);
+    assert(leftWidth === '280px', 'Left pane should use its generated CSS, got ' + leftWidth);
 
     const centerPane = await page.$(s('.pane-center'));
     assert(centerPane, 'Center pane should exist');

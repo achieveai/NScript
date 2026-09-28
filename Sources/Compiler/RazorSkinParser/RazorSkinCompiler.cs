@@ -33,7 +33,7 @@ namespace NScript.RazorSkin
             // Phase 1: Preprocess
             var phaseSw = Stopwatch.StartNew();
             log.Debug("Phase {Phase} started for template {TemplateName}", "Preprocess", templateName);
-            var preprocessed = RazorSkinPreprocessor.Process(templateSource);
+            var preprocessed = RazorSkinPreprocessor.Process(templateSource, sourceFile);
             log.Debug("Phase {Phase} completed in {ElapsedMs}ms for template {TemplateName}", "Preprocess", phaseSw.ElapsedMilliseconds, templateName);
 
             // Phase 2: Razor parse

@@ -107,5 +107,87 @@ namespace RazorSkinParser.Test
 
             result.ModelTypeName.Should().Be("MyVM");
         }
+
+        [TestMethod]
+        public void SubControlChildContentIsRejected()
+        {
+            Action process = () => RazorSkinPreprocessor.Process("@model MyVM\n<div><SearchBox><span>Unexpected</span></SearchBox></div>");
+
+            process.Should().Throw<InvalidOperationException>()
+                .WithMessage("*SearchBox*child content*");
+        }
+
+        [TestMethod]
+        public void EmptyPairedSubControlIsAllowed()
+        {
+            Action process = () => RazorSkinPreprocessor.Process("@model MyVM\n<SearchBox>  \n </SearchBox>");
+
+            process.Should().NotThrow();
+        }
+
+        [TestMethod]
+        public void SubControlChildContentReportsSourceLocation()
+        {
+            Action process = () => RazorSkinPreprocessor.Process(
+                "@model MyVM\n<SearchBox>\n  <span>Unexpected</span>\n</SearchBox>",
+                "Search.skin.cshtml");
+
+            process.Should().Throw<RazorSkinPreprocessorException>()
+                .Where(error => error.Location.FileName == "Search.skin.cshtml"
+                    && error.Location.StartLine == 2);
+        }
+
+        [TestMethod]
+        public void UnclosedSubControlIsRejected()
+        {
+            Action process = () => RazorSkinPreprocessor.Process("<SearchBox>", "Search.skin.cshtml");
+            process.Should().Throw<RazorSkinPreprocessorException>()
+                .WithMessage("*Unclosed*SearchBox*");
+        }
+
+        [TestMethod]
+        public void MismatchedSubControlClosingTagIsRejected()
+        {
+            Action process = () => RazorSkinPreprocessor.Process(
+                "<SearchBox><ResultBox></SearchBox></ResultBox>", "Search.skin.cshtml");
+            process.Should().Throw<RazorSkinPreprocessorException>()
+                .WithMessage("*SearchBox*ResultBox*");
+        }
+
+        [TestMethod]
+        public void LessThanExpressionIsNotTreatedAsSubControlTag()
+        {
+            var source = "@model MyVM\n@((x<Foo) ? 1 : 0) <span title=\"@Model.Name\"></span>";
+
+            RazorSkinPreprocessor.Process(source).CleanedTemplate.Should()
+                .Be(source.Replace("\n", Environment.NewLine));
+        }
+
+        [TestMethod]
+        public void GenericTypeInsideFunctionsBlockIsNotASubControlTag()
+        {
+            var source = "@model MyVM\n@functions { System.Collections.Generic.List<Foo> Values; }\n<div>OK</div>";
+
+            RazorSkinPreprocessor.Process(source, "Generic.skin.cshtml")
+                .CleanedTemplate.Should().Contain("List<Foo> Values");
+        }
+
+        [TestMethod]
+        public void GenericTypeInsideRazorCodeBlockIsNotASubControlTag()
+        {
+            var source = "@model MyVM\n@{\n    System.Collections.Generic.List<Foo> values = null;\n}\n<div>OK</div>";
+
+            RazorSkinPreprocessor.Process(source, "Generic.skin.cshtml")
+                .CleanedTemplate.Should().Contain("List<Foo> values");
+        }
+
+        [TestMethod]
+        public void SubControlMarkupInsideRazorCodeBlockStillGetsProtected()
+        {
+            var source = "@model MyVM\n@{\n    <SearchBox Query=\"@Model.Name\" />\n}";
+
+            RazorSkinPreprocessor.Process(source, "CodeBlock.skin.cshtml")
+                .CleanedTemplate.Should().Contain("Query=\"" + RazorSkinPreprocessor.EscapedSubControlAt);
+        }
     }
 }

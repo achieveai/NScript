@@ -7,7 +7,7 @@
 
 ## Context
 
-`SkinInstance` is the runtime object that manages a bound template — it holds the DOM root, element references, binder state, and child element lifecycle. Before the Razor binding graph (ADR-0018), all binding logic lived directly inside `SkinInstance`: binder iteration, `LiveBinder` creation, `PropertyChanged` subscription, deactivation cleanup.
+`SkinInstance` is the runtime object that manages a bound template — it holds the DOM root, element references, binder state, and the legacy child element lifecycle. Before the Razor binding graph (ADR-0018), all binding logic lived directly inside `SkinInstance`: binder iteration, `LiveBinder` creation, `PropertyChanged` subscription, deactivation cleanup.
 
 Adding graph-based binding alongside the existing binder-based binding required a way for `SkinInstance` to delegate binding management without conditional logic (`if (isGraphMode) ... else ...`) scattered throughout its methods.
 
@@ -82,11 +82,19 @@ The `LegacyBinderStrategy` contains the exact binder loop code extracted from th
 **What stays in SkinInstance:**
 
 - Template lifecycle: `Bind()`, `Activate()`, `Deactivate()`, `Dispose()`
-- Child UIElement cascade: DataContext propagation, child activate/deactivate
+- Legacy child UIElement cascade: DataContext propagation, child activate/deactivate
 - Part ID mapping: `GetChildById()`
 - DOM management: root element, child nodes transfer
 
-These are orthogonal to the binding strategy and remain in `SkinInstance`.
+These legacy child operations remain in `SkinInstance`. Razor graph sub-controls are different: `GraphBindingStrategy` owns the controls created from `GraphDescriptor.SubControls`, including their activation, deactivation, and disposal. A skin swap disposes the old strategy and its Razor children.
+
+### Amendment — 2026-09-27
+
+Clarified the context above after Razor sub-controls were added. `SkinInstance` owns the legacy child cascade; `GraphBindingStrategy` owns Razor graph sub-controls and their lifecycle.
+
+### Amendment — 2026-09-27: collection child reactivation
+
+Razor `@foreach` controls and their item graph states survive parent deactivation. Reactivation refreshes their bindings and reuses their hosts when the collection reference is unchanged. Replacing the collection, removing an item, changing a gate branch, swapping the skin, or disposing the parent still disposes the affected controls. This gives loop children the same deactivate/reactivate identity behavior as top-level children.
 
 ## Consequences
 

@@ -4,6 +4,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
     /// <summary>
     /// Internal strategy interface for SkinInstance binding management.
     /// Selected based on whether the factory provides a GraphDescriptor or SkinBinderInfo[].
+    /// GraphBindingStrategy also owns Razor sub-controls created by its graph,
+    /// including their activation and disposal. SkinInstance still cascades to
+    /// child elements held in its legacy childElements array.
     /// </summary>
     public interface IBindingStrategy
     {

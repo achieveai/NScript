@@ -16,10 +16,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public NativeArray<int> NodeTypes;
 
         /// <summary>
-        /// Getter function per node. For Property/Computed/Gate nodes: (source) => value.
+        /// Getter function per node. For Property/Computed/Gate nodes:
+        /// (source, templateParent) => value.
         /// For Source/DomTarget/EventBinding: null.
         /// </summary>
-        public NativeArray<Func<object, object>> Getters;
+        public NativeArray<Func<object, object, object>> Getters;
+
+        /// <summary>1 when a getter reads TemplateParent independently of DataContext.</summary>
+        public NativeArray<int> GetterSourceSlots;
 
         /// <summary>
         /// Adjacency list: Consumers[i] is an int[] of node indices that depend on node i.
@@ -136,11 +140,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public int MarkerIdx;
         public GraphDescriptor ItemGraph;
         public object ItemTemplate;
-        /// <summary>
-        /// Sub-control descriptors for controls inside the foreach item template.
-        /// Null when no sub-controls are used.
-        /// </summary>
-        public NativeArray<SubControlInfo> SubControlInfos;
     }
 
     /// <summary>
@@ -167,6 +166,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         // LIMIT-006: Top-level sub-control property binding fields
         public int ElemIdx;
         public NativeArray<SubControlPropertyInfo> Bindings;
+        public bool HasDataContextBinding;
     }
 
     /// <summary>
@@ -178,5 +178,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
     {
         public int NodeIdx;
         public Action<object, object> Setter;
+        public string TargetPropertyName;
+        public Func<object, object> TargetGetter;
+        public Action<object, object> SourceSetter;
     }
 }

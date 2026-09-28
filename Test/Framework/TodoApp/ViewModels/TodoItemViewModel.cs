@@ -390,6 +390,11 @@ namespace TodoApp.ViewModels
             }
         }
 
+        public void SaveTitle()
+        {
+            this.appViewModel.SaveTodo(this);
+        }
+
         /// <summary>
         /// Requests the parent AppViewModel to delete this todo item.
         /// </summary>

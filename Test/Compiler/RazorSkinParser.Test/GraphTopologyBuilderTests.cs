@@ -249,17 +249,16 @@ namespace RazorSkinParser.Test
         // ------------------------------------------------------------------
 
         [TestMethod]
-        public void SubControlNode_IsIgnoredInTopology()
+        public void SubControlNode_HasRuntimeMarkerAndPartId()
         {
-            // SubControlNode is present in IR but GraphTopologyBuilder skips it
-            // (stub break; — no graph nodes created for sub-controls yet).
-            var template = MakeTemplate(
-                new SubControlNode
+            var child = new SubControlNode
                 {
                     TypeName = "ListView",
                     ResolvedTypeName = "Sunlight.Framework.UI.ListView",
                     ElementId = "myList"
-                },
+                };
+            var template = MakeTemplate(
+                child,
                 MakeBinding("Model.Name", BindingMode.OneWay, ExpressionTarget.TextContent, "e0", "Name"));
 
             var topology = GraphTopologyBuilder.Build(template);
@@ -270,6 +269,86 @@ namespace RazorSkinParser.Test
             topology.NodeTypes[0].Should().Be(GraphNodeTypeConstants.Source);
             topology.NodeTypes[1].Should().Be(GraphNodeTypeConstants.Property);
             topology.NodeTypes[2].Should().Be(GraphNodeTypeConstants.DomTarget);
+            child.RuntimeMarkerIdx.Should().Be(topology.SubControls[0].ElemIdx);
+            topology.SubControls[0].ElementId.Should().Be("myList");
+        }
+
+        [TestMethod]
+        public void SubControlNode_LiteralAndEvents_ProduceBindingAndHostEvent()
+        {
+            var child = new SubControlNode
+            {
+                TypeName = "RazorProbeControl",
+                PropertyBindings = new List<SubControlPropertyBinding>
+                {
+                    new SubControlPropertyBinding
+                    {
+                        PropertyName = "Text",
+                        IsLiteral = true,
+                        Classification = new BindingClassification
+                        {
+                            CSharpExpression = "hello",
+                            Mode = BindingMode.OneTime
+                        }
+                    },
+                    new SubControlPropertyBinding
+                    {
+                        PropertyName = "Click",
+                        IsDelegate = true,
+                        Classification = new BindingClassification
+                        {
+                            CSharpExpression = "Model.Save",
+                            Mode = BindingMode.OneTime
+                        }
+                    }
+                },
+                EventBindings = new List<EventNode>
+                {
+                    MakeEvent("click", "Model.Save")
+                }
+            };
+
+            var topology = GraphTopologyBuilder.Build(MakeTemplate(child));
+
+            topology.SubControls[0].PropertyBindings.Should().HaveCount(2);
+            topology.GetterExpressions[topology.SubControls[0].PropertyBindings[0].NodeIdx]
+                .Should().Be("\"hello\"");
+            topology.NodeTypes[topology.SubControls[0].PropertyBindings[1].NodeIdx]
+                .Should().Be(GraphNodeTypeConstants.EventBinding);
+            topology.Events.Should().ContainSingle(e => e.ElemIdx == child.RuntimeMarkerIdx
+                && e.EventName == "click");
+        }
+
+        [TestMethod]
+        public void SubControlNode_TwoWayBinding_KeepsSourcePropertyAndSubscription()
+        {
+            var child = new SubControlNode
+            {
+                TypeName = "InputControl",
+                PropertyBindings = new List<SubControlPropertyBinding>
+                {
+                    new SubControlPropertyBinding
+                    {
+                        PropertyName = "Value",
+                        Classification = new BindingClassification
+                        {
+                            CSharpExpression = "Model.Draft",
+                            Mode = BindingMode.TwoWay,
+                            Dependencies = new List<ObservableDependency>
+                            {
+                                new ObservableDependency(BindingSourceKind.DataContext,
+                                    "Draft", "Draft")
+                            }
+                        }
+                    }
+                }
+            };
+
+            var topology = GraphTopologyBuilder.Build(MakeTemplate(child));
+
+            topology.SubControls[0].PropertyBindings.Should().ContainSingle()
+                .Which.TwoWaySourceProperty.Should().Be("Draft");
+            topology.Subscriptions.Should().ContainSingle(s => s.PropertyName == "Draft");
         }
 
         [TestMethod]

@@ -49,6 +49,10 @@ jobs:
       - name: Test RazorSkinParser
         run: dotnet test Test/Compiler/RazorSkinParser.Test/RazorSkinParser.Test.csproj -c Release --no-build
 
+      # Browser tests use scoped CSS names from Debug-generated JavaScript.
+      - name: Build Debug browser bundles
+        run: dotnet build NScript_Full.sln -c Debug --no-restore
+
       # ─── Phase 3: Playwright E2E ──────────────────────────────────────
       - name: Install Playwright
         working-directory: Test/Framework/TestWebApplication

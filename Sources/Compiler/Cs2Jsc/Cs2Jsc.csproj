@@ -10,7 +10,7 @@
     <PackageOutputPath>$(NScriptToolsetDir)</PackageOutputPath>
     <PackageId>Mcqdb.NScript.Cs2Jsc</PackageId>
     <!--
-      Pinned ahead of $(NScriptPackageVersion). History:
+      Kept in step with $(NScriptPackageVersion) for this local release. History:
         1.1.0 — shipped a Windows-argv handling bug
                 (BuildClient.GetCommandLineWindows leaked Cs2Jsc.dll + the
                 `csc` subcommand selector into Roslyn's argv under dotnet-tool
@@ -28,10 +28,9 @@
                 (ClearScript.V8.ICUData.dll, ~10MB) instead of a loose
                 ClearScriptV8.ICU.dat file. Native V8 runtimes grow from
                 ~15MB to ~26MB (win-x64) because V8 itself is newer.
-      The rest of the toolset stays at 1.1.0 — version bumps and bugs were
-      isolated to the compiler tool.
+      Earlier tool-only fixes did not require framework version bumps.
     -->
-    <PackageVersion>1.1.8</PackageVersion>
+    <PackageVersion>$(NScriptPackageVersion)</PackageVersion>
     <GeneratePackageOnBuild>$(GenerateNScriptPackages)</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>

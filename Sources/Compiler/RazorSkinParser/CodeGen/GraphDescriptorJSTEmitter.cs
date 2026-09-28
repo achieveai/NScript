@@ -31,7 +31,9 @@ namespace NScript.RazorSkin.CodeGen
         private readonly ClrContext _clrContext;
         private readonly string _modelTypeName;
         private readonly string _parentModelTypeName;
+        private readonly string _controlTypeName;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
+        private readonly IEnumerable<string> _usingNamespaces;
         private readonly CecilTypeHelper _typeHelper;
         private readonly RazorCssManager _cssManager;
 
@@ -61,6 +63,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _nodeCountField;
         private readonly IIdentifier _nodeTypesField;
         private readonly IIdentifier _gettersField;
+        private readonly IIdentifier _getterSourceSlotsField;
         private readonly IIdentifier _consumersField;
         private readonly IIdentifier _gateIndicesField;
         private readonly IIdentifier _defaultValuesField;
@@ -94,7 +97,6 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _collectionMarkerIdxField;
         private readonly IIdentifier _collectionItemGraphField;
         private readonly IIdentifier _collectionItemTemplateField;
-        private readonly IIdentifier _collectionSubControlInfosField;
 
         // Resolved field identifiers for SubControlInfo
         private readonly IIdentifier _subControlMarkerIdxField;
@@ -109,8 +111,12 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _subControlsField;
         private readonly IIdentifier _subControlElemIdxField;
         private readonly IIdentifier _subControlBindingsField;
+        private readonly IIdentifier _subControlHasDataContextBindingField;
         private readonly IIdentifier _subControlPropNodeIdxField;
         private readonly IIdentifier _subControlPropSetterField;
+        private readonly IIdentifier _subControlPropTargetNameField;
+        private readonly IIdentifier _subControlPropTargetGetterField;
+        private readonly IIdentifier _subControlPropSourceSetterField;
 
         // Factory identifiers for sub-types (used to emit proper typed instances)
         private readonly IIdentifier _domTargetInfoFactory;
@@ -132,7 +138,9 @@ namespace NScript.RazorSkin.CodeGen
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null,
             string parentModelTypeName = null,
             RazorCssManager cssManager = null,
-            Location fallbackLocation = null)
+            IEnumerable<string> usingNamespaces = null,
+            Location fallbackLocation = null,
+            string controlTypeName = null)
         {
             _topology = topology;
             _scope = scope;
@@ -142,10 +150,15 @@ namespace NScript.RazorSkin.CodeGen
             _clrContext = clrContext;
             _modelTypeName = modelTypeName;
             _parentModelTypeName = parentModelTypeName;
+            _controlTypeName = controlTypeName;
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
+            _usingNamespaces = usingNamespaces ?? Enumerable.Empty<string>();
             _typeHelper = new CecilTypeHelper(clrContext);
             _cssManager = cssManager;
             _fallbackLocation = fallbackLocation;
+            _getterSourceSlotsField = ResolveFieldId(
+                FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GraphDescriptor"),
+                "GetterSourceSlots");
 
             // Resolve all field identifiers at construction time
             ResolveFieldIdentifiers(
@@ -160,7 +173,7 @@ namespace NScript.RazorSkin.CodeGen
                 out _gateTrueElemCountField, out _gateFalseElemCountField,
                 out _gateTrueChildElemIndicesField, out _gateFalseChildElemIndicesField,
                 out _collectionMarkerIdxField, out _collectionItemGraphField,
-                out _collectionItemTemplateField, out _collectionSubControlInfosField,
+                out _collectionItemTemplateField,
                 out _subControlMarkerIdxField, out _subControlTypeFactoryField,
                 out _subControlSkinFactoryField,
                 out _eventElemIdxField, out _eventNameField);
@@ -168,7 +181,10 @@ namespace NScript.RazorSkin.CodeGen
             // LIMIT-006: Resolve sub-control field identifiers
             ResolveSubControlFieldIdentifiers(
                 out _subControlsField, out _subControlElemIdxField, out _subControlBindingsField,
-                out _subControlPropNodeIdxField, out _subControlPropSetterField);
+                out _subControlHasDataContextBindingField,
+                out _subControlPropNodeIdxField, out _subControlPropSetterField,
+                out _subControlPropTargetNameField, out _subControlPropTargetGetterField,
+                out _subControlPropSourceSetterField);
 
             // Resolve factory identifiers for sub-types so we can emit proper typed instances
             ResolveFactoryIdentifiers(
@@ -195,7 +211,6 @@ namespace NScript.RazorSkin.CodeGen
             out IIdentifier gateTrueElemCount, out IIdentifier gateFalseElemCount,
             out IIdentifier gateTrueChildElemIndices, out IIdentifier gateFalseChildElemIndices,
             out IIdentifier collMarkerIdx, out IIdentifier collItemGraph, out IIdentifier collItemTemplate,
-            out IIdentifier collSubControlInfos,
             out IIdentifier scMarkerIdx, out IIdentifier scTypeFactory, out IIdentifier scSkinFactory,
             out IIdentifier eventElemIdx, out IIdentifier eventName)
         {
@@ -241,7 +256,6 @@ namespace NScript.RazorSkin.CodeGen
             collMarkerIdx = ResolveFieldId(collType, "MarkerIdx");
             collItemGraph = ResolveFieldId(collType, "ItemGraph");
             collItemTemplate = ResolveFieldId(collType, "ItemTemplate");
-            collSubControlInfos = ResolveFieldId(collType, "SubControlInfos");
 
             // SubControlInfo fields
             var scType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
@@ -260,7 +274,10 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private void ResolveSubControlFieldIdentifiers(
             out IIdentifier subControlsField, out IIdentifier scElemIdx, out IIdentifier scBindings,
-            out IIdentifier scpNodeIdx, out IIdentifier scpSetter)
+            out IIdentifier scHasDataContextBinding,
+            out IIdentifier scpNodeIdx, out IIdentifier scpSetter,
+            out IIdentifier scpTargetName, out IIdentifier scpTargetGetter,
+            out IIdentifier scpSourceSetter)
         {
             var graphDescType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GraphDescriptor");
             subControlsField = ResolveFieldId(graphDescType, "SubControls");
@@ -268,10 +285,14 @@ namespace NScript.RazorSkin.CodeGen
             var subControlType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlInfo");
             scElemIdx = ResolveFieldId(subControlType, "ElemIdx");
             scBindings = ResolveFieldId(subControlType, "Bindings");
+            scHasDataContextBinding = ResolveFieldId(subControlType, "HasDataContextBinding");
 
             var subControlPropType = FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubControlPropertyInfo");
             scpNodeIdx = ResolveFieldId(subControlPropType, "NodeIdx");
             scpSetter = ResolveFieldId(subControlPropType, "Setter");
+            scpTargetName = ResolveFieldId(subControlPropType, "TargetPropertyName");
+            scpTargetGetter = ResolveFieldId(subControlPropType, "TargetGetter");
+            scpSourceSetter = ResolveFieldId(subControlPropType, "SourceSetter");
         }
 
         /// <summary>
@@ -349,6 +370,10 @@ namespace NScript.RazorSkin.CodeGen
 
             AddField(obj, _nodeTypesField, "nodeTypes", EmitNodeTypes());
             AddField(obj, _gettersField, "getters", EmitGetters());
+            AddField(obj, _getterSourceSlotsField, "getterSourceSlots",
+                new InlineNewArrayInitialization(null, _scope,
+                    _topology.GetterSourceSlots.Select(slot =>
+                        (Expression)new NumberLiteralExpression(_scope, slot)).ToList()));
             AddField(obj, _consumersField, "consumers", EmitConsumers());
             AddField(obj, _gateIndicesField, "gateIndices", EmitGateIndices());
             AddField(obj, _defaultValuesField, "defaultValues", EmitDefaultValues());
@@ -430,12 +455,12 @@ namespace NScript.RazorSkin.CodeGen
         {
             var items = new List<Expression>();
             for (int i = 0; i < _topology.NodeCount; i++)
-                items.Add(EmitGetter(_topology.NodeTypes[i], _topology.GetterExpressions[i]));
+                items.Add(EmitGetter(_topology.NodeTypes[i], _topology.GetterExpressions[i], i));
 
             return new InlineNewArrayInitialization(null, _scope, items);
         }
 
-        private Expression EmitGetter(int nodeType, string getterExpression)
+        private Expression EmitGetter(int nodeType, string getterExpression, int nodeIndex)
         {
             switch (nodeType)
             {
@@ -449,7 +474,7 @@ namespace NScript.RazorSkin.CodeGen
                     if (string.IsNullOrEmpty(getterExpression))
                         return new NullLiteralExpression(_scope);
 
-                    return EmitEventGetter(getterExpression);
+                    return EmitEventGetter(getterExpression, nodeIndex);
                 }
 
                 case GraphNodeTypeConstants.Property:
@@ -461,6 +486,10 @@ namespace NScript.RazorSkin.CodeGen
                     var resolved = TryBuildResolvedPropertyGetter(getterExpression);
                     if (resolved != null)
                         return resolved;
+
+                    var staticProperty = TryBuildStaticPropertyGetter(getterExpression);
+                    if (staticProperty != null)
+                        return staticProperty;
 
                     // Fallback: known function names stay as-is, others get getter prefix.
                     var fallbackExpr = getterExpression;
@@ -502,6 +531,10 @@ namespace NScript.RazorSkin.CodeGen
                     if (resolved != null)
                         return resolved;
 
+                    var staticProperty = TryBuildStaticPropertyGetter(getterExpression);
+                    if (staticProperty != null)
+                        return staticProperty;
+
                     // Try building a proper JST expression tree for arithmetic expressions.
                     // This ensures field names are resolved through the scope system, avoiding
                     // issues with raw body strings that can't access the final minified names.
@@ -527,6 +560,51 @@ namespace NScript.RazorSkin.CodeGen
             }
         }
 
+        private Expression TryBuildStaticPropertyGetter(string expression)
+        {
+            if (_clrContext == null || string.IsNullOrEmpty(expression)
+                || expression.StartsWith("Model.") || expression.StartsWith("Control."))
+                return null;
+
+            int dot = expression.LastIndexOf('.');
+            if (dot <= 0 || dot == expression.Length - 1) return null;
+            string typeName = expression.Substring(0, dot);
+            string propertyName = expression.Substring(dot + 1);
+            if (propertyName.IndexOfAny(new[] { '(', ')', ' ', '[', ']' }) >= 0)
+                return null;
+
+            var type = FindSubControlType(typeName);
+            if (type == null) return null;
+
+            if (type.IsEnum)
+            {
+                var enumField = type.Fields.FirstOrDefault(field => field.Name == propertyName
+                    && field.IsLiteral && field.HasConstant);
+                if (enumField != null)
+                {
+                    var enumScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+                    var enumGetter = new FunctionExpression(_fallbackLocation, _scope, enumScope,
+                        enumScope.ParameterIdentifiers, null);
+                    enumGetter.AddStatement(new ReturnStatement(_fallbackLocation, enumScope,
+                        new NumberLiteralExpression(enumScope,
+                            Convert.ToInt64(enumField.Constant))));
+                    return enumGetter;
+                }
+            }
+
+            var property = FindProperty(type, propertyName);
+            if (property?.GetMethod == null || !property.GetMethod.IsStatic) return null;
+
+            var getterId = _scopeManager.ResolveStatic(property.GetMethod);
+            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var call = new MethodCallExpression(null, getterScope,
+                new IdentifierExpression(getterId, getterScope), System.Array.Empty<Expression>());
+            var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope,
+                getterScope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, call));
+            return fn;
+        }
+
         /// <summary>
         /// Builds a fully resolved JST getter function for a simple property access.
         /// The getter expression is the property name (e.g., "PropStr1") which is looked
@@ -550,7 +628,11 @@ namespace NScript.RazorSkin.CodeGen
 
             // Strip "Model." prefix — in Razor templates, Model IS the DataContext.
             // OneTime bindings pass the full CSharpExpression (e.g., "Model.AppVersion").
-            if (propertyName.StartsWith("Model."))
+            bool isControl = propertyName.StartsWith("Control.");
+            bool isParentModel = IsItemGraph && propertyName.StartsWith("Model.");
+            if (isControl)
+                propertyName = propertyName.Substring(8);
+            else if (propertyName.StartsWith("Model."))
                 propertyName = propertyName.Substring(6);
 
             // Strip item variable prefix for foreach item templates (e.g., "item.Name" -> "Name")
@@ -563,10 +645,13 @@ namespace NScript.RazorSkin.CodeGen
                 return null;
 
             // Find the model type
-            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            var typeName = isControl ? _controlTypeName
+                : isParentModel ? _parentModelTypeName
+                : _modelTypeName;
+            var typeDefinition = FindTypeDefinition(typeName);
             if (typeDefinition == null)
             {
-                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve type {TypeName} for getter", _modelTypeName);
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve type {TypeName} for getter", typeName);
                 return null;
             }
 
@@ -580,7 +665,7 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             // Create a scope with "dc" parameter (no enforceSuggestion — let minification work)
-            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
             var paramIdentifier = getterScope.ParameterIdentifiers[0];
 
             // NScript inlines simple field-return getters — the getter method won't exist at
@@ -589,7 +674,10 @@ namespace NScript.RazorSkin.CodeGen
             // (not via IL resolution) to ensure the scope manager returns the correct identifier.
             var backingField = TryFindBackingFieldOnType(typeDefinition, property);
             // For item graphs, access the item element of the tuple: dc[2]
-            var dcAccess = CreateTupleAccessExpression(paramIdentifier, getterScope);
+            var dcAccess = isControl
+                ? (Expression)new IdentifierExpression(getterScope.ParameterIdentifiers[1], getterScope)
+                : CreateTupleAccessExpression(paramIdentifier, getterScope,
+                    isParentModel ? 0 : 2);
             Expression currentExpr;
             if (backingField != null)
             {
@@ -604,16 +692,15 @@ namespace NScript.RazorSkin.CodeGen
             else
             {
                 // Complex getter — use method call: dc.get_propName() (or dc[2].get_propName())
-                var getterMethodId = _scopeManager.Resolve(property.GetMethod);
-                currentExpr = new MethodCallExpression(
-                    null,
-                    getterScope,
-                    new IndexExpression(
-                        null,
-                        getterScope,
-                        dcAccess,
-                        new IdentifierExpression(getterMethodId, getterScope)),
-                    System.Array.Empty<Expression>());
+                var method = property.GetMethod;
+                currentExpr = IsMethodDevirtualized(method)
+                    ? new MethodCallExpression(null, getterScope,
+                        new IdentifierExpression(_scopeManager.ResolveStatic(method), getterScope),
+                        new Expression[] { dcAccess })
+                    : new MethodCallExpression(null, getterScope,
+                        new IndexExpression(null, getterScope, dcAccess,
+                            new IdentifierExpression(_scopeManager.Resolve(method), getterScope)),
+                        System.Array.Empty<Expression>());
             }
 
             // Apply negation for gate conditions like "!IsCollapsed"
@@ -688,6 +775,26 @@ namespace NScript.RazorSkin.CodeGen
             return null;
         }
 
+        private static FieldDefinition TryFindTrivialSetterFieldOnType(TypeDefinition type, PropertyDefinition property)
+        {
+            if (property.CustomAttributes.Any(attr => attr.AttributeType.Name == "AutoFireAttribute"))
+                return null;
+            var setter = property.SetMethod;
+            if (setter?.Body == null) return null;
+
+            var instructions = setter.Body.Instructions
+                .Where(instruction => instruction.OpCode != OpCodes.Nop).ToList();
+            if (instructions.Count != 4
+                || instructions[0].OpCode != OpCodes.Ldarg_0
+                || instructions[1].OpCode != OpCodes.Ldarg_1
+                || instructions[2].OpCode != OpCodes.Stfld
+                || instructions[3].OpCode != OpCodes.Ret)
+                return null;
+
+            var fieldName = (instructions[2].Operand as FieldReference)?.Name;
+            return type.Fields.FirstOrDefault(field => field.Name == fieldName);
+        }
+
         /// <summary>
         /// Fallback: creates a getter function with a raw JS body string.
         /// Used for computed/gate/collection getters whose bodies contain operators
@@ -699,7 +806,7 @@ namespace NScript.RazorSkin.CodeGen
             // Emit the entire function as a raw script literal to avoid the JST
             // TransformerVisitor replacing it with an empty FunctionExpression.
             // Parameter "dc" is the data-context array, referenced literally in rawBody.
-            return new ScriptLiteralExpression(null, _scope, $"function(dc){{{rawBody};}}");
+            return new ScriptLiteralExpression(null, _scope, $"function(dc,tp){{{rawBody};}}");
         }
 
         /// <summary>
@@ -1107,7 +1214,7 @@ namespace NScript.RazorSkin.CodeGen
 
             if (tokens.Length < 3) return null; // Need at least operand operator operand
 
-            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
             var paramIdentifier = getterScope.ParameterIdentifiers[0];
 
             Expression result = null;
@@ -1176,7 +1283,7 @@ namespace NScript.RazorSkin.CodeGen
                 expression.Trim(),
                 @"^(!?\s*(?:Model\.|" +
                 System.Text.RegularExpressions.Regex.Escape(_topology?.ItemVariablePrefix ?? "NOMATCH") +
-                @")?\s*[A-Z]\w*)\s*\?\s*(.*?)\s*:\s*(.*?)\s*$");
+                @"|Control\.)?\s*[A-Z]\w*)\s*\?\s*(.*?)\s*:\s*(.*?)\s*$");
 
             if (!match.Success) return null;
 
@@ -1184,7 +1291,7 @@ namespace NScript.RazorSkin.CodeGen
             var truePart = match.Groups[2].Value.Trim();
             var falsePart = match.Groups[3].Value.Trim();
 
-            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+            var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
             var paramIdentifier = getterScope.ParameterIdentifiers[0];
 
             // Build condition expression (property field access, possibly negated)
@@ -1257,13 +1364,17 @@ namespace NScript.RazorSkin.CodeGen
             string expression, IdentifierScope scope, IIdentifier dcParam)
         {
             var propName = expression;
+            bool isControl = propName.StartsWith("Control.");
+            bool isParentModel = IsItemGraph && propName.StartsWith("Model.");
+            if (isControl) propName = propName.Substring(8);
             if (propName.StartsWith("Model.")) propName = propName.Substring(6);
             if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
                 && propName.StartsWith(_topology.ItemVariablePrefix))
                 propName = propName.Substring(_topology.ItemVariablePrefix.Length);
             if (propName.Contains(".")) return null;
 
-            var typeDefinition = FindTypeDefinition(_modelTypeName);
+            var typeDefinition = FindTypeDefinition(isControl ? _controlTypeName
+                : isParentModel ? _parentModelTypeName : _modelTypeName);
             if (typeDefinition == null) return null;
 
             var property = FindProperty(typeDefinition, propName);
@@ -1271,7 +1382,9 @@ namespace NScript.RazorSkin.CodeGen
 
             var backingField = TryFindBackingFieldOnType(typeDefinition, property);
             // For item graphs, access the item element of the tuple: dc[2]
-            var dcAccess = CreateTupleAccessExpression(dcParam, scope);
+            var dcAccess = isControl
+                ? (Expression)new IdentifierExpression(scope.ParameterIdentifiers[1], scope)
+                : CreateTupleAccessExpression(dcParam, scope, isParentModel ? 0 : 2);
             if (backingField != null)
             {
                 var fieldId = _scopeManager.Resolve(backingField);
@@ -1299,18 +1412,21 @@ namespace NScript.RazorSkin.CodeGen
         /// The handler expression is like "Model.IncrementClick" or a lambda "(e) => Model.IncrementClick()".
         /// For item graphs, uses tuple DataContext: dc[2] for item methods, dc[0] for Model methods.
         /// </summary>
-        private Expression EmitEventGetter(string handlerExpression)
+        private Expression EmitEventGetter(string handlerExpression, int nodeIndex)
         {
             if (string.IsNullOrEmpty(handlerExpression))
                 return new NullLiteralExpression(_scope);
 
             // Track whether this is a Model-level method reference (for tuple index selection)
             bool isModelMethodRef = handlerExpression.StartsWith("Model.");
+            bool isControlMethodRef = handlerExpression.StartsWith("Control.");
 
             // Strip Model. or item variable prefix (e.g., "folder.", "todo.")
             var expr = handlerExpression;
             if (expr.StartsWith("Model."))
                 expr = expr.Substring(6);
+            else if (expr.StartsWith("Control."))
+                expr = expr.Substring(8);
             if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix)
                 && expr.StartsWith(_topology.ItemVariablePrefix))
                 expr = expr.Substring(_topology.ItemVariablePrefix.Length);
@@ -1318,18 +1434,25 @@ namespace NScript.RazorSkin.CodeGen
             // For simple method references (no parens, no lambda)
             if (expr.IndexOfAny(new[] { '(', ')', '=', '>' }) < 0)
             {
+                if (isControlMethodRef)
+                    RequirePublicControlHandler(FindTypeDefinition(_controlTypeName), expr,
+                        _topology.Events.FirstOrDefault(evt => evt.NodeIdx == nodeIndex)?.Location
+                            ?? _fallbackLocation);
                 // Resolve method — for Model methods in item graphs, look up on parent type
-                var resolveTypeName = (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
-                    ? _parentModelTypeName : null;
+                var resolveTypeName = isControlMethodRef ? _controlTypeName
+                    : (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
+                        ? _parentModelTypeName : null;
                 var methodId = TryResolveMethodIdentifier(expr, out bool isDevirtualized, resolveTypeName);
                 if (methodId != null)
                 {
-                    var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
+                    var outerScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
                     var dcParam = outerScope.ParameterIdentifiers[0];
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
                     int tupleIdx = isModelMethodRef ? 0 : 2;
-                    var dcRef = CreateTupleAccessExpression(dcParam, innerScope, tupleIdx);
+                    var dcRef = isControlMethodRef
+                        ? (Expression)new IdentifierExpression(outerScope.ParameterIdentifiers[1], innerScope)
+                        : CreateTupleAccessExpression(dcParam, innerScope, tupleIdx);
                     var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
                     var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
 
@@ -1358,16 +1481,25 @@ namespace NScript.RazorSkin.CodeGen
                     return outerFn;
                 }
 
+                if (isControlMethodRef)
+                    throw new RazorSubControlDiagnosticException(_fallbackLocation,
+                        "Cannot resolve public control event handler '" + handlerExpression + "'.");
+
                 // Fallback: raw body (unresolved name — may not match minification)
                 var methodName = char.ToLower(expr[0]) + expr.Substring(1);
-                var rawPrefix = IsItemGraph ? (isModelMethodRef ? "dc[0]" : "dc[2]") : "dc";
+                var rawPrefix = isControlMethodRef ? "tp"
+                    : IsItemGraph ? (isModelMethodRef ? "dc[0]" : "dc[2]") : "dc";
                 return CreateRawGetterFunction(
                     "return function(e,ev){" + rawPrefix + "." + methodName + "()}");
             }
 
             // Parent-context method invocation inside a foreach item template:
             // Pattern: "Model.Method(itemVar)" → function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }
-            var parentMethodResult = TryEmitParentMethodInvocation(handlerExpression);
+            var parentInvocation = handlerExpression;
+            var lambdaArrow = parentInvocation.IndexOf("=>", StringComparison.Ordinal);
+            if (lambdaArrow >= 0)
+                parentInvocation = parentInvocation.Substring(lambdaArrow + 2).Trim();
+            var parentMethodResult = TryEmitParentMethodInvocation(parentInvocation);
             if (parentMethodResult != null)
                 return parentMethodResult;
 
@@ -1474,17 +1606,37 @@ namespace NScript.RazorSkin.CodeGen
             if (typeDefinition == null)
                 return null;
 
-            foreach (var method in typeDefinition.Methods)
+            var resolvedMethod = FindPublicMethod(typeDefinition, methodName);
+            if (resolvedMethod != null)
             {
-                if (method.Name == methodName && method.IsPublic && !method.IsConstructor)
-                {
-                    isDevirtualized = IsMethodDevirtualized(method);
-                    if (isDevirtualized)
-                        return _scopeManager.ResolveStatic(method);
-                    return _scopeManager.Resolve(method);
-                }
+                isDevirtualized = IsMethodDevirtualized(resolvedMethod);
+                if (isDevirtualized)
+                    return _scopeManager.ResolveStatic(resolvedMethod);
+                return _scopeManager.Resolve(resolvedMethod);
             }
 
+            return null;
+        }
+
+        internal static MethodDefinition RequirePublicControlHandler(
+            TypeDefinition controlType, string methodName, Location location)
+        {
+            var method = FindPublicMethod(controlType, methodName);
+            if (method == null)
+                throw new RazorSubControlDiagnosticException(location,
+                    "Cannot resolve public control event handler 'Control." + methodName + "'.");
+            return method;
+        }
+
+        private static MethodDefinition FindPublicMethod(TypeDefinition type, string methodName)
+        {
+            for (var currentType = type; currentType != null;
+                currentType = currentType.BaseType?.Resolve())
+            {
+                var method = currentType.Methods.FirstOrDefault(candidate =>
+                    candidate.Name == methodName && candidate.IsPublic && !candidate.IsConstructor);
+                if (method != null) return method;
+            }
             return null;
         }
 
@@ -1662,10 +1814,12 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Expression EmitGateTargetInfo(GateTopology gt)
         {
-            var trueHtml = RazorSkinCodeGenerator.CollectHtmlPublic(gt.IrNode.TrueBranch);
+            var trueHtml = RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(gt.IrNode.TrueBranch);
             var falseHtml = (gt.IrNode.FalseBranch != null && gt.IrNode.FalseBranch.Count > 0)
-                ? RazorSkinCodeGenerator.CollectHtmlPublic(gt.IrNode.FalseBranch)
+                ? RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(gt.IrNode.FalseBranch)
                 : "";
+            trueHtml = RazorCssManager.ReplaceCssClassNamesInHtml(trueHtml, _cssManager);
+            falseHtml = RazorCssManager.ReplaceCssClassNamesInHtml(falseHtml, _cssManager);
 
             if (_gateTargetInfoFactory != null)
             {
@@ -1736,7 +1890,9 @@ namespace NScript.RazorSkin.CodeGen
                     _resolvedTypeIdentifiers,
                     parentModelTypeName: _modelTypeName,
                     cssManager: _cssManager,
-                    fallbackLocation: ct.IrNode?.Location ?? _fallbackLocation);
+                    usingNamespaces: _usingNamespaces,
+                    fallbackLocation: ct.IrNode?.Location ?? _fallbackLocation,
+                    controlTypeName: _controlTypeName);
                 itemGraphExpr = nestedEmitter.Emit();
             }
 
@@ -1750,11 +1906,6 @@ namespace NScript.RazorSkin.CodeGen
                 if (itemGraphExpr != null)
                     fields.Add((_collectionItemGraphField, "ItemGraph", itemGraphExpr));
 
-                // Emit SubControlInfos for sub-controls inside the collection item template
-                var subControlInfosExpr = EmitCollectionSubControlInfos(ct);
-                if (subControlInfosExpr != null)
-                    fields.Add((_collectionSubControlInfosField, "SubControlInfos", subControlInfosExpr));
-
                 return EmitTypedObject(_collectionTargetInfoFactory, fields);
             }
 
@@ -1765,85 +1916,7 @@ namespace NScript.RazorSkin.CodeGen
             if (itemGraphExpr != null)
                 AddField(info, _collectionItemGraphField, "ItemGraph", itemGraphExpr);
 
-            // Emit SubControlInfos for fallback path too
-            var fallbackSubControlInfos = EmitCollectionSubControlInfos(ct);
-            if (fallbackSubControlInfos != null)
-                AddField(info, _collectionSubControlInfosField, "SubControlInfos", fallbackSubControlInfos);
-
             return info;
-        }
-
-        /// <summary>
-        /// Emits SubControlInfos array for sub-controls inside a collection item template.
-        /// Each SubControlInfo has MarkerIdx, TypeFactory, and SkinFactory so the GraphEngine
-        /// can instantiate sub-controls when rendering collection items.
-        /// Returns null if no sub-controls exist in the item topology.
-        /// </summary>
-        private Expression EmitCollectionSubControlInfos(CollectionTopology ct)
-        {
-            if (ct.ItemTopology?.SubControls == null || ct.ItemTopology.SubControls.Count == 0)
-                return null;
-
-            if (_clrContext == null)
-                return null;
-
-            var items = new List<Expression>();
-            int markerIdx = 0;
-
-            foreach (var sc in ct.ItemTopology.SubControls)
-            {
-                var typeName = sc.ResolvedTypeName ?? sc.ControlTypeName;
-                if (string.IsNullOrEmpty(typeName))
-                {
-                    markerIdx++;
-                    continue;
-                }
-
-                var typeDef = FindSubControlType(typeName);
-                if (typeDef == null)
-                {
-                    Log.Debug("EmitCollectionSubControlInfos: Cannot find type {TypeName}", typeName);
-                    markerIdx++;
-                    continue;
-                }
-
-                var typeFactoryExpr = BuildSubControlTypeFactory(typeDef);
-                var skinFactoryExpr = BuildSubControlSkinFactory(typeDef);
-
-                if (typeFactoryExpr == null || skinFactoryExpr == null)
-                {
-                    Log.Debug("EmitCollectionSubControlInfos: Cannot build factories for {TypeName}", typeName);
-                    markerIdx++;
-                    continue;
-                }
-
-                if (_subControlInfoFactory != null)
-                {
-                    var fields = new List<(IIdentifier, string, Expression)>
-                    {
-                        (_subControlMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, markerIdx)),
-                        (_subControlTypeFactoryField, "TypeFactory", typeFactoryExpr),
-                        (_subControlSkinFactoryField, "SkinFactory", skinFactoryExpr)
-                    };
-                    items.Add(EmitTypedObject(_subControlInfoFactory, fields));
-                }
-                else
-                {
-                    var scObj = new InlineObjectInitializer(null, _scope);
-                    AddField(scObj, _subControlMarkerIdxField, "MarkerIdx",
-                        new NumberLiteralExpression(_scope, markerIdx));
-                    AddField(scObj, _subControlTypeFactoryField, "TypeFactory", typeFactoryExpr);
-                    AddField(scObj, _subControlSkinFactoryField, "SkinFactory", skinFactoryExpr);
-                    items.Add(scObj);
-                }
-
-                markerIdx++;
-            }
-
-            if (items.Count == 0)
-                return null;
-
-            return new InlineNewArrayInitialization(null, _scope, items);
         }
 
         /// <summary>
@@ -1854,8 +1927,7 @@ namespace NScript.RazorSkin.CodeGen
         private Expression BuildSubControlTypeFactory(TypeDefinition typeDef)
         {
             // Find the constructor that takes an Element parameter
-            var ctor = typeDef.Methods.FirstOrDefault(m =>
-                m.IsConstructor && !m.IsStatic && m.Parameters.Count == 1);
+            var ctor = RazorSkinJSTGenerator.FindElementConstructor(typeDef);
 
             if (ctor == null)
             {
@@ -1926,22 +1998,19 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Searches loaded assemblies for a type matching the given name.
-        /// Supports both short names ("TodoItemControl") and fully qualified names.
+        /// Resolves a type using the template's imports and ambiguity rules.
         /// </summary>
         private TypeDefinition FindSubControlType(string typeName)
         {
-            // Try fully qualified first
-            var result = FindTypeDefinition(typeName);
-            if (result != null) return result;
-
-            // Search all types for a match by short name
-            foreach (var type in _clrContext.GetTypes())
+            try
             {
-                if (type.Name == typeName)
-                    return type;
+                return RazorSkinJSTGenerator.ResolveSubControlType(
+                    _clrContext.GetTypes(), typeName, _usingNamespaces);
             }
-            return null;
+            catch (InvalidOperationException ex)
+            {
+                throw new RazorSubControlDiagnosticException(_fallbackLocation, ex.Message);
+            }
         }
 
         /// <summary>
@@ -2054,13 +2123,25 @@ namespace NScript.RazorSkin.CodeGen
             var items = new List<Expression>();
             foreach (var sc in _topology.SubControls)
             {
+                var typeDef = FindSubControlType(sc.ResolvedTypeName ?? sc.ControlTypeName);
+                var typeFactory = typeDef != null ? BuildSubControlTypeFactory(typeDef) : null;
+                var skinFactory = typeDef != null ? BuildSubControlSkinFactory(typeDef) : null;
+
                 // Build bindings array
                 var bindingItems = new List<Expression>();
-                foreach (var propBinding in sc.PropertyBindings)
+                foreach (var propBinding in sc.PropertyBindings.OrderBy(p =>
+                    p.TargetPropertyName == "Skin" ? 0 : p.TargetPropertyName == "DataContext" ? 1 : 2))
                 {
                     var setter = BuildSubControlPropertySetter(
                         sc.ResolvedTypeName ?? sc.ControlTypeName,
                         propBinding.TargetPropertyName);
+                    var targetGetter = !string.IsNullOrEmpty(propBinding.TwoWaySourceProperty)
+                        ? BuildSubControlTargetGetter(typeDef, propBinding.TargetPropertyName)
+                        : null;
+                    var sourceSetter = !string.IsNullOrEmpty(propBinding.TwoWaySourceProperty)
+                        ? BuildSubControlSourceSetter(propBinding.TwoWaySourceProperty,
+                            propBinding.TwoWaySourceSlot)
+                        : null;
 
                     if (_subControlPropertyInfoFactory != null)
                     {
@@ -2069,6 +2150,13 @@ namespace NScript.RazorSkin.CodeGen
                             (_subControlPropNodeIdxField, "NodeIdx", new NumberLiteralExpression(_scope, propBinding.NodeIdx)),
                             (_subControlPropSetterField, "Setter", setter ?? new NullLiteralExpression(_scope))
                         };
+                        if (sourceSetter != null)
+                        {
+                            fields.Add((_subControlPropTargetNameField, "TargetPropertyName",
+                                new StringLiteralExpression(_scope, propBinding.TargetPropertyName)));
+                            fields.Add((_subControlPropTargetGetterField, "TargetGetter", targetGetter));
+                            fields.Add((_subControlPropSourceSetterField, "SourceSetter", sourceSetter));
+                        }
                         bindingItems.Add(EmitTypedObject(_subControlPropertyInfoFactory, fields));
                     }
                     else
@@ -2078,6 +2166,13 @@ namespace NScript.RazorSkin.CodeGen
                             new NumberLiteralExpression(_scope, propBinding.NodeIdx));
                         AddField(propObj, _subControlPropSetterField, "Setter",
                             setter ?? new NullLiteralExpression(_scope));
+                        if (sourceSetter != null)
+                        {
+                            AddField(propObj, _subControlPropTargetNameField, "TargetPropertyName",
+                                new StringLiteralExpression(_scope, propBinding.TargetPropertyName));
+                            AddField(propObj, _subControlPropTargetGetterField, "TargetGetter", targetGetter);
+                            AddField(propObj, _subControlPropSourceSetterField, "SourceSetter", sourceSetter);
+                        }
                         bindingItems.Add(propObj);
                     }
                 }
@@ -2088,17 +2183,30 @@ namespace NScript.RazorSkin.CodeGen
                 {
                     var fields = new List<(IIdentifier, string, Expression)>
                     {
+                        (_subControlMarkerIdxField, "MarkerIdx", new NumberLiteralExpression(_scope, sc.ElemIdx)),
+                        (_subControlTypeFactoryField, "TypeFactory", typeFactory ?? new NullLiteralExpression(_scope)),
+                        (_subControlSkinFactoryField, "SkinFactory", skinFactory ?? new NullLiteralExpression(_scope)),
                         (_subControlElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, sc.ElemIdx)),
-                        (_subControlBindingsField, "Bindings", bindingsExpr)
+                        (_subControlBindingsField, "Bindings", bindingsExpr),
+                        (_subControlHasDataContextBindingField, "HasDataContextBinding",
+                            new BooleanLiteralExpression(_scope, sc.PropertyBindings.Any(p => p.TargetPropertyName == "DataContext")))
                     };
                     items.Add(EmitTypedObject(_subControlInfoFactory, fields));
                 }
                 else
                 {
                     var scObj = new InlineObjectInitializer(null, _scope);
+                    AddField(scObj, _subControlMarkerIdxField, "MarkerIdx",
+                        new NumberLiteralExpression(_scope, sc.ElemIdx));
+                    AddField(scObj, _subControlTypeFactoryField, "TypeFactory",
+                        typeFactory ?? new NullLiteralExpression(_scope));
+                    AddField(scObj, _subControlSkinFactoryField, "SkinFactory",
+                        skinFactory ?? new NullLiteralExpression(_scope));
                     AddField(scObj, _subControlElemIdxField, "ElemIdx",
                         new NumberLiteralExpression(_scope, sc.ElemIdx));
                     AddField(scObj, _subControlBindingsField, "Bindings", bindingsExpr);
+                    AddField(scObj, _subControlHasDataContextBindingField, "HasDataContextBinding",
+                        new BooleanLiteralExpression(_scope, sc.PropertyBindings.Any(p => p.TargetPropertyName == "DataContext")));
                     items.Add(scObj);
                 }
             }
@@ -2115,7 +2223,7 @@ namespace NScript.RazorSkin.CodeGen
             if (_clrContext == null || string.IsNullOrEmpty(controlTypeName))
                 return null;
 
-            var typeDef = FindTypeDefinition(controlTypeName);
+            var typeDef = FindSubControlType(controlTypeName);
             if (typeDef == null)
             {
                 Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve sub-control type {TypeName}", controlTypeName);
@@ -2135,17 +2243,107 @@ namespace NScript.RazorSkin.CodeGen
             var ctrlParam = setterScope.ParameterIdentifiers[0];
             var valParam = setterScope.ParameterIdentifiers[1];
 
-            var setterMethodId = _scopeManager.Resolve(property.SetMethod);
-            var callExpr = new MethodCallExpression(
-                null, setterScope,
-                new IndexExpression(
-                    null, setterScope,
-                    new IdentifierExpression(ctrlParam, setterScope),
-                    new IdentifierExpression(setterMethodId, setterScope)),
-                new Expression[] { new IdentifierExpression(valParam, setterScope) });
-
             var fn = new FunctionExpression(_fallbackLocation, _scope, setterScope, setterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ExpressionStatement(_fallbackLocation, setterScope, callExpr));
+            var field = TryFindTrivialSetterFieldOnType(property.DeclaringType.Resolve(), property);
+            if (field != null)
+            {
+                fn.AddStatement(ExpressionStatement.CreateAssignmentExpression(
+                    new IndexExpression(null, setterScope,
+                        new IdentifierExpression(ctrlParam, setterScope),
+                        new IdentifierExpression(_scopeManager.Resolve(field), setterScope)),
+                    new IdentifierExpression(valParam, setterScope)));
+            }
+            else
+            {
+                var method = property.SetMethod;
+                var control = new IdentifierExpression(ctrlParam, setterScope);
+                var value = new IdentifierExpression(valParam, setterScope);
+                var callExpr = IsMethodDevirtualized(method)
+                    ? new MethodCallExpression(null, setterScope,
+                        new IdentifierExpression(_scopeManager.ResolveStatic(method), setterScope),
+                        new Expression[] { control, value })
+                    : new MethodCallExpression(null, setterScope,
+                        new IndexExpression(null, setterScope, control,
+                            new IdentifierExpression(_scopeManager.Resolve(method), setterScope)),
+                        new Expression[] { value });
+                fn.AddStatement(new ExpressionStatement(_fallbackLocation, setterScope, callExpr));
+            }
+            return fn;
+        }
+
+        private Expression BuildSubControlTargetGetter(TypeDefinition typeDef, string propertyName)
+        {
+            var property = FindProperty(typeDef, propertyName);
+            if (property?.GetMethod == null)
+                throw new InvalidOperationException(
+                    $"Two-way target {typeDef.FullName}.{propertyName} has no getter.");
+
+            var scope = new IdentifierScope(_scope, new[] { "ctrl" }, false);
+            var control = new IdentifierExpression(scope.ParameterIdentifiers[0], scope);
+            Expression value;
+            var declaringType = property.DeclaringType.Resolve();
+            var field = TryFindBackingFieldOnType(declaringType, property);
+            if (field != null)
+            {
+                value = new IndexExpression(null, scope, control,
+                    new IdentifierExpression(_scopeManager.Resolve(field), scope));
+            }
+            else
+            {
+                var method = property.GetMethod;
+                value = IsMethodDevirtualized(method)
+                    ? new MethodCallExpression(null, scope,
+                        new IdentifierExpression(_scopeManager.ResolveStatic(method), scope),
+                        new Expression[] { control })
+                    : new MethodCallExpression(null, scope,
+                        new IndexExpression(null, scope, control,
+                            new IdentifierExpression(_scopeManager.Resolve(method), scope)),
+                        System.Array.Empty<Expression>());
+            }
+            var fn = new FunctionExpression(_fallbackLocation, _scope, scope,
+                scope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, scope, value));
+            return fn;
+        }
+
+        private Expression BuildSubControlSourceSetter(string propertyName, int sourceSlot)
+        {
+            var sourceTypeName = IsItemGraph && sourceSlot == 0
+                ? _parentModelTypeName : _modelTypeName;
+            var sourceType = FindTypeDefinition(sourceTypeName);
+            var property = sourceType != null ? FindProperty(sourceType, propertyName) : null;
+            if (property?.SetMethod == null)
+                throw new InvalidOperationException(
+                    $"Two-way source {sourceTypeName}.{propertyName} has no setter.");
+
+            var scope = new IdentifierScope(_scope, new[] { "dc", "val" }, false);
+            Expression source = new IdentifierExpression(scope.ParameterIdentifiers[0], scope);
+            if (IsItemGraph)
+                source = new IndexExpression(null, scope, source,
+                    new NumberLiteralExpression(scope, sourceSlot));
+            var fn = new FunctionExpression(_fallbackLocation, _scope, scope,
+                scope.ParameterIdentifiers, null);
+            var field = TryFindTrivialSetterFieldOnType(property.DeclaringType.Resolve(), property);
+            var value = new IdentifierExpression(scope.ParameterIdentifiers[1], scope);
+            if (field != null)
+            {
+                fn.AddStatement(ExpressionStatement.CreateAssignmentExpression(
+                    new IndexExpression(null, scope, source,
+                        new IdentifierExpression(_scopeManager.Resolve(field), scope)), value));
+            }
+            else
+            {
+                var method = property.SetMethod;
+                var call = IsMethodDevirtualized(method)
+                    ? new MethodCallExpression(null, scope,
+                        new IdentifierExpression(_scopeManager.ResolveStatic(method), scope),
+                        new Expression[] { source, value })
+                    : new MethodCallExpression(null, scope,
+                        new IndexExpression(null, scope, source,
+                            new IdentifierExpression(_scopeManager.Resolve(method), scope)),
+                        new Expression[] { value });
+                fn.AddStatement(new ExpressionStatement(_fallbackLocation, scope, call));
+            }
             return fn;
         }
     }

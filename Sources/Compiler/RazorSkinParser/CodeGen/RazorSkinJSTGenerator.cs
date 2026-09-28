@@ -11,6 +11,17 @@ using Serilog;
 
 namespace NScript.RazorSkin.CodeGen
 {
+    internal sealed class RazorSubControlDiagnosticException : InvalidOperationException
+    {
+        internal RazorSubControlDiagnosticException(Location location, string message)
+            : base(message)
+        {
+            Location = location;
+        }
+
+        internal Location Location { get; }
+    }
+
     /// <summary>
     /// Generates proper JST (JavaScript Syntax Tree) nodes for Razor skin templates,
     /// mirroring the pattern used by XwmlParser's SkinCodeGenerator. This ensures that
@@ -154,7 +165,12 @@ namespace NScript.RazorSkin.CodeGen
 
             // Resolve sub-control attributes (TagName, DomAttributes) via Cecil
             // Must happen before CollectHtmlWithPathsPublic which reads SubControlNode.TagName
-            ResolveSubControlAttributes(_ir.Children);
+            ResolveSubControlAttributes(_ir.Children, FindTypeDefinition(_ir.ModelTypeName));
+
+            // Marker indices are assigned by the topology builder and used by the
+            // HTML collector for stable sub-control host lookup.
+            var topology = GraphTopologyBuilder.Build(_ir);
+            _topology = topology;
 
             // Collect bindings, events, and HTML content
             var bindings = RazorSkinCodeGenerator.CollectBindingsPublic(_ir.Children);
@@ -169,10 +185,6 @@ namespace NScript.RazorSkin.CodeGen
             {
                 htmlContent = ReplaceCssClassNamesInHtml(htmlContent);
             }
-
-            // Build graph topology from IR
-            var topology = GraphTopologyBuilder.Build(_ir);
-            _topology = topology;
 
             // Build known function names from @functions blocks
             var knownFunctionNames = new HashSet<string>();
@@ -315,7 +327,9 @@ namespace NScript.RazorSkin.CodeGen
                 topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames,
                 _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers,
                 cssManager: _cssManager,
-                fallbackLocation: GetTemplateLocation());
+                usingNamespaces: _ir.UsingNamespaces,
+                fallbackLocation: GetTemplateLocation(),
+                controlTypeName: _ir.ControlTypeName);
             var graphDescriptorExpr = graphEmitter.Emit();
 
             initStatements.Add(
@@ -473,6 +487,7 @@ namespace NScript.RazorSkin.CodeGen
             foreach (var evt in topology.Events)
             {
                 if (gatedElemIndices.Contains(evt.ElemIdx)) continue;
+                if (topology.SubControls.Any(sc => sc.ElemIdx == evt.ElemIdx)) continue;
 
                 stmts.Add(
                     ExpressionStatement.CreateAssignmentExpression(
@@ -484,10 +499,19 @@ namespace NScript.RazorSkin.CodeGen
                         BuildEventElementRef(htmlContent, evt)));
             }
 
-            // Part ID mapping — not yet implemented for Razor templates (always null).
-            // XWML uses a custom expression for this; Razor will add support when
-            // id-based part access is needed.
-            var partIdExpr = new NullLiteralExpression(_factoryScope);
+            var partIds = new InlineObjectInitializer(null, _factoryScope);
+            ValidateUniqueSubControlIds(topology.SubControls);
+            var seenPartIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var subControl in topology.SubControls)
+            {
+                if (string.IsNullOrEmpty(subControl.ElementId)) continue;
+                seenPartIds.Add(subControl.ElementId);
+                partIds.AddInitializer(subControl.ElementId,
+                    new NumberLiteralExpression(_factoryScope, subControl.ElemIdx));
+            }
+            Expression partIdExpr = seenPartIds.Count > 0
+                ? (Expression)partIds
+                : new NullLiteralExpression(_factoryScope);
 
             // return SkinInstance_factory(skinFactory, htmlRoot, [], objStorage, tmplStore[0], partMap, liveBinderCount, 0)
             IIdentifier skinInstanceFactoryId = GetResolvedIdentifier(
@@ -1040,7 +1064,9 @@ namespace NScript.RazorSkin.CodeGen
         /// Recursively resolves TagName and DomAttributes on SubControlNode instances
         /// by looking up the control type via Cecil and reading [TagName] and [DomAttribute] attributes.
         /// </summary>
-        private void ResolveSubControlAttributes(List<IRNode> nodes)
+        private void ResolveSubControlAttributes(List<IRNode> nodes,
+            TypeDefinition modelType, TypeDefinition itemType = null,
+            string itemVariablePrefix = null)
         {
             if (nodes == null) return;
 
@@ -1048,21 +1074,32 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (node is SubControlNode sub)
                 {
-                    ResolveSubControlTagInfo(sub);
+                    ResolveSubControlTagInfo(sub, modelType, itemType, itemVariablePrefix);
                 }
 
                 if (node.Children?.Count > 0)
-                    ResolveSubControlAttributes(node.Children);
+                    ResolveSubControlAttributes(node.Children, modelType, itemType, itemVariablePrefix);
 
                 if (node is ConditionalNode cond)
                 {
-                    ResolveSubControlAttributes(cond.TrueBranch);
-                    ResolveSubControlAttributes(cond.FalseBranch);
+                    ResolveSubControlAttributes(cond.TrueBranch, modelType, itemType, itemVariablePrefix);
+                    ResolveSubControlAttributes(cond.FalseBranch, modelType, itemType, itemVariablePrefix);
                 }
 
                 if (node is LoopNode loop)
                 {
-                    ResolveSubControlAttributes(loop.ItemTemplate);
+                    var collectionOwner = (loop.CollectionExpression ?? string.Empty)
+                        .StartsWith("Model.") ? modelType : itemType ?? modelType;
+                    var propertyName = (loop.CollectionExpression ?? string.Empty)
+                        .Split('.').LastOrDefault();
+                    var collection = collectionOwner != null
+                        ? FindProperty(collectionOwner, propertyName) : null;
+                    var collectionType = collection?.PropertyType as GenericInstanceType;
+                    var itemReference = collectionType?.GenericArguments.FirstOrDefault();
+                    var loopItemType = itemReference != null
+                        ? FindTypeDefinition(itemReference.FullName) : null;
+                    ResolveSubControlAttributes(loop.ItemTemplate, modelType,
+                        loopItemType, loop.ItemVariableName + ".");
                 }
             }
         }
@@ -1071,18 +1108,31 @@ namespace NScript.RazorSkin.CodeGen
         /// Resolves tag name and DOM attributes for a single SubControlNode by looking up its
         /// CLR type via Cecil and reading [TagName] and [DomAttribute] custom attributes.
         /// </summary>
-        private void ResolveSubControlTagInfo(SubControlNode sub)
+        private void ResolveSubControlTagInfo(SubControlNode sub,
+            TypeDefinition modelType, TypeDefinition itemType,
+            string itemVariablePrefix)
         {
             if (_clrContext == null || _knownTypes == null) return;
 
-            var typeDef = FindSubControlType(sub.TypeName);
-            if (typeDef == null)
+            TypeDefinition typeDef;
+            try { typeDef = FindSubControlType(sub.TypeName); }
+            catch (InvalidOperationException ex)
             {
-                Log.Debug("ResolveSubControlTagInfo: Cannot find type for {TypeName}", sub.TypeName);
-                return;
+                throw new RazorSubControlDiagnosticException(sub.Location, ex.Message);
             }
-
-            sub.ResolvedTypeName = typeDef.FullName;
+            foreach (var binding in sub.PropertyBindings.Where(binding => binding.IsLiteral))
+            {
+                var property = typeDef != null ? FindProperty(typeDef, binding.PropertyName) : null;
+                var targetEnum = property != null
+                    ? _clrContext.GetTypes().FirstOrDefault(type =>
+                        type.FullName == property.PropertyType.FullName && type.IsEnum)
+                    : null;
+                if (targetEnum != null)
+                    ValidateEnumLiteral(binding.Classification.CSharpExpression,
+                        targetEnum, _clrContext.GetTypes(), _ir.UsingNamespaces, sub.Location);
+            }
+            ValidateSubControlTagInfo(sub, typeDef, FindProperty,
+                modelType, itemType, itemVariablePrefix);
 
             // Read [TagName("xxx")] attribute
             if (_knownTypes.TagNameAttribute != null)
@@ -1119,44 +1169,337 @@ namespace NScript.RazorSkin.CodeGen
             }
         }
 
+        internal static void ValidateSubControlTagInfo(
+            SubControlNode sub, TypeDefinition typeDef,
+            Func<TypeDefinition, string, PropertyDefinition> findProperty,
+            TypeDefinition modelType = null, TypeDefinition itemType = null,
+            string itemVariablePrefix = null)
+        {
+            if (typeDef == null)
+                throw new RazorSubControlDiagnosticException(
+                    sub.Location, $"Unknown sub-control type '{sub.TypeName}'.");
+
+            var baseType = typeDef;
+            while (baseType != null && baseType.FullName != "Sunlight.Framework.UI.UIElement")
+                baseType = baseType.BaseType?.Resolve();
+            if (baseType == null)
+                throw new RazorSubControlDiagnosticException(
+                    sub.Location, $"Sub-control {typeDef.FullName} must inherit from UIElement.");
+
+            sub.ResolvedTypeName = typeDef.FullName;
+            foreach (var binding in sub.PropertyBindings)
+            {
+                var property = findProperty(typeDef, binding.PropertyName);
+                if (property == null || property.SetMethod == null)
+                    throw new RazorSubControlDiagnosticException(
+                        sub.Location, $"Sub-control {typeDef.FullName} has no writable property '{binding.PropertyName}'.");
+
+                var typeName = property.PropertyType.FullName;
+                if (typeName.StartsWith("System.Func"))
+                    throw new RazorSubControlDiagnosticException(sub.Location,
+                        $"Sub-control {typeDef.FullName}.{binding.PropertyName} uses Func; Razor sub-control bindings cannot return a value from a Func handler.");
+                binding.IsDelegate = typeName.StartsWith("System.Action");
+
+                // Razor attributes without @ are text only when the target is a string.
+                if (binding.IsLiteral && typeName != "System.String")
+                {
+                    binding.IsLiteral = false;
+                    ValidatePrimitiveLiteral(binding.Classification.CSharpExpression,
+                        property.PropertyType, sub.Location);
+                }
+
+                if (!binding.IsLiteral && !binding.IsDelegate)
+                    ValidateDirectSourceType(binding.Classification.CSharpExpression,
+                        property, modelType, itemType, itemVariablePrefix,
+                        findProperty, sub.Location);
+
+                if (!binding.IsLiteral && property.CustomAttributes.Any(attr =>
+                    attr.AttributeType.Name == "DefaultDataBindingAttribute"
+                    && attr.Properties.Any(named => named.Name == "Mode"
+                        && Convert.ToInt32(named.Argument.Value) == 2)))
+                {
+                    var source = binding.Classification.CSharpExpression;
+                    var prefix = !string.IsNullOrEmpty(itemVariablePrefix)
+                        && (source ?? string.Empty).StartsWith(itemVariablePrefix)
+                        ? itemVariablePrefix : "Model.";
+                    var sourceType = prefix == "Model." ? modelType : itemType;
+                    var match = System.Text.RegularExpressions.Regex.Match(source ?? string.Empty,
+                        "^" + System.Text.RegularExpressions.Regex.Escape(prefix)
+                        + @"([A-Za-z_][A-Za-z0-9_]*)$");
+                    if (property.GetMethod != null && match.Success
+                        && sourceType != null
+                        && findProperty(sourceType, match.Groups[1].Value)?.SetMethod != null)
+                        binding.Classification.Mode = BindingMode.TwoWay;
+                }
+            }
+
+            if (FindElementConstructor(typeDef) == null)
+                throw new RazorSubControlDiagnosticException(sub.Location,
+                    $"Sub-control {typeDef.FullName} requires a public (System.Web.Html.Element) constructor.");
+        }
+
+        internal static MethodDefinition FindElementConstructor(TypeDefinition typeDef)
+        {
+            return typeDef.Methods.FirstOrDefault(method => method.IsConstructor && !method.IsStatic
+                && method.IsPublic && method.Parameters.Count == 1
+                && method.Parameters[0].ParameterType.FullName == "System.Web.Html.Element");
+        }
+
+        private static void ValidatePrimitiveLiteral(string expression,
+            TypeReference targetType, Location location)
+        {
+            var value = (expression ?? string.Empty).Trim();
+            bool? valid = null;
+            switch (targetType.FullName)
+            {
+                case "System.Boolean": valid = value == "true" || value == "false"; break;
+                case "System.Byte": valid = byte.TryParse(value, out _); break;
+                case "System.SByte": valid = sbyte.TryParse(value, out _); break;
+                case "System.Int16": valid = short.TryParse(value, out _); break;
+                case "System.UInt16": valid = ushort.TryParse(value, out _); break;
+                case "System.Int32": valid = int.TryParse(value, out _); break;
+                case "System.UInt32": valid = uint.TryParse(value, out _); break;
+                case "System.Int64": valid = long.TryParse(value.TrimEnd('L', 'l'), out _); break;
+                case "System.UInt64": valid = ulong.TryParse(value.TrimEnd('U', 'u', 'L', 'l'), out _); break;
+                case "System.Single": valid = float.TryParse(value.TrimEnd('F', 'f'),
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out _); break;
+                case "System.Double": valid = double.TryParse(value.TrimEnd('D', 'd'),
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out _); break;
+                case "System.Decimal": valid = decimal.TryParse(value.TrimEnd('M', 'm'),
+                    System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture, out _); break;
+                case "System.Char": valid = value.Length == 3 && value[0] == '\''
+                    && value[2] == '\''; break;
+            }
+
+            // Dotted names may be enum members or static constants. Enum members are
+            // validated against their declared type separately.
+            if (valid == false && !value.Contains("."))
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Value '{expression}' is not valid for {targetType.FullName}.");
+        }
+
+        private static void ValidateDirectSourceType(string expression,
+            PropertyDefinition targetProperty, TypeDefinition modelType,
+            TypeDefinition itemType, string itemVariablePrefix,
+            Func<TypeDefinition, string, PropertyDefinition> findProperty,
+            Location location)
+        {
+            if (string.IsNullOrEmpty(expression)) return;
+            var prefix = expression.StartsWith("Model.") ? "Model."
+                : !string.IsNullOrEmpty(itemVariablePrefix)
+                    && expression.StartsWith(itemVariablePrefix)
+                    ? itemVariablePrefix : null;
+            if (prefix == null) return;
+            var propertyName = expression.Substring(prefix.Length);
+            if (!System.Text.RegularExpressions.Regex.IsMatch(propertyName,
+                @"^[A-Za-z_][A-Za-z0-9_]*$")) return;
+            var sourceType = prefix == "Model." ? modelType : itemType;
+            var sourceProperty = sourceType != null
+                ? findProperty(sourceType, propertyName) : null;
+            if (sourceProperty == null) return;
+            if (CanAssign(sourceProperty.PropertyType, targetProperty.PropertyType)) return;
+            throw new RazorSubControlDiagnosticException(location,
+                $"Cannot bind {sourceProperty.PropertyType.FullName} to {targetProperty.DeclaringType.FullName}.{targetProperty.Name} ({targetProperty.PropertyType.FullName}).");
+        }
+
+        private static bool CanAssign(TypeReference source, TypeReference target)
+        {
+            if ((source.FullName == target.FullName
+                && source.Scope?.Name == target.Scope?.Name)
+                || target.FullName == "System.Object")
+                return true;
+            var widening = new Dictionary<string, string[]>
+            {
+                ["System.SByte"] = new[] { "System.Int16", "System.Int32", "System.Int64",
+                    "System.Single", "System.Double", "System.Decimal" },
+                ["System.Byte"] = new[] { "System.Int16", "System.UInt16", "System.Int32",
+                    "System.UInt32", "System.Int64", "System.UInt64", "System.Single",
+                    "System.Double", "System.Decimal" },
+                ["System.Int16"] = new[] { "System.Int32", "System.Int64", "System.Single",
+                    "System.Double", "System.Decimal" },
+                ["System.UInt16"] = new[] { "System.Int32", "System.UInt32", "System.Int64",
+                    "System.UInt64", "System.Single", "System.Double", "System.Decimal" },
+                ["System.Int32"] = new[] { "System.Int64", "System.Single", "System.Double",
+                    "System.Decimal" },
+                ["System.UInt32"] = new[] { "System.Int64", "System.UInt64", "System.Single",
+                    "System.Double", "System.Decimal" },
+                ["System.Int64"] = new[] { "System.Single", "System.Double", "System.Decimal" },
+                ["System.UInt64"] = new[] { "System.Single", "System.Double", "System.Decimal" },
+                ["System.Char"] = new[] { "System.UInt16", "System.Int32", "System.UInt32",
+                    "System.Int64", "System.UInt64", "System.Single", "System.Double",
+                    "System.Decimal" },
+                ["System.Single"] = new[] { "System.Double" }
+            };
+            if (widening.TryGetValue(source.FullName, out var targets)
+                && targets.Contains(target.FullName)) return true;
+            var primitive = new[] { "System.Boolean", "System.Byte", "System.SByte",
+                "System.Int16", "System.UInt16", "System.Int32", "System.UInt32",
+                "System.Int64", "System.UInt64", "System.Single", "System.Double",
+                "System.Decimal", "System.Char", "System.String" };
+            if (primitive.Contains(target.FullName))
+                return false;
+            try
+            {
+                return CanAssignReference(source, target, new HashSet<string>());
+            }
+            catch (AssemblyResolutionException)
+            {
+                // Let the existing C# compilation diagnose unresolved reference types.
+                return true;
+            }
+        }
+
+        private static bool CanAssignReference(TypeReference source, TypeReference target,
+            HashSet<string> visited)
+        {
+            if (source.FullName == target.FullName
+                && source.Scope?.Name == target.Scope?.Name) return true;
+            if (!visited.Add(source.FullName + "|" + source.Scope?.Name)) return false;
+
+            if (source is GenericInstanceType sourceGeneric
+                && target is GenericInstanceType targetGeneric
+                && sourceGeneric.ElementType.FullName == targetGeneric.ElementType.FullName)
+            {
+                var definition = sourceGeneric.ElementType.Resolve();
+                if (definition != null && sourceGeneric.GenericArguments.Count
+                    == targetGeneric.GenericArguments.Count)
+                {
+                    bool compatible = true;
+                    for (int i = 0; i < sourceGeneric.GenericArguments.Count; i++)
+                    {
+                        var sourceArg = sourceGeneric.GenericArguments[i];
+                        var targetArg = targetGeneric.GenericArguments[i];
+                        var variance = definition.GenericParameters[i].Attributes
+                            & GenericParameterAttributes.VarianceMask;
+                        compatible &= variance == GenericParameterAttributes.Covariant
+                            ? CanAssign(sourceArg, targetArg)
+                            : variance == GenericParameterAttributes.Contravariant
+                                ? CanAssign(targetArg, sourceArg)
+                                : sourceArg.FullName == targetArg.FullName;
+                    }
+                    if (compatible) return true;
+                }
+            }
+
+            var sourceDefinition = source.Resolve();
+            if (sourceDefinition == null) return false;
+            foreach (var implementation in sourceDefinition.Interfaces)
+            {
+                var inherited = Specialize(implementation.InterfaceType, source);
+                if (CanAssignReference(inherited, target, visited)) return true;
+            }
+            var baseType = sourceDefinition.BaseType;
+            return baseType != null && CanAssignReference(
+                Specialize(baseType, source), target, visited);
+        }
+
+        private static TypeReference Specialize(TypeReference inherited, TypeReference source)
+        {
+            if (!(source is GenericInstanceType sourceGeneric)) return inherited;
+            if (inherited is GenericParameter parameter)
+                return parameter.Position < sourceGeneric.GenericArguments.Count
+                    ? sourceGeneric.GenericArguments[parameter.Position] : inherited;
+            if (!(inherited is GenericInstanceType inheritedGeneric)) return inherited;
+            var result = new GenericInstanceType(inheritedGeneric.ElementType);
+            foreach (var argument in inheritedGeneric.GenericArguments)
+                result.GenericArguments.Add(Specialize(argument, source));
+            return result;
+        }
+
+        internal static void ValidateEnumLiteral(string expression, TypeDefinition targetEnum,
+            IEnumerable<TypeDefinition> types, IEnumerable<string> usingNamespaces, Location location)
+        {
+            var member = System.Text.RegularExpressions.Regex.Match(expression ?? string.Empty,
+                @"^(?<type>[A-Za-z_][A-Za-z0-9_.]*)\.(?<member>[A-Za-z_][A-Za-z0-9_]*)$");
+            if (!member.Success)
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Enum value '{expression}' must name a member of {targetEnum.FullName}.");
+
+            TypeDefinition sourceEnum;
+            try
+            {
+                sourceEnum = ResolveSubControlType(types, member.Groups["type"].Value,
+                    usingNamespaces);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new RazorSubControlDiagnosticException(location, ex.Message);
+            }
+            if (sourceEnum == null || !sourceEnum.IsEnum)
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Unknown enum type '{member.Groups["type"].Value}' in '{expression}'.");
+            if (sourceEnum.FullName != targetEnum.FullName
+                || sourceEnum.Module?.Mvid != targetEnum.Module?.Mvid)
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Enum value '{expression}' is not a member of {targetEnum.FullName}.");
+            if (!sourceEnum.Fields.Any(field => field.Name == member.Groups["member"].Value
+                && field.IsLiteral && field.HasConstant))
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Enum {sourceEnum.FullName} has no member '{member.Groups["member"].Value}'.");
+        }
+
+        private static void ValidateUniqueSubControlIds(IEnumerable<SubControlTopology> subControls)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var subControl in subControls)
+            {
+                if (string.IsNullOrEmpty(subControl.ElementId)) continue;
+                if (!seen.Add(subControl.ElementId))
+                    throw new RazorSubControlDiagnosticException(subControl.Location,
+                        "Duplicate Razor sub-control id '" + subControl.ElementId + "'.");
+            }
+        }
+
         /// <summary>
         /// Finds a SubControlNode's TypeDefinition by trying the type name directly,
         /// then trying each using namespace as a prefix.
         /// </summary>
         private TypeDefinition FindSubControlType(string typeName)
         {
-            if (string.IsNullOrEmpty(typeName)) return null;
-
-            var typeDef = FindTypeDefinitionByName(typeName);
-            if (typeDef != null) return typeDef;
-
-            if (_ir.UsingNamespaces != null)
-            {
-                foreach (var ns in _ir.UsingNamespaces)
-                {
-                    typeDef = FindTypeDefinitionByName(ns + "." + typeName);
-                    if (typeDef != null) return typeDef;
-                }
-            }
-
-            return null;
+            return ResolveSubControlType(_clrContext.GetTypes(), typeName, _ir.UsingNamespaces);
         }
 
-        /// <summary>
-        /// Finds a TypeDefinition by full name across all loaded assemblies.
-        /// </summary>
-        private TypeDefinition FindTypeDefinitionByName(string fullName)
+        internal static TypeDefinition ResolveSubControlType(
+            IEnumerable<TypeDefinition> types, string typeName, IEnumerable<string> usingNamespaces)
         {
-            try
+            if (string.IsNullOrEmpty(typeName)) return null;
+            var allTypes = types.ToList();
+            var exactMatches = allTypes.Where(type => type.FullName == typeName)
+                .GroupBy(type => type.Module?.Mvid).Select(group => group.First()).ToList();
+            if (exactMatches.Count > 1)
+                throw new InvalidOperationException("Ambiguous sub-control '" + typeName + "': "
+                    + string.Join(", ", exactMatches.Select(type => type.FullName
+                        + " (" + type.Module?.Name + ")")));
+            if (exactMatches.Count == 1) return exactMatches[0];
+
+            var importedMatches = new List<TypeDefinition>();
+            if (usingNamespaces != null)
             {
-                foreach (var type in _clrContext.GetTypeDefinitions())
+                foreach (var ns in usingNamespaces)
                 {
-                    if (type.FullName == fullName)
-                        return type;
+                    foreach (var imported in allTypes.Where(type => type.FullName == ns + "." + typeName))
+                        if (!importedMatches.Any(type => type.FullName == imported.FullName
+                            && type.Module?.Mvid == imported.Module?.Mvid))
+                            importedMatches.Add(imported);
                 }
             }
-            catch { }
+            if (importedMatches.Count > 1)
+                throw new InvalidOperationException("Ambiguous sub-control '" + typeName + "': "
+                    + string.Join(", ", importedMatches.Select(type => type.FullName
+                        + " (" + type.Module?.Name + ")")));
+            if (importedMatches.Count == 1) return importedMatches[0];
 
+            var matches = allTypes.Where(type => type.Name == typeName)
+                .GroupBy(type => type.FullName + "|" + type.Module?.Mvid)
+                .Select(group => group.First()).ToList();
+            if (matches.Count > 1)
+                throw new InvalidOperationException("Ambiguous sub-control '" + typeName + "': "
+                    + string.Join(", ", matches.Select(type => type.FullName
+                        + " (" + type.Module?.Name + ")")));
+            if (matches.Count == 1) return matches[0];
             return null;
         }
     }

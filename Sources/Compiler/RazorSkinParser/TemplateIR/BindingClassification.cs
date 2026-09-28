@@ -6,7 +6,8 @@ namespace NScript.RazorSkin.TemplateIR
     {
         OneTime,   // No observable dependencies — evaluate once
         OneWay,    // Has observable dependencies — live updates
-        Event      // Event handler (method ref or lambda)
+        Event,     // Event handler (method ref or lambda)
+        TwoWay     // Source and target both report property changes
     }
 
     public enum BindingSourceKind
@@ -21,12 +22,15 @@ namespace NScript.RazorSkin.TemplateIR
         public BindingSourceKind SourceKind { get; set; }
         public string PropertyName { get; set; }
         public string PropertyChain { get; set; } // e.g., "Customer.Address.City"
+        public string SourceExpressionPrefix { get; set; } // "Model.", "Control.", or loop item prefix
 
-        public ObservableDependency(BindingSourceKind sourceKind, string propertyName, string propertyChain)
+        public ObservableDependency(BindingSourceKind sourceKind, string propertyName,
+            string propertyChain, string sourceExpressionPrefix = null)
         {
             SourceKind = sourceKind;
             PropertyName = propertyName;
             PropertyChain = propertyChain;
+            SourceExpressionPrefix = sourceExpressionPrefix;
         }
     }
 

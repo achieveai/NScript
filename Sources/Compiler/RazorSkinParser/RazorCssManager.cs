@@ -116,44 +116,51 @@ namespace NScript.RazorSkin
 
             foreach (var sheet in _sheets)
             {
-                // Serialize rules
-                foreach (var rule in sheet.Rules)
-                {
-                    CssParser.CssSerializerVisitor.Instance.Process(
-                        sb,
-                        rule,
-                        (cn) =>
-                        {
-                            IIdentifier id;
-                            TryGetCssClassIdentifier(cn.ClassName, out id);
-                            return id?.GetName() ?? cn.ClassName;
-                        },
-                        (idN) => idN.Id);
-                }
-
-                // Serialize keyframes
-                foreach (var keyframes in sheet.KeyFrames)
-                {
-                    CssParser.CssSerializerVisitor.Instance.Process(sb, keyframes);
-                }
-
-                // Serialize media rules
-                foreach (var media in sheet.MediaRules)
-                {
-                    CssParser.CssSerializerVisitor.Instance.Process(
-                        sb,
-                        media,
-                        (cn) =>
-                        {
-                            IIdentifier id;
-                            TryGetCssClassIdentifier(cn.ClassName, out id);
-                            return id?.GetName() ?? cn.ClassName;
-                        },
-                        (idN) => idN.Id);
-                }
+                AppendSerializedCss(sb, sheet);
             }
 
             return sb.ToString();
+        }
+
+        internal string GetSerializedCssForSheet(RazorCssSheet sheet)
+        {
+            var sb = new StringBuilder();
+            AppendSerializedCss(sb, sheet);
+            return sb.ToString();
+        }
+
+        private void AppendSerializedCss(StringBuilder sb, RazorCssSheet sheet)
+        {
+            foreach (var rule in sheet.Rules)
+            {
+                CssParser.CssSerializerVisitor.Instance.Process(
+                    sb,
+                    rule,
+                    (cn) =>
+                    {
+                        IIdentifier id;
+                        TryGetCssClassIdentifier(cn.ClassName, out id);
+                        return id?.GetName() ?? cn.ClassName;
+                    },
+                    (idN) => idN.Id);
+            }
+
+            foreach (var keyframes in sheet.KeyFrames)
+                CssParser.CssSerializerVisitor.Instance.Process(sb, keyframes);
+
+            foreach (var media in sheet.MediaRules)
+            {
+                CssParser.CssSerializerVisitor.Instance.Process(
+                    sb,
+                    media,
+                    (cn) =>
+                    {
+                        IIdentifier id;
+                        TryGetCssClassIdentifier(cn.ClassName, out id);
+                        return id?.GetName() ?? cn.ClassName;
+                    },
+                    (idN) => idN.Id);
+            }
         }
 
         /// <summary>

@@ -69,6 +69,30 @@
     <EmbeddedResource Include="RazorTemplates\RazorStyledTemplate.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorMultiStyled.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorForeachMixedMarkers.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorProbeControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorLiteralProbeControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlLiterals.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorContextProbeControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlTopLevel.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlDataContext.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlDefaultContext.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlLifecycle.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlForeachSources.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlForeachDefaultContext.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlConditional.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlDelegate.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlDelegateForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlItemDelegate.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorInheritedHandlerControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlDomEvent.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorProbeAlternate.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlComposition.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlPart.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorValueProbeControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlTwoWay.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlDeactivation.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlIfInForeach.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,6 +102,9 @@
     <ProjectReference Include="..\..\..\Sources\Framework\SunlightUnit\SunlightUnit.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj" />
     <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
+    <ProjectReference Include="..\RazorCrossAssembly.Models\RazorCrossAssembly.Models.csproj" />
+    <ProjectReference Include="..\RazorCrossAssembly.Controls\RazorCrossAssembly.Controls.csproj" />
+    <ProjectReference Include="..\RazorCrossAssembly.Views\RazorCrossAssembly.Views.csproj" />
   </ItemGroup>
 
   <Target Name="EnsureJsOutputDirectory" BeforeTargets="ScriptGenerate" Condition="$(GenerateJs) == 'True'">

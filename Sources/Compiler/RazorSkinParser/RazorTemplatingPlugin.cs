@@ -34,16 +34,95 @@ namespace NScript.RazorSkin
         private int _nextDataIndex = 100;
 
         /// <summary>
-        /// Map of template name to compiled template IR.
+        /// Map of assembly module and full resource name to compiled template IR.
         /// Used by GetPostJavascript to generate proper JST nodes.
         /// </summary>
         private readonly Dictionary<string, TemplateIR.SkinTemplateNode> _compiledIRs
             = new Dictionary<string, TemplateIR.SkinTemplateNode>();
 
         /// <summary>
-        /// Maps full resource name to short template name (for GetOverwrite JS call).
+        /// Maps template identity to a readable short name for diagnostics.
         /// </summary>
         private readonly Dictionary<string, string> _templateShortNames = new Dictionary<string, string>();
+
+        private static string GetTemplateKey(ModuleDefinition module, string resourceName)
+            => module.Mvid.ToString("N") + "|" + resourceName;
+
+        private string FindTemplateKey(ModuleDefinition module, string resourceName,
+            TypeDefinition ownerType, out string ambiguity)
+        {
+            return SelectTemplateKey(module, resourceName, ownerType, _compiledIRs,
+                _templateShortNames,
+                (name, imports) => RazorSkinJSTGenerator.ResolveSubControlType(
+                    _clrContext.GetTypes(), name, imports), out ambiguity);
+        }
+
+        internal static string SelectTemplateKey(ModuleDefinition module, string resourceName,
+            TypeDefinition ownerType, IReadOnlyDictionary<string, SkinTemplateNode> templates,
+            IReadOnlyDictionary<string, string> shortNames,
+            Func<string, IEnumerable<string>, TypeDefinition> resolveType,
+            out string ambiguity)
+        {
+            ambiguity = null;
+            var ownKey = GetTemplateKey(module, resourceName);
+            if (templates.ContainsKey(ownKey)) return ownKey;
+
+            var exactSuffix = "|" + resourceName;
+            var exactMatches = templates.Keys.Where(key => key.EndsWith(exactSuffix,
+                StringComparison.Ordinal)).ToList();
+            if (exactMatches.Count == 1) return exactMatches[0];
+
+            var candidates = exactMatches.Count > 1 ? exactMatches : shortNames
+                .Where(pair => pair.Value == resourceName && templates.ContainsKey(pair.Key))
+                .Select(pair => pair.Key).ToList();
+            if (candidates.Count == 1) return candidates[0];
+            if (candidates.Count == 0 || ownerType == null) return null;
+
+            var compatible = new List<(string Key, int Distance)>();
+            foreach (var key in candidates)
+            {
+                var template = templates[key];
+                TypeDefinition controlType;
+                try
+                {
+                    controlType = resolveType(template.ControlTypeName, template.UsingNamespaces);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ambiguity = ex.Message;
+                    return null;
+                }
+                var distance = InheritanceDistance(ownerType, controlType);
+                if (distance >= 0) compatible.Add((key, distance));
+            }
+
+            if (compatible.Count == 0) return null;
+            var closestDistance = compatible.Min(candidate => candidate.Distance);
+            var best = compatible.Where(candidate => candidate.Distance == closestDistance).ToList();
+            if (best.Count == 1) return best[0].Key;
+
+            ambiguity = "Ambiguous Razor skin '" + resourceName + "' for " + ownerType.FullName
+                + ": " + string.Join(", ", best.Select(candidate => candidate.Key));
+            return null;
+        }
+
+        private static int InheritanceDistance(TypeDefinition type, TypeDefinition ancestor)
+        {
+            if (ancestor == null) return -1;
+            for (var distance = 0; type != null; distance++)
+            {
+                if (type.FullName == ancestor.FullName
+                    && type.Module?.Mvid == ancestor.Module?.Mvid) return distance;
+                try { type = type.BaseType?.Resolve(); }
+                catch (AssemblyResolutionException) { return -1; }
+            }
+            return -1;
+        }
+
+        internal static Statement CreateTemplateAmbiguityThrow(IdentifierScope scope, string message)
+        {
+            return new ThrowStatement(null, scope, new StringLiteralExpression(scope, message), false);
+        }
 
         /// <summary>
         /// Whether any .skin.cshtml resources were found during initialization.
@@ -192,11 +271,9 @@ namespace Sunlight.Framework.Observables
                             var ir = RazorSkinCompiler.CompileToIR(
                                 templateName, templateSource,
                                 additionalSources, fileName);
-                            // Store under both short name and full resource name
-                            // so [Skin("full.resource.name.skin.cshtml")] matches
-                            _compiledIRs[templateName] = ir;
-                            _compiledIRs[embeddedResource.Name] = ir;
-                            _templateShortNames[embeddedResource.Name] = templateName;
+                            var resourceKey = GetTemplateKey(module, embeddedResource.Name);
+                            _compiledIRs[resourceKey] = ir;
+                            _templateShortNames[resourceKey] = templateName;
                             _hasRazorTemplates = true;
 
                             // Pre-create the getter function identifier in the scope system
@@ -205,7 +282,7 @@ namespace Sunlight.Framework.Observables
                                 runtimeScopeManager.Scope,
                                 templateName,
                                 false);
-                            _templateGetterIdentifiers[templateName] = getterId;
+                            _templateGetterIdentifiers[resourceKey] = getterId;
 
                             Log.Debug("Compilation succeeded for template {TemplateName} from resource {ResourceName}",
                                 templateName, embeddedResource.Name);
@@ -215,7 +292,7 @@ namespace Sunlight.Framework.Observables
                             Log.Error(ex, "Compilation failed for resource {ResourceName}", embeddedResource.Name);
 
                             runtimeScopeManager.Context.AddError(
-                                null,
+                                (ex as RazorSkinPreprocessorException)?.Location,
                                 $"Error compiling Razor skin template '{fileName}': {ex.Message}",
                                 false);
                         }
@@ -256,14 +333,9 @@ namespace Sunlight.Framework.Observables
         /// </summary>
         private void LoadCssForTemplates(RuntimeScopeManager runtimeScopeManager)
         {
-            // Deduplicate — _compiledIRs stores each IR under both short name and resource name
-            var processedTemplates = new HashSet<string>(StringComparer.Ordinal);
-
             foreach (var kvp in _compiledIRs)
             {
                 var ir = kvp.Value;
-                if (!processedTemplates.Add(ir.TemplateName))
-                    continue;
 
                 if (ir.StylesheetResourceNames == null || ir.StylesheetResourceNames.Count == 0)
                     continue;
@@ -306,7 +378,7 @@ namespace Sunlight.Framework.Observables
                         // once [CssClass] const fields are validated, ensuring all dynamic
                         // class references are tracked before minification.
 
-                        _templateCssManagers[ir.TemplateName] = cssManager;
+                        _templateCssManagers[kvp.Key] = cssManager;
 
                         Log.Debug("CSS loaded for template {TemplateName}: {SheetCount} sheets",
                             ir.TemplateName, cssManager.Sheets.Count);
@@ -477,32 +549,14 @@ namespace Sunlight.Framework.Observables
         /// <summary>
         /// Emits CSS from Razor templates as JST statements.
         /// Creates a &lt;style&gt; element, sets textContent to the serialized CSS, and appends to document.head.
-        /// Also contributes to ConverterContext for XWML merge (when XWML plugin is active).
         /// </summary>
         private List<Statement> EmitCssStatements()
         {
             var result = new List<Statement>();
             if (_templateCssManagers.Count == 0) return result;
 
-            // Collect all serialized CSS
-            var allCss = new System.Text.StringBuilder();
-            var emittedManagers = new HashSet<RazorCssManager>();
-            foreach (var cssManager in _templateCssManagers.Values)
-            {
-                if (!emittedManagers.Add(cssManager))
-                    continue;
-
-                var css = cssManager.GetSerializedCss();
-                if (!string.IsNullOrEmpty(css))
-                    allCss.Append(css);
-            }
-
-            if (allCss.Length == 0) return result;
-
-            var cssText = allCss.ToString();
-
-            // Also contribute to ConverterContext for XWML merge (if XWML plugin is active)
-            _runtimeScopeManager?.Context?.AddCssContribution(cssText);
+            var cssText = CollectCssForEmission(_templateCssManagers.Values);
+            if (cssText.Length == 0) return result;
 
             // Emit standalone <style> element creation via IIFE:
             // (function(d){var s=d.createElement("style");s.textContent="...";d.head.appendChild(s)})(document)
@@ -569,6 +623,33 @@ namespace Sunlight.Framework.Observables
 
             Log.Debug("Emitted CSS style element with {CssLength} chars", cssText.Length);
             return result;
+        }
+
+        internal static string CollectCssForEmission(IEnumerable<RazorCssManager> cssManagers)
+        {
+            var allCss = new System.Text.StringBuilder();
+            var emittedSheets = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+            foreach (var cssManager in cssManagers)
+            {
+                foreach (var sheet in cssManager.Sheets)
+                {
+                    var css = cssManager.GetSerializedCssForSheet(sheet);
+                    if (string.IsNullOrEmpty(css))
+                        continue;
+
+                    if (!emittedSheets.TryGetValue(sheet.ResourceName, out var variants))
+                    {
+                        variants = new HashSet<string>(StringComparer.Ordinal);
+                        emittedSheets.Add(sheet.ResourceName, variants);
+                    }
+
+                    // Different class-name scopes can serialize one resource differently.
+                    // Keep those variants so generated HTML still matches its stylesheet.
+                    if (variants.Add(css))
+                        allCss.Append(css);
+                }
+            }
+            return allCss.ToString();
         }
 
         /// <summary>
@@ -981,7 +1062,10 @@ namespace Sunlight.Framework.Observables
             if (skinAttr.HasConstructorArguments)
             {
                 var templateName = skinAttr.ConstructorArguments[0].Value as string;
-                if (templateName != null && _compiledIRs.ContainsKey(templateName))
+                if (templateName != null
+                    && (FindTemplateKey(methodDefinition.Module, templateName,
+                        methodDefinition.DeclaringType, out var ambiguity) != null
+                        || ambiguity != null))
                 {
                     Log.Debug("[Skin] match found for method {MethodName} with template {TemplateName}",
                         methodDefinition.FullName, templateName);
@@ -1014,20 +1098,30 @@ namespace Sunlight.Framework.Observables
 
             var templateName = (skinAttr?.HasConstructorArguments == true && skinAttr.ConstructorArguments.Count > 0)
                 ? skinAttr.ConstructorArguments[0].Value as string : null;
-            if (templateName == null || !_compiledIRs.ContainsKey(templateName))
+            string ambiguity = null;
+            var templateKey = templateName != null
+                ? FindTemplateKey(methodConverter.MethodDefinition.Module, templateName,
+                    methodConverter.MethodDefinition.DeclaringType, out ambiguity)
+                : null;
+            if (ambiguity != null)
+                return new List<Statement>
+                {
+                    CreateTemplateAmbiguityThrow(methodConverter.Scope, ambiguity)
+                };
+            if (templateKey == null)
             {
                 return null;
             }
 
             // Look up the short template name (used as the JS getter function name)
-            var shortName = _templateShortNames.ContainsKey(templateName)
-                ? _templateShortNames[templateName] : templateName;
+            var shortName = _templateShortNames.ContainsKey(templateKey)
+                ? _templateShortNames[templateKey] : templateName;
 
             Log.Debug("Resolved template {TemplateName} (short: {ShortName}) for overwrite", templateName, shortName);
 
             // Use the JST getter identifier if available (from JST generation in GetPostJavascript),
             // otherwise fall back to raw JS with the short name.
-            if (_templateGetterIdentifiers.TryGetValue(shortName, out var getterId))
+            if (_templateGetterIdentifiers.TryGetValue(templateKey, out var getterId))
             {
                 var scope = methodConverter.Scope;
                 return new List<Statement>
@@ -1084,8 +1178,10 @@ namespace Sunlight.Framework.Observables
                 var seen = new HashSet<string>();
                 foreach (var kvp in _compiledIRs)
                 {
-                    CollectEventMethodReferences(kvp.Value, kvp.Value.ModelTypeName, methods, seen);
-                    CollectSubControlMethodReferences(kvp.Value, methods, seen);
+                    CollectEventMethodReferences(kvp.Value, kvp.Value.ModelTypeName,
+                        kvp.Value.ControlTypeName, methods, seen);
+                    CollectSubControlMethodReferences(kvp.Value, kvp.Value.ModelTypeName,
+                        kvp.Value.UsingNamespaces, methods, seen);
                 }
             }
 
@@ -1122,50 +1218,57 @@ namespace Sunlight.Framework.Observables
         /// so the demand-driven converter emits their bodies.
         /// </summary>
         private void CollectEventMethodReferences(
-            IRNode node, string modelTypeName, List<MethodReference> methods, HashSet<string> seen)
+            IRNode node, string modelTypeName, string controlTypeName,
+            List<MethodReference> methods, HashSet<string> seen,
+            string itemTypeName = null, string itemVariableName = null)
         {
             if (node is TemplateIR.EventNode evt && !string.IsNullOrEmpty(evt.HandlerExpression))
+                AddEventMethodReference(evt.HandlerExpression, modelTypeName, controlTypeName,
+                    itemTypeName, itemVariableName, methods, seen);
+
+            if (node is TemplateIR.SubControlNode subControl)
             {
-                var methodDef = TryFindEventMethodDefinition(evt.HandlerExpression, modelTypeName);
-                if (methodDef != null && seen.Add(methodDef.FullName))
-                    methods.Add(methodDef);
+                foreach (var subEvent in subControl.EventBindings)
+                    AddEventMethodReference(subEvent.HandlerExpression, modelTypeName, controlTypeName,
+                        itemTypeName, itemVariableName, methods, seen);
+                foreach (var binding in subControl.PropertyBindings)
+                    AddEventMethodReference(binding.Classification.CSharpExpression,
+                        modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
             }
 
             // For loops, also scan item template with the item type for item-level methods
             if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
             {
                 // Resolve item type from collection property on the model
-                string itemTypeName = TryResolveItemTypeName(modelTypeName, loop);
+                var loopItemTypeName = TryResolveItemTypeName(modelTypeName, loop);
 
                 foreach (var child in loop.ItemTemplate)
-                {
-                    // Model.XXX references inside item templates
-                    CollectEventMethodReferences(child, modelTypeName, methods, seen);
-
-                    // Item-level methods (e.g., "todo.ToggleImportant")
-                    if (!string.IsNullOrEmpty(itemTypeName)
-                        && child is TemplateIR.EventNode itemEvt
-                        && !string.IsNullOrEmpty(itemEvt.HandlerExpression)
-                        && !itemEvt.HandlerExpression.StartsWith("Model."))
-                    {
-                        // Strip item variable prefix: "todo.ToggleImportant" → "ToggleImportant"
-                        var itemHandler = itemEvt.HandlerExpression;
-                        var dotIdx = itemHandler.IndexOf('.');
-                        if (dotIdx > 0)
-                            itemHandler = itemHandler.Substring(dotIdx + 1);
-
-                        var itemMethod = TryFindEventMethodDefinition(itemHandler, itemTypeName);
-                        if (itemMethod != null && seen.Add(itemMethod.FullName))
-                            methods.Add(itemMethod);
-                    }
-                }
+                    CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
+                        loopItemTypeName, loop.ItemVariableName);
             }
 
             if (node.Children != null)
             {
                 foreach (var child in node.Children)
-                    CollectEventMethodReferences(child, modelTypeName, methods, seen);
+                    CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
+                        itemTypeName, itemVariableName);
             }
+        }
+
+        private void AddEventMethodReference(string handler, string modelTypeName,
+            string controlTypeName, string itemTypeName, string itemVariableName,
+            List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (string.IsNullOrEmpty(handler)) return;
+            var itemPrefix = itemVariableName + ".";
+            var isItemMethod = !string.IsNullOrEmpty(itemVariableName)
+                && handler.StartsWith(itemPrefix, StringComparison.Ordinal);
+            var typeName = isItemMethod ? itemTypeName
+                : handler.StartsWith("Control.", StringComparison.Ordinal)
+                    ? controlTypeName : modelTypeName;
+            var expression = isItemMethod ? handler.Substring(itemPrefix.Length) : handler;
+            var method = TryFindEventMethodDefinition(expression, typeName);
+            if (method != null && seen.Add(method.FullName)) methods.Add(method);
         }
 
         /// <summary>
@@ -1173,16 +1276,26 @@ namespace Sunlight.Framework.Observables
         /// for SubControlNodes so the demand-driven converter emits their factory functions.
         /// </summary>
         private void CollectSubControlMethodReferences(
-            IRNode node, List<MethodReference> methods, HashSet<string> seen)
+            IRNode node, string modelTypeName, IEnumerable<string> usingNamespaces,
+            List<MethodReference> methods, HashSet<string> seen)
         {
             if (node is TemplateIR.SubControlNode sub)
             {
-                var controlType = FindSubControlTypeInAssemblies(sub.ResolvedTypeName);
+                TypeDefinition controlType;
+                try
+                {
+                    controlType = RazorSkinJSTGenerator.ResolveSubControlType(
+                        _clrContext.GetTypes(), sub.ResolvedTypeName ?? sub.TypeName,
+                        usingNamespaces);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _runtimeScopeManager.Context.AddError(sub.Location, ex.Message, false);
+                    controlType = null;
+                }
                 if (controlType != null)
                 {
-                    // Constructor with 1 parameter (Element)
-                    var ctor = controlType.Methods.FirstOrDefault(m =>
-                        m.IsConstructor && !m.IsStatic && m.Parameters.Count == 1);
+                    var ctor = RazorSkinJSTGenerator.FindElementConstructor(controlType);
                     if (ctor != null && seen.Add(ctor.FullName))
                         methods.Add(ctor);
 
@@ -1191,19 +1304,76 @@ namespace Sunlight.Framework.Observables
                         p.Name == "DefaultSkin" && p.GetMethod != null && p.GetMethod.IsStatic);
                     if (skinProp?.GetMethod != null && seen.Add(skinProp.GetMethod.FullName))
                         methods.Add(skinProp.GetMethod);
+
+                    foreach (var binding in sub.PropertyBindings)
+                    {
+                        var expression = binding.Classification.CSharpExpression;
+                        if (!string.IsNullOrEmpty(expression) && expression.StartsWith("Model."))
+                        {
+                            var modelPropertyName = expression.Substring(6);
+                            var modelType = FindSubControlTypeInAssemblies(modelTypeName);
+                            var modelProperty = modelType?.Properties.FirstOrDefault(p =>
+                                p.Name == modelPropertyName);
+                            if (modelProperty?.SetMethod != null
+                                && seen.Add(modelProperty.SetMethod.FullName))
+                                methods.Add(modelProperty.SetMethod);
+                        }
+                        var dot = expression?.LastIndexOf('.') ?? -1;
+                        if (dot > 0 && dot < expression.Length - 1)
+                        {
+                            var typeName = expression.Substring(0, dot);
+                            var propertyName = expression.Substring(dot + 1);
+                            var staticType = FindSubControlTypeInAssemblies(typeName);
+                            var staticProperty = staticType?.Properties.FirstOrDefault(p =>
+                                p.Name == propertyName && p.GetMethod != null
+                                && p.GetMethod.IsStatic);
+                            if (staticProperty?.GetMethod != null
+                                && seen.Add(staticProperty.GetMethod.FullName))
+                                methods.Add(staticProperty.GetMethod);
+                        }
+
+                        var currentType = controlType;
+                        while (currentType != null)
+                        {
+                            var property = currentType.Properties.FirstOrDefault(p =>
+                                p.Name == binding.PropertyName);
+                            if (property?.SetMethod != null)
+                            {
+                                if (seen.Add(property.SetMethod.FullName))
+                                    methods.Add(property.SetMethod);
+                                if (property.GetMethod != null
+                                    && seen.Add(property.GetMethod.FullName))
+                                    methods.Add(property.GetMethod);
+                                break;
+                            }
+                            currentType = currentType.BaseType?.Resolve();
+                        }
+                    }
                 }
+            }
+
+            if (node is TemplateIR.ConditionalNode conditional)
+            {
+                foreach (var child in conditional.TrueBranch)
+                    CollectSubControlMethodReferences(child, modelTypeName,
+                        usingNamespaces, methods, seen);
+                foreach (var child in conditional.FalseBranch)
+                    CollectSubControlMethodReferences(child, modelTypeName,
+                        usingNamespaces, methods, seen);
             }
 
             if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
             {
                 foreach (var child in loop.ItemTemplate)
-                    CollectSubControlMethodReferences(child, methods, seen);
+                    CollectSubControlMethodReferences(child, modelTypeName,
+                        usingNamespaces, methods, seen);
             }
 
             if (node.Children != null)
             {
                 foreach (var child in node.Children)
-                    CollectSubControlMethodReferences(child, methods, seen);
+                    CollectSubControlMethodReferences(child, modelTypeName,
+                        usingNamespaces, methods, seen);
             }
         }
 
@@ -1273,18 +1443,20 @@ namespace Sunlight.Framework.Observables
 
             var expr = handler;
 
+            var arrowIdx = expr.IndexOf("=>", StringComparison.Ordinal);
+            if (arrowIdx >= 0)
+                expr = expr.Substring(arrowIdx + 2).Trim();
+
             // Strip Model. prefix — method is on the model type
             if (expr.StartsWith("Model."))
                 expr = expr.Substring(6);
+            else if (expr.StartsWith("Control."))
+                expr = expr.Substring(8);
 
             // Remove parenthesized arguments: "Method(arg)" → "Method"
             var parenIdx = expr.IndexOf('(');
             if (parenIdx > 0)
                 expr = expr.Substring(0, parenIdx);
-
-            // Skip lambdas
-            if (expr.Contains("=>"))
-                return null;
 
             // Skip if it contains dots (nested access not supported here)
             if (expr.Contains("."))
@@ -1308,10 +1480,14 @@ namespace Sunlight.Framework.Observables
                 }
                 if (typeDef == null) return null;
 
-                foreach (var m in typeDef.Methods)
+                for (var currentType = typeDef; currentType != null;
+                    currentType = currentType.BaseType?.Resolve())
                 {
-                    if (m.Name == methodName && m.IsPublic && !m.IsConstructor)
-                        return m;
+                    foreach (var m in currentType.Methods)
+                    {
+                        if (m.Name == methodName && m.IsPublic && !m.IsConstructor)
+                            return m;
+                    }
                 }
             }
             catch { }
@@ -1347,23 +1523,16 @@ namespace Sunlight.Framework.Observables
                     statements.AddRange(docStorageGetterStatements);
             }
 
-            // Track which template IRs we've already emitted to avoid duplicates
-            // (_compiledIRs stores the same IR under both short name and resource name)
-            var emittedTemplates = new HashSet<string>(StringComparer.Ordinal);
-
             foreach (var kvp in _compiledIRs)
             {
-                if (!emittedTemplates.Add(kvp.Value.TemplateName))
-                    continue; // Skip duplicate entries
-
                 try
                 {
                     // Generate proper JST nodes with graph descriptor emission
                     IIdentifier preCreatedGetter = null;
-                    _templateGetterIdentifiers.TryGetValue(kvp.Value.TemplateName, out preCreatedGetter);
+                    _templateGetterIdentifiers.TryGetValue(kvp.Key, out preCreatedGetter);
 
                     RazorCssManager cssManager = null;
-                    if (!_templateCssManagers.TryGetValue(kvp.Value.TemplateName, out cssManager)
+                    if (!_templateCssManagers.TryGetValue(kvp.Key, out cssManager)
                         && _templateCssManagers.Count > 0)
                     {
                         // Sub-templates without @styles inherit the parent's CSS manager
@@ -1389,7 +1558,7 @@ namespace Sunlight.Framework.Observables
                     var getterIdentifier = jstGenerator.GetGetterIdentifier();
                     if (getterIdentifier != null)
                     {
-                        _templateGetterIdentifiers[kvp.Value.TemplateName] = getterIdentifier;
+                        _templateGetterIdentifiers[kvp.Key] = getterIdentifier;
                     }
 
                     Log.Debug("Generated {StatementCount} JST statements for template {TemplateName}",
@@ -1400,7 +1569,7 @@ namespace Sunlight.Framework.Observables
                     Log.Error(ex, "JST generation failed for template {TemplateName}", kvp.Value.TemplateName);
 
                     _runtimeScopeManager.Context.AddError(
-                        null,
+                        (ex as RazorSubControlDiagnosticException)?.Location,
                         $"Error generating JST for Razor template '{kvp.Value.TemplateName}': {ex.Message}",
                         false);
                 }
@@ -1418,7 +1587,7 @@ namespace Sunlight.Framework.Observables
             }
 
             Log.Debug("GetPostJavascript emitting {StatementCount} statements for {TemplateCount} templates",
-                statements.Count, emittedTemplates.Count);
+                statements.Count, _compiledIRs.Count);
 
             return statements;
         }

@@ -1,6 +1,7 @@
 namespace Sunlight.Framework.UI.Test
 {
     using Sunlight.Framework.Observables;
+    using Sunlight.Framework.UI.Attributes;
     using System.Web.Html;
 
     /// <summary>
@@ -8,82 +9,34 @@ namespace Sunlight.Framework.UI.Test
     /// </summary>
     public class RazorTestVM : ObservableObject
     {
-        private string name;
-        private bool isActive;
-        private string cssClass;
-        private int count;
-        private ObservableCollection<RazorItemVM> items;
-        private int price;
-        private int quantity;
-        private string displayStyle;
-        private string title;
-        private bool showDetails;
-        private int clickCount;
+        private string draft;
 
-        public string Name
+        public int DraftSetCount;
+
+        public string Draft
         {
-            get { return this.name; }
+            get { return this.draft; }
             set
             {
-                if (this.name != value)
-                {
-                    this.name = value;
-                    base.FirePropertyChanged("Name");
-                }
+                this.DraftSetCount++;
+                if (this.draft == value) return;
+                this.draft = value;
+                this.FirePropertyChanged("Draft");
             }
+        }
+        [AutoFire] public string PickedName { get; set; }
+
+        public void Pick(RazorItemVM item)
+        {
+            this.PickedName = item.Name;
         }
 
-        public bool IsActive
-        {
-            get { return this.isActive; }
-            set
-            {
-                if (this.isActive != value)
-                {
-                    this.isActive = value;
-                    base.FirePropertyChanged("IsActive");
-                }
-            }
-        }
-
-        public string CssClass
-        {
-            get { return this.cssClass; }
-            set
-            {
-                if (this.cssClass != value)
-                {
-                    this.cssClass = value;
-                    base.FirePropertyChanged("CssClass");
-                }
-            }
-        }
-
-        public int Count
-        {
-            get { return this.count; }
-            set
-            {
-                if (this.count != value)
-                {
-                    this.count = value;
-                    base.FirePropertyChanged("Count");
-                }
-            }
-        }
-
-        public ObservableCollection<RazorItemVM> Items
-        {
-            get { return this.items; }
-            set
-            {
-                if (this.items != value)
-                {
-                    this.items = value;
-                    base.FirePropertyChanged("Items");
-                }
-            }
-        }
+        [AutoFire] public RazorItemVM Child { get; set; }
+        [AutoFire] public string Name { get; set; }
+        [AutoFire] public bool IsActive { get; set; }
+        [AutoFire] public string CssClass { get; set; }
+        [AutoFire] public int Count { get; set; }
+        [AutoFire] public ObservableCollection<RazorItemVM> Items { get; set; }
 
         public bool ClickFired;
 
@@ -95,85 +48,15 @@ namespace Sunlight.Framework.UI.Test
         public void OnDomClick(Element elem, ElementEvent evt)
         {
             this.ClickFired = true;
+            this.ClickCount++;
         }
 
-        public int Price
-        {
-            get { return this.price; }
-            set
-            {
-                if (this.price != value)
-                {
-                    this.price = value;
-                    base.FirePropertyChanged("Price");
-                }
-            }
-        }
-
-        public int Quantity
-        {
-            get { return this.quantity; }
-            set
-            {
-                if (this.quantity != value)
-                {
-                    this.quantity = value;
-                    base.FirePropertyChanged("Quantity");
-                }
-            }
-        }
-
-        public string DisplayStyle
-        {
-            get { return this.displayStyle; }
-            set
-            {
-                if (this.displayStyle != value)
-                {
-                    this.displayStyle = value;
-                    base.FirePropertyChanged("DisplayStyle");
-                }
-            }
-        }
-
-        public string Title
-        {
-            get { return this.title; }
-            set
-            {
-                if (this.title != value)
-                {
-                    this.title = value;
-                    base.FirePropertyChanged("Title");
-                }
-            }
-        }
-
-        public bool ShowDetails
-        {
-            get { return this.showDetails; }
-            set
-            {
-                if (this.showDetails != value)
-                {
-                    this.showDetails = value;
-                    base.FirePropertyChanged("ShowDetails");
-                }
-            }
-        }
-
-        public int ClickCount
-        {
-            get { return this.clickCount; }
-            set
-            {
-                if (this.clickCount != value)
-                {
-                    this.clickCount = value;
-                    base.FirePropertyChanged("ClickCount");
-                }
-            }
-        }
+        [AutoFire] public int Price { get; set; }
+        [AutoFire] public int Quantity { get; set; }
+        [AutoFire] public string DisplayStyle { get; set; }
+        [AutoFire] public string Title { get; set; }
+        [AutoFire] public bool ShowDetails { get; set; }
+        [AutoFire] public int ClickCount { get; set; }
 
         public void IncrementClick()
         {
@@ -183,47 +66,14 @@ namespace Sunlight.Framework.UI.Test
 
     public class RazorItemVM : ObservableObject
     {
-        private string name;
-        private bool isComplete;
-        private string status;
+        [AutoFire] public string Name { get; set; }
+        [AutoFire] public bool IsComplete { get; set; }
+        [AutoFire] public string Status { get; set; }
+        [AutoFire] public int SelectCount { get; set; }
 
-        public string Name
+        public void Select()
         {
-            get { return this.name; }
-            set
-            {
-                if (this.name != value)
-                {
-                    this.name = value;
-                    base.FirePropertyChanged("Name");
-                }
-            }
-        }
-
-        public bool IsComplete
-        {
-            get { return this.isComplete; }
-            set
-            {
-                if (this.isComplete != value)
-                {
-                    this.isComplete = value;
-                    base.FirePropertyChanged("IsComplete");
-                }
-            }
-        }
-
-        public string Status
-        {
-            get { return this.status; }
-            set
-            {
-                if (this.status != value)
-                {
-                    this.status = value;
-                    base.FirePropertyChanged("Status");
-                }
-            }
+            this.SelectCount++;
         }
     }
 
