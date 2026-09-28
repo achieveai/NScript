@@ -94,7 +94,8 @@ namespace NScript.RazorSkin
             INamedTypeSymbol controlType,
             CSharpCompilation compilation,
             SemanticModel semanticModel,
-            string modelPrefix = "Model.")
+            string modelPrefix = "Model.",
+            INamedTypeSymbol parentModelType = null)
         {
             foreach (var node in nodes)
             {
@@ -106,8 +107,10 @@ namespace NScript.RazorSkin
                 {
                     // Refine condition with the current model prefix (handles item.Prop inside loops)
                     RefineConditionalBinding(cond, modelType, controlType, modelPrefix);
-                    RefineNodes(cond.TrueBranch, modelType, controlType, compilation, semanticModel, modelPrefix);
-                    RefineNodes(cond.FalseBranch, modelType, controlType, compilation, semanticModel, modelPrefix);
+                    RefineNodes(cond.TrueBranch, modelType, controlType, compilation, semanticModel,
+                        modelPrefix, parentModelType);
+                    RefineNodes(cond.FalseBranch, modelType, controlType, compilation, semanticModel,
+                        modelPrefix, parentModelType);
                 }
                 else if (node is LoopNode loop)
                 {
@@ -116,20 +119,23 @@ namespace NScript.RazorSkin
                     var itemPrefix = loop.ItemVariableName + ".";
                     if (itemType != null)
                     {
-                        RefineNodes(loop.ItemTemplate, itemType, controlType, compilation, semanticModel, itemPrefix);
+                        RefineNodes(loop.ItemTemplate, itemType, controlType, compilation, semanticModel,
+                            itemPrefix, parentModelType ?? modelType);
                     }
                     else
                     {
-                        RefineNodes(loop.ItemTemplate, modelType, controlType, compilation, semanticModel, modelPrefix);
+                        RefineNodes(loop.ItemTemplate, modelType, controlType, compilation, semanticModel,
+                            modelPrefix, parentModelType);
                     }
                 }
                 else if (node is SubControlNode sub)
                 {
-                    RefineSubControlBindings(sub, modelType, controlType, modelPrefix);
+                    RefineSubControlBindings(sub, modelType, controlType, modelPrefix, parentModelType);
                 }
 
                 // Recurse into generic children
-                RefineNodes(node.Children, modelType, controlType, compilation, semanticModel, modelPrefix);
+                RefineNodes(node.Children, modelType, controlType, compilation, semanticModel,
+                    modelPrefix, parentModelType);
             }
         }
 
@@ -295,7 +301,8 @@ namespace NScript.RazorSkin
             SubControlNode sub,
             INamedTypeSymbol modelType,
             INamedTypeSymbol controlType,
-            string modelPrefix)
+            string modelPrefix,
+            INamedTypeSymbol parentModelType)
         {
             foreach (var propBinding in sub.PropertyBindings)
             {
@@ -303,21 +310,29 @@ namespace NScript.RazorSkin
                 if (classification.Mode != BindingMode.OneTime)
                     continue; // Already promoted
 
-                if (modelType != null)
+                var modelSources = new List<(INamedTypeSymbol Type, string Prefix)>
+                {
+                    (modelType, modelPrefix)
+                };
+                if (parentModelType != null && modelPrefix != "Model.")
+                    modelSources.Add((parentModelType, "Model."));
+                foreach (var source in modelSources)
                 {
                     var chains = ExtractPropertyReferences(
-                        classification.CSharpExpression, modelPrefix);
+                        classification.CSharpExpression, source.Prefix);
                     foreach (var chain in chains)
                     {
                         var rootPropName = chain.Contains(".")
                             ? chain.Substring(0, chain.IndexOf('.'))
                             : chain;
-                        var prop = FindProperty(modelType, rootPropName);
+                        var prop = source.Type != null
+                            ? FindProperty(source.Type, rootPropName) : null;
                         if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
                         {
                             classification.Mode = BindingMode.OneWay;
                             classification.Dependencies.Add(new ObservableDependency(
-                                BindingSourceKind.DataContext, rootPropName, chain));
+                                BindingSourceKind.DataContext, rootPropName, chain,
+                                source.Prefix));
                         }
                     }
                 }

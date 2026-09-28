@@ -155,6 +155,75 @@ public class PlainVM
                 "non-observable property binding should stay OneTime");
         }
 
+        [TestMethod]
+        public void ForeachSubControlRecognizesParentAndItemObservableSources()
+        {
+            var vmSource = @"
+using Sunlight.Framework.Observables;
+public class TestVM : ObservableObject
+{
+    public string Name { get; set; }
+    public ObservableCollection<ItemVM> Items { get; set; }
+}
+public class ItemVM : ObservableObject
+{
+    public string Name { get; set; }
+}";
+            var template = @"
+@model TestVM
+@foreach (var item in Model.Items)
+{
+    <SearchBox ParentName=""@Model.Name"" ItemName=""@item.Name"" />
+}";
+
+            var ir = BuildAndAnalyze(template, vmSource);
+            var bindings = FindNodes<SubControlNode>(ir).Single().PropertyBindings;
+
+            bindings.Should().HaveCount(2);
+            bindings.Should().OnlyContain(binding =>
+                binding.Classification.Mode == BindingMode.OneWay
+                && binding.Classification.Dependencies.Single().PropertyName == "Name");
+            var topology = NScript.RazorSkin.CodeGen.GraphTopologyBuilder.Build(ir)
+                .Collections.Single().ItemTopology;
+            topology.Subscriptions.Should().Contain(entry =>
+                entry.PropertyName == "Name" && entry.SourceSlot == 0);
+            topology.Subscriptions.Should().Contain(entry =>
+                entry.PropertyName == "Name" && entry.SourceSlot == 2);
+        }
+
+        [TestMethod]
+        public void ForeachSubControlMixedExpressionRetainsBothSourceIdentities()
+        {
+            var vmSource = @"
+using Sunlight.Framework.Observables;
+public class TestVM : ObservableObject
+{
+    public string Name { get; set; }
+    public ObservableCollection<ItemVM> Items { get; set; }
+}
+public class ItemVM : ObservableObject
+{
+    public string Name { get; set; }
+}";
+            var template = @"
+@model TestVM
+@foreach (var item in Model.Items)
+{
+    <SearchBox Text=""@(Model.Name + item.Name)"" />
+}";
+
+            var ir = BuildAndAnalyze(template, vmSource);
+            var binding = FindNodes<SubControlNode>(ir).Single().PropertyBindings.Single();
+            binding.Classification.Dependencies.Should().HaveCount(2);
+            var topology = NScript.RazorSkin.CodeGen.GraphTopologyBuilder.Build(ir)
+                .Collections.Single().ItemTopology;
+            topology.Subscriptions.Should().Contain(entry =>
+                entry.PropertyName == "Name" && entry.SourceSlot == 0);
+            topology.Subscriptions.Should().Contain(entry =>
+                entry.PropertyName == "Name" && entry.SourceSlot == 2);
+            topology.GetterExpressions.Should().Contain("Model.Name").And.Contain("item.Name");
+        }
+
         // --- LIMIT-001: Getter-only observable property classification ---
 
         [TestMethod]

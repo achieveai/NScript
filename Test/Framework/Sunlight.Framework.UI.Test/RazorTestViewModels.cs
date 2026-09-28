@@ -9,7 +9,21 @@ namespace Sunlight.Framework.UI.Test
     /// </summary>
     public class RazorTestVM : ObservableObject
     {
-        [AutoFire] public string Draft { get; set; }
+        private string draft;
+
+        public int DraftSetCount;
+
+        public string Draft
+        {
+            get { return this.draft; }
+            set
+            {
+                this.DraftSetCount++;
+                if (this.draft == value) return;
+                this.draft = value;
+                this.FirePropertyChanged("Draft");
+            }
+        }
         [AutoFire] public string PickedName { get; set; }
 
         public void Pick(RazorItemVM item)

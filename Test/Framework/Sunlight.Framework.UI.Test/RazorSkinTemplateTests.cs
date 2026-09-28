@@ -4,6 +4,7 @@ namespace Sunlight.Framework.UI.Test
     using SunlightUnit;
     using System.Web.Html;
     using Sunlight.Framework.Observables;
+    using Sunlight.Framework.UI.Helpers.BindingGraph;
     using RazorCrossAssembly.Models;
     using RazorCrossAssembly.Controls;
     using RazorCrossAssembly.Views;
@@ -386,6 +387,57 @@ namespace Sunlight.Framework.UI.Test
         }
 
         [Test]
+        public static void TestInactiveForeachChangesWaitAndPreserveUnchangedChild(Assert assert)
+        {
+            RazorProbeControl.CreatedCount = 0;
+            RazorProbeControl.DisposedCount = 0;
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            var first = new RazorItemVM { Name = "First" };
+            var second = new RazorItemVM { Name = "Second" };
+            items.Add(first);
+            items.Add(second);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+            var before = element.QuerySelectorAll("[data-ns-subctl]");
+            assert.Equal(2, before.Length, "Initial children should render");
+            if (before.Length != 2) return;
+
+            control.Deactivate();
+            first.Name = "First changed";
+            var replacement = new RazorItemVM { Name = "Replacement" };
+            items[1] = replacement;
+            items.Add(new RazorItemVM { Name = "Third" });
+            assert.Equal(2, element.QuerySelectorAll("[data-ns-subctl]").Length,
+                "Inactive collection changes must not create hosts");
+            assert.Equal("First", before[0].GetAttribute("data-bound-text"),
+                "Inactive item changes must not update child bindings");
+            assert.Equal(2, RazorProbeControl.CreatedCount,
+                "Inactive collection changes must not create controls");
+            assert.Equal(0, RazorProbeControl.DisposedCount,
+                "Inactive collection changes must not dispose controls yet");
+
+            control.Activate();
+            var after = element.QuerySelectorAll("[data-ns-subctl]");
+            assert.Equal(3, after.Length, "Reactivation should catch up with current items");
+            if (after.Length != 3) return;
+            assert.Equal(before[0], after[0], "The unchanged item's host should survive");
+            assert.NotEqual(before[1], after[1], "The replaced item's host should be new");
+            assert.Equal("First changed", after[0].GetAttribute("data-bound-text"),
+                "The retained child should receive the latest item value");
+            assert.Equal("Replacement", after[1].GetAttribute("data-bound-text"),
+                "The replacement child should bind the replacement item");
+            assert.Equal("Third", after[2].GetAttribute("data-bound-text"),
+                "The added child should bind the new item");
+            assert.Equal(1, RazorProbeControl.DisposedCount,
+                "Only the replaced child should be disposed on catch-up");
+        }
+
+        [Test]
         public static void TestForeachBindingAfterSubControlTargetsCorrectSpan(Assert assert)
         {
             var element = Window.Instance.Document.CreateElement("div");
@@ -465,6 +517,226 @@ namespace Sunlight.Framework.UI.Test
             oldItems.Add(new RazorItemVM());
             assert.Equal(1, element.QuerySelectorAll("[data-ns-subctl]").Length,
                 "The old collection listener should be detached");
+        }
+
+        [Test]
+        public static void TestReplacingForeachItemDisposesDirectSubControl(Assert assert)
+        {
+            RazorProbeControl.CreatedCount = 0;
+            RazorProbeControl.DisposedCount = 0;
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            var oldItem = new RazorItemVM { Name = "Old" };
+            var unchangedItem = new RazorItemVM { Name = "Unchanged" };
+            items.Add(oldItem);
+            items.Add(unchangedItem);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            var oldHosts = element.QuerySelectorAll("[data-ns-subctl]");
+            assert.Equal(2, oldHosts.Length, "Both direct children should render");
+            if (oldHosts.Length != 2) return;
+            var replacement = new RazorItemVM { Name = "Replacement" };
+            items[0] = replacement;
+
+            var newHosts = element.QuerySelectorAll("[data-ns-subctl]");
+            assert.Equal(2, newHosts.Length, "Replacement should leave two child hosts");
+            if (newHosts.Length != 2) return;
+            assert.NotEqual(oldHosts[0], newHosts[0],
+                "The replaced item must receive a new direct child host");
+            assert.Equal(oldHosts[1], newHosts[1],
+                "The unchanged item's child host should retain its identity");
+            assert.Equal(1, RazorProbeControl.DisposedCount,
+                "The replaced direct child should be disposed exactly once");
+            assert.Equal("Replacement", newHosts[0].GetAttribute("data-bound-text"),
+                "The new child should bind the replacement item");
+
+            oldItem.Name = "Stale";
+            assert.Equal("Old", oldHosts[0].GetAttribute("data-bound-text"),
+                "Old item notifications must not reach the disposed child");
+            replacement.Name = "Current";
+            assert.Equal("Current", newHosts[0].GetAttribute("data-bound-text"),
+                "The replacement child should remain reactive");
+        }
+
+        [Test]
+        public static void TestForeachSetterWritesReconcileDuringInitialAddAndReplace(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            var initial = new RazorItemVM { Name = "Initial" };
+            var added = new RazorItemVM { Name = "Added" };
+            var replacement = new RazorItemVM { Name = "Replacement" };
+            items.Add(initial);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "Initial") initial.Name = "Initial settled";
+                if (child.Text == "Added") added.Name = "Added settled";
+                if (child.Text == "Replacement") replacement.Name = "Replacement settled";
+            };
+            try
+            {
+                control.Activate();
+                var hosts = element.QuerySelectorAll("[data-ns-subctl]");
+                assert.Equal("Initial settled", hosts[0].GetAttribute("data-bound-text"),
+                    "Initial item writes from a child setter should settle immediately");
+
+                items.Add(added);
+                hosts = element.QuerySelectorAll("[data-ns-subctl]");
+                assert.Equal("Added settled", hosts[1].GetAttribute("data-bound-text"),
+                    "Added item writes from a child setter should settle immediately");
+
+                items[1] = replacement;
+                hosts = element.QuerySelectorAll("[data-ns-subctl]");
+                assert.Equal("Replacement settled", hosts[1].GetAttribute("data-bound-text"),
+                    "Replacement item writes from a child setter should settle immediately");
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+        }
+
+        [Test]
+        public static void TestForeachChildSetterCanAddToParentCollectionDuringInitialRender(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            var items = new ObservableCollection<RazorItemVM>();
+            items.Add(new RazorItemVM { Name = "First" });
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "First")
+                    items.Add(new RazorItemVM { Name = "Second" });
+            };
+            try
+            {
+                control.Activate();
+                var hosts = element.QuerySelectorAll("[data-bound-text]");
+                assert.Equal(2, hosts.Length,
+                    "An item added by the first child's setter should render during initial activation");
+                if (hosts.Length != 2) return;
+                assert.Equal("Second", hosts[1].GetAttribute("data-bound-text"),
+                    "The added item should bind its own value");
+
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+        }
+
+        [Test]
+        public static void TestForeachResetAndAddWhileInactiveRendersFinalCollectionOnce(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var marker = Window.Instance.Document.CreateElement("span");
+            element.AppendChild(marker);
+            var items = new ObservableCollection<RazorItemVM>();
+            items.Add(new RazorItemVM { Name = "Old" });
+            var info = new CollectionTargetInfo
+            {
+                MarkerIdx = 0,
+                ItemTemplate = "<div class='reset-item'></div>"
+            };
+            var desc = new GraphDescriptor
+            {
+                NodeCount = 2,
+                NodeTypes = new NativeArray<int>(2),
+                GateIndices = new NativeArray<int>(2),
+                Getters = new NativeArray<Func<object, object, object>>(2),
+                ParentIndices = new NativeArray<NativeArray<int>>(2),
+                TargetInfos = new NativeArray(2)
+            };
+            desc.NodeTypes[0] = GraphNodeType.Source;
+            desc.NodeTypes[1] = GraphNodeType.CollectionManager;
+            desc.GateIndices[0] = -1;
+            desc.GateIndices[1] = -1;
+            desc.ParentIndices[1] = new NativeArray<int>(1);
+            desc.ParentIndices[1][0] = 0;
+            desc.Getters[1] = delegate(object source, object parent) { return items; };
+            desc.TargetInfos[1] = info;
+            var state = new GraphState(desc, new NativeArray(1), 0);
+            state.ElemRefs[0] = marker;
+            state.Sources[0] = new object();
+            GraphEngine.PushInitialValues(desc, state);
+
+            state.Suspended = true;
+            items.Clear();
+            var replacement = new RazorItemVM { Name = "New" };
+            var added = new RazorItemVM { Name = "After reset" };
+            items.Add(replacement);
+            items.Add(added);
+            // Model a source that reports Reset then Add after the collection reaches
+            // its final state; ObservableCollection itself reports Remove/Add/Add.
+            state.PendingCollectionChanges[1] = new NativeArray<CollectionChangedEventArgs>(2);
+            state.PendingCollectionChanges[1][0] = new CollectionChangedEventArgs<RazorItemVM>(
+                CollectionChangedAction.Reset, -1, null, null);
+            state.PendingCollectionChanges[1][1] = new CollectionChangedEventArgs<RazorItemVM>(
+                CollectionChangedAction.Add, 1, new[] { added }, null);
+            state.Suspended = false;
+            GraphEngine.PushInitialValues(desc, state);
+
+            var hosts = element.QuerySelectorAll(".reset-item");
+            assert.Equal(2, hosts.Length,
+                "Reset followed by Add while inactive should render the final collection once");
+        }
+
+        [Test]
+        public static void TestForeachParentAndItemBindingsKeepTheirSources(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM { Name = "Parent" };
+            var item = new RazorItemVM { Name = "Item" };
+            var items = new ObservableCollection<RazorItemVM>();
+            items.Add(item);
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeachSources;
+            control.Activate();
+
+            var row = element.QuerySelector(".source-row");
+            assert.NotEqual(null, row, "The item row should render");
+            if (row == null) return;
+            var parentHost = row.QuerySelector("[data-bound-text]");
+            var itemHost = row.QuerySelector("[data-probe-value]");
+            assert.NotEqual(null, parentHost, "The parent-bound child should render");
+            assert.NotEqual(null, itemHost, "The item-bound child should render");
+            if (parentHost == null || itemHost == null) return;
+            assert.Equal("Parent", parentHost.GetAttribute("data-bound-text"),
+                "Model.Name in a loop should read the parent model");
+            assert.Equal("Item", itemHost.GetAttribute("data-probe-value"),
+                "item.Name in a loop should read the item");
+
+            vm.Name = "Parent updated";
+            assert.Equal("Parent updated", parentHost.GetAttribute("data-bound-text"),
+                "Parent notifications should update the parent-bound child");
+            item.Name = "Item updated";
+            assert.Equal("Item updated", itemHost.GetAttribute("data-probe-value"),
+                "Item notifications should update the item-bound child");
+
+            var itemControl = RazorValueProbeControl.LastCreated;
+            assert.NotEqual(null, itemControl, "The two-way item child should exist");
+            if (itemControl == null) return;
+            itemControl.Value = "Child edit";
+            assert.Equal("Child edit", item.Name,
+                "A two-way item child should write back to the item");
+            assert.Equal("Parent updated", vm.Name,
+                "A child item edit must not overwrite the parent model");
         }
 
         [Test]
@@ -837,6 +1109,45 @@ namespace Sunlight.Framework.UI.Test
             child.Value = "Child changed";
             assert.Equal("Child changed", vm.Draft,
                 "The child property change should update the parent ViewModel");
+        }
+
+        [Test]
+        public static void TestTwoWayChildActivationWriteBackOccursOnce(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new RazorPartProbeParent(element);
+            var vm = new RazorTestVM { Draft = "Initial" };
+            vm.DraftSetCount = 0;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlTwoWay;
+            RazorValueProbeControl.ActivationValueForTest = "First activation";
+            try
+            {
+                control.Activate();
+                assert.Equal("First activation", vm.Draft,
+                    "A two-way child edit during activation should reach the source");
+                assert.Equal(1, vm.DraftSetCount,
+                    "The activation edit should write back once");
+
+                control.Deactivate();
+                RazorValueProbeControl.ActivationValueForTest = "Second activation";
+                control.Activate();
+                assert.Equal("Second activation", vm.Draft,
+                    "Reactivation should also preserve the child's activation edit");
+                assert.Equal(2, vm.DraftSetCount,
+                    "Reactivation should not duplicate reverse listeners");
+
+                var child = control.ProbePart as RazorValueProbeControl;
+                assert.NotEqual(null, child, "The named two-way child should exist");
+                if (child == null) return;
+                child.Value = "User edit";
+                assert.Equal(3, vm.DraftSetCount,
+                    "A later child edit should still write back exactly once");
+            }
+            finally
+            {
+                RazorValueProbeControl.ActivationValueForTest = null;
+            }
         }
 
         [Test]

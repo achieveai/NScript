@@ -9,9 +9,13 @@ namespace Sunlight.Framework.UI.Test
     {
         private string value;
 
+        public static string ActivationValueForTest;
+        public static RazorValueProbeControl LastCreated;
+
         public RazorValueProbeControl(Element element)
             : base(element)
         {
+            LastCreated = this;
         }
 
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorValueProbeControl.skin.cshtml")]
@@ -33,6 +37,13 @@ namespace Sunlight.Framework.UI.Test
                     this.FirePropertyChanged("Value");
                 }
             }
+        }
+
+        protected override void OnActivate()
+        {
+            if (ActivationValueForTest != null)
+                this.Value = ActivationValueForTest;
+            base.OnActivate();
         }
     }
 }

@@ -52,6 +52,12 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlForeachSources.skin.cshtml")]
+        public static Skin RazorSubControlForeachSources
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlForeachDefaultContext.skin.cshtml")]
         public static Skin RazorSubControlForeachDefaultContext
         {

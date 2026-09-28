@@ -10,6 +10,74 @@ namespace RazorSkinParser.Test
     [TestClass]
     public class GraphTopologyBuilderForEachTests
     {
+        [TestMethod]
+        public void ForeachSubControlKeepsParentAndItemPropertiesSeparate()
+        {
+            var parent = new SubControlPropertyBinding
+            {
+                PropertyName = "Text",
+                Classification = new BindingClassification
+                {
+                    CSharpExpression = "Model.Name", Mode = BindingMode.OneWay,
+                    Dependencies = { new ObservableDependency(BindingSourceKind.DataContext, "Name", "Name") }
+                }
+            };
+            var item = new SubControlPropertyBinding
+            {
+                PropertyName = "Value",
+                Classification = new BindingClassification
+                {
+                    CSharpExpression = "item.Name", Mode = BindingMode.TwoWay,
+                    Dependencies = { new ObservableDependency(BindingSourceKind.DataContext, "Name", "Name") }
+                }
+            };
+            var topology = GraphTopologyBuilder.Build(new SkinTemplateNode
+            {
+                ModelTypeName = "Parent",
+                Children = { new LoopNode
+                {
+                    ItemVariableName = "item", CollectionExpression = "Model.Items",
+                    ItemTemplate = new List<IRNode> { new SubControlNode
+                    {
+                        TypeName = "Child", PropertyBindings = { parent, item }
+                    } }
+                } }
+            }).Collections.Single().ItemTopology;
+
+            topology.SubControls.Single().PropertyBindings.Should().HaveCount(2);
+            var parentNode = topology.SubControls.Single().PropertyBindings.Single(b => b.TargetPropertyName == "Text");
+            var itemNode = topology.SubControls.Single().PropertyBindings.Single(b => b.TargetPropertyName == "Value");
+            parentNode.NodeIdx.Should().NotBe(itemNode.NodeIdx);
+            topology.GetterExpressions[parentNode.NodeIdx].Should().Be("Model.Name");
+            topology.GetterSourceSlots[parentNode.NodeIdx].Should().Be(0);
+            topology.GetterSourceSlots[itemNode.NodeIdx].Should().Be(2);
+            topology.Subscriptions.Should().Contain(s => s.NodeIdx == parentNode.NodeIdx && s.SourceSlot == 0);
+            topology.Subscriptions.Should().Contain(s => s.NodeIdx == itemNode.NodeIdx && s.SourceSlot == 2);
+            itemNode.TwoWaySourceProperty.Should().Be("Name");
+        }
+
+        [TestMethod]
+        public void ForeachOrdinaryBindingsSubscribeToTheirOwnSources()
+        {
+            var item = MakeBinding("item.Name", BindingMode.OneWay,
+                BindingSourceKind.DataContext, ExpressionTarget.TextContent, "e0", "Name");
+            var parent = MakeBinding("Model.Name", BindingMode.OneWay,
+                BindingSourceKind.DataContext, ExpressionTarget.TextContent, "e1", "Name");
+            var topology = GraphTopologyBuilder.Build(new SkinTemplateNode
+            {
+                Children = { new LoopNode
+                {
+                    ItemVariableName = "item", CollectionExpression = "Model.Items",
+                    ItemTemplate = new List<IRNode> { item, parent }
+                } }
+            }).Collections.Single().ItemTopology;
+
+            topology.Subscriptions.Should().Contain(entry =>
+                entry.PropertyName == "Name" && entry.SourceSlot == 2);
+            topology.Subscriptions.Should().Contain(entry =>
+                entry.PropertyName == "Name" && entry.SourceSlot == 0);
+            topology.GetterExpressions.Should().Contain("item.Name").And.Contain("Model.Name");
+        }
         /// <summary>
         /// Verifies that a foreach loop creates a CollectionManager node with an item topology.
         /// </summary>
@@ -118,8 +186,9 @@ namespace RazorSkinParser.Test
             itemTopo.NodeTypes[1].Should().Be(GraphNodeTypeConstants.Property);
             itemTopo.NodeTypes[2].Should().Be(GraphNodeTypeConstants.DomTarget);
 
-            // Getter stores the property name (prefix stripped by builder)
-            itemTopo.GetterExpressions[1].Should().Be("Name");
+            // Getter retains the item source identity for tuple slot selection.
+            itemTopo.GetterExpressions[1].Should().Be("item.Name");
+            itemTopo.Subscriptions.Single().SourceSlot.Should().Be(2);
         }
 
         /// <summary>

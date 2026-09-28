@@ -76,6 +76,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Whether child controls should be active during a graph flush.</summary>
         public bool SubControlsActive;
 
+        /// <summary>Whether this graph is suspended by parent deactivation.</summary>
+        public bool Suspended;
+
+        /// <summary>Collection changes to replay when the graph reactivates.</summary>
+        public NativeArray<NativeArray<CollectionChangedEventArgs>> PendingCollectionChanges;
+
+        /// <summary>Per-collection guard while DOM rows and item arrays are being updated.</summary>
+        public NativeArray<bool> CollectionChangesInProgress;
+
         /// <summary>
         /// Creates a new GraphState for the given descriptor.
         /// </summary>
@@ -132,6 +141,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 this.ChildGraphStates = new NativeArray<NativeArray<GraphState>>(n);
                 this.ItemElements = new NativeArray<NativeArray>(n);
                 this.CollectionListeners = new NativeArray(n);
+                this.PendingCollectionChanges =
+                    new NativeArray<NativeArray<CollectionChangedEventArgs>>(n);
+                this.CollectionChangesInProgress = new NativeArray<bool>(n);
             }
         }
     }

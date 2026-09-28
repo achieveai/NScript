@@ -629,6 +629,7 @@ namespace NScript.RazorSkin.CodeGen
             // Strip "Model." prefix — in Razor templates, Model IS the DataContext.
             // OneTime bindings pass the full CSharpExpression (e.g., "Model.AppVersion").
             bool isControl = propertyName.StartsWith("Control.");
+            bool isParentModel = IsItemGraph && propertyName.StartsWith("Model.");
             if (isControl)
                 propertyName = propertyName.Substring(8);
             else if (propertyName.StartsWith("Model."))
@@ -644,7 +645,9 @@ namespace NScript.RazorSkin.CodeGen
                 return null;
 
             // Find the model type
-            var typeName = isControl ? _controlTypeName : _modelTypeName;
+            var typeName = isControl ? _controlTypeName
+                : isParentModel ? _parentModelTypeName
+                : _modelTypeName;
             var typeDefinition = FindTypeDefinition(typeName);
             if (typeDefinition == null)
             {
@@ -673,7 +676,8 @@ namespace NScript.RazorSkin.CodeGen
             // For item graphs, access the item element of the tuple: dc[2]
             var dcAccess = isControl
                 ? (Expression)new IdentifierExpression(getterScope.ParameterIdentifiers[1], getterScope)
-                : CreateTupleAccessExpression(paramIdentifier, getterScope);
+                : CreateTupleAccessExpression(paramIdentifier, getterScope,
+                    isParentModel ? 0 : 2);
             Expression currentExpr;
             if (backingField != null)
             {
@@ -1361,6 +1365,7 @@ namespace NScript.RazorSkin.CodeGen
         {
             var propName = expression;
             bool isControl = propName.StartsWith("Control.");
+            bool isParentModel = IsItemGraph && propName.StartsWith("Model.");
             if (isControl) propName = propName.Substring(8);
             if (propName.StartsWith("Model.")) propName = propName.Substring(6);
             if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
@@ -1368,7 +1373,8 @@ namespace NScript.RazorSkin.CodeGen
                 propName = propName.Substring(_topology.ItemVariablePrefix.Length);
             if (propName.Contains(".")) return null;
 
-            var typeDefinition = FindTypeDefinition(isControl ? _controlTypeName : _modelTypeName);
+            var typeDefinition = FindTypeDefinition(isControl ? _controlTypeName
+                : isParentModel ? _parentModelTypeName : _modelTypeName);
             if (typeDefinition == null) return null;
 
             var property = FindProperty(typeDefinition, propName);
@@ -1378,7 +1384,7 @@ namespace NScript.RazorSkin.CodeGen
             // For item graphs, access the item element of the tuple: dc[2]
             var dcAccess = isControl
                 ? (Expression)new IdentifierExpression(scope.ParameterIdentifiers[1], scope)
-                : CreateTupleAccessExpression(dcParam, scope);
+                : CreateTupleAccessExpression(dcParam, scope, isParentModel ? 0 : 2);
             if (backingField != null)
             {
                 var fieldId = _scopeManager.Resolve(backingField);
@@ -2133,7 +2139,8 @@ namespace NScript.RazorSkin.CodeGen
                         ? BuildSubControlTargetGetter(typeDef, propBinding.TargetPropertyName)
                         : null;
                     var sourceSetter = !string.IsNullOrEmpty(propBinding.TwoWaySourceProperty)
-                        ? BuildSubControlSourceSetter(propBinding.TwoWaySourceProperty)
+                        ? BuildSubControlSourceSetter(propBinding.TwoWaySourceProperty,
+                            propBinding.TwoWaySourceSlot)
                         : null;
 
                     if (_subControlPropertyInfoFactory != null)
@@ -2299,9 +2306,10 @@ namespace NScript.RazorSkin.CodeGen
             return fn;
         }
 
-        private Expression BuildSubControlSourceSetter(string propertyName)
+        private Expression BuildSubControlSourceSetter(string propertyName, int sourceSlot)
         {
-            var sourceTypeName = IsItemGraph ? _parentModelTypeName : _modelTypeName;
+            var sourceTypeName = IsItemGraph && sourceSlot == 0
+                ? _parentModelTypeName : _modelTypeName;
             var sourceType = FindTypeDefinition(sourceTypeName);
             var property = sourceType != null ? FindProperty(sourceType, propertyName) : null;
             if (property?.SetMethod == null)
@@ -2312,7 +2320,7 @@ namespace NScript.RazorSkin.CodeGen
             Expression source = new IdentifierExpression(scope.ParameterIdentifiers[0], scope);
             if (IsItemGraph)
                 source = new IndexExpression(null, scope, source,
-                    new NumberLiteralExpression(scope, 0));
+                    new NumberLiteralExpression(scope, sourceSlot));
             var fn = new FunctionExpression(_fallbackLocation, _scope, scope,
                 scope.ParameterIdentifiers, null);
             var field = TryFindTrivialSetterFieldOnType(property.DeclaringType.Resolve(), property);

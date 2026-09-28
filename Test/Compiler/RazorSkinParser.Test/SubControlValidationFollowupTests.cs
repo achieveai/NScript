@@ -57,6 +57,101 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void InvalidPrimitiveLiteralsReportTemplateLocation()
+        {
+            var control = CreateControl(out var module);
+            AddElementConstructor(control, module);
+            AddProperty(control, "IsOn", module.TypeSystem.Boolean);
+            AddProperty(control, "Count", module.TypeSystem.Int32);
+            foreach (var invalid in new[] { ("IsOn", "maybe"), ("Count", "five") })
+            {
+                var sub = new SubControlNode { TypeName = control.Name,
+                    Location = new Location("Parent.skin.cshtml", 6, 3) };
+                AddLiteral(sub, invalid.Item1, invalid.Item2);
+                var error = ((Action)(() => Validate(sub, control)))
+                    .Should().Throw<RazorSubControlDiagnosticException>().Which;
+                error.Location.FileName.Should().Be("Parent.skin.cshtml");
+                error.Location.StartLine.Should().Be(6);
+            }
+        }
+
+        [TestMethod]
+        public void IncompatibleBoundSourceReportsTemplateLocation()
+        {
+            var controlModule = ModuleDefinition.CreateModule("ChildAssembly", ModuleKind.Dll);
+            var ui = new TypeDefinition("Sunlight.Framework.UI", "UIElement", TypeAttributes.Public);
+            controlModule.Types.Add(ui);
+            var control = new TypeDefinition("Tests", "Child", TypeAttributes.Public, ui);
+            controlModule.Types.Add(control);
+            AddElementConstructor(control, controlModule);
+            AddProperty(control, "IsOn", controlModule.TypeSystem.Boolean);
+
+            var modelModule = ModuleDefinition.CreateModule("ParentAssembly", ModuleKind.Dll);
+            var model = new TypeDefinition("Tests", "Parent", TypeAttributes.Public);
+            modelModule.Types.Add(model);
+            AddProperty(model, "Title", modelModule.TypeSystem.String);
+
+            var sub = new SubControlNode { TypeName = control.Name,
+                Location = new Location("Parent.skin.cshtml", 11, 4) };
+            sub.PropertyBindings.Add(new SubControlPropertyBinding
+            {
+                PropertyName = "IsOn",
+                Classification = new BindingClassification
+                { CSharpExpression = "Model.Title", Mode = BindingMode.OneWay }
+            });
+
+            var error = ((Action)(() => Validate(sub, control, model)))
+                .Should().Throw<RazorSubControlDiagnosticException>().Which;
+            error.Message.Should().Contain("IsOn").And.Contain("System.String").And.Contain("System.Boolean");
+            error.Location.StartLine.Should().Be(11);
+        }
+
+        [TestMethod]
+        public void GenericInterfaceSourceCanBindToInheritedInterfaceTarget()
+        {
+            var control = CreateControl(out var module);
+            AddElementConstructor(control, module);
+            var enumerable = new TypeDefinition("Tests", "IEnumerable`1",
+                TypeAttributes.Public | TypeAttributes.Interface | TypeAttributes.Abstract);
+            var list = new TypeDefinition("Tests", "IList`1",
+                TypeAttributes.Public | TypeAttributes.Interface | TypeAttributes.Abstract);
+            module.Types.Add(enumerable);
+            module.Types.Add(list);
+            enumerable.GenericParameters.Add(new GenericParameter("T", enumerable));
+            enumerable.GenericParameters[0].Attributes = GenericParameterAttributes.Covariant;
+            list.GenericParameters.Add(new GenericParameter("T", list));
+            var inheritedEnumerable = new GenericInstanceType(enumerable);
+            inheritedEnumerable.GenericArguments.Add(list.GenericParameters[0]);
+            list.Interfaces.Add(new InterfaceImplementation(inheritedEnumerable));
+            var target = new GenericInstanceType(enumerable);
+            target.GenericArguments.Add(module.TypeSystem.String);
+            var source = new GenericInstanceType(list);
+            source.GenericArguments.Add(module.TypeSystem.String);
+            AddProperty(control, "Values", target);
+            var covariantTarget = new GenericInstanceType(enumerable);
+            covariantTarget.GenericArguments.Add(module.TypeSystem.Object);
+            AddProperty(control, "Objects", covariantTarget);
+            var model = new TypeDefinition("Tests", "Model", TypeAttributes.Public);
+            module.Types.Add(model);
+            AddProperty(model, "Values", source);
+            var sub = new SubControlNode { TypeName = control.Name };
+            sub.PropertyBindings.Add(new SubControlPropertyBinding
+            {
+                PropertyName = "Values",
+                Classification = new BindingClassification
+                { CSharpExpression = "Model.Values", Mode = BindingMode.OneWay }
+            });
+            sub.PropertyBindings.Add(new SubControlPropertyBinding
+            {
+                PropertyName = "Objects",
+                Classification = new BindingClassification
+                { CSharpExpression = "Model.Values", Mode = BindingMode.OneWay }
+            });
+
+            ((Action)(() => Validate(sub, control, model))).Should().NotThrow();
+        }
+
+        [TestMethod]
         public void FuncPropertyDoesNotSilentlyBecomeVoidEventHandler()
         {
             var type = CreateControl(out var module);
@@ -133,6 +228,38 @@ namespace RazorSkinParser.Test
             sub.PropertyBindings[0].Classification.CSharpExpression = "Model.Writable";
             Validate(sub, control, model);
             sub.PropertyBindings[0].Classification.Mode.Should().Be(BindingMode.TwoWay);
+        }
+
+        [TestMethod]
+        public void TwoWayDefaultUsesWritableLoopItemProperty()
+        {
+            var control = CreateControl(out var module);
+            AddElementConstructor(control, module);
+            AddProperty(control, "Value", module.TypeSystem.String, twoWayDefault: true);
+            var parent = new TypeDefinition("Tests", "Parent", TypeAttributes.Public);
+            var item = new TypeDefinition("Tests", "Item", TypeAttributes.Public);
+            module.Types.Add(parent);
+            module.Types.Add(item);
+            AddProperty(parent, "Name", module.TypeSystem.String);
+            AddProperty(item, "Name", module.TypeSystem.String);
+            var sub = new SubControlNode { TypeName = control.Name };
+            sub.PropertyBindings.Add(new SubControlPropertyBinding
+            {
+                PropertyName = "Value",
+                Classification = new BindingClassification
+                { CSharpExpression = "item.Name", Mode = BindingMode.OneWay }
+            });
+
+            Validate(sub, control, parent, item, "item.");
+
+            sub.PropertyBindings[0].Classification.Mode.Should().Be(BindingMode.TwoWay);
+            var topology = GraphTopologyBuilder.Build(new SkinTemplateNode
+            {
+                ItemVariablePrefix = "item.", Children = { sub }
+            });
+            var binding = topology.SubControls.Single().PropertyBindings.Single();
+            binding.TwoWaySourceProperty.Should().Be("Name");
+            binding.TwoWaySourceSlot.Should().Be(2);
         }
 
         [TestMethod]
@@ -330,10 +457,13 @@ namespace RazorSkinParser.Test
             });
         }
 
-        private static void Validate(SubControlNode sub, TypeDefinition type, TypeDefinition modelType = null)
+        private static void Validate(SubControlNode sub, TypeDefinition type,
+            TypeDefinition modelType = null, TypeDefinition itemType = null,
+            string itemVariablePrefix = null)
         {
             RazorSkinJSTGenerator.ValidateSubControlTagInfo(sub, type,
-                (current, name) => current.Properties.FirstOrDefault(p => p.Name == name), modelType);
+                (current, name) => current.Properties.FirstOrDefault(p => p.Name == name),
+                modelType, itemType, itemVariablePrefix);
         }
     }
 }

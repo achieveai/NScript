@@ -138,10 +138,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         if (nodeVal == previousValue
                             && !object.IsNullOrUndefined(state.ItemElements[i]))
                         {
+                            GraphEngine.ReplayPendingCollectionChanges(desc, state, i, colInfo);
                             GraphEngine.RefreshCollectionItems(state, i);
                         }
                         else
                         {
+                            state.PendingCollectionChanges[i] = null;
                             if (!object.IsNullOrUndefined(previousValue))
                                 GraphEngine.DetachCollectionListener(state, i, previousValue);
                             GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
@@ -166,6 +168,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <param name="state">The per-instance graph state.</param>
         public static void Flush(GraphDescriptor desc, GraphState state)
         {
+            if (state.Suspended) return;
             // The outer flush drains changes raised by setters. A re-entrant call
             // only marks nodes dirty; it must not start a nested scan.
             if (state.Flushing) return;
@@ -663,10 +666,17 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphDescriptor desc, GraphState state, int nodeIdx,
             CollectionTargetInfo colInfo, IObservableCollection collection)
         {
-            GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, collection);
-
-            // Attach collection change listener.
+            state.CollectionChangesInProgress[nodeIdx] = true;
             GraphEngine.AttachCollectionListener(desc, state, nodeIdx, colInfo, collection);
+            try
+            {
+                GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, collection);
+            }
+            finally
+            {
+                state.CollectionChangesInProgress[nodeIdx] = false;
+            }
+            GraphEngine.ReplayPendingCollectionChanges(desc, state, nodeIdx, colInfo);
         }
 
         /// <summary>
@@ -685,6 +695,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             if (object.IsNullOrUndefined(parent)) return;
 
             int count = collection.Count;
+            NativeArray items = new NativeArray(count);
+            for (int idx = 0; idx < count; idx++)
+                items[idx] = collection[idx];
             NativeArray<GraphState> childStates = new NativeArray<GraphState>(count);
             NativeArray itemElems = new NativeArray(count);
 
@@ -699,7 +712,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             for (int idx = 0; idx < count; idx++)
             {
-                object item = collection[idx];
+                object item = items[idx];
 
                 Element clone = (Element)templateElement.CloneNode(true);
 
@@ -709,31 +722,46 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 // Create child graph if item graph descriptor exists.
                 if (!object.IsNullOrUndefined(colInfo.ItemGraph))
                 {
-                    // Build element refs for the item's bindings.
-                    // Find all <span> elements inside the clone — these are the binding markers.
-                    NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
-                    GraphEngine.ResolveEventElements(clone, childElemRefs);
-                    GraphEngine.ResolveBindElements(clone, childElemRefs);
-
-                    GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                    // Item graphs receive a [parentDC, control, item] tuple as DataContext.
-                    NativeArray itemContext = new NativeArray(3);
-                    itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
-                    itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
-                    itemContext[2] = item;
-                    childState.Sources[GraphSourceSlot.DataContext] = itemContext;
-                    GraphEngine.CreateSubControls(colInfo.ItemGraph, childState, clone, item);
-                    GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
-                    GraphEngine.ApplySubControlBindings(colInfo.ItemGraph, childState);
-                    if (state.SubControlsActive)
-                        GraphEngine.ActivateSubControls(colInfo.ItemGraph, childState);
-                    GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
-                    childStates[idx] = childState;
+                    childStates[idx] = GraphEngine.CreateCollectionItemGraph(state, colInfo, clone, item);
                 }
             }
 
             state.ChildGraphStates[nodeIdx] = childStates;
             state.ItemElements[nodeIdx] = itemElems;
+        }
+
+        private static GraphState CreateCollectionItemGraph(
+            GraphState parentState, CollectionTargetInfo colInfo, Element clone, object item)
+        {
+            NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
+            GraphEngine.ResolveEventElements(clone, childElemRefs);
+            GraphEngine.ResolveBindElements(clone, childElemRefs);
+
+            GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, parentState.Depth + 1);
+            NativeArray itemContext = new NativeArray(3);
+            itemContext[0] = parentState.Sources[GraphSourceSlot.DataContext];
+            itemContext[1] = parentState.Sources[GraphSourceSlot.TemplateParent];
+            itemContext[2] = item;
+            childState.Sources[GraphSourceSlot.DataContext] = itemContext;
+            GraphEngine.CreateSubControls(colInfo.ItemGraph, childState, clone, item);
+
+            // An item setter or Activate() can write to the item. Subscribe
+            // before invoking either and drain those notifications afterward.
+            childState.Flushing = true;
+            try
+            {
+                GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState);
+                GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
+                GraphEngine.ApplySubControlBindings(colInfo.ItemGraph, childState);
+                if (parentState.SubControlsActive)
+                    GraphEngine.ActivateSubControls(colInfo.ItemGraph, childState);
+            }
+            finally
+            {
+                childState.Flushing = false;
+            }
+            GraphEngine.Flush(colInfo.ItemGraph, childState);
+            return childState;
         }
 
         private static void RefreshCollectionItems(GraphState state, int nodeIdx)
@@ -747,12 +775,53 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (object.IsNullOrUndefined(child)) continue;
 
                 NativeArray itemContext = (NativeArray)child.Sources[GraphSourceSlot.DataContext];
+                bool sourceChanged = itemContext[0] != state.Sources[GraphSourceSlot.DataContext]
+                    || itemContext[1] != state.Sources[GraphSourceSlot.TemplateParent];
+                if (sourceChanged)
+                    GraphEngine.UnwireChildSubscriptions(child.Descriptor, child);
                 itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
                 itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
-                GraphEngine.SetDefaultSubControlDataContext(child.Descriptor, child, itemContext[2]);
-                GraphEngine.PushInitialValues(child.Descriptor, child);
-                GraphEngine.ApplySubControlBindings(child.Descriptor, child);
+                child.Suspended = false;
+                child.Flushing = true;
+                try
+                {
+                    if (sourceChanged)
+                        GraphEngine.WireChildSubscriptions(child.Descriptor, child);
+                    GraphEngine.SetDefaultSubControlDataContext(child.Descriptor, child, itemContext[2]);
+                    GraphEngine.PushInitialValues(child.Descriptor, child);
+                    GraphEngine.ApplySubControlBindings(child.Descriptor, child);
+                }
+                finally
+                {
+                    child.Flushing = false;
+                }
+                GraphEngine.Flush(child.Descriptor, child);
             }
+        }
+
+        private static void ReplayPendingCollectionChanges(
+            GraphDescriptor desc, GraphState state, int nodeIdx, CollectionTargetInfo colInfo)
+        {
+            NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
+            state.PendingCollectionChanges[nodeIdx] = null;
+            if (object.IsNullOrUndefined(pending)) return;
+
+            int resetIdx = GraphEngine.FindLastCollectionReset(pending);
+            if (resetIdx >= 0)
+            {
+                GraphEngine.OnCollectionChanged(desc, state, nodeIdx, colInfo, pending[resetIdx]);
+                return;
+            }
+            for (int i = 0; i < pending.Length; i++)
+                GraphEngine.OnCollectionChanged(desc, state, nodeIdx, colInfo, pending[i]);
+        }
+
+        private static int FindLastCollectionReset(NativeArray<CollectionChangedEventArgs> pending)
+        {
+            for (int i = pending.Length - 1; i >= 0; i--)
+                if (pending[i].Action == CollectionChangedAction.Reset)
+                    return i;
+            return -1;
         }
 
         /// <summary>
@@ -835,14 +904,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         public static void ActivateSubControls(GraphDescriptor desc, GraphState state)
         {
+            state.Suspended = false;
             state.SubControlsActive = true;
             NativeArray<UIElement> controls = state.SubControlInstances;
             if (!object.IsNullOrUndefined(controls))
                 for (int i = 0; i < controls.Length; i++)
                     if (!object.IsNullOrUndefined(controls[i]) && !controls[i].IsActive)
                     {
-                        controls[i].Activate();
                         GraphEngine.WireSubControlPropertyListeners(desc, state, i);
+                        controls[i].Activate();
                     }
 
             if (object.IsNullOrUndefined(state.ChildGraphStates)) return;
@@ -858,6 +928,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         public static void DeactivateSubControls(GraphDescriptor desc, GraphState state)
         {
+            state.Suspended = true;
             state.SubControlsActive = false;
             GraphEngine.CleanupEventListeners(desc, state);
             NativeArray<UIElement> controls = state.SubControlInstances;
@@ -1142,6 +1213,47 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphDescriptor desc, GraphState state, int nodeIdx,
             CollectionTargetInfo colInfo, CollectionChangedEventArgs args)
         {
+            if (state.Suspended || state.CollectionChangesInProgress[nodeIdx])
+            {
+                NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
+                if (object.IsNullOrUndefined(pending))
+                {
+                    pending = new NativeArray<CollectionChangedEventArgs>(0);
+                    state.PendingCollectionChanges[nodeIdx] = pending;
+                }
+                pending.Push(args);
+                return;
+            }
+
+            state.CollectionChangesInProgress[nodeIdx] = true;
+            try
+            {
+                GraphEngine.ApplyCollectionChange(desc, state, nodeIdx, colInfo, args);
+                NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
+                state.PendingCollectionChanges[nodeIdx] = null;
+                while (!object.IsNullOrUndefined(pending))
+                {
+                    int resetIdx = GraphEngine.FindLastCollectionReset(pending);
+                    if (resetIdx >= 0)
+                        GraphEngine.ApplyCollectionChange(desc, state, nodeIdx, colInfo, pending[resetIdx]);
+                    else
+                        for (int i = 0; i < pending.Length; i++)
+                            GraphEngine.ApplyCollectionChange(desc, state, nodeIdx, colInfo, pending[i]);
+                    pending = state.PendingCollectionChanges[nodeIdx];
+                    state.PendingCollectionChanges[nodeIdx] = null;
+                }
+            }
+            finally
+            {
+                state.CollectionChangesInProgress[nodeIdx] = false;
+            }
+        }
+
+        private static void ApplyCollectionChange(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, CollectionChangedEventArgs args)
+        {
+
             Element marker = (Element)state.ElemRefs[colInfo.MarkerIdx];
             if (object.IsNullOrUndefined(marker)) return;
 
@@ -1158,7 +1270,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
             else if (args.Action == CollectionChangedAction.Replace)
             {
-                GraphEngine.HandleCollectionReplace(state, nodeIdx, colInfo, args);
+                GraphEngine.HandleCollectionReplace(state, nodeIdx, colInfo, args, marker, parent);
             }
             else if (args.Action == CollectionChangedAction.Reset)
             {
@@ -1227,24 +1339,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                 if (!object.IsNullOrUndefined(colInfo.ItemGraph))
                 {
-                    NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
-                    GraphEngine.ResolveEventElements(clone, childElemRefs);
-                    GraphEngine.ResolveBindElements(clone, childElemRefs);
-
-                    GraphState childState = new GraphState(
-                        colInfo.ItemGraph, childElemRefs, state.Depth + 1);
-                    NativeArray itemContext = new NativeArray(3);
-                    itemContext[0] = state.Sources[GraphSourceSlot.DataContext];
-                    itemContext[1] = state.Sources[GraphSourceSlot.TemplateParent];
-                    itemContext[2] = item;
-                    childState.Sources[GraphSourceSlot.DataContext] = itemContext;
-                    GraphEngine.CreateSubControls(colInfo.ItemGraph, childState, clone, item);
-                    GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
-                    GraphEngine.ApplySubControlBindings(colInfo.ItemGraph, childState);
-                    if (state.SubControlsActive)
-                        GraphEngine.ActivateSubControls(colInfo.ItemGraph, childState);
-                    GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState, item);
-                    newChildStates[insertIdx + j] = childState;
+                    newChildStates[insertIdx + j] = GraphEngine.CreateCollectionItemGraph(
+                        state, colInfo, clone, item);
                 }
             }
 
@@ -1328,53 +1424,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// </summary>
         private static void HandleCollectionReplace(
             GraphState state, int nodeIdx, CollectionTargetInfo colInfo,
-            CollectionChangedEventArgs args)
+            CollectionChangedEventArgs args, Element marker, Node parent)
         {
-            int replaceIdx = args.ChangeIndex;
-            NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
-
-            if (!object.IsNullOrUndefined(childStates) && replaceIdx < childStates.Length)
-            {
-                GraphState oldChild = childStates[replaceIdx];
-                if (!object.IsNullOrUndefined(oldChild) && !object.IsNullOrUndefined(colInfo.ItemGraph))
-                {
-                    // Unwire old child subscriptions to avoid leaks.
-                    GraphEngine.UnwireChildSubscriptions(colInfo.ItemGraph, oldChild);
-                    GraphEngine.CleanupEventListeners(colInfo.ItemGraph, oldChild);
-                    GraphEngine.CleanupCollectionListeners(colInfo.ItemGraph, oldChild);
-                    for (int gate = 0; gate < colInfo.ItemGraph.NodeCount; gate++)
-                    {
-                        if (colInfo.ItemGraph.NodeTypes[gate] != GraphNodeType.Gate
-                            || object.IsNullOrUndefined(oldChild.GateElements[gate])) continue;
-                        GateTargetInfo gateInfo = (GateTargetInfo)colInfo.ItemGraph.TargetInfos[gate];
-                        if (object.IsNullOrUndefined(gateInfo)) continue;
-                        GraphEngine.DisposeGateSubControls(colInfo.ItemGraph, oldChild,
-                            gateInfo, oldChild.GateOpen[gate]);
-                        GraphEngine.ClearGateChildElems(oldChild, gateInfo, oldChild.GateOpen[gate]);
-                    }
-                    GraphEngine.RemoveChildGateElements(oldChild);
-                }
-
-                // Update the child graph's DataContext to the new item and re-push.
-                object newItem = args.NewItems[0];
-                if (!object.IsNullOrUndefined(oldChild) && !object.IsNullOrUndefined(colInfo.ItemGraph))
-                {
-                    // Item graph DC is [parentDC, control, item] tuple — update item in-place.
-                    object existingDc = oldChild.Sources[GraphSourceSlot.DataContext];
-                    NativeArray tuple = (NativeArray)existingDc;
-                    if (!object.IsNullOrUndefined(tuple) && tuple.Length >= 3)
-                        tuple[2] = newItem;
-                    else
-                        oldChild.Sources[GraphSourceSlot.DataContext] = newItem;
-                    oldChild.SubscriptionsActive = false;
-                    GraphEngine.SetDefaultSubControlDataContext(colInfo.ItemGraph, oldChild, newItem);
-                    GraphEngine.PushInitialValues(colInfo.ItemGraph, oldChild);
-                    GraphEngine.ApplySubControlBindings(colInfo.ItemGraph, oldChild);
-                    if (oldChild.SubControlsActive)
-                        GraphEngine.ActivateSubControls(colInfo.ItemGraph, oldChild);
-                    GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, oldChild, newItem);
-                }
-            }
+            // Reuse the remove/add paths so a replacement gets a new graph and
+            // control while unaffected items retain their existing instances.
+            GraphEngine.HandleCollectionRemove(state, nodeIdx, colInfo, args);
+            GraphEngine.HandleCollectionAdd(state, nodeIdx, colInfo, args, marker, parent);
         }
 
         /// <summary>
@@ -1442,15 +1497,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Wires property change subscriptions for a child graph state (e.g., a foreach item).
         /// Similar to GraphBindingStrategy.WireSubscriptions but operates on a standalone state.
         /// </summary>
-        public static void WireChildSubscriptions(GraphDescriptor desc, GraphState childState, object dataContext)
+        public static void WireChildSubscriptions(GraphDescriptor desc, GraphState childState)
         {
             if (childState.SubscriptionsActive) return;
 
             NativeArray subscriptions = desc.Subscriptions;
             if (object.IsNullOrUndefined(subscriptions) || subscriptions.Length == 0) return;
-
-            INotifyPropertyChanged observable = dataContext as INotifyPropertyChanged;
-            if (object.IsNullOrUndefined(observable)) return;
 
             int subCount = subscriptions.Length;
             NativeArray listeners = new NativeArray(subCount);
@@ -1459,6 +1511,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             {
                 SubscriptionEntry entry = (SubscriptionEntry)subscriptions[i];
                 if (object.IsNullOrUndefined(entry)) continue;
+
+                object source = GraphEngine.GetCollectionItemSource(childState, entry.SourceSlot);
+                INotifyPropertyChanged observable = source as INotifyPropertyChanged;
+                if (object.IsNullOrUndefined(observable)) continue;
 
                 Action<INotifyPropertyChanged, string> callback =
                     GraphBindingStrategy.CreatePropertyCallback(childState, desc, entry.NodeIdx);
@@ -1490,17 +1546,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 SubscriptionEntry entry = (SubscriptionEntry)subscriptions[i];
                 if (object.IsNullOrUndefined(entry)) continue;
 
-                object source = childState.Sources[entry.SourceSlot];
+                object source = GraphEngine.GetCollectionItemSource(childState, entry.SourceSlot);
                 if (object.IsNullOrUndefined(source)) continue;
-
-                // Item graphs store a [parentDC, control, item] tuple as DataContext.
-                // Extract the actual item (tuple[2]) for unwiring.
-                if (entry.SourceSlot == GraphSourceSlot.DataContext)
-                {
-                    NativeArray tuple = (NativeArray)source;
-                    if (!object.IsNullOrUndefined(tuple) && tuple.Length >= 3)
-                        source = tuple[2];
-                }
 
                 INotifyPropertyChanged observable = source as INotifyPropertyChanged;
                 if (object.IsNullOrUndefined(observable)) continue;
@@ -1514,6 +1561,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             childState.SubscriptionsActive = false;
+        }
+
+        private static object GetCollectionItemSource(GraphState childState, int sourceSlot)
+        {
+            // An item graph stores its sources in [parent, control, item].
+            NativeArray tuple = childState.Sources[GraphSourceSlot.DataContext] as NativeArray;
+            return !object.IsNullOrUndefined(tuple) && sourceSlot < tuple.Length
+                ? tuple[sourceSlot]
+                : null;
         }
 
         /// <summary>

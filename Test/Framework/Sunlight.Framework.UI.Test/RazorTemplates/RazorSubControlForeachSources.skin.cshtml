@@ -1,0 +1,11 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="subcontrol-foreach-sources">
+@foreach (var item in Model.Items)
+{
+    <div class="source-row">
+        <RazorProbeControl Text="@Model.Name" />
+        <RazorValueProbeControl Value="@item.Name" />
+    </div>
+}
+</div>

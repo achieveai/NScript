@@ -165,7 +165,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // Resolve sub-control attributes (TagName, DomAttributes) via Cecil
             // Must happen before CollectHtmlWithPathsPublic which reads SubControlNode.TagName
-            ResolveSubControlAttributes(_ir.Children);
+            ResolveSubControlAttributes(_ir.Children, FindTypeDefinition(_ir.ModelTypeName));
 
             // Marker indices are assigned by the topology builder and used by the
             // HTML collector for stable sub-control host lookup.
@@ -1064,7 +1064,9 @@ namespace NScript.RazorSkin.CodeGen
         /// Recursively resolves TagName and DomAttributes on SubControlNode instances
         /// by looking up the control type via Cecil and reading [TagName] and [DomAttribute] attributes.
         /// </summary>
-        private void ResolveSubControlAttributes(List<IRNode> nodes)
+        private void ResolveSubControlAttributes(List<IRNode> nodes,
+            TypeDefinition modelType, TypeDefinition itemType = null,
+            string itemVariablePrefix = null)
         {
             if (nodes == null) return;
 
@@ -1072,21 +1074,32 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (node is SubControlNode sub)
                 {
-                    ResolveSubControlTagInfo(sub);
+                    ResolveSubControlTagInfo(sub, modelType, itemType, itemVariablePrefix);
                 }
 
                 if (node.Children?.Count > 0)
-                    ResolveSubControlAttributes(node.Children);
+                    ResolveSubControlAttributes(node.Children, modelType, itemType, itemVariablePrefix);
 
                 if (node is ConditionalNode cond)
                 {
-                    ResolveSubControlAttributes(cond.TrueBranch);
-                    ResolveSubControlAttributes(cond.FalseBranch);
+                    ResolveSubControlAttributes(cond.TrueBranch, modelType, itemType, itemVariablePrefix);
+                    ResolveSubControlAttributes(cond.FalseBranch, modelType, itemType, itemVariablePrefix);
                 }
 
                 if (node is LoopNode loop)
                 {
-                    ResolveSubControlAttributes(loop.ItemTemplate);
+                    var collectionOwner = (loop.CollectionExpression ?? string.Empty)
+                        .StartsWith("Model.") ? modelType : itemType ?? modelType;
+                    var propertyName = (loop.CollectionExpression ?? string.Empty)
+                        .Split('.').LastOrDefault();
+                    var collection = collectionOwner != null
+                        ? FindProperty(collectionOwner, propertyName) : null;
+                    var collectionType = collection?.PropertyType as GenericInstanceType;
+                    var itemReference = collectionType?.GenericArguments.FirstOrDefault();
+                    var loopItemType = itemReference != null
+                        ? FindTypeDefinition(itemReference.FullName) : null;
+                    ResolveSubControlAttributes(loop.ItemTemplate, modelType,
+                        loopItemType, loop.ItemVariableName + ".");
                 }
             }
         }
@@ -1095,7 +1108,9 @@ namespace NScript.RazorSkin.CodeGen
         /// Resolves tag name and DOM attributes for a single SubControlNode by looking up its
         /// CLR type via Cecil and reading [TagName] and [DomAttribute] custom attributes.
         /// </summary>
-        private void ResolveSubControlTagInfo(SubControlNode sub)
+        private void ResolveSubControlTagInfo(SubControlNode sub,
+            TypeDefinition modelType, TypeDefinition itemType,
+            string itemVariablePrefix)
         {
             if (_clrContext == null || _knownTypes == null) return;
 
@@ -1117,7 +1132,7 @@ namespace NScript.RazorSkin.CodeGen
                         targetEnum, _clrContext.GetTypes(), _ir.UsingNamespaces, sub.Location);
             }
             ValidateSubControlTagInfo(sub, typeDef, FindProperty,
-                FindTypeDefinition(_ir.ModelTypeName));
+                modelType, itemType, itemVariablePrefix);
 
             // Read [TagName("xxx")] attribute
             if (_knownTypes.TagNameAttribute != null)
@@ -1157,7 +1172,8 @@ namespace NScript.RazorSkin.CodeGen
         internal static void ValidateSubControlTagInfo(
             SubControlNode sub, TypeDefinition typeDef,
             Func<TypeDefinition, string, PropertyDefinition> findProperty,
-            TypeDefinition modelType = null)
+            TypeDefinition modelType = null, TypeDefinition itemType = null,
+            string itemVariablePrefix = null)
         {
             if (typeDef == null)
                 throw new RazorSubControlDiagnosticException(
@@ -1186,7 +1202,16 @@ namespace NScript.RazorSkin.CodeGen
 
                 // Razor attributes without @ are text only when the target is a string.
                 if (binding.IsLiteral && typeName != "System.String")
+                {
                     binding.IsLiteral = false;
+                    ValidatePrimitiveLiteral(binding.Classification.CSharpExpression,
+                        property.PropertyType, sub.Location);
+                }
+
+                if (!binding.IsLiteral && !binding.IsDelegate)
+                    ValidateDirectSourceType(binding.Classification.CSharpExpression,
+                        property, modelType, itemType, itemVariablePrefix,
+                        findProperty, sub.Location);
 
                 if (!binding.IsLiteral && property.CustomAttributes.Any(attr =>
                     attr.AttributeType.Name == "DefaultDataBindingAttribute"
@@ -1194,11 +1219,16 @@ namespace NScript.RazorSkin.CodeGen
                         && Convert.ToInt32(named.Argument.Value) == 2)))
                 {
                     var source = binding.Classification.CSharpExpression;
+                    var prefix = !string.IsNullOrEmpty(itemVariablePrefix)
+                        && (source ?? string.Empty).StartsWith(itemVariablePrefix)
+                        ? itemVariablePrefix : "Model.";
+                    var sourceType = prefix == "Model." ? modelType : itemType;
                     var match = System.Text.RegularExpressions.Regex.Match(source ?? string.Empty,
-                        @"^Model\.([A-Za-z_][A-Za-z0-9_]*)$");
+                        "^" + System.Text.RegularExpressions.Regex.Escape(prefix)
+                        + @"([A-Za-z_][A-Za-z0-9_]*)$");
                     if (property.GetMethod != null && match.Success
-                        && modelType != null
-                        && findProperty(modelType, match.Groups[1].Value)?.SetMethod != null)
+                        && sourceType != null
+                        && findProperty(sourceType, match.Groups[1].Value)?.SetMethod != null)
                         binding.Classification.Mode = BindingMode.TwoWay;
                 }
             }
@@ -1213,6 +1243,170 @@ namespace NScript.RazorSkin.CodeGen
             return typeDef.Methods.FirstOrDefault(method => method.IsConstructor && !method.IsStatic
                 && method.IsPublic && method.Parameters.Count == 1
                 && method.Parameters[0].ParameterType.FullName == "System.Web.Html.Element");
+        }
+
+        private static void ValidatePrimitiveLiteral(string expression,
+            TypeReference targetType, Location location)
+        {
+            var value = (expression ?? string.Empty).Trim();
+            bool? valid = null;
+            switch (targetType.FullName)
+            {
+                case "System.Boolean": valid = value == "true" || value == "false"; break;
+                case "System.Byte": valid = byte.TryParse(value, out _); break;
+                case "System.SByte": valid = sbyte.TryParse(value, out _); break;
+                case "System.Int16": valid = short.TryParse(value, out _); break;
+                case "System.UInt16": valid = ushort.TryParse(value, out _); break;
+                case "System.Int32": valid = int.TryParse(value, out _); break;
+                case "System.UInt32": valid = uint.TryParse(value, out _); break;
+                case "System.Int64": valid = long.TryParse(value.TrimEnd('L', 'l'), out _); break;
+                case "System.UInt64": valid = ulong.TryParse(value.TrimEnd('U', 'u', 'L', 'l'), out _); break;
+                case "System.Single": valid = float.TryParse(value.TrimEnd('F', 'f'),
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out _); break;
+                case "System.Double": valid = double.TryParse(value.TrimEnd('D', 'd'),
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out _); break;
+                case "System.Decimal": valid = decimal.TryParse(value.TrimEnd('M', 'm'),
+                    System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture, out _); break;
+                case "System.Char": valid = value.Length == 3 && value[0] == '\''
+                    && value[2] == '\''; break;
+            }
+
+            // Dotted names may be enum members or static constants. Enum members are
+            // validated against their declared type separately.
+            if (valid == false && !value.Contains("."))
+                throw new RazorSubControlDiagnosticException(location,
+                    $"Value '{expression}' is not valid for {targetType.FullName}.");
+        }
+
+        private static void ValidateDirectSourceType(string expression,
+            PropertyDefinition targetProperty, TypeDefinition modelType,
+            TypeDefinition itemType, string itemVariablePrefix,
+            Func<TypeDefinition, string, PropertyDefinition> findProperty,
+            Location location)
+        {
+            if (string.IsNullOrEmpty(expression)) return;
+            var prefix = expression.StartsWith("Model.") ? "Model."
+                : !string.IsNullOrEmpty(itemVariablePrefix)
+                    && expression.StartsWith(itemVariablePrefix)
+                    ? itemVariablePrefix : null;
+            if (prefix == null) return;
+            var propertyName = expression.Substring(prefix.Length);
+            if (!System.Text.RegularExpressions.Regex.IsMatch(propertyName,
+                @"^[A-Za-z_][A-Za-z0-9_]*$")) return;
+            var sourceType = prefix == "Model." ? modelType : itemType;
+            var sourceProperty = sourceType != null
+                ? findProperty(sourceType, propertyName) : null;
+            if (sourceProperty == null) return;
+            if (CanAssign(sourceProperty.PropertyType, targetProperty.PropertyType)) return;
+            throw new RazorSubControlDiagnosticException(location,
+                $"Cannot bind {sourceProperty.PropertyType.FullName} to {targetProperty.DeclaringType.FullName}.{targetProperty.Name} ({targetProperty.PropertyType.FullName}).");
+        }
+
+        private static bool CanAssign(TypeReference source, TypeReference target)
+        {
+            if ((source.FullName == target.FullName
+                && source.Scope?.Name == target.Scope?.Name)
+                || target.FullName == "System.Object")
+                return true;
+            var widening = new Dictionary<string, string[]>
+            {
+                ["System.SByte"] = new[] { "System.Int16", "System.Int32", "System.Int64",
+                    "System.Single", "System.Double", "System.Decimal" },
+                ["System.Byte"] = new[] { "System.Int16", "System.UInt16", "System.Int32",
+                    "System.UInt32", "System.Int64", "System.UInt64", "System.Single",
+                    "System.Double", "System.Decimal" },
+                ["System.Int16"] = new[] { "System.Int32", "System.Int64", "System.Single",
+                    "System.Double", "System.Decimal" },
+                ["System.UInt16"] = new[] { "System.Int32", "System.UInt32", "System.Int64",
+                    "System.UInt64", "System.Single", "System.Double", "System.Decimal" },
+                ["System.Int32"] = new[] { "System.Int64", "System.Single", "System.Double",
+                    "System.Decimal" },
+                ["System.UInt32"] = new[] { "System.Int64", "System.UInt64", "System.Single",
+                    "System.Double", "System.Decimal" },
+                ["System.Int64"] = new[] { "System.Single", "System.Double", "System.Decimal" },
+                ["System.UInt64"] = new[] { "System.Single", "System.Double", "System.Decimal" },
+                ["System.Char"] = new[] { "System.UInt16", "System.Int32", "System.UInt32",
+                    "System.Int64", "System.UInt64", "System.Single", "System.Double",
+                    "System.Decimal" },
+                ["System.Single"] = new[] { "System.Double" }
+            };
+            if (widening.TryGetValue(source.FullName, out var targets)
+                && targets.Contains(target.FullName)) return true;
+            var primitive = new[] { "System.Boolean", "System.Byte", "System.SByte",
+                "System.Int16", "System.UInt16", "System.Int32", "System.UInt32",
+                "System.Int64", "System.UInt64", "System.Single", "System.Double",
+                "System.Decimal", "System.Char", "System.String" };
+            if (primitive.Contains(target.FullName))
+                return false;
+            try
+            {
+                return CanAssignReference(source, target, new HashSet<string>());
+            }
+            catch (AssemblyResolutionException)
+            {
+                // Let the existing C# compilation diagnose unresolved reference types.
+                return true;
+            }
+        }
+
+        private static bool CanAssignReference(TypeReference source, TypeReference target,
+            HashSet<string> visited)
+        {
+            if (source.FullName == target.FullName
+                && source.Scope?.Name == target.Scope?.Name) return true;
+            if (!visited.Add(source.FullName + "|" + source.Scope?.Name)) return false;
+
+            if (source is GenericInstanceType sourceGeneric
+                && target is GenericInstanceType targetGeneric
+                && sourceGeneric.ElementType.FullName == targetGeneric.ElementType.FullName)
+            {
+                var definition = sourceGeneric.ElementType.Resolve();
+                if (definition != null && sourceGeneric.GenericArguments.Count
+                    == targetGeneric.GenericArguments.Count)
+                {
+                    bool compatible = true;
+                    for (int i = 0; i < sourceGeneric.GenericArguments.Count; i++)
+                    {
+                        var sourceArg = sourceGeneric.GenericArguments[i];
+                        var targetArg = targetGeneric.GenericArguments[i];
+                        var variance = definition.GenericParameters[i].Attributes
+                            & GenericParameterAttributes.VarianceMask;
+                        compatible &= variance == GenericParameterAttributes.Covariant
+                            ? CanAssign(sourceArg, targetArg)
+                            : variance == GenericParameterAttributes.Contravariant
+                                ? CanAssign(targetArg, sourceArg)
+                                : sourceArg.FullName == targetArg.FullName;
+                    }
+                    if (compatible) return true;
+                }
+            }
+
+            var sourceDefinition = source.Resolve();
+            if (sourceDefinition == null) return false;
+            foreach (var implementation in sourceDefinition.Interfaces)
+            {
+                var inherited = Specialize(implementation.InterfaceType, source);
+                if (CanAssignReference(inherited, target, visited)) return true;
+            }
+            var baseType = sourceDefinition.BaseType;
+            return baseType != null && CanAssignReference(
+                Specialize(baseType, source), target, visited);
+        }
+
+        private static TypeReference Specialize(TypeReference inherited, TypeReference source)
+        {
+            if (!(source is GenericInstanceType sourceGeneric)) return inherited;
+            if (inherited is GenericParameter parameter)
+                return parameter.Position < sourceGeneric.GenericArguments.Count
+                    ? sourceGeneric.GenericArguments[parameter.Position] : inherited;
+            if (!(inherited is GenericInstanceType inheritedGeneric)) return inherited;
+            var result = new GenericInstanceType(inheritedGeneric.ElementType);
+            foreach (var argument in inheritedGeneric.GenericArguments)
+                result.GenericArguments.Add(Specialize(argument, source));
+            return result;
         }
 
         internal static void ValidateEnumLiteral(string expression, TypeDefinition targetEnum,

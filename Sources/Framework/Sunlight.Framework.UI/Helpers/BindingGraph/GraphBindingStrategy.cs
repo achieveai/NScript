@@ -20,6 +20,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             this.state.Sources[GraphSourceSlot.DataContext] = dataContext;
             this.state.Sources[GraphSourceSlot.TemplateParent] = templateParent;
+            this.state.Suspended = false;
 
             // Capture changes raised by a child setter or Activate() while the
             // initial graph is still being populated, then reconcile them below.
@@ -88,6 +89,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             this.state.Sources[GraphSourceSlot.DataContext] = newDataContext;
+            if (this.state.Suspended) return;
             GraphEngine.SetDefaultSubControlDataContext(this.descriptor, this.state, newDataContext);
 
             if (wasSubscribed)
@@ -108,6 +110,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             this.state.Sources[GraphSourceSlot.TemplateParent] = newTemplateParent;
+            if (this.state.Suspended) return;
 
             if (wasSubscribed)
                 WireSubscriptions(this.state.Sources[GraphSourceSlot.DataContext], newTemplateParent);
@@ -182,6 +185,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             return delegate(INotifyPropertyChanged sender, string propName)
             {
+                if (state.Suspended) return;
                 // Synchronous flush: mark node dirty and evaluate immediately.
                 // This ensures DOM is up-to-date before the next line of application
                 // code executes. The reentrancy guard in Flush() (try-finally)

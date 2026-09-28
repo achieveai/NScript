@@ -78,6 +78,7 @@
     <EmbeddedResource Include="RazorTemplates\RazorSubControlDefaultContext.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlLifecycle.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSubControlForeachSources.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlForeachDefaultContext.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlConditional.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlDelegate.skin.cshtml" />
