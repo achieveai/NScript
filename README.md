@@ -46,7 +46,7 @@ in `Directory.Build.props`):
 
    ```xml
    <GenerateNScriptPackages>true</GenerateNScriptPackages>
-   <NScriptPackageVersion>1.1.9-local.3</NScriptPackageVersion>
+   <NScriptPackageVersion>1.1.9</NScriptPackageVersion>
    ```
 
 2. **Build the solution**:
@@ -396,5 +396,5 @@ For issues, questions, or feedback:
 
 ---
 
-**Version**: 1.1.8
-**Last Updated**: May 2026
+**Version**: 1.1.9
+**Last Updated**: October 2026
